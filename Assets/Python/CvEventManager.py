@@ -828,7 +828,8 @@ class CvEventManager:
 		iOwner = city.findHighestCulture()
 		
 		# Partisans!
-		if city.getPopulation > 1 and iOwner != -1 and iPlayer != -1:
+		# f1rpo (bugfix by SmokeyTheBear): Missing parentheses after getPopulation
+		if city.getPopulation() > 1 and iOwner != -1 and iPlayer != -1:
 			owner = gc.getPlayer(iOwner)
 			if not owner.isBarbarian() and owner.getNumCities() > 0:
 				if gc.getTeam(owner.getTeam()).isAtWar(gc.getPlayer(iPlayer).getTeam()):

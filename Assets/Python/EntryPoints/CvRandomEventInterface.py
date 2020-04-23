@@ -3199,8 +3199,16 @@ def canTriggerExperiencedCaptain(argsList):
 def getNumPartisanUnits(plot, iPlayer):
 	for i in range(gc.getNumCultureLevelInfos()):
 		iI = gc.getNumCultureLevelInfos() - i - 1
-		if plot.getCulture(iPlayer) >= gc.getGame().getCultureThreshold(iI):
-			return iI
+		# <f1rpo> (idea by SmokeyTheBear) Use city culture if there is a city (and there should be one).
+		# Note that CyCity.getCultureLevel can't be used b/c iPlayer no longer owns the city.
+		if plot.isCity():
+			iCulture = plot.getPlotCity().getCulture(iPlayer)
+		else:
+			iCulture = plot.getCulture(iPlayer)
+		if iCulture >= gc.getGame().getCultureThreshold(iI):
+			# Subtracting 1 here means that cities with Poor culture don't spawn partisans
+			return iI - 1
+		# </f1rpo>
 	return 0
 
 def getHelpPartisans1(argsList):
