@@ -22231,8 +22231,14 @@ bool CvUnitAI::AI_exploreAir()
 /************************************************************************************************/
 int CvUnitAI::AI_exploreAirPlotValue( CvPlot* pPlot )
 {
+	// <f1rpo> Don't cheat with visibility (no need)
+	CvTeam const& kOurTeam = GET_TEAM(getTeam());
+	if (!pPlot->isRevealed(kOurTeam.getID(), false))
+		return 50; // </f1rpo>
 	int iValue = 0;
-	if (pPlot->isVisible(getTeam(), false))
+	//if (pPlot->isVisible(getTeam(), false))
+	// f1rpo (bugfix): We're _not_ interested in exploring visible tiles
+	if (!pPlot->isVisible(kOurTeam.getID(), false))
 	{
 		iValue++;
 
@@ -22283,7 +22289,9 @@ bool CvUnitAI::AI_exploreAir2()
 						for (int iI = 0; iI < NUM_DIRECTION_TYPES; iI++)
 						{
 							DirectionTypes eDirection = (DirectionTypes) iI;
-							CvPlot* pAdjacentPlot = plotDirection(getX_INLINE(), getY_INLINE(), eDirection);
+							//CvPlot* pAdjacentPlot = plotDirection(getX_INLINE(), getY_INLINE(), eDirection);
+							// f1rpo (bugfix):
+							CvPlot* pAdjacentPlot = plotDirection(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), eDirection);
 							if (pAdjacentPlot != NULL)
 							{
 								if( !pAdjacentPlot->isVisible(getTeam(),false) )
