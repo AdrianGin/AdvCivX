@@ -8,7 +8,10 @@
 // K-Mod. Created the following function for rounded integer division
 static inline int ROUND_DIVIDE(int a, int b)
 {
-	return (a+((a/b>0)?1:-1)*(b/2)) / b;
+	//return (a+((a/b>0)?1:-1)*(b/2)) / b;
+	// <f1rpo> Bugfix; the above would round 2/3 to 0.
+	int iSign = ((a ^ b) >= 0 ? 1 : -1);
+	return (a + iSign * b / 2) / b; // </f1rpo>
 }
 // K-Mod end
 
