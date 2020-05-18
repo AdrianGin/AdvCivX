@@ -9867,8 +9867,14 @@ bool CvPlayerAI::AI_counterPropose(PlayerTypes ePlayer, const CLinkList<TradeDat
 				std::vector<std::pair<TradeData*, int> >::iterator it, best_it;
 				for (best_it = it = item_value_list.begin(); it != item_value_list.end(); ++it)
 				{
-					if ((it->second > value_gap && best_it->second < value_gap) ||
-						(std::abs(it->second - value_gap) < std::abs(best_it->second - value_gap)))
+					/*if ((it->second > value_gap && best_it->second < value_gap) ||
+						(std::abs(it->second - value_gap) < std::abs(best_it->second - value_gap)))*/
+					/*	<f1rpo> Bugfix, arguably. The last condition above allows an item
+						that doesn't fill the value gap to replace an item that does. */
+					if (it->second > value_gap
+						&& (best_it->second < value_gap
+						|| std::abs(it->second - value_gap) < std::abs(best_it->second - value_gap)))
+						// </f1rpo>
 					{
 						best_it = it;
 					}
