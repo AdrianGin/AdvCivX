@@ -1,0 +1,10 @@
+This is a fork of K-Mod 1.46 with a few dozen bugfixes and other hopefully
+unobjectionable changes from AdvCiv. It can be played as an "unofficial"
+K-Mod version, however, the main point is the Git commit history, from which
+other mods can cherry-pick -- especially mods based on K-Mod, but I've also
+fixed some BBAI and BtS bugs.
+
+Commit history:
+https://github.com/f1rpo/AdvCiv/tree/kmod_tweaks
+Background:
+https://forums.civfanatics.com/threads/advanced-civ.614217/#post-14841994
