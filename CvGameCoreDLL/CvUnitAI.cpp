@@ -3931,7 +3931,10 @@ void CvUnitAI::AI_pillageMove()
 		return;
 	}
 
-	if( !isHuman() && plot()->isCoastalLand() && GET_PLAYER(getOwnerINLINE()).AI_unitTargetMissionAIs(this, MISSIONAI_PICKUP) > 0 )
+	if (!isHuman() && plot()->isCoastalLand() && GET_PLAYER(getOwnerINLINE()).AI_unitTargetMissionAIs(this, MISSIONAI_PICKUP) > 0
+		 /*  f1rpo (advc.046): SKIP w/o setting eMissionAI would make the group
+			 forget that it's stranded, and then AI_pickupStranded won't find it. */
+		&& !getGroup()->isStranded())
 	{
 		getGroup()->pushMission(MISSION_SKIP);
 		return;
@@ -11025,7 +11028,10 @@ CvUnit* CvUnitAI::AI_findTransport(UnitAITypes eUnitAI, int iFlags, int iMaxPath
 						if ((iMaxCargoSpace == -1) || (iCargoSpaceAvailable <= iMaxCargoSpace))
 						{
 							if ((iMaxCargoOurUnitAI == -1) || (pLoopUnit->getUnitAICargo(AI_getUnitAIType()) <= iMaxCargoOurUnitAI))
-							{
+							{	// <f1rpo> (advc.046) Don't join a mission to nowhere
+								CvUnit const* u = pLoopUnit->getGroup()->AI_getMissionAIUnit();
+								if(u != NULL && u->plot()->getTeam() != getTeam() && u->plot() != plot())
+									continue; // </f1rpo>
 								if (!(pLoopUnit->plot()->isVisibleEnemyUnit(this)))
 								{
 									CvPlot* pUnitTargetPlot = pLoopUnit->getGroup()->AI_getMissionAIPlot();
