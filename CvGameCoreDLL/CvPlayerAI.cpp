@@ -7319,7 +7319,10 @@ int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnable
 				}
 				else if( eExistingUnit != NO_UNIT )
 				{
-					iAssaultValue += 500 * std::max(0, AI_unitImpassableCount(eLoopUnit) - AI_unitImpassableCount(eExistingUnit)); // was 1000*
+					//iAssaultValue += 500 * std::max(0, AI_unitImpassableCount(eLoopUnit) - AI_unitImpassableCount(eExistingUnit)); // (was 1000* in BBAI, 100* in BtS)
+					/*	f1rpo (bugfix): We want the new unit to have _fewer_ impassables!
+						Given that 0 was counted previously, perhaps 500 is a bit much. */
+					iAssaultValue += 300 * std::max(0, AI_unitImpassableCount(eExistingUnit) - AI_unitImpassableCount(eLoopUnit));
 
 					int iNewCapacity = kLoopUnit.getMoves() * kLoopUnit.getCargoSpace();
 					int iOldCapacity = GC.getUnitInfo(eExistingUnit).getMoves() * GC.getUnitInfo(eExistingUnit).getCargoSpace();
