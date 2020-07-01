@@ -2129,7 +2129,13 @@ int CvTeamAI::AI_techTradeVal(TechTypes eTech, TeamTypes eTeam) const
 	iValue += (((iCost / 2) * (iPossibleKnownCount - iKnownCount)) / iPossibleKnownCount);
 	*/
 	// K-Mod. Standardized the modifier for # of teams with the tech; and removed the effect of team size.
-	int iValue = (150 + AI_knownTechValModifier(eTech)) * std::max(0, (getResearchCost(eTech, true, false) - getResearchProgress(eTech))) / 100;
+	int iValue = (150 + AI_knownTechValModifier(eTech)) *
+			/*	f1rpo: Don't remove the effect of team size. A correct implementation
+				would also have to remove it from the research progress; but it would
+				still be a questionable change imo, making tech-for-gold purchases
+				cheaper in team games for no particular reason. (Perhaps it was aimed
+				at Permanent Alliances only?) */
+			std::max(0, (getResearchCost(eTech/*, true, false*/) - getResearchProgress(eTech))) / 100;
 	// K-Mod end
 
 	iValue *= std::max(0, (GC.getTechInfo(eTech).getAITradeModifier() + 100));
