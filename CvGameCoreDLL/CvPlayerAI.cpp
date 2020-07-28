@@ -11310,12 +11310,15 @@ int CvPlayerAI::AI_civicTradeVal(CivicTypes eCivic, PlayerTypes ePlayer) const
 
 	eBestCivic = GET_PLAYER(ePlayer).AI_bestCivic((CivicOptionTypes)(GC.getCivicInfo(eCivic).getCivicOptionType()));
 
-	if (eBestCivic != NO_CIVIC)
+	if (eBestCivic != NO_CIVIC && eBestCivic != eCivic)
 	{
-		if (eBestCivic != eCivic)
-		{
-			iValue += std::max(0, ((GET_PLAYER(ePlayer).AI_civicValue(eBestCivic) - GET_PLAYER(ePlayer).AI_civicValue(eCivic)) * 2));
-		}
+		iValue += std::max(0, 2 *
+				/*	f1rpo: AI_civicValue is at a scale of 1 commerce per turn.
+					ePlayer will have to run the new civic for longer than 2 turns ...
+					2*MIN_REVOLUTION_TURNS is consistent with code at the end of AI_doCivics. */
+				GC.getDefineINT("MIN_REVOLUTION_TURNS") *
+				(GET_PLAYER(ePlayer).AI_civicValue(eBestCivic)
+				- GET_PLAYER(ePlayer).AI_civicValue(eCivic)));
 	}
 
 	if (GET_TEAM(GET_PLAYER(ePlayer).getTeam()).isVassal(getTeam()))
