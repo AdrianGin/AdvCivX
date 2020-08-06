@@ -18872,7 +18872,8 @@ EventTriggeredData* CvPlayer::initTriggeredData(EventTriggerTypes eEventTrigger,
 				{
 					if (kTrigger.getBuildingRequired(i) != NO_BUILDINGCLASS)
 					{
-						iNumBuildings += getBuildingClassCount((BuildingClassTypes)kTrigger.getBuildingRequired(i));
+						iNumBuildings += kLoopPlayer. // f1rpo (bugfix): was this->
+								getBuildingClassCount((BuildingClassTypes)kTrigger.getBuildingRequired(i));
 					}
 				}
 			}
