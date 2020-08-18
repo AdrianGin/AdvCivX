@@ -33,11 +33,6 @@
 		<DefineName>BARBARIAN_FREE_TECH_PERCENT</DefineName>
 		<iDefineIntVal>4</iDefineIntVal> <!-- increased from 3, to compensate for other changes -->
 	</Define>
-	<!-- f1rpo: Increased from 2200 -->
-	<Define>
-		<DefineName>CAMERA_START_DISTANCE</DefineName>
-		<fDefineFloatVal>4600</fDefineFloatVal>
-	</Define>
 	<Define>
 		<DefineName>FROZEN_TERRAIN</DefineName>
 		<DefineTextVal>TERRAIN_SNOW</DefineTextVal>
