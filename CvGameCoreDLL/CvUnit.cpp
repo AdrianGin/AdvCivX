@@ -7057,6 +7057,8 @@ void CvUnit::promote(PromotionTypes ePromotion, int iLeaderUnitId)
 		return;
 	}
 
+	bool bPlaySound = true; // f1rpo
+
 	if (iLeaderUnitId >= 0)
 	{
 		CvUnit* pWarlord = GET_PLAYER(getOwnerINLINE()).getUnit(iLeaderUnitId);
@@ -7073,6 +7075,26 @@ void CvUnit::promote(PromotionTypes ePromotion, int iLeaderUnitId)
 			reloadEntity();
 		}
 	}
+	// <f1rpo>
+	else if (IsSelected())
+	{
+		int iSelectedCanPromote = 0;
+		for (CLLNode<IDInfo>* pNode = gDLL->getInterfaceIFace()->headSelectionListNode();
+			pNode != NULL; pNode = gDLL->getInterfaceIFace()->nextSelectionListNode(pNode))
+		{
+			CvUnit const* pUnit = ::getUnit(pNode->m_data);
+			if (pUnit != NULL && pUnit->canPromote(ePromotion, iLeaderUnitId))
+			{
+				iSelectedCanPromote++;
+				// Play sound only for the last promoted unit in a selected stack
+				if (iSelectedCanPromote > 1)
+				{
+					bPlaySound = false;
+					break;
+				}
+			}
+		}
+	} // </f1rpo>
 
 	if (!GC.getPromotionInfo(ePromotion).isLeader())
 	{
@@ -7088,7 +7110,8 @@ void CvUnit::promote(PromotionTypes ePromotion, int iLeaderUnitId)
 
 	if (IsSelected())
 	{
-		gDLL->getInterfaceIFace()->playGeneralSound(GC.getPromotionInfo(ePromotion).getSound());
+		if (bPlaySound) // f1rpo
+			gDLL->getInterfaceIFace()->playGeneralSound(GC.getPromotionInfo(ePromotion).getSound());
 
 		gDLL->getInterfaceIFace()->setDirty(UnitInfo_DIRTY_BIT, true);
 		gDLL->getFAStarIFace()->ForceReset(&GC.getInterfacePathFinder()); // K-Mod.
@@ -12460,14 +12483,18 @@ void CvUnit::flankingStrikeCombat(const CvPlot* pPlot, int iAttackerStrength, in
 	}
 
 	if (iNumUnitsHit > 0)
-	{
+	{	// f1rpo: bForce these messages and don't play a sound
 		CvWString szBuffer = gDLL->getText("TXT_KEY_MISC_YOU_DAMAGED_UNITS_BY_FLANKING", getNameKey(), iNumUnitsHit);
-		gDLL->getInterfaceIFace()->addHumanMessage(getOwnerINLINE(), false, GC.getEVENT_MESSAGE_TIME(), szBuffer, GC.getEraInfo(GC.getGameINLINE().getCurrentEra()).getAudioUnitVictoryScript(), MESSAGE_TYPE_INFO, NULL, (ColorTypes)GC.getInfoTypeForString("COLOR_GREEN"), pPlot->getX_INLINE(), pPlot->getY_INLINE());
+		gDLL->getInterfaceIFace()->addHumanMessage(getOwnerINLINE(), true, GC.getEVENT_MESSAGE_TIME(), szBuffer,
+				/*GC.getEraInfo(GC.getGameINLINE().getCurrentEra()).getAudioUnitVictoryScript()*/ NULL,
+				MESSAGE_TYPE_INFO, NULL, (ColorTypes)GC.getInfoTypeForString("COLOR_GREEN"), pPlot->getX_INLINE(), pPlot->getY_INLINE());
 
 		if (NULL != pSkipUnit)
 		{
 			szBuffer = gDLL->getText("TXT_KEY_MISC_YOUR_UNITS_DAMAGED_BY_FLANKING", getNameKey(), iNumUnitsHit);
-			gDLL->getInterfaceIFace()->addHumanMessage(pSkipUnit->getOwnerINLINE(), false, GC.getEVENT_MESSAGE_TIME(), szBuffer, GC.getEraInfo(GC.getGameINLINE().getCurrentEra()).getAudioUnitDefeatScript(), MESSAGE_TYPE_INFO, NULL, (ColorTypes)GC.getInfoTypeForString("COLOR_RED"), pPlot->getX_INLINE(), pPlot->getY_INLINE());
+			gDLL->getInterfaceIFace()->addHumanMessage(pSkipUnit->getOwnerINLINE(), true, GC.getEVENT_MESSAGE_TIME(), szBuffer,
+					/*GC.getEraInfo(GC.getGameINLINE().getCurrentEra()).getAudioUnitDefeatScript()*/ NULL,
+					MESSAGE_TYPE_INFO, NULL, (ColorTypes)GC.getInfoTypeForString("COLOR_RED"), pPlot->getX_INLINE(), pPlot->getY_INLINE());
 		}
 	}
 }
