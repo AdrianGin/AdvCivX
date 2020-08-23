@@ -33,6 +33,17 @@
 		<DefineName>BARBARIAN_FREE_TECH_PERCENT</DefineName>
 		<iDefineIntVal>4</iDefineIntVal> <!-- increased from 3, to compensate for other changes -->
 	</Define>
+	<!-- f1rpo: Increased from 2200. For players who mostly use a rather
+		 top-down camera angle (i.e. who zoom out far), something like 5000
+		 should work well. The original value seems too small even for
+		 players who use a flat angle (zoomed in halfway, probably combined
+		 with a high field-of-view value).
+		 When CAMERA_START_DISTANCE is too far off the typical playing distance,
+		 music and other sounds can become almost inaudible. -->
+	<Define>
+		<DefineName>CAMERA_START_DISTANCE</DefineName>
+		<fDefineFloatVal>3200</fDefineFloatVal>
+	</Define>
 	<Define>
 		<DefineName>FROZEN_TERRAIN</DefineName>
 		<DefineTextVal>TERRAIN_SNOW</DefineTextVal>
