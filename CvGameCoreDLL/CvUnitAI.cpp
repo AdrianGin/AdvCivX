@@ -15081,7 +15081,12 @@ CvCity* CvUnitAI::AI_pickTargetCity(int iFlags, int iMaxPathTurns, bool bHuntBar
 								int iOffenceEnRoute = kOwner.AI_cityTargetStrengthByPath(pLoopCity, getGroup(), iPathTurns);
 								if (pLoopCity->isVisible(getTeam(), false))
 								{
-									iEnemyDefence = kOwner.AI_localDefenceStrength(pLoopCity->plot(), NO_TEAM, DOMAIN_LAND, true, iPathTurns > 1 ? 2 : 0);
+									iEnemyDefence = kOwner.AI_localDefenceStrength(
+											pLoopCity->plot(), NO_TEAM, DOMAIN_LAND,
+											/*	f1rpo (bugfix): Probably a remnant of
+												bDefensiveBonuses=true in BBAI's AI_getEnemyPlotStrength. */
+											//true,
+											iPathTurns > 1 ? 2 : 0);
 
 									if (iPathTurns > 2)
 									{
