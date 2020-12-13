@@ -1247,9 +1247,12 @@ int CvTeamAI::AI_chooseElection(const VoteSelectionData& kVoteSelectionData) con
 				{
 					if (GET_PLAYER((PlayerTypes)iJ).getTeam() == getID())
 					{
-						PlayerVoteTypes eVote = GET_PLAYER((PlayerTypes)iJ).AI_diploVote(kVoteSelectionData.aVoteOptions[iI], eVoteSource, true);
+						// f1rpo (bugfix from Kek-Mod): Had shadowed the eVote variable
+						PlayerVoteTypes ePlayerVote = GET_PLAYER((PlayerTypes)iJ).AI_diploVote(kVoteSelectionData.aVoteOptions[iI], eVoteSource, true);
 
-						if (eVote != PLAYER_VOTE_YES || eVote == GC.getGameINLINE().getVoteOutcome((VoteTypes)iI))
+						//if (eVote != PLAYER_VOTE_YES || eVote == GC.getGameINLINE().getVoteOutcome((VoteTypes)iI))
+						// f1rpo (bugfix from Kek-Mod cont.):
+						if (ePlayerVote != PLAYER_VOTE_YES || ePlayerVote == GC.getGameINLINE().getVoteOutcome(eVote))
 						{
 							bValid = false;
 							break;
