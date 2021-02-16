@@ -6978,7 +6978,13 @@ int CvCityAI::AI_getImprovementValue(CvPlot* pPlot, ImprovementTypes eImprovemen
 		// Adjustments to match calculation in CvPlot::doImprovementUpgrade.
 		iTimeScale = iTimeScale * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getImprovementPercent()/100;
 		iTimeScale = iTimeScale * GC.getEraInfo(GC.getGameINLINE().getStartEra()).getImprovementPercent()/100;
-		iTimeScale = iTimeScale / kOwner.getImprovementUpgradeRate();
+		//iTimeScale = iTimeScale / kOwner.getImprovementUpgradeRate();
+		/*	f1rpo (bugfix): ImprovementUpgradeRate is not applied to the
+			ImprovementUpgradeTime but to the UpgradeProgress, i.e.
+			the opposite side of the equation.
+			Faster upgrade should make us more interested in delayed rewards,
+			which is what an increased time scale accomplishes. */
+		iTimeScale *= kOwner.getImprovementUpgradeRate();
 
 		std::vector<float> weighted_final_yields(NUM_YIELD_TYPES);
 		std::vector<float> weighted_yield_diffs(NUM_YIELD_TYPES);
