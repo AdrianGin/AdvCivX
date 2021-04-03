@@ -1,5 +1,5 @@
 TOOLKIT=C:\Program Files (x86)\Microsoft Visual C++ Toolkit 2003 SP1
-PSDK=C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A
+PSDK=C:\Program Files (x86)\Microsoft SDKs\Windows\v6.0
 CIV4_PATH=C:\Program Files (x86)\Sid Meier's Civilization 4\Beyond the Sword
 YOURMOD=C:\Program Files (x86)\Sid Meier's Civilization 4\Beyond the Sword\Mods\K-Mod
 YOURLOGS=C:\Users\Administrator\Documents\My Games\Beyond the Sword\Logs

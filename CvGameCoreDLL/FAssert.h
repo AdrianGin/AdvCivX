@@ -14,7 +14,7 @@
 
 /*  f1rpo: Inlining functions with assertions could be a bad choice.
 	Let's at least not force-inline. */
-#define __forceinline inline
+#define __forceinline __inline
 
 #ifdef WIN32
 
