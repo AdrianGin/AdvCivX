@@ -10547,7 +10547,7 @@ int CvPlayerAI::AI_baseBonusVal(BonusTypes eBonus) const
 					if (iUnitValue > 0)
 					{
 						// devalue the unit if we wouldn't be able to build it anyway
-						if (canTrain(eLoopUnit))
+						if (canTrain(eLoopUnit, /* f1rpo (bugfix): */ true))
 						{
 							// is it a water unit and no coastal cities or our coastal city cannot build because its obsolete
 							if ((kLoopUnit.getDomainType() == DOMAIN_SEA && (pCoastalCity == NULL || pCoastalCity->allUpgradesAvailable(eLoopUnit) != NO_UNIT)) ||
@@ -10650,7 +10650,9 @@ int CvPlayerAI::AI_baseBonusVal(BonusTypes eBonus) const
 						bool bIsStateReligion = (((ReligionTypes) kLoopBuilding.getStateReligion()) != NO_RELIGION);
 
 						//check if function call is cached
-						bool bCanConstruct = canConstruct(eLoopBuilding, false, /*bTestVisible*/ true, /*bIgnoreCost*/ true);
+						bool bCanConstruct = canConstruct(eLoopBuilding,
+								true, // f1rpo: bugfix (though it doesn't really make a difference)
+								/*bTestVisible=*/true, /*bIgnoreCost=*/true);
 						
 						// bCanNeverBuild when true is accurate, it may be false in some cases where we will never be able to build 
 						bool bCanNeverBuild = (bHasTechForBuilding && !bCanConstruct && !bIsStateReligion);
@@ -10710,7 +10712,7 @@ int CvPlayerAI::AI_baseBonusVal(BonusTypes eBonus) const
 						// project worthless
 						iTempValue = 0;
 					}
-					else if (canCreate(eProject))
+					else if (canCreate(eProject /*f1rpo (bugfix): */, true))
 					{
 						iTempValue *= 2;
 					}
