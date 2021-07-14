@@ -165,6 +165,15 @@ void CvCity::init(int iID, PlayerTypes eOwner, int iX, int iY, bool bBumpUnits,
 	setName(kOwner.getNewCityName(), /* advc.106k: */ false, true);
 
 	setEverOwned(getOwner(), true);
+	// <advc.908b>
+	FOR_EACH_ENUM(Trait)
+	{
+		if (!kOwner.hasTrait(eLoopTrait))
+			continue;
+		int iFreeCityCulture = GC.getGame().freeCityCultureFromTrait(eLoopTrait);
+		if (iFreeCityCulture > 0)
+			setCulture(getOwner(), iFreeCityCulture, true, false);
+	} // </advc.908b>
 	/*  advc.ctr: To prevent updateCultureLevel from bumping units in
 		surrounding tiles after trading a city under occupation. Don't call
 		setOccupationTimer though -- don't need all those updates. */
@@ -172,10 +181,11 @@ void CvCity::init(int iID, PlayerTypes eOwner, int iX, int iY, bool bBumpUnits,
 	updateCultureLevel(false);
 
 	CvPlot& kPlot = GC.getMap().getPlot(iX, iY);
-	int const iFreeCityCulture = GC.getDefineINT("FREE_CITY_CULTURE"); // advc.opt
-	if (kPlot.getCulture(getOwner()) < iFreeCityCulture)
-		kPlot.setCulture(getOwner(), iFreeCityCulture, bBumpUnits, false);
-
+	{
+		int const iFreeCityPlotCulture = GC.getDefineINT("FREE_CITY_CULTURE"); // advc.opt
+		if (kPlot.getCulture(getOwner()) < iFreeCityPlotCulture)
+			kPlot.setCulture(getOwner(), iFreeCityPlotCulture, bBumpUnits, false);
+	}
 	kPlot.setOwner(getOwner(), bBumpUnits, false);
 	kPlot.setPlotCity(this);
 

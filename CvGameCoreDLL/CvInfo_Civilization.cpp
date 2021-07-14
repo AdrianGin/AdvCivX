@@ -1224,7 +1224,7 @@ bool CvTraitInfo::isFreePromotionUnitCombat(int i) const // advc.003t: Return ty
 
 bool CvTraitInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML)) // advc.tag
 		return false;
 	{
 		CvString szTextVal;

@@ -51,7 +51,12 @@ CitySiteEvaluator::CitySiteEvaluator(CvPlayerAI const& kPlayer, int iMinRivalRan
 				continue;
 
 			CvTraitInfo const& kLoopTrait = GC.getInfo(eLoopTrait);
-			if (kLoopTrait.getCommerceChange(COMMERCE_CULTURE) > 0)
+			if (kLoopTrait.getCommerceChange(COMMERCE_CULTURE) > 0 ||
+				// <advc.908b>
+				(GC.getNumCultureLevelInfos() >= 2 &&
+				GC.getGame().freeCityCultureFromTrait(eLoopTrait) >=
+				GC.getGame().getCultureThreshold((CultureLevelTypes)2)))
+				// </advc.908b>
 			{
 				m_bEasyCulture = true;
 				if (pPersonality != NULL && pPersonality->getBasePeaceWeight() <= 5)

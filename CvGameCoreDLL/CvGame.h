@@ -776,8 +776,8 @@ public:
 	bool culturalVictoryValid() const;
 	int culturalVictoryNumCultureCities() const;
 	CultureLevelTypes culturalVictoryCultureLevel() const;
-
 	int getCultureThreshold(CultureLevelTypes eLevel) const;
+	int freeCityCultureFromTrait(TraitTypes eTrait) const; // advc.908b
 
 	int getPlotExtraYield(int iX, int iY, YieldTypes eYield) const;   // exposed to Python (K-Mod)
 	void setPlotExtraYield(int iX, int iY, YieldTypes eYield, int iCost);   // exposed to Python

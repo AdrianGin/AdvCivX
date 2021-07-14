@@ -343,9 +343,27 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  class : CvTraitInfo
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-class CvTraitInfo : public CvInfoBase
+class CvTraitInfo : /* <advc.tag> */ public CvXMLInfo
 {
-public: // advc: All the const functions are exposed to Python except those added by mods
+	typedef CvXMLInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		kElements.addInt(FREE_CITY_CULTURE, "FreeCityCulture");
+	}
+public:
+	enum IntElementTypes
+	{
+		FREE_CITY_CULTURE = CvXMLInfo::NUM_INT_ELEMENT_TYPES, // advc.908b
+		NUM_INT_ELEMENT_TYPES
+	};
+	int get(IntElementTypes e) const
+	{
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
+	} // </advc.tag>
+
+	// advc: All the const functions are exposed to Python except those added by mods
 	CvTraitInfo();
 	~CvTraitInfo();
 

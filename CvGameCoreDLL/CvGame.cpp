@@ -10189,6 +10189,14 @@ int CvGame::getCultureThreshold(CultureLevelTypes eLevel) const
 	return iThreshold;
 }
 
+// advc.908b:
+int CvGame::freeCityCultureFromTrait(TraitTypes eTrait) const
+{
+	return (GC.getInfo(eTrait).get(CvTraitInfo::FREE_CITY_CULTURE) *
+			gameSpeedMultiplier()).floor();
+}
+
+
 void CvGame::doUpdateCacheOnTurn()
 {
 	// reset shrine count

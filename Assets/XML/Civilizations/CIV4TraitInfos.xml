@@ -146,12 +146,15 @@
 			<iMaxGlobalBuildingProductionModifier>0</iMaxGlobalBuildingProductionModifier>
 			<iMaxTeamBuildingProductionModifier>0</iMaxTeamBuildingProductionModifier>
 			<iMaxPlayerBuildingProductionModifier>0</iMaxPlayerBuildingProductionModifier>
+			<!-- advc.908b -->
+			<iFreeCityCulture>10</iFreeCityCulture>
 			<ExtraYieldThresholds/>
 			<TradeYieldModifiers/>
 			<CommerceChanges>
 				<iCommerce>0</iCommerce>
 				<iCommerce>0</iCommerce>
-				<iCommerce>2</iCommerce>
+				<!-- advc.908b: was 2 -->
+				<iCommerce>1</iCommerce>
 			</CommerceChanges>
 			<CommerceModifiers/>
 			<FreePromotions/>

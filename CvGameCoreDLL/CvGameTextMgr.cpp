@@ -5902,6 +5902,47 @@ void CvGameTextMgr::parseTraits(CvWStringBuffer &szHelpString, TraitTypes eTrait
 					GC.getInfo(eCommerce).getChar(), "COMMERCE"));
 		}
 	}
+	// <advc.908b>
+	{
+		CvGame const& kGame = GC.getGame();
+		bool const bInGame = (kGame.getActivePlayer() != NO_PLAYER);
+		int const iFreeCityCulture = (bInGame ?
+				kGame.freeCityCultureFromTrait(eTrait) :
+				kTrait.get(CvTraitInfo::FREE_CITY_CULTURE));
+		if (iFreeCityCulture != 0)
+		{
+			CultureLevelTypes eFreeLevel = NO_CULTURELEVEL;
+			FOR_EACH_ENUM_REV(CultureLevel)
+			{
+				if (eLoopCultureLevel <= 1)
+					break;
+				int iThresh = (bInGame ? kGame.getCultureThreshold(eLoopCultureLevel) :
+						// (Game speed is treated as default before game launch)
+						GC.getInfo(eLoopCultureLevel).getSpeedThreshold(kGame.getGameSpeedType()));
+				if (iFreeCityCulture < iThresh)
+					continue;
+				/*	This only works because (and so long as) the thresholds
+					set in CultureLevel XML correspond to the VictoryDelay
+					modifier set in GameSpeed XML. (Clean solution would be a
+					separate XML tag for free culture level.) */
+				if (iFreeCityCulture == iThresh)
+					eFreeLevel = eLoopCultureLevel;
+				break;
+			}
+			if (eFreeLevel != NO_CULTURELEVEL)
+			{
+				szHelpString.append(
+						gDLL->getText("TXT_KEY_TRAIT_FREE_CULTURE_LEVEL",
+						GC.getInfo(eFreeLevel).getDescription()));
+			}
+			else
+			{
+				szHelpString.append(
+						gDLL->getText("TXT_KEY_TRAIT_FREE_CITY_CULTURE",
+						iFreeCityCulture));
+			}
+		}
+	} // </advc.908b>
 	{
 		CvWString szTempBuffer;
 		bool bFoundPromotion = false;

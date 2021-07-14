@@ -3017,7 +3017,36 @@
 		<Italian>[NEWLINE][SPACE][SPACE][ICON_BULLET]+1%F1_yield su caselle con un rendimento naturale di %d2%F3_yield o un rendimento totale di %d4%F5_yield</Italian>
 		<Spanish>[NEWLINE][SPACE][SPACE][ICON_BULLET]+1 %F1_yield en las casillas con un rendimiento natural de %d2%F3_yield o un rendimiento total de %d4%F5_yield</Spanish>
 	</TEXT>
-	
+
+	<!-- advc.908b -->
+	<TEXT>
+		<Tag>TXT_KEY_TRAIT_FREE_CULTURE_LEVEL</Tag>
+		<English>[NEWLINE][SPACE][SPACE][ICON_BULLET]Cities start at %s1_Level [ICON_CULTURE]-Level</English>
+		<French>[NEWLINE][SPACE][SPACE][ICON_BULLET]Les villes commencent au niveau de la culture %s1_Level</French>
+		<German>[NEWLINE][SPACE][SPACE][ICON_BULLET]Städte werden auf [ICON_CULTURE]-Stufe %s1_Level gegründet</German>
+		<Italian>[NEWLINE][SPACE][SPACE][ICON_BULLET]Le città iniziano a livello di cultura %s1_Level</Italian>
+		<Spanish>[NEWLINE][SPACE][SPACE][ICON_BULLET]Las ciudades comienzan en el nivel de cultura %s1_Level</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_TRAIT_FREE_CITY_CULTURE</Tag>
+		<English>[NEWLINE][SPACE][SPACE][ICON_BULLET]Cities start with %d1 [ICON_CULTURE]</English>
+		<French>[NEWLINE][SPACE][SPACE][ICON_BULLET]Les villes commencent avec %d1 [ICON_CULTURE]</French>
+		<German>[NEWLINE][SPACE][SPACE][ICON_BULLET]Städte erhalten bei Gründung %d1 [ICON_CULTURE]</German>
+		<Italian>[NEWLINE][SPACE][SPACE][ICON_BULLET]Le città iniziano con %d1 [ICON_CULTURE]l</Italian>
+		<Spanish>[NEWLINE][SPACE][SPACE][ICON_BULLET]Las ciudades comienzan con %d1 [ICON_CULTURE]</Spanish>
+	</TEXT>
+	<!-- From CIV4GameTextInfos.xml. Add the word "rate" so that it's clearer,
+		 in the case of culture, how this differs from free culture that cities
+		 start with. -->
+	<TEXT>
+		<Tag>TXT_KEY_TRAIT_COMMERCE_CHANGES</Tag>
+		<English>[NEWLINE][SPACE][SPACE][ICON_BULLET]%D1%F2_commerce rate in cities</English>
+		<French>[NEWLINE][SPACE][SPACE][ICON_BULLET]%D1%F2_commerce/ville</French>
+		<German>[NEWLINE][SPACE][SPACE][ICON_BULLET]%D1%F2_commerce/Runde in Städten</German>
+		<Italian>[NEWLINE][SPACE][SPACE][ICON_BULLET]%D1%F2_commerce/Citt&#224;</Italian>
+		<Spanish>[NEWLINE][SPACE][SPACE][ICON_BULLET]%D1 %F2_commerce/ciudad</Spanish>
+	</TEXT>
+
 	<!-- advc.012: Plot help text to be used along with TXT_KEY_PLOT_BONUS
 		 (Civ4GameTextInfos.xml). -->
 	<TEXT>
