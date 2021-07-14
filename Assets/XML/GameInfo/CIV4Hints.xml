@@ -658,7 +658,10 @@
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_32</Description>
 		</HintInfo>
-		<!-- Skip 33-34; shouldn't be as frequent. -->
+		<!-- Skip 33; shouldn't be as frequent. -->
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_34</Description>
+		</HintInfo>
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_35</Description>
 		</HintInfo>

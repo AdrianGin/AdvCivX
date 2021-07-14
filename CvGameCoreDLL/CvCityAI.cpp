@@ -5122,14 +5122,22 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 				iTempValue *= getTotalCommerceRateModifier(eLoopCommerce) +
 						kBuilding.getCommerceModifier(eLoopCommerce);
 				iTempValue /= 100;
-				if (kBuilding.getCommerceChangeDoubleTime(eLoopCommerce) > 0)
+				int const iCommerceChangeDoubleTime = kBuilding.
+						getCommerceChangeDoubleTime(eLoopCommerce);
+				if (iCommerceChangeDoubleTime > 0)
 				{
-					if (kBuilding.getCommerceChange(eLoopCommerce) > 0 ||
-						kBuilding.getObsoleteSafeCommerceChange(eLoopCommerce) > 0)
+					if (kBuilding.getCommerceChange(eLoopCommerce) > 0)
 					{	//iTempValue += (1000 / kBuilding.getCommerceChangeDoubleTime(eLoopCommerce));
 						// K-Mod (still very rough...):
-						iTempValue += iTempValue * 250 /
-								kBuilding.getCommerceChangeDoubleTime(eLoopCommerce);
+						iTempValue += (iTempValue * 250) / iCommerceChangeDoubleTime;
+					}
+					if (kBuilding.getObsoleteSafeCommerceChange(eLoopCommerce) > 0)
+					{
+						iTempValue += (iTempValue * 250) /
+								// <advc.098>
+								(GC.getDefineBOOL(CvGlobals::DOUBLE_OBSOLETE_BUILDING_COMMERCE) ?
+								1000 : // </advc.098>
+								iCommerceChangeDoubleTime);
 					}
 				}
 				if (eLoopCommerce == COMMERCE_CULTURE)

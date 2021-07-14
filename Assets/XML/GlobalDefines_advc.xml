@@ -601,6 +601,15 @@
 		<iDefineIntVal>20</iDefineIntVal>
 	</Define>
 
+	<!-- advc.098: If set to 1, then buildings with a positive
+		 CommerceChangeDoubleTimes value double their ObsoleteSafeCommerceChanges
+		 (immediately) upon becoming obsolete, not after a particular
+		 number of years. Set to 0 for BtS behavior. -->
+	<Define>
+		<DefineName>DOUBLE_OBSOLETE_BUILDING_COMMERCE</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+
 	<!-- advc.300: The percentage of owned tiles per landmass at which
 		 Barbarian activity reaches its peak. AdvCiv computes the target
 		 number B of Barbarian units on a landmass (or shelf) as

@@ -808,11 +808,17 @@
 	<German>(AdvCiv) Ihre Forschungsrate wird um 10% reduziert, wenn eines Ihrer Team-Mitglieder an der gleichen Technologie forscht wie Sie. Wenn das Team eine bestimmte Technologie dringend benötigt, kann es sich trotzdem lohnen, gemeinsam an einer Technologie zu forschen.</German>
 </TEXT>
 
-<!-- advc.099f -->
-<TEXT>
+<!-- advc.099f (always enabled as of AdvCiv v1.0) -->
+<!--TEXT>
 	<Tag>TXT_KEY_ADVC_HINT_34</Tag>
 	<English>(AdvCiv) To see the culture percentages of unowned tiles, hold down [Shift] or enable "Always Show Tile Culture" on the "Map" tab of the BUG menu.</English>
 	<German>(AdvCiv) Die Kulturanteile auf neutralen Feldern lassen sich mit der Umschalttaste einblenden, oder über die Option "Kultur stets anzeigen" auf dem Reiter "Karte" im BUG-Menü.</German>
+</TEXT-->
+<!-- advc.098: Would prefer to change this obscure rule, but it doesn't look like I will for now. -->
+<TEXT>
+	<Tag>TXT_KEY_ADVC_HINT_34</Tag>
+	<English>The culture rate of a building doubles 1000 years after its construction. For medieval buildings, this doubling can still occur early enough to contribute to a culture victory.</English>
+	<German>Die Kulturrate von Gebäuden verdoppelt sich 1000 Jahre nach ihrer Fertigstellung. Bei mittelalterlichen Gebäuden kann das noch rechtzeitig sein, um zu einem Kultursieg beizutragen.</German>
 </TEXT>
 
 <!-- The right-click behavior is pretty obscure, and therefore perhaps worth

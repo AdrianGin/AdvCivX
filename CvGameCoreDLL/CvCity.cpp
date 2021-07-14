@@ -7236,24 +7236,40 @@ int CvCity::getBuildingCommerceByBuilding(CommerceTypes eCommerce, BuildingTypes
 		gives to religious buildings should not be doubled.) */
 
 	if (getNumBuilding(eBuilding) <= 0)
-		return 0; // advc
+		return 0;
 	CvBuildingInfo const& kBuilding = GC.getInfo(eBuilding);
 	if (kBuilding.isCommerceChangeOriginalOwner(eCommerce) &&
 		getBuildingOriginalOwner(eBuilding) != getOwner())
 	{
-		return 0; // advc
+		return 0;
 	}
 
-	int iTimeFactor = ((kBuilding.getCommerceChangeDoubleTime(eCommerce) != 0 &&
-			getBuildingOriginalTime(eBuilding) != MIN_INT &&
-			GC.getGame().getGameTurnYear() - getBuildingOriginalTime(eBuilding) >=
-			kBuilding.getCommerceChangeDoubleTime(eCommerce)) ? 2 : 1);
+	int iTimeFactor = 1;
+	// <advc.098>
+	bool const bDelayedCommerceIncrease =
+			(kBuilding.getCommerceChangeDoubleTime(eCommerce) > 0); // </advc.098>
+	if (bDelayedCommerceIncrease &&
+		getBuildingOriginalTime(eBuilding) != MIN_INT &&
+		GC.getGame().getGameTurnYear() - getBuildingOriginalTime(eBuilding) >=
+		kBuilding.getCommerceChangeDoubleTime(eCommerce))
+	{
+		iTimeFactor = 2;
+	}
 	/*	there are just two components which get multiplied by the time factor:
 		1) the "safe" commerce and 2) the standard commerce;
 		the rest of the components are bonuses which should not be doubled. */
 
 	int iCommerceRate = kBuilding.getObsoleteSafeCommerceChange(eCommerce) *
-			getNumBuilding(eBuilding) * iTimeFactor; // 1)
+			getNumBuilding(eBuilding);
+	// <advc.098>
+	if (bDelayedCommerceIncrease &&
+		GC.getDefineBOOL(CvGlobals::DOUBLE_OBSOLETE_BUILDING_COMMERCE))
+	{
+		if (GET_TEAM(getTeam()).isObsoleteBuilding(eBuilding))
+			iCommerceRate *= 2;
+	}
+	else // </advc.098>
+		iCommerceRate *= iTimeFactor; // 1)
 
 	if (getNumActiveBuilding(eBuilding) > 0)
 	{
