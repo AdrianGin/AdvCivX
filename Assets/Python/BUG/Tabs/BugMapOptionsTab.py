@@ -45,12 +45,12 @@ class BugMapOptionsTab(BugOptionsTab.BugOptionsTab):
 		self.addSlider(screen, leftL, leftR, "StrategyOverlay__DotMapHighlightBrightness", False, False, False, "up", 0, 100)
 		#self.addLabel(screen, center, "CityBar", "CityBar:")
 		#self.addCheckbox(screen, center, "CityBar__StarvationTurns")
-		# advc.011b, advc.099f:
+		# <advc.011b>
 		self.addLabel(screen, center, "TileHover", "Tile Hover:")
-		# advc.011b:
 		self.addCheckbox(screen, center, "MiscHover__PartialBuildsAlways")
-		# advc.099f:
-		self.addCheckbox(screen, center, "MiscHover__CultureInUnownedTiles")
+		# </advc.011b>
+		# advc.099f: (always enabled as of AdvCiv v1.0)
+		#self.addCheckbox(screen, center, "MiscHover__CultureInUnownedTiles")
 		# advc.061:
 		self.addCheckbox(screen, center, "MainInterface__ListUnitsPerOwner")
 		#self.addCheckbox(screen, center, "MiscHover__LatLongCoords")

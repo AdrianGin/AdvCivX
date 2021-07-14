@@ -32,9 +32,9 @@
 			<!-- advc.011b -->
 			<option id="PartialBuildsAlways" key="Partial Builds Always"
 					type="boolean" default="False"/>
-			<!-- advc.099f -->
-			<option id="CultureInUnownedTiles" key="Culture in Unowned Tiles"
-					type="boolean" default="False"/>
+			<!-- advc.099f (always enabled as of AdvCiv 1.0) -->
+			<!--option id="CultureInUnownedTiles" key="Culture in Unowned Tiles"
+					type="boolean" default="False"/-->
 		</section>
 		
 		<section id="Unit">

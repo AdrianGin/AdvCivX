@@ -9391,6 +9391,7 @@ void CvGame::read(FDataStreamBase* pStream)
 	if(uiFlag >= 3)
 		pStream->Read(&m_bScenario); // </advc.052>
 	m_iTurnLoadedFromSave = m_iElapsedGameTurns; // advc.044
+	GAMETEXT.setAlwaysShowPlotCulture(uiFlag >= 10); // advc.099f
 	applyOptionEffects(); // advc.310
 	m_bFPTestDone = !isNetworkMultiPlayer(); // advc.003g
 }
@@ -9408,7 +9409,8 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 6; // advc.106h
 	//uiFlag = 7; // advc.027b
 	//uiFlag = 8; // advc.172
-	uiFlag = 9; // advc (m_aeVoteSourceReligion)
+	//uiFlag = 9; // advc (m_aeVoteSourceReligion)
+	uiFlag = 10; // advc.099f
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);

@@ -7820,15 +7820,10 @@ scaled CvCity::revoltProbability(bool bIgnoreWar,
 	bool bIgnoreGarrison, bool bIgnoreOccupation) const // advc.023
 {
 	PlayerTypes eCulturalOwner = calculateCulturalOwner(); // advc.099c
-	CvGame const& kGame = GC.getGame();
 	static bool const bBARBS_REVOLT = GC.getDefineBOOL("BARBS_REVOLT");
 	if (eCulturalOwner == NO_PLAYER || TEAMID(eCulturalOwner) == getTeam() ||
-		// <advc.099c> Barbarian revolts
-		(eCulturalOwner == BARBARIAN_PLAYER && !bBARBS_REVOLT) ||
-		(GET_PLAYER(getOwner()).getCurrentEra() <= 0 &&
-		kGame.getGameTurn() - getGameTurnFounded() <
-		(10 * GC.getInfo(kGame.getGameSpeedType()).
-		getConstructPercent()) / 100)) // </advc.099c>
+		// advc.099c: Barbarian revolts
+		(eCulturalOwner == BARBARIAN_PLAYER && !bBARBS_REVOLT))
 	{
 		return 0;
 	}
@@ -10303,6 +10298,7 @@ void CvCity::doCulture()
 void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
 	int iCultureRateTimes100, bool bCityCulture)
 {
+	PROFILE_FUNC(); // advc: Let's keep an eye on this
 	if (GC.getPythonCaller()->doPlotCultureTimes100(*this, ePlayer, bUpdate, iCultureRateTimes100))
 		return;
 	CultureLevelTypes const eCultureLevel = getCultureLevel(ePlayer);
@@ -10355,6 +10351,9 @@ void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
 		{
 			continue;
 		}
+		// <advc.098>
+		if (iDistance > eCultureLevel && !p.isOwned())
+			continue; // </advc.098>
 		// BtS formula for culture to add (the 20 was "CITY_FREE_CULTURE_GROWTH_FACTOR"):
 		//eCultureLevel < iDistance ? 0 : (1 + iCultureRateTimes100/100 + (eCultureLevel - iDistance) * 20;
 		// K-Mod 1.45 (older K-Mod code deleted):
