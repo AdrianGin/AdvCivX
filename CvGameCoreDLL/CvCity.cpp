@@ -11345,26 +11345,9 @@ void CvCity::read(FDataStreamBase* pStream)
 			}
 		} 
 	} // </advc.160>
-	// <advc.201>
+	// <advc.201>, advc.098
 	if (uiFlag < 11)
-	{
-		char const* aeChangedWonders[] =
-		{
-			"BUILDINGCLASS_STONEHENGE", 
-			"BUILDINGCLASS_ARTEMIS",
-			"BUILDINGCLASS_SISTINE_CHAPEL"
-		};
-		for (int i = 0; i < ARRAYSIZE(aeChangedWonders); i++)
-		{
-			BuildingClassTypes eLoopWonder = (BuildingClassTypes)
-					GC.getInfoTypeForString(aeChangedWonders[i], true);
-			if (eLoopWonder != NO_BUILDINGCLASS && getNumBuilding(eLoopWonder) > 0)
-			{
-				updateCommerce(COMMERCE_CULTURE);
-				break;
-			}
-		}
-	} // </advc.201>
+		updateBuildingCommerce(); // </advc.201>
 }
 
 void CvCity::write(FDataStreamBase* pStream)
@@ -11382,7 +11365,7 @@ void CvCity::write(FDataStreamBase* pStream)
 	//uiFlag = 8; // advc.310
 	//uiFlag = 9; // advc.912d (adjust food kept)
 	//uiFlag = 10; // advc.911a, advc.908b
-	uiFlag = 11; // advc.201 (wonder culture rate tweaks)
+	uiFlag = 11; // advc.201, advc.098
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);

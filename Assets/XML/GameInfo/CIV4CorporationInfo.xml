@@ -14,7 +14,7 @@
 			<FreeUnitClass>NONE</FreeUnitClass>
 			<iSpreadFactor>200</iSpreadFactor>
 			<iSpreadCost>50</iSpreadCost>
-			<!-- K-Mod: was 75 in BtS -->
+			<!-- K-Mod: was 75 -->
 			<iMaintenance>100</iMaintenance>
 			<PrereqBonuses>
 				<BonusType>BONUS_WHEAT</BonusType>
@@ -30,8 +30,8 @@
 			<CommercesProduced>
 				<iCommerceProduced>0</iCommerceProduced>
 			</CommercesProduced>
-			<!-- K-Mod: was 75 in BtS -->
 			<YieldsProduced>
+				<!-- K-Mod: was 75 -->
 				<iYieldProduced>100</iYieldProduced>
 			</YieldsProduced>
 			<Button>,Art/Interface/Buttons/TechTree/Corporation.dds,Art/Interface/Buttons/Beyond_the_Sword_Atlas.dds,1,6</Button>
@@ -60,10 +60,10 @@
 				<iHeadquarterCommerce>0</iHeadquarterCommerce>
 			</HeadquarterCommerces>
 			<BonusProduced>NONE</BonusProduced>
-			<!-- K-Mod: was 2.00 culture in BtS -->
 			<CommercesProduced>
 				<iCommerceProduced>0</iCommerceProduced>
 				<iCommerceProduced>0</iCommerceProduced>
+				<!-- K-Mod: was 200 -->
 				<iCommerceProduced>150</iCommerceProduced>
 			</CommercesProduced>
 			<YieldsProduced>
@@ -84,7 +84,7 @@
 			<FreeUnitClass>NONE</FreeUnitClass>
 			<iSpreadFactor>200</iSpreadFactor>
 			<iSpreadCost>50</iSpreadCost>
-			<!-- advc.200: As in BtS (was 80 in K-Mod) -->
+			<!-- advc.200: K-Mod had decreased this to 80 -->
 			<iMaintenance>100</iMaintenance>
 			<PrereqBonuses>
 				<BonusType>BONUS_CORN</BonusType>
@@ -131,11 +131,11 @@
 				<iHeadquarterCommerce>0</iHeadquarterCommerce>
 			</HeadquarterCommerces>
 			<BonusProduced>NONE</BonusProduced>
-			<!-- K-Mod: was 3 culture in BtS -->
 			<CommercesProduced>
 				<iCommerceProduced>0</iCommerceProduced>
 				<iCommerceProduced>0</iCommerceProduced>
-				<iCommerceProduced>250</iCommerceProduced>
+				<!-- advc.201: K-Mod had reduced this to 250 -->
+				<iCommerceProduced>300</iCommerceProduced>
 			</CommercesProduced>
 			<YieldsProduced>
 				<iYieldProduced>0</iYieldProduced>
@@ -194,7 +194,7 @@
 			<FreeUnitClass>NONE</FreeUnitClass>
 			<iSpreadFactor>200</iSpreadFactor>
 			<iSpreadCost>50</iSpreadCost>
-			<!-- advc.200: As in BtS (was 80 in K-Mod) -->
+			<!-- advc.200: K-Mod had decreased this to 80 -->
 			<iMaintenance>100</iMaintenance>
 			<PrereqBonuses>
 				<BonusType>BONUS_COAL</BonusType>
@@ -205,9 +205,9 @@
 				<iHeadquarterCommerce>0</iHeadquarterCommerce>
 			</HeadquarterCommerces>
 			<BonusProduced>BONUS_ALUMINUM</BonusProduced>
-			<!-- K-Mod: was 3 research in BtS -->
 			<CommercesProduced>
 				<iCommerceProduced>0</iCommerceProduced>
+				<!-- K-Mod: was 300 -->
 				<iCommerceProduced>350</iCommerceProduced>
 			</CommercesProduced>
 			<YieldsProduced>
@@ -228,7 +228,7 @@
 			<FreeUnitClass>NONE</FreeUnitClass>
 			<iSpreadFactor>200</iSpreadFactor>
 			<iSpreadCost>50</iSpreadCost>
-			<!-- advc.200: As in BtS (was 120 in K-Mod) -->
+			<!-- advc.200: K-Mod had increased this to 120 -->
 			<iMaintenance>100</iMaintenance>
 			<PrereqBonuses>
 				<BonusType>BONUS_GOLD</BonusType>
@@ -241,10 +241,10 @@
 				<iHeadquarterCommerce>0</iHeadquarterCommerce>
 			</HeadquarterCommerces>
 			<BonusProduced>NONE</BonusProduced>
-			<!-- K-Mod: was 4 culture in BtS -->
 			<CommercesProduced>
 				<iCommerceProduced>100</iCommerceProduced>
 				<iCommerceProduced>0</iCommerceProduced>
+				<!-- K-Mod: was 400 -->
 				<iCommerceProduced>300</iCommerceProduced>
 			</CommercesProduced>
 			<YieldsProduced>
