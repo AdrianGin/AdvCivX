@@ -15,9 +15,9 @@ public: // All the const functions are exposed to Python
 
 	wchar getChar() const; // advc: return wchar (not int)
 	void setChar(/* advc: */ wchar wc);
-	int getTechPrereq() const { return m_iTechPrereq; } // advc.inl
+	int getTechPrereq() const { return m_iTechPrereq; }
 	int getFreeUnitClass() const;
-	int getSpreadFactor() const { return m_iSpreadFactor; } // advc.inl
+	int getSpreadFactor() const { return m_iSpreadFactor; }
 	int getMissionType() const;
 	void setMissionType(int iNewType);
 
@@ -90,7 +90,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvCorporationInfo : public CvOrganizationInfo
 {
-public: // All the const functions are exposed to Python; advc.inl: inlined some getters.
+public: // All the const functions are exposed to Python
 	CvCorporationInfo();
 	virtual ~CvCorporationInfo();
 

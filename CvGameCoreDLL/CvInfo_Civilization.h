@@ -110,7 +110,6 @@ class CvLeaderHeadInfo : public CvInfoBase
 {
 friend class UWAI; // advc.104x (for applyPersonalityWeight)
 public: // advc: All the const functions are exposed to Python except those added by mods
-		// advc.inl: Inlined all non-array getters
 	CvLeaderHeadInfo();
 	CvLeaderHeadInfo(CvLeaderHeadInfo const& kOther); // advc.xmldefault
 	~CvLeaderHeadInfo();

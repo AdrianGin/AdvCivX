@@ -24,7 +24,7 @@ protected:
 
 	void setDefaults();
 
-	bool checkBounds(int iValue, int iLower, int iUpper) const // advc.inl
+	bool checkBounds(int iValue, int iLower, int iUpper) const
 	{
 		return (iLower <= iValue && iValue < iUpper);
 	}
@@ -145,7 +145,7 @@ public:
 	DllExport bool getForceControl(ForceControlTypes eIndex) const { return m_abForceControls.get(eIndex); }
 	DllExport void setForceControl(ForceControlTypes eIndex, bool bForceControl);
 
-	int getGameTurn() const { return m_iGameTurn; } // advc.inl
+	int getGameTurn() const { return m_iGameTurn; }
 	void setGameTurn(int iGameTurn) { m_iGameTurn = iGameTurn; }
 
 	int getMaxTurns() const { return m_iMaxTurns; }

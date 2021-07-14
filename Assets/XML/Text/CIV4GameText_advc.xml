@@ -6932,7 +6932,7 @@
 		<Italian>Sono state distrutte delle unit&#224; %s1:4:</Italian>
 		<Spanish>Unidades %s1:4 han quedado destruidas:</Spanish>
 	</TEXT>
-	<!-- Trying to handle singular and pluranl in a single key gets too complicated.
+	<!-- Trying to handle singular and plural in a single key gets too complicated.
 		 Take the d1 parameter in any case (even if it has to be 1); easier to use
 		 that way. -->
 	<TEXT>

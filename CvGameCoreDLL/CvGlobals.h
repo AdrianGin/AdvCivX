@@ -107,7 +107,7 @@ public:
 	{
 		return m_pPythonCaller;
 	} // </advc.003y>
-	DllExport CvRandom& getASyncRand() { return *m_asyncRand; } // advc.inl
+	DllExport CvRandom& getASyncRand() { return *m_asyncRand; }
 	CvRandom& getASyncRand() const { return *m_asyncRand; } // advc
 	DllExport CMessageQueue& getMessageQueue();
 	DllExport CMessageQueue& getHotMessageQueue();

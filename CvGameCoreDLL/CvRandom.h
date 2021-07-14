@@ -37,7 +37,7 @@ public:
 	// </advc.006>
 	// advc.190c: Exported through .def file
 	unsigned short getExternal(unsigned short usNum, TCHAR const* szMsg = NULL);
-	DllExport float getFloat() // advc.inl
+	DllExport float getFloat()
 	{
 		return get(MAX_UNSIGNED_SHORT) / (float)MAX_UNSIGNED_SHORT;
 	}

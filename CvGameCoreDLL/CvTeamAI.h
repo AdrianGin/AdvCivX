@@ -20,7 +20,7 @@ class CvTeamAI : public CvTeam
 {
 public:
 	// advc.003u: Renamed from getTeam
-	static CvTeamAI& AI_getTeam(TeamTypes eTeam) // advc.inl
+	static CvTeamAI& AI_getTeam(TeamTypes eTeam)
 	{
 		FAssertBounds(0, MAX_TEAMS, eTeam);
 		return *m_aTeams[eTeam];
@@ -174,7 +174,7 @@ public:
 	void AI_forgiveEnemy(TeamTypes eEnemyTeam, bool bCapitulated, bool bFreed);
 	void AI_thankLiberator(TeamTypes eLiberator);
 	// </advc.130y>
-	TeamTypes AI_getWorstEnemy() const { return m_eWorstEnemy; } // advc.inl
+	TeamTypes AI_getWorstEnemy() const { return m_eWorstEnemy; } 
 	void AI_updateWorstEnemy(/* advc.130p: */ bool bUpdateTradeMemory = true);
 	// <advc.130p>
 	scaled AI_enemyTradeResentmentFactor(TeamTypes eTo, TeamTypes eFrom,
@@ -244,7 +244,7 @@ public:
 	int AI_countEnemyCitiesByArea(CvArea const& kArea) const; // K-Mod
 	int AI_countEnemyDangerByArea(CvArea const& kArea, TeamTypes eEnemyTeam = NO_TEAM) const; // bbai		// Exposed to Python
 	int AI_countEnemyPopulationByArea(CvArea const& kArea) const; // bbai (advc: unused)
-	WarPlanTypes AI_getWarPlan(TeamTypes eIndex) const // advc.inl
+	WarPlanTypes AI_getWarPlan(TeamTypes eIndex) const
 	{
 		return m_aeWarPlan.get(eIndex);
 	}

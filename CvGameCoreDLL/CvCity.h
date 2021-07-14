@@ -93,7 +93,7 @@ public:
 	bool canJoin() const;																						// Exposed to Python
 
 	int getFoodTurnsLeft() const;																				// Exposed to Python
-	bool isProduction() const { return (headOrderQueueNode() != NULL); } // advc.inl							// Exposed to Python
+	bool isProduction() const { return (headOrderQueueNode() != NULL); }										// Exposed to Python
 	bool isProductionLimited() const;																			// Exposed to Python
 	bool isProductionUnit() const;																				// Exposed to Python
 	bool isProductionBuilding() const;																			// Exposed to Python
@@ -155,7 +155,7 @@ public:
 			bool bForceFeatureProd = false, int* iFeatureProdReturn = NULL) const;
 			// </advc.064bc>
 	int getExtraProductionDifference(int iExtra) const															// Exposed to Python
-	{	// advc.inl:
+	{
 		return getExtraProductionDifference(iExtra, getProductionModifier());
 	}
 
@@ -263,18 +263,18 @@ public:
 	int foodDifference(bool bBottom = true, bool bIgnoreProduction = false) const;	// Exposed to Python, K-Mod added bIgnoreProduction
 	int growthThreshold(/* advc.064b: */int iPopulationChange = 0) const;										// Exposed to Python
 
-	int productionLeft() const { return (getProductionNeeded() - getProduction()); } // advc.inl				// Exposed to Python
-	int hurryCost(bool bExtra) const // advc.inl																// Exposed to Python
+	int productionLeft() const { return (getProductionNeeded() - getProduction()); }							// Exposed to Python
+	int hurryCost(bool bExtra) const																			// Exposed to Python
 	{
 		return getHurryCost(bExtra, productionLeft(),
 				getHurryCostModifier(), getProductionModifier());
 	}
 	int getHurryCostModifier(bool bIgnoreNew = false) const;
-	int hurryGold(HurryTypes eHurry) const // advc.inl															// Exposed to Python
+	int hurryGold(HurryTypes eHurry) const																		// Exposed to Python
 	{
 		return getHurryGold(eHurry, hurryCost(false));
 	}
-	int hurryPopulation(HurryTypes eHurry) const // advc.inl													// Exposed to Python
+	int hurryPopulation(HurryTypes eHurry) const																// Exposed to Python
 	{
 		return getHurryPopulation(eHurry, hurryCost(true));
 	}
@@ -315,10 +315,10 @@ public:
 	DllExport int getX() const { return m_iX; } // advc.inl: was "getX_INLINE"									// Exposed to Python	
 	DllExport int getY() const { return m_iY; } // advc.inl: was "getY_INLINE"									// Exposed to Python
 
-	bool at(int iX, int iY) const  { return (getX() == iX && getY() == iY); } // advc.inl						// Exposed to Python
+	bool at(int iX, int iY) const  { return (getX() == iX && getY() == iY); }									// Exposed to Python
 	bool at(CvPlot const* pPlot) const // advc: const CvPlot*													// Exposed to Python as atPlot
 	{
-		return (plot() == pPlot); // advc.inl
+		return (plot() == pPlot);
 	}  // <advc>
 	bool at(CvPlot const& kPlot) const
 	{
@@ -347,8 +347,6 @@ public:
 
 	CvPlot* getRallyPlot() const;																				// Exposed to Python
 	void setRallyPlot(CvPlot* pPlot);
-
-	// advc.inl: Inlined most of the getters below
 
 	int getGameTurnFounded() const { return m_iGameTurnFounded; }												// Exposed to Python
 	void setGameTurnFounded(int iNewValue);
@@ -904,11 +902,11 @@ public:
 	void setEverOwned(PlayerTypes ePlayer, bool bNewValue);
 
 	DllExport bool isRevealed(TeamTypes eTeam, bool bDebug) const;												// Exposed to Python
-	// <advc.inl> Faster implementation for non-UI code
+	// advc.inl: Faster implementation for non-UI code
 	bool isRevealed(TeamTypes eToTeam) const
 	{
 		return m_abRevealed.get(eToTeam);
-	} // </advc.inl>
+	}
 	void setRevealed(TeamTypes eTeam, bool bNewValue);															// Exposed to Python
 
 	bool getEspionageVisibility(TeamTypes eTeam) const															// Exposed to Python
@@ -1162,12 +1160,12 @@ public:
 	void stopHeadOrder();
 	int getOrderQueueLength() /* advc: */ const																	// Exposed to Python
 	{
-		return m_orderQueue.getLength(); // advc.inl
+		return m_orderQueue.getLength();
 	}
 	OrderData* getOrderFromQueue(int iIndex) const;																// Exposed to Python
 	CLLNode<OrderData>* nextOrderQueueNode(CLLNode<OrderData>* pNode) const
 	{
-		return m_orderQueue.next(pNode); // advc.inl
+		return m_orderQueue.next(pNode);
 	}  // <advc.003s>
 	CLLNode<OrderData> const* nextOrderQueueNode(CLLNode<OrderData> const* pNode) const
 	{
@@ -1175,11 +1173,11 @@ public:
 	} // </advc.003s>
 	CLLNode<OrderData>* headOrderQueueNode() const
 	{
-		return m_orderQueue.head(); // advc.inl
+		return m_orderQueue.head();
 	}
 	DllExport int getNumOrdersQueued() const
 	{
-		return m_orderQueue.getLength(); // advc.inl
+		return m_orderQueue.getLength();
 	}
 	DllExport OrderData getOrderData(int iIndex) const;
 
@@ -1241,7 +1239,7 @@ public:
 
 	DllExport void getBuildQueue(std::vector<std::string>& astrQueue) const;
 
-	void invalidatePopulationRankCache() { m_bPopulationRankValid = false; } // advc.inl
+	void invalidatePopulationRankCache() { m_bPopulationRankValid = false; }
 	void invalidateYieldRankCache(YieldTypes eYield = NO_YIELD);
 	void invalidateCommerceRankCache(CommerceTypes eCommerce = NO_COMMERCE);
 	//int getBestYieldAvailable(YieldTypes eYield) const; // advc.003j: obsolete
@@ -1485,7 +1483,7 @@ protected:
 	void doReligion();
 	void doGreatPeople();
 	void doMeltdown();
-		// advc.inl: Allow getExtraProductionDifference to be inlined ...
+
 	int getExtraProductionDifference(int iExtra, UnitTypes eUnit) const
 	{
 		return getExtraProductionDifference(iExtra, getProductionModifier(eUnit));

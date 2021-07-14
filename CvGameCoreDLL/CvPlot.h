@@ -65,7 +65,7 @@ public:
 	int getPlotGroupConnectedBonus(PlayerTypes ePlayer, BonusTypes eBonus) const;					// Exposed to Python
 	bool isPlotGroupConnectedBonus(PlayerTypes ePlayer, BonusTypes eBonus) const					// Exposed to Python
 	{
-		return (getPlotGroupConnectedBonus(ePlayer, eBonus) > 0); // advc.inl
+		return (getPlotGroupConnectedBonus(ePlayer, eBonus) > 0);
 	}
 	bool isAdjacentPlotGroupConnectedBonus(PlayerTypes ePlayer, BonusTypes eBonus) const;			// Exposed to Python
 	void updatePlotGroupBonus(bool bAdd, /* advc.064d: */ bool bVerifyProduction = true);
@@ -91,7 +91,7 @@ public:
 	bool isRiverMask() const;
 	DllExport bool isRiverCrossingFlowClockwise(DirectionTypes eDirection) const;
 	bool isRiverSide() const;																		// Exposed to Python
-	bool isRiver() const { return (getRiverCrossingCount() > 0); } // advc.inl						// Exposed to Python
+	bool isRiver() const { return (getRiverCrossingCount() > 0); }									// Exposed to Python
 	bool isRiverConnection(DirectionTypes eDirection) const;										// Exposed to Python
 	// advc.500:
 	bool isConnectRiverSegments() const;
@@ -100,7 +100,7 @@ public:
 
 	CvPlot* getNearestLandPlotInternal(int iDistance) const;
 	CvArea* getNearestLandArea() const;																// Exposed to Python
-	CvPlot* getNearestLandPlot() const { return getNearestLandPlotInternal(0); } // advc.inl		// Exposed to Python
+	CvPlot* getNearestLandPlot() const { return getNearestLandPlotInternal(0); }					// Exposed to Python
 
 	int seeFromLevel(TeamTypes eTeam) const;														// Exposed to Python
 	int seeThroughLevel() const;																	// Exposed to Python
@@ -213,11 +213,11 @@ public:
 			PlayerTypes eOwner = NO_PLAYER, TeamTypes eTeam = NO_TEAM,
 			ConstPlotUnitFunc funcB = NULL, int iData1B = -1, int iData2B = -1) const;
 
-	bool isOwned() const // advc.inl																// Exposed to Python
+	bool isOwned() const																			// Exposed to Python
 	{
 		return (getOwner() != NO_PLAYER);
 	}
-	bool isBarbarian() const { return (getOwner() == BARBARIAN_PLAYER); } // advc.inl				// Exposed to Python
+	bool isBarbarian() const { return (getOwner() == BARBARIAN_PLAYER); }							// Exposed to Python
 	bool isRevealedBarbarian() const;																// Exposed to Python
 
 	bool isVisible(TeamTypes eTeam, bool bDebug) const;												// Exposed to Python
@@ -257,24 +257,24 @@ public:
 	bool isOccupation() const;																		// Exposed to Python
 	bool isBeingWorked() const;																		// Exposed to Python
 
-	bool isUnit() const { return (getNumUnits() > 0); } // advc.inl									// Exposed to Python
-	bool isInvestigate(TeamTypes eTeam) const // advc.inl											// Exposed to Python
+	bool isUnit() const { return (getNumUnits() > 0); }												// Exposed to Python
+	bool isInvestigate(TeamTypes eTeam) const														// Exposed to Python
 	{
 		return (plotCheck(PUF_isInvestigate, -1, -1, NO_PLAYER, eTeam) != NULL);
 	}
 	bool isVisibleEnemyDefender(const CvUnit* pUnit) const;											// Exposed to Python
-	CvUnit *getVisibleEnemyDefender(PlayerTypes ePlayer) const // advc.inl
+	CvUnit *getVisibleEnemyDefender(PlayerTypes ePlayer) const
 	{
 		return plotCheck(PUF_canDefendEnemy, ePlayer, false,
 				NO_PLAYER, NO_TEAM, PUF_isVisible, ePlayer);
 	}
-	int getNumDefenders(PlayerTypes ePlayer) const // advc.inl										// Exposed to Python
+	int getNumDefenders(PlayerTypes ePlayer) const													// Exposed to Python
 	{
 		return plotCount(PUF_canDefend, -1, -1, ePlayer);
 	}
 	int getNumVisibleEnemyDefenders(const CvUnit* pUnit) const;										// Exposed to Python
 	// (advc: getNumVisiblePotentialEnemyDefenders has become CvUnitAI::AI_countEnemyDefenders)
-	DllExport bool isVisibleEnemyUnit(PlayerTypes ePlayer) const // advc.inl						// Exposed to Python
+	DllExport bool isVisibleEnemyUnit(PlayerTypes ePlayer) const									// Exposed to Python
 	{
 		return (plotCheck(PUF_isEnemy, ePlayer, false,
 				NO_PLAYER, NO_TEAM, PUF_isVisible, ePlayer) != NULL);
@@ -287,25 +287,23 @@ public:
 	bool isVisibleEnemyUnit(const CvUnit* pUnit) const;
 	// advc.004l:
 	bool isVisibleEnemyUnit(CvUnit const* pUnit, CvUnit const* pPotentialEnemy) const;
-	bool isVisibleOtherUnit(PlayerTypes ePlayer) const // advc.inl									// Exposed to Python
+	bool isVisibleOtherUnit(PlayerTypes ePlayer) const												// Exposed to Python
 	{
 		return (plotCheck(PUF_isOtherTeam, ePlayer, -1,
 				NO_PLAYER, NO_TEAM, PUF_isVisible, ePlayer) != NULL);
 	}
-	DllExport bool isFighting() const // advc.inl													// Exposed to Python
+	DllExport bool isFighting() const																// Exposed to Python
 	{
 		return (plotCheck(PUF_isFighting) != NULL);
 	}
 
 	bool canHaveFeature(FeatureTypes eFeature,														// Exposed to Python
 			bool bIgnoreCurrentFeature = false) const; // advc.055
-	// advc.inl
 	DllExport bool isRoute() const																	// Exposed to Python
 	{
 		return (getRouteType() != NO_ROUTE);
 	}
 	bool isValidRoute(const CvUnit* pUnit, /* advc.001i: */ bool bAssumeRevealed) const;			// Exposed to Python
-	// advc.inl
 	bool isTradeNetworkImpassable(TeamTypes eTeam) const											// Exposed to Python
 	{
 		return (isImpassable() && !isRiverNetwork(eTeam));
@@ -323,7 +321,7 @@ public:
 
 	DllExport int getX() const { return m_iX; } // advc.inl: was "getX_INLINE"						// Exposed to Python
 	DllExport int getY() const { return m_iY; } // advc.inl: was "getY_INLINE"						// Exposed to Python
-	bool at(int iX, int iY) const {  return (getX() == iX && getY() == iY); } // advc.inl			// Exposed to Python
+	bool at(int iX, int iY) const {  return (getX() == iX && getY() == iY); }						// Exposed to Python
 	PlotNumTypes plotNum() const { return (PlotNumTypes)m_iPlotNum; } // advc.opt
 	int getLatitude() const;																																					// Exposed to Python
 	void setLatitude(int iLatitude); // advc.tsl	(exposed to Python)
@@ -345,35 +343,35 @@ public:
 
 	DllExport int getFeatureVariety() const;														// Exposed to Python
 
-	int getOwnershipDuration() const { return m_iOwnershipDuration; } // advc.inl					// Exposed to Python
+	int getOwnershipDuration() const { return m_iOwnershipDuration; }								// Exposed to Python
 	bool isOwnershipScore() const;																	// Exposed to Python
 	void setOwnershipDuration(int iNewValue);														// Exposed to Python
 	void changeOwnershipDuration(int iChange);														// Exposed to Python
 
-	int getImprovementDuration() const { return m_iImprovementDuration; } // advc.inl				// Exposed to Python
+	int getImprovementDuration() const { return m_iImprovementDuration; }							// Exposed to Python
 	void setImprovementDuration(int iNewValue);														// Exposed to Python
 	void changeImprovementDuration(int iChange);													// Exposed to Python
 
 	int getUpgradeProgress() const																	// Exposed to Python
 	{	// advc.912f (note): Now times 100, divisions at call locations not commented.
-		return m_iUpgradeProgress; // advc.inl
+		return m_iUpgradeProgress;
 	}
 	int getUpgradeTimeLeft(ImprovementTypes eImprovement, PlayerTypes ePlayer) const;				// Exposed to Python
 	void setUpgradeProgress(int iNewValue);															// Exposed to Python
 	void changeUpgradeProgress(int iChange);														// Exposed to Python
 
-	int getForceUnownedTimer() const { return m_iForceUnownedTimer; } // advc.inl					// Exposed to Python
+	int getForceUnownedTimer() const { return m_iForceUnownedTimer; }								// Exposed to Python
 	bool isForceUnowned() const;																	// Exposed to Python
 	void setForceUnownedTimer(int iNewValue);														// Exposed to Python
 	void changeForceUnownedTimer(int iChange);														// Exposed to Python
 
 	int getCityRadiusCount() const																	// Exposed to Python
 	{
-		return m_iCityRadiusCount; // advc.inl
+		return m_iCityRadiusCount;
 	}
 	bool isCityRadius() const												// Exposed to Python (K-Mod: changed to bool)
 	{
-		return (getCityRadiusCount() > 0); // advc.inl
+		return (getCityRadiusCount() > 0);
 	}
 	void changeCityRadiusCount(int iChange);
 
@@ -392,11 +390,11 @@ public:
 	CvPlot* getInlandCorner() const;																// Exposed to Python
 	bool hasCoastAtSECorner() const;
 
-	bool isIrrigated() const { return m_bIrrigated; } // advc.inl									// Exposed to Python
+	bool isIrrigated() const { return m_bIrrigated; }												// Exposed to Python
 	void setIrrigated(bool bNewValue);
 	void updateIrrigated();
 
-	bool isPotentialCityWork() const { return m_bPotentialCityWork; } // advc.inl					// Exposed to Python
+	bool isPotentialCityWork() const { return m_bPotentialCityWork; }								// Exposed to Python
 	bool isPotentialCityWorkForArea(CvArea const& kArea) const;										// Exposed to Python
 	void updatePotentialCityWork();
 
@@ -421,7 +419,7 @@ public:
 	PlayerTypes getSecondOwner() const;
 	void setSecondOwner(PlayerTypes eNewValue); // </advc.035>
 	int exclusiveRadius(PlayerTypes ePlayer) const; // advc.099b
-	// advc.inl: inline all plotType accessors
+
 	PlotTypes getPlotType() const																	// Exposed to Python
 	{
 		return (PlotTypes)m_ePlotType;
@@ -444,14 +442,12 @@ public:
 	}
 	void setPlotType(PlotTypes eNewValue, bool bRecalculate = true,									// Exposed to Python
 			bool bRebuildGraphics = true);
-	// advc.inl
 	DllExport TerrainTypes getTerrainType() const													// Exposed to Python
 	{
 		return (TerrainTypes)m_eTerrainType;
 	}
 	void setTerrainType(TerrainTypes eNewValue, bool bRecalculate = true,							// Exposed to Python
 			bool bRebuildGraphics = true);
-	// advc.inl
 	DllExport FeatureTypes getFeatureType() const													// Exposed to Python
 	{
 		return (FeatureTypes)m_eFeatureType;
@@ -482,7 +478,6 @@ public:
 	} // </advc>
 	void setImprovementType(ImprovementTypes eNewValue,												// Exposed to Python
 			bool bUpdateInFoW = false); // advc.055
-	// advc.inl
 	RouteTypes getRouteType() const																	// Exposed to Python
 	{
 		return (RouteTypes)m_eRouteType;
@@ -518,7 +513,6 @@ public:
 
 	bool isHabitable(bool bIgnoreSea = false) const; // advc.300
 	//short* getYield() { return m_aiYield; } // advc.enum: now an EnumMap
-	// advc.inl
 	DllExport int getYield(YieldTypes eIndex) const													// Exposed to Python
 	{
 		return m_aiYield.get(eIndex);
@@ -539,7 +533,6 @@ public:
 	// int calculateMaxYield(YieldTypes eYield) const; // disabled by K-Mod
 	int getYieldWithBuild(BuildTypes eBuild, YieldTypes eYield, bool bWithUpgrade) const;
 
-	// advc.inl
 	int getCulture(PlayerTypes eIndex) const { return m_aiCulture.get(eIndex); }					// Exposed to Python
 	int getTotalCulture() const { return m_iTotalCulture; } // advc.opt
 	int countFriendlyCulture(TeamTypes eTeam) const;
@@ -563,8 +556,7 @@ public:
 	void setFoundValue(PlayerTypes eIndex, short iNewValue); // K-Mod (was int iNewValue)
 	bool canFound(bool bTestVisible = false) const; // advc
 	bool canEverFound() const; // advc.129d
-	
-	// advc.inl: 2x inline
+
 	int getPlayerCityRadiusCount(PlayerTypes eIndex) const											// Exposed to Python
 	{
 		return m_aiPlayerCityRadiusCount.get(eIndex);
@@ -576,11 +568,11 @@ public:
 	void changePlayerCityRadiusCount(PlayerTypes eIndex, int iChange);
 
 	CvPlotGroup* getPlotGroup(PlayerTypes ePlayer) const;
-	// <advc.inl> New function. Can't inline the above w/o including CvPlayer.h.
+	// advc.inl: New function. Can't inline the above w/o including CvPlayer.h.
 	bool isSamePlotGroup(CvPlot const& kOther, PlayerTypes ePlayer) const
 	{
 		return (m_aiPlotGroup.get(ePlayer) == kOther.m_aiPlotGroup.get(ePlayer));
-	} // </advc.inl>
+	}
 	CvPlotGroup* getOwnerPlotGroup() const;
 	void setPlotGroup(PlayerTypes ePlayer, CvPlotGroup* pNewValue,
 			bool bVerifyProduction = true); // advc.064d
@@ -588,7 +580,6 @@ public:
 	void updatePlotGroup(PlayerTypes ePlayer, bool bRecalculate = true,
 			bool bVerifyProduction = true); // advc.064d
 
-	// advc.inl
 	int getVisibilityCount(TeamTypes eTeam) const													// Exposed to Python
 	{
 		return m_aiVisibilityCount.get(eTeam);
@@ -596,13 +587,11 @@ public:
 	void changeVisibilityCount(TeamTypes eTeam, int iChange,										// Exposed to Python
 			InvisibleTypes eSeeInvisible, bool bUpdatePlotGroups,
 			CvUnit const* pUnit = NULL); // advc.071
-	// advc.inl
 	int getStolenVisibilityCount(TeamTypes eTeam) const												// Exposed to Python
 	{
 		return m_aiStolenVisibilityCount.get(eTeam);
 	}
 	void changeStolenVisibilityCount(TeamTypes eTeam, int iChange);
-	// advc.inl
 	int getBlockadedCount(TeamTypes eTeam) const													// Exposed to Python
 	{
 		return m_aiBlockadedCount.get(eTeam);
@@ -610,11 +599,11 @@ public:
 	void changeBlockadedCount(TeamTypes eTeam, int iChange);
 
 	DllExport PlayerTypes getRevealedOwner(TeamTypes eTeam, bool bDebug) const;						// Exposed to Python
-	// <advc.inl> Faster implementation for non-UI code
+	// advc.inl: Faster implementation for non-UI code
 	PlayerTypes getRevealedOwner(TeamTypes eTeam) const
 	{
 		return m_aiRevealedOwner.get(eTeam);
-	} // </advc.inl>
+	}
 	TeamTypes getRevealedTeam(TeamTypes eTeam, bool bDebug) const;									// Exposed to Python
 	void setRevealedOwner(TeamTypes eTeam, PlayerTypes eNewValue);
 	void updateRevealedOwner(TeamTypes eTeam);
@@ -630,11 +619,11 @@ public:
 	void updateRiverCrossing();
 
 	DllExport bool isRevealed(TeamTypes eTeam, bool bDebug) const;									// Exposed to Python
-	// <advc.inl> Faster implementation for non-UI code
+	// advc.inl: Faster implementation for non-UI code
 	bool isRevealed(TeamTypes eTeam) const
 	{
 		return m_abRevealed.get(eTeam);
-	} // </advc.inl>
+	}
 	void setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly,							// Exposed to Python
 			TeamTypes eFromTeam, bool bUpdatePlotGroup);
 	bool isAdjacentRevealed(TeamTypes eTeam,														// Exposed to Python
@@ -642,22 +631,21 @@ public:
 	bool isAdjacentNonrevealed(TeamTypes eTeam) const;												// Exposed to Python
 
 	ImprovementTypes getRevealedImprovementType(TeamTypes eTeam, bool bDebug) const;				// Exposed to Python
-	// <advc.inl> Faster implementation for non-UI code
+	// advc.inl: Faster implementation for non-UI code
 	ImprovementTypes getRevealedImprovementType(TeamTypes eTeam) const
 	{
 		return m_aeRevealedImprovementType.get(eTeam);
-	} // </advc.inl>
+	}
 	void setRevealedImprovementType(TeamTypes eTeam, ImprovementTypes eNewValue);
 	RouteTypes getRevealedRouteType(TeamTypes eTeam, bool bDebug) const;							// Exposed to Python
-	/*	<advc.inl> Faster implementation for non-UI code.
-		Compiler won't inline it unless I use force. Weird. */
-	__forceinline RouteTypes getRevealedRouteType(TeamTypes eTeam) const
+	// advc.inl: Faster implementation for non-UI code
+	RouteTypes getRevealedRouteType(TeamTypes eTeam) const
 	{
 		return m_aeRevealedRouteType.get(eTeam);
-	} // </advc.inl>
+	}
 	void setRevealedRouteType(TeamTypes eTeam, RouteTypes eNewValue);
 	// advc.inl:
-	int getBuildProgress(BuildTypes eBuild) const												// Exposed to Python
+	int getBuildProgress(BuildTypes eBuild) const													// Exposed to Python
 	{
 		return m_aiBuildProgress.get(eBuild);
 	}
@@ -695,7 +683,7 @@ public:
 	DllExport void updateFlagSymbol();
 	void clearFlagSymbol(); // advc.127c
 
-	DllExport CvUnit* getCenterUnit() const { return m_pCenterUnit; } // advc.inl
+	DllExport CvUnit* getCenterUnit() const { return m_pCenterUnit; }
 	DllExport CvUnit* getDebugCenterUnit() const;
 	void setCenterUnit(CvUnit* pNewValue);
 
@@ -714,26 +702,26 @@ public:
 	int getInvisibleVisibilityCount(TeamTypes eTeam,												// Exposed to Python
 		InvisibleTypes eInvisible) const
 	{
-		return m_aaiInvisibleVisibilityCount.get(eTeam, eInvisible); // advc.inl
+		return m_aaiInvisibleVisibilityCount.get(eTeam, eInvisible);
 	}
 	bool isInvisibleVisible(TeamTypes eTeam,														// Exposed to Python
 		InvisibleTypes eInvisible) const
 	{
-		return (getInvisibleVisibilityCount(eTeam, eInvisible) > 0); // advc.inl
+		return (getInvisibleVisibilityCount(eTeam, eInvisible) > 0);
 	}
 	void changeInvisibleVisibilityCount(TeamTypes eTeam,											// Exposed to Python
 			InvisibleTypes eInvisible, int iChange);
 
-	int getNumUnits() const { return m_units.getLength(); } // advc.inl								// Exposed to Python
+	int getNumUnits() const { return m_units.getLength(); }											// Exposed to Python
 	void addUnit(CvUnit const& kUnit, bool bUpdate = true);
 	void removeUnit(CvUnit* pUnit, bool bUpdate = true);
 	DllExport CLLNode<IDInfo>* headUnitNode() const
 	{
-		return m_units.head(); // advc.inl
+		return m_units.head();
 	}
 	CLLNode<IDInfo>* tailUnitNode() const
 	{
-		return m_units.tail(); // advc.inl
+		return m_units.tail();
 	}
 	CvUnit* headUnit() const { return getUnitByIndex(0); }
 	// <advc.003s>
@@ -758,7 +746,7 @@ public:
 	}
 	// </advc.003s>
 
-	int getNumSymbols() const { return m_symbols.size(); } // advc.inl
+	int getNumSymbols() const { return m_symbols.size(); }
 	CvSymbol* getSymbol(int iID) const;
 	CvSymbol* addSymbol();
 

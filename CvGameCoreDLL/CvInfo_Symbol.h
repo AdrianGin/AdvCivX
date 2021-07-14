@@ -4,8 +4,7 @@
 #define CV_INFO_SYMBOL_H
 
 /*  advc.003x: Cut from CvInfos.h. A few nuts-and-bolts classes to be precompiled:
-	CvYieldInfo, CvCommerceInfo, CvColorInfo, CvPlayerColorInfo
-	advc.inl: Inlined most of the CvYieldInfo getters */
+	CvYieldInfo, CvCommerceInfo, CvColorInfo, CvPlayerColorInfo */
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  class : CvYieldInfo
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

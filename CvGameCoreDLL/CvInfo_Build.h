@@ -10,7 +10,7 @@
 
 class CvBuildInfo : public CvHotkeyInfo
 {
-public: /*	All the const functions are exposed to Python. advc.inl: inlined most of them.
+public: /*	All the const functions are exposed to Python.
 			Integers in signatures replaced with enum types. */
 	CvBuildInfo();
 	~CvBuildInfo();

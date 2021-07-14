@@ -37,7 +37,7 @@ typedef std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > CivLeaderArra
 #endif // </advc.003u>
 
 class CvPlayer /* advc.003e: */ : private boost::noncopyable
-{	// advc.inl: Moved pretty much all const one-liners to the header for inlining
+{
 public:
 	// <advc.003u>
 	static CvPlayer& getPlayer(PlayerTypes ePlayer)
@@ -876,7 +876,7 @@ public:
 	LeaderHeadTypes getPersonalityType() const { return m_ePersonalityType; }										// Exposed to Python
 	void setPersonalityType(LeaderHeadTypes eNewValue);																// Exposed to Python
 
-	DllExport EraTypes getCurrentEra() const { return m_eCurrentEra; } // advc.inl									// Exposed to Python
+	DllExport EraTypes getCurrentEra() const { return m_eCurrentEra; }												// Exposed to Python
 	void setCurrentEra(EraTypes eNewValue);
 
 	ReligionTypes getLastStateReligion() const { return m_eLastStateReligion; }

@@ -16,7 +16,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvBuildingClassInfo : public CvInfoBase
 {
-public: // All the const functions are exposed to Python; advc.inl: Inlined most of them.
+public: // All the const functions are exposed to Python
 	CvBuildingClassInfo();
 
 	int getMaxGlobalInstances() const
@@ -104,7 +104,7 @@ public:
 		return base_t::get(static_cast<base_t::IntElementTypes>(e));
 	} // </advc.tag>
 
-	/*	All the const functions are exposed to Python. advc.inl: Inlined most of those.
+	/*	All the const functions are exposed to Python.
 		Integers in signatures replaced with enum types. */
 	CvBuildingInfo();
 
@@ -476,7 +476,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvSpecialBuildingInfo : public CvInfoBase
 {
-public: // All the const functions are exposed to Python. advc.inl: Inlined the non-array getters.
+public: // All the const functions are exposed to Python
 	CvSpecialBuildingInfo();
 
 	TechTypes getObsoleteTech() const { return m_eObsoleteTech; }
@@ -584,7 +584,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvProjectInfo : public CvInfoBase
 {
-public: // All const functions are exposed to Python. advc.inl: Most of them inlined.
+public: // All const functions are exposed to Python
 	CvProjectInfo();
 
 	VictoryTypes getVictoryPrereq() const

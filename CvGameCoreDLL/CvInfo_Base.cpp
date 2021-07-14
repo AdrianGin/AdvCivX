@@ -384,10 +384,7 @@ bool CvXMLInfo::read(CvXMLLoadUtility* pXML)
 
 	ElementList elements;
 	addElements(elements);
-	{	// Allocate space in data vectors
-		m_aiData.resize(elements.numIntElements());
-		m_abData.resize(elements.numBoolElements());
-	}
+	m_aiData.resize(elements.numIntElements());
 	for (int i = 0; i < elements.numIntElements(); i++)
 	{
 		IntElement const& kElement = elements.intElementAt(i);
@@ -403,6 +400,7 @@ bool CvXMLInfo::read(CvXMLLoadUtility* pXML)
 		}
 		set((IntElementTypes)kElement.getID(), iTmp);
 	}
+	m_abData.resize(elements.numBoolElements());
 	for (int i = 0; i < elements.numBoolElements(); i++)
 	{
 		BoolElement const& kElement = elements.boolElementAt(i);

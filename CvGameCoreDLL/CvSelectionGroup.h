@@ -147,7 +147,7 @@ public:
 	bool atPlot(CvPlot const* pPlot) const																									// Exposed to Python
 	{
 		return (plot() == pPlot);
-	}  // advc.inl: (also in-lined the above)
+	}  // advc.inl:
 	bool at(CvPlot const& kPlot) const
 	{
 		return atPlot(&kPlot);
@@ -182,7 +182,7 @@ public:
 			bool bTestVisible, bool bCheckMoves) /* advc.002i: */ const;
 	// K-Mod end
 
-	int getID() const { return m_iID; } // advc.inl													// Exposed to Python
+	int getID() const { return m_iID; }															// Exposed to Python
 	void setID(int iID);
 	IDInfo getIDInfo() const { return IDInfo(getOwner(), getID()); } // advc
 
@@ -195,14 +195,13 @@ public:
 	void setForceUpdate(bool bNewValue) { m_bForceUpdate = bNewValue; } // K-Mod made inline
 	// void doForceUpdate(); // K-Mod. (disabled. force update doesn't work the same way anymore.)
 
-	//DllExport PlayerTypes getOwner() const;
-	// advc.inl: The EXE doesn't call this, so no need for an external version.
-	PlayerTypes getOwner() const { return m_eOwner; }
+	//DllExport PlayerTypes getOwner() const; // advc.inl: Not called externally
+	PlayerTypes getOwner() const { return m_eOwner; } // advc.inl: was "getOwnerINLINE"
 	TeamTypes getTeam() const;																																					// Exposed to Python
 
-	ActivityTypes getActivityType() const { return m_eActivityType; } // advc.inl																	// Exposed to Python
+	ActivityTypes getActivityType() const { return m_eActivityType; } 										// Exposed to Python
 	void setActivityType(ActivityTypes eNewValue);																											// Exposed to Python
-	// advc.inl: 2x inline
+
 	AutomateTypes getAutomateType() const { return m->eAutomateType; }																									// Exposed to Python
 	bool isAutomated() const { return (getAutomateType() != NO_AUTOMATE); }							// Exposed to Python
 	void setAutomateType(AutomateTypes eNewValue);																											// Exposed to Python
@@ -259,20 +258,20 @@ public:
 	TeamTypes getHeadTeam() const;
 
 	void clearMissionQueue();																																	// Exposed to Python
-	int getLengthMissionQueue() const { return m_missionQueue.getLength(); } // advc.inl											// Exposed to Python
-	MissionData* getMissionFromQueue(int iIndex) const;																							// Exposed to Python
+	int getLengthMissionQueue() const { return m_missionQueue.getLength(); }						// Exposed to Python
+	MissionData* getMissionFromQueue(int iIndex) const;												// Exposed to Python
 	void insertAtEndMissionQueue(MissionData mission, bool bStart = true);
 	CLLNode<MissionData>* deleteMissionQueueNode(CLLNode<MissionData>* pNode);
 	DllExport CLLNode<MissionData>* nextMissionQueueNode(CLLNode<MissionData>* pNode) const
 	{
-		return m_missionQueue.next(pNode); // advc.inl
+		return m_missionQueue.next(pNode);
 	}
 	CLLNode<MissionData>* prevMissionQueueNode(CLLNode<MissionData>* pNode) const
 	{
-		return m_missionQueue.prev(pNode); // advc.inl
+		return m_missionQueue.prev(pNode);
 	}
-	DllExport CLLNode<MissionData>* headMissionQueueNode() const { return m_missionQueue.head(); } // advc.inl
-	CLLNode<MissionData>* tailMissionQueueNode() const { return m_missionQueue.tail(); } // advc.inl
+	DllExport CLLNode<MissionData>* headMissionQueueNode() const { return m_missionQueue.head(); }
+	CLLNode<MissionData>* tailMissionQueueNode() const { return m_missionQueue.tail(); }
 	int getMissionType(int iNode) const;																														// Exposed to Python
 	int getMissionData1(int iNode) const;																														// Exposed to Python
 	int getMissionData2(int iNode) const;																														// Exposed to Python

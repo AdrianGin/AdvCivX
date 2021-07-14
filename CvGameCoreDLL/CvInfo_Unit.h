@@ -75,7 +75,7 @@ protected:
 class CvUnitInfo : public CvHotkeyInfo
 {
 public: /*  All const functions are exposed to Python except some related to art and those added by mods.
-			Replaced int return types with enum. advc.inl: Inlined most of the non-array getters. */
+			Replaced int return types with enum. */
 	CvUnitInfo();
 	~CvUnitInfo();
 
@@ -198,7 +198,7 @@ public: /*  All const functions are exposed to Python except some related to art
 	bool isFirstStrikeImmune() const { return m_bFirstStrikeImmune; }
 	bool isNoDefensiveBonus() const { return m_bNoDefensiveBonus; }
 	bool isIgnoreBuildingDefense() const { return m_bIgnoreBuildingDefense; }
-	// advc.inl: force-inlined for CvArea::canBeEntered. Renamed from "isCanMoveImpassable"
+	// advc: Renamed from "isCanMoveImpassable"
 	bool canMoveImpassable() const { return m_bCanMoveImpassable; }
 	bool isCanMoveAllTerrain() const { return m_bCanMoveAllTerrain; }
 	bool isFlatMovementCost() const { return m_bFlatMovementCost; }
@@ -722,8 +722,8 @@ class CvEspionageMissionInfo : public CvInfoBase
 public:
 	CvEspionageMissionInfo();
 
-	int getCost() const { return m_iCost; } // advc.inl
-	bool isPassive() const { return m_bIsPassive; } // advc.inl
+	int getCost() const { return m_iCost; }
+	bool isPassive() const { return m_bIsPassive; }
 	bool isTwoPhases() const;
 	bool isTargetsCity() const;
 	bool isSelectPlot() const;

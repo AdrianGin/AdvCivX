@@ -43,7 +43,7 @@ public:
 	// </advc>
 	int AI_getBirthmark() const { return m_iBirthmark; }
 	void AI_setBirthmark(int iNewValue);
-	// advc.inl: inline (now that it's no longer virtual)
+
 	UnitAITypes AI_getUnitAIType() const { return m_eUnitAIType; } 									// Exposed to Python
 	void AI_setUnitAIType(UnitAITypes eNewValue);
 	CvSelectionGroupAI const* AI_getGroup() const; // advc.003u

@@ -3,8 +3,7 @@
 #ifndef CV_INFO_TECH_H
 #define CV_INFO_TECH_H
 
-/*  advc.003x: Cut from CvInfos.h. Just CvTechInfo b/c I want to precompile this one.
-	advc.inl: Inlined most of the getters. */
+// advc.003x: Cut from CvInfos.h. Just CvTechInfo b/c I want to precompile this one.
 class CvTechInfo : public CvInfoBase
 {
 friend class CvXMLLoadUtility;

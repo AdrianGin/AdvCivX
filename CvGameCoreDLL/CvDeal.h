@@ -44,7 +44,7 @@ public:
 	bool isVassalTributeDeal() const;
 	bool isDisengage() const; // advc.034
 
-	DllExport int getID() const { return m_iID; } // advc.inl
+	DllExport int getID() const { return m_iID; }
 	void setID(int iID);
 
 	int getInitialGameTurn() const;
@@ -59,7 +59,7 @@ public:
 		use FOR_EACH_TRADE_ITEM(getSecondList()) instead, or just getSecondList. */
 	CLLNode<TradeData>* headSecondTradesNodeExternal() const;
 	CLLNode<TradeData>* nextSecondTradesNodeExternal(CLLNode<TradeData>* pNode) const;
-	// </advc.003s>  <advc.inl>
+	// </advc.003s> 
 	DllExport PlayerTypes getFirstPlayer() const
 	{
 		return m_eFirstPlayer;
@@ -78,7 +78,7 @@ public:
 	{
 		return m_secondList;
 	}
-	// </advc.inl>
+
 	// <advc> More convenient interface for iteration
 	/*  Want to make all the CLLNodes const - should generally not modify deal lists
 		while traversing them. (Though this means that CLLNode::m_data also can't be
@@ -98,7 +98,6 @@ public:
 	// <advc.003j> Unused, let's keep it that way.
 	//void clearFirstTrades();
 	//void clearSecondTrades(); // </advc.003j>
-	// <advc.inl>
 	int getLengthFirst() const { return m_firstList.getLength(); }
 	int getLengthSecond() const { return m_secondList.getLength(); }
 	void insertAtEndFirst(TradeData item) // (currently only used internally)
@@ -108,7 +107,7 @@ public:
 	void insertAtEndSecond(TradeData item) // (currently only used internally)
 	{
 		m_secondList.insertAtEnd(item);
-	} // </advc.inl>
+	}
 
 	DllExport bool isCancelable(PlayerTypes eByPlayer = NO_PLAYER, CvWString* pszReason = NULL)
 	// <advc> Need a const version
@@ -125,7 +124,6 @@ public:
 	DllExport static bool isDual(TradeableItems eItem, bool bExcludePeace = false);
 	DllExport static bool hasData(TradeableItems eItem);
 	DllExport static bool isEndWar(TradeableItems eItem);
-	// advc.inl: Inlined x5
 	DllExport static bool isGold(TradeableItems eItem)
 	{
 		return (eItem == getGoldItem() || eItem == getGoldPerTurnItem());

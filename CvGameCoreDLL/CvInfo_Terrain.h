@@ -20,7 +20,6 @@
 class CvTerrainInfo : public CvInfoBase
 {
 public: // All the const functions are exposed to Python except for those related to sound
-		// advc.inl: Inlined most of the getters
 	CvTerrainInfo();
 	~CvTerrainInfo();
 
@@ -81,7 +80,6 @@ class CvFeatureInfo : public CvInfoBase
 {
 public: /*  All the const functions are exposed to Python except for those dealing with art
 			and those added by mods */
-		// advc.inl: inlined some functions w/o giving it much thought
 	CvFeatureInfo();
 	~CvFeatureInfo();
 
@@ -195,7 +193,6 @@ private:
 class CvBonusInfo : public CvInfoBase
 {
 public: // All the const functions are exposed to Python
-		// advc.inl: inlined a few getters w/o giving it much thought
 	CvBonusInfo();
 	virtual ~CvBonusInfo();
 
@@ -322,7 +319,6 @@ public: // All the const functions are exposed to Python except those added by m
 	int getAdvancedStartCostIncrease() const;
 
 	int getValue() const;
-	// advc.inl: inlined these three
 	int getMovementCost() const { return m_iMovementCost; }
 	int getFlatMovementCost() const { return m_iFlatMovementCost; }
 	BonusTypes getPrereqBonus() const { return m_ePrereqBonus; }
@@ -381,7 +377,7 @@ public:
 	}
 	// </advc.tag>
 	/*  All the const functions are exposed to Python except those dealing with sound,
-		Advanced Start and those added by mods */ // advc.inl: Inlined many of the getters
+		Advanced Start and those added by mods */
 	CvImprovementInfo();
 	~CvImprovementInfo();
 
@@ -418,7 +414,7 @@ public:
 
 	int getWorldSoundscapeScriptId() const;
 
-	// Array access: (advc.inl: whole-array getters constified, inlined)
+	// Array access:
 
 	int getPrereqNatureYield(int i) const;
 	int const* getPrereqNatureYieldArray() const { return m_piPrereqNatureYield; }

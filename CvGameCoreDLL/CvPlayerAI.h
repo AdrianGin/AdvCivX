@@ -23,7 +23,7 @@ class CvPlayerAI : public CvPlayer
 {
 public:
 	// advc.003u: Renamed from getPlayer
-	static CvPlayerAI& AI_getPlayer(PlayerTypes ePlayer) // advc.inl
+	static CvPlayerAI& AI_getPlayer(PlayerTypes ePlayer)
 	{
 		FAssertBounds(0, MAX_PLAYERS, ePlayer);
 		return *m_aPlayers[ePlayer];
@@ -198,7 +198,7 @@ public:
 			bool bUpdateWorstEnemy = true); // advc.130e
 	void AI_changeCachedAttitude(PlayerTypes ePlayer, int iChange); // K-Mod
 	AttitudeTypes AI_getAttitude(PlayerTypes ePlayer, bool bForced = true) const		// Exposed to Python
-	{	// advc.inl
+	{
 		FAssert(ePlayer != getID());
 		return (AI_getAttitudeFromValue(AI_getAttitudeVal(ePlayer, bForced)));
 	}
@@ -623,7 +623,7 @@ public:
 	void AI_recalculateFoundValues(int iX, int iY, int iInnerRadius, int iOuterRadius) const;
 	void AI_updateCitySites(int iMinFoundValueThreshold = -1, int iMaxSites = 4); // advc: default values
 	void AI_invalidateCitySites(int iMinFoundValueThreshold);
-	int AI_getNumCitySites() const { return m_aeAICitySites.size(); } // advc.inl
+	int AI_getNumCitySites() const { return m_aeAICitySites.size(); }
 	bool AI_isPlotCitySite(CvPlot const& kPlot) const; // advc: Made plot param const
 	int AI_getNumAreaCitySites(CvArea const& kArea, int& iBestValue) const;
 	int AI_getNumAdjacentAreaCitySites(int& iBestValue, CvArea const& kWaterArea,

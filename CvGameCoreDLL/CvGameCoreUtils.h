@@ -268,7 +268,7 @@ float colorDifference(NiColorA const& c1, NiColorA const& c2); // advc.002i
 
 inline CardinalDirectionTypes getOppositeCardinalDirection(CardinalDirectionTypes eDir)	// Exposed to Python
 {
-	return (CardinalDirectionTypes)((eDir + 2) % NUM_CARDINALDIRECTION_TYPES); // advc.inl
+	return (CardinalDirectionTypes)((eDir + 2) % NUM_CARDINALDIRECTION_TYPES);
 }
 DirectionTypes cardinalDirectionToDirection(CardinalDirectionTypes eCard);				// Exposed to Python
 DllExport bool isCardinalDirection(DirectionTypes eDirection);															// Exposed to Python

@@ -59,10 +59,7 @@ public:
 	//
 	// Returns the distance between plots according to the pattern above...
 	int plotDistance(int iX1, int iY1, int iX2, int iY2) const
-	{	/*	advc.opt: inline keyword removed. Wasn't getting inlined either.
-			xDistance and yDistance and its auxiliary functions are getting inlined.
-			I'm guessing that's why the compiler resists inlining plotDistance;
-			inlining the whole computation is probably bad for branch prediction. */
+	{
 		int iDX = xDistance(iX1, iX2);
 		int iDY = yDistance(iY1, iY2);
 		//return std::max(iDX, iDY) + std::min(iDX, iDY) / 2;
@@ -371,7 +368,7 @@ public: // advc: made several functions const
 		return m_iGridHeight;
 	}
 
-	int getLandPlots() const { return m_iLandPlots; } // advc.inl										// Exposed to Python
+	int getLandPlots() const { return m_iLandPlots; }												// Exposed to Python
 	void changeLandPlots(int iChange);
 	int getWaterPlots() const { return numPlots() - getLandPlots(); } // advc
 
@@ -403,8 +400,8 @@ public: // advc: made several functions const
 	{
 		return GC.getInitCore().getWorldSize();
 	} // </advc>
-	ClimateTypes getClimate() const { return GC.getInitCore().getClimate(); } // advc.inl						// Exposed to Python
-	SeaLevelTypes getSeaLevel() const { return GC.getInitCore().getSeaLevel(); } // advc.inl					// Exposed to Python
+	ClimateTypes getClimate() const { return GC.getInitCore().getClimate(); }								// Exposed to Python
+	SeaLevelTypes getSeaLevel() const { return GC.getInitCore().getSeaLevel(); }							// Exposed to Python
 
 	int getNumCustomMapOptions() const;
 	CustomMapOptionTypes getCustomMapOption(int iOption) const;											// Exposed to Python

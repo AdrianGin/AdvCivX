@@ -108,7 +108,6 @@ public:
 	int getStartingGold() const;
 	int getFreePopulation() const;
 	int getStartPercent() const;
-	// advc.inl: inlined some getters
 	int getGrowthPercent() const { return m_iGrowthPercent; }
 	int getTrainPercent() const { return m_iTrainPercent; }
 	int getConstructPercent() const { return m_iConstructPercent; }
@@ -232,7 +231,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvGameSpeedInfo : public CvInfoBase
 {
-public: // The const functions are exposed to Python // advc.inl: inlined some getters
+public: // The const functions are exposed to Python
 	CvGameSpeedInfo();
 	~CvGameSpeedInfo();
 
@@ -385,7 +384,7 @@ public: // The const functions are exposed to Python except functions added by m
 	int getGPThresholdPercent() const { return m_iGPThresholdPercent; }
 	int getCultureLevelPercent() const { return m_iCultureLevelPercent; }
 	// </advc.251>
-	int getResearchPercent() const { return m_iResearchPercent; } // advc.inl: Let's inline this one too
+	int getResearchPercent() const { return m_iResearchPercent; }
 	// <advc.251>
 	int getTrainPercent() const { return m_iTrainPercent; }
 	int getConstructPercent() const { return m_iConstructPercent; }
@@ -555,18 +554,18 @@ class CvWorldInfo : public CvInfoBase
 public: // All the const functions are exposed to Python
 	CvWorldInfo();
 
-	DllExport int getDefaultPlayers() const { return m_iDefaultPlayers; } // advc.inl
+	DllExport int getDefaultPlayers() const { return m_iDefaultPlayers; }
 	int getUnitNameModifier() const;
-	int getTargetNumCities() const { return m_iTargetNumCities; } // advc.inl
+	int getTargetNumCities() const { return m_iTargetNumCities; }
 	int getNumFreeBuildingBonuses() const;
-	int getBuildingClassPrereqModifier() const { return m_iBuildingClassPrereqModifier; } // advc.inl
+	int getBuildingClassPrereqModifier() const { return m_iBuildingClassPrereqModifier; }
 	int getMaxConscriptModifier() const;
 	int getWarWearinessModifier() const;
 	int getGridWidth() const;
 	int getGridHeight() const;
 	int getTerrainGrainChange() const;
 	int getFeatureGrainChange() const;
-	int getResearchPercent() const { return m_iResearchPercent; } // advc.inl
+	int getResearchPercent() const { return m_iResearchPercent; }
 	int getTradeProfitPercent() const;
 	int getDistanceMaintenancePercent() const;
 	int getNumCitiesMaintenancePercent() const;
