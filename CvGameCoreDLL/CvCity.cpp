@@ -10320,9 +10320,9 @@ void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
 	if (bCityCulture)
 	{
 		FAssertMsg(iCultureRateTimes100 >= 0, "dubious");
-		// <advc> Putting this XML define back to use
+		// <advc.098> Putting this BtS define back to use (with new semantics)
 		static int const iCITY_FREE_CULTURE_GROWTH_FACTOR = GC.getDefineINT("CITY_FREE_CULTURE_GROWTH_FACTOR");
-		iCultureRateTimes100 += iCITY_FREE_CULTURE_GROWTH_FACTOR * 100; // </advc>
+		iCultureRateTimes100 += iCITY_FREE_CULTURE_GROWTH_FACTOR * 100; // </advc.098>
 	}
 
 	if (eCultureLevel == NO_CULTURELEVEL ||
@@ -10355,12 +10355,16 @@ void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
 		if (iDistance > eCultureLevel && !p.isOwned())
 			continue; // </advc.098>
 		// BtS formula for culture to add (the 20 was "CITY_FREE_CULTURE_GROWTH_FACTOR"):
-		//eCultureLevel < iDistance ? 0 : (1 + iCultureRateTimes100/100 + (eCultureLevel - iDistance) * 20;
+		//eCultureLevel < iDistance ? 0 : (iCultureRateTimes100/100 + 1 + (eCultureLevel - iDistance) * 20;
 		// K-Mod 1.45 (older K-Mod code deleted):
 		//int iCultureToAdd = iCultureRateTimes100*((iScale-1)*(iDistance-iCultureRange)*(iDistance-iCultureRange) + iCultureRange*iCultureRange)/(100*iCultureRange*iCultureRange);
 		/*  <advc.001> Secure this against overflow from culture added through WB.
 			(K-Mod 1.46 does so too - by using floating-point math.) */
 		scaled rDistFactor(SQR(iCultureRange - iDistance), SQR(iCultureRange));
+		/*	Observation (rephrasing a deleted K-Mod comment):
+			If iDistance is 0, then we add the culture rate times iScale.
+			(However, culture distance is always at least 1 - even for the city plot.)
+			If iDistance equals iCultureRange, then we add the culture rate (times 1). */
 		scaled rCultureToAdd = per100(iCultureRateTimes100) * (1 + rDistFactor * (iScale - 1));
 		// </advc.001>  <advc.025>
 		if (p.getTeam() != getTeam() &&

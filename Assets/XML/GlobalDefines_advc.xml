@@ -126,15 +126,6 @@
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
-	<!-- advc: Was 20 in BtS and was unused in K-Mod. The K-Mod formula works
-		 differently - free culture isn't multiplied by the culture level -,
-		 but there's still such a thing as free culture, so I'm putting this
-		 parameter back in use. Set to 4 for K-Mod behavior. -->
-	<Define> <!-- redefine -->
-		<DefineName>CITY_FREE_CULTURE_GROWTH_FACTOR</DefineName>
-		<iDefineIntVal>4</iDefineIntVal>
-	</Define>
-
     <!-- [advc.100]
 		 Only relevant if UWAI disabled (or only in the background).
 		 When an AI civ is willing to declare war in exchange for gold or tech,
@@ -583,22 +574,31 @@
 		<iDefineIntVal>1</iDefineIntVal>
 	</Define>
 
-	<!-- [advc.099b]
+	<!-- advc.099b:
 	     Each round, the tile culture value of each player (civ and barbarian)
 		 is decreased by this permillage. 0 to disable decay.
 		 (Will also have to set CITY_RADIUS_DECAY=0 to disable decay in
 		 foreign city radii.)
-		 Recommended: 10 (1% decay). -->
+		 Recommended: 15 (1.5% decay). -->
 	<Define>
 		<DefineName>TILE_CULTURE_DECAY_PER_MILL</DefineName>
-		<iDefineIntVal>10</iDefineIntVal>
+		<iDefineIntVal>15</iDefineIntVal>
 	</Define>
 	<!-- Per-mill decay rate of foreign culture on tiles within a city radius.
 		 The value gets doubled for tiles in the inner radius. Set to 0 to have
-		 foreign culture decay normally. Recommended: 20 -->
+		 foreign culture decay normally. Recommended: 25 -->
 	<Define>
 		<DefineName>CITY_RADIUS_DECAY</DefineName>
-		<iDefineIntVal>20</iDefineIntVal>
+		<iDefineIntVal>25</iDefineIntVal>
+	</Define>
+
+	<!-- advc.098: Was 20 in BtS and was unused in K-Mod. The K-Mod formula
+		 works differently - free culture isn't multiplied by the culture level -,
+		 but there's still such a thing as free culture, so I'm putting this
+		 parameter back in use. Recommended: 5; use 4 for K-Mod behavior. -->
+	<Define> <!-- redefine -->
+		<DefineName>CITY_FREE_CULTURE_GROWTH_FACTOR</DefineName>
+		<iDefineIntVal>5</iDefineIntVal>
 	</Define>
 
 	<!-- advc.098: If set to 1, then buildings with a positive
