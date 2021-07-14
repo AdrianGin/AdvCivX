@@ -358,32 +358,32 @@ class CvImprovementBonusInfo;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  class : CvImprovementInfo
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-class CvImprovementInfo : /* advc.tag: */ public CvXMLInfo
+class CvImprovementInfo : /* <advc.tag> */ public CvXMLInfo
 {
-public: /*  All the const functions are exposed to Python except those dealing with sound,
-			Advanced Start and those added by mods */ // advc.inl: Inlined many of the getters
-	CvImprovementInfo();
-	~CvImprovementInfo();
-	// <advc.tag>
+	typedef CvXMLInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		kElements.addInt(HealthPercent, "HealthPercent"); // advc.901
+		kElements.addInt(GWFeatureProtection, "GWFeatureProtection"); // advc.055
+	}
+public:
 	enum IntElementTypes
 	{
-		HealthPercent = CvXMLInfo::NUM_INT_ELEMENT_TYPES, // advc.901
+		HealthPercent = base_t::NUM_INT_ELEMENT_TYPES, // advc.901
 		GWFeatureProtection, // advc.055
 		NUM_INT_ELEMENT_TYPES
 	};
-	enum BoolElementTypes // unused so far
-	{
-		NUM_BOOL_ELEMENT_TYPES = CvXMLInfo::NUM_BOOL_ELEMENT_TYPES
-	};
-	using CvXMLInfo::get; // unhide
 	int get(IntElementTypes e) const
 	{
-		return get(static_cast<CvXMLInfo::IntElementTypes>(e));
+		return CvXMLInfo::get(static_cast<base_t::IntElementTypes>(e));
 	}
-	int get(BoolElementTypes e) const
-	{
-		return get(static_cast<CvXMLInfo::BoolElementTypes>(e));
-	} // </advc.tag>
+	// </advc.tag>
+	/*  All the const functions are exposed to Python except those dealing with sound,
+		Advanced Start and those added by mods */ // advc.inl: Inlined many of the getters
+	CvImprovementInfo();
+	~CvImprovementInfo();
 
 	int getAdvancedStartCost() const;
 	int getAdvancedStartCostIncrease() const;
@@ -511,8 +511,6 @@ protected:
 	int** m_ppiRouteYieldChanges;
 
 	CvImprovementBonusInfo* m_paImprovementBonus;
-
-	void addElements(std::vector<XMLElement*>& r) const; // advc.tag
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

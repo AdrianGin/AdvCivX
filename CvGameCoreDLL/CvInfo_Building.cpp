@@ -120,13 +120,6 @@ m_bStateReligion(false),
 m_bAllowsNukes(false)
 {}
 
-// advc.tag:
-void CvBuildingInfo::addElements(std::vector<XMLElement*>& r) const
-{
-	CvHotkeyInfo::addElements(r);
-	r.push_back(new IntElement(RaiseDefense, "RaiseDefense", 0)); // advc.004c
-}
-
 // advc.003w:
 bool CvBuildingInfo::isTechRequired(TechTypes eTech) const
 {
@@ -248,7 +241,7 @@ bool CvBuildingInfo::nameNeedsArticle() const
 #if ENABLE_XML_FILE_CACHE
 void CvBuildingInfo::read(FDataStreamBase* stream)
 {
-	CvHotkeyInfo::read(stream);
+	base_t::read(stream);
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -427,7 +420,7 @@ void CvBuildingInfo::read(FDataStreamBase* stream)
 
 void CvBuildingInfo::write(FDataStreamBase* stream)
 {
-	CvHotkeyInfo::write(stream);
+	base_t::write(stream);
 	uint uiFlag;
 	//uiFlag = 0;
 	uiFlag = 1; // advc.003t
@@ -605,7 +598,7 @@ void CvBuildingInfo::write(FDataStreamBase* stream)
 
 bool CvBuildingInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvHotkeyInfo::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetInfoIDFromChildXmlVal((int&)m_eBuildingClassType, "BuildingClass");

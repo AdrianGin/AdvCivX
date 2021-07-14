@@ -85,29 +85,28 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvBuildingInfo : public CvHotkeyInfo
 {
-public: /*	All the const functions are exposed to Python. advc.inl: Inlined most of those.
-			Integers in signatures replaced with enum types (except for most of the array
-			accessors - tbd.). */
-	CvBuildingInfo();
 	// <advc.tag>
+	typedef CvHotkeyInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		kElements.addInt(RaiseDefense, "RaiseDefense"); // advc.004c
+	}
+public:
 	enum IntElementTypes
 	{
-		RaiseDefense = CvHotkeyInfo::NUM_INT_ELEMENT_TYPES, // advc.004c
+		RaiseDefense = base_t::NUM_INT_ELEMENT_TYPES, // advc.004c
 		NUM_INT_ELEMENT_TYPES
 	};
-	enum BoolElementTypes // unused so far
-	{
-		NUM_BOOL_ELEMENT_TYPES = CvHotkeyInfo::NUM_BOOL_ELEMENT_TYPES
-	};
-	using CvXMLInfo::get; // unhide
 	int get(IntElementTypes e) const
 	{
-		return get(static_cast<CvXMLInfo::IntElementTypes>(e));
-	}
-	int get(BoolElementTypes e) const
-	{
-		return get(static_cast<CvXMLInfo::BoolElementTypes>(e));
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
 	} // </advc.tag>
+
+	/*	All the const functions are exposed to Python. advc.inl: Inlined most of those.
+		Integers in signatures replaced with enum types. */
+	CvBuildingInfo();
 
 	BuildingClassTypes getBuildingClassType() const
 	{
@@ -465,8 +464,6 @@ protected:
 
 	std::vector<TechTypes> m_aePrereqAndTechs;
 	std::vector<BonusTypes> m_aePrereqOrBonuses;
-
-	void addElements(std::vector<XMLElement*>& r) const; // advc.tag
 	// <advc.310>
 	static bool m_bEnabledAreaBorderObstacle;
 	static bool m_bEnabledAreaTradeRoutes;

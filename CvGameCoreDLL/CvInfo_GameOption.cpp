@@ -211,28 +211,10 @@ int CvEraInfo::getCitySoundscapeScriptId(int i) const
 	FAssertBounds(0, NUM_CITYSIZE_TYPES, i); // advc: Check for upper bound added
 	return m_paiCitySoundscapeScriptIds ? m_paiCitySoundscapeScriptIds[i] : 0; // advc.003t
 }
-// advc.tag:
-void CvEraInfo::addElements(std::vector<XMLElement*>& r) const
-{
-	CvXMLInfo::addElements(r);
-	// <advc.groundbr>
-	r.push_back(new IntElement(AIMaxGroundbreakingPenalty, "AIMaxGroundbreakingPenalty", 0));
-	r.push_back(new IntElement(HumanMaxGroundbreakingPenalty, "HumanMaxGroundbreakingPenalty", 0));
-	// </advc.groundbr>  <advc.erai>
-	r.push_back(new IntElement(AIEraFactor, "AIEraFactor", -1));
-	r.push_back(new BoolElement(AIAgeOfExploration, "AIAgeOfExploration", false));
-	r.push_back(new BoolElement(AIAgeOfPestilence, "AIAgeOfPestilence", false));
-	r.push_back(new BoolElement(AIAgeOfPollution, "AIAgeOfPollution", false));
-	r.push_back(new BoolElement(AIAgeOfFertility, "AIAgeOfFertility", false));
-	r.push_back(new BoolElement(AIAgeOfGuns, "AIAgeOfGuns", false));
-	r.push_back(new BoolElement(AIAtomicAge, "AIAtomicAge", false));
-	// </advc.erai>
-	r.push_back(new BoolElement(AllGoodyTechs, "AllGoodyTechs", false)); // advc.314
-}
 
 bool CvEraInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvXMLInfo::read(pXML))
+	if (!base_t::read(pXML)) // advc.tag
 		return false;
 
 	pXML->GetChildXmlValByName(&m_bNoGoodies, "bNoGoodies");
@@ -304,7 +286,7 @@ void CvEraInfo::allInfosRead()
 		// Set default values for AI era factors
 		if (kLoopEra.get(CvEraInfo::AIEraFactor) == -1)
 		{
-			kLoopEra.set((CvXMLInfo::IntElementTypes)
+			kLoopEra.set((base_t::IntElementTypes)
 					CvEraInfo::AIEraFactor, 100 * eLoopEra);
 			/*	The idea is to map the eras of a mod to the BtS eras that the
 				AI code has been written for. Therefore shouldn't exceed 100 times

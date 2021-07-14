@@ -115,9 +115,9 @@ protected:
 	float m_fInterfaceScale; 
 };
 
-/*	advc.tag: Abstract class that allows XML elements to be added
-	and accessed through enum values
-	For elements that map an enum key to a value, see CvInfo_EnumMap.h. */
+/*	advc.tag: Abstract class that allows simple XML elements
+	(i.e. w/o child elements) to be added and accessed through enum values.
+	For elements that map an enum key to a value, see CvInfo_EnumMap.h instead. */
 class CvXMLInfo : public CvInfoBase
 {
 public:
@@ -152,48 +152,94 @@ protected:
 		INT_ELEMENT,
 		BOOL_ELEMENT,
 	};
+	template<typename ContentType>
 	class XMLElement
 	{
 	public:
-		XMLElement(int iEnumValue, CvString szName);
-		XMLElement(int iEnumValue, CvString szName, bool bMandatory);
+		XMLElement(int iID, char const* szName)
+		:	m_iID(iID), m_sName(szName), m_bMandatory(true),
+			m_defaultValue(0)
+		{}
+		XMLElement(int iID, CvString szName, ContentType defaultValue)
+		:	m_iID(iID), m_sName(szName), m_bMandatory(false),
+			m_defaultValue(defaultValue)
+		{}
 		virtual ~XMLElement() {};
-		virtual ElementDataType getDataType() const = 0;
-		int getEnumValue() const;
-		CvString getName() const;
-		bool isMandatory() const;
+		int getID() const { return m_iID; }
+		CvString getName() const { return m_sName; }
+		ContentType getDefaultValue() const
+		{
+			return m_defaultValue;
+		}
+		bool isMandatory() const { return m_bMandatory; }
 	private:
-		CvString m_szName;
-		int m_iEnumValue;
+		CvString m_sName;
+		int m_iID;
+		ContentType m_defaultValue;
 		bool m_bMandatory;
 	};
-	class IntElement : public XMLElement
+	typedef XMLElement<int> IntElement;
+	typedef XMLElement<bool> BoolElement;
+
+	class ElementList
 	{
 	public:
-		IntElement(int iEnumValue, CvString szName);
-		IntElement(int iEnumValue, CvString szName, short iDefault);
-		ElementDataType getDataType() const;
-		short getDefaultValue() const;
+		~ElementList()
+		{
+			for (size_t i = 0; i < m_intElements.size(); i++)
+				delete m_intElements[i];
+			for (size_t i = 0; i < m_boolElements.size(); i++)
+				delete m_boolElements[i];
+		}
+		void addMandatoryInt(int iID, char const* szName)
+		{
+			m_intElements.push_back(new IntElement(iID, szName));
+		}
+		void addInt(int iID, char const* szName, int iDefault = 0)
+		{
+			m_intElements.push_back(new IntElement(iID, szName, iDefault));
+		}
+		void addMandatoryBool(int iID, char const* szName)
+		{
+			m_boolElements.push_back(new BoolElement(iID, szName));
+		}
+		void addBool(int iID, char const* szName, bool bDefault = false)
+		{
+			m_boolElements.push_back(new BoolElement(iID, szName, bDefault));
+		}
+		int numIntElements() const { return (int)m_intElements.size(); }
+		int numBoolElements() const { return (int)m_boolElements.size(); }
+		IntElement const& intElementAt(int iPos) const
+		{
+			return *m_intElements.at(iPos);
+		}
+		BoolElement const& boolElementAt(int iPos) const
+		{
+			return *m_boolElements.at(iPos);
+		}
 	private:
-		short m_iDefaultValue;
+		std::vector<IntElement*> m_intElements;
+		std::vector<BoolElement*> m_boolElements;
 	};
-	class BoolElement : public XMLElement
-	{
-	public:
-		BoolElement(int iEnumValue, CvString szName);
-		BoolElement(int iEnumValue, CvString szName, bool bDefault);
-		ElementDataType getDataType() const;
-		bool getDefaultValue() const;
-	private:
-		int m_bDefaultValue;
-	};
+
 	/*	Derived classes that extend any of the element type enums need to override this.
 		The overridden function needs to call the base function and then append its
-		own elements to r. */
-	virtual void addElements(std::vector<XMLElement*>& r) const;
+		own elements to kElements. */
+	virtual void addElements(ElementList& kElements) const
+	{
+		// Could add elements common to all info classes here
+	}
 	// Allow derived classes to overwrite data (but don't expose the data structures)
-	void set(IntElementTypes e, int iNewValue);
-	void set(BoolElementTypes e, bool bNewValue);
+	void set(IntElementTypes e, int iNewValue)
+	{
+		FAssertBounds(0, m_aiData.size(), e);
+		m_aiData[e] = toShort(iNewValue);
+	}
+	void set(BoolElementTypes e, bool bNewValue)
+	{
+		FAssertBounds(0, m_abData.size(), e);
+		m_abData[e] = bNewValue;
+	}
 
 private:
 	std::vector<short> m_aiData;
@@ -216,28 +262,34 @@ private:
 //  class : CvHotkeyInfo
 //  holds the hotkey info for an info class
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-class CvHotkeyInfo : public /* advc.tag: */ CvXMLInfo
+class CvHotkeyInfo : public /* <advc.tag> */ CvXMLInfo
 {
+	typedef CvXMLInfo base_t;
+protected:
+	// All unused here, just to exemplify the pattern.
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+	}
 public:
-	CvHotkeyInfo();
-	// <advc.tag>
-	enum IntElementTypes // unused so far
+	enum IntElementTypes
 	{
-		NUM_INT_ELEMENT_TYPES = CvXMLInfo::NUM_BOOL_ELEMENT_TYPES
+		NUM_INT_ELEMENT_TYPES = base_t::NUM_BOOL_ELEMENT_TYPES
 	};
-	enum BoolElementTypes // unused so far
+	enum BoolElementTypes
 	{
-		NUM_BOOL_ELEMENT_TYPES = CvXMLInfo::NUM_BOOL_ELEMENT_TYPES
+		NUM_BOOL_ELEMENT_TYPES = base_t::NUM_BOOL_ELEMENT_TYPES
 	};
-	using CvXMLInfo::get; // unhide
 	int get(IntElementTypes e) const
 	{
-		return get(static_cast<CvXMLInfo::IntElementTypes>(e));
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
 	}
 	int get(BoolElementTypes e) const
 	{
-		return get(static_cast<CvXMLInfo::BoolElementTypes>(e));
+		return base_t::get(static_cast<base_t::BoolElementTypes>(e));
 	} // </advc.tag>
+
+	CvHotkeyInfo();
 
 	bool read(CvXMLLoadUtility* pXML);
 	#if ENABLE_XML_FILE_CACHE
@@ -286,8 +338,6 @@ protected:
 	CvWString m_szHotKeyDescriptionKey;
 	CvWString m_szHotKeyAltDescriptionKey;
 	CvWString m_szHotKeyString;
-
-	void addElements(std::vector<XMLElement*>& r) const; // advc.tag
 };
 
 #endif

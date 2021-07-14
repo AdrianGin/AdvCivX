@@ -1199,7 +1199,7 @@ void CvArtInfoImprovement::setShaderNIF(const TCHAR* szDesc)
 #if ENABLE_XML_FILE_CACHE
 void CvImprovementInfo::read(FDataStreamBase* stream)
 {
-	CvXMLInfo::read(stream); // advc.tag
+	base_t::read(stream); // advc.tag
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -1286,8 +1286,8 @@ void CvImprovementInfo::read(FDataStreamBase* stream)
 
 void CvImprovementInfo::write(FDataStreamBase* stream)
 {
-	CvXMLInfo::write(stream); // advc.tag
-	uint uiFlag=0;
+	base_t::write(stream); // advc.tag
+	uint uiFlag = 0;
 	stream->Write(uiFlag);
 
 	stream->Write(m_iAdvancedStartCost);
@@ -1333,17 +1333,10 @@ void CvImprovementInfo::write(FDataStreamBase* stream)
 		stream->Write(NUM_YIELD_TYPES, m_ppiRouteYieldChanges[i]);
 }
 #endif
-// <advc.tag>
-void CvImprovementInfo::addElements(std::vector<XMLElement*>& r) const
-{
-	CvXMLInfo::addElements(r);
-	r.push_back(new IntElement(HealthPercent, "HealthPercent", 0)); // advc.901
-	r.push_back(new IntElement(GWFeatureProtection, "GWFeatureProtection", 0)); // advc.055
-} // </advc.tag>
 
 bool CvImprovementInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvXMLInfo::read(pXML)) // advc.tag
+	if (!base_t::read(pXML)) // advc.tag
 		return false;
 
 	pXML->GetChildXmlValByName(m_szArtDefineTag, "ArtDefineTag");

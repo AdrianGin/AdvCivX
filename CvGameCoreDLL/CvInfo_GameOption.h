@@ -47,12 +47,28 @@ private:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  class : CvEraInfo - Used to manage different types of Art Styles
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-class CvEraInfo :  /* advc.tag: */ public CvXMLInfo
+class CvEraInfo : /* <advc.tag> */ public CvXMLInfo
 {
-public: // All the const functions are exposed to Python except those added by mods
-	CvEraInfo();
-	~CvEraInfo();
-	// <advc.tag>
+	typedef CvXMLInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		// <advc.groundbr>
+		kElements.addInt(AIMaxGroundbreakingPenalty, "AIMaxGroundbreakingPenalty");
+		kElements.addInt(HumanMaxGroundbreakingPenalty, "HumanMaxGroundbreakingPenalty");
+		// </advc.groundbr>  <advc.erai>
+		kElements.addInt(AIEraFactor, "AIEraFactor", -1);
+		kElements.addBool(AIAgeOfExploration, "AIAgeOfExploration");
+		kElements.addBool(AIAgeOfPestilence, "AIAgeOfPestilence");
+		kElements.addBool(AIAgeOfPollution, "AIAgeOfPollution");
+		kElements.addBool(AIAgeOfFertility, "AIAgeOfFertility");
+		kElements.addBool(AIAgeOfGuns, "AIAgeOfGuns");
+		kElements.addBool(AIAtomicAge, "AIAtomicAge");
+		// </advc.erai>
+		kElements.addBool(AllGoodyTechs, "AllGoodyTechs"); // advc.314
+	}
+public:
 	enum IntElementTypes
 	{	// <advc.groundbr>
 		AIMaxGroundbreakingPenalty = CvXMLInfo::NUM_INT_ELEMENT_TYPES,
@@ -71,15 +87,18 @@ public: // All the const functions are exposed to Python except those added by m
 		AllGoodyTechs, // advc.314
 		NUM_BOOL_ELEMENT_TYPES
 	};
-	using CvXMLInfo::get; // unhide
 	int get(IntElementTypes e) const
 	{
-		return get(static_cast<CvXMLInfo::IntElementTypes>(e));
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
 	}
 	int get(BoolElementTypes e) const
 	{
-		return get(static_cast<CvXMLInfo::BoolElementTypes>(e));
+		return base_t::get(static_cast<base_t::BoolElementTypes>(e));
 	} // </advc.tag>
+
+	// All the const functions are exposed to Python except those added by mods
+	CvEraInfo();
+	~CvEraInfo();
 
 	int getStartingUnitMultiplier() const;
 	int getStartingDefenseUnits() const;
@@ -206,8 +225,6 @@ protected:
 
 	int* m_paiSoundtracks;
 	int* m_paiCitySoundscapeScriptIds;
-
-	void addElements(std::vector<XMLElement*>& r) const; // advc.tag
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
