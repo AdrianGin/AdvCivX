@@ -9671,7 +9671,9 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szBuffer, UnitTypes eUnit,
 			szBuffer.append(szTempBuffer);
 			// BULL - Production Decay - start
 			// advc.094: No separate ProductionDecayHover option
-			if (BUGOption::isEnabled("CityScreen__ProductionDecayQueue", false))
+			if (BUGOption::isEnabled("CityScreen__ProductionDecayQueue", false) &&
+				// advc.094: Don't show this in foreign cities
+				pCity->getOwner() == GC.getGame().getActivePlayer())
 			{
 				setProductionDecayHelp(szBuffer, pCity->getUnitProductionDecayTurns(eUnit),
 						// advc.094: No separate ProductionDecayHoverUnitThreshold option
@@ -11321,7 +11323,9 @@ void CvGameTextMgr::setBuildingHelpActual(CvWStringBuffer &szBuffer,
 			}
 			// BULL - Production Decay - start
 			// advc.094: No separate ProductionDecayHover option
-			if (BUGOption::isEnabled("CityScreen__ProductionDecayQueue", false))
+			if (BUGOption::isEnabled("CityScreen__ProductionDecayQueue", false) &&
+				// advc.094: Don't show this in foreign cities
+				pCity->getOwner() == GC.getGame().getActivePlayer())
 			{
 				setProductionDecayHelp(szBuffer,
 						pCity->getBuildingProductionDecayTurns(eBuilding),

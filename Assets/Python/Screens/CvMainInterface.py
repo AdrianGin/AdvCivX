@@ -4857,8 +4857,9 @@ class CvMainInterface:
 							szRightBuffer = BugUtil.colorText(szRightBuffer, "COLOR_CYAN")
 # BUG - Production Started - end
 					
-# BUG - Production Decay - start  # advc.094: BugDll.isPresent check removed
-					if CityScreenOpt.isShowProductionDecayQueue():
+# BUG - Production Decay - start
+					# advc.094: BugDll.isPresent check removed; active player check added (replacing a is-human check in the DLL).
+					if CityScreenOpt.isShowProductionDecayQueue() and pHeadSelectedCity.getOwner() == gc.getGame().getActivePlayer():
 						eUnit = CyInterface().getOrderNodeData1(i)
 						if pHeadSelectedCity.getUnitProduction(eUnit) > 0:
 							if pHeadSelectedCity.isUnitProductionDecay(eUnit):
@@ -4882,8 +4883,9 @@ class CvMainInterface:
 							szRightBuffer = BugUtil.colorText(szRightBuffer, "COLOR_CYAN")
 # BUG - Production Started - end
 
-# BUG - Production Decay - start  # advc.094: BugDll.isPresent check removed
-					if CityScreenOpt.isShowProductionDecayQueue():
+# BUG - Production Decay - start 
+					# advc.094: BugDll.isPresent check removed; active player check added.
+					if CityScreenOpt.isShowProductionDecayQueue() and pHeadSelectedCity.getOwner() == gc.getGame().getActivePlayer():
 						eBuilding = CyInterface().getOrderNodeData1(i)
 						if pHeadSelectedCity.getBuildingProduction(eBuilding) > 0:
 							if pHeadSelectedCity.isBuildingProductionDecay(eBuilding):
