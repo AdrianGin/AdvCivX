@@ -86,14 +86,18 @@ class BugCityScreenOptionsTab(BugOptionsTab.BugOptionsTab):
 	def createProductionQueuePanel(self, screen, panel):
 		self.addLabel(screen, panel, "ProductionQueue", "Production Queue:")
 		self.addCheckbox(screen, panel, "CityScreen__ProductionStarted")
+		# <advc.094> BULL production decay options now available - but no separate option for hover text. Hence also no need for a 3-column layout.
+		self.addCheckbox(screen, panel, "CityScreen__ProductionDecayQueue")
+		left, right = self.addTwoColumnLayout(screen, panel, "ProductionDecay")
 		#left, center, right = self.addThreeColumnLayout(screen, panel, "ProductionDecay")
 		#self.addLabel(screen, left, "ProductionDecay", "Decay:")
 		#self.addCheckbox(screen, center, "CityScreen__ProductionDecayQueue")
 		#self.addCheckbox(screen, right, "CityScreen__ProductionDecayHover")
-		#self.addIntDropdown(screen, left, center, "CityScreen__ProductionDecayQueueUnitThreshold", True)
-		#self.addIntDropdown(screen, left, center, "CityScreen__ProductionDecayQueueBuildingThreshold", True)
+		self.addIntDropdown(screen, left, right, "CityScreen__ProductionDecayQueueUnitThreshold", True)
+		self.addIntDropdown(screen, left, right, "CityScreen__ProductionDecayQueueBuildingThreshold", True)
 		#self.addIntDropdown(screen, None, right, "CityScreen__ProductionDecayHoverUnitThreshold")
 		#self.addIntDropdown(screen, None, right, "CityScreen__ProductionDecayHoverBuildingThreshold")
+		# </advc.094>
 		
 	#def createCityBarPanel(self, screen, panel):
 		#self.addLabel(screen, panel, "CitybarHover", "City Bar Hover:")

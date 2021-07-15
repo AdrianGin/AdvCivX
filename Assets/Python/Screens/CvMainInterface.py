@@ -4857,8 +4857,8 @@ class CvMainInterface:
 							szRightBuffer = BugUtil.colorText(szRightBuffer, "COLOR_CYAN")
 # BUG - Production Started - end
 					
-# BUG - Production Decay - start
-					if BugDll.isPresent() and CityScreenOpt.isShowProductionDecayQueue():
+# BUG - Production Decay - start  # advc.094: BugDll.isPresent check removed
+					if CityScreenOpt.isShowProductionDecayQueue():
 						eUnit = CyInterface().getOrderNodeData1(i)
 						if pHeadSelectedCity.getUnitProduction(eUnit) > 0:
 							if pHeadSelectedCity.isUnitProductionDecay(eUnit):
@@ -4882,8 +4882,8 @@ class CvMainInterface:
 							szRightBuffer = BugUtil.colorText(szRightBuffer, "COLOR_CYAN")
 # BUG - Production Started - end
 
-# BUG - Production Decay - start
-					if BugDll.isPresent() and CityScreenOpt.isShowProductionDecayQueue():
+# BUG - Production Decay - start  # advc.094: BugDll.isPresent check removed
+					if CityScreenOpt.isShowProductionDecayQueue():
 						eBuilding = CyInterface().getOrderNodeData1(i)
 						if pHeadSelectedCity.getBuildingProduction(eBuilding) > 0:
 							if pHeadSelectedCity.isBuildingProductionDecay(eBuilding):

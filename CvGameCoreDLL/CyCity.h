@@ -412,6 +412,15 @@ public:
 	int getUnitProduction(int iIndex);
 	void setUnitProduction(int iIndex, int iNewValue);
 	void changeUnitProduction(int /*UnitTypes*/ iIndex, int iChange);
+	// BULL - Production Decay - start (advc.094)
+	int getUnitProductionTime(int /*UnitTypes*/ eIndex);
+	bool isBuildingProductionDecay(int /*BuildingTypes*/ eIndex);
+	int getBuildingProductionDecay(int /*BuildingTypes*/ eIndex);
+	int getBuildingProductionDecayTurns(int /*BuildingTypes*/ eIndex);
+	bool isUnitProductionDecay(int /*UnitTypes*/ eIndex);
+	int getUnitProductionDecay(int /*UnitTypes*/ eIndex);
+	int getUnitProductionDecayTurns(int /*UnitTypes*/ eIndex);
+	// BULL - Production Decay - end
 	int getGreatPeopleUnitRate(int /*UnitTypes*/ iIndex);
 	int getGreatPeopleUnitProgress(int /*UnitTypes*/ iIndex);
 	void setGreatPeopleUnitProgress(int /*UnitTypes*/ iIndex, int iNewValue);

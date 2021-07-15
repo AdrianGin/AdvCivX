@@ -113,6 +113,8 @@ public:
 // BUG - Building Additional Happiness - end
 	void setProjectHelp(CvWStringBuffer &szBuffer, ProjectTypes eProject, bool bCivilopediaText = false, CvCity* pCity = NULL);
 	void setProcessHelp(CvWStringBuffer &szBuffer, ProcessTypes eProcess);
+	// BULL - Production Decay: (advc.094)
+	void setProductionDecayHelp(CvWStringBuffer &szBuffer, int iTurnsLeft, int iThreshold, int iDecay, bool bProducing);
 	void setGoodHealthHelp(CvWStringBuffer &szBuffer, CvCity& city);
 	void setBadHealthHelp(CvWStringBuffer &szBuffer, CvCity& city);
 // BUG - Building Additional Health - start

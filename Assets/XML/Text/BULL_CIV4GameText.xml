@@ -157,6 +157,10 @@
 	</TEXT>
 
 <!-- Production Decay -->
+	<!-- advc.094: Would be nice to use colors matching the exclamation marks;
+		 and the all-red text is kind of difficult to read. But I won't experiment
+		 with that now. Only changed it so that the darker shade of red gets used
+		 (consistently) for imminent decay. -->
 	<TEXT>
 		<Tag>TXT_KEY_PRODUCTION_DECAY</Tag>
 		<English>[COLOR_NEGATIVE_TEXT]Will lose %d1[ICON_PRODUCTION] this turn[COLOR_REVERT]</English>
@@ -166,23 +170,23 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_PRODUCTION_DECAY_PRODUCING</Tag>
-		<English>[COLOR_WARNING_TEXT]Will lose %d1[ICON_PRODUCTION] if not produced this turn[COLOR_REVERT]</English>
-		<German>[COLOR_WARNING_TEXT]%d1[ICON_PRODUCTION] gehen verloren, falls nicht in dieser Runde produziert wird[COLOR_REVERT]</German>
-		<Italian>[COLOR_WARNING_TEXT]Perderà %d1[ICON_PRODUCTION] se non viene prodotto questo turno [COLOR_REVERT]</Italian>
-		<Spanish>[COLOR_WARNING_TEXT]Perderá %d1[ICON_PRODUCTION] si no se activa este turno[COLOR_REVERT]</Spanish>
+		<English>[COLOR_NEGATIVE_TEXT]Will lose %d1[ICON_PRODUCTION] if not produced this turn[COLOR_REVERT]</English>
+		<German>[COLOR_NEGATIVE_TEXT]%d1[ICON_PRODUCTION] gehen verloren, falls nicht in dieser Runde produziert wird[COLOR_REVERT]</German>
+		<Italian>[COLOR_NEGATIVE_TEXT]Perderà %d1[ICON_PRODUCTION] se non viene prodotto questo turno [COLOR_REVERT]</Italian>
+		<Spanish>[COLOR_NEGATIVE_TEXT]Perderá %d1[ICON_PRODUCTION] si no se activa este turno[COLOR_REVERT]</Spanish>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_PRODUCTION_DECAY_TURNS</Tag>
-		<English>[COLOR_NEGATIVE_TEXT]Will lose %d1[ICON_PRODUCTION] in %d2 [NUM2:turn:turns][COLOR_REVERT]</English>
-		<German>[COLOR_NEGATIVE_TEXT]%d1[ICON_PRODUCTION] gehen in %d2 [NUM2:Runde:Runden] verloren[COLOR_REVERT]</German>
-		<Italian>[COLOR_NEGATIVE_TEXT]Perderà %d1[ICON_PRODUCTION] in %d2 [NUM2:turno:turni][COLOR_REVERT]</Italian>
-		<Spanish>[COLOR_NEGATIVE_TEXT]Perderá %d1[ICON_PRODUCTION] en %d2 [NUM2:turno:turnos][COLOR_REVERT]</Spanish>
+		<English>[COLOR_WARNING_TEXT]Will lose %d1[ICON_PRODUCTION] in %d2 [NUM2:turn:turns][COLOR_REVERT]</English>
+		<German>[COLOR_WARNING_TEXT]%d1[ICON_PRODUCTION] gehen in %d2 [NUM2:Runde:Runden] verloren[COLOR_REVERT]</German>
+		<Italian>[COLOR_WARNING_TEXT]Perderà %d1[ICON_PRODUCTION] in %d2 [NUM2:turno:turni][COLOR_REVERT]</Italian>
+		<Spanish>[COLOR_WARNING_TEXT]Perderá %d1[ICON_PRODUCTION] en %d2 [NUM2:turno:turnos][COLOR_REVERT]</Spanish>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_PRODUCTION_DECAY_TURNS_PRODUCING</Tag>
 		<English>[COLOR_WARNING_TEXT]Will lose %d1[ICON_PRODUCTION] if not produced for %d2 [NUM2:turn:turns][COLOR_REVERT]</English>
 		<German>[COLOR_WARNING_TEXT]%d1[ICON_PRODUCTION] gehen verloren, falls für %d2 [NUM2:Runde:Runden] nicht produziert wird[COLOR_REVERT]</German>
-		<Italian>[COLOR_WARNING_TEXT]Perderà  %d1[ICON_PRODUCTION] se non viene prodotto per %d2 [NUM2:turno:turni][COLOR_REVERT]</Italian>
+		<Italian>[COLOR_WARNING_TEXT]Perderà %d1[ICON_PRODUCTION] se non viene prodotto per %d2 [NUM2:turno:turni][COLOR_REVERT]</Italian>
 		<Spanish>[COLOR_WARNING_TEXT]Perderá %d1[ICON_PRODUCTION] si no se activa durante %d2 [NUM2:turn:turns][COLOR_REVERT]</Spanish>
 	</TEXT>
 

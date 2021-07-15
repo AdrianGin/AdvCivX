@@ -1943,6 +1943,42 @@ void CyCity::changeUnitProduction(int /*UnitTypes*/ iIndex, int iChange)
 		m_pCity->changeUnitProduction((UnitTypes) iIndex, iChange);
 }
 
+// BULL - Production Decay - start (advc.094)
+int CyCity::getUnitProductionTime(int /*UnitTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->getUnitProductionTime((UnitTypes)eIndex) : -1;
+}
+
+bool CyCity::isBuildingProductionDecay(int /*BuildingTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->isBuildingProductionDecay((BuildingTypes)eIndex) : false;
+}
+
+int CyCity::getBuildingProductionDecay(int /*BuildingTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->getBuildingProductionDecay((BuildingTypes)eIndex) : 0;
+}
+
+int CyCity::getBuildingProductionDecayTurns(int /*BuildingTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->getBuildingProductionDecayTurns((BuildingTypes)eIndex) : 0;
+}
+
+bool CyCity::isUnitProductionDecay(int /*UnitTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->isUnitProductionDecay((UnitTypes)eIndex) : false;
+}
+
+int CyCity::getUnitProductionDecay(int /*UnitTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->getUnitProductionDecay((UnitTypes)eIndex) : 0;
+}
+
+int CyCity::getUnitProductionDecayTurns(int /*UnitTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->getUnitProductionDecayTurns((UnitTypes)eIndex) : 0;
+} // BULL - Production Decay - end
+
 int CyCity::getGreatPeopleUnitRate(int /*UnitTypes*/ iIndex)
 {
 	return m_pCity ? m_pCity->getGreatPeopleUnitRate((UnitTypes) iIndex) : -1;

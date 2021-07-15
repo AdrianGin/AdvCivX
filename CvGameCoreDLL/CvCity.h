@@ -972,8 +972,8 @@ public:
 	{
 		return m_aiProjectProduction.get(eProject);
 	}
-	void setProjectProduction(ProjectTypes eProject, int iNewValue);											// Exposed to Python
-	void changeProjectProduction(ProjectTypes eProject, int iChange);											// Exposed to Python
+	void setProjectProduction(ProjectTypes eProject, int iNewValue);
+	void changeProjectProduction(ProjectTypes eProject, int iChange);
 
 	PlayerTypes getBuildingOriginalOwner(BuildingTypes eBuilding) const											// Exposed to Python
 	{
@@ -991,13 +991,20 @@ public:
 	void setUnitProduction(UnitTypes eUnit, int iNewValue);														// Exposed to Python
 	void changeUnitProduction(UnitTypes eUnit, int iChange);													// Exposed to Python
 
-	int getUnitProductionTime(UnitTypes eUnit) const															// Exposed to Python
+	int getUnitProductionTime(UnitTypes eUnit) const								// Exposed to Python (for BULL - Production Decay)
 	{
 		return m_aiUnitProductionTime.get(eUnit);
 	}
-	void setUnitProductionTime(UnitTypes eUnit, int iNewValue);													// Exposed to Python
-	void changeUnitProductionTime(UnitTypes eUnit, int iChange);												// Exposed to Python
-
+	void setUnitProductionTime(UnitTypes eUnit, int iNewValue);
+	void changeUnitProductionTime(UnitTypes eUnit, int iChange);
+	// BULL - Production Decay - start (advc.094)
+	bool isBuildingProductionDecay(BuildingTypes eBuilding) const;												// Exposed to Python
+	int getBuildingProductionDecay(BuildingTypes eBuilding) const;												// Exposed to Python
+	int getBuildingProductionDecayTurns(BuildingTypes eBuilding) const;											// Exposed to Python
+	bool isUnitProductionDecay(UnitTypes eUnit) const;															// Exposed to Python
+	int getUnitProductionDecay(UnitTypes eUnit) const;															// Exposed to Python
+	int getUnitProductionDecayTurns(UnitTypes eUnit) const;														// Exposed to Python
+	// BULL - Production Decay - end
 	bool isAnyProductionProgress(OrderTypes eOrder) const; // advc.opt
 
 	int getGreatPeopleUnitRate(UnitTypes eUnit) const															// Exposed to Python

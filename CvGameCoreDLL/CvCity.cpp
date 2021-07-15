@@ -8421,6 +8421,45 @@ void CvCity::changeUnitProductionTime(UnitTypes eUnit, int iChange)
 	setUnitProductionTime(eUnit, getUnitProductionTime(eUnit) + iChange);
 }
 
+// BULL - Production Decay - start
+/*	advc.094: Using the preprocessor is less bad than keeping two copies
+	of this moderately complex code */
+#define IMPLEMENT_BUG_PRODUCTION_DECAY_GETTERS(ORDER, Order, Verb) \
+/* Returns true if the given order will decay this turn */ \
+bool CvCity::is##Order##ProductionDecay(Order##Types e##Order) const \
+{ \
+	return (/*isHuman() &&*/ /* advc.094: Not the place to check this */ \
+			getProduction##Order() != e##Order && \
+			get##Order##Production(e##Order) > 0 && \
+			100 * get##Order##ProductionTime(e##Order) >= \
+			GC.getDefineINT(CvGlobals::ORDER##_PRODUCTION_DECAY_TIME) * \
+			GC.getGameSpeedInfo(GC.getGame().getGameSpeedType()).get##Verb##Percent()); \
+} \
+\
+/*	Returns the amount by which the given order will decay once it reaches the limit. */ \
+/*	Ignores whether or not the order will actually decay this turn. */ \
+int CvCity::get##Order##ProductionDecay(Order##Types e##Order) const \
+{ \
+	int const iProduction = get##Order##Production(e##Order); \
+	return iProduction - \
+			(iProduction * \
+			GC.getDefineINT(CvGlobals::ORDER##_PRODUCTION_DECAY_PERCENT)) / 100; \
+} \
+\
+/* Returns the number of turns left before the given order will decay */ \
+int CvCity::get##Order##ProductionDecayTurns(Order##Types e##Order) const \
+{ \
+	return 1 + std::max(0, \
+			intdiv::uceil( \
+			GC.getDefineINT(CvGlobals::ORDER##_PRODUCTION_DECAY_TIME) * \
+			GC.getGameSpeedInfo(GC.getGame().getGameSpeedType()).get##Verb##Percent(), \
+			100) \
+			- get##Order##ProductionTime(e##Order)); \
+}
+IMPLEMENT_BUG_PRODUCTION_DECAY_GETTERS(BUILDING, Building, Construct)
+IMPLEMENT_BUG_PRODUCTION_DECAY_GETTERS(UNIT, Unit, Train)
+// BULL - Production Decay - end
+
 // advc.opt: Taking advantage of EnumMap.hasContent
 bool CvCity::isAnyProductionProgress(OrderTypes eOrder) const
 {
@@ -10592,10 +10631,10 @@ void CvCity::doDecay()
 				int const iGameSpeedPercent = GC.getInfo(GC.getGame().
 						getGameSpeedType()). getConstructPercent();
 				if (100 * getBuildingProductionTime(eLoopBuilding) >
-					GC.getDefineINT("BUILDING_PRODUCTION_DECAY_TIME") * iGameSpeedPercent)
+					GC.getDefineINT(CvGlobals::BUILDING_PRODUCTION_DECAY_TIME) * iGameSpeedPercent)
 				{
 					int iProduction = getBuildingProduction(eLoopBuilding);
-					int const iDecayPercent = GC.getDefineINT("BUILDING_PRODUCTION_DECAY_PERCENT");
+					int const iDecayPercent = GC.getDefineINT(CvGlobals::BUILDING_PRODUCTION_DECAY_PERCENT);
 					setBuildingProduction(eLoopBuilding, iProduction -
 							(iProduction * (100 - iDecayPercent) + iGameSpeedPercent - 1) /
 							iGameSpeedPercent);
@@ -10617,10 +10656,10 @@ void CvCity::doDecay()
 					int const iGameSpeedPercent = GC.getInfo(GC.getGame().
 							getGameSpeedType()).getTrainPercent();
 					if (100 * getUnitProductionTime(eLoopUnit) >
-						GC.getDefineINT("UNIT_PRODUCTION_DECAY_TIME") * iGameSpeedPercent)
+						GC.getDefineINT(CvGlobals::UNIT_PRODUCTION_DECAY_TIME) * iGameSpeedPercent)
 					{
 						int iProduction = getUnitProduction(eLoopUnit);
-						int const iDecayPercent = GC.getDefineINT("UNIT_PRODUCTION_DECAY_PERCENT");
+						int const iDecayPercent = GC.getDefineINT(CvGlobals::UNIT_PRODUCTION_DECAY_PERCENT);
 						setUnitProduction(eLoopUnit, iProduction -
 								(iProduction * (100 - iDecayPercent) + iGameSpeedPercent - 1) /
 								iGameSpeedPercent);
