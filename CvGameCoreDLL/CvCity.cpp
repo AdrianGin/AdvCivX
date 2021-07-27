@@ -10747,7 +10747,7 @@ void CvCity::doReligion()
 		FAssert(!GET_PLAYER(getOwner()).isNoNonStateReligionSpread() ||
 				GET_PLAYER(getOwner()).getStateReligion() == eLoopReligion);
 
-		int iRandThreshold = 0;
+		int iMaxChance = 0;
 		for (PlayerIter<ALIVE,KNOWN_TO> itPlayer(getTeam());
 			itPlayer.hasNext(); ++itPlayer)
 		{
@@ -10769,38 +10769,47 @@ void CvCity::doReligion()
 					iDivisor *= 100 + (100 * iDistanceFactor *
 							plotDistance(plot(), pLoopCity->plot())) /
 							GC.getMap().maxTypicalDistance();  // advc.140: was maxPlotDistance
-					iDivisor /= 100;
+					iDivisor /= 125; // advc.140: was 100
 
 					// now iDivisor is in the range [1, 1+iDistanceFactor] * iDivisorBase
 					/*	this is approximately in the range [5, 50], depending on what the xml value are.
 						(the value currently being tested and tuned.) */
 					iSpread /= iDivisor;
 					// K-Mod end
-					//iSpread /= (getReligionCount() + 1);
-					iRandThreshold = std::max(iRandThreshold, iSpread);
+					//iSpread /= getReligionCount() + 1; // (already commented out in original SDK)
+					iMaxChance = std::max(iMaxChance, iSpread);
 				}
 			}
 		}
-
-		// scale for game speed
-		iRandThreshold *= 100;
-		iRandThreshold /= GC.getInfo(GC.getGame().getGameSpeedType()).
-				/*	advc (note): Missionaries only get slowed down by getTrainPercent().
-					But I don't think we want to double down on quicker proselytization
-					by making natural spread faster as well. Units having a bigger role
-					is normal for Marathon. */
-				getVictoryDelayPercent();
-
+		// <advc.173>
+		scaled rSpreadProb = per100(iMaxChance);
+		if (GET_PLAYER(getOwner()).getHasReligionCount(eLoopReligion) <= 0)
+		{	/*	Make first spread of a religion to a player less dependent
+				on the number of cities owned by that player */
+			int iTargetCities = GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities();
+			int iCities = GET_PLAYER(getOwner()).getNumCities();
+			if (iCities < iTargetCities) // Few cities: increase spread prob
+				rSpreadProb *= 2 - scaled(iCities, iTargetCities);
+			if (iCities > iTargetCities) // Many cities: decrease spread prob
+				rSpreadProb *= scaled(iTargetCities, iCities);
+		} // </advc.173>
+		/*	advc.173 (note): Missionaries only get slowed down by getTrainPercent().
+			But I don't think we want to double down on quicker proselytization
+			by making natural spread faster as well. Units having a bigger role
+			is normal for Marathon. */
+		rSpreadProb /= GC.getGame().gameSpeedMultiplier();
 		// K-Mod. Give a bonus for the first few cities?
 		/*int iReligionCities = GC.getGame().countReligionLevels(eLoopReligion);
 		if (iReligionCities < 3) {
-			iRandThreshold *= 2 + iReligionCities;
-			iRandThreshold /= 1 + iReligionCities;
-		}*/ //
-
-		if (GC.getGame().getSorenRandNum(
-			GC.getDefineINT("RELIGION_SPREAD_RAND"), "Religion Spread") < iRandThreshold)
-		{
+			iChancePercent *= 2 + iReligionCities;
+			iChancePercent /= 1 + iReligionCities;
+		}*/
+		// <advc> (No functional change)
+		static scaled const rRELIGION_SPREAD_DIV = std::max(scaled::epsilon(),
+				per100(GC.getDefineINT("RELIGION_SPREAD_RAND")));
+		rSpreadProb /= rRELIGION_SPREAD_DIV;
+		if (rSpreadProb.bernoulliSuccess(GC.getGame().getSRand(), "Religion Spread"))
+		{	// </advc>
 			setHasReligion(eLoopReligion, true, true, true);
 			if (iWeakestGrip < iLoopGrip)
 			{
