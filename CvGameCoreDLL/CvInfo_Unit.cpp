@@ -2367,8 +2367,8 @@ bool CvPromotionInfo::readPass2(CvXMLLoadUtility* pXML)
 	m_iPrereqOrPromotion1 = GC.getInfoTypeForString(szTextVal);
 	pXML->GetChildXmlValByName(szTextVal, "PromotionPrereqOr2");
 	m_iPrereqOrPromotion2 = GC.getInfoTypeForString(szTextVal);
-	// K-Mod, 7/jan/11
-	pXML->GetChildXmlValByName(szTextVal, "PromotionPrereqOr3");
+	// K-Mod, 7/jan/11: start
+	pXML->GetChildXmlValByName(szTextVal, "PromotionPrereqOr3", /* advc: */ "");
 	m_iPrereqOrPromotion3 = GC.getInfoTypeForString(szTextVal); // K-Mod end
 
 	return true;
