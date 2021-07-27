@@ -11230,6 +11230,7 @@ int CvPlayerAI::AI_baseBonusVal(BonusTypes eBonus, /* advc.036: */ bool bTrade) 
 	// advc: Unit, building, project, route evaluation moved into subroutines ...
 
 	{
+		scaled rUnitValue;
 		int iUnitsEnabled = 0; // advc.036b
 		for (int i = 0; i < kCiv.getNumUnits(); i++)
 		{
@@ -11240,14 +11241,16 @@ int CvPlayerAI::AI_baseBonusVal(BonusTypes eBonus, /* advc.036: */ bool bTrade) 
 				iUnitsEnabled++;
 			if (rLoopValue.isNegative()) // (future-proofing)
 				iUnitsEnabled--; // </advc.036b>
-			rValue += rLoopValue;
+			rUnitValue += rLoopValue;
 		}
 		/*	<advc.036b> If numerous units become enabled, there will probably be some
 			redundancy (which AI_baseBonusUnitVal can't address). */
 		if (iUnitsEnabled > 1)
-			rValue /= scaled(iUnitsEnabled).pow(fixp(1/8.));
+			rUnitValue /= scaled(iUnitsEnabled).pow(fixp(1/8.));
+		rValue += rUnitValue;
 	}
 	{
+		scaled rBuildingValue;
 		int iBuildingsEnabled = 0; // advc.036b
 		for (int i = 0; i < kCiv.getNumBuildings(); i++)
 		{
@@ -11257,11 +11260,12 @@ int CvPlayerAI::AI_baseBonusVal(BonusTypes eBonus, /* advc.036: */ bool bTrade) 
 				iBuildingsEnabled++;
 			if (rLoopValue.isNegative()) // (future-proofing)
 				iBuildingsEnabled--; // </advc.036b>
-			rValue += rLoopValue;
+			rBuildingValue += rLoopValue;
 		}
 		// <advc.036b> 
 		if (iBuildingsEnabled > 1)
-			rValue /= scaled(iBuildingsEnabled).pow(fixp(1/10.)); // </advc.036b>
+			rBuildingValue /= scaled(iBuildingsEnabled).pow(fixp(1/10.)); // </advc.036b>
+		rValue += rBuildingValue;
 	}
 	FOR_EACH_ENUM(Project)
 	{
