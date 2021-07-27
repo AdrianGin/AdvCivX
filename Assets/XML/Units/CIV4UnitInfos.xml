@@ -14968,9 +14968,9 @@
 			<iAirCombatLimit>0</iAirCombatLimit>
 			<iXPValueAttack>4</iXPValueAttack>
 			<iXPValueDefense>2</iXPValueDefense>
-			<!-- advc.909b: was 0 in BtS, 1 in K-Mod -->
+			<!-- advc.907f: was 0 in BtS, 1 in K-Mod -->
 			<iFirstStrikes>2</iFirstStrikes>
-			<!-- advc.909b: was 0 in BtS, 1 in K-Mod -->
+			<!-- advc.907f: was 0 in BtS, 1 in K-Mod -->
 			<iChanceFirstStrikes>0</iChanceFirstStrikes>
 			<iInterceptionProbability>0</iInterceptionProbability>
 			<iEvasionProbability>0</iEvasionProbability>
@@ -15032,7 +15032,7 @@
 					<PromotionType>PROMOTION_BLITZ</PromotionType>
 					<bFreePromotion>1</bFreePromotion>
 				</FreePromotion>
-				<!-- advc.909b -->
+				<!-- advc.907f -->
 				<!--FreePromotion>
 					<PromotionType>PROMOTION_FLANKING1</PromotionType>
 					<bFreePromotion>1</bFreePromotion>
