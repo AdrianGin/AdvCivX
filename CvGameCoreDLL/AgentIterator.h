@@ -144,7 +144,7 @@ public:
 
 protected:
 	AgentIterator(TeamTypes eTeam = NO_TEAM)
-	:	ExplicitAgentIterator<AgentType,eSTATUS,eRELATION,AgentAIType>(eTeam), m_iSkipped(0)
+	:	ExplicitAgentIterator<AgentType,eSTATUS,eRELATION,AgentAIType>(eTeam)
 	{
 		/*  ExplicitAgentIterator gets instantiated for all combinations of template parameters,
 			so these static assertions would fail in that class. In this derived class, they'll
@@ -152,8 +152,8 @@ protected:
 			See comments in AgentPredicates.h about the specific assertions. */
 		BOOST_STATIC_ASSERT(eSTATUS != ANY_AGENT_STATUS || eRELATION <= NOT_SAME_TEAM_AS);
 		BOOST_STATIC_ASSERT(eRELATION != VASSAL_OF || eSTATUS != FREE_MAJOR_CIV);
-
 		FAssert(eRELATION == ANY_AGENT_RELATION || (eTeam > NO_TEAM && eTeam < MAX_TEAMS));
+
 		if (bAPPLY_FILTERS)
 		{
 			if (eCACHE_SUPER < CvAgents::NUM_STATUS_CACHES)
@@ -166,6 +166,7 @@ protected:
 				m_pCache = m_pAgents->getAgentSeqCache<AgentAIType>(eCACHE_SUBSETEQ);
 			else m_pCache = m_pAgents->getPerTeamSeqCache<AgentAIType>(eCACHE_SUBSETEQ, eTeam);
 		}
+		m_iSkipped = 0;
 		m_iPos = 0;
 		// Cache the cache size (std::vector computes it as 'end' minus 'begin')
 		m_iCacheSize = static_cast<short>(m_pCache->size());

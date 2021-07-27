@@ -7128,29 +7128,28 @@ void CvGame::doHolyCity()
 {
 	if (GC.getPythonCaller()->doHolyCity())
 		return;
-
 	if (getElapsedGameTurns() < 5 && !isOption(GAMEOPTION_ADVANCED_START))
 		return;
 
 	int iRandOffset = getSorenRandNum(GC.getNumReligionInfos(), "Holy City religion offset");
 	for (int iLoop = 0; iLoop < GC.getNumReligionInfos(); ++iLoop)
 	{
-		int iI = ((iLoop + iRandOffset) % GC.getNumReligionInfos());
-		ReligionTypes eReligion = (ReligionTypes)iI;
+		ReligionTypes eReligion = (ReligionTypes)(
+				(iLoop + iRandOffset) % GC.getNumReligionInfos());
 		if (isReligionSlotTaken(eReligion))
 			continue;
-
 		TeamTypes eBestTeam = NO_TEAM;
-		{ // scope for iBestValue
+		{
 			int iBestValue = MAX_INT;
 			/*  advc.001: Was MAX_TEAMS. Make sure Barbarians can't found a religion
-				somehow.Inspired by Mongoose SDK ReligionMod. */
+				somehow. Inspired by Mongoose SDK ReligionMod. */
 			for (TeamIter<CIV_ALIVE> itTeam; itTeam.hasNext(); ++itTeam)
 			{
-				if (!itTeam->isHasTech((TechTypes)GC.getInfo(eReligion).getTechPrereq()))
+				if (!itTeam->isHasTech((TechTypes)GC.getInfo(eReligion).getTechPrereq()) ||
+					itTeam->getNumCities() <= 0)
+				{
 					continue;
-				if (itTeam->getNumCities() <= 0)
-					continue;
+				}
 
 				int iValue = getSorenRandNum(10, "Found Religion (Team)");
 				FOR_EACH_ENUM(Religion)
@@ -7159,8 +7158,7 @@ void CvGame::doHolyCity()
 					if (iReligionCount > 0)
 						iValue += iReligionCount * 20;
 				}
-				// advc.138:
-				iValue -= religionPriority(itTeam->getID(), eReligion);
+				iValue -= religionPriority(itTeam->getID(), eReligion); // advc.138
 				if (iValue < iBestValue)
 				{
 					iBestValue = iValue;

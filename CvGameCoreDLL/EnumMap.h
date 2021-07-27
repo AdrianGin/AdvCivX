@@ -210,15 +210,6 @@ private:
 		SAVE_ARRAY_EMPTY_SHORT = 0xFFFF,
 	};
 
-	class interval
-	{
-	public:
-		IndexType first;
-		IndexType last;
-
-		interval() : first((IndexType)0), last((IndexType)0) {}
-	};
-
 	/*	bool helpers
 		advc.003t (note): ArrayEnumMap uses the same logic */
 	__inline int getBoolArrayBlock(int iIndex) const

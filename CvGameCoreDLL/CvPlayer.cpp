@@ -1248,12 +1248,12 @@ CvPlot* CvPlayer::findStartingPlot(
 		*pbAreaFoundByMapScript = false;
 	// </advc.027>
 	{
-		CvPlot* r = GC.getPythonCaller()->findStartingPlot(getID());
-		if (r != NULL)
+		CvPlot* pPlot = GC.getPythonCaller()->findStartingPlot(getID());
+		if (pPlot != NULL)
 		{	// <advc.027>
 			if (pbPlotFoundByMapScript != NULL)
 				*pbPlotFoundByMapScript = true; // </advc.027>
-			return r;
+			return pPlot;
 		}
 	}
 	//int iBestArea = -1;

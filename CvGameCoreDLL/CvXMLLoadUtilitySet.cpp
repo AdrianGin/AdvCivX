@@ -1800,7 +1800,7 @@ void CvXMLLoadUtility::SetVariableListTagPair(T** pptList, TCHAR const* szRootTa
 	if (pMap == NULL)
 	{
 		if (!bListModified && tDefaultListVal == 0)
-		SAFE_DELETE_ARRAY(*pptList);
+			SAFE_DELETE_ARRAY(*pptList);
 	}
 	else pMap->finalizeInsertions(); // </advc.003t>
 }

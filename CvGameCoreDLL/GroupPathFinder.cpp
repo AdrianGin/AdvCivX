@@ -634,7 +634,7 @@ bool GroupStepMetric::updatePathData(Node& kNode, Node const& kParent,
 			iUnitMoves = std::max(iUnitMoves, 0);
 			iMoves = std::min(iMoves, iUnitMoves);
 		}*/ // BtS
-		/*K-Mod. The original code would give incorrect results for groups
+		/*	K-Mod. The original code would give incorrect results for groups
 			where one unit had more moves but also had higher move cost.
 			(the most obvious example is when a group with 1-move units and 2-move units
 			is moving on a railroad. - In this situation, the original code would consistently

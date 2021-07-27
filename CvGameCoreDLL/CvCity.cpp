@@ -6871,7 +6871,7 @@ int CvCity::getBaseYieldRateModifier(YieldTypes eYield, int iExtra) const
 	// note: player->invalidateYieldRankCache() must be called for anything that is checked here
 	// so if any extra checked things are added here, the cache needs to be invalidated
 
-	return std::max(0, (iModifier + 100));
+	return std::max(0, iModifier + 100);
 }
 
 
@@ -7647,11 +7647,11 @@ void CvCity::updateCorporation(/* advc.064d: */ bool bVerifyProduction)
 	updateCorporationBonus(/* advc.06d: */ bVerifyProduction);
 	updateBuildingCommerce();
 
-	for (int iI = 0; iI < NUM_YIELD_TYPES; ++iI)
-		updateCorporationYield((YieldTypes)iI);
+	FOR_EACH_ENUM(Yield)
+		updateCorporationYield(eLoopYield);
 
-	for (int iI = 0; iI < NUM_COMMERCE_TYPES; ++iI)
-		updateCorporationCommerce((CommerceTypes)iI);
+	FOR_EACH_ENUM(Commerce)
+		updateCorporationCommerce(eLoopCommerce);
 
 	updateMaintenance();
 }
@@ -10689,7 +10689,7 @@ void CvCity::doReligion()
 	// weakest religion already in the city
 	ReligionTypes eWeakestReligion = NO_RELIGION;
 	int iWeakestGrip = MAX_INT;
-	static int const iRandomWeight = GC.getDefineINT("RELIGION_INFLUENCE_RANDOM_WEIGHT"); // advc.opt: 3x static
+	static int const iRandomWeight = GC.getDefineINT("RELIGION_INFLUENCE_RANDOM_WEIGHT");
 	static int const iDivisorBase = GC.getDefineINT("RELIGION_SPREAD_DIVISOR_BASE");
 	static int const iDistanceFactor = GC.getDefineINT("RELIGION_SPREAD_DISTANCE_FACTOR");
 
@@ -10744,10 +10744,10 @@ void CvCity::doReligion()
 				GET_PLAYER(getOwner()).getStateReligion() == eLoopReligion);
 
 		int iRandThreshold = 0;
-
-		for (PlayerIter<ALIVE,KNOWN_TO> it(getTeam()); it.hasNext(); ++it)
+		for (PlayerIter<ALIVE,KNOWN_TO> itPlayer(getTeam());
+			itPlayer.hasNext(); ++itPlayer)
 		{
-			FOR_EACH_CITY(pLoopCity, *it)
+			FOR_EACH_CITY(pLoopCity, *itPlayer)
 			{
 				if (!pLoopCity->isConnectedTo(*this))
 					continue;
@@ -10756,15 +10756,14 @@ void CvCity::doReligion()
 				iSpread *= GC.getInfo(eLoopReligion).getSpreadFactor();
 				if (iSpread > 0)
 				{
-					//iSpread /= std::max(1, (((GC.getDefineINT("RELIGION_SPREAD_DISTANCE_DIVISOR") * plotDistance(getX(), getY(), pLoopCity->getX(), pLoopCity->getY())) / GC.getMap().maxPlotDistance()) - 5));
+					/*iSpread /= std::max(1, (GC.getDefineINT("RELIGION_SPREAD_DISTANCE_DIVISOR", 100) *
+							plotDistance(plot(), pLoopCity->plot())) / GC.getMap().maxPlotDistance() - 5);*/
 					/*	K-Mod. The original formula basically divided the spread
-						by the percent of max distance.
-						(RELIGION_SPREAD_DISTANCE_DIVISOR == 100)
-						In my view, this produced too much spread at short distance
-						and too little at long. */
+						by the percent of max distance. In my view, this produced
+						too much spread at short distance and too little at long. */
 					int iDivisor = std::max(1, iDivisorBase);
-					iDivisor *= 100 + 100 * iDistanceFactor *
-							plotDistance(plot(), pLoopCity->plot()) /
+					iDivisor *= 100 + (100 * iDistanceFactor *
+							plotDistance(plot(), pLoopCity->plot())) /
 							GC.getMap().maxTypicalDistance();  // advc.140: was maxPlotDistance
 					iDivisor /= 100;
 

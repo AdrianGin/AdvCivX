@@ -55,7 +55,7 @@
 // (advc.make: Some macros moved into new header Trigonometry.h)
 
 // <advc.003s> For generating variable names. (The layer of indirection is necessary.)
-#define CONCATVARNAME_IMPL(prefix, lineNum) prefix##lineNum
+#define CONCATVARNAME_IMPL(prefix, suffix) prefix##suffix
 #define CONCATVARNAME(prefix, suffix) CONCATVARNAME_IMPL(prefix, suffix) // </advc.003s>
 
 // <advc> Stuff moved into separate headers
@@ -125,4 +125,4 @@ BOOST_STATIC_ASSERT(MAX_PLAYERS < MAX_CHAR && MAX_TEAMS < MAX_CHAR);
 	#define printToConsole(szMsg)
 #endif // </advc.wine>
 
-#endif	// CvGameCoreDLL_h
+#endif

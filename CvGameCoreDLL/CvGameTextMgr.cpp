@@ -8187,12 +8187,13 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 			szBuffer.append(NEWLINE);
 			// <advc.004x> (based on BtS code)
 			bool bShowTurns = GET_PLAYER(eActivePlayer).isResearch();
-			int iTurnsLeft = (bShowTurns ? GET_PLAYER(eActivePlayer).
+			int iTurnsLeft = (!bShowTurns ? -1 :
 					/*	Note: bTreeInfo is _false_ when hovering on the tech tree.
-						The Shift check is for queuing up techs; don't know what
-						the Ctrl check is for. */
-					getResearchTurnsLeft(eTech, !bTreeInfo &&
-					(GC.ctrlKey() || !GC.shiftKey())) : -1);
+						The Shift check is for queuing up techs; don't know
+						what the Ctrl check is for. */
+					GET_PLAYER(eActivePlayer).getResearchTurnsLeft(eTech,
+					(!bTreeInfo && (GC.ctrlKey() || !GC.shiftKey())) ||
+					bStrategyText)); // Do include overflow in choose-tech popup
 			if (iTurnsLeft < 0)
 				bShowTurns = false;
 			if (bDiplo) // To set the cost apart from trade denial text

@@ -1803,6 +1803,7 @@ enum ChatTargetTypes
 enum PlayerVoteTypes
 {
 	NO_PLAYER_VOTE_CHECKED = -6,
+	FIRST_PLAYER_VOTE = NO_PLAYER_VOTE_CHECKED, // advc.enum
 	PLAYER_VOTE_NEVER = -5,
 	PLAYER_VOTE_ABSTAIN = -4,
 	PLAYER_VOTE_NO = -3,

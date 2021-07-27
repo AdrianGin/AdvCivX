@@ -288,6 +288,11 @@ DEFINE_INCREMENT_OPERATORS(Name##Types)
 	enumerators from the EXE through _USRDLL checks. Since we can't
 	recompile the EXE, let's not bother with that. */
 
+template<typename E>
+bool checkEnumBounds(E eIndex)
+{
+	return (eIndex >= 0 && eIndex < getEnumLength(eIndex));
+}
 namespace info_enum_detail
 {
 	template<typename E>

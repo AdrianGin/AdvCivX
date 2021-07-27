@@ -5156,10 +5156,10 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 		}
 	}
 
-	//the way feature-remove is done in XML is pretty weird
-	//I believe this code needs to be outside the general BuildTypes loop
-	//to ensure the feature-remove is only counted once rather than once per build
-	//which could be a lot since nearly every build clears jungle...
+	/*	The way feature-remove is done in XML is pretty weird.
+		I believe this code needs to be outside the general BuildTypes loop
+		to ensure the feature-remove is only counted once rather than once per build
+		which could be a lot since nearly every build clears jungle... */
 
 	FOR_EACH_ENUM(Feature)
 	{
@@ -6212,7 +6212,7 @@ int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnable
 	for (int i = 0; i < kCiv.getNumUnits(); i++)
 	{
 		UnitTypes eLoopUnit = kCiv.unitAt(i);
-		CvUnitInfo& kLoopUnit = GC.getInfo(eLoopUnit);
+		CvUnitInfo const& kLoopUnit = GC.getInfo(eLoopUnit);
 		if (!kLoopUnit.isTechRequired(eTech))
 			continue;
 		UnitClassTypes eLoopClass = kCiv.unitClassAt(i);
@@ -6225,8 +6225,8 @@ int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnable
 			iTotalUnitValue += 600;
 
 		if (kLoopUnit.getPrereqAndTech() == eTech ||
-			kTeam.isHasTech((TechTypes)kLoopUnit.getPrereqAndTech()) ||
-			canResearch((TechTypes)kLoopUnit.getPrereqAndTech()))
+			kTeam.isHasTech(kLoopUnit.getPrereqAndTech()) ||
+			canResearch(kLoopUnit.getPrereqAndTech()))
 		{
 			int iNavalValue = 0;
 			int iOffenceValue = 0;
@@ -6243,18 +6243,18 @@ int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnable
 				{
 					// Score the default AI type as a direct competitor to the current best.
 					iWeight = std::min(250, 70 * // k146
-							AI_unitValue(eLoopUnit, eAI, 0) /
-							std::max(1, AI_bestAreaUnitAIValue(eAI, 0)));
+							AI_unitValue(eLoopUnit, eAI) /
+							std::max(1, AI_bestAreaUnitAIValue(eAI)));
 				}
 				// only consider types which are flagged in the xml.
 				else if (kLoopUnit.getUnitAIType(eAI))
 				{
 					/*	For the other AI types, only score
 						based on the improvement over the current best. */
-					int iTypeValue = AI_unitValue(eLoopUnit, eAI, 0);
+					int iTypeValue = AI_unitValue(eLoopUnit, eAI);
 					if (iTypeValue > 0)
 					{
-						int iOldValue = AI_bestAreaUnitAIValue(eAI, 0);
+						int iOldValue = AI_bestAreaUnitAIValue(eAI);
 						iWeight = std::min(150, // k146
 								100 * (iTypeValue - iOldValue) / std::max(1, iOldValue));
 					}
@@ -13517,7 +13517,7 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI,
 			Note: The original bts bombard evaluation has been deleted. */
 		int iSiegeValue = 0;
 		iSiegeValue += iCombatValue * u.getCollateralDamage() *
-				(4+u.getCollateralDamageMaxUnits()) / 600;
+				(4 + u.getCollateralDamageMaxUnits()) / 600;
 		if (u.getBombardRate() > 0 && !AI_isDoStrategy(AI_STRATEGY_AIR_BLITZ))
 		{
 			int iBombardValue = (u.getBombardRate() + 3) * 6;
@@ -13537,24 +13537,21 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI,
 			PROFILE("AI_unitValue, UNITAI_ATTACK_CITY combat limit adjustment");
 			// count the number of existing combat-limited units.
 			int iLimitedUnits = 0;
-
 			/*	Unfortunately, when counting units like this we can't distiguish
 				between attack unit and collateral defensive units. Most of the time,
 				unitai_collateral units will be combat limited, and so we should
-				subtract them from out limited unit tally. But in some situations
+				subtract them from our limited unit tally. But in some situations
 				there are collateral damage units without combat limits
 				(eg. Cho-Ko-Nu). When such units are in use, we should not assume
 				that all unitai_collateral are limited.
 				This whole business is an ugly kludge... I hope it works. */
 			int iNoLimitCollateral = 0;
-
 			CvCivilization const& kCiv = getCivilization(); // advc.003w 
 			for (int i = 0; i < kCiv.getNumUnits(); i++)
 			{
 				UnitTypes eLoopUnit = kCiv.unitAt(i);
 				UnitClassTypes eUnitClass = kCiv.unitClassAt(i);
-				const CvUnitInfo& kLoopInfo = GC.getInfo(eLoopUnit);
-
+				CvUnitInfo const& kLoopInfo = GC.getInfo(eLoopUnit);
 				if (kLoopInfo.getDomainType() == DOMAIN_LAND &&
 					kLoopInfo.getCombat() > 0 &&
 					!kLoopInfo.isMostlyDefensive()) // advc.315
@@ -13570,9 +13567,9 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI,
 					AI_totalUnitAIs(UNITAI_COLLATERAL) - iNoLimitCollateral / 2,
 					0, iLimitedUnits);
 			FAssert(iLimitedUnits >= 0);
-			// floor value just to avoid division by zero
-			int iAttackUnits = std::max(1, AI_totalUnitAIs(UNITAI_ATTACK) +
-					AI_totalUnitAIs(UNITAI_ATTACK_CITY));
+			int iAttackUnits = AI_totalUnitAIs(UNITAI_ATTACK) +
+					AI_totalUnitAIs(UNITAI_ATTACK_CITY);
+			iAttackUnits = std::max(1, iAttackUnits);
 			/*	this is not strictly guaranteed, but I expect it to
 				always be true under normal playing conditions. */
 			/*  advc.006: +1 added and replaced iLimitedUnits with iAttackUnits
@@ -27396,17 +27393,18 @@ int CvPlayerAI::AI_bestAreaUnitAIValue(UnitAITypes eUnitAI, CvArea const* pArea,
 }
 
 
-int CvPlayerAI::AI_bestCityUnitAIValue(UnitAITypes eUnitAI, CvCity const* pCity, UnitTypes* peBestUnitType) const // advc: const CvCity*
+int CvPlayerAI::AI_bestCityUnitAIValue(UnitAITypes eUnitAI, CvCity const* pCity,
+	UnitTypes* peBestUnitType) const
 {
-	FAssertMsg(eUnitAI != NO_UNITAI, "UnitAI is not assigned a valid value");
+	FAssert(eUnitAI != NO_UNITAI);
 
 	int iBestValue = 0;
-	CvCivilization const& kCiv = getCivilization(); // advc.003w
+	CvCivilization const& kCiv = getCivilization();
 	for (int i = 0; i < kCiv.getNumUnits(); i++)
 	{
 		UnitTypes eLoopUnit = kCiv.unitAt(i);
 		//if (!isHuman() || (GC.getInfo(eLoopUnit).getDefaultUnitAIType() == eUnitAI)) { // disabled by K-Mod
-		if (NULL == pCity ? (canTrain(eLoopUnit) &&
+		if (pCity == NULL ? (canTrain(eLoopUnit) &&
 			AI_haveResourcesToTrain(eLoopUnit)) : // k146
 			pCity->canTrain(eLoopUnit))
 		{
@@ -27428,7 +27426,7 @@ int CvPlayerAI::AI_calculateTotalBombard(DomainTypes eDomain,
 	int iMaxCount) const // advc.opt
 {
 	int iTotalBombard = 0;
-	CvCivilization const& kCiv = getCivilization(); // advc.003w
+	CvCivilization const& kCiv = getCivilization();
 	for (int i = 0; i < kCiv.getNumUnits(); i++)
 	{
 		UnitTypes eLoopUnit = kCiv.unitAt(i);
