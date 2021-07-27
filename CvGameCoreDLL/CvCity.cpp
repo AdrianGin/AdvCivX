@@ -3930,12 +3930,16 @@ int CvCity::getHurryCost(bool bExtra, int iProductionLeft, int iHurryModifier, i
 
 	if (bExtra)
 	{
-		int iExtraProduction = getExtraProductionDifference(iProduction,
-			/*  advc.064c (comment): Passing 0 here instead of iModifier would
-				only apply generic modifiers */
-				iModifier);
-		if (iExtraProduction > 0) // adjust production
-			iProduction = intdiv::uceil(SQR(iProduction), iExtraProduction);
+		/*int iExtraProduction = getExtraProductionDifference(iProduction, iModifier);
+		if (iExtraProduction > 0)
+			iProduction = intdiv::uceil(SQR(iProduction), iExtraProduction);*/
+		/*	<advc.001> Same as above, but rounds more intuitively, e.g.
+			when iProduction=45 and iModifier=50 (settler at 55/100 production with
+			Imperialistic trait). Based on a similar change in the CloseToHome mod. */
+		iProduction = getInverseProductionDifference(iProduction,
+				/*  advc.064c (note): Passing 0 here instead of iModifier would
+					only apply generic modifiers */
+				iModifier); // </advc.001>
 	}
 
 	return std::max(0, iProduction);

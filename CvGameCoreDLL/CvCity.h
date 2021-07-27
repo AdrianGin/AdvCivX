@@ -1505,7 +1505,12 @@ protected:
 	}
 	int getExtraProductionDifference(int iExtra, int iModifier) const
 	{
-		return ((iExtra * getBaseYieldRateModifier(YIELD_PRODUCTION, iModifier)) / 100);
+		return (iExtra * getBaseYieldRateModifier(YIELD_PRODUCTION, iModifier)) / 100;
+	}
+	// advc.001: For accurate calculation of hurry cost
+	int getInverseProductionDifference(int iExtra, int iModifier) const
+	{
+		return intdiv::uceil(iExtra * 100, getBaseYieldRateModifier(YIELD_PRODUCTION, iModifier));
 	}
 	int getHurryCostModifier(UnitTypes eUnit, bool bIgnoreNew) const;
 	int getHurryCostModifier(BuildingTypes eBuilding, bool bIgnoreNew) const;
