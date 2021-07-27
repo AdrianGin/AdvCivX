@@ -13563,7 +13563,10 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI,
 					if (kLoopInfo.getCombatLimit() < 100)
 						iLimitedUnits += getUnitClassCount(eUnitClass);
 					else if (kLoopInfo.getCollateralDamage() > 0)
-						iNoLimitCollateral = getUnitClassCount(eUnitClass);
+					{	//iNoLimitCollateral = getUnitClassCount(eUnitClass);
+						// advc.001 (likely bug, found by keldath):
+						iNoLimitCollateral += getUnitClassCount(eUnitClass);
+					}
 				}
 			}
 
@@ -13576,11 +13579,7 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI,
 			iAttackUnits = std::max(1, iAttackUnits);
 			/*	this is not strictly guaranteed, but I expect it to
 				always be true under normal playing conditions. */
-			/*  advc.006: +1 added and replaced iLimitedUnits with iAttackUnits
-				in the 2nd clause b/c this assert kept failing for a capitulated
-				Renaissance civ w/o access to Horses (not sure if that's what's
-				causing the failed assertion). */
-			FAssert(iAttackUnits + 1 >= iLimitedUnits || iAttackUnits <= 3);
+			FAssert(iAttackUnits >= iLimitedUnits || iLimitedUnits <= 3);
 
 			iValue *= std::max(1, iAttackUnits - iLimitedUnits);
 			iValue /= iAttackUnits;
