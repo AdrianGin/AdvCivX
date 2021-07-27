@@ -8,8 +8,7 @@
 #include "TypeChoice.h"
 #include "FixedPointPowTables.h"
 /*	Other non-BtS dependencies: intdiv::round, fmath::round, intHash, all in CvGameCoreUtils.h
-	(tbd.: move those functions here?), and integer_limits in CvGameCoreDLL.h
-	(tbd. move into TypeChoice.h and rename that header to "TypeTraits.h"?).
+	(tbd.: move those functions here?), and integer_limits in IntegerTraits.h.
 	For inclusion in PCH, one may have to define NOMINMAX before including windows.h;
 	see CvGameCoreDLL.h.
 	The bernoulliSuccess function assumes that CvRandom can include two integer values
@@ -135,8 +134,8 @@ class ScaledNum : ScaledNumBase<void> // Not named "ScaledInt" b/c what's being 
 	static IntType const INTMAX = integer_limits<IntType>::max;
 
 public:
-	static IntType MAX() { return INTMAX / SCALE; }
-	static IntType MIN() { return INTMIN / SCALE; }
+	static IntType const MAX = INTMAX / SCALE;
+	static IntType const MIN = INTMIN / SCALE;
 
 	/*	Factory function for creating fractions (with wrapper macro 'fixp').
 		Numerator and denominator as template parameters ensure

@@ -8905,7 +8905,7 @@ int CvGame::calculateSyncChecksum()
 			aiMultipliers.push_back(iMultiplier);
 		}
 		if(bFullOOSCheck)
-			iMultiplier = (scaled::hash(aiMultipliers) * scaled::MAX()).floor();
+			iMultiplier = (scaled::hash(aiMultipliers) * scaled::MAX).floor();
 		// </advc.001n>
 		if (iMultiplier != 0)
 			iValue *= iMultiplier;

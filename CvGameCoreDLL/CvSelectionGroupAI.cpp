@@ -690,7 +690,7 @@ CvUnit* CvSelectionGroupAI::AI_bestUnitForMission(MissionTypes eMission,
 		}
 	}
 	CvUnit* pBestUnit = NULL;
-	scaled rMaxPriority = scaled::MIN();
+	scaled rMaxPriority = scaled::MIN;
 	FOR_EACH_UNITAI_VAR_IN(pUnit, *this)
 	{
 		if (!pUnit->canMove())

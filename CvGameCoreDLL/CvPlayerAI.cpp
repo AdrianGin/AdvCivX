@@ -14902,10 +14902,10 @@ int CvPlayerAI::AI_nukePlotValue(CvPlot const& kPlot,
 	at a later point.) */
 scaled CvPlayerAI::AI_nukeChanceToKillUnit(int iHP, int iNukeModifier) const
 {
-	static scaled rLastResult = scaled::MIN();
+	static scaled rLastResult = scaled::MIN;
 	static short iLastHP;
 	static short iLastModifier;
-	if (rLastResult > scaled::MIN() && iHP == iLastHP && iNukeModifier == iLastModifier)
+	if (rLastResult > scaled::MIN && iHP == iLastHP && iNukeModifier == iLastModifier)
 		return rLastResult;
 	iLastHP = toShort(iHP);
 	iLastModifier = toShort(iNukeModifier);

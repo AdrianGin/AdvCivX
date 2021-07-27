@@ -137,9 +137,9 @@ void TestScaledNum()
 	uscaled rAlmostSqrtOfTwo = scaled(2).sqrt() - scaled::epsilon();
 	ScaledNum<MAX_INT,uint> r1 = rAlmostSqrtOfTwo;
 	ScaledNum<MAX_INT - 1,uint> r2 = rAlmostSqrtOfTwo;
-	FAssert(r2.MAX() == 2);
+	FAssert(r2.MAX == 2);
 	r2 *= r1;
-	// (But an approxEquals check isn't possible so close to r2.MAX())
+	// (But an approxEquals check isn't possible so close to r2.MAX)
 	FAssert(r2 > fixp(1.99));
 	FAssert(r2 < 2);
 

@@ -323,7 +323,7 @@ StartingPositionIteration::PotentialSites::PotentialSites(
 		if (fewestPotentialSites() < 2 && numSites() < iPlayers * 15u)
 			break;
 		map<PlotNumTypes,short>::iterator minPos;
-		scaled rMinVal = scaled::MAX();
+		scaled rMinVal = scaled::MAX;
 		for (map<PlotNumTypes,short>::iterator it = m_foundValuesPerSite.begin();
 			it != m_foundValuesPerSite.end(); ++it)
 		{

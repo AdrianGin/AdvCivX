@@ -52,91 +52,6 @@
 
 #define DllExport   __declspec( dllexport )
 
-/*	advc (tbd.): Put all this primitive type stuff into a separate header,
-	perhaps along with the contents of TypeChoice.h (advc.fract). */
-typedef unsigned char		byte;
-// advc (note): A little strange to me, but consistent with WORD in winnt.h.
-typedef unsigned short		word;
-typedef unsigned int		uint;
-typedef unsigned long		dword;
-typedef unsigned __int64	qword;
-typedef wchar_t				wchar;
-
-/*	advc.001q: Put minus operators into the negative constants, otherwise,
-	if there's only a literal, it can get treated as an unsigned value. */
-#define MAX_CHAR							(0x7f)
-//#define MIN_CHAR							(0x80)
-#define MIN_CHAR							(-MAX_CHAR - 1)
-#define MAX_SHORT							(0x7fff)
-//#define MIN_SHORT							(0x8000)
-#define MIN_SHORT							(-MAX_SHORT - 1)
-#define MAX_INT								(0x7fffffff)
-//#define MIN_INT							(0x80000000)
-#define MIN_INT								(-MAX_INT - 1)
-#define MAX_UNSIGNED_CHAR					(0xff)
-#define MIN_UNSIGNED_CHAR					(0x00)
-#define MAX_UNSIGNED_SHORT					(0xffff)
-#define MIN_UNSIGNED_SHORT					(0x0000)
-#define MAX_UNSIGNED_INT					(0xffffffff)
-#define MIN_UNSIGNED_INT					(0x00000000)
-/*	advc: These are unused. FLT_MAX and FLT_MIN are used in a few places,
-	so let's keep using those exclusively. */
-/*inline DWORD FtoDW( float f ) { return *(DWORD*)&f; }
-inline float DWtoF( dword n ) { return *(float*)&n; }
-inline float MaxFloat() { return DWtoF(0x7f7fffff); }*/
-
-/*	advc: Get the limits of an integer type of at most 4 bytes length
-	(bool doesn't count either) -- since we don't have SIZE_MIN/MAX (cstdint),
-	nor boost::integer_traits<T>::const_max.
-	We do have std::numeric_limits<T>::min and max, but those are functions,
-	so they can't e.g. be used in static assertions. std::numeric_limits<T>::is_signed
-	is a constant, but let's nevertheless take care of that here too, so that
-	integer_limits and numeric_limits won't have to be used side by side. */
-template<typename T>
-struct integer_limits;
-template<>
-struct integer_limits<char>
-{
-	static char const min = MIN_CHAR;
-	static char const max = MAX_CHAR;
-	static bool const is_signed = true;
-};
-template<>
-struct integer_limits<byte>
-{
-	static byte const min = MIN_UNSIGNED_CHAR;
-	static byte const max = MAX_UNSIGNED_CHAR;
-	static bool const is_signed = false;
-};
-template<>
-struct integer_limits<short>
-{
-	static short const min = MIN_SHORT;
-	static short const max = MAX_SHORT;
-	static bool const is_signed = true;
-};
-template<>
-struct integer_limits<word>
-{
-	static word const min = MIN_UNSIGNED_SHORT;
-	static word const max = MAX_UNSIGNED_SHORT;
-	static bool const is_signed = false;
-};
-template<>
-struct integer_limits<int>
-{
-	static int const min = MIN_INT;
-	static int const max = MAX_INT;
-	static bool const is_signed = true;
-};
-template<>
-struct integer_limits<uint>
-{
-	static uint const min = MIN_UNSIGNED_INT;
-	static uint const max = MAX_UNSIGNED_INT;
-	static bool const is_signed = false;
-};
-
 // (advc.make: Some macros moved into new header Trigonometry.h)
 
 // <advc.003s> For generating variable names. (The layer of indirection is necessary.)
@@ -146,8 +61,9 @@ struct integer_limits<uint>
 // <advc> Stuff moved into separate headers
 #include "GameBryo.h"
 #include "CvMemoryManager.h"
-#include "BoostPythonPCH.h" // </advc>
+#include "BoostPythonPCH.h"
 #pragma warning(pop) // advc.make: Restore project warning level
+#include "IntegerTraits.h" // </advc>
 #include "FAssert.h"
 #include "CvGameCoreDLLDefNew.h"
 #include "FDataStreamBase.h"

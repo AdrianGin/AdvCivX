@@ -323,6 +323,7 @@
     <ClInclude Include="..\FAStarNode.h" />
     <ClInclude Include="..\GameBryo.h" />
     <ClInclude Include="..\GroupPathFinder.h" />
+    <ClInclude Include="..\IntegerTraits.h" />
     <ClInclude Include="..\KmodPathFinder.h" />
     <ClInclude Include="..\KmodPathFinderLegacy.h" />
     <ClInclude Include="..\LinkedListTraversal.h" />
