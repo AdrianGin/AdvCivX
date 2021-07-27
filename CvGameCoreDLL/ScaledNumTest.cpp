@@ -20,7 +20,6 @@ void TestScaledNum()
 #ifndef SCALED_NUM_TEST
 	return;
 #else
-
 	// These numbers match the running example commented on in pow.
 	//FAssert(scaled(fixp(5.2)).pow(scaled(fixp(2.1))).round() == 32);
 	// The example assumes scale 1024, hence the explicit calls. */
@@ -176,7 +175,7 @@ void TestScaledNum()
 				dSum += std::pow(b, 1.24);
 			}
 		}
-		iDummy += ::round(dSum);
+		iDummy += fmath::round(dSum);
 	}
 
 	// Addition speed measurements
@@ -218,7 +217,7 @@ void TestScaledNum()
 				z += x + j;
 				z -= y - j;
 			}
-			iDummy += ::round(z);
+			iDummy += fmath::round(z);
 		}
 	}
 
@@ -303,7 +302,7 @@ void TestScaledNum()
 				dCost *= GC.getInfo((EraTypes)0).getResearchPercent() / 100.;
 				dCost *= (GC.getDefineINT(
 						CvGlobals::TECH_COST_EXTRA_TEAM_MEMBER_MODIFIER) + 100) / 100.;
-				int iCost = ::round(dCost) % 5;
+				int iCost = fmath::round(dCost) % 5;
 				dCost = range(iCost, 10, 2000);
 			}
 			iDummy += (int)dCost;
@@ -328,7 +327,7 @@ void TestScaledNum()
 				fCost *= GC.getInfo((EraTypes)0).getResearchPercent() / 100.f;
 				fCost *= (GC.getDefineINT(
 						CvGlobals::TECH_COST_EXTRA_TEAM_MEMBER_MODIFIER) + 100) / 100.f;
-				int iCost = ::round(fCost) % 5;
+				int iCost = fmath::round(fCost) % 5;
 				fCost = range(iCost, 10, 2000);
 			}
 			iDummy += (int)fCost;
