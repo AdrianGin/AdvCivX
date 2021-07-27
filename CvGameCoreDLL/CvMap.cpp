@@ -918,6 +918,25 @@ CvWString CvMap::getNonDefaultCustomMapOptionDesc(int iOption) const
 	return py.customMapOptionDescription(szMapScriptNameNarrow.c_str(), iOption, eOptionValue);
 }
 
+/*	advc.108b: Does any custom map option have (exactly) the value szOptionsValue?
+	So that the DLL can implement special treatment for particular custom map options
+	(that may or may not be present in only one particular map script). */
+bool CvMap::isCustomMapOption(char const* szOptionsValue) const
+{
+	CvWString wsOptionsValue(szOptionsValue);
+	CvString szMapScriptNameNarrow(GC.getInitCore().getMapScriptName());
+	for (int iOption = 0; iOption < getNumCustomMapOptions(); iOption++)
+	{
+		if (GC.getPythonCaller()->customMapOptionDescription(
+			szMapScriptNameNarrow.c_str(), iOption, getCustomMapOption(iOption)) ==
+			wsOptionsValue)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 
 int CvMap::getNumBonuses(BonusTypes eIndex) const
 {

@@ -1325,6 +1325,9 @@ void CvGame::applyStartingLocHandicaps(
 	for (itPlayerOrder = aePlayerOrder.begin(); itPlayerOrder != aePlayerOrder.end(); ++itPlayerOrder)
 		GET_PLAYER(*itPlayerOrder).setStartingPlot(GET_PLAYER(*playerOrderIter).findStartingPlot(), true);*/
 
+	if (GC.getMap().isCustomMapOption("Historical")) // for EarthEvolution3 script
+		return;
+
 	/*	The basic approach, as in K-Mod, is to sort the players by handicap,
 		starting with the least handicapped player, and to sort the starting sites
 		by value, starting with the best site. In the end, the sorted sites are
