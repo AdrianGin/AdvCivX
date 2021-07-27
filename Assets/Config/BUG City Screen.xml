@@ -108,9 +108,9 @@
 			
 			<!-- Production Decay by EmperorFool [BULL] -->
 			<!-- Queue -->
-			<!-- advc.094: dll=1 attributes removed; default was True. -->
+			<!-- advc.094: dll=1 attributes removed -->
 			<option id="ProductionDecayQueue" key="Production Decay Queue"
-					type="boolean" default="False" dirtyBit="InfoPane" get="isShowProductionDecayQueue"/>
+					type="boolean" default="True" dirtyBit="InfoPane" get="isShowProductionDecayQueue"/>
 			<list   id="ProductionDecayQueueBuildingThreshold" key="Production Decay Queue Building Threshold"
 					type="int" default="10" dirtyBit="InfoPane"
 					values="0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50"/>
