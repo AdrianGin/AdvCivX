@@ -6818,7 +6818,7 @@ int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnable
 					risk undervaluing axemen in the early game! (Kludge, sorry.) */
 				/*  <advc.036> Need to reduce the value of military tech compared
 					with food tech in the early game. Was *=4 and /=5. */
-				iTotalUnitValue *= ::range(2 * getNumCities(), 1, 4);
+				iTotalUnitValue *= ::range(2 * getNumCities(), 1, 5);
 				iTotalUnitValue /= 6; // </advc.036>
 			}
 			else
