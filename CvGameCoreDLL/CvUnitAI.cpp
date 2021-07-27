@@ -10775,6 +10775,11 @@ bool CvUnitAI::AI_guardCitySite()
 			if(!pAdj->isRevealed(getTeam()))
 				continue;
 			int iGuardValue = pAdj->defenseModifier(getTeam(), true);
+			if (noDefensiveBonus())
+			{	// Still useful to deny approaching enemies a defensive bonus
+				iGuardValue *= 3;
+				iGuardValue /= 5;
+			}
 			iGuardValue += pAdj->seeFromLevel(getTeam()) * 30;
 			if(at(*pAdj))
 				iGuardValue += 3; // inertia
