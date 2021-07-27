@@ -776,6 +776,7 @@ public:
 	int getBuildingCommerce(CommerceTypes eCommerce) const { return m_aiBuildingCommerce.get(eCommerce); }		// Exposed to Python
 	int getBuildingCommerceByBuilding(CommerceTypes eCommerce, BuildingTypes eBuilding) const;					// Exposed to Python
 	void updateBuildingCommerce();
+	void updateBuildingCommerce(CommerceTypes eCommerce); // advc.opt
 	// BUG - Building Additional Commerce - start
 	int getAdditionalCommerceByBuilding(CommerceTypes eCommerce, BuildingTypes eBuilding) const
 	{

@@ -7318,19 +7318,25 @@ int CvCity::getBuildingCommerceByBuilding(CommerceTypes eCommerce, BuildingTypes
 void CvCity::updateBuildingCommerce()
 {
 	FOR_EACH_ENUM(Commerce)
+	{	// advc: Moved into new function
+		updateBuildingCommerce(eLoopCommerce);
+	}
+}
+
+// advc.opt: Cut from updateBuildingCommerce above
+void CvCity::updateBuildingCommerce(CommerceTypes eCommerce)
+{
+	int iNewBuildingCommerce = 0;
+	FOR_EACH_ENUM(Building)
 	{
-		int iNewBuildingCommerce = 0;
-		FOR_EACH_ENUM(Building)
-		{
-			iNewBuildingCommerce += getBuildingCommerceByBuilding(
-					eLoopCommerce, eLoopBuilding);
-		}
-		if (getBuildingCommerce(eLoopCommerce) != iNewBuildingCommerce)
-		{
-			m_aiBuildingCommerce.set(eLoopCommerce, iNewBuildingCommerce);
-			FAssert(getBuildingCommerce(eLoopCommerce) >= 0);
-			updateCommerce(eLoopCommerce);
-		}
+		iNewBuildingCommerce += getBuildingCommerceByBuilding(
+				eCommerce, eLoopBuilding);
+	}
+	if (getBuildingCommerce(eCommerce) != iNewBuildingCommerce)
+	{
+		m_aiBuildingCommerce.set(eCommerce, iNewBuildingCommerce);
+		FAssert(getBuildingCommerce(eCommerce) >= 0);
+		updateCommerce(eCommerce);
 	}
 }
 
@@ -11400,9 +11406,15 @@ void CvCity::read(FDataStreamBase* pStream)
 			}
 		} 
 	} // </advc.160>
-	// <advc.201>, advc.098
+	// <advc.201>, advc.200, advc.098
 	if (uiFlag < 11)
-		updateBuildingCommerce(); // </advc.201>
+	{
+		updateBuildingCommerce(COMMERCE_CULTURE);
+		CorporationTypes eCreativeConstr = (CorporationTypes)
+					GC.getInfoTypeForString("CORPORATION_4", true);
+		if (eCreativeConstr != NO_CORPORATION && isHasCorporation(eCreativeConstr))
+			updateCorporationCommerce(COMMERCE_CULTURE);
+	} // </advc.201>
 }
 
 void CvCity::write(FDataStreamBase* pStream)
@@ -12547,7 +12559,7 @@ void CvCity::setBuildingCommerceChange(BuildingClassTypes eBuildingClass,
 				if (iChange == 0)
 					m_aBuildingCommerceChange.erase(it);
 				else it->iChange = iChange;
-				updateBuildingCommerce();
+				updateBuildingCommerce(/* advc.opt: */ eCommerce);
 			}
 			return;
 		}
@@ -12559,8 +12571,7 @@ void CvCity::setBuildingCommerceChange(BuildingClassTypes eBuildingClass,
 		kChange.eCommerce = eCommerce;
 		kChange.iChange = iChange;
 		m_aBuildingCommerceChange.push_back(kChange);
-
-		updateBuildingCommerce();
+		updateBuildingCommerce(/* advc.opt: */ eCommerce);
 	}
 }
 
