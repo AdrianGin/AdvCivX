@@ -164,8 +164,23 @@ void CvPlayer::initInGame(PlayerTypes eID)
 	}
 	// <advc.003q>
 	// End of BBAI team effects
-	if(!initOtherData()) // New subroutine to avoid code duplication
+	if (!initOtherData()) // New subroutine to avoid code duplication
 		return;
+	/*	BETTER_BTS_AI_MOD 12/30/08 jdog5000
+		(Cut from CvTeam::init b/c player initialization should be done first) */
+	for (int i = 0; i < MAX_TEAMS; i++)
+	{
+		CvTeam& kTarget = GET_TEAM((TeamTypes)i);
+		if(i == getID() /* advc.003m: */ || !kTarget.isAlive())
+			continue;
+		if (!kTarget.isMajorCiv())
+		{
+			/*	advc.003q: The new team should have only one player, so
+				multiple declarations of war should be impossible here. */
+			FAssert(!kTarget.isAtWar(getTeam()));
+			kTarget.declareWar(getTeam(), false, WARPLAN_LIMITED);
+		}
+	} // BETTER_BTS_AI_MOD END
 
 	GC.getAgents().colonyCreated(getID()); // advc.agent
 	// <advc.104r>

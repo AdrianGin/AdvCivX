@@ -64,20 +64,7 @@ void CvTeam::init(TeamTypes eID)
 	reset(eID); // Reset serialized data
 
 	AI().AI_init();
-
-	// BETTER_BTS_AI_MOD 12/30/08 jdog5000
-	if(GC.getGame().isFinalInitialized())
-	{
-		// advc (note): This is for teams spawned through liberation
-		for(int i = 0; i < MAX_TEAMS; i++)
-		{
-			CvTeam& kTarget = GET_TEAM((TeamTypes)i);
-			if(i == getID() || !kTarget.isAlive()) // advc.003m: Alive check added
-				continue;
-			if(kTarget.isMinorCiv() || i == BARBARIAN_TEAM)
-				kTarget.declareWar(getID(), false, WARPLAN_LIMITED);
-		}
-	} // BETTER_BTS_AI_MOD END
+	// advc.003q: BBAI code for DoW by non-major civs moved to initInGame
 }
 
 
