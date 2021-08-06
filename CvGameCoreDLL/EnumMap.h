@@ -62,13 +62,6 @@ enum
 	// if a bool array has <= this number of bits, then, instead of allocating memory elsewhere,
 	// the data will be placed in the class itself
 	ENUMMAP_MAX_INLINE_BOOL = 64,
-
-	// bitmasks to get the bits, which gives the indexes to store 8 or 32 bit.
-	// modulo is slow at runtime, binary AND is fast. They give the same result in this case.
-	// Maybe the compiler will optimize to a binary and, but explicitly writing it means we are certain it will optimize.
-	// In fact this way it's "optimized" even in debug builds.
-	//ENUMMAP_BITMASK_8_BIT = 7, // advc: unused for now
-	ENUMMAP_BITMASK_32_BIT = 0x1F,
 };
 
 template<class IndexType, class T, int DEFAULT, class T_SUBSET = IndexType, class LengthType = IndexType>
@@ -211,7 +204,7 @@ private:
 	};
 
 	/*	bool helpers
-		advc.003t (note): ArrayEnumMap uses the same logic */
+		advc: getBoolArrayIndexInBlock replaced with BitUtil::getIndexInBlock */
 	__inline int getBoolArrayBlock(int iIndex) const
 	{
 		if (bINLINE_BOOL && NUM_BOOL_BLOCKS == 1)
@@ -222,10 +215,6 @@ private:
 			return 0;
 		}
 		return iIndex / 32;
-	}
-	int getBoolArrayIndexInBlock(int iIndex) const
-	{
-		return iIndex & ENUMMAP_BITMASK_32_BIT;
 	}
 
 	////
@@ -299,7 +288,7 @@ private:
 	template<>
 	T _get<false, ENUMMAP_SIZE_BOOL>(int iIndex) const
 	{
-		return m_pArrayBool ? BitUtil::HasBit(m_pArrayBool[getBoolArrayBlock(iIndex)], getBoolArrayIndexInBlock(iIndex)) : DEFAULT;
+		return m_pArrayBool ? BitUtil::GetBit(m_pArrayBool[getBoolArrayBlock(iIndex)], BitUtil::getIndexInBlock(iIndex)) : DEFAULT;
 	}
 	/*template<>
 	T _get<true, ENUMMAP_SIZE_NATIVE>(int iIndex) const
@@ -319,7 +308,7 @@ private:
 	template<>
 	T _get<true, ENUMMAP_SIZE_BOOL>(int iIndex) const
 	{
-		return BitUtil::HasBit(m_InlineBoolArray[getBoolArrayBlock(iIndex)], getBoolArrayIndexInBlock(iIndex));
+		return BitUtil::GetBit(m_InlineBoolArray[getBoolArrayBlock(iIndex)], BitUtil::getIndexInBlock(iIndex));
 	}
 
 	// set
@@ -342,7 +331,7 @@ private:
 	void _set<false, ENUMMAP_SIZE_BOOL>(int iIndex, T tValue)
 	{
 		BitUtil::SetBit(m_pArrayBool[getBoolArrayBlock(iIndex)],
-				getBoolArrayIndexInBlock(iIndex), tValue ? 1 : 0);
+				BitUtil::getIndexInBlock(iIndex), tValue ? 1 : 0);
 	}
 	/*template<>
 	void _set<true, ENUMMAP_SIZE_NATIVE>(int iIndex, T tValue)
@@ -362,7 +351,7 @@ private:
 	template<>
 	void _set<true, ENUMMAP_SIZE_BOOL>(int iIndex, T tValue)
 	{
-		BitUtil::SetBit(m_InlineBoolArray[getBoolArrayBlock(iIndex)], getBoolArrayIndexInBlock(iIndex), tValue ? 1 : 0);
+		BitUtil::SetBit(m_InlineBoolArray[getBoolArrayBlock(iIndex)], BitUtil::getIndexInBlock(iIndex), tValue ? 1 : 0);
 	}
 
 	// setAll

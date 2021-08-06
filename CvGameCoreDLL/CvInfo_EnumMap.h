@@ -621,7 +621,7 @@ private:
 	template<>
 	void _setUnsafe<bool>(E eKey, bool bValue)
 	{
-		BitUtil::SetBit(m_blocks[getBlock(eKey)], getIndexInBlock(eKey), bValue);
+		BitUtil::setBitInBlocks(m_blocks, eKey, bValue);
 	}
 
 	template<typename T>
@@ -633,24 +633,12 @@ private:
 	template<>
 	bool _getUnsafe<bool>(E eKey) const
 	{
-		return BitUtil::HasBit(m_blocks[getBlock(eKey)], getIndexInBlock(eKey));
-	}
-
-	/*	From the WtP enum map (EnumMap.h) ...  (Should only be called if V==bool,
-		but I'm not going to bother safeguarding that requirement.) */
-	int getBlock(int i) const
-	{
-		return i / 32;
-	}
-
-	int getIndexInBlock(int i) const
-	{
-		return i & 0x1F;
+		return BitUtil::getBitFromBlocks(m_blocks, eKey);
 	}
 
 	int numBlocks() const
 	{
-		return intdiv::uceil(fullLength(), 32);
+		return (fullLength() + 31) / 32;
 	}
 // <advc.003i>
 protected:
