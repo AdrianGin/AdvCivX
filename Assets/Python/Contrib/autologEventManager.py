@@ -336,7 +336,7 @@ class AutoLogEvent(AbstractAutoLogEvent):
 			self.storeStuff()
 
 			#zcurrturn = gc.getGame().getElapsedGameTurns() + 1 + AutologOpt.get4000BCTurn()
-			# advc.004: Not sure why +1
+			# advc.004: (Not sure why +1)
 			zcurrturn = gc.getGame().getGameTurn() + 1
 			zmaxturn = gc.getGame().getMaxTurns()
 			zturn = gc.getGame().getGameTurn() + 1

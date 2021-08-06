@@ -5,8 +5,8 @@
 #include "CvUnit.h"
 
 // Not in the header b/c CvUnit.h isn't included there
-template<bool bIN_CIRCLE>
-CvPlot* SquareIterator<bIN_CIRCLE>::getUnitPlot(CvUnit const& kUnit) const
+template<bool bINCIRCLE>
+CvPlot* SquareIterator<bINCIRCLE>::getUnitPlot(CvUnit const& kUnit) const
 {
 	return kUnit.plot();
 }

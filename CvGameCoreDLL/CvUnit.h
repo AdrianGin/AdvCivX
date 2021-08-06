@@ -1134,7 +1134,7 @@ protected:
 
 	//bool m_bMadeAttack;
 	int m_iMadeAttacks; // advc.164
-	// advc.opt: Since we have exactly 8 booleans ...
+	// advc.opt: Bitfields - since we have exactly 8 booleans ...
 	bool m_bMadeInterception:1;
 	bool m_bPromotionReady:1;
 	bool m_bDeathDelay:1;

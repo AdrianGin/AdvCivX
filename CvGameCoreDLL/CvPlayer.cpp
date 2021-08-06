@@ -11084,9 +11084,9 @@ void CvPlayer::validateDiplomacy()
 			else if (pNode != NULL && pNode->m_data.m_eItemType == TRADE_DEFENSIVE_PACT &&
 				!GET_TEAM(getTeam()).allWarsShared(TEAMID(pDiplo->getWhoTalkingTo())))
 			{
-				CvPlayerAI& who = GET_PLAYER(pDiplo->getWhoTalkingTo());
-				who.AI_changeContactTimer(getID(), CONTACT_DEFENSIVE_PACT,
-						-who.AI_getContactTimer(getID(), CONTACT_DEFENSIVE_PACT));
+				CvPlayerAI& kWho = GET_PLAYER(pDiplo->getWhoTalkingTo());
+				kWho.AI_changeContactTimer(getID(), CONTACT_DEFENSIVE_PACT,
+						-kWho.AI_getContactTimer(getID(), CONTACT_DEFENSIVE_PACT));
 				m_listDiplomacy.remove(pDiplo);
 				delete pDiplo;
 				bDone = false;

@@ -7,7 +7,7 @@
 
 #include "CvMap.h"
 
-/*  Iterators over the CvPlot objects within a radius around a central plot or unit.
+/*  Iterators over the CvPlot instances within a radius around a central plot or unit.
 	If bINCIRCLE is false, then the radius is measured according to the
 	stepDistance metric, which results in a square of plots. The center plot
 	doesn't count toward the radius, so e.g. iRadius=3 yields a 7x7 square.
@@ -22,7 +22,8 @@
 	If iRadius is known to be 1 at compile time, then one of the macros in
 	PlotAdjListTraversal.h should be preferred; they're faster.
 
-	The order of traversal corresponds to a North-East-South-West (clockwise) spiral.
+	The order of traversal corresponds to a north-east-south-west (clockwise) spiral
+	away from the center.
 	NULL plots are skipped, but CvUnitAI::AI_plotValid isn't checked - should only be
 	checked when considering to move into a tile, and even then there can be faster
 	alternatives (see comments at the definition of AI_plotValid). */
