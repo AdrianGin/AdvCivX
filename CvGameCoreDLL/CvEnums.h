@@ -18,14 +18,17 @@
 //#else
 //	#define MAX_CIV_PLAYERS ((PlayerTypes)CvGlobals::getInstance().getMaxCivPlayers())
 //#endif
+// K-Mod (note): default is 18, some people like 48. They are not compatible.
+/*  advc.056 (note): Scenario (WB) files are now compatible so long
+	as the player ids in the WB file don't exceed MAX_CIV_PLAYERS in the DLL.
+	Savegames are still incompatible. */
+/*	advc.enum (fixme): This define is only needed for defining PlotNumInt below.
+	Should instead use the choose_type struct for that. */
+#define _MAX_CIV_PLAYERS 18
 enum PlayerTypes
 {
 	NO_PLAYER = -1,
-	// K-Mod (note): default is 18, some people like 48. They are not compatible.
-	/*  advc.056 (note): Scenario (WB) files are now compatible so long
-		as the player ids in the WB file don't exceed MAX_CIV_PLAYERS in the DLL.
-		Savegames are still incompatible. */
-	MAX_CIV_PLAYERS = 18,
+	MAX_CIV_PLAYERS = _MAX_CIV_PLAYERS,
 	BARBARIAN_PLAYER = MAX_CIV_PLAYERS,
 	MAX_PLAYERS
 };
@@ -80,7 +83,7 @@ enum FlavorTypes
 	Larger maps really aren't playable, but let's allow them
 	if the civ limit has been increased by a lot. */
 typedef
-	#if MAX_CIV_PLAYERS >= 32
+	#if _MAX_CIV_PLAYERS >= 32
 		int
 	#else
 		short

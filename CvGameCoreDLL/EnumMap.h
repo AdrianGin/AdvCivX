@@ -139,15 +139,15 @@ protected: // advc (Maybe some of these should indeed be public, but probably no
 	static const int SIZE_OF_T = EnumMapGetDefault<T>::SIZE_OF_T;
 	/*static const bool bINLINE_NATIVE = (SIZE == ENUMMAP_SIZE_NATIVE && (MAX_LENGTH * SIZE_OF_T) <= ENUMMAP_MAX_BYTES);
 	static const int NUM_NATIVE_BLOCKS = (bINLINE_NATIVE ? MAX_LENGTH : 1);*/ // advc.fract
-
-	static const bool bINLINE_1_BYTE = (SIZE == ENUMMAP_SIZE_1_BYTE && (MAX_LENGTH * SIZE_OF_T) <= ENUMMAP_MAX_BYTES);
+	// advc: Casts to long long are necessary for PlotNumInt
+	static const bool bINLINE_1_BYTE = (SIZE == ENUMMAP_SIZE_1_BYTE && (static_cast<long long>(MAX_LENGTH) * SIZE_OF_T) <= ENUMMAP_MAX_BYTES);
 	static const int NUM_1_BYTE_BLOCKS = (bINLINE_1_BYTE ? MAX_LENGTH : 1);
 
-	static const bool bINLINE_2_BYTE = (SIZE == ENUMMAP_SIZE_2_BYTE && (MAX_LENGTH * SIZE_OF_T) <= ENUMMAP_MAX_BYTES);
+	static const bool bINLINE_2_BYTE = (SIZE == ENUMMAP_SIZE_2_BYTE && (static_cast<long long>(MAX_LENGTH) * SIZE_OF_T) <= ENUMMAP_MAX_BYTES);
 	static const int NUM_2_BYTE_BLOCKS = (bINLINE_2_BYTE ? MAX_LENGTH : 1);
 
 	static const bool bINLINE_BOOL = (SIZE == ENUMMAP_SIZE_BOOL && MAX_LENGTH <= ENUMMAP_MAX_INLINE_BOOL);
-	static const int NUM_BOOL_BLOCKS = bINLINE_BOOL ? (MAX_LENGTH + 31) / 32 : 1;
+	static const int NUM_BOOL_BLOCKS = bINLINE_BOOL ? (static_cast<long long>(MAX_LENGTH) + 31) / 32 : 1;
 	static const uint BOOL_BLOCK_DEFAULT = DEFAULT ? MAX_UNSIGNED_INT : 0;
 
 	static const bool bINLINE = (/*bINLINE_NATIVE ||*/ // advc.fract
