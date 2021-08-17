@@ -4443,10 +4443,12 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 {
 	PROFILE_FUNC();
 
-	/*	advc.001: Was long. Probably can no longer overflow - if that had really
-		ever happened. I've added some iValue > MAX_INT assertions that, so far,
-		have never failed. */
-	long long iValue = 1; // K-Mod. (the int was overflowing in parts of the calculation)
+	//long iValue = 1; // K-Mod. (the int was overflowing in parts of the calculation)
+	/*	advc: Probably can no longer overflow - if that had really ever happened.
+		Changing it to long couldn't have helped (same limits as int). Also,
+		I've used long-long with some iValue <= MAX_INT assertions for a year or so,
+		and those assertions never failed. */
+	int iValue = 1;
 
 	CvCity const* pCapital = getCapital();
 	CvTeamAI const& kTeam = GET_TEAM(getTeam());
@@ -5821,9 +5823,10 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 		if (iTurnsLeft >= 0) // </advc.004x>
 		{
 			iValue += iTurnsLeft / 5;
-			iValue *= 1000; // roughly normalise with usual value. (cf. code below)
-			FAssert(iValue < MAX_INT); // advc.test: Trying to find out where int iValue would overflow
-			iValue /= 10 * GC.getInfo(GC.getGame().getGameSpeedType()).getResearchPercent();
+			/*	advc: Eliminated a factor of 10 from this fraction in order to
+				get less close to overflowing */
+			iValue *= 100; // roughly normalise with usual value. (cf. code below)
+			iValue /= GC.getInfo(GC.getGame().getGameSpeedType()).getResearchPercent();
 		}
 	} // </k146>
 	else if (iValue > 0)
@@ -5845,7 +5848,6 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 			iTurnsLeft /= 2; // </advc.144>
 		//iValue *= 100000;
 		iValue *= 1000; // k146
-		FAssert(iValue < MAX_INT); // advc.test: Where would int iValue overflow?
 		iValue /= (iTurnsLeft + (bCheapBooster ? 1 : 5) * iAdjustment);
 	}
 
@@ -5920,7 +5922,6 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 						scaled(3 * iAlreadyKnown, 2).ceil() : // </advc.550h>
 						2 * iAlreadyKnown);
 				iValue *= 100 + std::min(100, iTradeModifier);
-				FAssert(iValue < MAX_INT); // advc.test: Where would int iValue overflow?
 				iValue /= 100;
 			}
 			// K-Mod end
@@ -5942,22 +5943,22 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 		Use a random _factor_ at the end. */
 	if (bRandomize)
 	{
-		// advc: Renamed from iRandomFactor, which is already defined (though unused).
-		int iFinalRandomFactor = kRand.get(200, "AI Research factor"); // k146: was 100
+		/*	advc: Renamed from iRandomFactor, which is already defined (though unused).
+			And eliminated a factor of 10 from these calculations
+			for overflow protection. */
+		// k146: Was 100. (advc: I.e. the impact was doubled; that's still the case.)
+		int iFinalRandomFactor = kRand.get(20, "AI Research factor");
 		// k146: was 950+...
-		iValue *= (900 + iFinalRandomFactor); // between 90% and 110%
-		FAssert(iValue < MAX_INT); // advc.test: Where would int iValue overflow?
-		iValue /= 1000;
+		iValue *= (90 + iFinalRandomFactor); // between 90% and 110%
+		iValue /= 100;
 	}
 	/*	advc: iRandomMax is disused; checking it only to make sure
 		that I haven't missed any randomized code. */
 	else FAssert(iRandomMax == 0);
-
-	/*iValue = range(iValue, 0, MAX_INT);
-	return iValue;*/ // K-Mod end
-	// <advc.001> The above won't work for long long
-	iValue = std::max(0LL, iValue);
-	return ::longLongToInt(iValue); // </advc.001>
+	// advc (note): Not a safe was to do this - and no longer needed.
+	//iValue = range(iValue, 0, MAX_INT);
+	// K-Mod end
+	return iValue;
 }
 
 /*	K-Mod. This function returns the (positive) value of
