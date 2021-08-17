@@ -3,12 +3,6 @@ SOURCE_DIR = ..
 PROJECT_CFLAGS = /WX /W4
 # Allow inline expansion of functions with an inline keyword even for debug builds
 PROJECT_Debug_CFLAGS = /Ob1
-# Should _not_ be set when inspecting disassembly as it will disable __forceinline
-#PROJECT_DebugOpt_CFLAGS = /DFASSERT_ENABLE /Oy-
-# Can use global optimizations along with debug symbols; it's just slow to compile.
-# (But not recommended for profiling with Very Sleepy; I've seen it e.g. claim
-# that _alldiv calls all sorts of GameCoreDLL functions.)
-#PROJECT_DebugOpt_CFLAGS = /GL
 # DLL-internal profiler: /DUSE_INTERNAL_PROFILER
 # Time Stamp Counter profiler: /DUSE_TSC_PROFILER
 # External profiler, e.g. Very Sleepy: No profile flags needed; profile builds always use Z7.
@@ -18,3 +12,12 @@ PROJECT_Debug_CFLAGS = /Ob1
 PROJECT_Profile_CFLAGS = /DPROFILE_AI_AUTO_PLAY
 PROJECT_LDFLAGS = /DEF:CvGameCoreDLL.def
 PRECOMPILE_DEPENDENCIES = 
+# Should use these extra flags for debugging (i.e. when debugging errors that
+# aren't reproducible with non-optimizing debug builds). Replacing
+# /O2 with just e.g. /Oi /Ot /Ob1 is also worth a try, or a debug build w/o /RTC1;
+# that would have to be done through the actual Makefile.
+#PROJECT_DebugOpt_CFLAGS = /DFASSERT_ENABLE /Oy-
+# Can use global optimizations along with debug symbols; it's just slow to compile.
+# (But not recommended for profiling with Very Sleepy; I've seen it e.g. claim
+# that _alldiv calls all sorts of GameCoreDLL functions.)
+#PROJECT_DebugOpt_CFLAGS = /GL
