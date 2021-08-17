@@ -21,40 +21,44 @@ void CvDLLInterfaceIFaceBase::addMessage(PlayerTypes ePlayer, bool bForce,
 	if (eFlashColor == NO_COLOR)
 		eFlashColor = GC.getColorType("WHITE"); // </advc>
 	CvPlayer& kPlayer = GET_PLAYER(ePlayer);
-	if(kPlayer.isHuman() ||
-		/*  <advc.700> Want message archive to be available when human
-			takes over. AI messages expire just like human messages. */
-		(GC.getGame().isOption(GAMEOPTION_RISE_FALL) &&
-		!kPlayer.isHumanDisabled() &&
-		GC.getGame().getRiseFall().isDeliverMessages(ePlayer)))
-	{	// </advc.700>
-		addMessageExternal(ePlayer, bForce
-				&& !gDLL->getEngineIFace()->isGlobeviewUp(), // advc.106
-				iLength, szString, pszSound, eType, pszIcon, eFlashColor, iFlashX, iFlashY,
-				bShowOffScreenArrows, bShowOnScreenArrows);
-	}
-	//else if (GC.getGame().getActivePlayer() == ePlayer)
-	// advc.700: Replacing the above
-	else if(!kPlayer.isHuman() && kPlayer.isHumanDisabled())
+	// <advc.700>
+	bool const bRiseFall = GC.getGame().isOption(GAMEOPTION_RISE_FALL);
+	// Adjustments for AI Auto Play
+	if (kPlayer.isHumanDisabled()) // Replacing getActivePlayer check
 	{
-		// this means ePlayer is human, but currently using auto-play (K-Mod)
-		if(eType == MESSAGE_TYPE_MAJOR_EVENT || eType == MESSAGE_TYPE_CHAT ||
-				eType == MESSAGE_TYPE_MAJOR_EVENT_LOG_ONLY) // advc.106b
+		if (bRiseFall) // Silent AI Auto Play in R&F games
+			return; // </advc.700>
+		if (eType != MESSAGE_TYPE_MAJOR_EVENT && eType != MESSAGE_TYPE_CHAT && // K-Mod
+			eType != MESSAGE_TYPE_MAJOR_EVENT_LOG_ONLY) // advc.106b
 		{
-			addMessageExternal(ePlayer,
-				/*  advc.127: bForce=true causes the event to be announced immediately,
-					whereas bForce=false delays the announcement until the start of the next turn.
-					bForce=true should make Auto Play easier to follow.
-					Also set pszSound to NULL; no sounds during Auto Play. */
-					true, iLength, szString, NULL, eType, NULL,
-					//NO_COLOR, -1, -1, // (K-Mod)
-					/*  advc.127: Don't want stuff to flash during Auto Play,
-						but pszIcon=NULL is enough to prevent this. No need to
-						discard the color and coordinates. */
-					eFlashColor, iFlashX, iFlashY,
-					false, false);
+			return;
 		}
+		// <advc.127>
+		// Announce immediately; don't wait until the active player's next turn.
+		bForce = true;
+		// Don't exceed the default display time
+		iLength = std::min(iLength, GC.getEVENT_MESSAGE_TIME());
+		pszSound = NULL;
+		/*	K-Mod had also discarded the "flash" info. That's used for the
+			text color and coordinates stored in the Turn Log -- not just
+			for the (disabled) icon. */
+		// </advc.127>
+		pszIcon = NULL;
+		bShowOffScreenArrows = bShowOnScreenArrows = false;
 	}
+	else if (!kPlayer.isHuman() &&
+		/*  advc.700: Want message archive to be available when human
+			takes over. AI messages expire just like human messages. */
+		!(bRiseFall && GC.getGame().getRiseFall().isDeliverMessages(ePlayer)))
+	{
+		return;
+	}
+	// <advc.106>
+	if (!gDLL->getEngineIFace()->isGlobeviewUp())
+		bForce = true; // </advc.106>
+	addMessageExternal(ePlayer, bForce, iLength, szString,
+			pszSound, eType, pszIcon, eFlashColor, iFlashX, iFlashY,
+			bShowOffScreenArrows, bShowOnScreenArrows);
 }
 
 void CvDLLInterfaceIFaceBase::addMessage(PlayerTypes ePlayer, bool bForce,
