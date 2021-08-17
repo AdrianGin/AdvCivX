@@ -54,7 +54,7 @@ void CvMap::init(CvMapInitData* pInitInfo)
 	m_areas.init(); // Init containers
 	setup();
 	gDLL->logMemState("CvMap before init plots");
-	FAssert(numPlots() <= (EnumMap<PlotNumTypes,scaled>::MAX_LENGTH)); // advc.enum
+	FAssert(numPlots() <= integer_limits<PlotNumInt>::max); // advc.enum
 	m_pMapPlots = new CvPlot[numPlots()];
 	for (int iX = 0; iX < getGridWidth(); iX++)
 	{
@@ -1145,10 +1145,16 @@ void CvMap::read(FDataStreamBase* pStream)
 	// </advc.opt>
 	pStream->Read(&m_bWrapX);
 	pStream->Read(&m_bWrapY);
-
-	m_aiNumBonus.Read(pStream);
-	m_aiNumBonusOnLand.Read(pStream);
-
+	if (uiFlag >= 4)
+	{
+		m_aiNumBonus.read(pStream);
+		m_aiNumBonusOnLand.read(pStream);
+	}
+	else
+	{
+		m_aiNumBonus.readArray<int>(pStream);
+		m_aiNumBonusOnLand.readArray<int>(pStream);
+	}
 	if (numPlots() > 0)
 	{
 		m_pMapPlots = new CvPlot[numPlots()];
@@ -1198,7 +1204,8 @@ void CvMap::write(FDataStreamBase* pStream)
 	uint uiFlag;
 	//uiFlag = 1; // advc.106n
 	//uiFlag = 2; // advc.opt: CvPlot::m_bAnyIsthmus
-	uiFlag = 3; // advc.opt: m_ePlots
+	//uiFlag = 3; // advc.opt: m_ePlots
+	uiFlag = 4; // advc.enum: new enum map save behavior
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iGridWidth);
@@ -1214,8 +1221,8 @@ void CvMap::write(FDataStreamBase* pStream)
 	pStream->Write(m_bWrapY);
 
 	FAssertMsg((0 < GC.getNumBonusInfos()), "GC.getNumBonusInfos() is not greater than zero but an array is being allocated");
-	m_aiNumBonus.Write(pStream);
-	m_aiNumBonusOnLand.Write(pStream);
+	m_aiNumBonus.write(pStream);
+	m_aiNumBonusOnLand.write(pStream);
 	REPRO_TEST_END_WRITE();
 	for (int i = 0; i < numPlots(); i++)
 		m_pMapPlots[i].write(pStream);

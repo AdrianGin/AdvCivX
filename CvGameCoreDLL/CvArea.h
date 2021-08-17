@@ -189,11 +189,8 @@ public:
 	{
 		return m_aiBonuses.get(eBonus);
 	}
-	int getNumTotalBonuses() const																		// Exposed to Python
-	{
-		return m_aiBonuses.getTotal();
-	}
-	bool isAnyBonus() const { return m_aiBonuses.hasContent(); } // advc.opt
+	int getNumTotalBonuses() const;																		// Exposed to Python
+	bool isAnyBonus() const { return m_aiBonuses.isAnyNonDefault(); } // advc.opt
 	void changeNumBonuses(BonusTypes eBonus, int iChange);
 	// advc.opt: No longer used
 	/*int getNumImprovements(ImprovementTypes eImprovement) const;										// Exposed to Python
@@ -214,27 +211,31 @@ protected:
 	bool m_bWater;
 	// <advc.030>
 	bool m_bLake;
-	int m_iRepresentativeAreaId;
-	// </advc.030>  // <advc.enum> Tbd.: Use <...,short> for all of these?
-	EnumMap<PlayerTypes,int> m_aiUnitsPerPlayer;
-	EnumMap<PlayerTypes,int> m_aiCitiesPerPlayer;
-	EnumMap<PlayerTypes,int> m_aiPopulationPerPlayer;
-	EnumMap<PlayerTypes,int> m_aiBuildingGoodHealth;
-	EnumMap<PlayerTypes,int> m_aiBuildingBadHealth;
-	EnumMap<PlayerTypes,int> m_aiBuildingHappiness;
-	EnumMap<PlayerTypes,int> m_aiTradeRoutes; // advc.310
-	EnumMap<PlayerTypes,int> m_aiFreeSpecialist;
-	EnumMap<PlayerTypes,int> m_aiPower;
-	EnumMap<PlayerTypes,int> m_aiBestFoundValue;
-	EnumMap<TeamTypes,int> m_aiNumRevealedTiles;
-	EnumMap<TeamTypes,int> m_aiCleanPowerCount;
-	EnumMap<TeamTypes,int> m_aiBorderObstacleCount;
-	EnumMap<TeamTypes,AreaAITypes> m_aeAreaAIType;
-	EnumMap<BonusTypes,int> m_aiBonuses;
-	//EnumMap<ImprovementTypes,int> m_aiImprovements; // advc.opt: was only used for CvMapGenerator::addGoodies
-	EnumMap2D<PlayerTypes,YieldTypes,short> m_aaiYieldRateModifier;
-	EnumMap2D<PlayerTypes,UnitAITypes,int> m_aaiNumTrainAIUnits;
-	EnumMap2D<PlayerTypes,UnitAITypes,int> m_aaiNumAIUnits; // </advc.enum>
+	int m_iRepresentativeAreaId; // </advc.030>
+	/*	<advc.enum> (advc.030 - note: Most of these will remain unused
+		for water areas, and water areas can be quite numerous due to sea ice.
+		Array-based maps with lazy allocation should work best here.) */
+	ArrayEnumMap<PlayerTypes,int,short> m_aiUnitsPerPlayer;
+	ArrayEnumMap<PlayerTypes,int,short> m_aiCitiesPerPlayer;
+	ArrayEnumMap<PlayerTypes,int,short> m_aiPopulationPerPlayer;
+	ArrayEnumMap<PlayerTypes,int,char> m_aiBuildingGoodHealth;
+	ArrayEnumMap<PlayerTypes,int,char> m_aiBuildingBadHealth;
+	ArrayEnumMap<PlayerTypes,int,char> m_aiBuildingHappiness;
+	ArrayEnumMap<PlayerTypes,int,char> m_aiTradeRoutes; // advc.310
+	ArrayEnumMap<PlayerTypes,int,char> m_aiFreeSpecialist;
+	ArrayEnumMap<PlayerTypes,int> m_aiPower;
+	ArrayEnumMap<PlayerTypes,int,short> m_aiBestFoundValue;
+	ArrayEnumMap<TeamTypes,int,PlotNumInt> m_aiNumRevealedTiles;
+	ArrayEnumMap<TeamTypes,int,char> m_aiCleanPowerCount;
+	ArrayEnumMap<TeamTypes,int,char> m_aiBorderObstacleCount;
+	ArrayEnumMap<TeamTypes,AreaAITypes> m_aeAreaAIType;
+	ArrayEnumMap<BonusTypes,int,short> m_aiBonuses;
+	// advc.opt: was only used for CvMapGenerator::addGoodies
+	//ArrayEnumMap<ImprovementTypes,int> m_aiImprovements;
+	Enum2IntEncMap<ArrayEnumMap<PlayerTypes,YieldChangeMap::enc_t>,
+			YieldChangeMap> m_aaiYieldRateModifier;
+	ArrayEnumMap2D<PlayerTypes,UnitAITypes,int,short> m_aaiNumTrainAIUnits;
+	ArrayEnumMap2D<PlayerTypes,UnitAITypes,int,short> m_aaiNumAIUnits; // </advc.enum>
 
 	IDInfo* m_aTargetCities;
 

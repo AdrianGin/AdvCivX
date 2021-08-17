@@ -549,9 +549,10 @@ protected:
 
 	bool m_bWrapX;
 	bool m_bWrapY;
-	// <advc.enum>
-	EnumMap<BonusTypes,int> m_aiNumBonus;
-	EnumMap<BonusTypes,int> m_aiNumBonusOnLand;
+	/*	<advc.enum> (Can't use eager allocation here b/c the map is created
+		before XML is loaded.) */
+	ArrayEnumMap<BonusTypes,int,PlotNumInt> m_aiNumBonus;
+	ArrayEnumMap<BonusTypes,int,PlotNumInt> m_aiNumBonusOnLand;
 	// </advc.enum>
 	CvPlot* m_pMapPlots;
 	std::map<Shelf::Id,Shelf*> m_shelves; // advc.300
@@ -569,10 +570,13 @@ protected:
 	void updateNumPlots(); // advc.opt
 };
 
-// advc.enum: (for EnumMap)
-inline PlotNumTypes getEnumLength(PlotNumTypes)
+// advc.enum:
+namespace plot_num_traits
 {
-	return GC.getMap().numPlots();
+	inline PlotNumTypes getNumMapPlots()
+	{
+		return GC.getMap().numPlots();
+	}
 }
 
 /* <advc.make> Global wrappers for distance functions. The int versions are

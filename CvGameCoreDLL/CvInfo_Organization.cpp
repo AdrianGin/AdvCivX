@@ -2,7 +2,6 @@
 
 #include "CvGameCoreDLL.h"
 #include "CvXMLLoadUtility.h"
-#include "CvDLLXMLIFaceBase.h"
 
 
 CvOrganizationInfo::CvOrganizationInfo() :
@@ -171,24 +170,24 @@ bool CvReligionInfo::read(CvXMLLoadUtility* pXML)
 
 	pXML->GetChildXmlValByName(&m_iNumFreeUnits, "iFreeUnits");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"GlobalReligionCommerces"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"GlobalReligionCommerces"))
 	{
 		pXML->SetCommerce(&m_paiGlobalReligionCommerce);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiGlobalReligionCommerce, NUM_COMMERCE_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"HolyCityCommerces"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"HolyCityCommerces"))
 	{
 		pXML->SetCommerce(&m_paiHolyCityCommerce);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiHolyCityCommerce, NUM_COMMERCE_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"StateReligionCommerces"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"StateReligionCommerces"))
 	{
 		pXML->SetCommerce(&m_paiStateReligionCommerce);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiStateReligionCommerce, NUM_COMMERCE_TYPES);
 
@@ -284,24 +283,24 @@ bool CvCorporationInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_iSpreadCost, "iSpreadCost");
 	pXML->GetChildXmlValByName(&m_iMaintenance, "iMaintenance");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"HeadquarterCommerces"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"HeadquarterCommerces"))
 	{
 		pXML->SetCommerce(&m_paiHeadquarterCommerce);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiHeadquarterCommerce, NUM_COMMERCE_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "CommercesProduced"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"CommercesProduced"))
 	{
 		pXML->SetCommerce(&m_paiCommerceProduced);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiCommerceProduced, NUM_COMMERCE_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "YieldsProduced"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"YieldsProduced"))
 	{
 		pXML->SetYields(&m_paiYieldProduced);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiYieldProduced, NUM_YIELD_TYPES);
 

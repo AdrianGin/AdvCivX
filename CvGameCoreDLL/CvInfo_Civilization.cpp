@@ -2,7 +2,6 @@
 
 #include "CvGameCoreDLL.h"
 #include "CvXMLLoadUtility.h"
-#include "CvDLLXMLIFaceBase.h"
 
 
 CvCivilizationInfo::CvCivilizationInfo() :
@@ -1039,9 +1038,9 @@ bool CvLeaderHeadInfo::read(CvXMLLoadUtility* pXML)
 			"PermanentAllianceRefuseAttitudeThreshold");
 	pXML->SetInfoIDFromChildXmlVal(m_iVassalRefuseAttitudeThreshold,
 			"VassalRefuseAttitudeThreshold");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eFavoriteCivic,
+	pXML->SetInfoIDFromChildXmlVal(m_eFavoriteCivic,
 			"FavoriteCivic");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eFavoriteReligion,
+	pXML->SetInfoIDFromChildXmlVal(m_eFavoriteReligion,
 			"FavoriteReligion");
 
 	pXML->SetVariableListTagPair(&m_pbTraits, "Traits", GC.getNumTraitInfos());
@@ -1243,10 +1242,10 @@ bool CvTraitInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_iMaxTeamBuildingProductionModifier, "iMaxTeamBuildingProductionModifier");
 	pXML->GetChildXmlValByName(&m_iMaxPlayerBuildingProductionModifier, "iMaxPlayerBuildingProductionModifier");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "ExtraYieldThresholds"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"ExtraYieldThresholds"))
 	{
 		pXML->SetYields(&m_paiExtraYieldThreshold);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiExtraYieldThreshold, NUM_YIELD_TYPES);
 	// <advc.908a>
@@ -1257,24 +1256,24 @@ bool CvTraitInfo::read(CvXMLLoadUtility* pXML)
 		FAssert(getExtraYieldNaturalThreshold(eLoopYield) >= 0);
 	}
 	#endif // </advc.908a>
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "TradeYieldModifiers"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"TradeYieldModifiers"))
 	{
 		pXML->SetYields(&m_paiTradeYieldModifier);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiTradeYieldModifier, NUM_YIELD_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "CommerceChanges"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"CommerceChanges"))
 	{
 		pXML->SetCommerce(&m_paiCommerceChange);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiCommerceChange, NUM_COMMERCE_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "CommerceModifiers"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"CommerceModifiers"))
 	{
 		pXML->SetCommerce(&m_paiCommerceModifier);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiCommerceModifier, NUM_COMMERCE_TYPES);
 

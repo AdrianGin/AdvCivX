@@ -1,66 +1,14 @@
 #pragma once
+#ifndef CV_ENUM_MACROS_H
+#define CV_ENUM_MACROS_H
 
-#ifndef CV_INFO_ENUMS_H
-#define CV_INFO_ENUMS_H
-
-/*  advc.enum: New header; mostly for macros dealing with CvInfo classes and their
-	associated enum types. */
-
-#define FOR_EACH_ENUM(TypeName) \
-	for (TypeName##Types eLoop##TypeName = (TypeName##Types)0; \
-			eLoop##TypeName < getEnumLength(eLoop##TypeName); \
-			eLoop##TypeName = (TypeName##Types)(eLoop##TypeName + 1))
-// With a 2nd argument for a variable name
-#define FOR_EACH_ENUM2(TypeName, eVar) \
-	for (TypeName##Types eVar = (TypeName##Types)0; \
-			eVar < getEnumLength(eVar); \
-			eVar = (TypeName##Types)(eVar + 1))
-/*	Random order. The macro needs to declare two variables before the loop. Use __LINE__
-	for those, so that it's possible for loops to coexist in the same scope. */
-#define FOR_EACH_ENUM_RAND(TypeName, kRand) \
-	std::vector<int> CONCATVARNAME(aiLoop##TypeName##Indices_, __LINE__) \
-	(getEnumLength((TypeName##Types)0)); \
-	::shuffleVector(CONCATVARNAME(aiLoop##TypeName##Indices_, __LINE__), (kRand)); \
-	int CONCATVARNAME(iLoop##TypeName##Counter_, __LINE__) = 0; \
-	for ( TypeName##Types eLoop##TypeName; \
-			CONCATVARNAME(iLoop##TypeName##Counter_, __LINE__) < getEnumLength((TypeName##Types)0) && \
-			/* Do the increment in the termination check, but don't branch on it. */ \
-			(eLoop##TypeName = (TypeName##Types)CONCATVARNAME(aiLoop##TypeName##Indices_, __LINE__) \
-			[CONCATVARNAME(iLoop##TypeName##Counter_, __LINE__)], \
-			(CONCATVARNAME(iLoop##TypeName##Counter_, __LINE__)++, true)); )
-/*	Example. FOR_EACH_ENUM_RAND(CardinalDirection, GC.getGame().getMapRand())
-	expands to:
-	std::vector<int> aiLoopCardinalDirectionIndices_443(getEnumLength((CardinalDirectionTypes)0));
-	::shuffleVector(aiLoopCardinalDirectionIndices_443, (GC.getGame().getMapRand()));
-	int iLoopCardinalDirectionCounter_443 = 0;
-	for ( CardinalDirectionTypes eLoopCardinalDirection;
-			iLoopCardinalDirectionCounter_443 < getEnumLength((CardinalDirectionTypes)0) &&
-			(eLoopCardinalDirection = (CardinalDirectionTypes)aiLoopCardinalDirectionIndices_443
-			[iLoopCardinalDirectionCounter_443],
-			(iLoopCardinalDirectionCounter_443++, true)); )
-*/
-// Reversed order
-#define FOR_EACH_ENUM_REV(TypeName) \
-	for (TypeName##Types eLoop##TypeName = (TypeName##Types)(getEnumLength(((TypeName##Types)0)) - 1); \
-			eLoop##TypeName >= 0; \
-			eLoop##TypeName = (TypeName##Types)(eLoop##TypeName - 1))
-/*	To be used only in the body of a FOR_EACH_ENUM loop. Don't need to assert
-	array bounds then. Not really feasible though to replace all the
-	CvGlobals::getInfo calls, so maybe better not to use this at all ... */
-/*#define LOOP_INFO(TypeName) \
-	GC.getLoopInfo(eLoop##TypeName)
-#define SET_LOOP_INFO(TypeName) \
-	Cv##TypeName##Info const& kLoop##TypeName = LOOP_INFO(TypeName)
-// To go with FOR_EACH_ENUM2
-#define SET_LOOP_INFO2(TypeName, kVar) \
-	Cv##TypeName##Info const& kVar = LOOP_INFO(TypeName)*/
-
-
-// Type lists ...
+/*  advc.enum: Helper macros for defining global (i.e. precompiled)
+	enum types, their traits and global accessors for instances
+	of the associated CvInfo classes. */
 
 /*  Number of instances not known at compile time, but it's safe to say, even in
-	mod-mods, that it's not going to be greater than MAX_CHAR. (CvXMLLoadUtility
-	will verify this too.) */
+	mod-mods, that it's not going to be greater than MAX_CHAR.
+	(CvXMLLoadUtility will verify this too.) */
 #define DO_FOR_EACH_SMALL_DYN_INFO_TYPE(DO) \
 	/* getNumInfos function exported */ \
 	DO(Route, ROUTE) \
@@ -216,26 +164,29 @@
 // This one just has an irregular, exported name.
 #define CvThroneRoomCameraInfo CvThroneRoomCamera
 
-// Macros for generating enum definitions and getEnumLength functions (CvEnums, CvGlobals) ...
+/*	Static enum types without any associated CvInfo data.
+	Not a complete list; add types here if their traits need to be accessed. */
+#define DO_FOR_EACH_STATIC_ENUM_TYPE(DO) \
+	DO(Direction, DIRECTION) \
+	DO(CardinalDirection, CARDINALDIRECTION) \
+	DO(WarPlan, WARPLAN) \
+	DO(CityPlot, CITYPLOT) \
+	DO(Feat, FEAT) \
+	DO(AreaAI, AREAAI) \
+	DO(MissionAI, MISSIONAI) \
+	DO(PlayerHistory, PLAYER_HISTORY) /* advc.004s */ \
+	DO(Function, FUNC) \
+	DO(CitySize, CITYSIZE) \
+	DO(Contact, CONTACT) \
+	DO(DiplomacyPower, DIPLOMACYPOWER) \
+	DO(AIDemand, AI_DEMAND) /* advc.104m */
 
+// For generating enum definitions and traits ...
 #define NUM_ENUM_TYPES(INFIX) NUM_##INFIX##_TYPES
-#define NO_ENUM_TYPE(SUFFIX) NO_##SUFFIX = -1
+#define NO_ENUM_TYPE(SUFFIX) NO_##SUFFIX
+#define SET_NO_ENUM_TYPE(SUFFIX) NO_ENUM_TYPE(SUFFIX) = -1
 
-#define SET_ENUM_LENGTH_STATIC(Name, INFIX) \
-	inline Name##Types getEnumLength(Name##Types) \
-	{ \
-		return NUM_ENUM_TYPES(INFIX); \
-	}
-/*  This gets used in CvGlobals.h. (I wanted to do it in MAKE_INFO_ENUM, which is
-	used in CvEnums.h, but that lead to a circular dependency.) */
-#define SET_ENUM_LENGTH(Name, PREFIX) \
-	inline Name##Types getEnumLength(Name##Types) \
-	{ \
-		return static_cast<Name##Types>(gGlobals.getNum##Name##Infos()); \
-	}
-
-/*  Increment/decrement functions based on code in the "We the People" mod.
-	Used by EnumMap, otherwise mostly superseded by FOR_EACH_ENUM. */
+// Increment/decrement functions based on code in the "We the People" mod
 #define DEFINE_INCREMENT_OPERATORS(EnumType) \
 	inline EnumType& operator++(EnumType& e) \
 	{ \
@@ -263,7 +214,7 @@
 #define MAKE_INFO_ENUM(Name, PREFIX) \
 enum Name##Types \
 { \
-	NO_ENUM_TYPE(PREFIX), \
+	SET_NO_ENUM_TYPE(PREFIX), \
 }; \
 DEFINE_INCREMENT_OPERATORS(Name##Types)
 
@@ -272,49 +223,21 @@ DEFINE_INCREMENT_OPERATORS(Name##Types)
 #define ENUM_START(Name, PREFIX) \
 enum Name##Types \
 { \
-	NO_ENUM_TYPE(PREFIX),
+	SET_NO_ENUM_TYPE(PREFIX),
 
 #define ENUM_END(Name, PREFIX) \
 	NUM_ENUM_TYPES(PREFIX) \
 }; \
-SET_ENUM_LENGTH_STATIC(Name, PREFIX) \
 DEFINE_INCREMENT_OPERATORS(Name##Types)
 // For enumerators that are supposed to be excluded from iteration
 #define ENUM_END_HIDDEN(Name, PREFIX) \
 }; \
-SET_ENUM_LENGTH_STATIC(Name, PREFIX) \
 DEFINE_INCREMENT_OPERATORS(Name##Types)
-/*	The original enum definitions had hidden most of the NUM_...._TYPES
+/*	(The original enum definitions had hidden most of the NUM_...._TYPES
 	enumerators from the EXE through _USRDLL checks. Since we can't
-	recompile the EXE, let's not bother with that. */
+	recompile the EXE, let's not bother with that.) */
 
-template<typename E>
-bool checkEnumBounds(E eIndex)
-{
-	return (eIndex >= 0 && eIndex < getEnumLength(eIndex));
-}
-namespace info_enum_detail
-{
-	template<typename E>
-	void assertEnumBounds(E eIndex)
-	{
-		FAssertBounds(0, getEnumLength(eIndex), eIndex);
-	}
-	template<typename E>
-	void assertInfoEnum(E eIndex)
-	{
-		FAssertBounds(-1, getEnumLength(eIndex), eIndex);
-	}
-};
-#ifdef FASSERT_ENABLE
-#define FAssertEnumBounds(eIndex) info_enum_detail::assertEnumBounds(eIndex)
-#define FAssertInfoEnum(eIndex) info_enum_detail::assertInfoEnum(eIndex)
-#else
-#define FAssertEnumBounds(eIndex) (void)0
-#define FAssertInfoEnum(eIndex) (void)0
-#endif
-
-// Macros for generating CvInfo accessor functions (CvGlobals) ...
+// Macros for generating CvInfo accessor functions in CvGlobals ...
 	
 #define MAKE_INFO_ACCESSORS_DYN(Name, Dummy) \
 	inline int getNum##Name##Infos() const \

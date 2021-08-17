@@ -4942,16 +4942,30 @@ void CvTeamAI::read(FDataStreamBase* pStream)
 		uwai().init(getID()); // </advc.104>
 	uint uiFlag=0;
 	pStream->Read(&uiFlag);
-
-	m_aiWarPlanStateCounter.Read(pStream);
-	m_aiAtWarCounter.Read(pStream);
-	m_aiAtPeaceCounter.Read(pStream);
-	m_aiHasMetCounter.Read(pStream);
-	m_aiOpenBordersCounter.Read(pStream);
-	m_aiDefensivePactCounter.Read(pStream);
-	m_aiShareWarCounter.Read(pStream);
-	m_aiWarSuccess.Read(pStream);
-	m_aiSharedWarSuccess.Read(pStream); // advc.130m
+	if (uiFlag >= 6)
+	{
+		m_aiWarPlanStateCounter.read(pStream);
+		m_aiAtWarCounter.read(pStream);
+		m_aiAtPeaceCounter.read(pStream);
+		m_aiHasMetCounter.read(pStream);
+		m_aiOpenBordersCounter.read(pStream);
+		m_aiDefensivePactCounter.read(pStream);
+		m_aiShareWarCounter.read(pStream);
+		m_aiWarSuccess.read(pStream);
+		m_aiSharedWarSuccess.read(pStream); // advc.130m
+	}
+	else
+	{
+		m_aiWarPlanStateCounter.readArray<int>(pStream);
+		m_aiAtWarCounter.readArray<int>(pStream);
+		m_aiAtPeaceCounter.readArray<int>(pStream);
+		m_aiHasMetCounter.readArray<int>(pStream);
+		m_aiOpenBordersCounter.readArray<int>(pStream);
+		m_aiDefensivePactCounter.readArray<int>(pStream);
+		m_aiShareWarCounter.readArray<int>(pStream);
+		m_aiWarSuccess.readArray<int>(pStream);
+		m_aiSharedWarSuccess.readArray<int>(pStream); // advc.130m
+	}
 	// <advc.130n>
 	int iReligions;
 	pStream->Read(&iReligions);
@@ -4962,12 +4976,22 @@ void CvTeamAI::read(FDataStreamBase* pStream)
 		pStream->Read(&second);
 		m_religionKnownSince.insert(std::make_pair((ReligionTypes)first, second));
 	} // </advc.130n>
-	m_aiEnemyPeacetimeTradeValue.Read(pStream);
-	m_aiEnemyPeacetimeGrantValue.Read(pStream);
+	if (uiFlag >= 6)
+	{
+		m_aiEnemyPeacetimeTradeValue.read(pStream);
+		m_aiEnemyPeacetimeGrantValue.read(pStream);
+	}
+	else
+	{
+		m_aiEnemyPeacetimeTradeValue.readArray<int>(pStream);
+		m_aiEnemyPeacetimeGrantValue.readArray<int>(pStream);
+	}
 	// <advc.opt>
 	if (uiFlag >= 3)
 	{
-		m_aiWarPlanCounts.Read(pStream);
+		if (uiFlag >= 6)
+			m_aiWarPlanCounts.read(pStream);
+		else m_aiWarPlanCounts.readArray<int>(pStream);
 		pStream->Read(&m_bAnyWarPlan);
 	}
 	else
@@ -4977,7 +5001,9 @@ void CvTeamAI::read(FDataStreamBase* pStream)
 		FOR_EACH_ENUM(WarPlan)
 			m_aiWarPlanCounts.set(eLoopWarPlan, -1);
 	} // </advc.opt>
-	m_aeWarPlan.Read(pStream);
+	if (uiFlag >= 6)
+		m_aeWarPlan.read(pStream);
+	else m_aeWarPlan.readArray<int>(pStream);
 	pStream->Read((int*)&m_eWorstEnemy);
 	// <advc.109>
 	if (uiFlag >= 2)
@@ -5022,18 +5048,19 @@ void CvTeamAI::write(FDataStreamBase* pStream)
 	//uiFlag = 2; // advc.109
 	//uiFlag = 3; // advc.opt: m_aiWarPlanCounts
 	//uiFlag = 4; // advc.158
-	uiFlag = 5; // advc.650
+	//uiFlag = 5; // advc.650
+	uiFlag = 6; // advc.enum: new enum map save behavior
 	pStream->Write(uiFlag);
 
-	m_aiWarPlanStateCounter.Write(pStream);
-	m_aiAtWarCounter.Write(pStream);
-	m_aiAtPeaceCounter.Write(pStream);
-	m_aiHasMetCounter.Write(pStream);
-	m_aiOpenBordersCounter.Write(pStream);
-	m_aiDefensivePactCounter.Write(pStream);
-	m_aiShareWarCounter.Write(pStream);
-	m_aiWarSuccess.Write(pStream);
-	m_aiSharedWarSuccess.Write(pStream); // advc.130m
+	m_aiWarPlanStateCounter.write(pStream);
+	m_aiAtWarCounter.write(pStream);
+	m_aiAtPeaceCounter.write(pStream);
+	m_aiHasMetCounter.write(pStream);
+	m_aiOpenBordersCounter.write(pStream);
+	m_aiDefensivePactCounter.write(pStream);
+	m_aiShareWarCounter.write(pStream);
+	m_aiWarSuccess.write(pStream);
+	m_aiSharedWarSuccess.write(pStream); // advc.130m
 	// <advc.130n>
 	pStream->Write((int)m_religionKnownSince.size());
 	for(std::map<ReligionTypes,int>::const_iterator it = m_religionKnownSince.begin();
@@ -5042,11 +5069,11 @@ void CvTeamAI::write(FDataStreamBase* pStream)
 		pStream->Write(it->first);
 		pStream->Write(it->second);
 	} // </advc.130n>
-	m_aiEnemyPeacetimeTradeValue.Write(pStream);
-	m_aiEnemyPeacetimeGrantValue.Write(pStream);
-	m_aiWarPlanCounts.Write(pStream); // advc.opt
+	m_aiEnemyPeacetimeTradeValue.write(pStream);
+	m_aiEnemyPeacetimeGrantValue.write(pStream);
+	m_aiWarPlanCounts.write(pStream); // advc.opt
 	pStream->Write(m_bAnyWarPlan); // advc.opt
-	m_aeWarPlan.Write(pStream);
+	m_aeWarPlan.write(pStream);
 	pStream->Write(m_eWorstEnemy);
 	pStream->Write(m_bLonely); // advc.109
 	// <advc.650>

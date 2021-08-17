@@ -195,27 +195,22 @@ struct PlotExtraCost
 	void write(FDataStreamBase* pStream);
 };
 
-typedef std::vector< std::pair<BuildingClassTypes, int> > BuildingChangeArray;
-
-struct BuildingYieldChange
-{
+// advc.enum: Replaced with list enum map
+/*typedef std::vector< std::pair<BuildingClassTypes, int> > BuildingChangeArray;
+struct BuildingYieldChange {
 	BuildingClassTypes eBuildingClass;
 	YieldTypes eYield;
 	int iChange;
-
 	void read(FDataStreamBase* pStream);
 	void write(FDataStreamBase* pStream);
 };
-
-struct BuildingCommerceChange
-{
+struct BuildingCommerceChange {
 	BuildingClassTypes eBuildingClass;
 	CommerceTypes eCommerce;
 	int iChange;
-
 	void read(FDataStreamBase* pStream);
 	void write(FDataStreamBase* pStream);
-};
+};*/
 
 
 struct FOWVis

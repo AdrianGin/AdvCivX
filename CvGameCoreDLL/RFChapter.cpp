@@ -50,7 +50,7 @@ void RFChapter::write(FDataStreamBase* pStream) {
 	pStream->Write(scoreAtEnd);
 	pStream->Write(retireTurn);
 	pStream->Write(repeat);
-	pStream->Write((int)civ);
+	pStream->Write(civ);
 	pStream->Write(chapters);
 	breakdown.write(pStream);
 }

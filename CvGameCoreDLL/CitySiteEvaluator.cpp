@@ -787,7 +787,7 @@ short AIFoundValue::evaluate()
 
 	FAssert(iValue >= 0);
 	IFLOG logBBAI("Bottom line (found-city value): %d\n", iValue);
-	return std::max<short>(1, toShort(iValue));
+	return std::max<short>(1, truncIntCast<short>(iValue));
 }
 
 

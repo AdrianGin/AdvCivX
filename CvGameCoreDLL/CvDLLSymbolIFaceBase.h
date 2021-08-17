@@ -3,8 +3,6 @@
 #ifndef CvDLLSymbolIFaceBase_h
 #define CvDLLSymbolIFaceBase_h
 
-#include "CvDLLUtilityIFaceBase.h"
-
 // abstract interfaces for CvSymbol functions used by DLL
 
 class CvPlot;

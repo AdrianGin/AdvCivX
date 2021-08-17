@@ -195,6 +195,43 @@ public:
 		REPRO_TEST_REPORT(sizeof(unsigned long) * iCount, values);
 		WriteExternal(iCount, values);
 	}
+	// <advc.enum> long long
+	void Write(__int64 lValue)
+	{
+		__int32* iiPair = reinterpret_cast<__int32*>(&lValue);
+		Write(iiPair[0]);
+		Write(iiPair[1]);
+	}
+	void Write(unsigned __int64 lValue)
+	{
+		unsigned __int32* iiPair = reinterpret_cast<unsigned __int32*>(&lValue);
+		Write(iiPair[0]);
+		Write(iiPair[1]);
+	}
+	void Write(int iCount, __int64 const aValues[])
+	{
+		for (int i = 0; i < iCount; i++)
+			Write(aValues[i]);
+	}
+	void Write(int iCount, unsigned __int64 const aValues[])
+	{
+		for (int i = 0; i < iCount; i++)
+			Write(aValues[i]);
+	} // </advc.enum>
+	// <advc.fract>
+	template<int iSCALE, typename IntType, typename EnumType>
+	void Write(ScaledNum<iSCALE,IntType,EnumType> rValue) const
+	{
+		REPRO_TEST_REPORT(sizeof(rValue), &rValue);
+		rValue.write(this);
+	}
+	template<int iSCALE, typename IntType, typename EnumType>
+	void Write(int iCount, ScaledNum<iSCALE,IntType,EnumType> const arValues[])
+	{
+		REPRO_TEST_REPORT(sizeof(ScaledNum<iSCALE,IntType,EnumType>) * iCount, arValues);
+		for (int i = 0; i < iCount; i++)
+			arValues[i].write(this);
+	} // </advc.fract>
 	/*	Floating-point data isn't normally part of the synchronized game state.
 		So these wrappers aren't needed, but, somehow, if I remove them and
 		rename the respective virtual functions back to "Write", I get a crash
@@ -215,20 +252,42 @@ public:
 	{
 		WriteExternal(count, values);
 	} // <advc.repro>
-
-	// <advc.enum> for SparseEnumMap(2D)
-	template<class FirstType, class SecondType>
-	void Read(std::pair<FirstType,SecondType>* pPair)
+	// <advc.fract>
+	template<int iSCALE, typename IntType, typename EnumType>
+	void Read(ScaledNum<iSCALE,IntType,EnumType>* arValues)
 	{
-		Read(&pPair->first);
-		Read(&pPair->second);
+		arValues->read(this);
 	}
-
-	template<class FirstType, class SecondType>
-	void Write(std::pair<FirstType,SecondType>& kPair)
+	template<int iSCALE, typename IntType, typename EnumType>
+	void Read(int iCount, ScaledNum<iSCALE,IntType,EnumType> arValues[])
 	{
-		Write(kPair.first);
-		Write(kPair.second);
+		for (int i = 0; i < iCount; i++)
+			arValues[i].read(this);
+	} // </advc.fract>
+	// <advc.enum>
+	void Read(__int64* lValue)
+	{
+		__int32 iiPair[2];
+		Read(&iiPair[0]);
+		Read(&iiPair[1]);
+		*lValue = reinterpret_cast<__int64*>(iiPair)[0];
+	}
+	void Read(unsigned __int64* lValue)
+	{
+		unsigned __int32 iiPair[2];
+		Read(&iiPair[0]);
+		Read(&iiPair[1]);
+		*lValue = reinterpret_cast<unsigned __int64*>(iiPair)[0];
+	}
+	void Read(int iCount, __int64 aValues[])
+	{
+		for (int i = 0; i < iCount; i++)
+			Read(&aValues[i]);
+	}
+	void Read(int iCount, unsigned __int64 aValues[])
+	{
+		for (int i = 0; i < iCount; i++)
+			Read(&aValues[i]);
 	} // </advc.enum>
 };
 

@@ -58,38 +58,40 @@
 #define CONCATVARNAME_IMPL(prefix, suffix) prefix##suffix
 #define CONCATVARNAME(prefix, suffix) CONCATVARNAME_IMPL(prefix, suffix) // </advc.003s>
 
+/*	advc.enum (note): The order of these inclusions is tricky b/c the type trait
+	headers sometimes require other types to be defined, not just declared. */
 // <advc> Stuff moved into separate headers
 #include "GameBryo.h"
 #include "CvMemoryManager.h"
 #include "BoostPythonPCH.h"
 #pragma warning(pop) // advc.make: Restore project warning level
+#include "TypeChoice.h"
 #include "IntegerTraits.h" // </advc>
+#include "ScaledNumFwd.h" // advc.fract
 #include "FAssert.h"
+#include "ArithmeticUtils.h" // advc
 #include "CvGameCoreDLLDefNew.h"
 #include "FDataStreamBase.h"
-#include "FFreeListTrashArray.h" // advc.003s: includes FreeListTraversal.h
+#include "FFreeListTrashArray.h" // (advc.003s: includes FreeListTraversal.h)
 #include "LinkedList.h"
 #include "CvString.h"
 #include "BitUtil.h" // advc.enum
 #include "CvDefines.h"
-#include "CvEnums.h" // includes CvInfoEnum.h
-/*  advc: Smaller numbers may already crash the EXE; the DLL assumes in some places
-	that player ids fit in a single byte. */
-BOOST_STATIC_ASSERT(MAX_PLAYERS < MAX_CHAR && MAX_TEAMS < MAX_CHAR);
-#include "CvStructs.h"
-#include "CvDLLUtilityIFaceBase.h"
-
-//jason tests (advc.make: removed most of those)
 #include "CvRandom.h"
-#include "FProfiler.h"
-#include "CvGameCoreUtils.h"
-#include "ScaledNum.h" // Includes TypeChoice.h
+#include "CvEnums.h" // (advc.enum: includes CvEnumMacros.h)
 #include "CvGlobals.h"
-#include "EnumMap2D.h" // advc.enum: Includes EnumMap.h
+#include "EnumTraits.h"
+#include "IntegerConversion.h" // advc
+#include "CvStructs.h"
+#include "FProfiler.h" // (includes CvDLLUtilityIFaceBase.h)
+#include "CvGameCoreUtils.h"
+#include "ScaledNum.h"
+#include "ArithmeticTraits.h"
+#include "EnumMap.h"
 #include "CvPythonCaller.h" // advc.003y
 #include "CvDLLLogger.h" // advc.003t
 // <advc.003x> Include only parts of the old CvInfos.h (caveat: the order of these matters)
-#include "CvInfo_Base.h" // advc.enum: Includes CvInfo_EnumMap.h
+#include "CvInfo_Base.h" // (advc.enum: includes CvInfo_EnumMap.h)
 #include "CvInfo_Asset.h"
 #include "CvInfo_Tech.h"
 #include "CvInfo_Civilization.h"

@@ -44,7 +44,7 @@ protected:
 	UWAI m_uwai;
 	void AI_sortOutUWAIOptions(bool bFromSaveGame);
 	// </advc.104>
-	EnumMap<VoteSourceTypes,EraTypes> m_aeVoteSourceEras; // advc.erai
+	ArrayEnumMap<VoteSourceTypes,EraTypes> m_aeVoteSourceEras; // advc.erai
 	std::vector<scaled> m_arExclusiveRadiusWeight; // advc.099b
 
 	void AI_updateExclusiveRadiusWeight(); // advc.009b

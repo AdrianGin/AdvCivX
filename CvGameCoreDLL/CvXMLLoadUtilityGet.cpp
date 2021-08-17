@@ -3,7 +3,6 @@
 //
 
 #include "CvGameCoreDLL.h"
-#include "CvDLLXMLIFaceBase.h"
 #include "CvXMLLoadUtility.h"
 #include "FInputDevice.h"
 
@@ -289,7 +288,7 @@ bool CvXMLLoadUtility::GetNextXmlVal(short& r, short iDefault)
 		{
 			int i;
 			bool b = SafeGetLastNodeValue(m_pFXml, i, (int)iDefault); // advc.006d
-			r = toShort(i);
+			r = safeIntCast<short>(i);
 			return b;
 		}
 		FErrorMsg("Error in GetNextXmlVal function, unable to find the next non-comment node");
@@ -307,7 +306,7 @@ bool CvXMLLoadUtility::GetNextXmlVal(char& r, char iDefault)
 		{
 			int i;
 			bool b = SafeGetLastNodeValue(m_pFXml, i, (int)iDefault); // advc.006d
-			r = toChar(i);
+			r = safeIntCast<char>(i);
 			return b;
 		}
 		FErrorMsg("Error in GetNextXmlVal function, unable to find the next non-comment node");

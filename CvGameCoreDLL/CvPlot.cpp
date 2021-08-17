@@ -17,7 +17,7 @@
 #include "CvDLLPlotBuilderIFaceBase.h"
 #include "CvDLLFlagEntityIFaceBase.h"
 
-/*	advc.make: I've added toChar, toShort calls in a few places that looked at least
+/*	advc.make: I've added safeIntCast calls in a few places that looked at least
 	slightly hazardous. Beyond that, explicit casts would only add clutter.
 	NB: Disabling this warning entirely does unfortunately not only allow implicit
 	conversions from larger to smaller int types but also float-to-int conversions. */
@@ -116,8 +116,8 @@ CvPlot::~CvPlot() // advc: Merged with the deleted uninit function
 
 void CvPlot::init(int iX, int iY)
 {
-	m_iX = toShort(iX);
-	m_iY = toShort(iY);
+	m_iX = safeIntCast<short>(iX);
+	m_iY = safeIntCast<short>(iY);
 	updatePlotNum(); // advc.opt
 	m_iLatitude = calculateLatitude(); // advc.tsl
 }
@@ -126,7 +126,7 @@ void CvPlot::init(int iX, int iY)
 void CvPlot::updatePlotNum()
 {
 	if (getX() != INVALID_PLOT_COORD && getY() != INVALID_PLOT_COORD)
-		m_iPlotNum = static_cast<PlotNumInt>(GC.getMap().plotNum(getX(), getY()));
+		m_iPlotNum = (PlotNumInt)GC.getMap().plotNum(getX(), getY());
 }
 
 // advc.opt:
@@ -2779,11 +2779,11 @@ PlayerTypes CvPlot::calculateCulturalOwner(/* advc.099c: */ bool bIgnoreCultureR
 		think not the city plot itself) are set to unowned for 2 turns. This leads
 		to 0% revolt chance for a turn or two when a city is razed and a new city
 		is immediately founded near the ruins. Adding an isCity check to avoid confusion. */
-	if(!isCity() && isForceUnowned())
+	if (!isCity() && isForceUnowned())
 		return NO_PLAYER;
 
 	// <advc.035>
-	EnumMap<PlayerTypes,bool> abCityRadius;
+	EagerEnumMap<PlayerTypes,bool> abCityRadius;
 	bool bAnyCityRadius = false;
 	if (bOwnExclusiveRadius)
 	{
@@ -3491,7 +3491,7 @@ void CvPlot::setLatitude(int iLatitude)
 		FErrorMsg("Latitude should be in the interval [0,90]");
 		iLatitude = range(iLatitude, 0, 90);
 	}
-	m_iLatitude = toChar(iLatitude);
+	m_iLatitude = safeIntCast<char>(iLatitude);
 }
 
 
@@ -3521,7 +3521,7 @@ char CvPlot::calculateLatitude() const
 			getY() : getX()) + fixp(0.5)); // </advc.129>
 	rLatitude = rLatitude.abs();
 	rLatitude.decreaseTo(90);
-	return toChar(rLatitude.round());
+	return safeIntCast<char>(rLatitude.round());
 }
 
 
@@ -3647,7 +3647,7 @@ void CvPlot::setOwnershipDuration(int iNewValue)
 
 	bool bOldOwnershipScore = isOwnershipScore();
 
-	m_iOwnershipDuration = toShort(iNewValue);
+	m_iOwnershipDuration = safeIntCast<short>(iNewValue);
 	FAssert(getOwnershipDuration() >= 0);
 
 	if (bOldOwnershipScore != isOwnershipScore() &&
@@ -3666,7 +3666,7 @@ void CvPlot::changeOwnershipDuration(int iChange)
 
 void CvPlot::setImprovementDuration(int iNewValue)
 {
-	m_iImprovementDuration = toShort(iNewValue);
+	m_iImprovementDuration = safeIntCast<short>(iNewValue);
 	FAssert(getImprovementDuration() >= 0);
 }
 
@@ -3712,7 +3712,7 @@ bool CvPlot::isForceUnowned() const
 
 void CvPlot::setForceUnownedTimer(int iNewValue)
 {
-	m_iForceUnownedTimer = toShort(iNewValue);
+	m_iForceUnownedTimer = safeIntCast<short>(iNewValue);
 	FAssert(getForceUnownedTimer() >= 0);
 }
 
@@ -5027,7 +5027,7 @@ int CvPlot::getMinOriginalStartDist() const
 
 void CvPlot::setMinOriginalStartDist(int iNewValue)
 {
-	m_iMinOriginalStartDist = toShort(iNewValue);
+	m_iMinOriginalStartDist = safeIntCast<short>(iNewValue);
 }
 
 
@@ -7085,9 +7085,6 @@ ColorTypes CvPlot::plotMinimapColor()
 // read object from a stream. used during load.
 void CvPlot::read(FDataStreamBase* pStream)
 {
-	bool bVal;
-	char cCount;
-	int iCount;
 	//reset(); // advc: Constructor handles that
 
 	uint uiFlag=0;
@@ -7118,7 +7115,7 @@ void CvPlot::read(FDataStreamBase* pStream)
 	if (uiFlag < 5)
 	{
 		short sTmp; pStream->Read(&sTmp);
-		m_iCityRadiusCount = toChar(sTmp);
+		m_iCityRadiusCount = safeIntCast<char>(sTmp);
 	}
 	else pStream->Read(&m_iCityRadiusCount);
 	int iRiver;
@@ -7133,7 +7130,7 @@ void CvPlot::read(FDataStreamBase* pStream)
 	if (uiFlag < 5)
 	{
 		short sTmp; pStream->Read(&sTmp);
-		m_iRiverCrossingCount = toChar(sTmp);
+		m_iRiverCrossingCount = safeIntCast<char>(sTmp);
 	}
 	else pStream->Read(&m_iRiverCrossingCount); // </advc.opt>
 	// <advc.tsl>
@@ -7143,12 +7140,13 @@ void CvPlot::read(FDataStreamBase* pStream)
 		{
 			short sTmp;
 			pStream->Read(&sTmp);
-			m_iLatitude = toChar(sTmp);
+			m_iLatitude = safeIntCast<char>(sTmp);
 		}
 		else pStream->Read(&m_iLatitude);
 	}
 	else m_iLatitude = calculateLatitude(); // </advc.tsl>
 
+	bool bVal;
 	pStream->Read(&bVal);
 	m_bStartingPlot = bVal;
 	if(uiFlag < 4) // advc.opt: m_bHills removed
@@ -7186,11 +7184,11 @@ void CvPlot::read(FDataStreamBase* pStream)
 	{
 		short sTmp;
 		pStream->Read(&sTmp);
-		m_ePlotType = toChar(sTmp);
+		m_ePlotType = safeIntCast<char>(sTmp);
 		pStream->Read(&sTmp);
-		m_eTerrainType = toChar(sTmp);
+		m_eTerrainType = safeIntCast<char>(sTmp);
 		pStream->Read(&sTmp);
-		m_eFeatureType = toChar(sTmp);
+		m_eFeatureType = safeIntCast<char>(sTmp);
 	}
 	else
 	{ // </advc.opt>
@@ -7201,20 +7199,20 @@ void CvPlot::read(FDataStreamBase* pStream)
 	if (uiFlag < 7)
 		updateImpassable(); // </advc.opt>
 	pStream->Read(&m_eBonusType);
-	FAssertBounds(NO_BONUS, GC.getNumBonusInfos(), m_eBonusType); // advc
+	FAssertInfoEnum((BonusTypes)m_eBonusType); // advc
 	// <advc.opt>
 	if (uiFlag < 5)
 	{
 		short sTmp;
 		pStream->Read(&sTmp);
-		m_eImprovementType = toChar(sTmp);
+		m_eImprovementType = safeIntCast<char>(sTmp);
 	}
 	else pStream->Read(&m_eImprovementType);
 	if (uiFlag < 5)
 	{
 		short sTmp;
 		pStream->Read(&sTmp);
-		m_eRouteType = toChar(sTmp);
+		m_eRouteType = safeIntCast<char>(sTmp);
 	}
 	else pStream->Read(&m_eRouteType); // </advc.opt>
 	pStream->Read(&m_eRiverNSDirection);
@@ -7236,79 +7234,85 @@ void CvPlot::read(FDataStreamBase* pStream)
 	m_workingCity.validateOwner();
 	m_workingCityOverride.validateOwner(); // </advc.opt>
 
-	m_aiYield.Read(pStream, false, uiFlag < 5);
-
+	if (uiFlag >= 13)
+		m_aiYield.read(pStream);
+	else if (uiFlag < 5)
+		m_aiYield.readArray<short>(pStream);
+	else m_aiYield.readArray<char>(pStream);
 	// BETTER_BTS_AI_MOD, Efficiency (plot danger cache), 08/21/09, jdog5000: START
 	/*	K-Mod. I've changed the purpose of invalidateBorderDangerCache.
 		It is no longer appropriate for this. */
 	/*m_iActivePlayerNoBorderDangerCache = false;
 	invalidateBorderDangerCache();*/
 	// BETTER_BTS_AI_MOD: END
-	pStream->Read(&cCount);
-	if (cCount > 0)
-		m_aiCulture.Read(pStream);
-	pStream->Read(&cCount);
-	if (cCount > 0)
-		m_aiFoundValue.Read(pStream, false);
-	if (uiFlag < 10)
-		m_aiPlayerCityRadiusCount.ReadBtS<char,char>(pStream);
-	else m_aiPlayerCityRadiusCount.Read(pStream);
-	pStream->Read(&cCount);
-	if (cCount > 0)
-		m_aiPlotGroup.Read(pStream);
-	pStream->Read(&cCount);
-	if (cCount > 0)
-		m_aiVisibilityCount.Read(pStream, false);
-	if (uiFlag < 10)
+	if (uiFlag >= 13)
 	{
-		m_aiStolenVisibilityCount.ReadBtS<char,short>(pStream);
-		m_aiBlockadedCount.ReadBtS<char,short>(pStream);
+		m_aiCulture.read(pStream);
+		m_aiFoundValue.read(pStream);
+		m_aiPlayerCityRadiusCount.read(pStream);
+		m_aiPlotGroup.read(pStream);
+		m_aiVisibilityCount.read(pStream);
+		m_aiStolenVisibilityCount.read(pStream);
+		m_aiBlockadedCount.read(pStream);
+		m_aiRevealedOwner.read(pStream);
+		m_abRiverCrossing.read(pStream);
+		m_abRevealed.read(pStream);
+		m_aeRevealedImprovementType.read(pStream);
+		m_aeRevealedRouteType.read(pStream);
 	}
 	else
 	{
-		m_aiStolenVisibilityCount.Read(pStream);
-		m_aiBlockadedCount.Read(pStream);
-	}
-	pStream->Read(&cCount);
-	if (cCount > 0)
-		m_aiRevealedOwner.Read(pStream, false);
-	pStream->Read(&cCount);
-	if (cCount > 0)
-		m_abRiverCrossing.Read(pStream);
-	pStream->Read(&cCount);
-	if (cCount > 0)
-		m_abRevealed.Read(pStream);
-	if (uiFlag < 5)
-		m_aeRevealedImprovementType.ReadBtS<char,short>(pStream);
-	else if (uiFlag < 10)
-		m_aeRevealedImprovementType.ReadBtS<char,char>(pStream);
-	else m_aeRevealedImprovementType.Read(pStream);
-	if (uiFlag == 10)
-	{	// Sparse map didn't work out well here
-		SparseEnumMap<TeamTypes,RouteTypes> aeRevealedRouteType;
-		aeRevealedRouteType.Read(pStream);
-		if (aeRevealedRouteType.isAnyNonDefault())
+		m_aiCulture.readLazyArray<char,int>(pStream);
+		m_aiFoundValue.readLazyArray<char,short>(pStream);
+		if (uiFlag < 10)
+			m_aiPlayerCityRadiusCount.readLazyArray<char,char>(pStream);
+		else m_aiPlayerCityRadiusCount.readPair<short,short,char>(pStream);
+		m_aiPlotGroup.readLazyArray<char,int>(pStream);
+		m_aiVisibilityCount.readLazyArray<char,short>(pStream);
+		if (uiFlag < 10)
 		{
-			FOR_EACH_ENUM(Team)
-				m_aeRevealedRouteType.set(eLoopTeam, aeRevealedRouteType.get(eLoopTeam));
+			m_aiStolenVisibilityCount.readLazyArray<char,short>(pStream);
+			m_aiBlockadedCount.readLazyArray<char,short>(pStream);
+		}
+		else
+		{
+			m_aiStolenVisibilityCount.readPair<short,short,short>(pStream);
+			m_aiBlockadedCount.readPair<short,short,short>(pStream);
+		}
+		m_aiRevealedOwner.readLazyArray<char,char>(pStream);
+		m_abRiverCrossing.readLazyArray<char,bool>(pStream);
+		m_abRevealed.readLazyArray<char,bool>(pStream);
+		if (uiFlag < 5)
+			m_aeRevealedImprovementType.readLazyArray<char,short>(pStream);
+		else if (uiFlag < 10)
+			m_aeRevealedImprovementType.readLazyArray<char,char>(pStream);
+		else m_aeRevealedImprovementType.readPair<short,short,short>(pStream);
+		if (uiFlag == 10)
+		{	// List-based map didn't work out well here
+			ListEnumMap<TeamTypes,RouteTypes> aeRevealedRouteType;
+			aeRevealedRouteType.readPair<short,short,short>(pStream);
+			if (aeRevealedRouteType.isAnyNonDefault())
+			{
+				FOR_EACH_ENUM(Team)
+					m_aeRevealedRouteType.set(eLoopTeam, aeRevealedRouteType.get(eLoopTeam));
+			}
+		}
+		else
+		{
+			if (uiFlag < 5)
+				m_aeRevealedRouteType.readLazyArray<char,short>(pStream);
+			else m_aeRevealedRouteType.readLazyArray<char,char>(pStream);
 		}
 	}
-	else
-	{
-		pStream->Read(&cCount);
-		if (cCount > 0)
-			m_aeRevealedRouteType.Read(pStream, false, uiFlag < 5);
-	}
 	m_szScriptData = pStream->ReadString();
-
-	pStream->Read(&iCount);
-	if (iCount > 0)
-		m_aiBuildProgress.Read(pStream, false);
+	if (uiFlag >= 13)
+		m_aiBuildProgress.read(pStream);
+	else m_aiBuildProgress.readLazyArray<int,short>(pStream);
 	// <advc.011>
 	if (uiFlag < 5)
 	{
 		int iTmp; pStream->Read(&iTmp);
-		m_iTurnsBuildsInterrupted = toShort(iTmp);
+		m_iTurnsBuildsInterrupted = safeIntCast<short>(iTmp);
 	}
 	else pStream->Read(&m_iTurnsBuildsInterrupted); // </advc.011>
 	// <advc.005c>
@@ -7319,22 +7323,28 @@ void CvPlot::read(FDataStreamBase* pStream)
 	// <advc.opt>
 	if (uiFlag >= 2)
 		pStream->Read(&m_iTotalCulture);
-	else if(m_aiCulture.isAllocated()) // just to save time
+	else if (m_aiCulture.isAnyNonDefault()) // just to save time
 	{
 		/*  CvPlayer objects aren't loaded yet. Players that have never been alive
 			should have 0 culture, so we don't really need to check isEverAlive. */
-		for(int i = 0; i < MAX_PLAYERS; i++)
-			m_iTotalCulture += m_aiCulture.get((PlayerTypes)i);
+		FOR_EACH_ENUM(Player)
+			m_iTotalCulture += m_aiCulture.get(eLoopPlayer);
 	} // </advc.opt>
-	if (uiFlag < 10)
+	if (uiFlag >= 13)
 	{
-		m_aaiCultureRangeCities.ReadBtS<char,char>(pStream);
-		m_aaiInvisibleVisibilityCount.ReadBtS<char,short>(pStream);
+		m_aaiCultureRangeCities.read(pStream);
+		m_aaiInvisibleVisibilityCount.read(pStream);
+	}
+	else if (uiFlag >= 10)
+	{
+		m_aaiCultureRangeCities.readTuple<short,short,char>(pStream);
+		m_aaiInvisibleVisibilityCount.readTuple<short,short,short>(pStream);
 	}
 	else
 	{
-		m_aaiCultureRangeCities.Read(pStream);
-		m_aaiInvisibleVisibilityCount.Read(pStream);
+		m_aaiCultureRangeCities.readLazyArray<char,int,char>(pStream);
+		m_aaiInvisibleVisibilityCount.readLazyArray<char,int,short>(pStream);
+		
 	}
 	m_units.Read(pStream);
 }
@@ -7355,7 +7365,8 @@ void CvPlot::write(FDataStreamBase* pStream)
 	//uiFlag = 9; // advc.912f
 	//uiFlag = 10; // advc.enum (sparse maps 1)
 	//uiFlag = 11; // advc.enum (sparse maps 2)
-	uiFlag = 12; // advc.opt (m_iPlotNum)
+	//uiFlag = 12; // advc.opt (m_iPlotNum)
+	uiFlag = 13; // advc.enum: new enum map save behavior
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE(CvString::format("Plot pt1(%d,%d)", getX(), getY()).GetCString());
 	pStream->Write(m_iX);
@@ -7411,76 +7422,24 @@ void CvPlot::write(FDataStreamBase* pStream)
 	pStream->Write(m_workingCityOverride.iID);
 	REPRO_TEST_END_WRITE();
 	REPRO_TEST_BEGIN_WRITE(CvString::format("Plot pt2(%d,%d)", getX(), getY()).GetCString());
-	m_aiYield.Write(pStream, false);
-	if (!m_aiCulture.hasContent())
-		pStream->Write((char)0);
-	else
-	{
-		pStream->Write((char)m_aiCulture.getLength());
-		m_aiCulture.Write(pStream);
-	}
-	if (!m_aiFoundValue.hasContent())
-		pStream->Write((char)0);
-	else
-	{
-		pStream->Write((char)m_aiFoundValue.getLength());
-		m_aiFoundValue.Write(pStream, false);
-	}
-	m_aiPlayerCityRadiusCount.Write(pStream);
-	if (!m_aiPlotGroup.hasContent())
-		pStream->Write((char)0);
-	else
-	{
-		pStream->Write((char)m_aiPlotGroup.getLength());
-		m_aiPlotGroup.Write(pStream);
-	}
-	if (!m_aiVisibilityCount.hasContent())
-		pStream->Write((char)0);
-	else
-	{
-		pStream->Write((char)m_aiVisibilityCount.getLength());
-		m_aiVisibilityCount.Write(pStream, false);
-	}
-	m_aiStolenVisibilityCount.Write(pStream);
-	m_aiBlockadedCount.Write(pStream);
-	if (!m_aiRevealedOwner.hasContent())
-		pStream->Write((char)0);
-	else
-	{
-		pStream->Write((char)m_aiRevealedOwner.getLength());
-		m_aiRevealedOwner.Write(pStream, false);
-	}
-	if (!m_abRiverCrossing.hasContent())
-		pStream->Write((char)0);
-	else
-	{
-		pStream->Write((char)m_abRiverCrossing.getLength());
-		m_abRiverCrossing.Write(pStream);
-	}
-	if (!m_abRevealed.hasContent())
-		pStream->Write((char)0);
-	else
-	{
-		pStream->Write((char)m_abRevealed.getLength());
-		m_abRevealed.Write(pStream);
-	}
-	m_aeRevealedImprovementType.Write(pStream);
-	if (!m_aeRevealedRouteType.hasContent())
-		pStream->Write((char)0);
-	else
-	{
-		pStream->Write((char)m_aeRevealedRouteType.getLength());
-		m_aeRevealedRouteType.Write(pStream, false);
-	}
+	m_aiYield.write(pStream);
+	m_aiCulture.write(pStream);
+	m_aiFoundValue.write(pStream);
+	m_aiPlayerCityRadiusCount.write(pStream);
+	m_aiPlotGroup.write(pStream);
+	m_aiVisibilityCount.write(pStream);
+	m_aiStolenVisibilityCount.write(pStream);
+	m_aiBlockadedCount.write(pStream);
+	m_aiRevealedOwner.write(pStream);
+	m_abRiverCrossing.write(pStream);
+	m_abRevealed.write(pStream);
+	m_aeRevealedImprovementType.write(pStream);
+	m_aeRevealedRouteType.write(pStream);
+
 	pStream->WriteString(m_szScriptData);
 
-	if (!m_aiBuildProgress.hasContent())
-		pStream->Write((int)0);
-	else
-	{
-		pStream->Write((int)m_aiBuildProgress.getLength());
-		m_aiBuildProgress.Write(pStream, false);
-	}
+	m_aiBuildProgress.write(pStream);
+
 	pStream->Write(m_iTurnsBuildsInterrupted); // advc.011
 	// <advc.005c>
 	std::wstring szTmp;
@@ -7489,8 +7448,8 @@ void CvPlot::write(FDataStreamBase* pStream)
 	pStream->WriteString(szTmp); // </advc.005c>
 	pStream->Write(m_iTotalCulture); // advc.opt
 
-	m_aaiCultureRangeCities.Write(pStream);
-	m_aaiInvisibleVisibilityCount.Write(pStream);
+	m_aaiCultureRangeCities.write(pStream);
+	m_aaiInvisibleVisibilityCount.write(pStream);
 
 	m_units.Write(pStream);
 	REPRO_TEST_END_WRITE();

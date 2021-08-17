@@ -20,14 +20,14 @@ class StartingPositionIteration
 		SolutionAttributes() : m_eWorstOutlier(NO_PLAYER) {}
 		scaled m_rStartPosVal; // Optimization goal
 		// For heuristic search
-		EnumMap<PlayerTypes,scaled> m_startValues;
-		EnumMap<PlayerTypes,scaled> m_volatilityValues;
+		EagerEnumMap<PlayerTypes,scaled> m_startValues;
+		EagerEnumMap<PlayerTypes,scaled> m_volatilityValues;
 		PlayerTypes m_eWorstOutlier;
 		scaled m_rAvgError;
 		// For updating start value during normalization step
-		EnumMap<PlayerTypes,scaled> m_foundValues;
-		EnumMap<PlayerTypes,scaled> m_foundWeights;
-		EnumMap<PlayerTypes,scaled> m_rivalMultipliers;
+		EagerEnumMap<PlayerTypes,scaled> m_foundValues;
+		EagerEnumMap<PlayerTypes,scaled> m_foundWeights;
+		EagerEnumMap<PlayerTypes,scaled> m_rivalMultipliers;
 	};
 	friend class NormalizationTarget; // Just to make SolutionAttributes visible
 
@@ -42,9 +42,9 @@ public:
 private:
 	bool m_bRestrictedAreas;
 	bool m_bScenario;
-	EnumMap<PlayerTypes,bool> m_abFixedStart;
+	ArrayEnumMap<PlayerTypes,bool> m_abFixedStart;
 	CitySiteEvaluator* m_pEval;
-	EnumMap<PlotNumTypes,scaled> const* m_pYieldValues;
+	EagerEnumMap<PlotNumTypes,scaled> const* m_pYieldValues;
 	std::map<CvArea const*,scaled> const* m_pYieldsPerArea;
 	DistanceTable const* m_pPathDists;
 	PotentialSites const* m_pPotentialSites;
@@ -55,11 +55,11 @@ private:
 
 	CitySiteEvaluator* createSiteEvaluator(bool bNormalize = false) const;
 	void evaluateCurrPosition(SolutionAttributes& kResult, bool bLog = false) const;
-	void computeStartValues(EnumMap<PlayerTypes,short> const& kFoundValues,
+	void computeStartValues(EagerEnumMap<PlayerTypes,short> const& kFoundValues,
 			SolutionAttributes& kResult, bool bLog = false) const;
-	scaled computeRivalDistFactors(EnumMap<PlayerTypes,scaled>& kResult,
+	scaled computeRivalDistFactors(EagerEnumMap<PlayerTypes,scaled>& kResult,
 			bool bSameArea) const;
-	scaled outlierValue(EnumMap<PlayerTypes,scaled> const& kStartValues,
+	scaled outlierValue(EagerEnumMap<PlayerTypes,scaled> const& kStartValues,
 			PlayerTypes eIndex, scaled& rPercentage,
 			scaled rNegativeOutlierExtraWeight = 0,
 			scaled const* pMedian = NULL, bool* pbNegativeOutlier = NULL) const;
@@ -90,18 +90,18 @@ private:
 		VoronoiCell* getCell(PlayerTypes eCurrSite) const;
 		PlotNumTypes getRemoteSite(int iIndex) const;
 		void getCurrFoundValues(
-				EnumMap<PlayerTypes,short>& kFoundValuesPerPlayer) const;
+				EagerEnumMap<PlayerTypes,short>& kFoundValuesPerPlayer) const;
 
 	private:
 		CitySiteEvaluator const& m_kEval;
 		std::map<PlotNumTypes,short> m_foundValuesPerSite;
 		std::map<PlayerTypes,VoronoiCell*> m_sitesClosestToCurrSite;
-		EnumMap<PlayerTypes,short> m_foundValuesPerCurrSite;
+		EagerEnumMap<PlayerTypes,short> m_foundValuesPerCurrSite;
 		std::vector<std::pair<int,PlotNumTypes> > m_remoteSitesByAreaSize;
 
 		scaled computeMinFoundValue();
 		void recordSite(CvPlot const& kPlot, short iFoundValue, bool bAdd,
-				EnumMap<PlotNumTypes,scaled>& kVicinityPenaltiesPerPlot);
+				EagerEnumMap<PlotNumTypes,scaled>& kVicinityPenaltiesPerPlot);
 		void closestPlayers(CvPlot const& kPlot, std::vector<PlayerTypes>& kResult) const;
 		int fewestPotentialSites() const;
 	};
@@ -110,7 +110,7 @@ private:
 	{
 	public:
 		SpaceEvaluator(DistanceTable const& kDists,
-				EnumMap<PlotNumTypes,scaled> const& kYieldValues, bool bLog);
+				EagerEnumMap<PlotNumTypes,scaled> const& kYieldValues, bool bLog);
 		scaled getSpaceValue(PlayerTypes ePlayer) const { return m_spaceValues.get(ePlayer); }
 	private:
 		/*	Claims are inverted distances; pretty small. Enum param ensures that
@@ -119,9 +119,9 @@ private:
 		void computeSpaceValue(PlayerTypes ePlayer);
 		static std::vector<claim_t> cacheDelayFactors(word iMaxDist);
 		DistanceTable const& m_kDists;
-		EnumMap<PlotNumTypes,scaled> const& m_kYieldValues;
-		EnumMap<PlayerTypes,scaled> m_spaceValues;
-		EnumMap<PlotNumTypes,claim_t> m_sumOfClaims;
+		EagerEnumMap<PlotNumTypes,scaled> const& m_kYieldValues;
+		EagerEnumMap<PlayerTypes,scaled> m_spaceValues;
+		EagerEnumMap<PlotNumTypes,claim_t> m_sumOfClaims;
 		word m_iDistThresh;
 		word m_iAvgCityDist;
 		word m_iDistSubtr;

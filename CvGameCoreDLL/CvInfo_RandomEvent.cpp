@@ -3,7 +3,6 @@
 #include "CvGameCoreDLL.h"
 #include "CvInfo_RandomEvent.h"
 #include "CvXMLLoadUtility.h"
-#include "CvDLLXMLIFaceBase.h"
 
 
 CvEventInfo::CvEventInfo() :
@@ -420,66 +419,6 @@ int CvEventInfo::getNumWorldNews() const
 	return m_aszWorldNews.size();
 }
 
-int CvEventInfo::getBuildingYieldChange(int iBuildingClass, int iYield) const
-{
-	for (std::vector<BuildingYieldChange>::const_iterator it = m_aBuildingYieldChanges.begin(); it != m_aBuildingYieldChanges.end(); ++it)
-	{
-		if (it->eBuildingClass == (BuildingClassTypes)iBuildingClass && it->eYield == (YieldTypes)iYield)
-			return it->iChange;
-	}
-	return 0;
-}
-
-int CvEventInfo::getNumBuildingYieldChanges() const
-{
-	return m_aBuildingYieldChanges.size();
-}
-
-int CvEventInfo::getBuildingCommerceChange(int iBuildingClass, int iCommerce) const
-{
-	for (std::vector<BuildingCommerceChange>::const_iterator it = m_aBuildingCommerceChanges.begin(); it != m_aBuildingCommerceChanges.end(); ++it)
-	{
-		if (it->eBuildingClass == (BuildingClassTypes)iBuildingClass && it->eCommerce == (CommerceTypes)iCommerce)
-			return it->iChange;
-	}
-	return 0;
-}
-
-int CvEventInfo::getNumBuildingCommerceChanges() const
-{
-	return m_aBuildingCommerceChanges.size();
-}
-
-int CvEventInfo::getNumBuildingHappyChanges() const
-{
-	return m_aBuildingHappyChanges.size();
-}
-
-int CvEventInfo::getBuildingHappyChange(int iBuildingClass) const
-{
-	for (BuildingChangeArray::const_iterator it = m_aBuildingHappyChanges.begin(); it != m_aBuildingHappyChanges.end(); ++it)
-	{
-		if (it->first == (BuildingClassTypes)iBuildingClass)
-			return it->second;
-	}
-	return 0;
-}
-
-int CvEventInfo::getNumBuildingHealthChanges() const
-{
-	return m_aBuildingHealthChanges.size();
-}
-
-int CvEventInfo::getBuildingHealthChange(int iBuildingClass) const
-{
-	for (BuildingChangeArray::const_iterator it = m_aBuildingHealthChanges.begin(); it != m_aBuildingHealthChanges.end(); ++it)
-	{
-		if (it->first == (BuildingClassTypes)iBuildingClass)
-			return it->second;
-	}
-	return 0;
-}
-
 const char* CvEventInfo::getPythonCallback() const
 {
 	return m_szPythonCallback;
@@ -614,42 +553,11 @@ void CvEventInfo::read(FDataStreamBase* stream)
 		stream->ReadString(szText);
 		m_aszWorldNews.push_back(szText);
 	}
-	stream->Read(&iNumElements);
-	m_aBuildingYieldChanges.clear();
-	for (int i = 0; i < iNumElements; ++i)
-	{
-		BuildingYieldChange kChange;
-		kChange.read(stream);
-		m_aBuildingYieldChanges.push_back(kChange);
-	}
-	stream->Read(&iNumElements);
-	m_aBuildingCommerceChanges.clear();
-	for (int i = 0; i < iNumElements; ++i)
-	{
-		BuildingCommerceChange kChange;
-		kChange.read(stream);
-		m_aBuildingCommerceChanges.push_back(kChange);
-	}
-	stream->Read(&iNumElements);
-	m_aBuildingHappyChanges.clear();
-	for (int i = 0; i < iNumElements; ++i)
-	{
-		int iBuildingClass;
-		stream->Read(&iBuildingClass);
-		int iHappy;
-		stream->Read(&iHappy);
-		m_aBuildingHappyChanges.push_back(std::make_pair((BuildingClassTypes)iBuildingClass, iHappy));
-	}
-	stream->Read(&iNumElements);
-	m_aBuildingHealthChanges.clear();
-	for (int i = 0; i < iNumElements; ++i)
-	{
-		int iBuildingClass;
-		stream->Read(&iBuildingClass);
-		int iHealthy;
-		stream->Read(&iHealthy);
-		m_aBuildingHealthChanges.push_back(std::make_pair((BuildingClassTypes)iBuildingClass, iHealthy));
-	}
+	// <advc.003t>
+	BuildingYieldChange().read(stream);
+	BuildingCommerceChange().read(stream);
+	BuildingHappyChange().read(stream);
+	BuildingHealthChange().read(stream); // </advc.003t>
 	stream->ReadString(m_szUnitName);
 	stream->ReadString(m_szOtherPlayerPopup);
 	stream->ReadString(m_szQuestFailText);
@@ -732,24 +640,11 @@ void CvEventInfo::write(FDataStreamBase* stream)
 	stream->Write(m_aszWorldNews.size());
 	for (std::vector<CvWString>::iterator it = m_aszWorldNews.begin(); it != m_aszWorldNews.end(); ++it)
 		stream->WriteString(*it);
-	stream->Write(m_aBuildingYieldChanges.size());
-	for (std::vector<BuildingYieldChange>::iterator it = m_aBuildingYieldChanges.begin(); it != m_aBuildingYieldChanges.end(); ++it)
-		it->write(stream);
-	stream->Write(m_aBuildingCommerceChanges.size());
-	for (std::vector<BuildingCommerceChange>::iterator it = m_aBuildingCommerceChanges.begin(); it != m_aBuildingCommerceChanges.end(); ++it)
-		it->write(stream);
-	stream->Write(m_aBuildingHappyChanges.size());
-	for (BuildingChangeArray::iterator it = m_aBuildingHappyChanges.begin(); it != m_aBuildingHappyChanges.end(); ++it)
-	{
-		stream->Write(it->first);
-		stream->Write(it->second);
-	}
-	stream->Write(m_aBuildingHealthChanges.size());
-	for (BuildingChangeArray::iterator it = m_aBuildingHealthChanges.begin(); it != m_aBuildingHealthChanges.end(); ++it)
-	{
-		stream->Write(it->first);
-		stream->Write(it->second);
-	}
+	// <advc.003t>
+	BuildingYieldChange().write(stream);
+	BuildingCommerceChange().write(stream);
+	BuildingHappyChange().write(stream);
+	BuildingHealthChange().write(stream); // </advc.003t>
 	stream->WriteString(m_szUnitName);
 	stream->WriteString(m_szOtherPlayerPopup);
 	stream->WriteString(m_szQuestFailText);
@@ -884,140 +779,12 @@ bool CvEventInfo::read(CvXMLLoadUtility* pXML)
 		}
 		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
-
-	m_aBuildingYieldChanges.clear();
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "BuildingExtraYields"))
-	{
-		if (pXML->SkipToNextVal())
-		{
-			int iNumSibs = gDLL->getXMLIFace()->GetNumChildren(pXML->GetXML());
-			if (iNumSibs > 0)
-			{
-				if (gDLL->getXMLIFace()->SetToChild(pXML->GetXML()))
-				{
-					CvString szTextVal;
-					for (int j = 0; j < iNumSibs; ++j)
-					{
-						if (pXML->GetChildXmlVal(szTextVal))
-						{
-							BuildingYieldChange kChange;
-							kChange.eBuildingClass = (BuildingClassTypes)pXML->FindInInfoClass(szTextVal);
-							pXML->GetNextXmlVal(szTextVal);
-							kChange.eYield = (YieldTypes)pXML->FindInInfoClass(szTextVal);
-							pXML->GetNextXmlVal(kChange.iChange);
-							m_aBuildingYieldChanges.push_back(kChange);
-
-							gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
-						}
-						if (!gDLL->getXMLIFace()->NextSibling(pXML->GetXML()))
-							break;
-					}
-					gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
-				}
-			}
-		}
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
-	}
-
-	m_aBuildingCommerceChanges.clear();
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "BuildingExtraCommerces"))
-	{
-		if (pXML->SkipToNextVal())
-		{
-			int iNumSibs = gDLL->getXMLIFace()->GetNumChildren(pXML->GetXML());
-			if (iNumSibs > 0)
-			{
-				if (gDLL->getXMLIFace()->SetToChild(pXML->GetXML()))
-				{
-					CvString szTextVal;
-					for (int j = 0; j < iNumSibs; ++j)
-					{
-						if (pXML->GetChildXmlVal(szTextVal))
-						{
-							BuildingCommerceChange kChange;
-							kChange.eBuildingClass = (BuildingClassTypes)pXML->FindInInfoClass(szTextVal);
-							pXML->GetNextXmlVal(szTextVal);
-							kChange.eCommerce = (CommerceTypes)pXML->FindInInfoClass(szTextVal);
-							pXML->GetNextXmlVal(kChange.iChange);
-							m_aBuildingCommerceChanges.push_back(kChange);
-							gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
-						}
-
-						if (!gDLL->getXMLIFace()->NextSibling(pXML->GetXML()))
-							break;
-					}
-					gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
-				}
-			}
-		}
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
-	}
-
-	m_aBuildingHappyChanges.clear();
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "BuildingExtraHappies"))
-	{
-		if (pXML->SkipToNextVal())
-		{
-			int iNumSibs = gDLL->getXMLIFace()->GetNumChildren(pXML->GetXML());
-			if (iNumSibs > 0)
-			{
-				if (gDLL->getXMLIFace()->SetToChild(pXML->GetXML()))
-				{
-					CvString szTextVal;
-					for (int j = 0; j < iNumSibs; ++j)
-					{
-						if (pXML->GetChildXmlVal(szTextVal))
-						{
-							BuildingClassTypes eBuildingClass = (BuildingClassTypes)pXML->FindInInfoClass(szTextVal);
-							int iChange;
-							pXML->GetNextXmlVal(iChange);
-							m_aBuildingHappyChanges.push_back(std::make_pair(eBuildingClass, iChange));
-
-							gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
-
-						}
-						if (!gDLL->getXMLIFace()->NextSibling(pXML->GetXML()))
-							break;
-					}
-					gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
-				}
-			}
-		}
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
-	}
-
-	m_aBuildingHealthChanges.clear();
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "BuildingExtraHealths"))
-	{
-		if (pXML->SkipToNextVal())
-		{
-			int iNumSibs = gDLL->getXMLIFace()->GetNumChildren(pXML->GetXML());
-			if (iNumSibs > 0)
-			{
-				if (gDLL->getXMLIFace()->SetToChild(pXML->GetXML()))
-				{
-					CvString szTextVal;
-					for (int j = 0; j < iNumSibs; ++j)
-					{
-						if (pXML->GetChildXmlVal(szTextVal))
-						{
-							BuildingClassTypes eBuildingClass = (BuildingClassTypes)pXML->FindInInfoClass(szTextVal);
-							int iChange;
-							pXML->GetNextXmlVal(iChange);
-							m_aBuildingHealthChanges.push_back(std::make_pair(eBuildingClass, iChange));
-							gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
-
-						}
-						if (!gDLL->getXMLIFace()->NextSibling(pXML->GetXML()))
-							break;
-					}
-					gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
-				}
-			}
-		}
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
-	}
-
+	// <advc.003t>
+	pXML->SetVariableListTagRate(BuildingYieldChange(), "BuildingExtraYield");
+	pXML->SetVariableListTagRate(BuildingCommerceChange(), "BuildingExtraCommerce");
+	pXML->SetVariableListTagPair(BuildingHappyChange(), "BuildingExtraHappies");
+	pXML->SetVariableListTagPair(BuildingHealthChange(), "BuildingExtraHealths");
+	// </advc.003t>
 	return true;
 }
 

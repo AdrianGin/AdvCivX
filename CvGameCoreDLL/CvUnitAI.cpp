@@ -1174,7 +1174,7 @@ int CvUnitAI::AI_sacrificeValue(const CvPlot* pPlot) const
 		if(iValue > 100 * iXP)
 			iValue -= iXP; // </advc.048>
 	}
-	return ::longLongToInt(iValue); // advc.001
+	return truncIntCast<int>(iValue); // advc.001
 }
 
 // Lead From Behind, by UncutDragon, edited for K-Mod
@@ -16467,7 +16467,7 @@ bool CvUnitAI::AI_specialSeaTransportSpy()
 
 	int const iTotalPoints = kOurTeam.getTotalUnspentEspionage();
 
-	EnumMap<PlayerTypes,int> aiBaseValue;
+	EagerEnumMap<PlayerTypes,int> aiBaseValue;
 	PlayerTypes eBestTarget = NO_PLAYER;
 	int iBestValue = 0;
 	// advc.opt: Exclude dead teams

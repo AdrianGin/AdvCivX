@@ -4034,8 +4034,8 @@ CvSelectionGroup* CvSelectionGroup::splitGroup(int iSplitSize,
 
 	int iGroupSize = getNumUnits();
 
-	EnumMap<UnitAITypes, int> aiTotalAIs;
-	EnumMap<UnitAITypes, int> aiNewGroupAIs;
+	EagerEnumMap<UnitAITypes,int> aiTotalAIs;
+	EagerEnumMap<UnitAITypes,int> aiNewGroupAIs;
 	FAssert(iGroupSize > 0);
 
 	// populate 'aiTotalAIs' with the number of each AI type in the existing group.

@@ -64,7 +64,7 @@ public: // All the const functions are exposed to Python
 	bool isMonument() const { return m_bMonument; }
 	/*  advc (note): Unused in XML. Number of buildings of this class required for
 		team victory as a necessary (not sufficient) condition. No AI code for this. */
-	DEF_INFO_ENUM_MAP(VictoryThreshold, Victory, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(VictoryThreshold, Victory, int, short, ListEnumMap);
 
 	bool read(CvXMLLoadUtility* pXML);
 	bool readPass3();
@@ -268,15 +268,15 @@ public:
 	DEF_SHORT_INFO_ENUM_MAP(StateReligionCommerce, Commerce, CommerceChangeMap);
 	DEF_SHORT_INFO_ENUM_MAP(CommerceHappiness, Commerce, CommercePercentMap);
 
-	DEF_INFO_ENUM_MAP(ReligionChange, Religion, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(SpecialistCount, Specialist, char, ArrayEnumMap);
-	DEF_INFO_ENUM_MAP(FreeSpecialistCount, Specialist, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(BonusHealthChanges, Bonus, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(BonusHappinessChanges, Bonus, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(BonusProductionModifier, Bonus, short, ListEnumMap);
-	DEF_INFO_ENUM_MAP(UnitCombatFreeExperience, UnitCombat, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(DomainFreeExperience, Domain, char, ShortEnumMap);
-	DEF_INFO_ENUM_MAP(DomainProductionModifier, Domain, short, ShortEnumMap);
+	DEF_INFO_ENUM_MAP(ReligionChange, Religion, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(SpecialistCount, Specialist, int, char, ArrayEnumMap);
+	DEF_INFO_ENUM_MAP(FreeSpecialistCount, Specialist, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(BonusHealthChanges, Bonus, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(BonusHappinessChanges, Bonus, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(BonusProductionModifier, Bonus, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(UnitCombatFreeExperience, UnitCombat, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(DomainFreeExperience, Domain, int, char, ArrayEnumMap);
+	DEF_INFO_ENUM_MAP(DomainProductionModifier, Domain, int, short, ArrayEnumMap);
 
 	int getNumPrereqAndTechs() const { return m_aePrereqAndTechs.size(); }
 	int getNumPrereqOrBonuses() const { return m_aePrereqOrBonuses.size(); }
@@ -293,15 +293,15 @@ public:
 	int py_getPrereqAndTechs(int i) const;
 	int py_getPrereqOrBonuses(int i) const;
 
-	DEF_INFO_ENUM_MAP(ProductionTraits, Trait, short, ListEnumMap);
-	DEF_INFO_ENUM_MAP(HappinessTraits, Trait, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(BuildingHappinessChanges, BuildingClass, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(PrereqNumOfBuildingClass, BuildingClass, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(FlavorValue, Flavor, short, ListEnumMap);
-	DEF_INFO_ENUM_MAP(ImprovementFreeSpecialist, Improvement, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(ProductionTraits, Trait, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(HappinessTraits, Trait, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(BuildingHappinessChanges, BuildingClass, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(PrereqNumOfBuildingClass, BuildingClass, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(FlavorValue, Flavor, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(ImprovementFreeSpecialist, Improvement, int, char, ListEnumMap);
 	DEF_INFO_ENUM_MAP_BOOL(CommerceFlexible, Commerce, ArrayEnumMap);
 	DEF_INFO_ENUM_MAP_BOOL(CommerceChangeOriginalOwner, Commerce, ArrayEnumMap);
-	DEF_INFO_ENUM_MAP_BOOL(BuildingClassNeededInCity, BuildingClass, ListEnumMap);
+	DEF_INFO_ENUM_SET(BuildingClassNeededInCity, BuildingClass);
 	// (Replacing optimizations by UNOFFICIAL_PATCH, 06/27/10, Afforess & jdog5000)
 	DEF_INFO_ENUM2SHORT_MAP(SpecialistYieldChange, Specialist, Yield, YieldChangeMap, ListEnumMap);
 	DEF_INFO_ENUM2SHORT_MAP(BonusYieldModifier, Bonus, Yield, YieldPercentMap, ListEnumMap);
@@ -485,7 +485,7 @@ public: // All the const functions are exposed to Python
 
 	bool isValid() const { return m_bValid; }
 
-	DEF_INFO_ENUM_MAP(ProductionTraits, Trait, int, ListEnumMap);
+	DEF_INFO_ENUM_MAP(ProductionTraits, Trait, int, short, ListEnumMap);
 
 	bool read(CvXMLLoadUtility* pXML);
 
@@ -554,7 +554,7 @@ public: // All the const functions are exposed to Python
 	bool isForceWar() const { return m_bForceWar; }
 	bool isAssignCity() const { return m_bAssignCity; }
 
-	DEF_INFO_ENUM_MAP_BOOL(ForceCivic, Civic, ListEnumMap);
+	DEF_INFO_ENUM_SET(ForceCivic, Civic);
 	DEF_INFO_ENUM_MAP_BOOL(VoteSourceType, VoteSource, ArrayEnumMap);
 
 	bool read(CvXMLLoadUtility* pXML);
@@ -664,10 +664,10 @@ public: // All const functions are exposed to Python
 	bool nameNeedsArticle() const;
 
 	// Arrays access ...
-	DEF_INFO_ENUM_MAP(BonusProductionModifier, Bonus, short, ListEnumMap);
-	DEF_INFO_ENUM_MAP(VictoryThreshold, Victory, short, ListEnumMap);
-	DEF_INFO_ENUM_MAP(VictoryMinThreshold, Victory, short, ListEnumMap);
-	DEF_INFO_ENUM_MAP(ProjectsNeeded, Project, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(BonusProductionModifier, Bonus, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(VictoryThreshold, Victory, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(VictoryMinThreshold, Victory, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(ProjectsNeeded, Project, int, short, ListEnumMap);
 
 	bool read(CvXMLLoadUtility* pXML);
 	bool readPass2(CvXMLLoadUtility* pXML);

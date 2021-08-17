@@ -164,14 +164,15 @@ public:
 			PlayerTypes eFromPlayer = NO_PLAYER) const; // advc.144
 	scaled AI_getTechRank(TechTypes eTech) const; // advc.550g
 	// advc:
-	void AI_calculateOwnedBonuses(EnumMap<BonusClassTypes,int>& kBonusClassRevealed,
-			EnumMap<BonusClassTypes,int>& viBonusClassUnrevealed,
-			EnumMap<BonusClassTypes,int>& viBonusClassHave) const;
+	void AI_calculateTechRevealBonuses(
+			EagerEnumMap<BonusClassTypes,int>& kBonusClassRevealed,
+			EagerEnumMap<BonusClassTypes,int>& viBonusClassUnrevealed,
+			EagerEnumMap<BonusClassTypes,int>& viBonusClassHave) const;
 	// BETTER_BTS_AI_MOD, Tech AI, 03/18/10, jdog5000: START
 	int AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech, bool bAsync,
-			EnumMap<BonusClassTypes,int> const& kBonusClassRevealed,
-			EnumMap<BonusClassTypes,int> const& viBonusClassUnrevealed,
-			EnumMap<BonusClassTypes,int> const& viBonusClassHave,
+			EagerEnumMap<BonusClassTypes,int> const& kBonusClassRevealed,
+			EagerEnumMap<BonusClassTypes,int> const& viBonusClassUnrevealed,
+			EagerEnumMap<BonusClassTypes,int> const& viBonusClassHave,
 			PlayerTypes eFromPlayer = NO_PLAYER, // advc.144
 			bool bRandomize = true) const; // advc
 	int AI_obsoleteBuildingPenalty(TechTypes eTech, bool bConstCache) const; // K-Mod

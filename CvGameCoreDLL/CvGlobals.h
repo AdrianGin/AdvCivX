@@ -357,6 +357,7 @@ public:
 	CvString& getFlavorTypes(FlavorTypes e);
 
 	DllExport int& getNumArtStyleTypes();
+	int const& getNumArtStyleTypes() const { return m_iNumArtStyleTypes; } // advc
 	CvString*& getArtStyleTypes();
 	DllExport CvString& getArtStyleTypes(ArtStyleTypes e);
 
@@ -965,16 +966,6 @@ __inline CvGlobals const& CvGlobals::getConstInstance()
 {
 	return gGlobals;
 }
-
-/*  <advc.enum> These aren't member functions because they need to overload the
-	SET_ENUM_LENGTH_STATIC functions defined in CvEnums.h. I'd rather not make
-	those functions members of CvGlobals. (Though that could make it easier for
-	the compiler to remove unused functions. Hmm.) */
-DO_FOR_EACH_DYN_INFO_TYPE(SET_ENUM_LENGTH)
-// These two have a dynamic length (not known at compile time) but aren't in the DYN_INFO_TYPE list
-inline WorldSizeTypes getEnumLength(WorldSizeTypes) { return (WorldSizeTypes)gGlobals.getNumWorldInfos(); }
-inline FlavorTypes getEnumLength(FlavorTypes) { return (FlavorTypes)gGlobals.getNumFlavorTypes(); }
-// </advc.enum>
 
 
 // helpers ...

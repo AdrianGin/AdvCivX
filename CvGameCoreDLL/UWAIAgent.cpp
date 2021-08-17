@@ -229,7 +229,7 @@ bool UWAI::Team::reviewWarPlans()
 	bool bScheme = true;
 	m_pReport->log("%s reviews its war plans",
 			m_pReport->teamName(kAgent.getID()));
-	EnumMap<TeamTypes,bool> abTargetDone;
+	EagerEnumMap<TeamTypes,bool> abTargetDone;
 	bool bPlanChanged = false;
 	bool bAllNaval = true, bAnyNaval = false;
 	bool bAllLand = true, bAnyLand = false;
@@ -277,7 +277,7 @@ bool UWAI::Team::reviewWarPlans()
 			if (bPlanChanged)
 			{
 				abTargetDone.set(aPlans[i].eTarget, true);
-				if (abTargetDone.getSupportSz() < (int)aPlans.size())
+				if (abTargetDone.numNonDefault() < (int)aPlans.size())
 				{
 					m_pReport->log("War plan against %s has changed, repeating review",
 							m_pReport->teamName(aPlans[i].eTarget));

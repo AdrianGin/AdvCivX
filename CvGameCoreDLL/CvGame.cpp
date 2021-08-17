@@ -174,7 +174,7 @@ void CvGame::init(HandicapTypes eHandicap)
 			char szRandomPassword[iPasswordSize];
 			for (int i = 0; i < iPasswordSize-1; i++)
 			{
-				szRandomPassword[i] = /* advc: */ toChar(
+				szRandomPassword[i] = /* advc: */ safeIntCast<char>(
 						getSorenRandNum(CHAR_MAX + 1, NULL));
 			}
 			szRandomPassword[iPasswordSize-1] = 0;
@@ -783,7 +783,7 @@ void CvGame::initDiplomacy()
 void CvGame::setPlayerColors()
 {
 	std::vector<std::pair<PlayerTypes,int> > aeiReassign;
-	EnumMap<CivilizationTypes,int> aiPlayersPerCiv;
+	EagerEnumMap<CivilizationTypes,int> aiPlayersPerCiv;
 	for (PlayerIter<ALIVE> it; it.hasNext(); ++it)
 	{
 		CivilizationTypes eCiv = it->getCivilizationType();
@@ -1149,7 +1149,7 @@ NormalizationTarget* CvGame::assignStartingPlots()
 	{
 		if (!bTeamAssignmentDone) // advc.027
 		{
-			EnumMap<PlayerTypes,bool> abPlayerDone; // advc
+			EagerEnumMap<PlayerTypes,bool> abPlayerDone; // advc
 			// BtS team assignment
 			for (int iPass = 0; iPass < 2 * MAX_PLAYERS; iPass++)
 			{
@@ -1542,7 +1542,7 @@ void CvGame::rearrangeTeamStarts(/* advc.027: */ bool bOnlyWithinArea, scaled rI
 		return; // </advc.opt>
 	CvMap const& kMap = GC.getMap();
 	// Precompute distances between all starting sites
-	EnumMap2D<PlayerTypes,PlayerTypes,int> aaiDistances;
+	ArrayEnumMap2D<PlayerTypes,PlayerTypes,int> aaiDistances;
 	for (PlayerIter<CIV_ALIVE> itFirstPlayer; itFirstPlayer.hasNext(); ++itFirstPlayer)
 	{
 		gDLL->callUpdater(); // allow window to update during launch
@@ -1652,7 +1652,7 @@ void CvGame::rearrangeTeamStarts(/* advc.027: */ bool bOnlyWithinArea, scaled rI
 	Note: for the purposes of this function, player i will be assumed to start
 	in the location of player kStartingLocs[i] */
 int CvGame::getTeamClosenessScore(  // advc: params used to be arrays
-	EnumMap2D<PlayerTypes,PlayerTypes,int> const& kDistances,
+	ArrayEnumMap2D<PlayerTypes,PlayerTypes,int> const& kDistances,
 	std::vector<PlayerTypes> const& kStartingLocs)
 {
 	int iScore = 0;
@@ -9218,7 +9218,9 @@ void CvGame::read(FDataStreamBase* pStream)
 	pStream->Read(GC.getNumBuildingClassInfos(), m_paiBuildingClassCreatedCount);
 	pStream->Read(GC.getNumProjectInfos(), m_paiProjectCreatedCount);
 	pStream->Read(GC.getNumCivicInfos(), m_paiForceCivicCount);
-	m_aiVoteOutcome.Read(pStream);
+	if (uiFlag >= 11)
+		m_aiVoteOutcome.read(pStream);
+	else m_aiVoteOutcome.readArray<int>(pStream);
 	pStream->Read(GC.getNumReligionInfos(), m_paiReligionGameTurnFounded);
 	pStream->Read(GC.getNumCorporationInfos(), m_paiCorporationGameTurnFounded);
 	pStream->Read(GC.getNumVoteSourceInfos(), m_aiSecretaryGeneralTimer);
@@ -9332,7 +9334,11 @@ void CvGame::read(FDataStreamBase* pStream)
 	}
 	// <advc>
 	if (uiFlag >= 9)
-		m_aeVoteSourceReligion.Read(pStream);
+	{
+		if (uiFlag >= 11)
+			m_aeVoteSourceReligion.read(pStream);
+		else m_aeVoteSourceReligion.readArray<int>(pStream);
+	}
 	else // </advc>
 	{
 		int iSize;
@@ -9411,7 +9417,8 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 7; // advc.027b
 	//uiFlag = 8; // advc.172
 	//uiFlag = 9; // advc (m_aeVoteSourceReligion)
-	uiFlag = 10; // advc.099f
+	//uiFlag = 10; // advc.099f
+	uiFlag = 11; // advc.enum: new enum map save behavior
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9479,7 +9486,7 @@ void CvGame::write(FDataStreamBase* pStream)
 	pStream->Write(GC.getNumBuildingClassInfos(), m_paiBuildingClassCreatedCount);
 	pStream->Write(GC.getNumProjectInfos(), m_paiProjectCreatedCount);
 	pStream->Write(GC.getNumCivicInfos(), m_paiForceCivicCount);
-	m_aiVoteOutcome.Write(pStream);
+	m_aiVoteOutcome.write(pStream);
 	pStream->Write(GC.getNumReligionInfos(), m_paiReligionGameTurnFounded);
 	pStream->Write(GC.getNumCorporationInfos(), m_paiCorporationGameTurnFounded);
 	pStream->Write(GC.getNumVoteSourceInfos(), m_aiSecretaryGeneralTimer);
@@ -9560,7 +9567,7 @@ void CvGame::write(FDataStreamBase* pStream)
 		it->write(pStream);
 	}
 
-	m_aeVoteSourceReligion.Write(pStream); // advc
+	m_aeVoteSourceReligion.write(pStream); // advc
 
 	pStream->Write(m_aeInactiveTriggers.size());
 	for (std::vector<EventTriggerTypes>::iterator it = m_aeInactiveTriggers.begin();

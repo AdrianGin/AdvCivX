@@ -147,8 +147,8 @@ public:
 	bool nuke(int iX, int iY);
 	// <advc.650>
 	int nukeInterceptionChance(CvPlot const& kTarget, TeamTypes* pBestTeam = NULL,
-			EnumMap<TeamTypes,bool> const* pTeamsAffected = NULL) const; // <advc.650>
-
+			EagerEnumMap<TeamTypes,bool> const* pTeamsAffected = NULL) const;
+	// <advc.650>
 	bool canRecon(const CvPlot* pPlot) const;																// Exposed to Python
 	bool canReconAt(const CvPlot* pPlot, int iX, int iY) const;												// Exposed to Python
 	bool recon(int iX, int iY);
@@ -1159,16 +1159,16 @@ protected:
 	CvWString m_szName;
 	CvString m_szScriptData;
 
-	// <advc.enum> (Tbd.: short int would suffice)
-	EnumMap<PromotionTypes,bool> m_abHasPromotion;
-	EnumMap<DomainTypes,int> m_aiExtraDomainModifier;
-	EnumMap<TerrainTypes,int> m_aiTerrainDoubleMoveCount;
-	EnumMap<TerrainTypes,int> m_aiExtraTerrainAttackPercent;
-	EnumMap<TerrainTypes,int> m_aiExtraTerrainDefensePercent;
-	EnumMap<FeatureTypes,int> m_aiFeatureDoubleMoveCount;
-	EnumMap<FeatureTypes,int> m_aiExtraFeatureAttackPercent;
-	EnumMap<FeatureTypes,int> m_aiExtraFeatureDefensePercent;
-	EnumMap<UnitCombatTypes,int> m_aiExtraUnitCombatModifier;
+	// <advc.enum>
+	ArrayEnumMap<PromotionTypes,bool> m_abHasPromotion;
+	ArrayEnumMap<DomainTypes,int,short> m_aiExtraDomainModifier;
+	ArrayEnumMap<TerrainTypes,int,short> m_aiTerrainDoubleMoveCount;
+	ArrayEnumMap<TerrainTypes,int,short> m_aiExtraTerrainAttackPercent;
+	ArrayEnumMap<TerrainTypes,int,short> m_aiExtraTerrainDefensePercent;
+	ArrayEnumMap<FeatureTypes,int,short> m_aiFeatureDoubleMoveCount;
+	ArrayEnumMap<FeatureTypes,int,short> m_aiExtraFeatureAttackPercent;
+	ArrayEnumMap<FeatureTypes,int,short> m_aiExtraFeatureDefensePercent;
+	ArrayEnumMap<UnitCombatTypes,int,short> m_aiExtraUnitCombatModifier;
 	// </advc.enum>
 
 	PlayerTypes getCombatOwner_bulk(TeamTypes eForTeam, CvPlot const& kPlot) const; // advc

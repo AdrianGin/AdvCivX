@@ -233,7 +233,7 @@ protected:
 	void set(IntElementTypes e, int iNewValue)
 	{
 		FAssertBounds(0, m_aiData.size(), e);
-		m_aiData[e] = toShort(iNewValue);
+		m_aiData[e] = safeIntCast<short>(iNewValue);
 	}
 	void set(BoolElementTypes e, bool bNewValue)
 	{

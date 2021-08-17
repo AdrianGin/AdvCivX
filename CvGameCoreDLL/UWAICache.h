@@ -225,22 +225,23 @@ private:
 	std::set<TeamTypes> m_readyToCapitulateTo;
 
 	CivPlayerMap<scaled> m_arWarAnger;
-	CivPlayerMap<int> m_aiReachableCities;
-	CivPlayerMap<int> m_aiTargetMissions;
+	CivPlayerMap<int,short> m_aiReachableCities;
+	CivPlayerMap<int,short> m_aiTargetMissions;
 	CivPlayerMap<scaled> m_arThreatRating;
 	CivPlayerMap<int> m_aiVassalTechScore;
 	CivPlayerMap<int> m_aiVassalResourceScore;
 	CivPlayerMap<bool> m_abPlayerLocated;
 	// (CvTeamAI::AI_calculateAdjacentLandPlots is too slow and per team)
-	CivPlayerMap<int> m_aiAdjLandPlots;
+	CivPlayerMap<int,PlotNumInt> m_aiAdjLandPlots;
 	CivPlayerMap<scaled> m_arRelativeNavyPow;
 
-	CivTeamMap<int> m_aiPlotsLostAtWar; // advc.035
+	CivTeamMap<int,short> m_aiPlotsLostAtWar; // advc.035
 	CivTeamMap<int> m_aiPastWarScore;
-	CivTeamMap<int> m_aiBounty; // Maps targets to sponsorship values
-	CivTeamMap<PlayerTypes,NO_PLAYER> m_aeSponsorPerTarget; // Maps targets to sponsors
-	CivTeamMap<int,MIN_INT> m_aiWarUtilityIgnoringDistraction;
-	CivTeamMap<bool,true> m_abCanBeHiredAgainst; // Are we willing to be hired?
+	CivTeamMap<int,short> m_aiBounty; // Maps targets to sponsorship values
+	CivTeamMap<PlayerTypes> m_aeSponsorPerTarget; // Maps targets to sponsors
+	CivTeamMap<int,int,MIN_INT> m_aiWarUtilityIgnoringDistraction;
+	// Are we willing to be hired?
+	CivTeamMap<bool,void*,true> m_abCanBeHiredAgainst;
 
 public:
 	class City : public UWAICity // Information to be cached about a CvCity

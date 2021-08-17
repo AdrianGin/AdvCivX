@@ -3,7 +3,6 @@
 //
 
 #include "CvGameCoreDLL.h"
-#include "CvDLLXMLIFaceBase.h"
 #include "CvXMLLoadUtility.h"
 #include "CvGameTextMgr.h"
 #include "CvInfo_All.h"
@@ -961,7 +960,7 @@ void CvXMLLoadUtility::SetGlobalActionInfo()
 	#define SET_ACTION_DATA(EnumName, ActionSubTypeName) \
 		FOR_EACH_ENUM(EnumName) \
 		{ \
-			int iLength = getEnumLength(eLoop##EnumName); \
+		int iLength = enum_traits<EnumName##Types>::length(); \
 			if (iLength <= 0) \
 			{ \
 				char szMessage[1024]; \
@@ -1535,9 +1534,18 @@ void CvXMLLoadUtility::LoadDiplomacyInfo(std::vector<CvDiplomacyInfo*>& DiploInf
 	#endif
 }
 
+/*	advc: All call locations call SetToParent after SetYields, so let's do that
+	only once in a single place. */
+int CvXMLLoadUtility::SetYields(int** ppiYield)
+{
+	int iSet = SetYieldsImpl(ppiYield);
+	gDLL->getXMLIFace()->SetToParent(m_pFXml);
+	return iSet;
+}
+
 /*  Allocate memory for the yield parameter and set it to the values in XML.
 	The current/last located node must be the first child of the yield changes node */
-int CvXMLLoadUtility::SetYields(int** ppiYield)
+int CvXMLLoadUtility::SetYieldsImpl(int** ppiYield)
 {
 	if (!SkipToNextVal()) // Skip any comments and stop at the next value we might want
 		return 0;
@@ -1674,10 +1682,10 @@ void CvXMLLoadUtility::SetImprovementBonuses(CvImprovementBonusInfo** ppImprovem
 							gDLL->getXMLIFace()->SetToParent(m_pFXml);
 
 							SAFE_DELETE_ARRAY(paImprovementBonus[iBonusIndex].m_piYieldChange);	// free memory - MT, since we are about to reallocate
-							if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml,"YieldChanges"))
+							if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml,
+								"YieldChanges"))
 							{
 								SetYields(&paImprovementBonus[iBonusIndex].m_piYieldChange);
-								gDLL->getXMLIFace()->SetToParent(m_pFXml);
 							}
 							else InitList(&paImprovementBonus[iBonusIndex].m_piYieldChange, NUM_YIELD_TYPES);
 						}
@@ -1721,208 +1729,175 @@ bool CvXMLLoadUtility::SetAndLoadVar(int** ppiVar, int iDefault)
 	return true;
 }
 
-/*  advc.003t: Will set the array that pptList points to to NULL if
-	tDefaultListVal is 0 and no pairs are found or if all (index,value) pairs
-	have the value 0. */
+// <advc.enum> Iterators based on BtS loop cut from SetVariableListTagPair
+void CvXMLLoadUtility::XMLTagPairIteratorBase::setToParent()
+{
+	gDLL->getXMLIFace()->SetToParent(m_pParser);
+}
+
 template<typename T>
-void CvXMLLoadUtility::SetVariableListTagPair(T** pptList, TCHAR const* szRootTagName,
-	int iInfoBaseLength, T tDefaultListVal, // (advc.003x: Unused param iInfoBaseSize removed)
-	CvInfoMap<T>* pMap) // advc.003t
+CvXMLLoadUtility::XMLTagPairIterator<T>::XMLTagPairIterator(
+	CvXMLLoadUtility& kUtil, TCHAR const* szRootTagName)
+:	XMLTagPairIteratorBase(kUtil), m_iSiblingIndex(0), m_iSiblings(0)
 {
-	if (iInfoBaseLength <= 0)
+	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pParser, szRootTagName))
+		m_iParserLevel++;
+	else return;
+	if (m_util.SkipToNextVal()) // skip comments
 	{
-		char szMessage[1024];
-		sprintf(szMessage, "Allocating zero or less memory.\nCurrent XML file is: %s",
-				GC.getCurrentXMLFile().GetCString());
-		errorMessage(szMessage);
-	}
-	// <advc.003t>
-	FAssert((pptList == NULL) == (pMap != NULL));
-	bool bListModified=false;
-	if (pMap == NULL)
-	{
-		bListModified = (*pptList != NULL); // advc.xmldefault
-		InitList(pptList, iInfoBaseLength, tDefaultListVal);
-	} // </advc.003t>
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szRootTagName))
-	{
-		if (SkipToNextVal())
+		m_iSiblings = gDLL->getXMLIFace()->GetNumChildren(m_pParser);
+		if (m_iSiblings > 0)
 		{
-			int iNumSibs = gDLL->getXMLIFace()->GetNumChildren(m_pFXml);	
-			if (iNumSibs > 0)
-			{
-				if(iNumSibs > iInfoBaseLength)
-				{
-					char szMessage[1024];
-					sprintf(szMessage, "There are more siblings than memory allocated for them.\nCurrent XML file is: %s",
-							GC.getCurrentXMLFile().GetCString());
-					errorMessage(szMessage);
-				}
-				if (gDLL->getXMLIFace()->SetToChild(m_pFXml))
-				{
-					TCHAR szTextVal[256];
-					for (int i = 0; i < iNumSibs; i++)
-					{
-						if (SkipToNextVal() && // K-Mod: skip comments
-							GetChildXmlVal(szTextVal))
-						{	// advc: was FindInfoClass
-							int iKey = getGlobalEnumFromString(szTextVal);
-							if (iKey >= 0)
-							{
-								/*	advc.006: Can exceed the bounds here if the wrong type
-									is used in XML, e.g. a UNITCLASS_... where a
-									UNITCOMBAT_... is expected. */
-								FAssert(iKey < iInfoBaseLength);
-								T tVal;
-								GetNextXmlVal(tVal);
-								// <advc.003t>
-								if (pMap == NULL)
-								{
-									(*pptList)[iKey] = tVal;
-									if (tVal != tDefaultListVal)
-										bListModified = true;
-								}
-								else pMap->insert(iKey, tVal);
-								// </advc.003t>
-							}
-							gDLL->getXMLIFace()->SetToParent(m_pFXml);
-						}
-						if (!gDLL->getXMLIFace()->NextSibling(m_pFXml))
-							break;
-					}
-					gDLL->getXMLIFace()->SetToParent(m_pFXml);
-				}
-			}
-		}
-		gDLL->getXMLIFace()->SetToParent(m_pFXml);
-	}
-	// <advc.003t>
-	if (pMap == NULL)
-	{
-		if (!bListModified && tDefaultListVal == 0)
-			SAFE_DELETE_ARRAY(*pptList);
-	}
-	else pMap->finalizeInsertions(); // </advc.003t>
-}
-// <advc> Explicit instantiations of member function template
-template void CvXMLLoadUtility::SetVariableListTagPair(int**, TCHAR const*, int, int, CvInfoMap<int>*);
-template void CvXMLLoadUtility::SetVariableListTagPair(bool**, TCHAR const*, int, bool, CvInfoMap<bool>*);
-template void CvXMLLoadUtility::SetVariableListTagPair(float**, TCHAR const*, int, float, CvInfoMap<float>*);
-// </advc>
-// <advc.003t>
-template void CvXMLLoadUtility::SetVariableListTagPair(short**, TCHAR const*, int, short, CvInfoMap<short>*);
-template void CvXMLLoadUtility::SetVariableListTagPair(char**, TCHAR const*, int, char, CvInfoMap<char>*);
-
-// Wrappers for the weird SetYields (int only), SetCommerce (bool only) functions ...
-template<typename INT>
-void CvXMLLoadUtility::SetVariableListPerYield(CvInfoMap<INT>& kMap, TCHAR const* szRootTagName)
-{
-	if (gDLL->getXMLIFace()->SetToChildByTagName(GetXML(), szRootTagName))
-	{
-		int* piTmp = NULL;
-		int iSet = SetYields(&piTmp);
-		gDLL->getXMLIFace()->SetToParent(GetXML());
-		if (piTmp != NULL)
-		{
-			FOR_EACH_ENUM(Yield)
-			{
-				if (eLoopYield >= iSet)
-					break;
-				int iVal = piTmp[eLoopYield];
-				INT nVal;
-				if (sizeof(INT) == 1)
-					nVal = static_cast<INT>(toChar(iVal));
-				else if (sizeof(INT) == 2)
-					nVal = static_cast<INT>(toShort(iVal));
-				else nVal = static_cast<INT>(iVal);
-				kMap.insert(eLoopYield, nVal);
-			}
-			delete piTmp;
+			if (gDLL->getXMLIFace()->SetToChild(m_pParser))
+				m_iParserLevel++;
+			else m_iSiblings = 0;
 		}
 	}
-	kMap.finalizeInsertions();
 }
 
-template void CvXMLLoadUtility::SetVariableListPerYield(CvInfoMap<int>&, TCHAR const*);
-template void CvXMLLoadUtility::SetVariableListPerYield(CvInfoMap<short>&, TCHAR const*);
-template void CvXMLLoadUtility::SetVariableListPerYield(CvInfoMap<char>&, TCHAR const*);
-
-void CvXMLLoadUtility::SetVariableListPerCommerce(CvInfoMap<bool>& kMap, TCHAR const* szRootTagName)
+template<typename T>
+std::pair<int,T> CvXMLLoadUtility::XMLTagPairIterator<T>::next()
 {
-	if (gDLL->getXMLIFace()->SetToChildByTagName(GetXML(), szRootTagName))
+	std::pair<int,T> nextPair(noPair());
+	for (; m_iSiblingIndex < m_iSiblings && nextPair.first == iNO_KEY; m_iSiblingIndex++)
 	{
-		bool* pbTmp = NULL;
-		int iSet = SetCommerce(&pbTmp);
-		gDLL->getXMLIFace()->SetToParent(GetXML());
-		if (pbTmp != NULL)
-		{
-			FOR_EACH_ENUM(Commerce)
-			{
-				if (eLoopCommerce >= iSet)
-					break;
-				kMap.insert(eLoopCommerce, pbTmp[eLoopCommerce]);
-			}
-			delete pbTmp;
-		}
-	}
-	kMap.finalizeInsertions();
-}
-
-/*	Load mapping from an enum key to a list of yields.
-	Based on BtS code repeated in the CvInfo classes, e.g. CvInfo_Building. */
-template<class YieldMap_t, typename V>
-void CvXMLLoadUtility::SetVariableListTagYield(CvInfoMap<V>& kMap,
-	TCHAR const* szTagName, TCHAR const* szKeyTagName, TCHAR const* szYieldTagName)
-{
-	CvString szRootTagName(szTagName);
-	szRootTagName.append("s"); // plural
-	if (!gDLL->getXMLIFace()->SetToChildByTagName(GetXML(), szRootTagName.GetCString()))
-	{
-		kMap.finalizeInsertions();
-		return;
-	}
-	int const iNumChildren = gDLL->getXMLIFace()->GetNumChildren(GetXML());
-	if (gDLL->getXMLIFace()->SetToChildByTagName(GetXML(), szTagName))
-	{
-		int* aiYieldChanges = new int[NUM_YIELD_TYPES];
-		YieldMap_t::value_t vDefault = YieldMap_t().getDefault();
-		FAssertMsg(vDefault == 0, "Nonzero default values not supported for YieldMap");
-		for (int i = 0; i < iNumChildren; i++)
-		{
-			CvString szTextVal;
-			GetChildXmlValByName(szTextVal, szKeyTagName);
-			int iKey = FindInInfoClass(szTextVal);
+		if (m_util.SkipToNextVal() && // K-Mod: skip comments
+			// Deepens the parser level; will undo that locally through setToParent.
+			m_util.GetChildXmlVal(m_acTextVal))
+		{	// advc: was FindInfoClass
+			int iKey = getGlobalEnumFromString(m_acTextVal);
 			if (iKey >= 0)
 			{
-				if (gDLL->getXMLIFace()->SetToChildByTagName(GetXML(), szYieldTagName))
+				T tVal;
+				m_util.GetNextXmlVal(tVal);
+				nextPair = std::make_pair(iKey, tVal);
+			}
+			setToParent();
+		}
+		if (!gDLL->getXMLIFace()->NextSibling(m_pParser))
+		{
+			m_iSiblingIndex = m_iSiblings;
+			break;
+		}
+	}
+	return nextPair;
+}
+
+// Explicit instantiations
+template CvXMLLoadUtility::XMLTagPairIterator<int>;
+template CvXMLLoadUtility::XMLTagPairIterator<bool>;
+template CvXMLLoadUtility::XMLTagPairIterator<float>;
+template CvXMLLoadUtility::XMLTagPairIterator<short>;
+template CvXMLLoadUtility::XMLTagPairIterator<char>;
+// </advc.003t>
+// <advc.enum>
+template<class EncodableMap>
+CvXMLLoadUtility::XMLTagPairRateIterator<EncodableMap>::XMLTagPairRateIterator(
+	CvXMLLoadUtility& kUtil, TCHAR const* szTagName,
+	TCHAR const* szKeyTagName, TCHAR const* szRateTagName)
+:	XMLTagPairIteratorBase(kUtil), m_iSiblingIndex(0), m_iSiblings(0), m_aiRates(NULL)
+{
+	/*	The flat structure is used by Civ4EventInfos.xml. I'd like to change that to the
+		structure used everywhere else (e.g. SpecialistYieldChanges in Civ4BuildingInfos),
+		but I don't want to make XML mods more difficult to merge with AdvCiv. */
+	m_bFlat = (szKeyTagName == NULL);
+	FAssert(m_bFlat == (szRateTagName == NULL));
+	if (!m_bFlat)
+	{
+		m_szKeyTagName = szKeyTagName;
+		m_szRateTagName = szRateTagName;
+	}
+	CvString szRootTagName(szTagName);
+	szRootTagName.append("s"); // plural
+	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pParser, szRootTagName.c_str()))
+		m_iParserLevel++;
+	else return;
+	if (m_util.SkipToNextVal())
+	{
+		m_iSiblings = gDLL->getXMLIFace()->GetNumChildren(m_pParser);
+		if (m_iSiblings > 0)
+		{
+			if (gDLL->getXMLIFace()->SetToChildByTagName(m_pParser, szTagName))
+			{
+				m_aiRates = new int[iENUM_LEN];
+				m_iParserLevel++;
+			}
+			else m_iSiblings = 0;
+		}
+	}
+}
+
+template<class EncodableMap>
+std::pair<int,typename EncodableMap::enc_t>
+CvXMLLoadUtility::XMLTagPairRateIterator<EncodableMap>::next()
+{
+	std::pair<int,typename EncodableMap::enc_t> nextPair(noPair());
+	for (; m_iSiblingIndex < m_iSiblings && nextPair.first == iNO_KEY; m_iSiblingIndex++)
+	{
+		if (m_util.SkipToNextVal() &&
+			// This increases the parser depth ...
+			(m_bFlat ? m_util.GetChildXmlVal(m_szTextVal) :
+			// ... but this does not. (Yikes.)
+			m_util.GetChildXmlValByName(m_szTextVal, m_szKeyTagName)))
+		{
+			int iKey = getGlobalEnumFromString(m_szTextVal);
+			if (iKey >= 0)
+			{
+				ZeroMemory(m_aiRates, iENUM_LEN * sizeof(int));
+				int iValuesSet = 0;
+				if (m_bFlat)
 				{
-					std::fill_n(aiYieldChanges, NUM_YIELD_TYPES, vDefault);
-					int iValuesSet = SetYields(&aiYieldChanges);
-					if (iValuesSet > 0)
+					if (m_util.GetNextXmlVal(m_szTextVal))
 					{
-						YieldMap_t yieldMap;
-						yieldMap.insert(aiYieldChanges);
-						kMap.insert(iKey, yieldMap.encode());
+						int iRateType = FindInInfoClass(m_szTextVal);
+						if (iRateType >= 0)
+						{
+							FAssert(iRateType < iENUM_LEN);
+							int iRateVal = 0;
+							if (m_util.GetNextXmlVal(iRateVal))
+							{
+								m_aiRates[iRateType] = iRateVal;
+								if (iRateVal != 0)
+									iValuesSet++;
+							}
+						}
 					}
-					gDLL->getXMLIFace()->SetToParent(GetXML());
+					setToParent();
+				}
+				// Increases parser depth; the SetYields/Commerce call will undo that.
+				else if (gDLL->getXMLIFace()->SetToChildByTagName(m_pParser, m_szRateTagName))
+				{
+					// Not beautiful ...
+					if (is_same_type<typename EncodableMap::EnumType,YieldTypes>::value)
+						iValuesSet = m_util.SetYields(&m_aiRates);
+					else iValuesSet = m_util.SetCommerce(&m_aiRates);
+				}
+				if (iValuesSet > 0)
+				{
+					EncodableMap rateMap;
+					for (int i = 0; i < iENUM_LEN; i++)
+						rateMap.insert(i, m_aiRates[i]);
+					nextPair = std::make_pair(iKey, rateMap.encode());
 				}
 			}
-			if (!gDLL->getXMLIFace()->NextSibling(GetXML()))
-				break;
 		}
-		delete[] aiYieldChanges;
-		gDLL->getXMLIFace()->SetToParent(GetXML());
+		if (!gDLL->getXMLIFace()->NextSibling(m_pParser))
+		{
+			m_iSiblingIndex = m_iSiblings;
+			break;
+		}
 	}
-	gDLL->getXMLIFace()->SetToParent(GetXML());
-	kMap.finalizeInsertions();
+	return nextPair;
 }
-#define THREE_STRINGS TCHAR const*, TCHAR const*, TCHAR const*
-template void CvXMLLoadUtility::SetVariableListTagYield<YieldChangeMap>(
-		CvInfoMap<YieldChangeMap::enc_t>&, THREE_STRINGS);
-template void CvXMLLoadUtility::SetVariableListTagYield<YieldPercentMap>(
-		CvInfoMap<YieldPercentMap::enc_t>&, THREE_STRINGS);
-#undef THREE_STRINGS
-// </advc.003t>
+
+// Explicit instantiations
+template CvXMLLoadUtility::XMLTagPairRateIterator<YieldChangeMap>;
+template CvXMLLoadUtility::XMLTagPairRateIterator<YieldPercentMap>;
+template CvXMLLoadUtility::XMLTagPairRateIterator<CommerceChangeMap>;
+template CvXMLLoadUtility::XMLTagPairRateIterator<CommercePercentMap>;
+// </advc.enum>
+
+
 
 // advc.003t: See SetVariableListTagPair(int**,...) above
 void CvXMLLoadUtility::SetVariableListTagPair(CvString **ppszList, TCHAR const* szRootTagName,

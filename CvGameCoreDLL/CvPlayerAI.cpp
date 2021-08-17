@@ -1052,7 +1052,7 @@ void CvPlayerAI::AI_updateFoundValues(bool bStarting)  // advc: refactored
 				// Unless it doesn't have fresh water
 				kLoopPlot.isFreshWater())
 			{
-				iValue = toShort(iValue + intdiv::round(iValue, 20));
+				iValue = truncIntCast<short>(iValue + intdiv::round(iValue, 20));
 			} // </advc.108>
 		}
 		kLoopPlot.setFoundValue(getID(), iValue);
@@ -3813,11 +3813,11 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bFreeTech, bool bAsyn
 	CvTeam& kTeam = GET_TEAM(getTeam());
 
 	// advc.enum: Replacing vector<int>
-	EnumMap<BonusClassTypes,int> aiBonusClassRevealed;
-	EnumMap<BonusClassTypes,int> aiBonusClassUnrevealed;
-	EnumMap<BonusClassTypes,int> aiBonusClassHave;
+	EagerEnumMap<BonusClassTypes,int> aiBonusClassRevealed;
+	EagerEnumMap<BonusClassTypes,int> aiBonusClassUnrevealed;
+	EagerEnumMap<BonusClassTypes,int> aiBonusClassHave;
 	// <advc> Moved into subroutine
-	AI_calculateOwnedBonuses(
+	AI_calculateTechRevealBonuses(
 			aiBonusClassRevealed, aiBonusClassUnrevealed, aiBonusClassHave);
 	// </advc>
 	/*#ifdef DEBUG_TECH_CHOICES
@@ -4403,9 +4403,10 @@ scaled CvPlayerAI::AI_getTechRank(TechTypes eTech) const
 // advc: Cut from AI_bestTech. advc.enum: K-Mod had used std::vector<int>.
 /*	k146: Make lists of which bonuses we have / don't have / can see.
 	This is used for tech evaluation. */
-void CvPlayerAI::AI_calculateOwnedBonuses(EnumMap<BonusClassTypes,int>& kBonusClassRevealed,
-	EnumMap<BonusClassTypes,int>& kBonusClassUnrevealed,
-	EnumMap<BonusClassTypes,int>& kBonusClassHave) const
+void CvPlayerAI::AI_calculateTechRevealBonuses(
+	EagerEnumMap<BonusClassTypes,int>& kBonusClassRevealed,
+	EagerEnumMap<BonusClassTypes,int>& kBonusClassUnrevealed,
+	EagerEnumMap<BonusClassTypes,int>& kBonusClassHave) const
 {
 	FOR_EACH_ENUM(Bonus)
 	{
@@ -4433,9 +4434,9 @@ void CvPlayerAI::AI_calculateOwnedBonuses(EnumMap<BonusClassTypes,int>& kBonusCl
 	BBAI (05/14/10, jdog5000): This function was split off AI_bestTech. */
 int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 	bool bAsync,
-	EnumMap<BonusClassTypes,int> const& kBonusClassRevealed,
-	EnumMap<BonusClassTypes,int> const& kBonusClassUnrevealed,
-	EnumMap<BonusClassTypes,int> const& kBonusClassHave,
+	EagerEnumMap<BonusClassTypes,int> const& kBonusClassRevealed,
+	EagerEnumMap<BonusClassTypes,int> const& kBonusClassUnrevealed,
+	EagerEnumMap<BonusClassTypes,int> const& kBonusClassHave,
 	PlayerTypes eFromPlayer, // advc.144
 	/*	advc: Not needed after all (but may yet want to use it; if only for debug output).
 		false implies that the game state mustn't be modified - may or may not be run in-sync. */
@@ -6109,7 +6110,7 @@ int CvPlayerAI::AI_techBuildingValue(TechTypes eTech, bool bConstCache, bool& bE
 			if (kLoopBuilding.getProductionCost() > 0)
 			{	// advc: Moved into new function
 				int iMultiplier = getProductionTraitModifier(eLoopBuilding);
-				FOR_EACH_NON_DEFAULT_INFO_PAIR(kLoopBuilding.
+				FOR_EACH_NON_DEFAULT_PAIR(kLoopBuilding.
 					getBonusProductionModifier(), Bonus, int)
 				{
 					if (hasBonus(perBonusVal.first))
@@ -10108,7 +10109,7 @@ bool CvPlayerAI::AI_balanceDeal(bool bGoldDeal,
 		/*	We were unable to balance the trade with just gold.
 			So lets look at all the other items.
 			Exclude bonuses that we've already put on the table. */
-		EnumMap<BonusTypes,bool> abBonusDeal;
+		EagerEnumMap<BonusTypes,bool> abBonusDeal;
 		FOR_EACH_TRADE_ITEM(kWeGive)
 		{
 			FAssert(!pItem->m_bHidden);
@@ -14908,8 +14909,8 @@ scaled CvPlayerAI::AI_nukeChanceToKillUnit(int iHP, int iNukeModifier) const
 	static short iLastModifier;
 	if (rLastResult > scaled::MIN && iHP == iLastHP && iNukeModifier == iLastModifier)
 		return rLastResult;
-	iLastHP = toShort(iHP);
-	iLastModifier = toShort(iNukeModifier);
+	iLastHP = safeIntCast<short>(iHP);
+	iLastModifier = safeIntCast<short>(iNukeModifier);
 	int iNukeDamageRand1 = (GC.getDefineINT(CvGlobals::NUKE_UNIT_DAMAGE_RAND_1) *
 			(100 + iNukeModifier) / 100);
 	int iNukeDamageRand2 = (GC.getDefineINT(CvGlobals::NUKE_UNIT_DAMAGE_RAND_2) *
@@ -19528,7 +19529,7 @@ void CvPlayerAI::AI_doCivics()
 
 	CivicMap aeBestCivic;
 	getCivics(aeBestCivic);
-	EnumMap<CivicOptionTypes,int> aiCurrentValue; // advc.enum
+	EagerEnumMap<CivicOptionTypes,int> aiCurrentValue; // advc.enum
 	FOR_EACH_ENUM(CivicOption)
 	{
 		aiCurrentValue.set(eLoopCivicOption,
@@ -22477,7 +22478,7 @@ void CvPlayerAI::write(FDataStreamBase* pStream)
 		std::map<UnitClassTypes, int>::const_iterator it;
 		for (it = m_GreatPersonWeights.begin(); it != m_GreatPersonWeights.end(); ++it)
 		{
-			pStream->Write((int)it->first);
+			pStream->Write(it->first);
 			pStream->Write(it->second);
 		}
 	}
@@ -22521,9 +22522,8 @@ int CvPlayerAI::AI_eventValue(EventTypes eEvent,
 
 	int iHappy = 0;
 	int iHealth = 0;
-	// <advc.enum>
-	EnumMap<YieldTypes,int> aiYields;
-	EnumMap<CommerceTypes,int> aiCommerceYields; // </advc.enum>
+	YieldChangeMap aiYields;
+	CommerceChangeMap aiCommerces;
 
 	/*if (NO_PLAYER != kTriggeredData.m_eOtherPlayer) {
 		if (kEvent.isDeclareWar()) {
@@ -22644,43 +22644,33 @@ int CvPlayerAI::AI_eventValue(EventTypes eEvent,
 	if (kEvent.isGoldenAge())
 		iValue += AI_calculateGoldenAgeValue();
 
-	{	//Yield and other changes
-		if (kEvent.getNumBuildingYieldChanges() > 0)
+	FOR_EACH_NON_DEFAULT_PAIR(kEvent.
+		getBuildingYieldChange(), BuildingClass, YieldChangeMap)
+	{
+		/*	advc (note): Apparently, we're not checking whether we have
+			such buildings or could ever construct them. */
+		FOR_EACH_NON_DEFAULT_PAIR(perBuildingClassVal.second, Yield, int)
 		{
-			FOR_EACH_ENUM(BuildingClass)
-			{
-				FOR_EACH_ENUM(Yield)
-				{
-					aiYields.add(eLoopYield, kEvent.getBuildingYieldChange(
-							eLoopBuildingClass, eLoopYield));
-				}
-			}
+			aiYields.add(perYieldVal.first, perYieldVal.second);
 		}
-		if (kEvent.getNumBuildingCommerceChanges() > 0)
+	}
+	FOR_EACH_NON_DEFAULT_PAIR(kEvent.
+		getBuildingCommerceChange(), BuildingClass, CommerceChangeMap)
+	{
+		FOR_EACH_NON_DEFAULT_PAIR(perBuildingClassVal.second, Commerce, int)
 		{
-			FOR_EACH_ENUM(BuildingClass)
-			{
-				FOR_EACH_ENUM(Commerce)
-				{
-					aiCommerceYields.add(eLoopCommerce, kEvent.getBuildingCommerceChange(
-							eLoopBuildingClass, eLoopCommerce));
-				}
-			}
+			aiCommerces.add(perCommerceVal.first, perCommerceVal.second);
 		}
-		if (kEvent.getNumBuildingHappyChanges() > 0)
-		{
-			FOR_EACH_ENUM(BuildingClass)
-			{
-				iHappy += kEvent.getBuildingHappyChange(eLoopBuildingClass);
-			}
-		}
-		if (kEvent.getNumBuildingHealthChanges() > 0)
-		{
-			FOR_EACH_ENUM(BuildingClass)
-			{
-				iHealth += kEvent.getBuildingHealthChange(eLoopBuildingClass);
-			}
-		}
+	}
+	FOR_EACH_NON_DEFAULT_PAIR(kEvent.
+		getBuildingHappyChange(), BuildingClass, int)
+	{
+		iHappy += perBuildingClassVal.second;
+	}
+	FOR_EACH_NON_DEFAULT_PAIR(kEvent.
+		getBuildingHealthChange(), BuildingClass, int)
+	{
+		iHealth += perBuildingClassVal.second;
 	}
 
 	if (kEvent.isCityEffect())
@@ -22715,10 +22705,10 @@ int CvPlayerAI::AI_eventValue(EventTypes eEvent,
 		iCityTurnValue += aiYields.get(YIELD_PRODUCTION) * 5;
 		iCityTurnValue += aiYields.get(YIELD_COMMERCE) * 3;
 
-		iCityTurnValue += aiCommerceYields.get(COMMERCE_RESEARCH) * 3;
-		iCityTurnValue += aiCommerceYields.get(COMMERCE_GOLD) * 3;
-		iCityTurnValue += aiCommerceYields.get(COMMERCE_CULTURE) * 2; // was 1
-		iCityTurnValue += aiCommerceYields.get(COMMERCE_ESPIONAGE) * 2;
+		iCityTurnValue += aiCommerces.get(COMMERCE_RESEARCH) * 3;
+		iCityTurnValue += aiCommerces.get(COMMERCE_GOLD) * 3;
+		iCityTurnValue += aiCommerces.get(COMMERCE_CULTURE) * 2; // was 1
+		iCityTurnValue += aiCommerces.get(COMMERCE_ESPIONAGE) * 2;
 
 		iValue += (iCityTurnValue * 20 * iGameSpeedPercent) / 100;
 
@@ -27508,8 +27498,8 @@ void CvPlayerAI::AI_doEnemyUnitData()
 {
 	PROFILE_FUNC(); // advc: Entirely harmless so far wrt. performance
 
-	EnumMap<UnitTypes,int> aiUnitCounts;
-	EnumMap<DomainTypes,int> aiDomainSums;
+	EagerEnumMap<UnitTypes,int> aiUnitCounts;
+	EagerEnumMap<DomainTypes,int> aiDomainSums;
 
 	/*int iOldTotal = 0;
 	int iNewTotal = 0;*/ // advc: iOldTotal was unused, so let's just do:

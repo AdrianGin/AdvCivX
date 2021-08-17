@@ -8,8 +8,6 @@
 #include "CvMap.h"
 #include "CvInfo_All.h"
 #include "CvXMLLoadUtility.h" // advc.003v
-#include "CvDLLUtilityIFaceBase.h"
-#include "CvDLLXMLIFaceBase.h"
 // <advc.003o>
 #ifdef USE_TSC_PROFILER
 #include "TSCProfiler.h"

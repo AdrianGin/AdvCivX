@@ -48,14 +48,13 @@ bool CvTeam::bTriggeringWars = false;
 
 CvTeam::CvTeam(/* advc.003u: */ TeamTypes eID)
 {
-	m_pavProjectArtTypes = NULL;
 	reset(eID, true);
 }
 
 
 CvTeam::~CvTeam()
 {
-	uninit();
+	//uninit(); // advc: Nothing to do anymore
 }
 
 
@@ -67,16 +66,10 @@ void CvTeam::init(TeamTypes eID)
 	// advc.003q: BBAI code for DoW by non-major civs moved to initInGame
 }
 
-
-void CvTeam::uninit()
-{
-	SAFE_DELETE_ARRAY(m_pavProjectArtTypes);
-}
-
 // Initializes data members that are serialized.
 void CvTeam::reset(TeamTypes eID, bool bConstructorCall)
 {
-	uninit();
+	//uninit(); // advc: Nothing to do anymore
 
 	m_eID = eID;
 
@@ -114,7 +107,6 @@ void CvTeam::reset(TeamTypes eID, bool bConstructorCall)
 	m_iPeaceOfferStage = 0;
 	// </advc.134a>
 	// <advc.opt>
-	m_bAnyVictoryCountdown = false;
 	m_eMaster = NO_TEAM;
 	m_eLeader = NO_PLAYER;
 	// </advc.opt>
@@ -153,29 +145,31 @@ void CvTeam::reset(TeamTypes eID, bool bConstructorCall)
 	m_abCanLaunch.reset();
 	m_abHasTech.reset();
 	m_abNoTradeTech.reset();
+	m_abRevealedBonuses.reset();
+	m_aaiProjectArtTypes.clear();
 	if (!bConstructorCall && getID() != NO_TEAM)
 	{
 		FOR_EACH_ENUM(Team)
 		{
 			CvTeam& kLoopTeam = GET_TEAM(eLoopTeam);
-			kLoopTeam.m_aiStolenVisibilityTimer.reset(getID());
-			kLoopTeam.m_aiWarWeariness.reset(getID());
+			kLoopTeam.m_aiStolenVisibilityTimer.resetVal(getID());
+			kLoopTeam.m_aiWarWeariness.resetVal(getID());
 			/*	advc.001: The TechShareCount does not contain info about other teams
 				but info about team counts (kekm.38: player counts).
 				So it shouldn't be reset on kLoopTeam when this team is reset. */
 			//kLoopTeam.m_aiTechShareCount.reset(getID());
-			kLoopTeam.m_aiEspionagePointsAgainstTeam.reset(getID());
-			kLoopTeam.m_aiCounterespionageTurnsLeftAgainstTeam.reset(getID());
-			kLoopTeam.m_aiCounterespionageModAgainstTeam.reset(getID());
-			kLoopTeam.m_aiHasMetTurn.reset(getID()); // advc.091
-			kLoopTeam.m_abHasSeen.reset(getID()); // K-Mod
-			kLoopTeam.m_abAtWar.reset(getID());
-			kLoopTeam.m_abJustDeclaredWar.reset(getID()); // advc.162
-			kLoopTeam.m_abPermanentWarPeace.reset(getID());
-			kLoopTeam.m_abOpenBorders.reset(getID());
-			kLoopTeam.m_abDisengage.reset(getID()); // advc.034
-			kLoopTeam.m_abDefensivePact.reset(getID());
-			kLoopTeam.m_abForcePeace.reset(getID());
+			kLoopTeam.m_aiEspionagePointsAgainstTeam.resetVal(getID());
+			kLoopTeam.m_aiCounterespionageTurnsLeftAgainstTeam.resetVal(getID());
+			kLoopTeam.m_aiCounterespionageModAgainstTeam.resetVal(getID());
+			kLoopTeam.m_aiHasMetTurn.resetVal(getID()); // advc.091
+			kLoopTeam.m_abHasSeen.resetVal(getID()); // K-Mod
+			kLoopTeam.m_abAtWar.resetVal(getID());
+			kLoopTeam.m_abJustDeclaredWar.resetVal(getID()); // advc.162
+			kLoopTeam.m_abPermanentWarPeace.resetVal(getID());
+			kLoopTeam.m_abOpenBorders.resetVal(getID());
+			kLoopTeam.m_abDisengage.resetVal(getID()); // advc.034
+			kLoopTeam.m_abDefensivePact.resetVal(getID());
+			kLoopTeam.m_abForcePeace.resetVal(getID());
 			// <advc.opt>
 			if (kLoopTeam.m_eMaster == getID())
 				kLoopTeam.m_eMaster = NO_TEAM; // </advc.opt>
@@ -184,11 +178,7 @@ void CvTeam::reset(TeamTypes eID, bool bConstructorCall)
 
 	if (!bConstructorCall)
 	{
-		FAssertMsg(m_pavProjectArtTypes == NULL, "memory leak?");
-		m_pavProjectArtTypes = new std::vector<int>[GC.getNumProjectInfos()];
-
-		m_aeRevealedBonuses.clear();
-
+		m_aaiProjectArtTypes.resize(GC.getNumProjectInfos());
 		AI().AI_reset(false);
 	}
 }
@@ -2680,7 +2670,7 @@ void CvTeam::changeTechShareCount(PlayerTypes eSharePlayers, int iChange)
 	if (iChange == 0)
 		return;
 
-	m_aiTechShareCount.add(eSharePlayers, toChar(iChange));
+	m_aiTechShareCount.add(eSharePlayers, iChange);
 	// advc: Both keys and values of the map are really player counts
 	FAssertBounds(0, MAX_PLAYERS, getTechShareCount(eSharePlayers));
 	if (isTechShare(eSharePlayers))
@@ -2741,7 +2731,7 @@ void CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 	{
 		int iGameTurn = GC.getGame().getGameTurn();
 		FAssert(iGameTurn >= 0);
-		m_aiHasMetTurn.set(eOther, toShort(iGameTurn));
+		m_aiHasMetTurn.set(eOther, iGameTurn);
 	} // </advc.091>
 	updateTechShare();
 
@@ -3983,38 +3973,15 @@ void CvTeam::changeRiverTradeCount(int iChange)
 }
 
 
-int CvTeam::getVictoryCountdown(VictoryTypes eIndex) const
+void CvTeam::setVictoryCountdown(VictoryTypes eVictory, int iTurnsLeft)
 {
-	return m_aiVictoryCountdown.get(eIndex);
-}
-
-void CvTeam::setVictoryCountdown(VictoryTypes eIndex, int iTurnsLeft)
-{
-	m_aiVictoryCountdown.set(eIndex, iTurnsLeft);
-	// <advc.opt>
-	if (iTurnsLeft >= 0)
-		m_bAnyVictoryCountdown = true;
-	else
-	{
-		m_bAnyVictoryCountdown = false;
-		FOR_EACH_ENUM(Victory)
-		{
-			if (eLoopVictory != eIndex && getVictoryCountdown(eLoopVictory) >= 0)
-				m_bAnyVictoryCountdown = true;
-		}
-	} // </advc.opt>
+	m_aiVictoryCountdown.set(eVictory, iTurnsLeft);
 }
 
 
-void CvTeam::changeVictoryCountdown(VictoryTypes eIndex, int iChange)
+void CvTeam::changeVictoryCountdown(VictoryTypes eVictory, int iChange)
 {
-	setVictoryCountdown(eIndex, getVictoryCountdown(eIndex) + iChange); // advc: instead of m_aiVictoryCountdown.add(eIndex, iChange)
-}
-
-// advc.opt:
-bool CvTeam::isAnyVictoryCountdown() const
-{
-	return m_bAnyVictoryCountdown;
+	m_aiVictoryCountdown.add(eVictory, iChange);
 }
 
 
@@ -4071,13 +4038,10 @@ int CvTeam::getLaunchSuccessRate(VictoryTypes eVictory) const
 
 void CvTeam::resetVictoryProgress()
 {	// <advc.opt>
-	if (!isAnyVictoryCountdown() || GC.getGame().getGameState() != GAMESTATE_ON)
-		return; // </advc.opt>
-	FOR_EACH_ENUM(Victory)
+	if (GC.getGame().getGameState() != GAMESTATE_ON)
+		return;
+	FOR_EACH_NON_DEFAULT_KEY(m_aiVictoryCountdown, Victory) // </advc.opt>
 	{
-		if (getVictoryCountdown(eLoopVictory) < 0)
-			continue;
-
 		setVictoryCountdown(eLoopVictory, -1);
 		FOR_EACH_ENUM(Project)
 		{
@@ -4930,20 +4894,7 @@ void CvTeam::setForceRevealedBonus(BonusTypes eBonus, bool bRevealed)
 				kPlot.updatePlotGroupBonus(false, /* advc.064d: */ false);
 		}
 	}
-	if (bRevealed)
-		m_aeRevealedBonuses.push_back(eBonus);
-	else
-	{
-		std::vector<BonusTypes>::iterator it;
-		for (it = m_aeRevealedBonuses.begin(); it != m_aeRevealedBonuses.end(); ++it)
-		{
-			if (*it == eBonus)
-			{
-				m_aeRevealedBonuses.erase(it);
-				break;
-			}
-		}
-	}
+	m_abRevealedBonuses.set(eBonus, bRevealed);
 
 	for (int iI = 0; iI < kMap.numPlots(); ++iI)
 	{
@@ -4966,13 +4917,6 @@ void CvTeam::setForceRevealedBonus(BonusTypes eBonus, bool bRevealed)
 	}
 }
 
-bool CvTeam::isForceRevealedBonus(BonusTypes eBonus) const
-{
-	// <advc> Replacing equivalent BtS code
-	return (!m_aeRevealedBonuses.empty() && // To make sure we're not wasting any more time than necessary with this
-			std::find(m_aeRevealedBonuses.begin(), m_aeRevealedBonuses.end(), eBonus) != m_aeRevealedBonuses.end());
-	// </advc>
-}
 
 bool CvTeam::isBonusRevealed(BonusTypes eBonus) const // K-Mod
 {
@@ -5574,46 +5518,83 @@ void CvTeam::read(FDataStreamBase* pStream)
 
 	pStream->Read(&m_bMapCentering);
 	pStream->Read(&m_bCapitulated);
-	// <advc.opt>
-	if (uiFlag >= 7)
-		pStream->Read(&m_bAnyVictoryCountdown); // </advc.opt>
-
+	// <advc.opt> (obsolete)
+	if (uiFlag >= 7 && uiFlag < 16)
+	{
+		bool bAnyVictoryCountdown; // (discard)
+		pStream->Read(&bAnyVictoryCountdown);
+	} // </advc.opt>
 	pStream->Read((int*)&m_eID);
-
-	m_aiStolenVisibilityTimer.Read(pStream);
-	m_aiWarWeariness.Read(pStream);
+	FAssertEnumBounds(m_eID); // advc (sanity check)
+	if (uiFlag >= 16)
+	{
+		m_aiStolenVisibilityTimer.read(pStream);
+		m_aiWarWeariness.read(pStream);
+	}
+	else
+	{
+		m_aiStolenVisibilityTimer.readArray<int>(pStream);
+		m_aiWarWeariness.readArray<int>(pStream);
+	}
 	// <advc> (for kekm.38)
 	if (uiFlag >= 15)
-		m_aiTechShareCount.Read(pStream, false);
+	{
+		if (uiFlag >= 16)
+			m_aiTechShareCount.read(pStream);
+		else m_aiTechShareCount.readArray<char>(pStream);
+	}
 	else
 	{	/*	Used to be stored for each possible team count, now player count.
-			And the iTechShare from XML is no longer treated as 1 less in the DLL.
-			Also use char for the values, while we're at it. */
-		EnumMap<TeamTypes,int> aiTeamTechShareCount;
-		aiTeamTechShareCount.Read(pStream);
-		if (aiTeamTechShareCount.isAllocated())
+			And the iTechShare from XML is no longer treated as 1 less in the DLL. */
+		ArrayEnumMap<TeamTypes,int> aiTeamTechShareCount;
+		aiTeamTechShareCount.readArray<int>(pStream);
+		if (aiTeamTechShareCount.isAnyNonDefault())
 		{
 			for (int i = 0; i < std::min<int>(MAX_TEAMS, MAX_PLAYERS - 1); i++)
 			{
 				m_aiTechShareCount.set((PlayerTypes)(i + 1),
-						toChar(aiTeamTechShareCount.get((TeamTypes)i)));
+						aiTeamTechShareCount.get((TeamTypes)i));
 			}
 		}
 	} // </advc>
-	m_aiEspionagePointsAgainstTeam.Read(pStream);
-	m_aiCounterespionageTurnsLeftAgainstTeam.Read(pStream);
-	m_aiCounterespionageModAgainstTeam.Read(pStream);
-	m_aiCommerceFlexibleCount.Read(pStream);
+	if (uiFlag >= 16)
+	{
+		m_aiEspionagePointsAgainstTeam.read(pStream);
+		m_aiCounterespionageTurnsLeftAgainstTeam.read(pStream);
+		m_aiCounterespionageModAgainstTeam.read(pStream);
+		m_aiCommerceFlexibleCount.read(pStream);
+	}
+	else
+	{
+		m_aiEspionagePointsAgainstTeam.readArray<int>(pStream);
+		m_aiCounterespionageTurnsLeftAgainstTeam.readArray<int>(pStream);
+		m_aiCounterespionageModAgainstTeam.readArray<int>(pStream);
+		m_aiCommerceFlexibleCount.readArray<int>(pStream);
+	}
 	// <advc.120g> Prior to uiFlag=6, espionage was flexible from the beginning.
 	if(uiFlag < 6)
 		m_aiCommerceFlexibleCount.set(COMMERCE_ESPIONAGE, 1); // </advc.120g>
-	m_aiExtraMoves.Read(pStream);
-	m_aiForceTeamVoteEligibilityCount.Read(pStream);
-	// <advc.091>
-	if (uiFlag < 12)
+	if (uiFlag >= 16)
 	{
-		EnumMap<TeamTypes,bool> abHasMet;
-		abHasMet.Read(pStream);
+		m_aiExtraMoves.read(pStream);
+		m_aiForceTeamVoteEligibilityCount.read(pStream);
+	}
+	else
+	{
+		m_aiExtraMoves.readArray<int>(pStream);
+		m_aiForceTeamVoteEligibilityCount.readArray<int>(pStream);
+	}
+	// <advc.091>
+	if (uiFlag >= 12)
+	{
+		if (uiFlag >= 16)
+			m_aiHasMetTurn.read(pStream);
+		else m_aiHasMetTurn.readArray<int>(pStream);
+	}
+	else
+	{
+		ArrayEnumMap<TeamTypes,bool> abHasMet;
+		abHasMet.readArray<bool>(pStream);
 		CvGame const& kGame = GC.getGame();
 		int iGameTurn = kGame.getGameTurn();
 		int iStartTurn = kGame.getStartTurn();
@@ -5623,30 +5604,52 @@ void CvTeam::read(FDataStreamBase* pStream)
 			TeamTypes eTeam = itTeam->getID();
 			if (abHasMet.get(eTeam))
 			{
-				m_aiHasMetTurn.set(eTeam, toShort(
-						eTeam == getID() ? iStartTurn : iGameTurn));
+				m_aiHasMetTurn.set(eTeam,
+						eTeam == getID() ? iStartTurn : iGameTurn);
 			}
 		}
 	}
-	else m_aiHasMetTurn.Read(pStream);
 	// </advc.091>
 	/*if (uiFlag >= 1)
 		pStream->Read(MAX_TEAMS, m_abHasSeen);
 	else memcpy(m_abHasSeen, m_abHasMet, sizeof(*m_abHasSeen)*MAX_TEAMS);*/ // K-Mod
-	// <advc.enum>
 	FAssert(uiFlag >= 1);
-	m_abHasSeen.Read(pStream); // </advc.enum>
-	m_abAtWar.Read(pStream);
+	if (uiFlag >= 16)
+	{
+		m_abHasSeen.read(pStream);
+		m_abAtWar.read(pStream);
+	}
+	else
+	{
+		m_abHasSeen.readArray<bool>(pStream);
+		m_abAtWar.readArray<bool>(pStream);
+	}
 	// <advc.162>
-	if(uiFlag >= 4)
-		m_abJustDeclaredWar.Read(pStream); // </advc.162>
-	m_abPermanentWarPeace.Read(pStream);
-	m_abOpenBorders.Read(pStream);
+	if (uiFlag >= 4)
+	{
+		if (uiFlag >= 16)
+			m_abJustDeclaredWar.read(pStream);
+		else m_abJustDeclaredWar.readArray<bool>(pStream);
+	} // </advc.162>
+	if (uiFlag >= 16)
+	{
+		m_abPermanentWarPeace.read(pStream);
+		m_abOpenBorders.read(pStream);
+	}
+	else
+	{
+		m_abPermanentWarPeace.readArray<bool>(pStream);
+		m_abOpenBorders.readArray<bool>(pStream);
+	}
 	// <advc.034>
 	if(uiFlag >= 3)
 	{
 		if (uiFlag >= 9)
-			m_abDisengage.Read(pStream);
+		{
+			if (uiFlag >= 16)
+				m_abDisengage.read(pStream);
+			else m_abDisengage.readArray<bool>(pStream);
+		}
 		else // I had previously written only MAX_CIV_TEAMS values
 		{
 			bool abTmp[MAX_CIV_TEAMS];
@@ -5655,24 +5658,40 @@ void CvTeam::read(FDataStreamBase* pStream)
 				m_abDisengage.set((TeamTypes)i, abTmp[i]);
 		}
 	} // </advc.034>
-	m_abDefensivePact.Read(pStream);
-	m_abForcePeace.Read(pStream);
+	if (uiFlag >= 16)
+	{
+		m_abDefensivePact.read(pStream);
+		m_abForcePeace.read(pStream);
+	}
+	else
+	{
+		m_abDefensivePact.readArray<bool>(pStream);
+		m_abForcePeace.readArray<bool>(pStream);
+	}
 	// <advc.opt>
 	if (uiFlag < 9)
 	{
-		EnumMap<TeamTypes,bool> dummy; // m_abVassal
-		dummy.Read(pStream);
+		ArrayEnumMap<TeamTypes,bool> dummy; // m_abVassal
+		dummy.readArray<bool>(pStream);
 	}
 	pStream->Read((int*)&m_eMaster);
-	if(uiFlag >= 2)
+	if (uiFlag >= 2)
 		pStream->Read((int*)&m_eLeader);
 	if (uiFlag < 8)
 		updateLeaderID();
 	// </advc.opt>
-	m_abCanLaunch.Read(pStream);
-
-	m_aiRouteChange.Read(pStream);
-	m_aiProjectCount.Read(pStream);
+	if (uiFlag >= 16)
+	{
+		m_abCanLaunch.read(pStream);
+		m_aiRouteChange.read(pStream);
+		m_aiProjectCount.read(pStream);
+	}
+	else
+	{
+		m_abCanLaunch.readArray<bool>(pStream);
+		m_aiRouteChange.readArray<int>(pStream);
+		m_aiProjectCount.readArray<int>(pStream);
+	}
 	if (uiFlag < 14)
 	{	// Reduced SDI interception chance in AdvCiv 1.0
 		ProjectTypes eSDI = (ProjectTypes)GC.getInfoTypeForString("PROJECT_SDI");
@@ -5685,27 +5704,41 @@ void CvTeam::read(FDataStreamBase* pStream)
 			}
 		}
 	}
-	m_aiProjectDefaultArtTypes.Read(pStream);
-
-	//project art types
-	for(int i = 0; i < GC.getNumProjectInfos(); i++)
+	if (uiFlag >= 16)
+		m_aiProjectDefaultArtTypes.read(pStream);
+	else m_aiProjectDefaultArtTypes.readArray<int>(pStream);
+	// project art types
+	FOR_EACH_ENUM(Project)
 	{
 		int iTmp;
-		for(int j = 0; j < m_aiProjectCount.get((ProjectTypes)i); j++)
+		for (int i = 0; i < m_aiProjectCount.get(eLoopProject); i++)
 		{
 			pStream->Read(&iTmp);
-			m_pavProjectArtTypes[i].push_back(iTmp);
+			m_aaiProjectArtTypes[eLoopProject].push_back(iTmp);
 		}
 	}
-
-	m_aiProjectMaking.Read(pStream);
-	m_aiUnitClassCount.Read(pStream);
-	m_aiBuildingClassCount.Read(pStream);
-	m_aiObsoleteBuildingCount.Read(pStream);
-	m_aiResearchProgress.Read(pStream);
-	m_aiTechCount.Read(pStream);
-	m_aiTerrainTradeCount.Read(pStream);
-	m_aiVictoryCountdown.Read(pStream);
+	if (uiFlag >= 16)
+	{
+		m_aiProjectMaking.read(pStream);
+		m_aiUnitClassCount.read(pStream);
+		m_aiBuildingClassCount.read(pStream);
+		m_aiObsoleteBuildingCount.read(pStream);
+		m_aiResearchProgress.read(pStream);
+		m_aiTechCount.read(pStream);
+		m_aiTerrainTradeCount.read(pStream);
+		m_aiVictoryCountdown.read(pStream);
+	}
+	else
+	{
+		m_aiProjectMaking.readArray<int>(pStream);
+		m_aiUnitClassCount.readArray<int>(pStream);
+		m_aiBuildingClassCount.readArray<int>(pStream);
+		m_aiObsoleteBuildingCount.readArray<int>(pStream);
+		m_aiResearchProgress.readArray<int>(pStream);
+		m_aiTechCount.readArray<int>(pStream);
+		m_aiTerrainTradeCount.readArray<int>(pStream);
+		m_aiVictoryCountdown.readArray<int>(pStream);
+	}
 	// <advc.opt>
 	if (uiFlag == 10) // Fix a bug in AdvCiv 0.97
 	{
@@ -5715,17 +5748,10 @@ void CvTeam::read(FDataStreamBase* pStream)
 			if (getVictoryCountdown(eLoopVictory) == 0)
 				m_aiVictoryCountdown.set(eLoopVictory, -1);
 		}
-	}
-	if (uiFlag < 7 || uiFlag == 10)
-	{
-		FOR_EACH_ENUM(Victory)
-		{
-			if (getVictoryCountdown(eLoopVictory) >= 0)
-				m_bAnyVictoryCountdown = true;
-		}
 	} // </advc.opt>
-
-	m_abHasTech.Read(pStream);
+	if (uiFlag >= 16)
+		m_abHasTech.read(pStream);
+	else m_abHasTech.readArray<bool>(pStream);
 	// <advc.101>
 	if (uiFlag >= 10)
 		pStream->Read(&m_iTechCount);
@@ -5737,17 +5763,28 @@ void CvTeam::read(FDataStreamBase* pStream)
 				m_iTechCount++;
 		}
 	} // </advc.101>
-	m_abNoTradeTech.Read(pStream);
-	m_aaiImprovementYieldChange.Read(pStream);
-
-	int iSize;
-	m_aeRevealedBonuses.clear();
-	pStream->Read(&iSize);
-	for (int i = 0; i < iSize; ++i)
+	if (uiFlag >= 16)
 	{
-		BonusTypes eBonus;
-		pStream->Read((int*)&eBonus);
-		m_aeRevealedBonuses.push_back(eBonus);
+		m_abNoTradeTech.read(pStream);
+		m_aaiImprovementYieldChange.read(pStream);
+	}
+	else
+	{
+		m_abNoTradeTech.readArray<bool>(pStream);
+		m_aaiImprovementYieldChange.readArray<int>(pStream);
+	}
+	if (uiFlag >= 16)
+		m_abRevealedBonuses.read(pStream);
+	else
+	{
+		int iSize;
+		pStream->Read(&iSize);
+		for (int i = 0; i < iSize; i++)
+		{
+			int iBonus;
+			pStream->Read(&iBonus);
+			m_abRevealedBonuses.insert(iBonus, true);
+		}
 	}
 	// <advc.183> Reveal any destroyed forts (so that aircraft can't rebase to them)
 	if (uiFlag < 13 && isAlive())
@@ -5798,7 +5835,8 @@ void CvTeam::write(FDataStreamBase* pStream)
 	//uiFlag = 12; // advc.091
 	//uiFlag = 13; // advc.183
 	//uiFlag = 14; // advc.650
-	uiFlag = 15; // advc (for kekm.38)
+	//uiFlag = 15; // advc (for kekm.38)
+	uiFlag = 16; // advc.enum: new enum map save behavior
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iNumMembers);
@@ -5833,38 +5871,37 @@ void CvTeam::write(FDataStreamBase* pStream)
 	// </advc.003m>
 	pStream->Write(m_bMapCentering);
 	pStream->Write(m_bCapitulated);
-	pStream->Write(m_bAnyVictoryCountdown); // advc.opt
 
 	pStream->Write(m_eID);
 
-	m_aiStolenVisibilityTimer.Write(pStream);
-	m_aiWarWeariness.Write(pStream);
-	m_aiTechShareCount.Write(pStream, false);
-	m_aiEspionagePointsAgainstTeam.Write(pStream);
-	m_aiCounterespionageTurnsLeftAgainstTeam.Write(pStream);
-	m_aiCounterespionageModAgainstTeam.Write(pStream);
-	m_aiCommerceFlexibleCount.Write(pStream);
-	m_aiExtraMoves.Write(pStream);
-	m_aiForceTeamVoteEligibilityCount.Write(pStream);
+	m_aiStolenVisibilityTimer.write(pStream);
+	m_aiWarWeariness.write(pStream);
+	m_aiTechShareCount.write(pStream);
+	m_aiEspionagePointsAgainstTeam.write(pStream);
+	m_aiCounterespionageTurnsLeftAgainstTeam.write(pStream);
+	m_aiCounterespionageModAgainstTeam.write(pStream);
+	m_aiCommerceFlexibleCount.write(pStream);
+	m_aiExtraMoves.write(pStream);
+	m_aiForceTeamVoteEligibilityCount.write(pStream);
 
-	m_aiHasMetTurn.Write(pStream); // advc.091
-	m_abHasSeen.Write(pStream); // K-Mod. uiFlag >= 1
-	m_abAtWar.Write(pStream);
-	m_abJustDeclaredWar.Write(pStream); // advc.162
-	m_abPermanentWarPeace.Write(pStream);
-	m_abOpenBorders.Write(pStream);
-	m_abDisengage.Write(pStream); // advc.034
-	m_abDefensivePact.Write(pStream);
-	m_abForcePeace.Write(pStream);
+	m_aiHasMetTurn.write(pStream); // advc.091
+	m_abHasSeen.write(pStream); // K-Mod. uiFlag >= 1
+	m_abAtWar.write(pStream);
+	m_abJustDeclaredWar.write(pStream); // advc.162
+	m_abPermanentWarPeace.write(pStream);
+	m_abOpenBorders.write(pStream);
+	m_abDisengage.write(pStream); // advc.034
+	m_abDefensivePact.write(pStream);
+	m_abForcePeace.write(pStream);
 	// <advc.opt>
-	//m_abVassal.Write(pStream);
+	//m_abVassal.write(pStream);
 	pStream->Write(m_eMaster);
 	pStream->Write(m_eLeader);
 	// </advc.opt>
-	m_abCanLaunch.Write(pStream);
-	m_aiRouteChange.Write(pStream);
-	m_aiProjectCount.Write(pStream);
-	m_aiProjectDefaultArtTypes.Write(pStream);
+	m_abCanLaunch.write(pStream);
+	m_aiRouteChange.write(pStream);
+	m_aiProjectCount.write(pStream);
+	m_aiProjectDefaultArtTypes.write(pStream);
 
 	// project art types
 	FOR_EACH_ENUM(Project)
@@ -5873,24 +5910,19 @@ void CvTeam::write(FDataStreamBase* pStream)
 			pStream->Write(m_aaiProjectArtTypes[eLoopProject][i]);
 	}
 
-	m_aiProjectMaking.Write(pStream);
-	m_aiUnitClassCount.Write(pStream);
-	m_aiBuildingClassCount.Write(pStream);
-	m_aiObsoleteBuildingCount.Write(pStream);
-	m_aiResearchProgress.Write(pStream);
-	m_aiTechCount.Write(pStream);
-	m_aiTerrainTradeCount.Write(pStream);
-	m_aiVictoryCountdown.Write(pStream);
-	m_abHasTech.Write(pStream);
+	m_aiProjectMaking.write(pStream);
+	m_aiUnitClassCount.write(pStream);
+	m_aiBuildingClassCount.write(pStream);
+	m_aiObsoleteBuildingCount.write(pStream);
+	m_aiResearchProgress.write(pStream);
+	m_aiTechCount.write(pStream);
+	m_aiTerrainTradeCount.write(pStream);
+	m_aiVictoryCountdown.write(pStream);
+	m_abHasTech.write(pStream);
 	pStream->Write(m_iTechCount); // advc.101
-	m_abNoTradeTech.Write(pStream);
-	m_aaiImprovementYieldChange.Write(pStream);
-
-	pStream->Write(m_aeRevealedBonuses.size());
-	for (std::vector<BonusTypes>::iterator it = m_aeRevealedBonuses.begin(); it != m_aeRevealedBonuses.end(); ++it)
-	{
-		pStream->Write(*it);
-	}
+	m_abNoTradeTech.write(pStream);
+	m_aaiImprovementYieldChange.write(pStream);
+	m_abRevealedBonuses.write(pStream);
 	REPRO_TEST_END_WRITE();
 }
 

@@ -965,8 +965,10 @@ protected:
 	int* m_paiBuildingClassCreatedCount;
 	int* m_paiProjectCreatedCount;
 	int* m_paiForceCivicCount;
-	// advc.enum:  (Tbd.: The other arrays should also be turned into EnumMaps)
-	EnumMap<VoteTypes,PlayerVoteTypes> m_aiVoteOutcome;
+	/*	advc.enum:  (Tbd.: The other arrays should also be turned into EnumMaps.
+		Mustn't use eager allocation for dynamic enum types however b/c
+		XML isn't loaded yet.) */
+	ArrayEnumMap<VoteTypes,PlayerVoteTypes> m_aiVoteOutcome;
 	int* m_paiReligionGameTurnFounded;
 	int* m_paiCorporationGameTurnFounded;
 	int* m_aiSecretaryGeneralTimer;
@@ -1012,7 +1014,7 @@ protected:
 	std::vector<PlotExtraYield> m_aPlotExtraYields;
 	std::vector<PlotExtraCost> m_aPlotExtraCosts;
 	// advc: Replacing a hash_map
-	EnumMap<VoteSourceTypes,ReligionTypes> m_aeVoteSourceReligion;
+	ArrayEnumMap<VoteSourceTypes,ReligionTypes> m_aeVoteSourceReligion;
 	std::vector<EventTriggerTypes> m_aeInactiveTriggers;
 
 	/*  K-Mod. This is used to track which groups have been cycled through in the current turn.
@@ -1098,7 +1100,7 @@ protected:
 			std::vector<std::pair<Agent*,int> > const& kStartingLocPercentPerAgent,
 			std::vector<Agent*>& kResult); // </advc.108b>
 	int getTeamClosenessScore( // <advc>
-			EnumMap2D<PlayerTypes,PlayerTypes,int> const& kDistances,
+			ArrayEnumMap2D<PlayerTypes,PlayerTypes,int> const& kDistances,
 			std::vector<PlayerTypes> const& kStartingLocs); // </advc>
 	void normalizeAddRiver();
 	void normalizeRemovePeaks();

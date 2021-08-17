@@ -2327,7 +2327,7 @@ int CvCity::getProductionModifier(UnitTypes eUnit) const
 int CvCity::getProductionModifier(BuildingTypes eBuilding) const
 {
 	int iMultiplier = GET_PLAYER(getOwner()).getProductionModifier(eBuilding);
-	FOR_EACH_NON_DEFAULT_INFO_PAIR(GC.getInfo(eBuilding).
+	FOR_EACH_NON_DEFAULT_PAIR(GC.getInfo(eBuilding).
 		getBonusProductionModifier(), Bonus, int)
 	{
 		if (hasBonus(perBonusVal.first))
@@ -2350,7 +2350,7 @@ int CvCity::getProductionModifier(ProjectTypes eProject) const
 	if (GC.getInfo(eProject).isSpaceship())
 		iMultiplier += getSpaceProductionModifier();
 
-	FOR_EACH_NON_DEFAULT_INFO_PAIR(GC.getInfo(eProject).
+	FOR_EACH_NON_DEFAULT_PAIR(GC.getInfo(eProject).
 		getBonusProductionModifier(), Bonus, int)
 	{
 		if (hasBonus(perBonusVal.first))
@@ -3004,25 +3004,25 @@ void CvCity::processBuilding(BuildingTypes eBuilding, int iChange, bool bObsolet
 			changeCommerceHappinessPer(eLoopCommerce,
 					kBuilding.getCommerceHappiness(eLoopCommerce) * iChange);
 		}
-		FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+		FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 			getReligionChange(), Religion, int)
 		{
 			changeReligionInfluence(perReligionVal.first,
 					perReligionVal.second * iChange);
 		}
-		FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+		FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 			getSpecialistCount(), Specialist, int)
 		{
 			changeMaxSpecialistCount(perSpecialistVal.first,
 					perSpecialistVal.second * iChange);
 		}
-		FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+		FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 			getFreeSpecialistCount(), Specialist, int)
 		{
 			changeFreeSpecialistCount(perSpecialistVal.first,
 					perSpecialistVal.second * iChange);
 		}
-		FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+		FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 			getImprovementFreeSpecialist(), Improvement, int)
 		{
 			changeImprovementFreeSpecialists(perImprovementVal.first,
@@ -3052,7 +3052,7 @@ void CvCity::processBuilding(BuildingTypes eBuilding, int iChange, bool bObsolet
 			}
 		}
 
-		FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+		FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 			getUnitCombatFreeExperience(), UnitCombat, int)
 		{
 			changeUnitCombatFreeExperience(perUnitCombatVal.first,
@@ -4495,7 +4495,7 @@ void CvCity::changePopulation(int iChange)
 int CvCity::getRealPopulation() const
 {
 	long long iPop = (long long)(std::pow((float)getPopulation(), 2.8f) * 1000);
-	return ::longLongToInt(iPop);
+	return truncIntCast<int>(iPop);
 }
 
 
@@ -4600,7 +4600,7 @@ int CvCity::getAdditionalBaseGreatPeopleRateByBuilding(BuildingTypes eBuilding) 
 	int iExtraRate = kBuilding.getGreatPeopleRateChange();
 	if (!GET_TEAM(getTeam()).isObsoleteBuilding(eBuilding))
 	{
-		FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+		FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 			getFreeSpecialistCount(), Specialist, int)
 		{
 			iExtraRate += getAdditionalBaseGreatPeopleRateBySpecialist(
@@ -5488,7 +5488,7 @@ int CvCity::getAdditionalHappinessByBuilding(BuildingTypes eBuilding, int& iGood
 	}
 
 	// Bonus
-	FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+	FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 		getBonusHappinessChanges(), Bonus, int)
 	{
 		BonusTypes const eLoopBonus = perBonusVal.first;
@@ -5588,7 +5588,7 @@ int CvCity::getAdditionalHealthByBuilding(BuildingTypes eBuilding, int& iGood, i
 	}
 
 	// Bonus
-	FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+	FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 		getBonusHealthChanges(), Bonus, int)
 	{
 		BonusTypes const eLoopBonus = perBonusVal.first;
@@ -6772,7 +6772,7 @@ int CvCity::getAdditionalBaseYieldRateByBuilding(YieldTypes eYield,
 		iExtraRate += iNewTotalTradeYield - iTotalTradeYield;
 	}
 
-	FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+	FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 		getFreeSpecialistCount(), Specialist, int)
 	{
 		iExtraRate += getAdditionalBaseYieldRateBySpecialist(eYield,
@@ -6824,7 +6824,7 @@ int CvCity::getAdditionalYieldRateModifierByBuilding(YieldTypes eYield,
 		}
 		iExtraModifier += iMaxModifier;
 	}
-	FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+	FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 		getBonusYieldModifier(), Bonus, YieldPercentMap)
 	{
 		if (hasBonus(perBonusVal.first))
@@ -7253,7 +7253,7 @@ int CvCity::getBuildingCommerceByBuilding(CommerceTypes eCommerce, BuildingTypes
 	bool const bDelayedCommerceIncrease =
 			(kBuilding.getCommerceChangeDoubleTime(eCommerce) > 0); // </advc.098>
 	if (bDelayedCommerceIncrease &&
-		getBuildingOriginalTime(eBuilding) != MIN_INT &&
+		getBuildingOriginalTime(eBuilding) != iBuildingOriginalTimeUnknown &&
 		GC.getGame().getGameTurnYear() - getBuildingOriginalTime(eBuilding) >=
 		kBuilding.getCommerceChangeDoubleTime(eCommerce))
 	{
@@ -7420,7 +7420,7 @@ int CvCity::getAdditionalBaseCommerceRateByBuildingImpl(CommerceTypes eCommerce,
 	}
 	// ignore double-time check since this assumes you are building it this turn
 
-	FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+	FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 		getFreeSpecialistCount(), Specialist, int)
 	{
 		iExtraRate += getAdditionalBaseCommerceRateBySpecialistImpl(eCommerce,
@@ -7669,15 +7669,15 @@ void CvCity::updateCorporation(/* advc.064d: */ bool bVerifyProduction)
 
 void CvCity::updateCorporationBonus(/* advc.064d: */ bool bVerifyProduction)
 {
-	EnumMap<BonusTypes,int> aiLastCorpProducedBonuses;
-	EnumMap<BonusTypes,bool> abHadBonuses;
+	EagerEnumMap<BonusTypes,int> aiLastCorpProducedBonuses;
+	EagerEnumMap<BonusTypes,bool> abHadBonuses;
 	FOR_EACH_ENUM(Bonus)
 	{
 		abHadBonuses.set(eLoopBonus, hasBonus(eLoopBonus));
 		aiLastCorpProducedBonuses.set(eLoopBonus, getNumBonuses(eLoopBonus));
 	}
 	m_aiNumCorpProducedBonuses.reset();
-	EnumMap<BonusTypes,int> aiExtraCorpProducedBonuses;
+	EagerEnumMap<BonusTypes,int> aiExtraCorpProducedBonuses;
 	CvTeam const& kTeam = GET_TEAM(getTeam());
 	for (int iIter = 0; iIter < GC.getNumCorporationInfos(); iIter++)
 	{
@@ -8475,10 +8475,10 @@ bool CvCity::isAnyProductionProgress(OrderTypes eOrder) const
 {
 	switch(eOrder)
 	{
-	case ORDER_CONSTRUCT: return m_aiBuildingProduction.hasContent();
-	case ORDER_CREATE:	return m_aiProjectProduction.hasContent();
+	case ORDER_CONSTRUCT: return m_aiBuildingProduction.isAnyNonDefault();
+	case ORDER_CREATE:	return m_aiProjectProduction.isAnyNonDefault();
 	case ORDER_MAINTAIN: return false; // Can't make progress on a process
-	case ORDER_TRAIN: return m_aiUnitProduction.hasContent();
+	case ORDER_TRAIN: return m_aiUnitProduction.isAnyNonDefault();
 	default: FErrorMsg("Unknown type of production order");
 		return false;
 	}
@@ -8620,17 +8620,6 @@ void CvCity::changeMaxSpecialistCount(SpecialistTypes eSpecialist, int iChange)
 		FAssert(m_aiMaxSpecialistCount.get(eSpecialist) >= 0); // </advc>
 		AI_setAssignWorkDirty(true);
 	}
-}
-
-
-bool CvCity::isSpecialistForced() const
-{
-	/*FOR_EACH_ENUM(Specialist) {
-		if (getForceSpecialistCount(eLoopSpecialist) > 0)
-			return true;
-	}
-	return false;*/
-	return m_aiForceSpecialistCount.hasContent(); // advc.opt
 }
 
 
@@ -8887,7 +8876,7 @@ void CvCity::setNumRealBuildingTimed(BuildingTypes eBuilding, int iNewValue, boo
 	else
 	{
 		m_aeBuildingOriginalOwner.set(eBuilding, NO_PLAYER);
-		m_aiBuildingOriginalTime.set(eBuilding, MIN_INT);
+		m_aiBuildingOriginalTime.set(eBuilding, iBuildingOriginalTimeUnknown);
 	}
 	CvBuildingInfo const& kBuilding = GC.getInfo(eBuilding);
 	if (iOldNumBuilding != getNumBuilding(eBuilding))
@@ -8956,7 +8945,7 @@ void CvCity::setNumRealBuildingTimed(BuildingTypes eBuilding, int iNewValue, boo
 					}
 				}
 			}
-			FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+			FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 				getReligionChange(), Religion, int)
 			{
 				if (perReligionVal.second > 0)
@@ -10313,7 +10302,7 @@ void CvCity::doCulture()
 	{
 		/*	add up the culture contribution for each player before applying it
 			so that we avoid excessive calls to change culture and reduce rounding errors */
-		EnumMap<PlayerTypes,int> aiTradeCultureTimes100;
+		EagerEnumMap<PlayerTypes,int> aiTradeCultureTimes100;
 		for (int i = 0; i < GC.getDefineINT(CvGlobals::MAX_TRADE_ROUTES); i++)
 		{
 			CvCity* pLoopCity = getTradeCity(i);
@@ -11149,68 +11138,135 @@ void CvCity::read(FDataStreamBase* pStream)
 	pStream->Read((int*)&m_eOriginalOwner);
 	pStream->Read((int*)&m_eCultureLevel);
 
-	m_aiSeaPlotYield.Read(pStream);
-	m_aiRiverPlotYield.Read(pStream);
-	m_aiBaseYieldRate.Read(pStream);
-	m_aiYieldRateModifier.Read(pStream);
-	m_aiPowerYieldRateModifier.Read(pStream);
-	m_aiBonusYieldRateModifier.Read(pStream);
-	m_aiTradeYield.Read(pStream);
-	m_aiCorporationYield.Read(pStream);
-	m_aiExtraSpecialistYield.Read(pStream);
-	m_aiCommerceRate.Read(pStream);
-	m_aiProductionToCommerceModifier.Read(pStream);
-	m_aiBuildingCommerce.Read(pStream);
-	m_aiSpecialistCommerce.Read(pStream);
-	m_aiReligionCommerce.Read(pStream);
-	m_aiCorporationCommerce.Read(pStream);
-	m_aiCommerceRateModifier.Read(pStream);
-	m_aiCommerceHappinessPer.Read(pStream);
-	m_aiDomainFreeExperience.Read(pStream);
-	m_aiDomainProductionModifier.Read(pStream);
-	m_aiCulture.Read(pStream);
-	m_aiNumRevolts.Read(pStream);
-
-	m_abEverOwned.Read(pStream);
-	m_abTradeRoute.Read(pStream);
-	m_abRevealed.Read(pStream);
-	m_abEspionageVisibility.Read(pStream);
+	if (uiFlag >= 12)
+	{
+		m_aiSeaPlotYield.read(pStream);
+		m_aiRiverPlotYield.read(pStream);
+		m_aiBaseYieldRate.read(pStream);
+		m_aiYieldRateModifier.read(pStream);
+		m_aiPowerYieldRateModifier.read(pStream);
+		m_aiBonusYieldRateModifier.read(pStream);
+		m_aiTradeYield.read(pStream);
+		m_aiCorporationYield.read(pStream);
+		m_aiExtraSpecialistYield.read(pStream);
+		m_aiCommerceRate.read(pStream);
+		m_aiProductionToCommerceModifier.read(pStream);
+		m_aiBuildingCommerce.read(pStream);
+		m_aiSpecialistCommerce.read(pStream);
+		m_aiReligionCommerce.read(pStream);
+		m_aiCorporationCommerce.read(pStream);
+		m_aiCommerceRateModifier.read(pStream);
+		m_aiCommerceHappinessPer.read(pStream);
+		m_aiDomainFreeExperience.read(pStream);
+		m_aiDomainProductionModifier.read(pStream);
+		m_aiCulture.read(pStream);
+		m_aiNumRevolts.read(pStream);
+		m_abEverOwned.read(pStream);
+		m_abTradeRoute.read(pStream);
+		m_abRevealed.read(pStream);
+		m_abEspionageVisibility.read(pStream);
+	}
+	else
+	{
+		m_aiSeaPlotYield.readArray<int>(pStream);
+		m_aiRiverPlotYield.readArray<int>(pStream);
+		m_aiBaseYieldRate.readArray<int>(pStream);
+		m_aiYieldRateModifier.readArray<int>(pStream);
+		m_aiPowerYieldRateModifier.readArray<int>(pStream);
+		m_aiBonusYieldRateModifier.readArray<int>(pStream);
+		m_aiTradeYield.readArray<int>(pStream);
+		m_aiCorporationYield.readArray<int>(pStream);
+		m_aiExtraSpecialistYield.readArray<int>(pStream);
+		m_aiCommerceRate.readArray<int>(pStream);
+		m_aiProductionToCommerceModifier.readArray<int>(pStream);
+		m_aiBuildingCommerce.readArray<int>(pStream);
+		m_aiSpecialistCommerce.readArray<int>(pStream);
+		m_aiReligionCommerce.readArray<int>(pStream);
+		m_aiCorporationCommerce.readArray<int>(pStream);
+		m_aiCommerceRateModifier.readArray<int>(pStream);
+		m_aiCommerceHappinessPer.readArray<int>(pStream);
+		m_aiDomainFreeExperience.readArray<int>(pStream);
+		m_aiDomainProductionModifier.readArray<int>(pStream);
+		m_aiCulture.readArray<int>(pStream);
+		m_aiNumRevolts.readArray<int>(pStream);
+		m_abEverOwned.readArray<bool>(pStream);
+		m_abTradeRoute.readArray<bool>(pStream);
+		m_abRevealed.readArray<bool>(pStream);
+		m_abEspionageVisibility.readArray<bool>(pStream);
+	}
 
 	pStream->ReadString(m_szName);
 	// <advc.106k>
 	if(uiFlag >= 5)
 		pStream->ReadString(m_szPreviousName); // </advc.106k>
 	pStream->ReadString(m_szScriptData);
-
-	m_aiNoBonus.Read(pStream);
-	m_aiFreeBonus.Read(pStream);
-	m_aiNumBonuses.Read(pStream);
-	m_aiNumCorpProducedBonuses.Read(pStream);
-	m_aiProjectProduction.Read(pStream);
-	m_aiBuildingProduction.Read(pStream);
-	m_aiBuildingProductionTime.Read(pStream);
-	m_aeBuildingOriginalOwner.Read(pStream);
-	m_aiBuildingOriginalTime.Read(pStream);
-	m_aiUnitProduction.Read(pStream);
-	m_aiUnitProductionTime.Read(pStream);
-	m_aiGreatPeopleUnitRate.Read(pStream);
-	m_aiGreatPeopleUnitProgress.Read(pStream);
-	m_aiSpecialistCount.Read(pStream);
-	m_aiMaxSpecialistCount.Read(pStream);
-	m_aiForceSpecialistCount.Read(pStream);
-	m_aiFreeSpecialistCount.Read(pStream);
-	m_aiImprovementFreeSpecialists.Read(pStream);
-	m_aiReligionInfluence.Read(pStream);
-	m_aiStateReligionHappiness.Read(pStream);
-	m_aiUnitCombatFreeExperience.Read(pStream);
-	m_aiFreePromotionCount.Read(pStream);
-	m_aiNumRealBuilding.Read(pStream);
-	m_aiNumFreeBuilding.Read(pStream);
-
-	m_abWorkingPlot.Read(pStream);
-	m_abHasReligion.Read(pStream);
-	m_abHasCorporation.Read(pStream);
-
+	if (uiFlag >= 12)
+	{
+		m_aiNoBonus.read(pStream);
+		m_aiFreeBonus.read(pStream);
+		m_aiNumBonuses.read(pStream);
+		m_aiNumCorpProducedBonuses.read(pStream);
+		m_aiProjectProduction.read(pStream);
+		m_aiBuildingProduction.read(pStream);
+		m_aiBuildingProductionTime.read(pStream);
+		m_aeBuildingOriginalOwner.read(pStream);
+		m_aiBuildingOriginalTime.read(pStream);
+		m_aiUnitProduction.read(pStream);
+		m_aiUnitProductionTime.read(pStream);
+		m_aiGreatPeopleUnitRate.read(pStream);
+		m_aiGreatPeopleUnitProgress.read(pStream);
+		m_aiSpecialistCount.read(pStream);
+		m_aiMaxSpecialistCount.read(pStream);
+		m_aiForceSpecialistCount.read(pStream);
+		m_aiFreeSpecialistCount.read(pStream);
+		m_aiImprovementFreeSpecialists.read(pStream);
+		m_aiReligionInfluence.read(pStream);
+		m_aiStateReligionHappiness.read(pStream);
+		m_aiUnitCombatFreeExperience.read(pStream);
+		m_aiFreePromotionCount.read(pStream);
+		m_aiNumRealBuilding.read(pStream);
+		m_aiNumFreeBuilding.read(pStream);
+		m_abWorkingPlot.read(pStream);
+		m_abHasReligion.read(pStream);
+		m_abHasCorporation.read(pStream);
+	}
+	else
+	{
+		m_aiNoBonus.readArray<int>(pStream);
+		m_aiFreeBonus.readArray<int>(pStream);
+		m_aiNumBonuses.readArray<int>(pStream);
+		m_aiNumCorpProducedBonuses.readArray<int>(pStream);
+		m_aiProjectProduction.readArray<int>(pStream);
+		m_aiBuildingProduction.readArray<int>(pStream);
+		m_aiBuildingProductionTime.readArray<int>(pStream);
+		m_aeBuildingOriginalOwner.readArray<int>(pStream);
+		EagerEnumMap<BuildingTypes,int> aiBuildingOriginalTime;
+		aiBuildingOriginalTime.readArray<int>(pStream);
+		FOR_EACH_ENUM(Building)
+		{
+			int iTimeRead = aiBuildingOriginalTime.get(eLoopBuilding);
+			m_aiBuildingOriginalTime.set(eLoopBuilding,
+					iTimeRead == MIN_INT ? iBuildingOriginalTimeUnknown : iTimeRead);
+		}
+		m_aiUnitProduction.readArray<int>(pStream);
+		m_aiUnitProductionTime.readArray<int>(pStream);
+		m_aiGreatPeopleUnitRate.readArray<int>(pStream);
+		m_aiGreatPeopleUnitProgress.readArray<int>(pStream);
+		m_aiSpecialistCount.readArray<int>(pStream);
+		m_aiMaxSpecialistCount.readArray<int>(pStream);
+		m_aiForceSpecialistCount.readArray<int>(pStream);
+		m_aiFreeSpecialistCount.readArray<int>(pStream);
+		m_aiImprovementFreeSpecialists.readArray<int>(pStream);
+		m_aiReligionInfluence.readArray<int>(pStream);
+		m_aiStateReligionHappiness.readArray<int>(pStream);
+		m_aiUnitCombatFreeExperience.readArray<int>(pStream);
+		m_aiFreePromotionCount.readArray<int>(pStream);
+		m_aiNumRealBuilding.readArray<int>(pStream);
+		m_aiNumFreeBuilding.readArray<int>(pStream);
+		m_abWorkingPlot.readArray<bool>(pStream);
+		m_abHasReligion.readArray<bool>(pStream);
+		m_abHasCorporation.readArray<bool>(pStream);
+	}
 	for (size_t i = 0; i < m_aTradeCities.size(); i++)
 	{
 		pStream->Read((int*)&m_aTradeCities[i].eOwner);
@@ -11222,12 +11278,24 @@ void CvCity::read(FDataStreamBase* pStream)
 
 	pStream->Read(&m_iPopulationRank);
 	pStream->Read(&m_bPopulationRankValid);
-	m_aiBaseYieldRank.Read(pStream);
-	m_abBaseYieldRankValid.Read(pStream);
-	m_aiYieldRank.Read(pStream);
-	m_abYieldRankValid.Read(pStream);
-	m_aiCommerceRank.Read(pStream);
-	m_abCommerceRankValid.Read(pStream);
+	if (uiFlag >= 12)
+	{
+		m_aiBaseYieldRank.read(pStream);
+		m_abBaseYieldRankValid.read(pStream);
+		m_aiYieldRank.read(pStream);
+		m_abYieldRankValid.read(pStream);
+		m_aiCommerceRank.read(pStream);
+		m_abCommerceRankValid.read(pStream);
+	}
+	else
+	{
+		m_aiBaseYieldRank.readArray<int>(pStream);
+		m_abBaseYieldRankValid.readArray<bool>(pStream);
+		m_aiYieldRank.readArray<int>(pStream);
+		m_abYieldRankValid.readArray<bool>(pStream);
+		m_aiCommerceRank.readArray<int>(pStream);
+		m_abCommerceRankValid.readArray<bool>(pStream);
+	}
 
 	int iNumElts=-1;
 
@@ -11240,47 +11308,45 @@ void CvCity::read(FDataStreamBase* pStream)
 		m_aEventsOccured.push_back(eEvent);
 	}
 
-	pStream->Read(&iNumElts);
-	m_aBuildingYieldChange.clear();
-	for (int i = 0; i < iNumElts; ++i)
+	if (uiFlag >= 12)
 	{
-		BuildingYieldChange kChange;
-		kChange.read(pStream);
-		m_aBuildingYieldChange.push_back(kChange);
+		m_aeiiBuildingYieldChange.read(pStream);
+		m_aeiiBuildingCommerceChange.read(pStream);
+		m_aeiBuildingHappyChange.read(pStream);
+		m_aeiBuildingHealthChange.read(pStream);
 	}
-
-	pStream->Read(&iNumElts);
-	m_aBuildingCommerceChange.clear();
-	for (int i = 0; i < iNumElts; ++i)
+	else
 	{
-		BuildingCommerceChange kChange;
-		kChange.read(pStream);
-		m_aBuildingCommerceChange.push_back(kChange);
+		// (advc: BtS had actually read int but written size_t)
+		size_t uiSize;
+		pStream->Read(&uiSize);
+		for (size_t i = 0; i < uiSize; i++)
+		{
+			int iBuildingClass, iYield, iChange;
+			pStream->Read(&iBuildingClass);
+			pStream->Read(&iYield);
+			pStream->Read(&iChange);
+			m_aeiiBuildingYieldChange.set(
+					static_cast<BuildingClassTypes>(iBuildingClass),
+					static_cast<YieldTypes>(iYield),
+					iChange);
+		}
+		pStream->Read(&uiSize);
+		for (size_t i = 0; i < uiSize; i++)
+		{
+			int iBuildingClass, iCommerce, iChange;
+			pStream->Read(&iBuildingClass);
+			pStream->Read(&iCommerce);
+			pStream->Read(&iChange);
+			m_aeiiBuildingCommerceChange.set(
+					static_cast<BuildingClassTypes>(iBuildingClass),
+					static_cast<CommerceTypes>(iCommerce),
+					iChange);
+		}
+		m_aeiBuildingHappyChange.readPair<size_t,int,int>(pStream);
+		m_aeiBuildingHealthChange.readPair<size_t,int,int>(pStream);
 	}
-
-	pStream->Read(&iNumElts);
-	m_aBuildingHappyChange.clear();
-	for (int i = 0; i < iNumElts; ++i)
-	{
-		int iBuildingClass;
-		pStream->Read(&iBuildingClass);
-		int iChange;
-		pStream->Read(&iChange);
-		m_aBuildingHappyChange.push_back(std::make_pair(
-				(BuildingClassTypes)iBuildingClass, iChange));
-	}
-
-	pStream->Read(&iNumElts);
-	m_aBuildingHealthChange.clear();
-	for (int i = 0; i < iNumElts; ++i)
-	{
-		int iBuildingClass;
-		pStream->Read(&iBuildingClass);
-		int iChange;
-		pStream->Read(&iChange);
-		m_aBuildingHealthChange.push_back(std::make_pair(
-				(BuildingClassTypes)iBuildingClass, iChange));
-	} // <advc.912d>
+	// <advc.912d>
 	if(uiFlag >= 4)
 		pStream->Read(&m_iPopRushHurryCount);
 	if (uiFlag < 9 && isHuman() && GC.getGame().isOption(GAMEOPTION_NO_SLAVERY))
@@ -11432,7 +11498,8 @@ void CvCity::write(FDataStreamBase* pStream)
 	//uiFlag = 8; // advc.310
 	//uiFlag = 9; // advc.912d (adjust food kept)
 	//uiFlag = 10; // advc.911a, advc.908b
-	uiFlag = 11; // advc.201, advc.098
+	//uiFlag = 11; // advc.201, advc.098
+	uiFlag = 12; // advc.enum: new enum map save behavior
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);
@@ -11543,65 +11610,65 @@ void CvCity::write(FDataStreamBase* pStream)
 	pStream->Write(m_eOriginalOwner);
 	pStream->Write(m_eCultureLevel);
 
-	m_aiSeaPlotYield.Write(pStream);
-	m_aiRiverPlotYield.Write(pStream);
-	m_aiBaseYieldRate.Write(pStream);
-	m_aiYieldRateModifier.Write(pStream);
-	m_aiPowerYieldRateModifier.Write(pStream);
-	m_aiBonusYieldRateModifier.Write(pStream);
-	m_aiTradeYield.Write(pStream);
-	m_aiCorporationYield.Write(pStream);
-	m_aiExtraSpecialistYield.Write(pStream);
-	m_aiCommerceRate.Write(pStream);
-	m_aiProductionToCommerceModifier.Write(pStream);
-	m_aiBuildingCommerce.Write(pStream);
-	m_aiSpecialistCommerce.Write(pStream);
-	m_aiReligionCommerce.Write(pStream);
-	m_aiCorporationCommerce.Write(pStream);
-	m_aiCommerceRateModifier.Write(pStream);
-	m_aiCommerceHappinessPer.Write(pStream);
-	m_aiDomainFreeExperience.Write(pStream);
-	m_aiDomainProductionModifier.Write(pStream);
-	m_aiCulture.Write(pStream);
-	m_aiNumRevolts.Write(pStream);
+	m_aiSeaPlotYield.write(pStream);
+	m_aiRiverPlotYield.write(pStream);
+	m_aiBaseYieldRate.write(pStream);
+	m_aiYieldRateModifier.write(pStream);
+	m_aiPowerYieldRateModifier.write(pStream);
+	m_aiBonusYieldRateModifier.write(pStream);
+	m_aiTradeYield.write(pStream);
+	m_aiCorporationYield.write(pStream);
+	m_aiExtraSpecialistYield.write(pStream);
+	m_aiCommerceRate.write(pStream);
+	m_aiProductionToCommerceModifier.write(pStream);
+	m_aiBuildingCommerce.write(pStream);
+	m_aiSpecialistCommerce.write(pStream);
+	m_aiReligionCommerce.write(pStream);
+	m_aiCorporationCommerce.write(pStream);
+	m_aiCommerceRateModifier.write(pStream);
+	m_aiCommerceHappinessPer.write(pStream);
+	m_aiDomainFreeExperience.write(pStream);
+	m_aiDomainProductionModifier.write(pStream);
+	m_aiCulture.write(pStream);
+	m_aiNumRevolts.write(pStream);
 
-	m_abEverOwned.Write(pStream);
-	m_abTradeRoute.Write(pStream);
-	m_abRevealed.Write(pStream);
-	m_abEspionageVisibility.Write(pStream);
+	m_abEverOwned.write(pStream);
+	m_abTradeRoute.write(pStream);
+	m_abRevealed.write(pStream);
+	m_abEspionageVisibility.write(pStream);
 
 	pStream->WriteString(m_szName);
 	pStream->WriteString(m_szPreviousName); // advc.106k
 	pStream->WriteString(m_szScriptData);
 
-	m_aiNoBonus.Write(pStream);
-	m_aiFreeBonus.Write(pStream);
-	m_aiNumBonuses.Write(pStream);
-	m_aiNumCorpProducedBonuses.Write(pStream);
-	m_aiProjectProduction.Write(pStream);
-	m_aiBuildingProduction.Write(pStream);
-	m_aiBuildingProductionTime.Write(pStream);
-	m_aeBuildingOriginalOwner.Write(pStream);
-	m_aiBuildingOriginalTime.Write(pStream);
-	m_aiUnitProduction.Write(pStream);
-	m_aiUnitProductionTime.Write(pStream);
-	m_aiGreatPeopleUnitRate.Write(pStream);
-	m_aiGreatPeopleUnitProgress.Write(pStream);
-	m_aiSpecialistCount.Write(pStream);
-	m_aiMaxSpecialistCount.Write(pStream);
-	m_aiForceSpecialistCount.Write(pStream);
-	m_aiFreeSpecialistCount.Write(pStream);
-	m_aiImprovementFreeSpecialists.Write(pStream);
-	m_aiReligionInfluence.Write(pStream);
-	m_aiStateReligionHappiness.Write(pStream);
-	m_aiUnitCombatFreeExperience.Write(pStream);
-	m_aiFreePromotionCount.Write(pStream);
-	m_aiNumRealBuilding.Write(pStream);
-	m_aiNumFreeBuilding.Write(pStream);
+	m_aiNoBonus.write(pStream);
+	m_aiFreeBonus.write(pStream);
+	m_aiNumBonuses.write(pStream);
+	m_aiNumCorpProducedBonuses.write(pStream);
+	m_aiProjectProduction.write(pStream);
+	m_aiBuildingProduction.write(pStream);
+	m_aiBuildingProductionTime.write(pStream);
+	m_aeBuildingOriginalOwner.write(pStream);
+	m_aiBuildingOriginalTime.write(pStream);
+	m_aiUnitProduction.write(pStream);
+	m_aiUnitProductionTime.write(pStream);
+	m_aiGreatPeopleUnitRate.write(pStream);
+	m_aiGreatPeopleUnitProgress.write(pStream);
+	m_aiSpecialistCount.write(pStream);
+	m_aiMaxSpecialistCount.write(pStream);
+	m_aiForceSpecialistCount.write(pStream);
+	m_aiFreeSpecialistCount.write(pStream);
+	m_aiImprovementFreeSpecialists.write(pStream);
+	m_aiReligionInfluence.write(pStream);
+	m_aiStateReligionHappiness.write(pStream);
+	m_aiUnitCombatFreeExperience.write(pStream);
+	m_aiFreePromotionCount.write(pStream);
+	m_aiNumRealBuilding.write(pStream);
+	m_aiNumFreeBuilding.write(pStream);
 
-	m_abWorkingPlot.Write(pStream);
-	m_abHasReligion.Write(pStream);
-	m_abHasCorporation.Write(pStream);
+	m_abWorkingPlot.write(pStream);
+	m_abHasReligion.write(pStream);
+	m_abHasCorporation.write(pStream);
 
 	for (size_t i = 0; i < m_aTradeCities.size(); i++)
 	{
@@ -11613,12 +11680,12 @@ void CvCity::write(FDataStreamBase* pStream)
 
 	pStream->Write(m_iPopulationRank);
 	pStream->Write(m_bPopulationRankValid);
-	m_aiBaseYieldRank.Write(pStream);
-	m_abBaseYieldRankValid.Write(pStream);
-	m_aiYieldRank.Write(pStream);
-	m_abYieldRankValid.Write(pStream);
-	m_aiCommerceRank.Write(pStream);
-	m_abCommerceRankValid.Write(pStream);
+	m_aiBaseYieldRank.write(pStream);
+	m_abBaseYieldRankValid.write(pStream);
+	m_aiYieldRank.write(pStream);
+	m_abYieldRankValid.write(pStream);
+	m_aiCommerceRank.write(pStream);
+	m_abCommerceRankValid.write(pStream);
 
 	pStream->Write(m_aEventsOccured.size());
 	for (std::vector<EventTypes>::iterator it = m_aEventsOccured.begin();
@@ -11627,35 +11694,11 @@ void CvCity::write(FDataStreamBase* pStream)
 		pStream->Write(*it);
 	}
 
-	pStream->Write(m_aBuildingYieldChange.size());
-	for (std::vector<BuildingYieldChange>::iterator it = m_aBuildingYieldChange.begin();
-		it != m_aBuildingYieldChange.end(); ++it)
-	{
-		it->write(pStream);
-	}
+	m_aeiiBuildingYieldChange.write(pStream);
+	m_aeiiBuildingCommerceChange.write(pStream);
+	m_aeiBuildingHappyChange.write(pStream);
+	m_aeiBuildingHealthChange.write(pStream);
 
-	pStream->Write(m_aBuildingCommerceChange.size());
-	for (std::vector<BuildingCommerceChange>::iterator it = m_aBuildingCommerceChange.begin();
-		it != m_aBuildingCommerceChange.end(); ++it)
-	{
-		it->write(pStream);
-	}
-
-	pStream->Write(m_aBuildingHappyChange.size());
-	for (BuildingChangeArray::iterator it = m_aBuildingHappyChange.begin();
-		it != m_aBuildingHappyChange.end(); ++it)
-	{
-		pStream->Write(it->first);
-		pStream->Write(it->second);
-	}
-
-	pStream->Write(m_aBuildingHealthChange.size());
-	for (BuildingChangeArray::iterator it = m_aBuildingHealthChange.begin();
-		it != m_aBuildingHealthChange.end(); ++it)
-	{
-		pStream->Write(it->first);
-		pStream->Write(it->second);
-	}
 	pStream->Write(m_iPopRushHurryCount); // advc.912d
 	// <advc.004x>
 	pStream->Write(m_iMostRecentOrder);
@@ -12296,48 +12339,31 @@ void CvCity::applyEvent(EventTypes eEvent,
 			}
 		}
 	}
-	if (kEvent.getNumBuildingYieldChanges() > 0)
+	FOR_EACH_NON_DEFAULT_PAIR(kEvent.
+		getBuildingYieldChange(), BuildingClass, YieldChangeMap)
 	{
-		FOR_EACH_ENUM(BuildingClass)
+		FOR_EACH_NON_DEFAULT_PAIR(perBuildingClassVal.second, Yield, int)
 		{
-			FOR_EACH_ENUM(Yield)
-			{
-				setBuildingYieldChange(eLoopBuildingClass, eLoopYield,
-						getBuildingYieldChange(eLoopBuildingClass, eLoopYield) +
-						kEvent.getBuildingYieldChange(eLoopBuildingClass, eLoopYield));
-			}
+			changeBuildingYieldChange(perBuildingClassVal.first,
+					perYieldVal.first, perYieldVal.second);
 		}
 	}
-
-	if (kEvent.getNumBuildingCommerceChanges() > 0)
+	FOR_EACH_NON_DEFAULT_PAIR(kEvent.
+		getBuildingCommerceChange(), BuildingClass, CommerceChangeMap)
 	{
-		FOR_EACH_ENUM(BuildingClass)
+		FOR_EACH_NON_DEFAULT_PAIR(perBuildingClassVal.second, Commerce, int)
 		{
-			FOR_EACH_ENUM(Commerce)
-			{
-				setBuildingCommerceChange(eLoopBuildingClass, eLoopCommerce,
-						getBuildingCommerceChange(eLoopBuildingClass, eLoopCommerce) +
-						kEvent.getBuildingCommerceChange(eLoopBuildingClass, eLoopCommerce));
-			}
+			changeBuildingCommerceChange(perBuildingClassVal.first,
+					perCommerceVal.first, perCommerceVal.second);
 		}
 	}
-
-	if (kEvent.getNumBuildingHappyChanges() > 0)
+	FOR_EACH_NON_DEFAULT_PAIR(kEvent.getBuildingHappyChange(), BuildingClass, int)
 	{
-		FOR_EACH_ENUM(BuildingClass)
-		{
-			setBuildingHappyChange(eLoopBuildingClass,
-					kEvent.getBuildingHappyChange(eLoopBuildingClass));
-		}
+		setBuildingHappyChange(perBuildingClassVal.first, perBuildingClassVal.second);
 	}
-
-	if (kEvent.getNumBuildingHealthChanges() > 0)
+	FOR_EACH_NON_DEFAULT_PAIR(kEvent.getBuildingHealthChange(), BuildingClass, int)
 	{
-		FOR_EACH_ENUM(BuildingClass)
-		{
-			setBuildingHealthChange(eLoopBuildingClass,
-					kEvent.getBuildingHealthChange(eLoopBuildingClass));
-		}
+		setBuildingHealthChange(perBuildingClassVal.first, perBuildingClassVal.second);
 	}
 
 	if (bClear)
@@ -12468,59 +12494,19 @@ void CvCity::invalidateCommerceRankCache(CommerceTypes eCommerce)
 }
 
 
-int CvCity::getBuildingYieldChange(BuildingClassTypes eBuildingClass, YieldTypes eYield) const
-{
-	for (std::vector<BuildingYieldChange>::const_iterator it = m_aBuildingYieldChange.begin();
-		it != m_aBuildingYieldChange.end(); ++it)
-	{
-		if (it->eBuildingClass == eBuildingClass && it->eYield == eYield)
-			return it->iChange;
-	}
-	return 0;
-}
-
 void CvCity::setBuildingYieldChange(BuildingClassTypes eBuildingClass,
 	YieldTypes eYield, int iChange)
 {
 	BuildingTypes eBuilding = getCivilization().getBuilding(eBuildingClass); // advc.003w
-	for (std::vector<BuildingYieldChange>::iterator it = m_aBuildingYieldChange.begin();
-		it != m_aBuildingYieldChange.end(); ++it)
-	{
-		if (it->eBuildingClass != eBuildingClass || it->eYield != eYield)
-			continue;
-
-		int iOldChange = it->iChange;
-		if (iOldChange != iChange)
-		{
-
-			if (iChange == 0)
-				m_aBuildingYieldChange.erase(it);
-			else it->iChange = iChange;
-
-			if (eBuilding != NO_BUILDING)
-			{
-				if (getNumActiveBuilding(eBuilding) > 0)
-				{
-					changeBaseYieldRate(eYield,
-							(iChange - iOldChange) * getNumActiveBuilding(eBuilding));
-				}
-			}
-		}
+	// advc: Simplified this function a lot
+	int const iOldChange = m_aeiiBuildingYieldChange.get(eBuildingClass, eYield);
+	if (iOldChange == iChange)
 		return;
-	}
-	if (iChange != 0)
+	m_aeiiBuildingYieldChange.set(eBuildingClass, eYield, iChange);
+	if (getNumActiveBuilding(eBuilding) > 0)
 	{
-		BuildingYieldChange kChange;
-		kChange.eBuildingClass = eBuildingClass;
-		kChange.eYield = eYield;
-		kChange.iChange = iChange;
-		m_aBuildingYieldChange.push_back(kChange);
-
-		if (eBuilding != NO_BUILDING)
-		{
-			if (getNumActiveBuilding(eBuilding) > 0)
-				changeBaseYieldRate(eYield, iChange * getNumActiveBuilding(eBuilding));
-		}
+		changeBaseYieldRate(eYield,
+				(iChange - iOldChange) * getNumActiveBuilding(eBuilding));
 	}
 }
 
@@ -12533,46 +12519,16 @@ void CvCity::changeBuildingYieldChange(BuildingClassTypes eBuildingClass,
 }
 
 
-int CvCity::getBuildingCommerceChange(BuildingClassTypes eBuildingClass,
-	CommerceTypes eCommerce) const
-{
-	for (std::vector<BuildingCommerceChange>::const_iterator it = m_aBuildingCommerceChange.begin();
-		it != m_aBuildingCommerceChange.end(); ++it)
-	{
-		if (it->eBuildingClass == eBuildingClass && it->eCommerce == eCommerce)
-			return it->iChange;
-	}
-	return 0;
-}
-
-
 void CvCity::setBuildingCommerceChange(BuildingClassTypes eBuildingClass,
 	CommerceTypes eCommerce, int iChange)
-{
-	for (std::vector<BuildingCommerceChange>::iterator it = m_aBuildingCommerceChange.begin();
-		it != m_aBuildingCommerceChange.end(); ++it)
-	{
-		if (it->eBuildingClass == eBuildingClass && it->eCommerce == eCommerce)
-		{
-			if (it->iChange != iChange)
-			{
-				if (iChange == 0)
-					m_aBuildingCommerceChange.erase(it);
-				else it->iChange = iChange;
-				updateBuildingCommerce(/* advc.opt: */ eCommerce);
-			}
-			return;
-		}
-	}
-	if (iChange != 0)
-	{
-		BuildingCommerceChange kChange;
-		kChange.eBuildingClass = eBuildingClass;
-		kChange.eCommerce = eCommerce;
-		kChange.iChange = iChange;
-		m_aBuildingCommerceChange.push_back(kChange);
+{	// advc: Simplified this function a lot
+	BuildingTypes eBuilding = getCivilization().getBuilding(eBuildingClass);
+	int const iOldChange = m_aeiiBuildingCommerceChange.get(eBuildingClass, eCommerce);
+	if (iOldChange == iChange)
+		return;
+	m_aeiiBuildingCommerceChange.set(eBuildingClass, eCommerce, iChange);
+	if (getNumActiveBuilding(eBuilding) > 0)
 		updateBuildingCommerce(/* advc.opt: */ eCommerce);
-	}
 }
 
 
@@ -12587,149 +12543,51 @@ void CvCity::changeBuildingCommerceChange(BuildingClassTypes eBuildingClass,
 void CvCity::setBuildingHappyChange(BuildingClassTypes eBuildingClass, int iChange)
 {
 	BuildingTypes eBuilding = getCivilization().getBuilding(eBuildingClass); // advc.003w
-	FAssert(eBuilding != NO_BUILDING); // advc
-	for (BuildingChangeArray::iterator it = m_aBuildingHappyChange.begin();
-		it != m_aBuildingHappyChange.end(); ++it)
+	// advc: Simplified this function a lot
+	int const iOldChange = m_aeiBuildingHappyChange.get(eBuildingClass);
+	if (iOldChange == iChange)
+		return;
+	m_aeiBuildingHappyChange.set(eBuildingClass, iChange);
+	/*	UNOFFICIAL_PATCH (Bugfix), 10/22/09, jdog5000: START
+		(advc: BtS code deleted) */
+	if (getNumActiveBuilding(eBuilding) > 0)
 	{
-		if (it->first == eBuildingClass && it->second != iChange)
-		{
-			/*if (it->second > 0)
-				changeBuildingGoodHappiness(-it->second);
-			else if (it->second < 0)
-				changeBuildingBadHappiness(it->second);
-			if (iChange == 0)
-				m_aBuildingHappyChange.erase(it);
-			else it->second = iChange;
-			if (iChange > 0)
-				changeBuildingGoodHappiness(iChange);
-			else if (iChange < 0)
-				changeBuildingGoodHappiness(-iChange);*/
-			// UNOFFICIAL_PATCH (Bugfix), 10/22/09, jdog5000: START
-			int const iOldChange = it->second;
-			m_aBuildingHappyChange.erase(it);
-			if (getNumActiveBuilding(eBuilding) > 0)
-			{
-				if (iOldChange > 0)
-					changeBuildingGoodHappiness(-iOldChange);
-				else if (iOldChange < 0)
-					changeBuildingBadHappiness(-iOldChange);
-				if (iChange != 0)
-				{
-					m_aBuildingHappyChange.push_back(std::make_pair(eBuildingClass, iChange));
-					if (iChange > 0)
-						changeBuildingGoodHappiness(iChange);
-					else if (iChange < 0)
-						changeBuildingBadHappiness(iChange);
-				}
-			} // UNOFFICIAL_PATCH: END
-			return;
-		}
-	}
-	if (iChange != 0)
-	{
-		/*m_aBuildingHappyChange.push_back(std::make_pair(eBuildingClass, iChange));
+		if (iOldChange > 0)
+			changeBuildingGoodHappiness(-iOldChange);
+		else if (iOldChange < 0)
+			changeBuildingBadHappiness(-iOldChange);
 		if (iChange > 0)
 			changeBuildingGoodHappiness(iChange);
 		else if (iChange < 0)
-			changeBuildingGoodHappiness(-iChange);*/
-		// UNOFFICIAL_PATCH (Bugfix), 10/22/09, jdog5000: START
-		if (getNumActiveBuilding(eBuilding) > 0)
-		{
-			m_aBuildingHappyChange.push_back(std::make_pair(eBuildingClass, iChange));
-			if (iChange > 0)
-				changeBuildingGoodHappiness(iChange);
-			else if (iChange < 0)
-				changeBuildingBadHappiness(iChange);
-		} // UNOFFICIAL_PATCH: END
-	}
-}
-
-
-int CvCity::getBuildingHappyChange(BuildingClassTypes eBuildingClass) const
-{
-	for (BuildingChangeArray::const_iterator it = m_aBuildingHappyChange.begin();
-		it != m_aBuildingHappyChange.end(); ++it)
-	{
-		if (it->first == eBuildingClass)
-			return it->second;
-	}
-	return 0;
+			changeBuildingBadHappiness(iChange);
+	} // UNOFFICIAL_PATCH: END
 }
 
 
 void CvCity::setBuildingHealthChange(BuildingClassTypes eBuildingClass, int iChange)
 {
 	BuildingTypes eBuilding = getCivilization().getBuilding(eBuildingClass); // advc.003w
-	FAssert(eBuilding != NO_BUILDING); // advc
-	for (BuildingChangeArray::iterator it = m_aBuildingHealthChange.begin();
-		it != m_aBuildingHealthChange.end(); ++it)
+	// advc: Simplified this function a lot
+	int const iOldChange = m_aeiBuildingHealthChange.get(eBuildingClass);
+	if (iOldChange == iChange)
+		return;
+	m_aeiBuildingHealthChange.set(eBuildingClass, iChange);
+	/*	UNOFFICIAL_PATCH (Bugfix), 10/22/09, jdog5000: START
+		(advc: BtS code deleted) */
+	if (getNumActiveBuilding(eBuilding) > 0)
 	{
-		if (it->first == eBuildingClass && it->second != iChange)
-		{
-			/*if (it->second > 0)
-				changeBuildingGoodHealth(-it->second);
-			else if (it->second < 0)
-				changeBuildingBadHealth(it->second);
-			if (iChange == 0)
-				m_aBuildingHealthChange.erase(it);
-			else it->second = iChange;
-			if (iChange > 0)
-				changeBuildingGoodHealth(iChange);
-			else if (iChange < 0)
-				changeBuildingBadHealth(-iChange);*/
-			// UNOFFICIAL_PATCH, Bugfix, 10/22/09, jdog5000
-			int const iOldChange = it->second;
-			m_aBuildingHealthChange.erase(it);
-			if (getNumActiveBuilding(eBuilding) > 0)
-			{
-				if (iOldChange > 0)
-					changeBuildingGoodHealth(-iOldChange);
-				else if (iOldChange < 0)
-					changeBuildingBadHealth(-iOldChange);
-				if (iChange != 0)
-				{
-					m_aBuildingHealthChange.push_back(std::make_pair(eBuildingClass, iChange));
-					if (iChange > 0)
-						changeBuildingGoodHealth(iChange);
-					else if (iChange < 0)
-						changeBuildingBadHealth(iChange);
-				}
-			} // UNOFFICIAL_PATCH: END
-			return;
-		}
-	}
-	if (iChange != 0)
-	{
-		/*m_aBuildingHealthChange.push_back(std::make_pair(eBuildingClass, iChange));
+		if (iOldChange > 0)
+			changeBuildingGoodHealth(-iOldChange);
+		else if (iOldChange < 0)
+			changeBuildingBadHealth(-iOldChange);
 		if (iChange > 0)
-			changeBuildingGoodHappiness(iChange);
+			changeBuildingGoodHealth(iChange);
 		else if (iChange < 0)
-			changeBuildingGoodHappiness(-iChange);*/
-		// UNOFFICIAL_PATCH, Bugfix, 10/22/09, jdog5000
-		if (getNumActiveBuilding(eBuilding) > 0)
-		{
-			m_aBuildingHealthChange.push_back(std::make_pair(eBuildingClass, iChange));
-			if (iChange > 0)
-				changeBuildingGoodHealth(iChange);
-			else if (iChange < 0)
-				changeBuildingBadHealth(iChange);
-		} // UNOFFICIAL_PATCH: END
-	}
+			changeBuildingBadHealth(iChange);
+	} // UNOFFICIAL_PATCH: END
 }
 
-
-int CvCity::getBuildingHealthChange(BuildingClassTypes eBuildingClass) const
-{
-	for (BuildingChangeArray::const_iterator it = m_aBuildingHealthChange.begin();
-		it != m_aBuildingHealthChange.end(); ++it)
-	{
-		if (it->first == eBuildingClass)
-			return it->second;
-	}
-	return 0;
-}
-
-// <advc.071>
+// advc.071:
 void CvCity::meetNewOwner(TeamTypes eOtherTeam, TeamTypes eNewOwner) const
 {
 	if (!isRevealed(eOtherTeam) || GET_TEAM(eOtherTeam).isHasMet(eNewOwner))
@@ -12738,7 +12596,7 @@ void CvCity::meetNewOwner(TeamTypes eOtherTeam, TeamTypes eNewOwner) const
 	fcData.x1 = getX();
 	fcData.y1 = getY();
 	GET_TEAM(eOtherTeam).meet(eNewOwner, true, &fcData);
-} // </advc.071>
+}
 
 
 void CvCity::liberate(bool bConquest, /* advc.ctr: */ bool bPeaceDeal)

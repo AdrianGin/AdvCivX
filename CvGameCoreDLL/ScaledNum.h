@@ -5,10 +5,14 @@
 
 // advc.fract: Header-only class template for fixed-point fractional numbers
 
-#include "TypeChoice.h"
 #include "FixedPointPowTables.h"
-/*	Other non-BtS dependencies: intdiv::round, fmath::round, intHash, all in CvGameCoreUtils.h
-	(tbd.: move those functions here?), and integer_limits in IntegerTraits.h.
+/*	Other non-BtS dependencies (precompiled):
+ +	The whole TypeChoice.h header.
+ +	The whole IntegerConversion.h header. Two uses of enum_traits in that header
+	can be replaced (see comment there) when porting ScaledNum into another mod.
+ +	intdiv::round, fmath::round  in ArithmeticUtils.h.
+ +	intHash in CvGameCoreUtils.h.
+ +	integer_limits in IntegerTraits.h.
 	For inclusion in PCH, one may have to define NOMINMAX before including windows.h;
 	see CvGameCoreDLL.h.
 	The bernoulliSuccess function assumes that CvRandom can include two integer values
@@ -35,19 +39,11 @@ class ScaledNumBase
 {
 protected:
 	static CvString szBuf;
-	/*	(Could also be global, but sizeof(OtherIntType) <= 4 shouldn't be assumed
-		in other contexts.) */
 	template<typename OtherIntType>
 	static int safeToInt(OtherIntType n)
 	{
-		BOOST_STATIC_ASSERT(sizeof(OtherIntType) <= 4);
-		// uint is the only problematic OtherIntType
-		if (!integer_limits<OtherIntType>::is_signed &&
-			sizeof(int) == sizeof(OtherIntType))
-		{
-			FAssert(n <= static_cast<OtherIntType>(MAX_INT));
-		}
-		return static_cast<int>(n);
+		// NB: uint is the only problematic OtherIntType that can occur here
+		return safeIntCast<int>(n);
 	}
 };
 template<typename Dummy>
@@ -134,6 +130,7 @@ class ScaledNum : ScaledNumBase<void> // Not named "ScaledInt" b/c what's being 
 	static IntType const INTMAX = integer_limits<IntType>::max;
 
 public:
+	typedef IntType int_t; // Expose int type for any type trait code
 	static IntType const MAX = INTMAX / SCALE;
 	static IntType const MIN = INTMIN / SCALE;
 
@@ -179,7 +176,7 @@ public:
 		r.m_i = static_cast<IntType>(kRand.get(static_cast<unsigned short>(iSCALE), szLog));
 		return r;
 	}
-	/*	See intHash (CvGameCoreUtils.h) about the parameters.
+	/*	See intHash (ArithmeticUtils.h) about the parameters.
 		Result in the half-open interval [0, 1). */
 	static ScaledNum hash(std::vector<int> const& x, PlayerTypes ePlayer = NO_PLAYER)
 	{
@@ -670,24 +667,7 @@ private:
 	template<typename OtherIntType>
 	static IntType safeCast(OtherIntType n)
 	{
-		if (integer_limits<OtherIntType>::is_signed != bSIGNED ||
-			sizeof(IntType) < sizeof(OtherIntType))
-		{
-			if (!bSIGNED && integer_limits<OtherIntType>::is_signed)
-				FAssert(n >= 0);
-			if (sizeof(IntType) < sizeof(OtherIntType) ||
-				(sizeof(IntType) == sizeof(OtherIntType) &&
-				bSIGNED && !integer_limits<OtherIntType>::is_signed))
-			{
-				/*	(No static_cast b/c it needs to compile even when IntType is bigger
-					than OtherIntType, i.e. when the conditions above are false.
-					Tbd.: Solve this problem through choose_type and specialization?) */
-				FAssert(n <= (OtherIntType)INTMAX);
-				if (bSIGNED && integer_limits<OtherIntType>::is_signed)
-					FAssert(n >= (OtherIntType)INTMIN);
-			}
-		}
-		return static_cast<IntType>(n);
+		return safeIntCast<IntType>(n);
 	}
 
 	/*	Specialize b/c the sign inversion code wouldn't compile for

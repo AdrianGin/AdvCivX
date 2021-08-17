@@ -152,7 +152,7 @@ void CvReplayInfo::createInfo(PlayerTypes ePlayer)
 	m_eCalendar = kGame.getCalendar();
 
 	m_listPlayerScoreHistory.clear();
-	EnumMap<PlayerTypes,PlayerTypes> aePlayerIndices; // advc.enum
+	EagerEnumMap<PlayerTypes,PlayerTypes> aePlayerIndices; // advc.enum
 	/*	advc (note): This loop remaps player IDs so that players never alive are skipped.
 		Not sure if this is really needed. */
 	PlayerTypes eNewIndex = (PlayerTypes)0;
@@ -895,32 +895,32 @@ void CvReplayInfo::write(FDataStreamBase& stream)
 	}
 	else // </advc.106m>
 		stream.Write(m_eActivePlayer);
-	stream.Write((int)m_eDifficulty);
+	stream.Write(m_eDifficulty);
 	stream.WriteString(m_szLeaderName);
 	stream.WriteString(m_szCivDescription);
 	stream.WriteString(m_szShortCivDescription);
 	stream.WriteString(m_szCivAdjective);
 	stream.WriteString(m_szMapScriptName);
-	stream.Write((int)m_eWorldSize);
-	stream.Write((int)m_eClimate);
-	//stream.Write((int)m_eSeaLevel);
+	stream.Write(m_eWorldSize);
+	stream.Write(m_eClimate);
+	//stream.Write(m_eSeaLevel);
 	/*  advc.106i: m_eSeaLevel is unused in AdvCiv and BtS. Need to stick to the
 		BtS replay format. Well, it's probably OK to append additional data at
 		the end, but I'm not quite sure. */
 	stream.Write(m->iFinalScore); // advc.707
-	stream.Write((int)m_eEra);
-	stream.Write((int)m_eGameSpeed);
+	stream.Write(m_eEra);
+	stream.Write(m_eGameSpeed);
 	stream.Write((int)m_listGameOptions.size());
 	for (uint i = 0; i < m_listGameOptions.size(); i++)
 	{
-		stream.Write((int)m_listGameOptions[i]);
+		stream.Write(m_listGameOptions[i]);
 	}
 	stream.Write((int)m_listVictoryTypes.size());
 	for (uint i = 0; i < m_listVictoryTypes.size(); i++)
 	{
-		stream.Write((int)m_listVictoryTypes[i]);
+		stream.Write(m_listVictoryTypes[i]);
 	}
-	stream.Write((int)m_eVictoryType);
+	stream.Write(m_eVictoryType);
 	stream.Write((int)m_listReplayMessages.size());
 	for (uint i = 0; i < m_listReplayMessages.size(); i++)
 	{
@@ -933,14 +933,14 @@ void CvReplayInfo::write(FDataStreamBase& stream)
 	stream.Write(m_iStartYear);
 	stream.Write(m_iFinalTurn);
 	stream.WriteString(m_szFinalDate);
-	stream.Write((int)m_eCalendar);
+	stream.Write(m_eCalendar);
 	stream.Write(m->iNormalizedScore);
 	stream.Write((int)m_listPlayerScoreHistory.size());
 	for (uint i = 0; i < m_listPlayerScoreHistory.size(); i++)
 	{
 		PlayerInfo& info = m_listPlayerScoreHistory[i];
-		stream.Write((int)info.m_eLeader);
-		stream.Write((int)info.m_eColor);
+		stream.Write(info.m_eLeader);
+		stream.Write(info.m_eColor);
 		stream.Write((int)info.m_listScore.size());
 		for (uint j = 0; j < info.m_listScore.size(); j++)
 		{

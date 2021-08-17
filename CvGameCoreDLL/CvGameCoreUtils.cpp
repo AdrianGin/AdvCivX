@@ -7,42 +7,13 @@
 #include "BBAILog.h" // advc.007
 #include "CvInfo_GameOption.h"
 
-using std::vector; // advc
-
-/*	advc: Akin to natGetDeterministicRandom (deleted from CvCity.cpp). For reference,
-	the implementation of that function was:
-	srand(7297 * iSeedX + 2909  * iSeedY);
-	return (rand() % (iMax - iMin)) + iMin; */
-int intHash(vector<int> const& kInputs, PlayerTypes ePlayer)
-{
-	int const iPrime = 31;
-	int iHashVal = 0;
-	for (size_t i = 0; i < kInputs.size(); i++)
-	{
-		iHashVal += kInputs[i];
-		iHashVal *= iPrime;
-	}
-	int iCapitalIndex = -1;
-	if (ePlayer != NO_PLAYER)
-	{
-		CvCity* pCapital = GET_PLAYER(ePlayer).getCapital();
-		if (pCapital != NULL)
-			iCapitalIndex = pCapital->getPlot().plotNum();
-	}
-	if (iCapitalIndex >= 0)
-	{
-		iHashVal += iCapitalIndex;
-		iHashVal *= iPrime;
-	}
-	return iHashVal;
-}
 // advc.035:
-void contestedPlots(vector<CvPlot*>& r, TeamTypes t1, TeamTypes t2)
+void contestedPlots(std::vector<CvPlot*>& r, TeamTypes t1, TeamTypes t2)
 {
 	if(!GC.getDefineBOOL(CvGlobals::OWN_EXCLUSIVE_RADIUS))
 		return;
 	// Sufficient to check plots around the teams' cities
-	vector<CvCity const*> apCities;
+	std::vector<CvCity const*> apCities;
 	for (MemberIter itMember1(t1); itMember1.hasNext(); ++itMember1)
 	{
 		FOR_EACH_CITY(c, *itMember1)
@@ -800,6 +771,34 @@ int baseYieldToSymbol(int iNumYieldTypes, int iYieldStack)
 	return true;
 }*/
 
+/*	advc: Akin to natGetDeterministicRandom (deleted from CvCity.cpp). For reference,
+	the implementation of that function was:
+	srand(7297 * iSeedX + 2909  * iSeedY);
+	return (rand() % (iMax - iMin)) + iMin; */
+int intHash(std::vector<int> const& kInputs, PlayerTypes ePlayer)
+{
+	int const iPrime = 31;
+	int iHashVal = 0;
+	for (size_t i = 0; i < kInputs.size(); i++)
+	{
+		iHashVal += kInputs[i];
+		iHashVal *= iPrime;
+	}
+	int iCapitalIndex = -1;
+	if (ePlayer != NO_PLAYER)
+	{
+		CvCity const* pCapital = GET_PLAYER(ePlayer).getCapital();
+		if (pCapital != NULL)
+			iCapitalIndex = pCapital->plotNum();
+	}
+	if (iCapitalIndex >= 0)
+	{
+		iHashVal += iCapitalIndex;
+		iHashVal *= iPrime;
+	}
+	return iHashVal;
+}
+
 // create an array of shuffled numbers
 int* shuffle(int iNum, CvRandom& rand)
 {
@@ -827,7 +826,7 @@ void shuffleArray(int* piShuffle, int iNum, CvRandom& rand)
 }
 
 // advc.enum: Caller needs to set the vector size
-void shuffleVector(vector<int>& aiIndices, CvRandom& rand)
+void shuffleVector(std::vector<int>& aiIndices, CvRandom& rand)
 {
 	std11::iota(aiIndices.begin(), aiIndices.end(), 0);
 	int const iSize = (int)aiIndices.size();

@@ -3445,7 +3445,7 @@ BuildingTypes CvCityAI::AI_bestBuildingThreshold(int iFocusFlags, int iMaxTurns,
 			if (iLimit == -1)
 			{
 				// We're not out of the woods yet. Check for prereq buildings.
-				FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+				FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 					getPrereqNumOfBuildingClass(), BuildingClass, int)
 				{
 					BuildingClassTypes const ePrereqClass = perBuildingClassVal.first;
@@ -3648,7 +3648,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 	{
 		return 0;
 	} // </advc.014>
-	FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+	FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 		getReligionChange(), Religion, int)
 	{
 		if (perReligionVal.second > 0 &&
@@ -3842,7 +3842,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 						GC.getPERCENT_ANGER_DIVISOR() / (bWarPlan ? 10 : 20)) /
 						(100 * GC.getPERCENT_ANGER_DIVISOR()); // </K-Mod>
 			}
-			FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+			FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 				getBuildingHappinessChanges(), BuildingClass, int)
 			{
 				iValue += (perBuildingClassVal.second *
@@ -3923,7 +3923,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 					kOwner.AI_getNumCitySites() <= 0)) ? 1 : 4); // </advc.017>
 			iValue += kBuilding.getFreeExperience() * iWeight;
 
-			FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+			FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 				getUnitCombatFreeExperience(), UnitCombat, int)
 			{
 				if (canTrain(perUnitCombatVal.first))
@@ -4485,14 +4485,14 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 			}
 
 			iValue += kBuilding.getEnemyWarWearinessModifier() / 2;
-			FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+			FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 				getFreeSpecialistCount(), Specialist, int)
 			{
 				iValue += AI_permanentSpecialistValue(
 						perSpecialistVal.first/*, false, false*/) * // K-Mod
 						perSpecialistVal.second / /* K-Mod: was 50 */ 100;
 			}
-			FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+			FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 				getImprovementFreeSpecialist(), Improvement, int)
 			{
 				iValue += countNumImprovedPlots(perImprovementVal.first, true) * 50 *
@@ -4915,7 +4915,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 							27; // was 12
 				}
 
-				FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+				FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 					getBonusYieldModifier(), Bonus, YieldPercentMap)
 				{
 					if (hasBonus(perBonusVal.first))
@@ -4980,7 +4980,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 				iRawYieldValue *= AI_yieldMultiplier(eLoopYield);
 				iRawYieldValue /= 100;
 				iTempValue += iRawYieldValue;
-				FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+				FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 					getSpecialistYieldChange(), Specialist, YieldChangeMap)
 				{
 					iTempValue += (perSpecialistVal.second[eLoopYield] *
@@ -5499,7 +5499,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 					iValue += iCorpValue;
 			}
 			// K-Mod end (corp)
-			FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+			FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 				getReligionChange(), Religion, int)
 			{
 				ReligionTypes const eLoopReligion = perReligionVal.first;
@@ -5724,7 +5724,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 				kBuilding.getProductionCost() > 0 && !bRemove)
 			{
 				int iFlavour = 0;
-				FOR_EACH_NON_DEFAULT_INFO_PAIR(kBuilding.
+				FOR_EACH_NON_DEFAULT_PAIR(kBuilding.
 					getFlavorValue(), Flavor, int)
 				{
 					//iValue += (kOwner.AI_getFlavorValue(eLoopFlavor) * kBuilding.getFlavorValue(eLoopFlavor));
@@ -6290,7 +6290,7 @@ int CvCityAI::AI_projectValue(ProjectTypes eProject) /* advc: */ const
 	}
 	/*	projects which are required components for victory.
 		(ie. components of the spaceship) */
-	FOR_EACH_NON_DEFAULT_INFO_PAIR(kProject.
+	FOR_EACH_NON_DEFAULT_PAIR(kProject.
 		getVictoryThreshold(), Victory, int)
 	{
 		VictoryTypes const eLoopVictory = perVictoryVal.first;
@@ -7728,8 +7728,8 @@ int CvCityAI::AI_getImprovementValue(CvPlot const& kPlot, ImprovementTypes eImpr
 
 	//if (rValue >= 0) // condition disabled by K-Mod. (maybe the yield will be worth it!)
 
-	EnumMap<YieldTypes,scaled> weightedFinalYields;
-	EnumMap<YieldTypes,scaled> weightedYieldDiffs;
+	EagerEnumMap<YieldTypes,scaled> weightedFinalYields;
+	EagerEnumMap<YieldTypes,scaled> weightedYieldDiffs;
 	{
 		// K-Mod. Get a weighted average of the yields for improvements which upgrade (eg. cottages).
 		int iTimeScale = 60;
@@ -10824,7 +10824,7 @@ bool CvCityAI::AI_finalImprovementYieldDifference(/* advc: */ CvPlot const& kPlo
 	decreasing by a factor of `e` for each `time_scale` turns.) */
 bool CvCityAI::AI_timeWeightedImprovementYields(CvPlot const& kPlot, ImprovementTypes eImprovement,
 	int iTimeScale, // advc.912f (note): 0 now means infinity
-	EnumMap<YieldTypes,scaled>& kWeightedYields) const // advc: was vector<float>&
+	EagerEnumMap<YieldTypes,scaled>& kWeightedYields) const // advc: was vector<float>&
 {
 	PROFILE_FUNC();
 

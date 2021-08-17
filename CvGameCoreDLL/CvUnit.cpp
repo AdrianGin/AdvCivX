@@ -3758,7 +3758,7 @@ bool CvUnit::nuke(int iX, int iY)
 	CvWString szBuffer;
 	CvPlot& kPlot = GC.getMap().getPlot(iX, iY);
 
-	EnumMap<TeamTypes,bool> abTeamsAffected;
+	EagerEnumMap<TeamTypes,bool> abTeamsAffected;
 	for (TeamIter<ALIVE> it; it.hasNext(); ++it)
 		abTeamsAffected.set(it->getID(), isNukeVictim(&kPlot, it->getID()));
 
@@ -3841,7 +3841,7 @@ bool CvUnit::nuke(int iX, int iY)
 	}
 	CvCity const* pReplayCity = NULL; // advc.106
 	// <advc.130q>
-	EnumMap<TeamTypes,int> aiDamageScore;
+	EagerEnumMap<TeamTypes,int> aiDamageScore;
 	for (TeamIter<> it; it.hasNext(); ++it)
 	{
 		// We already know if the team is affected at all
@@ -3967,17 +3967,17 @@ bool CvUnit::nuke(int iX, int iY)
 int CvUnit::nukeInterceptionChance(CvPlot const& kTarget,
 	TeamTypes* pBestTeam, // Optional out-param
 	// Allow caller to provide set of affected teams (just to save time)
-	EnumMap<TeamTypes,bool> const* pTeamsAffected) const
+	EagerEnumMap<TeamTypes,bool> const* pTeamsAffected) const
 {
 	TeamTypes eBestTeam_local = NO_TEAM;
 	TeamTypes& eBestTeam = (pBestTeam == NULL ? eBestTeam_local : *pBestTeam);
-	EnumMap<TeamTypes,bool> abTeamsAffected_local;
+	EagerEnumMap<TeamTypes,bool> abTeamsAffected_local;
 	if (pTeamsAffected == NULL)
 	{
 		for (TeamIter<ALIVE> it; it.hasNext(); ++it)
 			abTeamsAffected_local.set(it->getID(), isNukeVictim(&kTarget, it->getID()));
 	}
-	EnumMap<TeamTypes,bool> const& abTeamsAffected = (pTeamsAffected == NULL ?
+	EagerEnumMap<TeamTypes,bool> const& abTeamsAffected = (pTeamsAffected == NULL ?
 			abTeamsAffected_local : *pTeamsAffected);
 	// Rest of the body cut from nuke(int,int) ...
 	int iBestInterception = 0;
@@ -4751,7 +4751,7 @@ void CvUnit::updatePlunder(int iChange, bool bUpdatePlotGroups)
 	std::vector<CvPlot*> apRange;
 	blockadeRange(apRange, iChange == -1 ? 2 : 0, iChange >= 0);
 	// To avoid updating plot groups unnecessarily
-	EnumMap<TeamTypes,bool> abChanged;
+	EagerEnumMap<TeamTypes,bool> abChanged;
 	for(size_t i = 0; i < apRange.size(); i++)
 	{
 		CvPlot* pLoopPlot = apRange[i]; 
@@ -10245,21 +10245,35 @@ void CvUnit::read(FDataStreamBase* pStream)
 	// <advc.opt>
 	m_combatUnit.validateOwner();
 	m_transportUnit.validateOwner(); // </advc.opt>
-
-	m_aiExtraDomainModifier.Read(pStream);
+	if (uiFlag >= 7)
+		m_aiExtraDomainModifier.read(pStream);
+	else m_aiExtraDomainModifier.readArray<int>(pStream);
 
 	pStream->ReadString(m_szName);
 	pStream->ReadString(m_szScriptData);
 
-	m_abHasPromotion.Read(pStream);
-
-	m_aiTerrainDoubleMoveCount.Read(pStream);
-	m_aiFeatureDoubleMoveCount.Read(pStream);
-	m_aiExtraTerrainAttackPercent.Read(pStream);
-	m_aiExtraTerrainDefensePercent.Read(pStream);
-	m_aiExtraFeatureAttackPercent.Read(pStream);
-	m_aiExtraFeatureDefensePercent.Read(pStream);
-	m_aiExtraUnitCombatModifier.Read(pStream);
+	if (uiFlag >= 7)
+	{
+		m_abHasPromotion.read(pStream);
+		m_aiTerrainDoubleMoveCount.read(pStream);
+		m_aiFeatureDoubleMoveCount.read(pStream);
+		m_aiExtraTerrainAttackPercent.read(pStream);
+		m_aiExtraTerrainDefensePercent.read(pStream);
+		m_aiExtraFeatureAttackPercent.read(pStream);
+		m_aiExtraFeatureDefensePercent.read(pStream);
+		m_aiExtraUnitCombatModifier.read(pStream);
+	}
+	else
+	{
+		m_abHasPromotion.readArray<bool>(pStream);
+		m_aiTerrainDoubleMoveCount.readArray<int>(pStream);
+		m_aiFeatureDoubleMoveCount.readArray<int>(pStream);
+		m_aiExtraTerrainAttackPercent.readArray<int>(pStream);
+		m_aiExtraTerrainDefensePercent.readArray<int>(pStream);
+		m_aiExtraFeatureAttackPercent.readArray<int>(pStream);
+		m_aiExtraFeatureDefensePercent.readArray<int>(pStream);
+		m_aiExtraUnitCombatModifier.readArray<int>(pStream);
+	}
 }
 
 
@@ -10272,7 +10286,8 @@ void CvUnit::write(FDataStreamBase* pStream)
 	//uiFlag = 3; // K-Mod
 	//uiFlag = 4; // advc.029
 	//uiFlag = 5; // advc.164
-	uiFlag = 6; // advc.opt (m_bFlatMovement)
+	//uiFlag = 6; // advc.opt (m_bFlatMovement)
+	uiFlag = 7; // advc.enum: new enum map save behavior
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);
@@ -10354,20 +10369,20 @@ void CvUnit::write(FDataStreamBase* pStream)
 	pStream->Write(m_transportUnit.eOwner);
 	pStream->Write(m_transportUnit.iID);
 
-	m_aiExtraDomainModifier.Write(pStream);
+	m_aiExtraDomainModifier.write(pStream);
 
 	pStream->WriteString(m_szName);
 	pStream->WriteString(m_szScriptData);
 
-	m_abHasPromotion.Write(pStream);
+	m_abHasPromotion.write(pStream);
 
-	m_aiTerrainDoubleMoveCount.Write(pStream);
-	m_aiFeatureDoubleMoveCount.Write(pStream);
-	m_aiExtraTerrainAttackPercent.Write(pStream);
-	m_aiExtraTerrainDefensePercent.Write(pStream);
-	m_aiExtraFeatureAttackPercent.Write(pStream);
-	m_aiExtraFeatureDefensePercent.Write(pStream);
-	m_aiExtraUnitCombatModifier.Write(pStream);
+	m_aiTerrainDoubleMoveCount.write(pStream);
+	m_aiFeatureDoubleMoveCount.write(pStream);
+	m_aiExtraTerrainAttackPercent.write(pStream);
+	m_aiExtraTerrainDefensePercent.write(pStream);
+	m_aiExtraFeatureAttackPercent.write(pStream);
+	m_aiExtraFeatureDefensePercent.write(pStream);
+	m_aiExtraUnitCombatModifier.write(pStream);
 }
 
 

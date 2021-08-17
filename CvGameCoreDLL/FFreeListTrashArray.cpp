@@ -1,6 +1,5 @@
 #include "CvGameCoreDLL.h"
 #include "FFreeListTrashArray.h"
-#include "FDataStreamBase.h"
 #include "CvUnitAI.h"
 #include "CvCityAI.h"
 #include "CvSelectionGroupAI.h"

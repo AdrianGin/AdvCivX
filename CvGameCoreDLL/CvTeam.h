@@ -271,7 +271,7 @@ public:
 	{
 		return (getTechShareCount(eSharePlayers) > 0);
 	}
-	bool isAnyTechShare() const { return m_aiTechShareCount.hasContent(); } // advc.opt
+	bool isAnyTechShare() const { return m_aiTechShareCount.isAnyNonDefault(); } // advc.opt
 	void changeTechShareCount(PlayerTypes eSharePlayers, int iChange); // </advc>						// Exposed to Python
 
 	int getCommerceFlexibleCount(CommerceTypes eIndex) const;														// Exposed to Python
@@ -430,7 +430,10 @@ public:
 	}
 	void setVictoryCountdown(VictoryTypes eVictory, int iTurnsLeft);
 	void changeVictoryCountdown(VictoryTypes eVictory, int iChange);
-	bool isAnyVictoryCountdown() const; // advc.opt
+	bool isAnyVictoryCountdown() const // advc.opt
+	{
+		return m_aiVictoryCountdown.isAnyNonDefault();
+	}
 	int getVictoryDelay(VictoryTypes eVictory) const;
 	bool canLaunch(VictoryTypes eVictory) const;									// Exposed to Python
 	void setCanLaunch(VictoryTypes eVictory, bool bCan);
@@ -505,7 +508,10 @@ public:
 	void verifySpyUnitsValidPlot();
 
 	void setForceRevealedBonus(BonusTypes eBonus, bool bRevealed);
-	bool isForceRevealedBonus(BonusTypes eBonus) const;
+	bool isForceRevealedBonus(BonusTypes eBonus) const
+	{
+		return m_abRevealedBonuses.get(eBonus);
+	}
 	bool isBonusRevealed(BonusTypes eBonus) const; // K-Mod. (the definitive answer)
 
 	void revealSurroundingPlots(CvPlot const& kCenter, int iRange) const; // advc.108
@@ -589,52 +595,54 @@ protected:
 	// </advc.003m>
 	bool m_bMapCentering;
 	bool m_bCapitulated;
-	bool m_bAnyVictoryCountdown; // advc.opt
 
-	// <advc.enum>
-	EnumMap<TeamTypes,int> m_aiStolenVisibilityTimer; // Make this <...,char> when breaking saves
-	EnumMap<TeamTypes,int> m_aiWarWeariness;
-	EnumMap<TeamTypes,int> m_aiEspionagePointsAgainstTeam;
-	EnumMap<TeamTypes,int> m_aiCounterespionageTurnsLeftAgainstTeam; // <...,short>?
-	EnumMap<TeamTypes,int> m_aiCounterespionageModAgainstTeam; // <...,short>?
-	EnumMap<PlayerTypes,char> m_aiTechShareCount;
+	/*	<advc.enum> (See comment in CvPlayer header about lazy allocation.) */
+	// (This is only used for the obsolete steal-plans spy mission)
+	ArrayEnumMap<TeamTypes,int,char> m_aiStolenVisibilityTimer;
+	ArrayEnumMap<TeamTypes,int> m_aiWarWeariness;
+	ArrayEnumMap<TeamTypes,int> m_aiEspionagePointsAgainstTeam;
+	ListEnumMap<TeamTypes,int,short> m_aiCounterespionageTurnsLeftAgainstTeam;
+	ListEnumMap<TeamTypes,int,short> m_aiCounterespionageModAgainstTeam;
+	ArrayEnumMap<PlayerTypes,int,char> m_aiTechShareCount;
 
-	EnumMap<CommerceTypes,int> m_aiCommerceFlexibleCount;
-	EnumMap<DomainTypes,int> m_aiExtraMoves;
-	EnumMap<VoteSourceTypes,int> m_aiForceTeamVoteEligibilityCount;
-	EnumMap<RouteTypes,int> m_aiRouteChange;
+	CommerceChangeMap m_aiCommerceFlexibleCount;
+	ArrayEnumMap<DomainTypes,int,char> m_aiExtraMoves;
+	ArrayEnumMap<VoteSourceTypes,int,char> m_aiForceTeamVoteEligibilityCount;
+	ArrayEnumMap<RouteTypes,int,char> m_aiRouteChange;
 
-	// (These largish EnumMaps should arguably map to short)
-	EnumMap<ProjectTypes,int> m_aiProjectCount;
-	EnumMap<ProjectTypes,int> m_aiProjectMaking;
-	// Could create an enum ProjectArtTypes { NO_PROJECTART=-1 } for this, but DLLExports make this more trouble than it's worth.
-	EnumMap<ProjectTypes,int> m_aiProjectDefaultArtTypes;
-	EnumMap<UnitClassTypes,int> m_aiUnitClassCount;
-	EnumMap<BuildingClassTypes,int> m_aiBuildingClassCount;
-	EnumMap<BuildingTypes,int> m_aiObsoleteBuildingCount;
-	EnumMap<TechTypes,int> m_aiResearchProgress;
-	EnumMap<TechTypes,int> m_aiTechCount;
-	EnumMap<TerrainTypes,int> m_aiTerrainTradeCount;
-	EnumMap<VictoryTypes,int,-1> m_aiVictoryCountdown;
-	EnumMap<TeamTypes,short,-1> m_aiHasMetTurn; // advc.091
+	ArrayEnumMap<ProjectTypes,int,short> m_aiProjectCount;
+	ArrayEnumMap<ProjectTypes,int,short> m_aiProjectMaking;
+	/*	Could create an enum ProjectArtTypes { NO_PROJECTART=-1 } for this,
+		but DLLExports make that more trouble than it's worth. */
+	ArrayEnumMap<ProjectTypes,int> m_aiProjectDefaultArtTypes;
+	ArrayEnumMap<UnitClassTypes,int,short> m_aiUnitClassCount;
+	ArrayEnumMap<BuildingClassTypes,int,short> m_aiBuildingClassCount;
+	ArrayEnumMap<BuildingTypes,int,char> m_aiObsoleteBuildingCount;
+	ArrayEnumMap<TechTypes,int> m_aiResearchProgress;
+	ArrayEnumMap<TechTypes,int,char> m_aiTechCount;
+	ArrayEnumMap<TerrainTypes,int,char> m_aiTerrainTradeCount;
+	ArrayEnumMap<VictoryTypes,int,short,-1> m_aiVictoryCountdown;
+	ArrayEnumMap<TeamTypes,int,short,-1> m_aiHasMetTurn; // advc.091
 
-	EnumMap2D<ImprovementTypes,YieldTypes,int> m_aaiImprovementYieldChange; // Should make this <...,char>
+	Enum2IntEncMap<ArrayEnumMap<ImprovementTypes,YieldChangeMap::enc_t>,
+			YieldChangeMap> m_aaiImprovementYieldChange;
 
-	EnumMap<TeamTypes,bool> m_abAtWar;
-	EnumMap<TeamTypes,bool> m_abJustDeclaredWar; // advc.162
-	EnumMap<TeamTypes,bool> m_abHasSeen; // K-Mod
-	EnumMap<TeamTypes,bool> m_abPermanentWarPeace;
-	EnumMap<TeamTypes,bool> m_abOpenBorders;
-	EnumMap<TeamTypes,bool> m_abDisengage; // advc.034
-	EnumMap<TeamTypes,bool> m_abDefensivePact;
-	EnumMap<TeamTypes,bool> m_abForcePeace;
+	ArrayEnumMap<TeamTypes,bool> m_abAtWar;
+	ArrayEnumMap<TeamTypes,bool> m_abJustDeclaredWar; // advc.162
+	ArrayEnumMap<TeamTypes,bool> m_abHasSeen; // K-Mod
+	ArrayEnumMap<TeamTypes,bool> m_abPermanentWarPeace;
+	ArrayEnumMap<TeamTypes,bool> m_abOpenBorders;
+	ArrayEnumMap<TeamTypes,bool> m_abDisengage; // advc.034
+	ArrayEnumMap<TeamTypes,bool> m_abDefensivePact;
+	ArrayEnumMap<TeamTypes,bool> m_abForcePeace;
 	//EnumMap<TeamTypes,bool> m_abVassal; // advc.opt: Replaced by m_eMaster
-	EnumMap<VictoryTypes,bool> m_abCanLaunch;
-	EnumMap<TechTypes,bool> m_abHasTech;
-	EnumMap<TechTypes,bool> m_abNoTradeTech;
-
-	std::vector<int>* m_pavProjectArtTypes; // a vector for each type of project
-	std::vector<BonusTypes> m_aeRevealedBonuses;
+	ArrayEnumMap<VictoryTypes,bool> m_abCanLaunch;
+	ArrayEnumMap<TechTypes,bool> m_abHasTech;
+	ArrayEnumMap<TechTypes,bool> m_abNoTradeTech;
+	// a vector for each type of project (advc: was an array of vectors)
+	std::vector<std::vector<int> > m_aaiProjectArtTypes;
+	ArrayEnumMap<BonusTypes,bool> m_abRevealedBonuses; // was vector<BonusTypes>
+	// </advc.enum>
 	// <advc.134a>
 	mutable TeamTypes m_eOfferingPeace;
 	mutable int m_iPeaceOfferStage;
@@ -648,8 +656,6 @@ protected:
 	static std::queue<bool> primarydow_queue;
 	static bool bTriggeringWars;
 	// </kekm.26>
-
-	void uninit();
 
 	void doWarWeariness();
 	void doBarbarianResearch(); // advc

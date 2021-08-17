@@ -53,7 +53,7 @@ protected:
 	static int m_iRecalculating; // advc.064d
 	int m_iID;
 	PlayerTypes m_eOwner;
-	EnumMap<BonusTypes,int> m_aiNumBonuses; // advc.enum
+	ArrayEnumMap<BonusTypes,int,short> m_aiNumBonuses; // advc.enum
 	CLinkList<XYCoords> m_plots;
 };
 

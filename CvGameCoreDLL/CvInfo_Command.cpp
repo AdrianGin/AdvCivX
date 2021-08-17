@@ -3,7 +3,6 @@
 #include "CvGameCoreDLL.h"
 #include "CvInfo_Command.h"
 #include "CvXMLLoadUtility.h"
-#include "CvDLLXMLIFaceBase.h"
 #include "CvInfo_City.h" // Needed by CvActionInfo
 
 

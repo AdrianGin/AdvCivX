@@ -1043,7 +1043,7 @@ short CvPythonCaller::AI_foundValue(PlayerTypes ePlayer, CvPlot const& kPlot) co
 	argsList.add(kPlot.getY());
 	call("getCityFoundValue", argsList, lResult);
 	FAssert(lResult <= MAX_SHORT); // K-Mod
-	return toShort(lResult);
+	return safeIntCast<short>(lResult);
 }
 
 TechTypes CvPythonCaller::AI_chooseTech(PlayerTypes ePlayer, bool bFree) const

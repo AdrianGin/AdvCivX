@@ -188,7 +188,7 @@ public:
 	void setActivePlayerSafeRangeCache(int iRange) const
 	{
 		// advc.opt: char (Probably OK to do nothing here if indeed iRange > MAX_CHAR.)
-		m_iActivePlayerSafeRangeCache = toChar(iRange);
+		m_iActivePlayerSafeRangeCache = safeIntCast<char>(iRange);
 	}
 	bool getBorderDangerCache(TeamTypes eTeam) const
 	{
@@ -512,7 +512,7 @@ public:
 	void changeRiverCrossingCount(int iChange);
 
 	bool isHabitable(bool bIgnoreSea = false) const; // advc.300
-	//short* getYield() { return m_aiYield; } // advc.enum: now an EnumMap
+	//short* getYield() { return m_aiYield; } // advc.enum: now an enum map
 	DllExport int getYield(YieldTypes eIndex) const													// Exposed to Python
 	{
 		return m_aiYield.get(eIndex);
@@ -526,7 +526,7 @@ public:
 			PlayerTypes ePlayer = NO_PLAYER, bool bOptimal = false,
 			bool bBestRoute = false) const;
 	int calculateYield(YieldTypes eIndex, bool bDisplay = false) const;								// Exposed to Python
-	bool hasYield() const { return m_aiYield.hasContent(); } // advc.enum							// Exposed to Python
+	bool hasYield() const { return m_aiYield.isAnyNonDefault(); } // advc.enum							// Exposed to Python
 	void updateYield();
 	int calculateCityPlotYieldChange(YieldTypes eYield,
 			int iYield, int iCityPopulation) const;
@@ -870,24 +870,24 @@ protected:
 	char const* m_szScriptData; // advc: const
 	// <advc.enum>
 	// BETTER_BTS_AI_MOD, Efficiency (plot danger cache), 08/21/09, jdog5000:
-	mutable EnumMap<TeamTypes,bool> m_abBorderDangerCache;
+	mutable ArrayEnumMap<TeamTypes,bool> m_abBorderDangerCache;
 
-	EnumMap<YieldTypes,char> m_aiYield;
-	EnumMap<PlayerTypes,int> m_aiCulture;
-	EnumMap<PlayerTypes,int,FFreeList::INVALID_INDEX> m_aiPlotGroup;
-	mutable EnumMap<PlayerTypes,short> m_aiFoundValue; // advc: mutable
-	SparseEnumMap<PlayerTypes,char> m_aiPlayerCityRadiusCount;
-	EnumMap<TeamTypes,short> m_aiVisibilityCount;
-	SparseEnumMap<TeamTypes,short> m_aiStolenVisibilityCount;
-	SparseEnumMap<TeamTypes,short> m_aiBlockadedCount;
-	EnumMap<TeamTypes,PlayerTypes> m_aiRevealedOwner;
-	SparseEnumMap<TeamTypes,ImprovementTypes> m_aeRevealedImprovementType;
-	EnumMap<TeamTypes,RouteTypes> m_aeRevealedRouteType;
-	EnumMap<TeamTypes,bool> m_abRevealed;
-	EnumMap<DirectionTypes,bool> m_abRiverCrossing;
-	EnumMap<BuildTypes,short> m_aiBuildProgress;
-	SparseEnumMap2D<PlayerTypes,CultureLevelTypes,char> m_aaiCultureRangeCities;
-	SparseEnumMap2D<TeamTypes,InvisibleTypes,short> m_aaiInvisibleVisibilityCount;
+	YieldChangeMap m_aiYield;
+	ArrayEnumMap<PlayerTypes,int> m_aiCulture;
+	ArrayEnumMap<PlayerTypes,int,int,FFreeList::INVALID_INDEX> m_aiPlotGroup;
+	mutable ArrayEnumMap<PlayerTypes,short> m_aiFoundValue; // advc: mutable
+	ListEnumMap<PlayerTypes,int,char> m_aiPlayerCityRadiusCount;
+	ArrayEnumMap<TeamTypes,int,short> m_aiVisibilityCount;
+	ListEnumMap<TeamTypes,int,short> m_aiStolenVisibilityCount;
+	ListEnumMap<TeamTypes,int,short> m_aiBlockadedCount;
+	ArrayEnumMap<TeamTypes,PlayerTypes> m_aiRevealedOwner;
+	ListEnumMap<TeamTypes,ImprovementTypes> m_aeRevealedImprovementType;
+	ArrayEnumMap<TeamTypes,RouteTypes> m_aeRevealedRouteType;
+	ArrayEnumMap<TeamTypes,bool> m_abRevealed;
+	ArrayEnumMap<DirectionTypes,bool> m_abRiverCrossing;
+	ArrayEnumMap<BuildTypes,short> m_aiBuildProgress;
+	ListEnumMap2D<PlayerTypes,CultureLevelTypes,char> m_aaiCultureRangeCities;
+	ListEnumMap2D<TeamTypes,InvisibleTypes,short> m_aaiInvisibleVisibilityCount;
 	// </advc.enum>
 	CvFeature* m_pFeatureSymbol;
 	CvRoute* m_pRouteSymbol;
@@ -924,7 +924,7 @@ protected:
 };
 
 // advc.opt: It's fine to change the size, but might want to double check if it can be avoided.
-BOOST_STATIC_ASSERT(MAX_PLOT_NUM > MAX_SHORT || sizeof(CvPlot) <= 244);
+BOOST_STATIC_ASSERT(MAX_PLOT_NUM > MAX_SHORT || sizeof(CvPlot) <= 268);
 
 /*	advc.enum: For functions that choose random plots.
 	Moved from CvDefines, turned into an enum, exposed to Python. */

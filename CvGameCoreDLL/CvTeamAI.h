@@ -349,21 +349,22 @@ public:
 
 protected:
 	TeamTypes m_eWorstEnemy;
-	/*  <advc.enum> (Tbd.: Should be CivTeamMap so that Barbarians are excluded;
-		the counters should be CivTeamMap<short>.) */
-	EnumMap<TeamTypes,int> m_aiWarPlanStateCounter;
-	EnumMap<TeamTypes,int> m_aiAtWarCounter;
-	EnumMap<TeamTypes,int> m_aiAtPeaceCounter;
-	EnumMap<TeamTypes,int> m_aiHasMetCounter;
-	EnumMap<TeamTypes,int> m_aiOpenBordersCounter;
-	EnumMap<TeamTypes,int> m_aiDefensivePactCounter;
-	EnumMap<TeamTypes,int> m_aiShareWarCounter;
-	EnumMap<TeamTypes,int> m_aiWarSuccess;
-	EnumMap<TeamTypes,int> m_aiSharedWarSuccess; // advc.130m
-	EnumMap<TeamTypes,int> m_aiEnemyPeacetimeTradeValue;
-	EnumMap<TeamTypes,int> m_aiEnemyPeacetimeGrantValue;
-	EnumMap<WarPlanTypes,int> m_aiWarPlanCounts; // advc.opt
-	EnumMap<TeamTypes,WarPlanTypes> m_aeWarPlan;
+	/*	<advc.enum> (See comment in CvPlayer header about lazy allocation.)
+		(Could exclude Barbarians from diplo counters and
+		use CivTeamMaps, but I don't think it's worth the effort.) */
+	ArrayEnumMap<TeamTypes,int,short> m_aiWarPlanStateCounter;
+	ArrayEnumMap<TeamTypes,int,short> m_aiAtWarCounter;
+	ArrayEnumMap<TeamTypes,int,short> m_aiAtPeaceCounter;
+	ArrayEnumMap<TeamTypes,int,short> m_aiHasMetCounter;
+	ArrayEnumMap<TeamTypes,int,short> m_aiOpenBordersCounter;
+	ArrayEnumMap<TeamTypes,int,short> m_aiDefensivePactCounter;
+	ArrayEnumMap<TeamTypes,int,short> m_aiShareWarCounter;
+	ArrayEnumMap<TeamTypes,int> m_aiWarSuccess;
+	ArrayEnumMap<TeamTypes,int> m_aiSharedWarSuccess; // advc.130m
+	ArrayEnumMap<TeamTypes,int> m_aiEnemyPeacetimeTradeValue;
+	ArrayEnumMap<TeamTypes,int> m_aiEnemyPeacetimeGrantValue;
+	ArrayEnumMap<WarPlanTypes,int,char> m_aiWarPlanCounts; // advc.opt
+	ArrayEnumMap<TeamTypes,WarPlanTypes> m_aeWarPlan;
 	/*	Tbd.: Should be EnumMap<ReligionTypes,short> - or rather:
 		remove this whole ill-conceived (by me) mechanism. */
 	std::map<ReligionTypes,int> m_religionKnownSince; // advc.130n

@@ -56,11 +56,12 @@ public:
 	DllExport void closeInactiveSlots();
 	DllExport void reopenInactiveSlots();
 
-	void resetGame();
+	void resetGame(/* advc.enum: */ bool bBeforeRead = false);
 	DllExport void resetGame(CvInitCore* pSource, bool bClear = true, bool bSaveGameType = false);
-	DllExport void resetPlayers();
+	DllExport void resetPlayers() /* <advc.enum> */ { resetPlayers(false); }
+	void resetPlayers(bool bBeforeRead); // </advc.enum>
 	DllExport void resetPlayers(CvInitCore* pSource, bool bClear = true, bool bSaveSlotInfo = false);
-	void resetPlayer(PlayerTypes eID);
+	void resetPlayer(PlayerTypes eID, /* advc.enum: */ bool bBeforeRead = false);
 	DllExport void resetPlayer(PlayerTypes eID, CvInitCore* pSource, bool bClear = true, bool bSaveSlotInfo = false);
 
 
@@ -157,7 +158,7 @@ public:
 	int getTargetScore() const { return m_iTargetScore; }
 	void setTargetScore(int iTargetScore) { m_iTargetScore = iTargetScore; }
 
-
+	// Number of city eliminations permitted
 	int getMaxCityElimination() const { return m_iMaxCityElimination; }
 	void setMaxCityElimination(int iMaxCityElimination) { m_iMaxCityElimination = iMaxCityElimination; }
 
@@ -303,21 +304,20 @@ protected:
 	//bool m_bPangaea; // (advc: Can't add this here b/c it would change the memory layout)
 
 	// Standard game options
-	/*	advc.enum: Not a bool map because that'll take up 8 byte when there are
-		more than 32 options. See comments above the union in EnumMap.h.
-		If this keeps causing problems, then either ENUMMAP_MAX_INLINE_BOOL (EnumMap.h)
-		should be decreased to 32 or CvInitCore reverted to arrays. */
-	EnumMap<GameOptionTypes,byte> m_abOptions;
-	EnumMap<MPOptionTypes,bool> m_abMPOptions;
+	/*	advc.enum: Important to limit the size of these maps to 4 byte, so that the
+		memory layout doesn't change when there are more than 32 options. */
+	ArrayEnumMap<GameOptionTypes,bool,void*,false,false,4> m_abOptions;
+	ArrayEnumMap<MPOptionTypes,bool,void*,false,false,4> m_abMPOptions;
 	bool m_bStatReporting;
 	/*	advc: Not related to "standard game options". But here's a good place
 		to add a bool b/c of padding; the memory layout stays the same. */
 	bool m_bPangaea;
-	EnumMap<ForceControlTypes,bool> m_abForceControls;
+	ArrayEnumMap<ForceControlTypes,bool,void*,false,false,4> m_abForceControls; // (unsaved)
 
 	// Dynamic victory condition setting
 	/*	(advc.enum: ^Whatever that means? Using a dummy variable and an EnumMap instead
-		causes a crash in the EXE.) */
+		has been crashing the EXE. Could give it another try now that data is properly
+		reset before reading savegames ...) */
 	int m_iNumVictories;
 	bool* m_abVictories;
 
@@ -327,7 +327,7 @@ protected:
 	int m_iPitbossTurnTime;
 	int m_iTargetScore;
 
-	int m_iMaxCityElimination; // Number of city eliminations permitted
+	int m_iMaxCityElimination;
 	int m_iNumAdvancedStartPoints;
 
 	// Unsaved data
@@ -355,17 +355,17 @@ protected:
 	CvString* m_aszSmtpHost;
 
 	CvWString* m_aszFlagDecal;
-	EnumMap<PlayerTypes,bool> m_abWhiteFlag;
+	ArrayEnumMap<PlayerTypes,bool> m_abWhiteFlag;
 
-	EnumMap<PlayerTypes,CivilizationTypes> m_aeCiv;
-	EnumMap<PlayerTypes,LeaderHeadTypes> m_aeLeader;
-	EnumMap<PlayerTypes,TeamTypes> m_aeTeam;
-	EnumMap<PlayerTypes,HandicapTypes> m_aeHandicap;
-	EnumMap<PlayerTypes,PlayerColorTypes> m_aeColor;
-	EnumMap<PlayerTypes,ArtStyleTypes> m_aeArtStyle;
+	EagerEnumMap<PlayerTypes,CivilizationTypes> m_aeCiv;
+	EagerEnumMap<PlayerTypes,LeaderHeadTypes> m_aeLeader;
+	EagerEnumMap<PlayerTypes,TeamTypes> m_aeTeam;
+	EagerEnumMap<PlayerTypes,HandicapTypes> m_aeHandicap;
+	EagerEnumMap<PlayerTypes,PlayerColorTypes> m_aeColor;
+	EagerEnumMap<PlayerTypes,ArtStyleTypes> m_aeArtStyle;
 	// <advc.190c>
-	EnumMap<PlayerTypes,bool> m_abCivChosenRandomly;
-	EnumMap<PlayerTypes,bool> m_abLeaderChosenRandomly;
+	ArrayEnumMap<PlayerTypes,bool> m_abCivChosenRandomly;
+	ArrayEnumMap<PlayerTypes,bool> m_abLeaderChosenRandomly;
 	bool m_bCivLeaderSetupKnown; // </advc.190c>
 
 	// Slot data
@@ -373,12 +373,13 @@ protected:
 	SlotClaim* m_aeSlotClaim;
 
 	// Civ flags
-	EnumMap<PlayerTypes,bool> m_abPlayableCiv;
-	EnumMap<PlayerTypes,bool> m_abMinorNationCiv;
+	ArrayEnumMap<PlayerTypes,bool> m_abPlayableCiv;
+	EagerEnumMap<PlayerTypes,bool> m_abMinorNationCiv;
 
 	// Unsaved player data
-	EnumMap<PlayerTypes,int,-1> m_aiNetID;
-	EnumMap<PlayerTypes,bool> m_abReady;
+	// (advc.enum: Store player net ids as PlayerTypes values)
+	ArrayEnumMap<PlayerTypes,PlayerTypes> m_aiNetID;
+	ArrayEnumMap<PlayerTypes,bool> m_abReady;
 
 	CvString* m_aszPythonCheck;
 	CvString* m_aszXMLCheck;
@@ -394,12 +395,9 @@ protected:
 	void refreshVictories();*/ // advc: Easier to understand w/o these
 };
 
-// Would increase the size of m_abMPOptions to 8 byte
-BOOST_STATIC_ASSERT(NUM_MPOPTION_TYPES <= 32 && NUM_FORCECONTROL_TYPES <= 32);
 /*  advc.003k: OK to increase the size of CvInitCore (and to update or remove this
 	assertion). Just make sure that new data members are added in the right place. */
 BOOST_STATIC_ASSERT(sizeof(CvInitCore) ==
-		// EnumMap<PlayerTypes,bool> has size 8 then
-		(MAX_PLAYERS > 32 && MAX_PLAYERS <= 64 ? 440 : 416)); 
+		(sizeof(ArrayEnumMap<PlayerTypes,bool>) > 4 ? 440 : 416)); 
 
 #endif

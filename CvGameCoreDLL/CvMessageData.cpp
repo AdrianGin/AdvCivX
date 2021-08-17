@@ -5,8 +5,6 @@
 #include "CvCity.h"
 #include "CvUnit.h"
 #include "CvSelectionGroup.h"
-#include "FDataStreamBase.h"
-#include "CvDLLUtilityIFaceBase.h"
 
 
 CvMessageData* CvMessageData::createMessage(GameMessageTypes eType)
@@ -379,13 +377,13 @@ void CvNetUpdateCivics::Execute()
 void CvNetUpdateCivics::PutInBuffer(FDataStreamBase* pStream)
 {
 	pStream->Write(m_ePlayer);
-	m_aeCivics.Write(pStream);
+	m_aeCivics.write(pStream);
 }
 
 void CvNetUpdateCivics::SetFromBuffer(FDataStreamBase* pStream)
 {
 	pStream->Read((int*)&m_ePlayer);
-	m_aeCivics.Read(pStream);
+	m_aeCivics.read(pStream);
 }
 
 CvNetResearch::CvNetResearch() :

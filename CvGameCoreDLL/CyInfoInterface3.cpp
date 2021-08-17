@@ -674,14 +674,16 @@ void CyInfoPythonInterface3()
 		.def("getUnitCombatPromotion", &CvEventInfo::getUnitCombatPromotion, "int (int)")
 		.def("getUnitClassPromotion", &CvEventInfo::getUnitClassPromotion, "int (int)")
 
-		.def("getBuildingYieldChange", &CvEventInfo::getBuildingYieldChange, "int (int /*BuildingClassTypes*/, int /*YieldTypes*/)")
-		.def("getNumBuildingYieldChanges", &CvEventInfo::getNumBuildingYieldChanges, "int ()")
-		.def("getBuildingCommerceChange", &CvEventInfo::getBuildingCommerceChange, "int (int /*BuildingClassTypes*/, int /*CommerceTypes*/)")
-		.def("getNumBuildingCommerceChanges", &CvEventInfo::getNumBuildingCommerceChanges, "int ()")
-		.def("getBuildingHappyChange", &CvEventInfo::getBuildingHappyChange, "int (int /*BuildingClassTypes*/)")
-		.def("getNumBuildingHappyChanges", &CvEventInfo::getNumBuildingHappyChanges, "int ()")
-		.def("getBuildingHealthChange", &CvEventInfo::getBuildingHealthChange, "int (int /*BuildingClassTypes*/)")
-		.def("getNumBuildingHealthChanges", &CvEventInfo::getNumBuildingHealthChanges, "int ()")
+		.def("getBuildingYieldChange", &CvEventInfo::py_getBuildingYieldChange, "int (int /*BuildingClassTypes*/, int /*YieldTypes*/)")
+		/*	advc.003t: The DLL doesn't need the getNum... functions, and
+			Python shouldn't need (and doesn't use) them either. */
+		//.def("getNumBuildingYieldChanges", &CvEventInfo::getNumBuildingYieldChanges, "int ()")
+		.def("getBuildingCommerceChange", &CvEventInfo::py_getBuildingCommerceChange, "int (int /*BuildingClassTypes*/, int /*CommerceTypes*/)")
+		//.def("getNumBuildingCommerceChanges", &CvEventInfo::getNumBuildingCommerceChanges, "int ()")
+		.def("getBuildingHappyChange", &CvEventInfo::py_getBuildingHappyChange, "int (int /*BuildingClassTypes*/)")
+		//.def("getNumBuildingHappyChanges", &CvEventInfo::getNumBuildingHappyChanges, "int ()")
+		.def("getBuildingHealthChange", &CvEventInfo::py_getBuildingHealthChange, "int (int /*BuildingClassTypes*/)")
+		//.def("getNumBuildingHealthChanges", &CvEventInfo::getNumBuildingHealthChanges, "int ()")
 		;
 
 	python::class_<CvEspionageMissionInfo, boost::noncopyable, python::bases<CvInfoBase> >("CvEspionageMissionInfo")

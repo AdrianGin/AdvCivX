@@ -1086,7 +1086,7 @@ public:
 	{
 		return m_aiHasReligionCount.get(eReligion);
 	}
-	int countTotalHasReligion() const { return m_aiHasReligionCount.getTotal(); }									// Exposed to Python
+	int countTotalHasReligion() const;																				// Exposed to Python
 	int findHighestHasReligionCount() const;																		// Exposed to Python
 	void changeHasReligionCount(ReligionTypes eReligion, int iChange);
 	// advc.132: No longer just an AI concept b/c spies can only switch to major now
@@ -1126,13 +1126,13 @@ public:
 
 	int getSpecialistExtraYield(SpecialistTypes eSpecialist, YieldTypes eYield) const								// Exposed to Python
 	{
-		return m_aaeSpecialistExtraYield.get(eSpecialist, eYield);
+		return m_aeeiSpecialistExtraYield.get(eSpecialist, eYield);
 	}
 	void changeSpecialistExtraYield(SpecialistTypes eSpecialist, YieldTypes eYield, int iChange);
 
 	int getImprovementYieldChange(ImprovementTypes eImprov, YieldTypes eYield) const								// Exposed to Python
 	{
-		return m_aaeImprovementYieldChange.get(eImprov, eYield);
+		return m_aeeiImprovementYieldChange.get(eImprov, eYield);
 	}
 	void changeImprovementYieldChange(ImprovementTypes eImprov, YieldTypes eYield, int iChange);
 
@@ -1565,59 +1565,64 @@ protected:  // <advc.210>
 	CvPlot* m_pStartingPlot; // advc.027: Replacing m_iStartingX/Y
 
 	CvString m_szScriptData;
-	// <advc.enum> (Tbd.: Should map to char or short)
-	EnumMap<YieldTypes,int> m_aiSeaPlotYield;
-	EnumMap<YieldTypes,int> m_aiYieldRateModifier;
-	EnumMap<YieldTypes,int> m_aiCapitalYieldRateModifier;
-	EnumMap<YieldTypes,int> m_aiExtraYieldThreshold;
-	EnumMap<YieldTypes,char> m_aiExtraYieldNaturalThreshold; // advc.908a
-	EnumMap<YieldTypes,int> m_aiTradeYieldModifier;
-	EnumMap<CommerceTypes,int> m_aiFreeCityCommerce;
-	EnumMap<CommerceTypes,int> m_aiCommercePercent;
-	EnumMap<CommerceTypes,int> m_aiCommerceRate;
-	EnumMap<CommerceTypes,int> m_aiCommerceRateModifier;
-	EnumMap<CommerceTypes,int> m_aiCapitalCommerceRateModifier;
-	EnumMap<CommerceTypes,int> m_aiStateReligionBuildingCommerce;
-	EnumMap<CommerceTypes,int> m_aiSpecialistExtraCommerce;
-	EnumMap<CommerceTypes,int> m_aiCommerceFlexibleCount;
-	EnumMap<PlayerTypes,int> m_aiGoldPerTurnByPlayer;
+	/*	<advc.enum> (Caveat: These get initialized before XML loading, so,
+		for dynamic-length enum types, array enum maps with eager allocation
+		mustn't be used. Lazy allocation is also preferrable b/c that avoids
+		memory allocation for players that are never alive.) */
+	YieldChangeMap m_aiSeaPlotYield;
+	YieldPercentMap m_aiYieldRateModifier;
+	YieldPercentMap m_aiCapitalYieldRateModifier;
+	YieldChangeMap m_aiExtraYieldThreshold;
+	YieldChangeMap m_aiExtraYieldNaturalThreshold; // advc.908a
+	YieldPercentMap m_aiTradeYieldModifier;
+	CommerceChangeMap m_aiFreeCityCommerce;
+	CommercePercentMap m_aiCommercePercent;
+	EagerEnumMap<CommerceTypes,int> m_aiCommerceRate; // (at times-100 precision)
+	CommercePercentMap m_aiCommerceRateModifier;
+	CommercePercentMap m_aiCapitalCommerceRateModifier;
+	CommerceChangeMap m_aiStateReligionBuildingCommerce;
+	CommerceChangeMap m_aiSpecialistExtraCommerce;
+	CommerceChangeMap m_aiCommerceFlexibleCount;
+	ArrayEnumMap<PlayerTypes,int,short> m_aiGoldPerTurnByPlayer;
 	// advc.120: K-Mod had used default 1; now 0 again.
-	EnumMap<TeamTypes,int> m_aiEspionageSpendingWeightAgainstTeam;
-	EnumMap<BonusTypes,int> m_aiBonusExport;
-	EnumMap<BonusTypes,int> m_aiBonusImport;
-	EnumMap<ImprovementTypes,int> m_aiImprovementCount;
+	ArrayEnumMap<TeamTypes,int,short> m_aiEspionageSpendingWeightAgainstTeam;
+	ArrayEnumMap<BonusTypes,int,char> m_aiBonusExport;
+	ArrayEnumMap<BonusTypes,int,char> m_aiBonusImport;
+	ArrayEnumMap<ImprovementTypes,int,short> m_aiImprovementCount;
 
 	/*	advc (note): These three should be per building class
 		(but it's tedious to change) */
-	EnumMap<BuildingTypes,int> m_aiFreeBuildingCount;
-	EnumMap<BuildingTypes,int> m_aiExtraBuildingHappiness;
-	EnumMap<BuildingTypes,int> m_aiExtraBuildingHealth;
-	EnumMap<FeatureTypes,int> m_aiFeatureHappiness;
-	EnumMap<UnitClassTypes,int> m_aiUnitClassCount;
-	EnumMap<UnitClassTypes,int> m_aiUnitClassMaking;
-	EnumMap<BuildingClassTypes,int> m_aiBuildingClassCount;
-	EnumMap<BuildingClassTypes,int> m_aiBuildingClassMaking;
-	EnumMap<HurryTypes,int> m_aiHurryCount;
-	EnumMap<SpecialBuildingTypes,int> m_aiSpecialBuildingNotRequiredCount;
-	EnumMap<CivicOptionTypes,int> m_aiHasCivicOptionCount;
-	EnumMap<CivicOptionTypes,int> m_aiNoCivicUpkeepCount;
-	EnumMap<ReligionTypes,int> m_aiHasReligionCount;
-	EnumMap<CorporationTypes,int> m_aiHasCorporationCount;
-	EnumMap<UpkeepTypes,int> m_aiUpkeepCount; // advc (comment): unused (but accessible)
-	EnumMap<SpecialistTypes,int> m_aiSpecialistValidCount;
+	ListEnumMap<BuildingTypes,int,char> m_aiFreeBuildingCount;
+	ListEnumMap<BuildingTypes,int,char> m_aiExtraBuildingHappiness;
+	ListEnumMap<BuildingTypes,int,char> m_aiExtraBuildingHealth;
+	ListEnumMap<FeatureTypes,int,char> m_aiFeatureHappiness;
+	ArrayEnumMap<UnitClassTypes,int,short> m_aiUnitClassCount;
+	ArrayEnumMap<UnitClassTypes,int,short> m_aiUnitClassMaking;
+	ArrayEnumMap<BuildingClassTypes,int,short> m_aiBuildingClassCount;
+	ArrayEnumMap<BuildingClassTypes,int,short> m_aiBuildingClassMaking;
+	ArrayEnumMap<HurryTypes,int,char> m_aiHurryCount;
+	ArrayEnumMap<SpecialBuildingTypes,int,char> m_aiSpecialBuildingNotRequiredCount;
+	ArrayEnumMap<CivicOptionTypes,int,char> m_aiHasCivicOptionCount;
+	ArrayEnumMap<CivicOptionTypes,int,char> m_aiNoCivicUpkeepCount;
+	ArrayEnumMap<ReligionTypes,int,char> m_aiHasReligionCount;
+	ArrayEnumMap<CorporationTypes,int,char> m_aiHasCorporationCount;
+	ArrayEnumMap<UpkeepTypes,int,char> m_aiUpkeepCount; // advc (comment): unused (but accessible)
+	ArrayEnumMap<SpecialistTypes,int,char> m_aiSpecialistValidCount;
 	/*int** m_paiExtraBuildingYield;
 	int** m_paiExtraBuildingCommerce;*/ // advc: unused
 
 	CivicMap m_aeCivics;
 
-	EnumMap<FeatTypes,bool> m_abFeatAccomplished;
-	EnumMap<PlayerOptionTypes,bool> m_abOptions;
-	EnumMap<TechTypes,bool> m_abResearchingTech;
-	EnumMap<PlayerTypes,bool> m_abEverSeenDemographics; // advc.091
-	EnumMap<VoteSourceTypes,bool,true> m_abLoyalMember;
+	ArrayEnumMap<FeatTypes,bool> m_abFeatAccomplished;
+	ArrayEnumMap<PlayerOptionTypes,bool> m_abOptions;
+	ArrayEnumMap<TechTypes,bool> m_abResearchingTech;
+	ArrayEnumMap<PlayerTypes,bool> m_abEverSeenDemographics; // advc.091
+	ArrayEnumMap<VoteSourceTypes,bool,void*,true> m_abLoyalMember;
 
-	EnumMap2D<SpecialistTypes,YieldTypes,int> m_aaeSpecialistExtraYield;
-	EnumMap2D<ImprovementTypes,YieldTypes,int> m_aaeImprovementYieldChange;
+	Enum2IntEncMap<ArrayEnumMap<SpecialistTypes,YieldChangeMap::enc_t>,
+			YieldChangeMap> m_aeeiSpecialistExtraYield;
+	Enum2IntEncMap<ArrayEnumMap<ImprovementTypes,YieldChangeMap::enc_t>,
+			YieldChangeMap> m_aeeiImprovementYieldChange;
 	// </advc.enum>
 
 	std::vector<EventTriggerTypes> m_triggersFired;

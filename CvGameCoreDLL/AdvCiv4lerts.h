@@ -36,8 +36,8 @@ private:
 			bool bTrade) const;
 	void showMessage(TeamTypes eHireling, bool bNowTooManyWars) const;
 	void showMessage(CvWString szMsg, TeamTypes eHireling) const;
-	EnumMap2D<TeamTypes,TeamTypes,bool> m_willWar;
-	EnumMap<TeamTypes,bool> m_tooManyWars;
+	ArrayEnumMap2D<TeamTypes,TeamTypes,bool> m_willWar;
+	ArrayEnumMap<TeamTypes,bool> m_tooManyWars;
 };
 
 // advc.210b:

@@ -165,12 +165,12 @@
     <ClCompile Include="..\CyTeamInterface.cpp" />
     <ClCompile Include="..\CyUnit.cpp" />
     <ClCompile Include="..\CyUnitInterface1.cpp" />
+    <ClCompile Include="..\EnumMapTest.cpp" />
     <ClCompile Include="..\FAStarFunc.cpp" />
     <ClCompile Include="..\GroupPathFinder.cpp" />
     <ClCompile Include="..\KmodPathFinderLegacy.cpp" />
     <ClCompile Include="..\PlayerHistory.cpp" />
     <ClCompile Include="..\ReproTest.cpp" />
-    <ClCompile Include="..\EnumMapTest.cpp" />
     <ClCompile Include="..\FDialogTemplate.cpp" />
     <ClCompile Include="..\FFreeListTrashArray.cpp" />
     <ClCompile Include="..\FProfiler.cpp" />
@@ -204,6 +204,8 @@
     <ClInclude Include="..\AgentPredicates.h" />
     <ClInclude Include="..\AIStrategies.h" />
     <ClInclude Include="..\AIStrengthMemoryMap.h" />
+    <ClInclude Include="..\ArithmeticTraits.h" />
+    <ClInclude Include="..\ArithmeticUtils.h" />
     <ClInclude Include="..\ArmamentForecast.h" />
     <ClInclude Include="..\BBAILog.h" />
     <ClInclude Include="..\BitUtil.h" />
@@ -239,6 +241,7 @@
     <ClInclude Include="..\CvDLLUtilityIFaceBase.h" />
     <ClInclude Include="..\CvDLLWidgetData.h" />
     <ClInclude Include="..\CvDLLXMLIFaceBase.h" />
+    <ClInclude Include="..\CvEnumMacros.h" />
     <ClInclude Include="..\CvEnums.h" />
     <ClInclude Include="..\CvEventReporter.h" />
     <ClInclude Include="..\CvFractal.h" />
@@ -271,7 +274,6 @@
     <ClInclude Include="..\CvInfo_Terrain.h" />
     <ClInclude Include="..\CvInfo_Unit.h" />
     <ClInclude Include="..\CvInfo_Water.h" />
-    <ClInclude Include="..\CvInfoEnums.h" />
     <ClInclude Include="..\CvInitCore.h" />
     <ClInclude Include="..\CvMap.h" />
     <ClInclude Include="..\CvMapGenerator.h" />
@@ -319,10 +321,13 @@
     <ClInclude Include="..\CySelectionGroup.h" />
     <ClInclude Include="..\CyTeam.h" />
     <ClInclude Include="..\CyUnit.h" />
+    <ClInclude Include="..\EnumMap.h" />
+    <ClInclude Include="..\EnumTraits.h" />
     <ClInclude Include="..\FAStarFunc.h" />
     <ClInclude Include="..\FAStarNode.h" />
     <ClInclude Include="..\GameBryo.h" />
     <ClInclude Include="..\GroupPathFinder.h" />
+    <ClInclude Include="..\IntegerConversion.h" />
     <ClInclude Include="..\IntegerTraits.h" />
     <ClInclude Include="..\KmodPathFinder.h" />
     <ClInclude Include="..\KmodPathFinderLegacy.h" />
@@ -331,8 +336,6 @@
     <ClInclude Include="..\PlotAdjListTraversal.h" />
     <ClInclude Include="..\PragmaWarnings.h" />
     <ClInclude Include="..\ReproTest.h" />
-    <ClInclude Include="..\EnumMap.h" />
-    <ClInclude Include="..\EnumMap2D.h" />
     <ClInclude Include="..\FAssert.h" />
     <ClInclude Include="..\FDataStreamBase.h" />
     <ClInclude Include="..\FDialogTemplate.h" />
@@ -349,6 +352,7 @@
     <ClInclude Include="..\PlotRadiusIterator.h" />
     <ClInclude Include="..\PlotRange.h" />
     <ClInclude Include="..\ScaledNum.h" />
+    <ClInclude Include="..\ScaledNumFwd.h" />
     <ClInclude Include="..\StartingPositionIteration.h" />
     <ClInclude Include="..\TeamPathFinder.h" />
     <ClInclude Include="..\Trigonometry.h" />

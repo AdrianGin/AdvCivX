@@ -2,7 +2,6 @@
 
 #include "CvGameCoreDLL.h"
 #include "CvXMLLoadUtility.h"
-#include "CvDLLXMLIFaceBase.h"
 
 CvInfoBase::CvInfoBase() : m_bGraphicalOnly(false) {}
 

@@ -122,27 +122,28 @@ void UWAICache::write(FDataStreamBase* pStream) const
 	//iSaveVersion = 5; // focusOnPeacefulVictory added
 	//iSaveVersion = 6; // advc.enum: Store as float
 	//iSaveVersion = 7; // remove latestTurnReachableBySea
-	iSaveVersion = 8; // advc.fract: Store as scaled (not float)
+	//iSaveVersion = 8; // advc.fract: Store as scaled (not float)
+	iSaveVersion = 9; // advc.enum: new enum map save behavior
 	/*	I hadn't thought of a version number in the initial release. Need
 		to fold it into ownerId now to avoid breaking compatibility. */
 	pStream->Write(m_eOwner + 100 * iSaveVersion);
 	pStream->Write(numCities());
 	for (int i = 0; i < numCities(); i++)
 		m_cityList[i]->write(pStream);
-	m_aiReachableCities.Write(pStream);
-	m_aiTargetMissions.Write(pStream);
-	m_arThreatRating.WriteRecursive(pStream);
-	m_aiVassalTechScore.Write(pStream);
-	m_aiVassalResourceScore.Write(pStream);
-	m_aiAdjLandPlots.Write(pStream);
-	m_arRelativeNavyPow.WriteRecursive(pStream);
-	m_arWarAnger.WriteRecursive(pStream);
-	m_aiPlotsLostAtWar.Write(pStream); // advc.035
-	m_aiPastWarScore.Write(pStream);
-	m_aiBounty.Write(pStream);
-	m_aeSponsorPerTarget.Write(pStream);
-	m_aiWarUtilityIgnoringDistraction.Write(pStream);
-	m_abCanBeHiredAgainst.Write(pStream);
+	m_aiReachableCities.write(pStream);
+	m_aiTargetMissions.write(pStream);
+	m_arThreatRating.write(pStream);
+	m_aiVassalTechScore.write(pStream);
+	m_aiVassalResourceScore.write(pStream);
+	m_aiAdjLandPlots.write(pStream);
+	m_arRelativeNavyPow.write(pStream);
+	m_arWarAnger.write(pStream);
+	m_aiPlotsLostAtWar.write(pStream); // advc.035
+	m_aiPastWarScore.write(pStream);
+	m_aiBounty.write(pStream);
+	m_aeSponsorPerTarget.write(pStream);
+	m_aiWarUtilityIgnoringDistraction.write(pStream);
+	m_abCanBeHiredAgainst.write(pStream);
 
 	pStream->Write(m_bOffensiveTrait);
 	pStream->Write(m_bDefensiveTrait);
@@ -185,62 +186,118 @@ void UWAICache::read(FDataStreamBase* pStream)
 			m_cityMap.insert(std::make_pair(m_cityList[i]->getID(), m_cityList[i]));
 		}
 	}
-	m_aiReachableCities.Read(pStream);
-	m_aiTargetMissions.Read(pStream);
-	if (iSaveVersion < 8)
+	if (iSaveVersion >= 9)
+	{
+		m_aiReachableCities.read(pStream);
+		m_aiTargetMissions.read(pStream);
+	}
+	else
+	{
+		m_aiReachableCities.readArray<int>(pStream);
+		m_aiTargetMissions.readArray<int>(pStream);
+	}
+	if (iSaveVersion >= 8)
+	{
+		if (iSaveVersion >= 9)
+			m_arThreatRating.read(pStream);
+		else m_arThreatRating.readArray<scaled>(pStream);
+	}
+	else
 	{
 		CivPlayerMap<float> afThreatRating;
-		afThreatRating.ReadFloat(pStream, iSaveVersion < 6);
+		if (iSaveVersion >= 6)
+			afThreatRating.readArray<float>(pStream);
+		else afThreatRating.readArray<double>(pStream);
 		FOR_EACH_ENUM(CivPlayer)
 		{
 			m_arThreatRating.set(eLoopCivPlayer, scaled::fromDouble(
 					afThreatRating.get(eLoopCivPlayer)));
 		}
 	}
-	else m_arThreatRating.ReadRecursive(pStream);
-	m_aiVassalTechScore.Read(pStream);
-	m_aiVassalResourceScore.Read(pStream);
-	m_aiAdjLandPlots.Read(pStream);
+	if (iSaveVersion >= 9)
+	{
+		m_aiVassalTechScore.read(pStream);
+		m_aiVassalResourceScore.read(pStream);
+		m_aiAdjLandPlots.read(pStream);
+	}
+	else
+	{
+		m_aiVassalTechScore.readArray<int>(pStream);
+		m_aiVassalResourceScore.readArray<int>(pStream);
+		m_aiAdjLandPlots.readArray<int>(pStream);
+	}
 	if (iSaveVersion >= 1)
 	{
-		if (iSaveVersion < 8)
+		if (iSaveVersion >= 8)
+		{
+			if (iSaveVersion >= 9)
+				m_arRelativeNavyPow.read(pStream);
+			else m_arRelativeNavyPow.readArray<scaled>(pStream);
+		}
+		else
 		{
 			CivPlayerMap<float> afRelativeNavyPow;
-			afRelativeNavyPow.ReadFloat(pStream, iSaveVersion < 6);
+			if (iSaveVersion >= 6)
+				afRelativeNavyPow.readArray<float>(pStream);
+			else afRelativeNavyPow.readArray<double>(pStream);
 			FOR_EACH_ENUM(CivPlayer)
 			{
 				m_arRelativeNavyPow.set(eLoopCivPlayer, scaled::fromDouble(
 						afRelativeNavyPow.get(eLoopCivPlayer)));
 			}
 		}
-		else m_arRelativeNavyPow.ReadRecursive(pStream);
 	}
-	if (iSaveVersion < 8)
+	if (iSaveVersion >= 8)
+	{
+		if (iSaveVersion >= 9)
+			m_arWarAnger.read(pStream);
+		else m_arWarAnger.readArray<scaled>(pStream);
+	}
+	else
 	{
 		CivPlayerMap<float> afWarAnger;
-		afWarAnger.ReadFloat(pStream, iSaveVersion < 6);
+		if (iSaveVersion >= 6)
+			afWarAnger.readArray<float>(pStream);
+		else afWarAnger.readArray<double>(pStream);
 		FOR_EACH_ENUM(CivPlayer)
 		{
 			m_arWarAnger.set(eLoopCivPlayer, scaled::fromDouble(
 					afWarAnger.get(eLoopCivPlayer)));
 		}
 	}
-	else m_arWarAnger.ReadRecursive(pStream);
 	// <advc.035>
 	if (iSaveVersion >= 2)
-		m_aiPlotsLostAtWar.Read(pStream); // </advc.035>
-	m_aiPastWarScore.Read(pStream);
+	{
+		if (iSaveVersion >= 9)
+			m_aiPlotsLostAtWar.read(pStream);
+		else m_aiPlotsLostAtWar.readArray<int>(pStream);
+	} // </advc.035>
+	if (iSaveVersion >= 9)
+		m_aiPastWarScore.read(pStream);
+	else m_aiPastWarScore.readArray<int>(pStream);
 	if (iSaveVersion < 4)
 	{
 		for (TeamIter<CIV_ALIVE> it; it.hasNext(); ++it)
 			m_aiPastWarScore.multiply(it->getID(), 100);
 	}
-	m_aiBounty.Read(pStream);
-	m_aeSponsorPerTarget.Read(pStream);
-	m_aiWarUtilityIgnoringDistraction.Read(pStream);
+	if (iSaveVersion >= 9)
+	{
+		m_aiBounty.read(pStream);
+		m_aeSponsorPerTarget.read(pStream);
+		m_aiWarUtilityIgnoringDistraction.read(pStream);
+	}
+	else
+	{
+		m_aiBounty.readArray<int>(pStream);
+		m_aeSponsorPerTarget.readArray<int>(pStream);
+		m_aiWarUtilityIgnoringDistraction.readArray<int>(pStream);
+	}
 	if (iSaveVersion >= 3)
-		m_abCanBeHiredAgainst.Read(pStream);
-
+	{
+		if (iSaveVersion >= 9)
+			m_abCanBeHiredAgainst.read(pStream);
+		else m_abCanBeHiredAgainst.readArray<bool>(pStream);
+	}
 	pStream->Read(&m_bOffensiveTrait);
 	pStream->Read(&m_bDefensiveTrait);
 	pStream->Read(&m_bCanScrub);
@@ -717,6 +774,7 @@ void UWAICache::updateWarAnger()
 		return;
 	// Who causes the anger?
 	CivTeamMap<int> aiAngerContrib;
+	int iTotalAngerContribs = 0;
 	for (TeamIter<MAJOR_CIV,ENEMY_OF> itEnemy(kOwner.getTeam());
 		itEnemy.hasNext(); ++itEnemy)
 	{
@@ -725,8 +783,8 @@ void UWAICache::updateWarAnger()
 		int iContrib = GET_TEAM(kOwner.getTeam()).
 				getWarWeariness(itEnemy->getID(), true);
 		aiAngerContrib.set(itEnemy->getID(), iContrib);
+		iTotalAngerContribs += iContrib;
 	}
-	int const iTotalAngerContribs = aiAngerContrib.getTotal();
 	if (iTotalAngerContribs <= 0)
 		return;
 	for (PlayerIter<CIV_ALIVE,ENEMY_OF> itEnemy(kOwner.getTeam());

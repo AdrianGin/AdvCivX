@@ -54,32 +54,6 @@ namespace BitUtil // advc: Don't want these in the global namespace
 		return x;
 	}
 #endif
-
-	/*	<advc> Helpers for representing bits as arrays of uint blocks.
-		These were EnumMap members in WtP; moved. */
-	inline int getIndexInBlock(int iBitPos)
-	{
-		// bitmasks to get the bits, which gives the indexes to store 8 or 32 bit.
-		// modulo is slow at runtime, binary AND is fast. They give the same result in this case.
-		// Maybe the compiler will optimize to a binary and, but explicitly writing it means we are certain it will optimize.
-		// In fact this way it's "optimized" even in debug builds.
-		return iBitPos & 0x1F;
-	}
-	
-	// Add these for convenience ...
-	inline bool getBitFromBlocks(uint const* auiBlocks, int iBitPos)
-	{
-		return GetBit(
-				auiBlocks[iBitPos / 32],
-				getIndexInBlock(iBitPos));
-	}
-	inline void setBitInBlocks(uint* auiBlocks, int iBitPos, bool bValue)
-	{
-		SetBit(auiBlocks[iBitPos / 32],
-				getIndexInBlock(iBitPos),
-				bValue);
-	}
-	// </advc>
 };
 
 // advc.enum (not from WtP): Macro for (somewhat) type-safe bitmasks

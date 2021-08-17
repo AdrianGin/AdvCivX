@@ -3,7 +3,6 @@
 #include "CvGameCoreDLL.h"
 #include "CvInfo_Unit.h"
 #include "CvXMLLoadUtility.h"
-#include "CvDLLXMLIFaceBase.h"
 
 
 bool CvUnitInfo::m_bCanAnyMoveAllTerrain = false; // advc.opt (static initialization)
@@ -770,9 +769,7 @@ void CvUnitInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_iCityAttackModifier);
 	stream->Read(&m_iCityDefenseModifier);
 	stream->Read(&m_iAnimalCombatModifier);
-	// <advc.315c>
-	if(uiFlag >= 2)
-		stream->Read(&m_iBarbarianCombatModifier); // </advc.315c>
+	stream->Read(&m_iBarbarianCombatModifier); // advc.315c
 	stream->Read(&m_iHillsAttackModifier);
 	stream->Read(&m_iHillsDefenseModifier);
 	stream->Read(&m_iBombRate);
@@ -819,11 +816,8 @@ void CvUnitInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_bFoodProduction);
 	stream->Read(&m_bNoBadGoodies);
 	stream->Read(&m_bOnlyDefensive);
-	// <advc.315>
-	if(uiFlag >= 2) {
-		stream->Read(&m_bOnlyAttackAnimals); // advc.315a
-		stream->Read(&m_bOnlyAttackBarbarians); // advc.315b
-	} // </advc.315>
+	stream->Read(&m_bOnlyAttackAnimals); // advc.315a
+	stream->Read(&m_bOnlyAttackBarbarians); // advc.315b
 	stream->Read(&m_bNoCapture);
 	stream->Read(&m_bQuickCombat);
 	stream->Read(&m_bRivalTerritory);
@@ -865,47 +859,28 @@ void CvUnitInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_fUnitPadTime);
 	// <advc.003t> (Pretty sure I'll never need this - not sure why I'm writing it.)
 	int iPrereqAndTechs;
-	if (uiFlag >= 1)
-		stream->Read(&iPrereqAndTechs);
-	else iPrereqAndTechs = GC.getDefineINT(CvGlobals::NUM_UNIT_AND_TECH_PREREQS);
+	stream->Read(&iPrereqAndTechs);
 	if (iPrereqAndTechs > 0)
 	{
 		m_aePrereqAndTechs.resize(iPrereqAndTechs);
 		stream->Read(iPrereqAndTechs, (int*)&m_aePrereqAndTechs[0]);
 	}
 	int iPrereqOrBonuses;
-	if (uiFlag >= 1)
-		stream->Read(&iPrereqOrBonuses);
-	else iPrereqOrBonuses = GC.getDefineINT(CvGlobals::NUM_UNIT_PREREQ_OR_BONUSES);
+	stream->Read(&iPrereqOrBonuses);
 	if (iPrereqOrBonuses > 0)
 	{
 		m_aePrereqOrBonuses.resize(iPrereqOrBonuses);
 		stream->Read(iPrereqOrBonuses, (int*)&m_aePrereqOrBonuses[0]);
-	} // </advc.003t>  <advc.905b>
-	if (uiFlag >= 4)
+	} // </advc.003t>
+	// <advc.905b>
+	int iSpeedBonuses;
+	stream->Read(&iSpeedBonuses);
+	for (int i = 0; i < iSpeedBonuses; i++)
 	{
-		int iSpeedBonuses;
-		stream->Read(&iSpeedBonuses);
-		for (int i = 0; i < iSpeedBonuses; i++)
-		{
-			int iFirst, iSecond;
-			stream->Read(&iFirst);
-			stream->Read(&iSecond);
-			m_aeiSpeedBonuses.push_back(std::make_pair((BonusTypes)iFirst, iSecond));
-		}
-	}
-	else if (uiFlag >= 3)
-	{
-		int const iSize = GC.getDefineINT(CvGlobals::NUM_UNIT_PREREQ_OR_BONUSES);
-		std::vector<BonusTypes> aeBonuses(iSize, NO_BONUS);
-		std::vector<int> aiMoves(iSize, 0);
-		stream->Read(iSize, (int*)&aeBonuses[0]);
-		stream->Read(iSize, &aiMoves[0]);
-		for (int i = 0; i < iSize; i++)
-		{
-			if (aeBonuses[i] != NO_BONUS && aiMoves[i] != 0)
-				m_aeiSpeedBonuses.push_back(std::make_pair(aeBonuses[i], aiMoves[i]));
-		}
+		int iFirst, iSecond;
+		stream->Read(&iFirst);
+		stream->Read(&iSecond);
+		m_aeiSpeedBonuses.push_back(std::make_pair((BonusTypes)iFirst, iSecond));
 	} // </advc.905b>
 	SAFE_DELETE_ARRAY(m_piProductionTraits);
 	m_piProductionTraits = new int[GC.getNumTraitInfos()];
@@ -1031,12 +1006,7 @@ void CvUnitInfo::read(FDataStreamBase* stream)
 void CvUnitInfo::write(FDataStreamBase* stream)
 {
 	CvHotkeyInfo::write(stream);
-	uint uiFlag;
-	//uiFlag = 1; // K-Mod
-	//uiFlag = 2; // advc.315
-	//uiFlag = 3; // advc.905b
-	//uiFlag = 4; // advc.905b
-	uiFlag = 5; // advc.003t
+	uint uiFlag = 0;
 	stream->Write(uiFlag);
 
 	stream->Write(m_iAIWeight);
@@ -1224,13 +1194,13 @@ bool CvUnitInfo::read(CvXMLLoadUtility* pXML)
 	if (!CvHotkeyInfo::read(pXML))
 		return false;
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eUnitClassType, "Class");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eSpecialUnitType, "Special");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eUnitCaptureClassType, "Capture");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eUnitCombatType, "Combat");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eDomainType, "Domain");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eDefaultUnitAIType, "DefaultUnitAI");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eInvisibleType, "Invisible");
+	pXML->SetInfoIDFromChildXmlVal(m_eUnitClassType, "Class");
+	pXML->SetInfoIDFromChildXmlVal(m_eSpecialUnitType, "Special");
+	pXML->SetInfoIDFromChildXmlVal(m_eUnitCaptureClassType, "Capture");
+	pXML->SetInfoIDFromChildXmlVal(m_eUnitCombatType, "Combat");
+	pXML->SetInfoIDFromChildXmlVal(m_eDomainType, "Domain");
+	pXML->SetInfoIDFromChildXmlVal(m_eDefaultUnitAIType, "DefaultUnitAI");
+	pXML->SetInfoIDFromChildXmlVal(m_eInvisibleType, "Invisible");
 	{
 		CvString szTextVal;
 		pXML->GetChildXmlValByName(szTextVal, "SeeInvisible");
@@ -1244,7 +1214,7 @@ bool CvUnitInfo::read(CvXMLLoadUtility* pXML)
 				m_aeSeeInvisibleTypes.push_back(eInvisibleType);
 		}
 	}
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eAdvisorType, "Advisor");
+	pXML->SetInfoIDFromChildXmlVal(m_eAdvisorType, "Advisor");
 
 	pXML->GetChildXmlValByName(&m_bAnimal, "bAnimal");
 	pXML->GetChildXmlValByName(&m_bFoodProduction, "bFood");
@@ -1328,13 +1298,13 @@ bool CvUnitInfo::read(CvXMLLoadUtility* pXML)
 	pXML->SetVariableListTagPair(&m_pbBuildings, "Buildings", GC.getNumBuildingInfos());
 	//pXML->SetVariableListTagPair(&m_pbForceBuildings, "ForceBuildings", GC.getNumBuildingInfos()); // advc.003t
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eHolyCity, "HolyCity");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eReligionType, "ReligionType");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eStateReligion, "StateReligion");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_ePrereqReligion, "PrereqReligion");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_ePrereqCorporation, "PrereqCorporation");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_ePrereqBuilding, "PrereqBuilding");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_ePrereqAndTech, "PrereqTech");
+	pXML->SetInfoIDFromChildXmlVal(m_eHolyCity, "HolyCity");
+	pXML->SetInfoIDFromChildXmlVal(m_eReligionType, "ReligionType");
+	pXML->SetInfoIDFromChildXmlVal(m_eStateReligion, "StateReligion");
+	pXML->SetInfoIDFromChildXmlVal(m_ePrereqReligion, "PrereqReligion");
+	pXML->SetInfoIDFromChildXmlVal(m_ePrereqCorporation, "PrereqCorporation");
+	pXML->SetInfoIDFromChildXmlVal(m_ePrereqBuilding, "PrereqBuilding");
+	pXML->SetInfoIDFromChildXmlVal(m_ePrereqAndTech, "PrereqTech");
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"TechTypes"))
 	{
@@ -1362,7 +1332,7 @@ bool CvUnitInfo::read(CvXMLLoadUtility* pXML)
 		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_ePrereqAndBonus, "BonusType");
+	pXML->SetInfoIDFromChildXmlVal(m_ePrereqAndBonus, "BonusType");
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "PrereqBonuses"))
 	{
@@ -1488,8 +1458,8 @@ bool CvUnitInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_iBombRate, "iBombRate");
 	pXML->GetChildXmlValByName(&m_iBombardRate, "iBombardRate");
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eSpecialCargo, "SpecialCargo");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eDomainCargo, "DomainCargo");
+	pXML->SetInfoIDFromChildXmlVal(m_eSpecialCargo, "SpecialCargo");
+	pXML->SetInfoIDFromChildXmlVal(m_eDomainCargo, "DomainCargo");
 
 	pXML->GetChildXmlValByName(&m_iCargoSpace, "iCargo");
 	pXML->GetChildXmlValByName(&m_iConscriptionValue, "iConscription");
@@ -2186,17 +2156,7 @@ void CvPromotionInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_iExperiencePercent);
 	stream->Read(&m_iKamikazePercent);
 	stream->Read(&m_bLeader);
-	// <advc.164>
-	if(uiFlag >= 1)
-		stream->Read(&m_iBlitz);
-	else
-	{
-		bool bTmp=false;
-		stream->Read(&bTmp);
-		if(bTmp)
-			m_iBlitz = 1;
-		else m_iBlitz = 0;
-	} // </advc.164>
+	stream->Read(&m_iBlitz); // advc.164
 	stream->Read(&m_bAmphib);
 	stream->Read(&m_bRiver);
 	stream->Read(&m_bEnemyRoute);
@@ -2236,8 +2196,7 @@ void CvPromotionInfo::read(FDataStreamBase* stream)
 void CvPromotionInfo::write(FDataStreamBase* stream)
 {
 	CvHotkeyInfo::write(stream);
-	uint uiFlag;
-	uiFlag = 1; // advc.164
+	uint uiFlag = 0;
 	stream->Write(uiFlag);
 
 	stream->Write(m_iLayerAnimationPath);

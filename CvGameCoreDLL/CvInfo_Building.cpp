@@ -3,7 +3,6 @@
 #include "CvGameCoreDLL.h"
 #include "CvInfo_Building.h"
 #include "CvXMLLoadUtility.h"
-#include "CvDLLXMLIFaceBase.h"
 
 CvBuildingInfo::CvBuildingInfo() :
 m_eBuildingClassType(NO_BUILDINGCLASS),
@@ -362,18 +361,14 @@ void CvBuildingInfo::read(FDataStreamBase* stream)
 	stream->ReadString(m_szMovieDefineTag);
 	// <advc.003t>
 	int iPrereqAndTechs;
-	if (uiFlag >= 1)
-		stream->Read(&iPrereqAndTechs);
-	else iPrereqAndTechs = GC.getDefineINT(CvGlobals::NUM_BUILDING_AND_TECH_PREREQS);
+	stream->Read(&iPrereqAndTechs);
 	if (iPrereqAndTechs > 0)
 	{
 		m_aePrereqAndTechs.resize(iPrereqAndTechs);
 		stream->Read(iPrereqAndTechs, (int*)&m_aePrereqAndTechs[0]);
 	}
 	int iPrereqOrBonuses;
-	if (uiFlag >= 1)
-		stream->Read(&iPrereqOrBonuses);
-	else iPrereqOrBonuses = GC.getDefineINT(CvGlobals::NUM_BUILDING_PREREQ_OR_BONUSES);
+	stream->Read(&iPrereqOrBonuses);
 	if (iPrereqOrBonuses > 0)
 	{
 		m_aePrereqOrBonuses.resize(iPrereqOrBonuses);
@@ -413,17 +408,15 @@ void CvBuildingInfo::read(FDataStreamBase* stream)
 	CommerceFlexible().read(stream);
 	CommerceChangeOriginalOwner().read(stream);
 	BuildingClassNeededInCity().read(stream);
-	SpecialistYieldChange().readEncode<YieldChangeMap>(stream);
-	BonusYieldModifier().readEncoded<YieldPercentMap>(stream);
+	SpecialistYieldChange().read(stream);
+	BonusYieldModifier().read(stream);
 	// </advc.003t>
 }
 
 void CvBuildingInfo::write(FDataStreamBase* stream)
 {
 	base_t::write(stream);
-	uint uiFlag;
-	//uiFlag = 0;
-	uiFlag = 1; // advc.003t
+	uint uiFlag = 0;
 	stream->Write(uiFlag);
 
 	stream->Write(m_eBuildingClassType);
@@ -590,8 +583,8 @@ void CvBuildingInfo::write(FDataStreamBase* stream)
 	CommerceFlexible().write(stream);
 	CommerceChangeOriginalOwner().write(stream);
 	BuildingClassNeededInCity().write(stream);
-	SpecialistYieldChange().writeEncoded<YieldChangeMap>(stream);
-	BonusYieldModifier().writeEncoded<YieldPercentMap>(stream);
+	SpecialistYieldChange().write(stream);
+	BonusYieldModifier().write(stream);
 	// </advc.003t>
 }
 #endif
@@ -601,24 +594,24 @@ bool CvBuildingInfo::read(CvXMLLoadUtility* pXML)
 	if (!base_t::read(pXML))
 		return false;
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eBuildingClassType, "BuildingClass");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eSpecialBuildingType, "SpecialBuildingType");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eAdvisorType, "Advisor");
+	pXML->SetInfoIDFromChildXmlVal(m_eBuildingClassType, "BuildingClass");
+	pXML->SetInfoIDFromChildXmlVal(m_eSpecialBuildingType, "SpecialBuildingType");
+	pXML->SetInfoIDFromChildXmlVal(m_eAdvisorType, "Advisor");
 	pXML->GetChildXmlValByName(m_szArtDefineTag, "ArtDefineTag");
 	pXML->GetChildXmlValByName(m_szMovieDefineTag, "MovieDefineTag");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eHolyCity, "HolyCity");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eReligionType, "ReligionType");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eStateReligion, "StateReligion");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_ePrereqReligion, "PrereqReligion");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_ePrereqCorporation, "PrereqCorporation");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eFoundsCorporation, "FoundsCorporation");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eGlobalReligionCommerce, "GlobalReligionCommerce");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eGlobalCorporationCommerce, "GlobalCorporationCommerce");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eVictoryPrereq, "VictoryPrereq");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eFreeStartEra, "FreeStartEra");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eMaxStartEra, "MaxStartEra");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eObsoleteTech, "ObsoleteTech");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_ePrereqAndTech, "PrereqTech");
+	pXML->SetInfoIDFromChildXmlVal(m_eHolyCity, "HolyCity");
+	pXML->SetInfoIDFromChildXmlVal(m_eReligionType, "ReligionType");
+	pXML->SetInfoIDFromChildXmlVal(m_eStateReligion, "StateReligion");
+	pXML->SetInfoIDFromChildXmlVal(m_ePrereqReligion, "PrereqReligion");
+	pXML->SetInfoIDFromChildXmlVal(m_ePrereqCorporation, "PrereqCorporation");
+	pXML->SetInfoIDFromChildXmlVal(m_eFoundsCorporation, "FoundsCorporation");
+	pXML->SetInfoIDFromChildXmlVal(m_eGlobalReligionCommerce, "GlobalReligionCommerce");
+	pXML->SetInfoIDFromChildXmlVal(m_eGlobalCorporationCommerce, "GlobalCorporationCommerce");
+	pXML->SetInfoIDFromChildXmlVal(m_eVictoryPrereq, "VictoryPrereq");
+	pXML->SetInfoIDFromChildXmlVal(m_eFreeStartEra, "FreeStartEra");
+	pXML->SetInfoIDFromChildXmlVal(m_eMaxStartEra, "MaxStartEra");
+	pXML->SetInfoIDFromChildXmlVal(m_eObsoleteTech, "ObsoleteTech");
+	pXML->SetInfoIDFromChildXmlVal(m_ePrereqAndTech, "PrereqTech");
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "TechTypes"))
 	{
@@ -646,7 +639,7 @@ bool CvBuildingInfo::read(CvXMLLoadUtility* pXML)
 		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_ePrereqAndBonus, "Bonus");
+	pXML->SetInfoIDFromChildXmlVal(m_ePrereqAndBonus, "Bonus");
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "PrereqBonuses"))
 	{
@@ -677,17 +670,17 @@ bool CvBuildingInfo::read(CvXMLLoadUtility* pXML)
 	pXML->SetVariableListTagPair(ProductionTraits(), "ProductionTraits");
 	pXML->SetVariableListTagPair(HappinessTraits(), "HappinessTraits");
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eNoBonus, "NoBonus");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_ePowerBonus, "PowerBonus");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eFreeBonus, "FreeBonus");
+	pXML->SetInfoIDFromChildXmlVal(m_eNoBonus, "NoBonus");
+	pXML->SetInfoIDFromChildXmlVal(m_ePowerBonus, "PowerBonus");
+	pXML->SetInfoIDFromChildXmlVal(m_eFreeBonus, "FreeBonus");
 
 	pXML->GetChildXmlValByName(&m_iNumFreeBonuses, "iNumFreeBonuses");
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eFreeBuildingClass, "FreeBuilding");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eFreePromotion, "FreePromotion");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eCivicOption, "CivicOption");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eGreatPeopleUnitClass, "GreatPeopleUnitClass");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eVoteSourceType, "DiploVoteType");
+	pXML->SetInfoIDFromChildXmlVal(m_eFreeBuildingClass, "FreeBuilding");
+	pXML->SetInfoIDFromChildXmlVal(m_eFreePromotion, "FreePromotion");
+	pXML->SetInfoIDFromChildXmlVal(m_eCivicOption, "CivicOption");
+	pXML->SetInfoIDFromChildXmlVal(m_eGreatPeopleUnitClass, "GreatPeopleUnitClass");
+	pXML->SetInfoIDFromChildXmlVal(m_eVoteSourceType, "DiploVoteType");
 
 	pXML->GetChildXmlValByName(&m_iGreatPeopleRateChange, "iGreatPeopleRateChange");
 	pXML->GetChildXmlValByName(&m_bTeamShare, "bTeamShare");
@@ -812,9 +805,9 @@ bool CvBuildingInfo::read(CvXMLLoadUtility* pXML)
 	pXML->SetVariableListTagPair(PrereqNumOfBuildingClass(), "PrereqBuildingClasses");
 	pXML->SetVariableListTagPair(BuildingClassNeededInCity(), "BuildingClassNeededs");
 
-	pXML->SetVariableListTagYield<YieldChangeMap>(SpecialistYieldChange(),
+	pXML->SetVariableListTagRate(SpecialistYieldChange(),
 			"SpecialistYieldChange", "SpecialistType", "YieldChanges");
-	pXML->SetVariableListTagYield<YieldPercentMap>(BonusYieldModifier(),
+	pXML->SetVariableListTagRate(BonusYieldModifier(),
 			"BonusYieldModifier", "BonusType", "YieldModifiers");
 	pXML->SetVariableListTagPair(FlavorValue(), "Flavors");
 	pXML->SetVariableListTagPair(ImprovementFreeSpecialist(), "ImprovementFreeSpecialists");
@@ -924,9 +917,9 @@ bool CvSpecialBuildingInfo::read(CvXMLLoadUtility* pXML)
 	if (!CvInfoBase::read(pXML))
 		return false;
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eObsoleteTech, "ObsoleteTech");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eTechPrereq, "TechPrereq");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eTechPrereqAnyone, "TechPrereqAnyone");
+	pXML->SetInfoIDFromChildXmlVal(m_eObsoleteTech, "ObsoleteTech");
+	pXML->SetInfoIDFromChildXmlVal(m_eTechPrereq, "TechPrereq");
+	pXML->SetInfoIDFromChildXmlVal(m_eTechPrereqAnyone, "TechPrereqAnyone");
 
 	pXML->GetChildXmlValByName(&m_bValid, "bValid");
 
@@ -960,7 +953,7 @@ bool CvVoteSourceInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(m_szPopupText, "PopupText");
 	pXML->GetChildXmlValByName(m_szSecretaryGeneralText, "SecretaryGeneralText");
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eFreeSpecialist, "FreeSpecialist");
+	pXML->SetInfoIDFromChildXmlVal(m_eFreeSpecialist, "FreeSpecialist");
 	{
 		CvString szTextVal;
 		pXML->GetChildXmlValByName(szTextVal, "Civic");
@@ -1083,8 +1076,8 @@ bool CvProjectInfo::read(CvXMLLoadUtility* pXML)
 	if (!CvInfoBase::read(pXML))
 		return false;
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eVictoryPrereq, "VictoryPrereq");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eTechPrereq, "TechPrereq");
+	pXML->SetInfoIDFromChildXmlVal(m_eVictoryPrereq, "VictoryPrereq");
+	pXML->SetInfoIDFromChildXmlVal(m_eTechPrereq, "TechPrereq");
 
 	pXML->GetChildXmlValByName(&m_iMaxGlobalInstances, "iMaxGlobalInstances");
 	pXML->GetChildXmlValByName(&m_iMaxTeamInstances, "iMaxTeamInstances");
@@ -1093,8 +1086,8 @@ bool CvProjectInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_iTechShare, "iTechShare");
 	FAssertBounds(0, MAX_PLAYERS, m_iTechShare); // advc
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eEveryoneSpecialUnit, "EveryoneSpecialUnit");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eEveryoneSpecialBuilding, "EveryoneSpecialBuilding");
+	pXML->SetInfoIDFromChildXmlVal(m_eEveryoneSpecialUnit, "EveryoneSpecialUnit");
+	pXML->SetInfoIDFromChildXmlVal(m_eEveryoneSpecialBuilding, "EveryoneSpecialBuilding");
 
 	pXML->GetChildXmlValByName(&m_bSpaceship, "bSpaceship");
 	pXML->GetChildXmlValByName(&m_bAllowsNukes, "bAllowsNukes");
@@ -1104,20 +1097,16 @@ bool CvProjectInfo::read(CvXMLLoadUtility* pXML)
 	pXML->SetVariableListTagPair(VictoryThreshold(), "VictoryThresholds");
 	pXML->SetVariableListTagPair(VictoryMinThreshold(), "VictoryMinThresholds");
 	/*	<advc.003t> Min threshold defaults to the regular threshold.
-		(BtS had handled this in the getter.)
-		Awkward to write b/c CvInfoEnumMap isn't supposed to be modified
-		once loaded from XML. */
+		(BtS had handled this in the getter.) */
 	if (VictoryThreshold().isAnyNonDefault())
 	{
-		ListEnumMap<VictoryTypes,short> newMinThresh;
 		FOR_EACH_ENUM(Victory)
 		{
-			if (getVictoryMinThreshold(eLoopVictory) != 0)
-				newMinThresh.insert(eLoopVictory, getVictoryMinThreshold(eLoopVictory));
-			else newMinThresh.insert(eLoopVictory, getVictoryThreshold(eLoopVictory));
+			VictoryMinThreshold().set(eLoopVictory,
+					getVictoryMinThreshold(eLoopVictory) == 0 ?
+					getVictoryThreshold(eLoopVictory) :
+					getVictoryMinThreshold(eLoopVictory));
 		}
-		newMinThresh.finalizeInsertions();
-		VictoryMinThreshold() = newMinThresh;
 	} // </advc.003t>
 	pXML->GetChildXmlValByName(&m_iVictoryDelayPercent, "iVictoryDelayPercent");
 	pXML->GetChildXmlValByName(&m_iSuccessRate, "iSuccessRate");
@@ -1132,7 +1121,7 @@ bool CvProjectInfo::read(CvXMLLoadUtility* pXML)
 bool CvProjectInfo::readPass2(CvXMLLoadUtility* pXML)
 {
 	pXML->SetVariableListTagPair(ProjectsNeeded(), "PrereqProjects");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eAnyoneProjectPrereq, "AnyonePrereqProject");
+	pXML->SetInfoIDFromChildXmlVal(m_eAnyoneProjectPrereq, "AnyonePrereqProject");
 
 	return true;
 }

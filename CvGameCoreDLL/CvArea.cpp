@@ -508,7 +508,7 @@ void CvArea::changeYieldRateModifier(PlayerTypes eIndex1, YieldTypes eIndex2, in
 	if (iChange == 0)
 		return;
 
-	m_aaiYieldRateModifier.add(eIndex1, eIndex2, toShort(iChange));
+	m_aaiYieldRateModifier.add(eIndex1, eIndex2, iChange);
 
 	GET_PLAYER(eIndex1).invalidateYieldRankCache(eIndex2);
 	if (eIndex2 == YIELD_COMMERCE)
@@ -545,6 +545,15 @@ void CvArea::changeNumAIUnits(PlayerTypes eIndex1, UnitAITypes eIndex2, int iCha
 {
 	m_aaiNumAIUnits.add(eIndex1, eIndex2, iChange);
 	FAssert(getNumAIUnits(eIndex1, eIndex2) >= 0);
+}
+
+
+int CvArea::getNumTotalBonuses() const
+{
+	int iCount = 0;
+	FOR_EACH_ENUM(Bonus)
+		iCount += m_aiBonuses.get(eLoopBonus);
+	return iCount;
 }
 
 
@@ -596,7 +605,9 @@ void CvArea::read(FDataStreamBase* pStream)
 		updateLake(false);
 		m_iRepresentativeAreaId = m_iID;
 	} // </advc.030>
-	m_aiUnitsPerPlayer.Read(pStream);
+	if (uiFlag < 4)
+		m_aiUnitsPerPlayer.readArray<int>(pStream);
+	else m_aiUnitsPerPlayer.read(pStream);
 	// <advc>
 	if (uiFlag < 2)
 	{
@@ -607,19 +618,38 @@ void CvArea::read(FDataStreamBase* pStream)
 			pStream->Read(&iTmp);
 		}
 	} // </advc>
-	m_aiCitiesPerPlayer.Read(pStream);
-	m_aiPopulationPerPlayer.Read(pStream);
-	m_aiBuildingGoodHealth.Read(pStream);
-	m_aiBuildingBadHealth.Read(pStream);
-	m_aiBuildingHappiness.Read(pStream);
-	m_aiTradeRoutes.Read(pStream); // advc.310
-	m_aiFreeSpecialist.Read(pStream);
-	m_aiPower.Read(pStream);
-	m_aiBestFoundValue.Read(pStream);
-	m_aiNumRevealedTiles.Read(pStream);
-	m_aiCleanPowerCount.Read(pStream);
-	m_aiBorderObstacleCount.Read(pStream);
-	m_aeAreaAIType.Read(pStream);
+	if (uiFlag < 4)
+	{
+		m_aiCitiesPerPlayer.readArray<int>(pStream);
+		m_aiPopulationPerPlayer.readArray<int>(pStream);
+		m_aiBuildingGoodHealth.readArray<int>(pStream);
+		m_aiBuildingBadHealth.readArray<int>(pStream);
+		m_aiBuildingHappiness.readArray<int>(pStream);
+		m_aiTradeRoutes.readArray<int>(pStream); // advc.310
+		m_aiFreeSpecialist.readArray<int>(pStream);
+		m_aiPower.readArray<int>(pStream);
+		m_aiBestFoundValue.readArray<int>(pStream);
+		m_aiNumRevealedTiles.readArray<int>(pStream);
+		m_aiCleanPowerCount.readArray<int>(pStream);
+		m_aiBorderObstacleCount.readArray<int>(pStream);
+		m_aeAreaAIType.readArray<int>(pStream);
+	}
+	else
+	{
+		m_aiCitiesPerPlayer.read(pStream);
+		m_aiPopulationPerPlayer.read(pStream);
+		m_aiBuildingGoodHealth.read(pStream);
+		m_aiBuildingBadHealth.read(pStream);
+		m_aiBuildingHappiness.read(pStream);
+		m_aiTradeRoutes.read(pStream); // advc.310
+		m_aiFreeSpecialist.read(pStream);
+		m_aiPower.read(pStream);
+		m_aiBestFoundValue.read(pStream);
+		m_aiNumRevealedTiles.read(pStream);
+		m_aiCleanPowerCount.read(pStream);
+		m_aiBorderObstacleCount.read(pStream);
+		m_aeAreaAIType.read(pStream);
+	}
 
 	FOR_EACH_ENUM(Player)
 	{
@@ -628,16 +658,38 @@ void CvArea::read(FDataStreamBase* pStream)
 		m_aTargetCities[eLoopPlayer].validateOwner(); // advc.opt
 	}
 
-	m_aaiYieldRateModifier.Read(pStream, uiFlag < 2);
-	m_aaiNumTrainAIUnits.Read(pStream);
-	m_aaiNumAIUnits.Read(pStream);
-	m_aiBonuses.Read(pStream);
+	if (uiFlag < 4)
+	{
+		ArrayEnumMap2D<PlayerTypes,YieldTypes,short> aaiYieldRateModifier;
+		if (uiFlag < 2)
+			aaiYieldRateModifier.readArray<int>(pStream);
+		else aaiYieldRateModifier.readArray<short>(pStream);
+		FOR_EACH_ENUM(Player)
+		{
+			FOR_EACH_ENUM(Yield)
+			{
+				m_aaiYieldRateModifier.set(eLoopPlayer, eLoopYield,
+						 aaiYieldRateModifier.get(eLoopPlayer, eLoopYield));
+			}
+		}
+		m_aaiNumTrainAIUnits.readArray<int>(pStream);
+		m_aaiNumAIUnits.readArray<int>(pStream);
+	}
+	else
+	{
+		m_aaiYieldRateModifier.read(pStream);
+		m_aaiNumTrainAIUnits.read(pStream);
+		m_aaiNumAIUnits.read(pStream);
+	}
+	if (uiFlag < 4)
+		m_aiBonuses.readArray<int>(pStream);
+	else m_aiBonuses.read(pStream);
 	//m_aiImprovements.Read(pStream);
 	// <advc.opt>
 	if (uiFlag < 3)
 	{
-		EnumMap<ImprovementTypes,int> dummy;
-		dummy.Read(pStream);
+		EagerEnumMap<ImprovementTypes,int> dummy;
+		dummy.readArray<int>(pStream);
 	} // </advc.opt>
 }
 
@@ -649,7 +701,8 @@ void CvArea::write(FDataStreamBase* pStream)
 	uint uiFlag;
 	//uiFlag = 1; // advc.030
 	//uiFlag = 2; // advc: Remove m_aiAnimalsPerPlayer, advc.enum: write m_aaiYieldRateModifier as short
-	uiFlag = 3; // advc.opt: Remove m_aiImprovements
+	//uiFlag = 3; // advc.opt: Remove m_aiImprovements
+	uiFlag = 4; // advc.enum: new enum map save behavior
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);
@@ -667,21 +720,21 @@ void CvArea::write(FDataStreamBase* pStream)
 	pStream->Write(m_bLake);
 	pStream->Write(m_iRepresentativeAreaId);
 	// </advc.030>
-	m_aiUnitsPerPlayer.Write(pStream);
-	//m_aiAnimalsPerPlayer.Write(pStream); // advc: removed
-	m_aiCitiesPerPlayer.Write(pStream);
-	m_aiPopulationPerPlayer.Write(pStream);
-	m_aiBuildingGoodHealth.Write(pStream);
-	m_aiBuildingBadHealth.Write(pStream);
-	m_aiBuildingHappiness.Write(pStream);
-	m_aiTradeRoutes.Write(pStream); // advc.310
-	m_aiFreeSpecialist.Write(pStream);
-	m_aiPower.Write(pStream);
-	m_aiBestFoundValue.Write(pStream);
-	m_aiNumRevealedTiles.Write(pStream);
-	m_aiCleanPowerCount.Write(pStream);
-	m_aiBorderObstacleCount.Write(pStream);
-	m_aeAreaAIType.Write(pStream);
+	m_aiUnitsPerPlayer.write(pStream);
+	//m_aiAnimalsPerPlayer.write(pStream); // advc: removed
+	m_aiCitiesPerPlayer.write(pStream);
+	m_aiPopulationPerPlayer.write(pStream);
+	m_aiBuildingGoodHealth.write(pStream);
+	m_aiBuildingBadHealth.write(pStream);
+	m_aiBuildingHappiness.write(pStream);
+	m_aiTradeRoutes.write(pStream); // advc.310
+	m_aiFreeSpecialist.write(pStream);
+	m_aiPower.write(pStream);
+	m_aiBestFoundValue.write(pStream);
+	m_aiNumRevealedTiles.write(pStream);
+	m_aiCleanPowerCount.write(pStream);
+	m_aiBorderObstacleCount.write(pStream);
+	m_aeAreaAIType.write(pStream);
 
 	FOR_EACH_ENUM(Player)
 	{
@@ -689,10 +742,10 @@ void CvArea::write(FDataStreamBase* pStream)
 		pStream->Write(m_aTargetCities[eLoopPlayer].iID);
 	}
 
-	m_aaiYieldRateModifier.Write(pStream, false);
-	m_aaiNumTrainAIUnits.Write(pStream);
-	m_aaiNumAIUnits.Write(pStream);
-	m_aiBonuses.Write(pStream);
+	m_aaiYieldRateModifier.write(pStream);
+	m_aaiNumTrainAIUnits.write(pStream);
+	m_aaiNumAIUnits.write(pStream);
+	m_aiBonuses.write(pStream);
 	//m_aiImprovements.Write(pStream); // advc.opt
 	REPRO_TEST_END_WRITE();
 }
