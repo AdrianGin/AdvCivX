@@ -642,7 +642,7 @@ void CvPlayer::changePersonalityType()
 		if (eLoopPersonality == iBARBARIAN_LEADER) // XXX minor civ???
 			continue;
 
-		int iValue = (1 + GC.getGame().getSorenRandNum(10000, "Choosing Personality"));
+		int iValue = 1 + GC.getGame().getSorenRandNum(10000, "Choosing Personality");
 		for (int i = 0; i < MAX_CIV_PLAYERS; i++)
 		{
 			if (GET_PLAYER((PlayerTypes)i).isAlive())

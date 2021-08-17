@@ -3,10 +3,9 @@
 #ifndef CIV4_MAP_H
 #define CIV4_MAP_H
 
-//	FILE:	 CvMap.h
-//	AUTHOR:  Soren Johnson
-//	PURPOSE: Game map class
-//	Copyright (c) 2004 Firaxis Games, Inc. All rights reserved.
+/*	AUTHOR:  Soren Johnson
+	PURPOSE: Game map class
+	Copyright (c) 2004 Firaxis Games, Inc. All rights reserved. */
 
 #include "CvPlot.h"
 #include "Shelf.h" // advc.300

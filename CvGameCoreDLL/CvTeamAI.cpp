@@ -978,7 +978,7 @@ void CvTeamAI::AI_preDeclareWar(TeamTypes eTarget, WarPlanTypes eWarPlan, bool b
 		{
 			CvPlayerAI& kPlayer = *itEnemy;
 			// <advc.130o>
-			if(bPrimaryDoW && kOurMember.isHuman() && !kPlayer.isHuman() &&
+			if (bPrimaryDoW && kOurMember.isHuman() && !kPlayer.isHuman() &&
 				kTarget.AI_getMemoryCount(getID(), MEMORY_MADE_DEMAND) > 0)
 			{
 				// Raise it to 8 (or what XML says)
@@ -991,7 +991,7 @@ void CvTeamAI::AI_preDeclareWar(TeamTypes eTarget, WarPlanTypes eWarPlan, bool b
 				kPlayer.AI_changeMemoryCount(kOurMember.getID(),
 						MEMORY_MADE_DEMAND_RECENT, iDelta);
 			}
-			if(bPrimaryDoW)
+			if (bPrimaryDoW)
 				kOurMember.AI_setMemoryCount(kPlayer.getID(), MEMORY_MADE_DEMAND, 0);
 			// </advc.130o>
 			if (kPlayer.getTeam() == eTarget)
@@ -1004,14 +1004,14 @@ void CvTeamAI::AI_preDeclareWar(TeamTypes eTarget, WarPlanTypes eWarPlan, bool b
 				// advc.130y:
 				else kPlayer.AI_changeMemoryCount(kOurMember.getID(), MEMORY_DECLARED_WAR, 2);
 			} // advc.130h:
-			if(kPlayer.AI_disapprovesOfDoW(getID(), eTarget)) // advc.130j:
+			if (kPlayer.AI_disapprovesOfDoW(getID(), eTarget)) // advc.130j:
 				kPlayer.AI_rememberEvent(kOurMember.getID(), MEMORY_DECLARED_WAR_ON_FRIEND);
 		}
 	}  // <advc.104i>
-	if(eSponsor != NO_PLAYER)
+	if (eSponsor != NO_PLAYER)
 	{
 		AI_makeUnwillingToTalk(eTarget);
-		if(GET_TEAM(eSponsor).isAtWar(eTarget))
+		if (GET_TEAM(eSponsor).isAtWar(eTarget))
 			GET_TEAM(eSponsor).AI_makeUnwillingToTalk(eTarget);
 	} // </advc.104i>
 }

@@ -182,6 +182,7 @@ CitySiteEvaluator::CitySiteEvaluator(CvPlayerAI const& kPlayer, int iMinRivalRan
 	m_iClaimThreshold *= 2 * GC.getGame().getCultureThreshold((CultureLevelTypes)
 			std::min(2, GC.getNumCultureLevelInfos() - 1));
 	// note: plot culture is roughly 10x city culture (cf. CvCity::doPlotCultureTimes100)
+	FAssert(m_iClaimThreshold > 0);
 
 	if (m_bAdvancedStart)
 	{

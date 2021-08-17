@@ -5175,7 +5175,7 @@ int CvCity::GPTurnsLeft() const
 	return iR;
 }
 
-void CvCity::GPProjection(std::vector<std::pair<UnitTypes,int> >& r) const
+void CvCity::GPProjection(std::vector<std::pair<UnitTypes,int> >& aeiProjection) const
 {
 	if (isDisorder())
 		return;
@@ -5199,10 +5199,10 @@ void CvCity::GPProjection(std::vector<std::pair<UnitTypes,int> >& r) const
 		{
 			int iPercent = rShare.getPercent();
 			iRoundedPercentages += iPercent;
-			r.push_back(std::make_pair(eLoopUnit, iPercent));
+			aeiProjection.push_back(std::make_pair(eLoopUnit, iPercent));
 		}
 	}
-	if (!r.empty())
+	if (!aeiProjection.empty())
 	{
 		int iTotalError = 100 - iRoundedPercentages;
 		if (iTotalError >= 2)
@@ -5212,15 +5212,15 @@ void CvCity::GPProjection(std::vector<std::pair<UnitTypes,int> >& r) const
 				Otherwise add 1 to the GP with the highest share. */
 			size_t iArgmax = 0;
 			int iMax = 0;
-			for (size_t i = 0; i < r.size(); i++)
+			for (size_t i = 0; i < aeiProjection.size(); i++)
 			{
-				if(r[i].second > iMax)
+				if (aeiProjection[i].second > iMax)
 				{
-					iMax = r[i].second;
+					iMax = aeiProjection[i].second;
 					iArgmax = i;
 				}
 			}
-			r[iArgmax].second += iTotalError - 1;
+			aeiProjection[iArgmax].second += iTotalError - 1;
 		}
 	}
 } // </advc.001c>
@@ -7907,13 +7907,13 @@ bool CvCity::canCultureFlip(PlayerTypes eToPlayer, /* advc.101: */ bool bCheckPr
 		return false;
 	} // </advc.099c>
 	return (!GC.getGame().isOption(GAMEOPTION_NO_CITY_FLIPPING) &&
-		// advc.101: City flipping option negated (now has inverse meaning)
-		(!GC.getGame().isOption(GAMEOPTION_NO_FLIPPING_AFTER_CONQUEST) ||
-		getPreviousOwner() == NO_PLAYER ||
-		TEAMID(getPreviousOwner()) != TEAMID(eToPlayer)) && // advc
-		(!bCheckPriorRevolts || // advc.101
-		getNumRevolts(eToPlayer) >= GC.getDefineINT(CvGlobals::NUM_WARNING_REVOLTS)
-		- (isBarbarian() ? 1 : 0))); // advc.101
+			// advc.101: City flipping option negated (now has inverse meaning)
+			(!GC.getGame().isOption(GAMEOPTION_NO_FLIPPING_AFTER_CONQUEST) ||
+			getPreviousOwner() == NO_PLAYER ||
+			TEAMID(getPreviousOwner()) != TEAMID(eToPlayer)) && // advc
+			(!bCheckPriorRevolts || // advc.101
+			getNumRevolts(eToPlayer) >= GC.getDefineINT(CvGlobals::NUM_WARNING_REVOLTS)
+			- (isBarbarian() ? 1 : 0))); // advc.101
 }
 
 

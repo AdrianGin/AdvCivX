@@ -530,12 +530,12 @@ int CvArea::getNumAIUnits(PlayerTypes eIndex1, UnitAITypes eIndex2) const
 {
 	// <advc.124> NO_UNITAI counts all units of eIndex1
 	//FAssertMsg(eIndex2 >= 0, "eIndex2 is expected to be >= 0");
-	if(eIndex2 < 0)
+	if (eIndex2 < 0)
 	{
-		int r = 0;
+		int iR = 0;
 		FOR_EACH_ENUM(UnitAI)
-			r += m_aaiNumAIUnits.get(eIndex1, eLoopUnitAI);
-		return r;
+			iR += m_aaiNumAIUnits.get(eIndex1, eLoopUnitAI);
+		return iR;
 	} // </advc.124>
 	return m_aaiNumAIUnits.get(eIndex1, eIndex2);
 }

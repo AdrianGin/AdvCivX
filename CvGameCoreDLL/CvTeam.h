@@ -338,7 +338,7 @@ public:
 	{	// K-Mod. Return the team which is the master of this team. (if this team is free, return getID())
 		return (m_eMaster == NO_TEAM ? getID() : m_eMaster); // advc.opt
 	}
-	void assignVassal(TeamTypes eVassal, bool bSurrender) const;																// Exposed to Python
+	void assignVassal(TeamTypes eVassal, bool bSurrender) const;											// Exposed to Python
 	void freeVassal(TeamTypes eVassal) const;																// Exposed to Python
 
 	bool isCapitulated() const // advc.130v: Exposed to Python
@@ -349,7 +349,7 @@ public:
 	{
 		return (isCapitulated() && isVassal(eMaster));
 	} // </advc>
-	int getRouteChange(RouteTypes eIndex) const																				// Exposed to Python
+	int getRouteChange(RouteTypes eIndex) const																// Exposed to Python
 	{
 		return m_aiRouteChange.get(eIndex);
 	}
@@ -361,20 +361,19 @@ public:
 	}
 	DllExport int getProjectDefaultArtType(ProjectTypes eIndex) const;
 	DllExport void setProjectDefaultArtType(ProjectTypes eIndex, int iValue);
-	DllExport int getProjectArtType(ProjectTypes eIndex, int number) const;
-	DllExport void setProjectArtType(ProjectTypes eIndex, int number, int value);
-	bool isProjectMaxedOut(ProjectTypes eIndex, int iExtra = 0) const;									// Exposed to Python
-	DllExport bool isProjectAndArtMaxedOut(ProjectTypes eIndex) const;
-	void changeProjectCount(ProjectTypes eIndex, int iChange);							// Exposed to Python
+	DllExport int getProjectArtType(ProjectTypes eProject, int iIndex) const;
+	DllExport void setProjectArtType(ProjectTypes eProject, int iIndex, int iValue);
+	bool isProjectMaxedOut(ProjectTypes eProject, int iExtra = 0) const;								// Exposed to Python
+	DllExport bool isProjectAndArtMaxedOut(ProjectTypes eProject) const;
+	void changeProjectCount(ProjectTypes eProject, int iChange);							// Exposed to Python
 	DllExport void finalizeProjectArtTypes();
-
-	int getProjectMaking(ProjectTypes eIndex) const																		// Exposed to Python
+	int getProjectMaking(ProjectTypes eProject) const												// Exposed to Python
 	{
-		return m_aiProjectMaking.get(eIndex);
+		return m_aiProjectMaking.get(eProject);
 	}
-	void changeProjectMaking(ProjectTypes eIndex, int iChange);
+	void changeProjectMaking(ProjectTypes eProject, int iChange);
 
-	int getUnitClassCount(UnitClassTypes eIndex) const																	// Exposed to Python
+	int getUnitClassCount(UnitClassTypes eIndex) const												// Exposed to Python
 	{
 		return m_aiUnitClassCount.get(eIndex);
 	}
@@ -425,9 +424,12 @@ public:
 	}
 	void changeRiverTradeCount(int iChange);
 
-	int getVictoryCountdown(VictoryTypes eIndex) const;																							// Exposed to Python
-	void setVictoryCountdown(VictoryTypes eIndex, int iTurnsLeft);
-	void changeVictoryCountdown(VictoryTypes eIndex, int iChange);
+	int getVictoryCountdown(VictoryTypes eVictory) const													// Exposed to Python
+	{
+		return m_aiVictoryCountdown.get(eVictory);
+	}
+	void setVictoryCountdown(VictoryTypes eVictory, int iTurnsLeft);
+	void changeVictoryCountdown(VictoryTypes eVictory, int iChange);
 	bool isAnyVictoryCountdown() const; // advc.opt
 	int getVictoryDelay(VictoryTypes eVictory) const;
 	bool canLaunch(VictoryTypes eVictory) const;									// Exposed to Python

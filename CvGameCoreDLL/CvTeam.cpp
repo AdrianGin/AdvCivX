@@ -1003,8 +1003,9 @@ bool CvTeam::canChangeWarPeace(TeamTypes eTeam, bool bAllowVassal) const
 	return true;
 }
 
-// K-Mod, I've removed the bulk of this function and replaced it with just a call to "canEventuallyDeclareWar",
-// which contains all of the original checks. I've done this to reduce code dupliation.
+/*	K-Mod, I've removed the bulk of this function and replaced it with just a call
+	to "canEventuallyDeclareWar", which contains all of the original checks.
+	I've done this to reduce code dupliation. */
 bool CvTeam::canDeclareWar(TeamTypes eTeam) const
 {
 	if (!canEventuallyDeclareWar(eTeam))
@@ -3621,39 +3622,40 @@ void CvTeam::setProjectDefaultArtType(ProjectTypes eIndex, int iValue)
 	m_aiProjectDefaultArtTypes.set(eIndex, iValue);
 }
 
-int CvTeam::getProjectArtType(ProjectTypes eIndex, int number) const
+int CvTeam::getProjectArtType(ProjectTypes eProject, int iIndex) const
 {
-	FAssertEnumBounds(eIndex);
-	FAssertBounds(0, getProjectCount(eIndex), number);
-	return m_pavProjectArtTypes[eIndex][number];
+	FAssertEnumBounds(eProject);
+	FAssertBounds(0, getProjectCount(eProject), iIndex);
+	return m_aaiProjectArtTypes[eProject][iIndex];
 }
 
 
-void CvTeam::setProjectArtType(ProjectTypes eIndex, int number, int value)
+void CvTeam::setProjectArtType(ProjectTypes eProject, int iIndex, int iValue)
 {
-	FAssertEnumBounds(eIndex);
-	FAssertBounds(0, getProjectCount(eIndex), number);
-	m_pavProjectArtTypes[eIndex][number] = value;
+	FAssertEnumBounds(eProject);
+	FAssertBounds(0, getProjectCount(eProject), iIndex);
+	m_aaiProjectArtTypes[eProject][iIndex] = iValue;
 }
 
 
-bool CvTeam::isProjectMaxedOut(ProjectTypes eIndex, int iExtra) const
+bool CvTeam::isProjectMaxedOut(ProjectTypes eProject, int iExtra) const
 {
-	if (!GC.getInfo(eIndex).isTeamProject())
+	if (!GC.getInfo(eProject).isTeamProject())
 		return false;
 
-	return (getProjectCount(eIndex) + iExtra >= GC.getInfo(eIndex).getMaxTeamInstances());
+	return (getProjectCount(eProject) + iExtra >=
+			GC.getInfo(eProject).getMaxTeamInstances());
 }
 
 
-bool CvTeam::isProjectAndArtMaxedOut(ProjectTypes eIndex) const
+bool CvTeam::isProjectAndArtMaxedOut(ProjectTypes eProject) const
 {
-	if(getProjectCount(eIndex) < GC.getInfo(eIndex).getMaxTeamInstances())
+	if (getProjectCount(eProject) < GC.getInfo(eProject).getMaxTeamInstances())
 		return false;
-	int iCount = getProjectCount(eIndex);
+	int iCount = getProjectCount(eProject);
 	for (int i = 0; i < iCount; i++)
 	{
-		if(getProjectArtType(eIndex, i) == -1) //undefined
+		if (getProjectArtType(eProject, i) == -1) // undefined
 			return false;
 	}
 	return true;
@@ -3662,53 +3664,54 @@ bool CvTeam::isProjectAndArtMaxedOut(ProjectTypes eIndex) const
 
 void CvTeam::finalizeProjectArtTypes()
 {
-	//loop through each project and fill in default art values
-	for(int i=0;i<GC.getNumProjectInfos();i++)
+	// Loop through each project and fill in default art values
+	FOR_EACH_ENUM(Project)
 	{
-		ProjectTypes eProject = (ProjectTypes) i;
-		int projectCount = getProjectCount(eProject);
-		for(int j=0;j<projectCount;j++)
+		int iProjects = getProjectCount(eLoopProject);
+		for (int i = 0; i < iProjects; i++)
 		{
-			int projectArtType = getProjectArtType(eProject, j);
-			if(projectArtType == -1) //undefined
+			int iProjectArtType = getProjectArtType(eLoopProject, i);
+			if (iProjectArtType == -1) // undefined
 			{
-				int defaultArtType = getProjectDefaultArtType(eProject);
-				setProjectArtType(eProject, j, defaultArtType);
+				setProjectArtType(eLoopProject, i,
+						getProjectDefaultArtType(eLoopProject));
 			}
 		}
 	}
 }
 
 
-void CvTeam::changeProjectCount(ProjectTypes eIndex, int iChange)
+void CvTeam::changeProjectCount(ProjectTypes eProject, int iChange)
 {
-	if(iChange == 0)
+	if (iChange == 0)
 		return;
 
-	GC.getGame().incrementProjectCreatedCount(eIndex, iChange);
+	GC.getGame().incrementProjectCreatedCount(eProject, iChange);
 
-	int iOldProjectCount = getProjectCount(eIndex);
+	int iOldProjectCount = getProjectCount(eProject);
 
-	m_aiProjectCount.add(eIndex, iChange);
-	FAssert(getProjectCount(eIndex) >= 0);
+	m_aiProjectCount.add(eProject, iChange);
+	FAssert(getProjectCount(eProject) >= 0);
 	// advc: Moved from isProjectMaxedOut
-	FAssert(!GC.getInfo(eIndex).isTeamProject() || getProjectCount(eIndex) <= GC.getInfo(eIndex).getMaxTeamInstances());
+	FAssert(!GC.getInfo(eProject).isTeamProject() ||
+			getProjectCount(eProject) <= GC.getInfo(eProject).getMaxTeamInstances());
 
 	//adjust default art types
-	if (iChange >= 0)
+	if (iChange > 0)
 	{
 		int iDefaultType = -1;
-		for(int i = 0; i < iChange; i++)
-			m_pavProjectArtTypes[eIndex].push_back(iDefaultType);
+		for (int i = 0; i < iChange; i++)
+			m_aaiProjectArtTypes[eProject].push_back(iDefaultType);
 	}
 	else
 	{
-		for(int i = 0; i < -iChange; i++)
-			m_pavProjectArtTypes[eIndex].pop_back();
+		for (int i = 0; i < -iChange; i++)
+			m_aaiProjectArtTypes[eProject].pop_back();
 	}
-	FAssertMsg(getProjectCount(eIndex) == m_pavProjectArtTypes[eIndex].size(), "[Jason] Unbalanced project art types.");
+	FAssertMsg(getProjectCount(eProject) == m_aaiProjectArtTypes[eProject].size(),
+			"[Jason] Unbalanced project art types.");
 
-	CvProjectInfo& kProject = GC.getInfo(eIndex);
+	CvProjectInfo& kProject = GC.getInfo(eProject);
 
 	changeNukeInterception(kProject.getNukeInterception() * iChange);
 	// <advc> (for kekm.38): Player counts, not team counts. And don't subtract 1.
@@ -3741,8 +3744,9 @@ void CvTeam::changeProjectCount(ProjectTypes eIndex, int iChange)
 		bool bChangeProduction = false;
 		FOR_EACH_ENUM(Project)
 		{
-			if (getProjectCount(eIndex) >= GC.getInfo(eLoopProject).getProjectsNeeded(eIndex) &&
-				iOldProjectCount < GC.getInfo(eLoopProject).getProjectsNeeded(eIndex))
+			if (getProjectCount(eProject) >=
+				GC.getInfo(eLoopProject).getProjectsNeeded(eProject) &&
+				iOldProjectCount < GC.getInfo(eLoopProject).getProjectsNeeded(eProject))
 			{
 				bChangeProduction = true;
 				break;
@@ -3755,7 +3759,7 @@ void CvTeam::changeProjectCount(ProjectTypes eIndex, int iChange)
 	if (GC.getGame().isFinalInitialized() && !gDLL->GetWorldBuilderMode())
 	{
 		CvWString szBuffer = gDLL->getText( // <advc.008e>
-				GC.getInfo(eIndex).nameNeedsArticle() ?
+				kProject.nameNeedsArticle() ?
 				"TXT_KEY_MISC_COMPLETES_PROJECT_THE" :
 				"TXT_KEY_MISC_COMPLETES_PROJECT", // </advc.008e>
 				getReplayName().GetCString(), kProject.getTextKeyWide());
@@ -3766,7 +3770,7 @@ void CvTeam::changeProjectCount(ProjectTypes eIndex, int iChange)
 		{
 			CvPlayer const& kObs = *it;
 			szBuffer = gDLL->getText( // <advc.008e>
-					GC.getInfo(eIndex).nameNeedsArticle() ?
+					kProject.nameNeedsArticle() ?
 					"TXT_KEY_MISC_SOMEONE_HAS_COMPLETED_THE" :
 					"TXT_KEY_MISC_SOMEONE_HAS_COMPLETED", // </advc.008e>
 					getName().GetCString(), kProject.getTextKeyWide());
@@ -3780,10 +3784,10 @@ void CvTeam::changeProjectCount(ProjectTypes eIndex, int iChange)
 }
 
 
-void CvTeam::changeProjectMaking(ProjectTypes eIndex, int iChange)
+void CvTeam::changeProjectMaking(ProjectTypes eProject, int iChange)
 {
-	m_aiProjectMaking.add(eIndex, iChange);
-	FAssert(getProjectMaking(eIndex) >= 0);
+	m_aiProjectMaking.add(eProject, iChange);
+	FAssert(getProjectMaking(eProject) >= 0);
 }
 
 
@@ -4104,7 +4108,7 @@ void CvTeam::resetVictoryProgress()
 	}
 }
 
-// K-Mod, code moved from CvPlayer::hasSpaceshipArrived. (it makes more sense to be here)
+// K-Mod: (code moved from CvPlayer::hasSpaceshipArrived. it makes more sense to be here.)
 bool CvTeam::hasSpaceshipArrived() const
 {	// <advc.opt>
 	if (!isAnyVictoryCountdown())
@@ -4113,12 +4117,14 @@ bool CvTeam::hasSpaceshipArrived() const
 	if (eSpaceVictory != NO_VICTORY)
 	{
 		int iVictoryCountdown = getVictoryCountdown(eSpaceVictory);
-		if (iVictoryCountdown == 0 || (iVictoryCountdown > 0 && GC.getGame().getGameState() == GAMESTATE_EXTENDED))
+		if (iVictoryCountdown == 0 ||
+			(iVictoryCountdown > 0 && GC.getGame().getGameState() == GAMESTATE_EXTENDED))
+		{
 			return true;
+		}
 	}
-
 	return false;
-} // K-Mod end
+}
 
 
 bool CvTeam::isParent(TeamTypes eChildTeam) const
@@ -5860,11 +5866,11 @@ void CvTeam::write(FDataStreamBase* pStream)
 	m_aiProjectCount.Write(pStream);
 	m_aiProjectDefaultArtTypes.Write(pStream);
 
-	//project art types
-	for(int i = 0; i < GC.getNumProjectInfos(); i++)
+	// project art types
+	FOR_EACH_ENUM(Project)
 	{
-		for(int j = 0; j < m_aiProjectCount.get((ProjectTypes)i); j++)
-			pStream->Write(m_pavProjectArtTypes[i][j]);
+		for (int i = 0; i < m_aiProjectCount.get(eLoopProject); i++)
+			pStream->Write(m_aaiProjectArtTypes[eLoopProject][i]);
 	}
 
 	m_aiProjectMaking.Write(pStream);
@@ -5931,9 +5937,9 @@ bool CvTeam::hasLaunched() const
 {	// <advc.opt>
 	if (!isAnyVictoryCountdown())
 		return false; // </advc.opt>
-	VictoryTypes spaceVictory = GC.getGame().getSpaceVictory();
-	if (spaceVictory != NO_VICTORY)
-		return (getVictoryCountdown(spaceVictory) >= 0);
+	VictoryTypes eSpaceVictory = GC.getGame().getSpaceVictory();
+	if (eSpaceVictory != NO_VICTORY)
+		return (getVictoryCountdown(eSpaceVictory) >= 0);
 	return false;
 }
 

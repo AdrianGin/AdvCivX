@@ -187,35 +187,59 @@ public:
 	// </advc.130p>
 	// advc.130k: Public b/c CvPlayerAI needs it too
 	int AI_randomCounterChange(int iUpperCap = -1, scaled rProb = scaled(1, 2)) const;
-	int AI_getWarPlanStateCounter(TeamTypes eIndex) const { return m_aiWarPlanStateCounter.get(eIndex); }
+	int AI_getWarPlanStateCounter(TeamTypes eIndex) const
+	{
+		return m_aiWarPlanStateCounter.get(eIndex);
+	}
 	void AI_setWarPlanStateCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeWarPlanStateCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getAtWarCounter(TeamTypes eIndex) const { return m_aiAtWarCounter.get(eIndex); }									// Exposed to Python
+	int AI_getAtWarCounter(TeamTypes eIndex) const											// Exposed to Python
+	{
+		return m_aiAtWarCounter.get(eIndex);
+	}
 	void AI_setAtWarCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeAtWarCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getAtPeaceCounter(TeamTypes eIndex) const { return m_aiAtPeaceCounter.get(eIndex); }
+	int AI_getAtPeaceCounter(TeamTypes eIndex) const
+	{
+		return m_aiAtPeaceCounter.get(eIndex);
+	}
 	void AI_setAtPeaceCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeAtPeaceCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getHasMetCounter(TeamTypes eIndex) const { return m_aiHasMetCounter.get(eIndex); }
+	int AI_getHasMetCounter(TeamTypes eIndex) const
+	{
+		return m_aiHasMetCounter.get(eIndex);
+	}
 	void AI_setHasMetCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeHasMetCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getOpenBordersCounter(TeamTypes eIndex) const { return m_aiOpenBordersCounter.get(eIndex); }
+	int AI_getOpenBordersCounter(TeamTypes eIndex) const
+	{
+		return m_aiOpenBordersCounter.get(eIndex);
+	}
 	void AI_setOpenBordersCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeOpenBordersCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getDefensivePactCounter(TeamTypes eIndex) const { return m_aiDefensivePactCounter.get(eIndex); }
+	int AI_getDefensivePactCounter(TeamTypes eIndex) const
+	{
+		return m_aiDefensivePactCounter.get(eIndex);
+	}
 	void AI_setDefensivePactCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeDefensivePactCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getShareWarCounter(TeamTypes eIndex) const { return m_aiShareWarCounter.get(eIndex); }
+	int AI_getShareWarCounter(TeamTypes eIndex) const
+	{
+		return m_aiShareWarCounter.get(eIndex);
+	}
 	void AI_setShareWarCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeShareWarCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getWarSuccess(TeamTypes eIndex) const { return m_aiWarSuccess.get(eIndex); }							 // Exposed to Python
+	int AI_getWarSuccess(TeamTypes eIndex) const										 // Exposed to Python
+	{
+		return m_aiWarSuccess.get(eIndex);
+	}
 	void AI_setWarSuccess(TeamTypes eIndex, int iNewValue);
 	void AI_changeWarSuccess(TeamTypes eIndex, int iChange);
 	int AI_countEnemyWarSuccess() const; // advc
@@ -225,17 +249,26 @@ public:
 	/*  The war success of our war ally against a shared enemy, plus the war success
 		of shared enemies against our war ally. This is quite different from AI_getWarSuccess,
 		which counts our success against team eIndex. Also on a different scale. */
-	int AI_getSharedWarSuccess(TeamTypes eWarAlly) const { return m_aiSharedWarSuccess.get(eWarAlly); }
+	int AI_getSharedWarSuccess(TeamTypes eWarAlly) const
+	{
+		return m_aiSharedWarSuccess.get(eWarAlly);
+	}
 	void AI_setSharedWarSuccess(TeamTypes eWarAlly, int iWS); // </advc.130m>
 	// <advc.130n>
 	int AI_getReligionKnownSince(ReligionTypes eReligion) const;
 	void AI_reportNewReligion(ReligionTypes eReligion);
 	// </advc.130n>
-	int AI_getEnemyPeacetimeTradeValue(TeamTypes eIndex) const { return m_aiEnemyPeacetimeTradeValue.get(eIndex); }
+	int AI_getEnemyPeacetimeTradeValue(TeamTypes eIndex) const
+	{
+		return m_aiEnemyPeacetimeTradeValue.get(eIndex);
+	}
 	void AI_setEnemyPeacetimeTradeValue(TeamTypes eIndex, int iNewValue);
 	void AI_changeEnemyPeacetimeTradeValue(TeamTypes eIndex, int iChange);
 
-	int AI_getEnemyPeacetimeGrantValue(TeamTypes eIndex) const { return m_aiEnemyPeacetimeGrantValue.get(eIndex); }
+	int AI_getEnemyPeacetimeGrantValue(TeamTypes eIndex) const
+	{
+		return m_aiEnemyPeacetimeGrantValue.get(eIndex);
+	}
 	void AI_setEnemyPeacetimeGrantValue(TeamTypes eIndex, int iNewValue);
 	void AI_changeEnemyPeacetimeGrantValue(TeamTypes eIndex, int iChange);
 

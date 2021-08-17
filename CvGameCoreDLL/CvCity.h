@@ -463,7 +463,7 @@ public:
 	// BUG - Actual Effects - end
 	// <advc.001c>
 	int GPTurnsLeft() const;
-	void GPProjection(std::vector<std::pair<UnitTypes,int> >& r) const; // (exposed to Python)
+	void GPProjection(std::vector<std::pair<UnitTypes,int> >& aeiProjection) const; // (exposed to Python)
 	// </advc.001c>
 	int getBuildingGoodHealth() const { return m_iBuildingGoodHealth; }											// Exposed to Python
 	int getBuildingBadHealth() const { return m_iBuildingBadHealth; }											// Exposed to Python

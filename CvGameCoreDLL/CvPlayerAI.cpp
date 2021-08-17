@@ -1030,10 +1030,10 @@ void CvPlayerAI::AI_updateFoundValues(bool bStarting)  // advc: refactored
 	// <advc.108>
 	int iCities = getNumCities();
 	CvPlot const* pStartPlot = getStartingPlot(); // </advc.108>
-	for(int i = 0; i < GC.getMap().numPlots(); i++)
+	for (int i = 0; i < GC.getMap().numPlots(); i++)
 	{
 		CvPlot& kLoopPlot = GC.getMap().getPlotByIndex(i);
-		if(!kLoopPlot.isRevealed(getTeam()))
+		if (!kLoopPlot.isRevealed(getTeam()))
 			//&& !AI_isPrimaryArea(kLoopPlot.getArea()))
 		/*  K-Mod: Clear out any junk found values.
 			(I've seen legacy AI code which makes use of the found values of unrevealed plots.
@@ -1044,11 +1044,11 @@ void CvPlayerAI::AI_updateFoundValues(bool bStarting)  // advc: refactored
 			continue;
 		}
 		short iValue = GC.getPythonCaller()->AI_foundValue(getID(), kLoopPlot);
-		if(iValue == -1)
+		if (iValue == -1)
 		{	// K-Mod:
 			iValue = citySiteEval.evaluate(kLoopPlot);
 			// <advc.108> Slight preference for the assigned starting plot
-			if(iCities <= 0 && pStartPlot != NULL && &kLoopPlot == pStartPlot &&
+			if (iCities <= 0 && pStartPlot != NULL && &kLoopPlot == pStartPlot &&
 				// Unless it doesn't have fresh water
 				kLoopPlot.isFreshWater())
 			{
@@ -1056,12 +1056,12 @@ void CvPlayerAI::AI_updateFoundValues(bool bStarting)  // advc: refactored
 			} // </advc.108>
 		}
 		kLoopPlot.setFoundValue(getID(), iValue);
-		if(iValue > kLoopPlot.getArea().getBestFoundValue(getID()))
+		if (iValue > kLoopPlot.getArea().getBestFoundValue(getID()))
 			kLoopPlot.getArea().setBestFoundValue(getID(), iValue);
 	}
 	int iMaxCityCount = 4;
 	// K-Mod - because humans don't always walk towards the AI's top picks..
-	if(isHuman())
+	if (isHuman())
 		iMaxCityCount = 6;
 	AI_updateCitySites(-1, iMaxCityCount); // advc: -1 now means the default number
 }
@@ -5818,7 +5818,7 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 	if (bFreeTech)
 	{	// <advc.004x> Don't adjust to research turns during anarchy
 		int iTurnsLeft = getResearchTurnsLeft(eTech, false);
-		if(iTurnsLeft >= 0) // </advc.004x>
+		if (iTurnsLeft >= 0) // </advc.004x>
 		{
 			iValue += iTurnsLeft / 5;
 			iValue *= 1000; // roughly normalise with usual value. (cf. code below)

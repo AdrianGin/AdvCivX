@@ -2785,7 +2785,7 @@ PlayerTypes CvPlot::calculateCulturalOwner(/* advc.099c: */ bool bIgnoreCultureR
 	// <advc.035>
 	EnumMap<PlayerTypes,bool> abCityRadius;
 	bool bAnyCityRadius = false;
-	if(bOwnExclusiveRadius)
+	if (bOwnExclusiveRadius)
 	{
 		for (CityPlotIter it(*this); it.hasNext(); ++it)
 		{
@@ -2793,7 +2793,7 @@ PlayerTypes CvPlot::calculateCulturalOwner(/* advc.099c: */ bool bIgnoreCultureR
 			if(!p.isCity() || p.getPlotCity()->isOccupation())
 				continue;
 			PlayerTypes eCityOwner = p.getPlotCity()->getOwner();
-			if(isWithinCultureRange(eCityOwner))
+			if (isWithinCultureRange(eCityOwner))
 			{
 				abCityRadius.set(eCityOwner, true);
 				bAnyCityRadius = true;
@@ -7223,7 +7223,7 @@ void CvPlot::read(FDataStreamBase* pStream)
 	if(uiFlag >= 1)
 		pStream->Read(&m_eSecondOwner);
 	else m_eSecondOwner = m_eOwner;
-	if(!GC.getDefineBOOL(CvGlobals::OWN_EXCLUSIVE_RADIUS))
+	if (!GC.getDefineBOOL(CvGlobals::OWN_EXCLUSIVE_RADIUS))
 		m_eSecondOwner = m_eOwner; // </advc.035>
 	pStream->Read((int*)&m_plotCity.eOwner);
 	pStream->Read(&m_plotCity.iID);
@@ -7239,9 +7239,10 @@ void CvPlot::read(FDataStreamBase* pStream)
 	m_aiYield.Read(pStream, false, uiFlag < 5);
 
 	// BETTER_BTS_AI_MOD, Efficiency (plot danger cache), 08/21/09, jdog5000: START
-	// K-Mod. I've changed the purpose of invalidateBorderDangerCache. It is no longer appropriate for this.
-	//m_iActivePlayerNoBorderDangerCache = false;
-	//invalidateBorderDangerCache();
+	/*	K-Mod. I've changed the purpose of invalidateBorderDangerCache.
+		It is no longer appropriate for this. */
+	/*m_iActivePlayerNoBorderDangerCache = false;
+	invalidateBorderDangerCache();*/
 	// BETTER_BTS_AI_MOD: END
 	pStream->Read(&cCount);
 	if (cCount > 0)
@@ -7316,7 +7317,7 @@ void CvPlot::read(FDataStreamBase* pStream)
 	if (!szTmp.empty())
 		setRuinsName(szTmp); // </advc.005c>
 	// <advc.opt>
-	if(uiFlag >= 2)
+	if (uiFlag >= 2)
 		pStream->Read(&m_iTotalCulture);
 	else if(m_aiCulture.isAllocated()) // just to save time
 	{
