@@ -1429,44 +1429,44 @@ void CvMap::calculateAreas_DFS(CvPlot const& kStart)
 
 // <advc.300>
 // All shelves adjacent to a continent
-void CvMap::getShelves(CvArea const& kArea, std::vector<Shelf*>& r) const
+void CvMap::getShelves(CvArea const& kArea, std::vector<Shelf*>& kShelves) const
 {
-	int iArea = kArea.getID();
+	int const iArea = kArea.getID();
 	for(std::map<Shelf::Id,Shelf*>::const_iterator it = m_shelves.begin();
 		it != m_shelves.end(); ++it)
 	{
 		if(it->first.first == iArea)
-			r.push_back(it->second);
+			kShelves.push_back(it->second);
 	}
 }
 
 
 void CvMap::computeShelves()
 {
-	for(std::map<Shelf::Id,Shelf*>::iterator it = m_shelves.begin();
+	for (std::map<Shelf::Id,Shelf*>::iterator it = m_shelves.begin();
 		it != m_shelves.end(); ++it)
 	{
 		SAFE_DELETE(it->second);
 	}
 	m_shelves.clear();
-	for(int i = 0; i < numPlots(); i++)
+	for (int i = 0; i < numPlots(); i++)
 	{
 		CvPlot& p = getPlotByIndex(i);
-		if(!p.isWater() || p.isLake() || p.isImpassable() || !p.isHabitable())
+		if (!p.isWater() || p.isLake() || p.isImpassable() || !p.isHabitable())
 			continue;
 		// Add plot to shelves of all adjacent land areas
 		std::set<int> adjLands;
 		FOR_EACH_ADJ_PLOT(p)
 		{
-			if(!pAdj->isWater())
+			if (!pAdj->isWater())
 				adjLands.insert(pAdj->getArea().getID());
 		}
-		for(std::set<int>::iterator it = adjLands.begin(); it != adjLands.end(); ++it)
+		for (std::set<int>::iterator it = adjLands.begin(); it != adjLands.end(); ++it)
 		{
 			Shelf::Id shelfID(*it, p.getArea().getID());
 			std::map<Shelf::Id,Shelf*>::iterator shelfPos = m_shelves.find(shelfID);
 			Shelf* pShelf;
-			if(shelfPos == m_shelves.end())
+			if (shelfPos == m_shelves.end())
 			{
 				pShelf = new Shelf();
 				m_shelves.insert(std::make_pair(shelfID, pShelf));
