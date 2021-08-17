@@ -55,7 +55,7 @@
     <ClCompile Include="..\CvDiploParameters.cpp" />
     <ClCompile Include="..\CvDLLButtonPopup.cpp" />
     <ClCompile Include="..\CvDLLEntity.cpp" />
-    <ClCompile Include="..\CvDLLInterfaceIBase.cpp" />
+    <ClCompile Include="..\CvDLLInterfaceIFaceBase.cpp" />
     <ClCompile Include="..\CvDLLLogger.cpp" />
     <ClCompile Include="..\CvDLLPython.cpp" />
     <ClCompile Include="..\CvDllPythonEvents.cpp" />
