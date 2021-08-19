@@ -1897,11 +1897,8 @@ template CvXMLLoadUtility::XMLTagPairRateIterator<CommerceChangeMap>;
 template CvXMLLoadUtility::XMLTagPairRateIterator<CommercePercentMap>;
 // </advc.enum>
 
-
-
-// advc.003t: See SetVariableListTagPair(int**,...) above
-void CvXMLLoadUtility::SetVariableListTagPair(CvString **ppszList, TCHAR const* szRootTagName,
-	int iInfoBaseLength, CvString szDefaultListVal)
+void CvXMLLoadUtility::SetVariableListTagPair(CvString **ppszList,
+	TCHAR const* szRootTagName, int iInfoBaseLength, CvString szDefaultListVal)
 {
 	// <advc.xmldefault>
 	if (*ppszList != NULL)

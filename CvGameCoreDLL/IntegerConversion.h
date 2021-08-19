@@ -29,7 +29,7 @@ struct int_cast
 {
 	BOOST_STATIC_ASSERT(bASSERT || bTRUNCATE); // Should use built in cast otherwise
 	/*	Can use these instead when enum types don't need to be supported
-		(i.e. when porting tbhis header into a different mod). */
+		(i.e. when porting this header into a different mod). */
 	//typedef ToType T; typedef FromType F;
 	typedef typename choose_type<enum_traits<ToType>::is_enum, int, ToType>::type T;
 	typedef typename choose_type<enum_traits<FromType>::is_enum, int, FromType>::type F;
