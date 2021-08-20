@@ -561,6 +561,8 @@ void TestEnumMap()
 		FAssert(!test.get((CivicTypes)1));
 		FAssert(test.get((CivicTypes)5));
 		test.set((CivicTypes)3, true);
+		//test.toggle((CivicTypes)2); // private
+		//test.add((CivicTypes)2, 1); // should fail static assert
 		FOR_EACH_NON_DEFAULT_KEY(test, Civic)
 		{
 			FAssert(eLoopCivic == 5 || eLoopCivic == 3);
