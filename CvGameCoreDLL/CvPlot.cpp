@@ -1564,16 +1564,11 @@ bool CvPlot::isRiverCrossingFlowClockwise(DirectionTypes eDirection) const
 
 bool CvPlot::isRiverSide() const
 {
-	for (int iI = 0; iI < NUM_CARDINALDIRECTION_TYPES; ++iI)
+	FOR_EACH_ORTH_ADJ_PLOT(*this)
 	{
-		CvPlot* pLoopPlot = plotCardinalDirection(getX(), getY(), (CardinalDirectionTypes)iI);
-		if (pLoopPlot != NULL)
-		{
-			if (isRiverCrossing(directionXY(*this, *pLoopPlot)))
-				return true;
-		}
+		if (isRiverCrossing(directionXY(*this, *pAdj)))
+			return true;
 	}
-
 	return false;
 }
 
@@ -4830,9 +4825,8 @@ void CvPlot::setPlotCity(CvCity* pNewValue)
 		CvPlotGroup* pPlotGroup = getPlotGroup(getOwner());
 		if (pPlotGroup != NULL)
 		{
-			for (int iI = 0; iI < GC.getNumBonusInfos(); iI++)
+			FOR_EACH_ENUM(Bonus)
 			{
-				BonusTypes eLoopBonus = (BonusTypes)iI;
 				getPlotCity()->changeNumBonuses((eLoopBonus),
 						-pPlotGroup->getNumBonuses(eLoopBonus));
 			}
@@ -4846,9 +4840,8 @@ void CvPlot::setPlotCity(CvCity* pNewValue)
 		CvPlotGroup* pPlotGroup = getPlotGroup(getOwner());
 		if (pPlotGroup != NULL)
 		{
-			for (int iI = 0; iI < GC.getNumBonusInfos(); iI++)
+			FOR_EACH_ENUM(Bonus)
 			{
-				BonusTypes eLoopBonus = (BonusTypes)iI;
 				getPlotCity()->changeNumBonuses(eLoopBonus,
 						pPlotGroup->getNumBonuses(eLoopBonus));
 			}
@@ -6981,10 +6974,10 @@ void CvPlot::processArea(CvArea& kArea, int iChange)
 					plotCount(PUF_isUnitAIType, eUnitAI, -1, ePlayer) * iChange);
 		}
 	}
-	for (int iI = 0; iI < MAX_TEAMS; ++iI)
+	FOR_EACH_ENUM(Team)
 	{
-		if (isRevealed((TeamTypes)iI))
-			kArea.changeNumRevealedTiles((TeamTypes)iI, iChange);
+		if (isRevealed(eLoopTeam))
+			kArea.changeNumRevealedTiles(eLoopTeam, iChange);
 	}
 
 	CvCity* pCity = getPlotCity();

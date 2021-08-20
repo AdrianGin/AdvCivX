@@ -1923,9 +1923,8 @@ void CvGame::startFlyoutMenu(const CvPlot* pPlot, std::vector<CvFlyoutMenuData>&
 			aFlyoutItems.push_back(CvFlyoutMenuData(FLYOUT_CONSTRUCT, eLoopBuilding,
 					pPlot->getX(), pPlot->getY(), szBuffer));
 		}
-		for (int iI = 0; iI < GC.getNumProjectInfos(); iI++)
+		FOR_EACH_ENUM(Project)
 		{
-			ProjectTypes eLoopProject = (ProjectTypes) iI;
 			if (!pCity->canCreate(eLoopProject))
 				continue;
 			szBuffer = GC.getInfo(eLoopProject).getDescription();
@@ -1935,9 +1934,8 @@ void CvGame::startFlyoutMenu(const CvPlot* pPlot, std::vector<CvFlyoutMenuData>&
 			aFlyoutItems.push_back(CvFlyoutMenuData(FLYOUT_CREATE, eLoopProject,
 					pPlot->getX(), pPlot->getY(), szBuffer));
 		}
-		for (int iI = 0; iI < GC.getNumProcessInfos(); iI++)
+		FOR_EACH_ENUM(Process)
 		{
-			ProcessTypes eLoopProcess = (ProcessTypes)iI;
 			if (!pCity->canMaintain(eLoopProcess))
 				continue;
 			szBuffer = GC.getInfo(eLoopProcess).getDescription();
@@ -1946,22 +1944,19 @@ void CvGame::startFlyoutMenu(const CvPlot* pPlot, std::vector<CvFlyoutMenuData>&
 		}
 
 		aFlyoutItems.push_back(CvFlyoutMenuData(NO_FLYOUT, -1, -1, -1, L""));
-		for (int iI = 0; iI < GC.getNumHurryInfos(); iI++)
+		FOR_EACH_ENUM(Hurry)
 		{
-			if (pCity->canHurry((HurryTypes)iI))
-			{
-				szBuffer = gDLL->getText("TXT_KEY_HURRY_PRODUCTION");
-
-				int iHurryGold = pCity->hurryGold((HurryTypes)iI);
-				if (iHurryGold > 0)
-					szBuffer += gDLL->getText("TXT_KEY_HURRY_PRODUCTION_GOLD", iHurryGold);
-
-				int iHurryPopulation = pCity->hurryPopulation((HurryTypes)iI);
-				if (iHurryPopulation > 0)
-					szBuffer += gDLL->getText("TXT_KEY_HURRY_PRODUCTION_POP", iHurryPopulation);
-
-				aFlyoutItems.push_back(CvFlyoutMenuData(FLYOUT_HURRY, iI, pPlot->getX(), pPlot->getY(), szBuffer));
-			}
+			if (!pCity->canHurry(eLoopHurry))
+				continue;
+			szBuffer = gDLL->getText("TXT_KEY_HURRY_PRODUCTION");
+			int iHurryGold = pCity->hurryGold(eLoopHurry);
+			if (iHurryGold > 0)
+				szBuffer += gDLL->getText("TXT_KEY_HURRY_PRODUCTION_GOLD", iHurryGold);
+			int iHurryPopulation = pCity->hurryPopulation(eLoopHurry);
+			if (iHurryPopulation > 0)
+				szBuffer += gDLL->getText("TXT_KEY_HURRY_PRODUCTION_POP", iHurryPopulation);
+				aFlyoutItems.push_back(CvFlyoutMenuData(FLYOUT_HURRY, eLoopHurry,
+						pPlot->getX(), pPlot->getY(), szBuffer));
 		}
 
 		if (pCity->canConscript())
@@ -2219,22 +2214,22 @@ void CvGame::loadBuildQueue(const CvString& strItem) const
 			return;
 		}
 	}
-	for (int iI = 0; iI < GC.getNumProjectInfos(); iI++)
+	FOR_EACH_ENUM(Project)
 	{
-		if (strItem == GC.getInfo((ProjectTypes)iI).getType())
+		if (strItem == GC.getInfo(eLoopProject).getType())
 		{
 			selectedCitiesGameNetMessage(GAMEMESSAGE_PUSH_ORDER, ORDER_CREATE,
-					(ProjectTypes)iI, -1, false, false, true);
+					eLoopProject, -1, false, false, true);
 			return;
 		}
 	}
 
-	for (int iI = 0; iI < GC.getNumProcessInfos(); iI++)
+	FOR_EACH_ENUM(Process)
 	{
-		if (strItem == GC.getInfo((ProcessTypes)iI).getType())
+		if (strItem == GC.getInfo(eLoopProcess).getType())
 		{
 			selectedCitiesGameNetMessage(GAMEMESSAGE_PUSH_ORDER, ORDER_MAINTAIN,
-					(ProcessTypes)iI, -1, false, false, true);
+					eLoopProcess, -1, false, false, true);
 			return;
 		}
 	}
@@ -2242,7 +2237,7 @@ void CvGame::loadBuildQueue(const CvString& strItem) const
 
 void CvGame::cheatSpaceship() const
 {	// <advc.007b> I don't know how this is triggered; it's safer to block it.
-	if(!isDebugMode())
+	if (!isDebugMode())
 		return; // </advc.007b>
 	//add one space project that is still available
 	CvTeam& kTeam = GET_TEAM(getActiveTeam());

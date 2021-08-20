@@ -365,10 +365,10 @@ void CvUnit::setupGraphical() // graphical-only setup
 
 void CvUnit::convert(CvUnit* pUnit)
 {
-	for (int iI = 0; iI < GC.getNumPromotionInfos(); iI++)
+	FOR_EACH_ENUM(Promotion)
 	{
-		setHasPromotion((PromotionTypes)iI, pUnit->isHasPromotion((PromotionTypes)iI) ||
-				m_pUnitInfo->getFreePromotions(iI));
+		setHasPromotion(eLoopPromotion, pUnit->isHasPromotion(eLoopPromotion) ||
+				m_pUnitInfo->getFreePromotions(eLoopPromotion));
 	}
 
 	setGameTurnCreated(pUnit->getGameTurnCreated());
@@ -5263,24 +5263,29 @@ bool CvUnit::spread(ReligionTypes eReligion)
 		{	/*szBuffer = gDLL->getText("TXT_KEY_MISC_RELIGION_FAILED_TO_SPREAD", getNameKey(), GC.getInfo(eReligion).getChar(), pCity->getNameKey());
 			gDLL->UI().addMessage(getOwner(), true, GC.getEVENT_MESSAGE_TIME(), szBuffer, "AS2D_NOSPREAD", MESSAGE_TYPE_INFO, getButton(), (ColorTypes)GC.getInfoTypeForString("COLOR_RED"), pCity->getX(), pCity->getY());
 			bSuccess = false;*/ // BtS
-			// K-Mod. Instead of simply failing, give some chance of removing one of the existing religions.
+			/*	K-Mod. Instead of simply failing, give some chance of
+				removing one of the existing religions. */
 			std::vector<std::pair<int, ReligionTypes> > rankedReligions;
 			int iRandomWeight = GC.getDefineINT("RELIGION_INFLUENCE_RANDOM_WEIGHT");
-			for (int iI = 0; iI < GC.getNumReligionInfos(); iI++)
+			FOR_EACH_ENUM(Religion)
 			{
-				if (pCity->isHasReligion((ReligionTypes)iI) || iI == eReligion)
+				if (pCity->isHasReligion(eLoopReligion) || eLoopReligion == eReligion)
 				{
-					if (pCity != GC.getGame().getHolyCity((ReligionTypes)iI)) // holy city can't lose its religion!
+					// holy city can't lose its religion!
+					if (pCity != GC.getGame().getHolyCity(eLoopReligion))
 					{
-						int iInfluence = pCity->getReligionGrip((ReligionTypes)iI);
-						iInfluence += GC.getGame().getSorenRandNum(iRandomWeight, "Religion influence");
-						iInfluence += (iI == eReligion ? m_pUnitInfo->getReligionSpreads(eReligion)/2 : 0);
-
-						rankedReligions.push_back(std::make_pair(iInfluence, (ReligionTypes)iI));
+						int iInfluence = pCity->getReligionGrip(eLoopReligion);
+						iInfluence += GC.getGame().getSorenRandNum(iRandomWeight,
+								"Religion influence");
+						if (eLoopReligion == eReligion)
+							iInfluence += m_pUnitInfo->getReligionSpreads(eReligion) / 2;
+						rankedReligions.push_back(std::make_pair(
+								iInfluence, eLoopReligion));
 					}
 				}
 			}
-			std::partial_sort(rankedReligions.begin(), rankedReligions.begin()+1, rankedReligions.end());
+			std::partial_sort(rankedReligions.begin(), rankedReligions.begin() + 1,
+					rankedReligions.end());
 			ReligionTypes eFailedReligion = rankedReligions[0].second;
 			if (eFailedReligion == eReligion)
 			{
@@ -5314,7 +5319,7 @@ bool CvUnit::spread(ReligionTypes eReligion)
 
 bool CvUnit::canSpreadCorporation(const CvPlot* pPlot, CorporationTypes eCorporation, bool bTestVisible) const
 {
-	if (NO_CORPORATION == eCorporation)
+	if (eCorporation == NO_CORPORATION)
 		return false;
 	if (!GET_PLAYER(getOwner()).isActiveCorporation(eCorporation))
 		return false;
@@ -8548,23 +8553,16 @@ void CvUnit::setXY(int iX, int iY, bool bGroup, bool bUpdate, bool bShow, bool b
 
 		if (!alwaysInvisible() && !m_pUnitInfo->isHiddenNationality()) // K-Mod
 		{
-			for (int iI = 0; iI < MAX_CIV_TEAMS; iI++)
+			for (TeamIter<CIV_ALIVE> itContact; itContact.hasNext(); ++itContact)
 			{
-				if (GET_TEAM((TeamTypes)iI).isAlive())
+				if (!isInvisible(itContact->getID(), false) &&
+					pNewPlot->isVisible(itContact->getID()))
 				{
-					if (!isInvisible((TeamTypes)iI, false))
-					{
-						if (pNewPlot->isVisible((TeamTypes)iI))
-						{	// advc.071:
-							FirstContactData fcData(pNewPlot, NULL, this);
-							GET_TEAM((TeamTypes)iI).meet(getTeam(), true,
-									&fcData); // advc.071
-						}
-					}
+					FirstContactData fcData(pNewPlot, NULL, this); // advc.071
+					itContact->meet(getTeam(), true, /* advc.071: */ &fcData);
 				}
 			}
 		}
-
 		pNewCity = pNewPlot->getPlotCity();
 		if (pNewCity != NULL)
 		{
@@ -8577,14 +8575,15 @@ void CvUnit::setXY(int iX, int iY, bool bGroup, bool bUpdate, bool bShow, bool b
 				pNewCity->verifyProduction();
 			} // </advc.001b>
 		}
-
-		CvCity* pWorkingCity = pNewPlot->getWorkingCity();
-		if (pWorkingCity != NULL)
 		{
-			if (canSiege(pWorkingCity->getTeam()))
+			CvCity* pWorkingCity = pNewPlot->getWorkingCity();
+			if (pWorkingCity != NULL)
 			{
-				pWorkingCity->verifyWorkingPlot(
-						pWorkingCity->getCityPlotIndex(*pNewPlot));
+				if (canSiege(pWorkingCity->getTeam()))
+				{
+					pWorkingCity->verifyWorkingPlot(
+							pWorkingCity->getCityPlotIndex(*pNewPlot));
+				}
 			}
 		}
 		/*if (pNewPlot->isWater()) {
@@ -9997,9 +9996,9 @@ bool CvUnit::isPromotionValid(PromotionTypes ePromotion) const
 
 bool CvUnit::canAcquirePromotionAny() const
 {
-	for (int iI = 0; iI < GC.getNumPromotionInfos(); iI++)
+	FOR_EACH_ENUM(Promotion)
 	{
-		if (canAcquirePromotion((PromotionTypes)iI))
+		if (canAcquirePromotion(eLoopPromotion))
 			return true;
 	}
 	return false;
@@ -10008,7 +10007,7 @@ bool CvUnit::canAcquirePromotionAny() const
 
 void CvUnit::setHasPromotion(PromotionTypes ePromotion, bool bNewValue)
 {
-	if(isHasPromotion(ePromotion) == bNewValue)
+	if (isHasPromotion(ePromotion) == bNewValue)
 		return;
 
 	m_abHasPromotion.set(ePromotion, bNewValue);

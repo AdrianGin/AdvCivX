@@ -3121,11 +3121,11 @@ void CvDLLWidgetData::parseCitizenHelp(CvWidgetDataStruct &widgetDataStruct, CvW
 		return;
 
 	int iCount = 0;
-	for (int iI = 0; iI < GC.getNumSpecialistInfos(); iI++)
+	FOR_EACH_ENUM(Specialist)
 	{
-		if (iI < widgetDataStruct.m_iData1)
-			iCount += pHeadSelectedCity->getSpecialistCount((SpecialistTypes)iI);
-		else if (iI == widgetDataStruct.m_iData1)
+		if (eLoopSpecialist < widgetDataStruct.m_iData1)
+			iCount += pHeadSelectedCity->getSpecialistCount(eLoopSpecialist);
+		else if (eLoopSpecialist == widgetDataStruct.m_iData1)
 			iCount += widgetDataStruct.m_iData2;
 	}
 	if (iCount < pHeadSelectedCity->totalFreeSpecialists())
@@ -6023,23 +6023,24 @@ void CvDLLWidgetData::parseGoldenAgeAnarchyHelp(PlayerTypes ePlayer, int iData2,
 } // </advc.085>
 
 // <K-Mod> 5/jan/11: Environmental advisor mouse-over text
-void CvDLLWidgetData::parsePollutionOffsetsHelp(CvWidgetDataStruct &widgetDataStruct, CvWStringBuffer &szBuffer)
+void CvDLLWidgetData::parsePollutionOffsetsHelp(CvWidgetDataStruct &widgetDataStruct,
+	CvWStringBuffer &szBuffer)
 {
 	szBuffer.append(gDLL->getText("TXT_KEY_POLLUTION_OFFSETS_HELP"));
-	for (int iI = 0; iI < GC.getNumFeatureInfos(); ++iI)
+	FOR_EACH_ENUM(Feature)
 	{
-		int iWarmingDefence = GC.getInfo((FeatureTypes)iI).getWarmingDefense();
-
+		int iWarmingDefence = GC.getInfo(eLoopFeature).getWarmingDefense();
 		if (iWarmingDefence != 0)
 		{
 			szBuffer.append(NEWLINE);
 			szBuffer.append(gDLL->getText("TXT_KEY_OFFSET_PER_FEATURE",
-					-iWarmingDefence, GC.getInfo((FeatureTypes)iI).getTextKeyWide()));
+					-iWarmingDefence, GC.getInfo(eLoopFeature).getTextKeyWide()));
 		}
 	}
 }
 
-void CvDLLWidgetData::parsePollutionHelp(CvWidgetDataStruct &widgetDataStruct, CvWStringBuffer &szBuffer)
+void CvDLLWidgetData::parsePollutionHelp(CvWidgetDataStruct &widgetDataStruct,
+	CvWStringBuffer &szBuffer)
 {
 	CvPlayer::PollutionFlags eFlags = (CvPlayer::PollutionFlags)widgetDataStruct.m_iData1;
 
@@ -6072,8 +6073,8 @@ void CvDLLWidgetData::parsePollutionHelp(CvWidgetDataStruct &widgetDataStruct, C
 } // </K-Mod>
 
 // advc.ctr:
-bool CvDLLWidgetData::parseCityTradeHelp(CvWidgetDataStruct const& kWidget, CvCity*& pCity,
-	PlayerTypes& eWhoTo) const
+bool CvDLLWidgetData::parseCityTradeHelp(CvWidgetDataStruct const& kWidget,
+	CvCity*& pCity, PlayerTypes& eWhoTo) const
 {
 	bool bListMore = false;
 	// bListMore, eOwner and eWhoTo are all folded into data1
@@ -6096,15 +6097,16 @@ bool CvDLLWidgetData::parseCityTradeHelp(CvWidgetDataStruct const& kWidget, CvCi
 }
 
 // advc.004a:
-CvWString CvDLLWidgetData::getDiscoverPathText(UnitTypes eUnit, PlayerTypes ePlayer) const {
-
+CvWString CvDLLWidgetData::getDiscoverPathText(UnitTypes eUnit,
+	PlayerTypes ePlayer) const
+{
 	CvWString szRetVal = NEWLINE;
 	CvPlayer const& kPlayer = GET_PLAYER(ePlayer);
-	/*  Could have ported the code in BUG TechPrefs.py, but it's unnecessarily
+	/*	Could have ported the code in BUG TechPrefs.py, but it's unnecessarily
 		complicated for what I'm trying to do. Use getDiscoveryTech and,
 		in between calls, pretend that the previous tech has already been discovered. */
 	TechTypes eCurrentDiscover = kPlayer.getDiscoveryTech(eUnit);
-	if(eCurrentDiscover == NO_TECH || eUnit == NO_UNIT)
+	if (eCurrentDiscover == NO_TECH || eUnit == NO_UNIT)
 		return szRetVal;
 	FlavorTypes eGPFlavor = NO_FLAVOR;
 	int iMaxFlavor = -1;
@@ -6112,14 +6114,14 @@ CvWString CvDLLWidgetData::getDiscoverPathText(UnitTypes eUnit, PlayerTypes ePla
 	FOR_EACH_ENUM(Flavor)
 	{
 		int iFlavor = kUnit.getFlavorValue(eLoopFlavor);
-		if(iFlavor > iMaxFlavor)
+		if (iFlavor > iMaxFlavor)
 		{
 			eGPFlavor = eLoopFlavor;
 			iMaxFlavor = iFlavor;
 		}
 	}
 	CvString szFlavor;
-	switch(eGPFlavor)
+	switch (eGPFlavor)
 	{
 		case FLAVOR_SCIENCE: szFlavor = "SCIENCE"; break;
 		case FLAVOR_MILITARY: szFlavor = "MILITARY"; break;
