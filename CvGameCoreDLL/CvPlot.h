@@ -521,10 +521,8 @@ public:
 			bool bIgnoreFeature = false, /* advc.300: */ bool bIgnoreHills = false) const;
 	int calculateBestNatureYield(YieldTypes eIndex, TeamTypes eTeam) const;							// Exposed to Python
 	int calculateTotalBestNatureYield(TeamTypes eTeam) const;										// Exposed to Python
-	// BETTER_BTS_AI_MOD, City AI, 10/06/09, jdog5000:
-	int calculateImprovementYieldChange(ImprovementTypes eImprovement, YieldTypes eYield,			// Exposed to Python
-			PlayerTypes ePlayer = NO_PLAYER, bool bOptimal = false,
-			bool bBestRoute = false) const;
+	int calculateImprovementYieldChange(ImprovementTypes eImprovement,								// Exposed to Python
+			 YieldTypes eYield, PlayerTypes ePlayer) const;
 	int calculateYield(YieldTypes eIndex, bool bDisplay = false) const;								// Exposed to Python
 	bool hasYield() const { return m_aiYield.isAnyNonDefault(); } // advc.enum							// Exposed to Python
 	void updateYield();

@@ -5143,72 +5143,77 @@ int CvPlot::calculateTotalBestNatureYield(TeamTypes eTeam) const
 			calculateBestNatureYield(YIELD_COMMERCE, eTeam);
 }
 
-// BETTER_BTS_AI_MOD, City AI, 10/06/09, jdog5000:
-int CvPlot::calculateImprovementYieldChange(ImprovementTypes eImprovement, YieldTypes eYield,
-	PlayerTypes ePlayer, bool bOptimal, bool bBestRoute) const
+/*	advc: Params bBestRoute (BBAI) and bOptimal (Vanilla Civ 4) removed b/c
+	they've been obsoleted by K-Mod. Had been used by CvCityAI. */
+int CvPlot::calculateImprovementYieldChange(
+	ImprovementTypes eImprovement, YieldTypes eYield,
+	PlayerTypes ePlayer) const
 {
 	PROFILE_FUNC();
 
 	CvImprovementInfo const& kImpr = GC.getInfo(eImprovement);
-
 	int iYield = kImpr.getYieldChange(eYield);
 	if (isRiverSide())
 		iYield += kImpr.getRiverSideYieldChange(eYield);
 	if (isHills())
 		iYield += kImpr.getHillsYieldChange(eYield);
-	if (bOptimal ? true : isIrrigationAvailable())
+	if (isIrrigationAvailable())
 		iYield += kImpr.getIrrigatedYieldChange(eYield);
-
-	if (bOptimal)
-	{
-		int iBestYield = 0;
-		FOR_EACH_ENUM(Route)
-		{
-			iBestYield = std::max(iBestYield,
-					kImpr.getRouteYieldChanges(eLoopRoute, eYield));
-		}
-		iYield += iBestYield;
-	}
-	else
 	{
 		RouteTypes eRoute = getRouteType();
-		if (bBestRoute && ePlayer != NO_PLAYER)
-		{
-			//eRoute = GET_PLAYER(ePlayer).getBestRoute(GC.getMap().plotSoren(getX(), getY()));
-			eRoute = GET_PLAYER(ePlayer).getBestRoute(this); // K-Mod. (obvious?)
-		}
-
 		if (eRoute != NO_ROUTE)
 			iYield += kImpr.getRouteYieldChanges(eRoute, eYield);
 	}
-
-	if (bOptimal || ePlayer == NO_PLAYER)
+	/*	<advc.182> Compute the yield of the plot owner. Fall back on ePlayer
+		only for (apparently) unowned tiles. Use the map knowledge of ePlayer.
+		Call locations changed accordingly. */
+	TeamTypes const eObs = (ePlayer == NO_PLAYER ? NO_TEAM : TEAMID(ePlayer));
+	PlayerTypes eRevealedOwner = (eObs == NO_TEAM ? getOwner() :
+			getRevealedOwner(eObs));
+	PlayerTypes eYieldPlayer = (eRevealedOwner == NO_PLAYER ? ePlayer :
+			eRevealedOwner); // </advc.182>
+	if (eYieldPlayer == NO_PLAYER)
 	{
 		FOR_EACH_ENUM(Tech)
 		{
 			iYield += kImpr.getTechYieldChanges(eLoopTech, eYield);
 		}
-		/*	K-Mod note (fixme): this doesn't calculate the 'optimal' yield, because it
+		/*	K-Mod not: this doesn't calculate the 'optimal' yield, because it
 			will count negative effects and it will count effects from competing civics. */
+		/*FOR_EACH_ENUM(Civic)
+			iYield += GC.getInfo(eLoopCivic).getImprovementYieldChanges(eImprovement, eYield);*/
+		// <advc.001> What he said ... (Though this whole branch isn't used much.)
+		EagerEnumMap<CivicOptionTypes,int> aiMaxYieldPerCivicOption;
 		FOR_EACH_ENUM(Civic)
 		{
-			iYield += GC.getInfo(eLoopCivic).
+			int iYieldChange = GC.getInfo(eLoopCivic).
 					getImprovementYieldChanges(eImprovement, eYield);
+			if (iYieldChange > 0)
+			{
+				CivicOptionTypes eLoopCivicOption = GC.getInfo(eLoopCivic).
+						getCivicOptionType();
+				aiMaxYieldPerCivicOption.set(eLoopCivicOption, std::max(
+						aiMaxYieldPerCivicOption.get(eLoopCivicOption), iYieldChange));
+			}
 		}
+		FOR_EACH_ENUM(CivicOption)
+		{
+			iYield += aiMaxYieldPerCivicOption.get(eLoopCivicOption);
+		} // </advc.001>
 	}
 	else
 	{
-		iYield += GET_PLAYER(ePlayer).getImprovementYieldChange(eImprovement, eYield);
-		iYield += GET_TEAM(ePlayer).getImprovementYieldChange(eImprovement, eYield);
+		iYield += GET_PLAYER(eYieldPlayer).
+				getImprovementYieldChange(eImprovement, eYield);
+		iYield += GET_TEAM(eYieldPlayer).
+				getImprovementYieldChange(eImprovement, eYield);
 	}
-
-	if (ePlayer != NO_PLAYER)
+	//if (ePlayer != NO_PLAYER) // advc.182
 	{
-		BonusTypes eBonus = getBonusType(GET_PLAYER(ePlayer).getTeam());
+		BonusTypes eBonus = getBonusType(eObs/*TEAMID(ePlayer)*/); // advc.182
 		if (eBonus != NO_BONUS)
 			iYield += kImpr.getImprovementBonusYield(eBonus, eYield);
 	}
-
 	return iYield;
 }
 
@@ -5242,14 +5247,19 @@ int CvPlot::calculateYield(YieldTypes eYield, bool bDisplay) const
 		eRoute = getRouteType();
 	}
 	int iNatureYield = // advc.908a: Preserve this for later
-			calculateNatureYield(eYield, (ePlayer != NO_PLAYER ?
-			GET_PLAYER(ePlayer).getTeam() : NO_TEAM));
+			calculateNatureYield(eYield,
+			bDisplay ? GC.getGame().getActiveTeam() : // advc.182
+			/*	(advc: Note that NO_TEAM means that bonus resources are ignored.
+				In most other places it means god mode.) */
+			(ePlayer != NO_PLAYER ? TEAMID(ePlayer) : NO_TEAM));
 
 	int iYield = iNatureYield;
 
 	if (eImprovement != NO_IMPROVEMENT)
-		iYield += calculateImprovementYieldChange(eImprovement, eYield, ePlayer);
-
+	{
+		iYield += calculateImprovementYieldChange(eImprovement, eYield, //ePlayer
+				bDisplay ? GC.getGame().getActivePlayer() : ePlayer); // advc.182
+	}
 	if (eRoute != NO_ROUTE)
 		iYield += GC.getInfo(eRoute).getYieldChange(eYield);
 
@@ -7622,7 +7632,7 @@ int CvPlot::getYieldWithBuild(BuildTypes eBuild, YieldTypes eYield, bool bWithUp
 		}
 
 		iYieldRate += calculateImprovementYieldChange(
-				eImprovement, eYield, getOwner(), false);
+				eImprovement, eYield, getOwner());
 	}
 
 	RouteTypes const eRoute = GC.getInfo(eBuild).getRoute();

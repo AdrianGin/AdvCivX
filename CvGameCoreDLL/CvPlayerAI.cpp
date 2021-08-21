@@ -17533,12 +17533,13 @@ int CvPlayerAI::AI_espionageVal(PlayerTypes eTargetPlayer,
 				if (kPlot.getWorkingCity() != NULL)
 				{
 					int iTempValue = 0;
+					// advc.182: Had been passing kPlot.getOwner() instead of getID()
 					iTempValue += (kPlot.calculateImprovementYieldChange(
-							eImprovement, YIELD_FOOD, kPlot.getOwner()) * 2);
+							eImprovement, YIELD_FOOD, getID()) * 2);
 					iTempValue += (kPlot.calculateImprovementYieldChange(
-							eImprovement, YIELD_PRODUCTION, kPlot.getOwner()) * 1);
+							eImprovement, YIELD_PRODUCTION, getID()) * 1);
 					iTempValue += (kPlot.calculateImprovementYieldChange(
-							eImprovement, YIELD_COMMERCE, kPlot.getOwner()) * 2);
+							eImprovement, YIELD_COMMERCE, getID()) * 2);
 					iTempValue += GC.getInfo(eImprovement).getUpgradeTime() / 2;
 					iValue += iTempValue;
 				}

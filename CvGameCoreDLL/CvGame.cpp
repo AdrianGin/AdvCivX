@@ -2131,7 +2131,7 @@ void CvGame::normalizeAddFoodBonuses(/* advc.027: */ NormalizationTarget const* 
 				if (GC.getInfo(eImp).isImprovementBonusTrade(eBonus))
 				{
 					bHighFood = (iNaturalFood + p.calculateImprovementYieldChange(
-							eImp, YIELD_FOOD, kPlayer.getID(), false, false) >=
+							eImp, YIELD_FOOD, kPlayer.getID()) >=
 							iHighFoodThreshold);
 				}
 			}
@@ -2224,8 +2224,8 @@ void CvGame::normalizeAddFoodBonuses(/* advc.027: */ NormalizationTarget const* 
 									isImprovementBonusTrade(eLoopBonus))
 								{
 									bHighFood = (iNaturalFood +
-											p.calculateImprovementYieldChange(eLoopImprovement,
-											YIELD_FOOD, kPlayer.getID(), false, false) >=
+											p.calculateImprovementYieldChange(
+											eLoopImprovement, YIELD_FOOD, kPlayer.getID()) >=
 											iHighFoodThreshold);
 								}
 							}

@@ -17542,7 +17542,8 @@ bool CvUnitAI::AI_improveBonus( // K-Mod. (all that junk wasn't being used anywa
 			eImprovement = GC.getInfo(eBestTempBuild).getImprovement();
 			FAssert(eImprovement != NO_IMPROVEMENT);
 			//iValue += (GC.getInfo(GC.getInfo(eBestTempBuild).getImprovement()))
-			iValue += 5 * kPlot.calculateImprovementYieldChange(eImprovement, YIELD_FOOD, getOwner(), false);
+			iValue += 5 * kPlot.calculateImprovementYieldChange(
+					eImprovement, YIELD_FOOD, getOwner());
 			iValue += 5 * kPlot.calculateNatureYield(YIELD_FOOD, getTeam(),
 					!kPlot.isFeature() ? true :
 					GC.getInfo(eBestTempBuild).isFeatureRemove(kPlot.getFeatureType()));
