@@ -2670,8 +2670,8 @@ bool CvSelectionGroup::groupAttack(int iX, int iY, MovementFlags eFlags,
 			if (GC.getPythonCaller()->doCombat(*this, *pDestPlot))
 				break;
 			// advc.004c: Don't always treat air attacks like stack attacks
-			bool bStack = (isHuman() && (/*getDomainType() == DOMAIN_AIR ||*/
-					GET_PLAYER(getOwner()).isOption(PLAYEROPTION_STACK_ATTACK)));
+			bool bStack = //getDomainType() == DOMAIN_AIR ||
+					GET_PLAYER(getOwner()).isHumanOption(PLAYEROPTION_STACK_ATTACK);
 			bFailedAlreadyFighting = false;
 			if (getNumUnits() > 1)
 			{	/*if (pBestAttackUnit->getPlot().isFighting() || pDestPlot->isFighting())

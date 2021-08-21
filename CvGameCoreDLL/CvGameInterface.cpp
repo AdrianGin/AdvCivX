@@ -247,7 +247,8 @@ void CvGame::updateColoredPlots()
 		}
 	}
 
-	if (!GET_PLAYER(getActivePlayer()).isOption(PLAYEROPTION_NO_UNIT_RECOMMENDATIONS))
+	if (!GET_PLAYER(getActivePlayer()).isOption(PLAYEROPTION_NO_UNIT_RECOMMENDATIONS) ||
+		!GET_PLAYER(getActivePlayer()).isHuman()) // advc.127
 	{
 		CvUnitAI const& kRecommendUnit = pHeadSelectedUnit->AI(); // advc.003u
 		if (kRecommendUnit.AI_getUnitAIType() == UNITAI_WORKER ||

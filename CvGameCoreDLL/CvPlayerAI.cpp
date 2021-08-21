@@ -470,9 +470,8 @@ void CvPlayerAI::AI_doTurnUnitsPost()
 	PROFILE_FUNC();
 
 	//if (!isHuman() || isOption(PLAYEROPTION_AUTO_PROMOTION))
-	// <advc.mnai> Do non-human civ promotions after upgrades
-	if ((isHuman() && isOption(PLAYEROPTION_AUTO_PROMOTION)) ||
-		isBarbarian()) // </advc.mnai>
+	// advc.mnai: Do non-human civ promotions after upgrades
+	if (isHumanOption(PLAYEROPTION_AUTO_PROMOTION) || isBarbarian())
 	{
 		FOR_EACH_UNITAI_VAR(pLoopUnit, *this)
 			pLoopUnit->AI_promote();

@@ -1673,7 +1673,7 @@ bool CvUnit::suppressStackAttackSound(CvUnit const& kDefender) const
 		return false;
 	CvSelectionGroup const* pAttackGroup = gDLL->UI().getSelectionList();
 	if (pAttackGroup == NULL ||
-		!GET_PLAYER(getOwner()).isOption(PLAYEROPTION_STACK_ATTACK))
+		!GET_PLAYER(getOwner()).isHumanOption(PLAYEROPTION_STACK_ATTACK))
 	{
 		return false;
 	}
@@ -1701,9 +1701,11 @@ void CvUnit::checkRemoveSelectionAfterAttack()
 
 bool CvUnit::isActionRecommended(int iAction)
 {
-	if(getOwner() != GC.getGame().getActivePlayer())
+	if (getOwner() != GC.getGame().getActivePlayer() ||
+		!isHuman()) // advc.127
+	{
 		return false;
-
+	}
 	/*  <advc.002e> This needs to be done in some CvUnit function that gets called
 		by the EXE after read, after isPromotionReady and late enough for IsSelected
 		to work. (E.g. setupGraphical and shouldShowEnemyGlow are too early.) */

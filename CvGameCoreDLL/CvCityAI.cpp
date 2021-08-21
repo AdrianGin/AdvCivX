@@ -7706,7 +7706,7 @@ int CvCityAI::AI_getImprovementValue(CvPlot const& kPlot, ImprovementTypes eImpr
 				if (GC.getInfo(kPlot.getFeatureType()).getYieldChange(YIELD_PRODUCTION) > 0 &&
 					eNonObsoleteBonus == NO_BONUS)
 				{
-					if (kOwner.isOption(PLAYEROPTION_LEAVE_FORESTS))
+					if (kOwner.isHumanOption(PLAYEROPTION_LEAVE_FORESTS))
 						bValid = false;
 					else if (healthRate() < 0 &&
 						GC.getInfo(kPlot.getFeatureType()).getHealthPercent() > 0)
@@ -8040,8 +8040,11 @@ int CvCityAI::AI_getImprovementValue(CvPlot const& kPlot, ImprovementTypes eImpr
 				}
 			}
 		}
-		if (kOwner.isOption(PLAYEROPTION_SAFE_AUTOMATION) /* advc.001: */ && rValue.isPositive())
+		if (kOwner.isHumanOption(PLAYEROPTION_SAFE_AUTOMATION) &&
+			rValue.isPositive()) // advc.001
+		{
 			rValue /= 4; // Greatly prefer builds which are legal.
+		}
 	}
 	// K-Mod. Feature value. (moved from the 'no improvement' block above.)
 	if (kPlot.isFeature() && eBestTempBuild != NO_BUILD &&
@@ -11366,7 +11369,7 @@ void CvCityAI::AI_bestPlotBuild(CvPlot const& kPlot, int* piBestValue, BuildType
 	/*	Chop - maybe integrate this better with the other feature-clear code
 		though the logic is kinda different */
 	if (bChop && eBonus == NO_BONUS && kPlot.isFeature() &&
-		!kPlot.isImproved() && !kOwner.isOption(PLAYEROPTION_LEAVE_FORESTS))
+		!kPlot.isImproved() && !kOwner.isHumanOption(PLAYEROPTION_LEAVE_FORESTS))
 	{
 		FOR_EACH_ENUM(Build)
 		{

@@ -975,7 +975,16 @@ public:
 	bool isFeatAccomplished(FeatTypes eFeat) const;																	// Exposed to Python
 	void setFeatAccomplished(FeatTypes eFeat, bool bNewValue);														// Exposed to Python
 
-	DllExport bool isOption(PlayerOptionTypes eOption) const;														// Exposed to Python
+	DllExport bool isOption(PlayerOptionTypes eOption) const														// Exposed to Python
+	{
+		return m_abOptions.get(eOption);
+	}
+	/*	advc.127, advc.001: For fixing bugs with automation options being applied
+		during AI Auto Play */
+	bool isHumanOption(PlayerOptionTypes eOption) const
+	{
+		return (isHuman() && isOption(eOption));
+	}
 	DllExport void setOption(PlayerOptionTypes eOption, bool bNewValue);											// Exposed to Python
 
 	bool isAutomationSafe(CvPlot const& kPlot) const; // advc

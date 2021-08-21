@@ -9770,13 +9770,10 @@ void CvCity::popOrder(int iNum, bool bFinish,
 		}
 		if (pRallyPlot != NULL/* advc.001b: */ && pUnit->at(getPlot()))
 			pUnit->getGroup()->pushMission(MISSION_MOVE_TO, pRallyPlot->getX(), pRallyPlot->getY());
-		if (isHuman())
-		{
-			if (kOwner.isOption(PLAYEROPTION_START_AUTOMATED))
-				pUnit->automate(AUTOMATE_BUILD);
-			if (kOwner.isOption(PLAYEROPTION_MISSIONARIES_AUTOMATED))
-				pUnit->automate(AUTOMATE_RELIGION);
-		}
+		if (kOwner.isHumanOption(PLAYEROPTION_START_AUTOMATED))
+			pUnit->automate(AUTOMATE_BUILD);
+		if (kOwner.isHumanOption(PLAYEROPTION_MISSIONARIES_AUTOMATED))
+			pUnit->automate(AUTOMATE_RELIGION);
 		CvEventReporter::getInstance().unitBuilt(this, pUnit);
 		if (gCityLogLevel >= 1) // BETTER_BTS_AI_MOD, AI logging, 10/02/09, jdog5000
 		{

@@ -9808,17 +9808,6 @@ void CvPlayer::setFeatAccomplished(FeatTypes eFeat, bool bNewValue)
 }
 
 
-bool CvPlayer::isOption(PlayerOptionTypes eOption) const
-{
-	/*  <advc.127> AI Auto-Play should probably disable player options temporarily,
-		but I don't think it does and this looks like a quick way to fix the problem.
-		AI players can't have options. Tagging advc.001. */
-	if (!isHuman())
-		return false; // </advc.127>
-	return m_abOptions.get(eOption);
-}
-
-
 void CvPlayer::setOption(PlayerOptionTypes eOption, bool bNewValue)
 {
 	m_abOptions.set(eOption, bNewValue);
@@ -9841,7 +9830,8 @@ void CvPlayer::setOption(PlayerOptionTypes eOption, bool bNewValue)
 	isAutomationSafe down with an optional parameter. */
 bool CvPlayer::isAutomationSafe(CvPlot const& kPlot) const
 {
-	return (isOption(PLAYEROPTION_SAFE_AUTOMATION) && kPlot.isImproved() &&
+	return (kPlot.isImproved() &&
+			isHumanOption(PLAYEROPTION_SAFE_AUTOMATION) &&
 			kPlot.getImprovementType() != GC.getRUINS_IMPROVEMENT());
 }
 

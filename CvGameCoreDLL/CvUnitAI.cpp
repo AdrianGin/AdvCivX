@@ -16901,7 +16901,7 @@ bool CvUnitAI::AI_improveLocalPlot(int iRange, CvCity const* pIgnoreCity, // adv
 		CvPlayerAI& kOwner = GET_PLAYER(getOwner());
 		if (!p.isCityRadius() && p.getWorkingCity() == NULL &&
 			!isBarbarian() && iMissingWorkersInArea <= 0 &&
-			!kOwner.isOption(PLAYEROPTION_LEAVE_FORESTS) &&
+			!kOwner.isHumanOption(PLAYEROPTION_LEAVE_FORESTS) &&
 			kOwner.getGwPercentAnger() <= 0 &&
 			!p.isImproved() && p.isFeature() &&
 			!kOwner.AI_isAdjacentCitySite(p, false)) // Don't chop near planned cities
@@ -17261,7 +17261,7 @@ bool CvUnitAI::AI_irrigateTerritory()  // advc: refactored
 			CvFeatureInfo const& kFeatureInfo = GC.getInfo(kLoopPlot.getFeatureType());
 			// K-Mod:
 			if ((iGwEventTally >= 0 && kFeatureInfo.getWarmingDefense() > 0) ||
-				(kOwner.isOption(PLAYEROPTION_LEAVE_FORESTS) &&
+				(kOwner.isHumanOption(PLAYEROPTION_LEAVE_FORESTS) &&
 				kFeatureInfo.getYieldChange(YIELD_PRODUCTION) > 0))
 			{
 				continue;
@@ -17367,7 +17367,7 @@ bool CvUnitAI::AI_fortTerritory(bool bCanal, bool bAirbase)
 			if(!kPlot.isVisibleEnemyUnit(this))
 			{
 				bool bValid = true;
-				if (GET_PLAYER(getOwner()).isOption(PLAYEROPTION_LEAVE_FORESTS) &&
+				if (GET_PLAYER(getOwner()).isHumanOption(PLAYEROPTION_LEAVE_FORESTS) &&
 					kPlot.isFeature() &&
 					GC.getInfo(eBestTempBuild).isFeatureRemove(kPlot.getFeatureType()) &&
 					GC.getInfo(kPlot.getFeatureType()).getYieldChange(YIELD_PRODUCTION) > 0)
@@ -17481,7 +17481,7 @@ bool CvUnitAI::AI_improveBonus( // K-Mod. (all that junk wasn't being used anywa
 		CvCityAI const* pWorkingCity = kPlot.AI_getWorkingCity();
 		BuildTypes eBestTempBuild = NO_BUILD;
 		if (eImprovement != NO_IMPROVEMENT &&
-			((kOwner.isOption(PLAYEROPTION_SAFE_AUTOMATION) &&
+			((kOwner.isHumanOption(PLAYEROPTION_SAFE_AUTOMATION) &&
 			eImprovement != GC.getRUINS_IMPROVEMENT()) ||
 			(kOwner.doesImprovementConnectBonus(eImprovement, eNonObsoleteBonus) &&
 			/*  advc.121: This should give replacement of Fort with another
@@ -21207,7 +21207,7 @@ bool CvUnitAI::AI_canConnectBonus(CvPlot const& p, BuildTypes eBuild) const
 		return false;
 	if(p.isFeature() &&
 		GC.getInfo(eBuild).isFeatureRemove(p.getFeatureType()) &&
-		kOwner.isOption(PLAYEROPTION_LEAVE_FORESTS))
+		kOwner.isHumanOption(PLAYEROPTION_LEAVE_FORESTS))
 	{
 		return false;
 	}
