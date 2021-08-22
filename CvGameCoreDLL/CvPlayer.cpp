@@ -9267,9 +9267,6 @@ void CvPlayer::setLastStateReligion(ReligionTypes eNewReligion)
 	if (!GC.getGame().isFinalInitialized())
 		return;
 
-	if (gDLL->isDiplomacy() && (gDLL->getDiplomacyPlayer() == getID()))
-		gDLL->updateDiplomacyAttitude(true);
-
 	if (!isBarbarian() &&
 		/*  advc.150a: Message superfluous when already reported switch to
 			civic that prohibits state religion. */
@@ -9343,6 +9340,8 @@ void CvPlayer::setLastStateReligion(ReligionTypes eNewReligion)
 			}
 		} // </K-Mod end>
 	}
+	/*	(advc.001: updateDiplomacyAttitude was called too early;
+		now handled by AI_updateAttitude. ) */
 }
 
 
@@ -10330,9 +10329,6 @@ void CvPlayer::setCivics(CivicOptionTypes eCivicOption, CivicTypes eNewValue)
 	if(!kGame.isFinalInitialized() || /* advc.003n: */ isBarbarian())
 		return;
 
-	if (gDLL->isDiplomacy() && (gDLL->getDiplomacyPlayer() == getID()))
-		gDLL->updateDiplomacyAttitude(true);
-
 	if (getCivics(eCivicOption) != NO_CIVIC &&
 		/* BtS code (which erroneously blocked the message for certain civic switches)
 		if (getCivics(eCivicOption) != GC.getInfo(getCivilizationType()).getCivilizationInitialCivics(eCivicOption))*/
@@ -10386,6 +10382,8 @@ void CvPlayer::setCivics(CivicOptionTypes eCivicOption, CivicTypes eNewValue)
 			itOther->AI_updateAttitude(getID());
 		} // </K-Mod>
 	}
+	/*	(advc.001: updateDiplomacyAttitude was called too early;
+		now handled by AI_updateAttitude. ) */
 }
 
 

@@ -7317,7 +7317,10 @@ void CvPlayerAI::AI_updateAttitude(PlayerTypes ePlayer, /* advc.130e: */ bool bU
 		m_abTheyFarAhead[ePlayer] = m_abTheyBarelyAhead[ePlayer] = false; // advc.130c
 		m_aiAttitude[ePlayer] = 0;
 		return;
-	} // <advc.130c> Are they (ePlayer) 150% ahead in score?
+	}
+	int const iOldAttitude = m_aiAttitude[ePlayer]; // advc.001
+
+	// <advc.130c> Are they (ePlayer) 150% ahead in score?
 	CvGame const& kGame = GC.getGame();
 	int iTheirScore = kGame.getPlayerScore(ePlayer);
 	int iOurScore = kGame.getPlayerScore(getID());
@@ -7363,6 +7366,15 @@ void CvPlayerAI::AI_updateAttitude(PlayerTypes ePlayer, /* advc.130e: */ bool bU
 	// <advc.130e>
 	if(bUpdateWorstEnemy)
 		GET_TEAM(getTeam()).AI_updateWorstEnemy(); // </advc.130e>
+	// <advc.001>
+	if (iOldAttitude != m_aiAttitude[ePlayer] &&
+		/*	Moved from CvPlayer::setCivics, setLastStateReligion.
+			Seems like this update should be relevant in other contexts as well. */
+		gDLL->isDiplomacy() && gDLL->getDiplomacyPlayer() == getID())
+	{
+		gDLL->updateDiplomacyAttitude(true);
+		// Should we do a bForce=false update otherwise? Unnecessary I guess ...
+	} // </advc.001>
 }
 
 // for making minor adjustments
