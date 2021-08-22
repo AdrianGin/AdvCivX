@@ -19736,7 +19736,8 @@ CvPlayerAI::CancelCode CvPlayerAI::AI_checkCancel(CvDeal const& kDeal, PlayerTyp
 			// <kekm.3> Cancel DP immediately when war no longer shared
 			(((pNode->m_data.m_eItemType == TRADE_DEFENSIVE_PACT &&
 			eDenial == DENIAL_JOKING)) || // </kekm.3>
-			fixp(0.2).bernoulliSuccess(GC.getGame().getSRand(), "deal cancellation")))
+			(eDenial == DENIAL_WORST_ENEMY ? 2 : 1 * fixp(0.2)).
+			bernoulliSuccess(GC.getGame().getSRand(), "deal cancellation")))
 		{
 			if (gDealCancelLogLevel > 1) logBBAICancel(kDeal, getID(), L"dual denial");
 			return DO_CANCEL;
