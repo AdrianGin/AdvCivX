@@ -9418,7 +9418,8 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 8; // advc.172
 	//uiFlag = 9; // advc (m_aeVoteSourceReligion)
 	//uiFlag = 10; // advc.099f
-	uiFlag = 11; // advc.enum: new enum map save behavior
+	//uiFlag = 11; // advc.enum: new enum map save behavior
+	uiFlag = 12; // advc.130n: DifferentReligionThreat added to CvPlayerAI
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9633,20 +9634,27 @@ void CvGame::onAllGameDataRead()
 		}
 	} // </advc.opt>
 	m_bAllGameDataRead = true;
-	for (PlayerIter<HUMAN> it; it.hasNext(); ++it)
-	{
-		CvPlayer& kActive = *it;
-		if (!kActive.isTurnActive())
-			continue;
-		kActive.validateDiplomacy(); // advc.134a
-	}
 	// <advc.127> Save created during AI Auto Play
-	if (m_iAIAutoPlay != 0 && !isNetworkMultiPlayer())
+	bool bUpdateAttitudeCache = (m_iAIAutoPlay != 0 && !isNetworkMultiPlayer());
+	m_iAIAutoPlay = 0; // </advc.127>
+	// <advc.130n>
+	if (m_uiSaveFlag < 12)
+	{
+		for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		{
+			if (itPlayer->getStateReligion() != NO_RELIGION)
+			{
+				itPlayer->AI_updateDifferentReligionThreat(NO_RELIGION, false);
+				if (!bUpdateAttitudeCache) // Don't do it twice
+					itPlayer->AI_updateAttitude();
+			}
+		}
+	} // </advc.130n>
+	if (bUpdateAttitudeCache)
 	{
 		for (PlayerAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
 			it->AI_updateAttitude();
 	}
-	m_iAIAutoPlay = 0; // </advc.127>
 	// <advc.172>
 	if (m_uiSaveFlag < 8)
 	{
@@ -9656,6 +9664,12 @@ void CvGame::onAllGameDataRead()
 				pCity->updateReligionCommerce();
 		}
 	} // </advc.172>
+	// <advc.134a>
+	for (PlayerIter<HUMAN> itActive; itActive.hasNext(); ++itActive)
+	{
+		if (itActive->isTurnActive())
+			itActive->validateDiplomacy();
+	} // </advc.134a>
 }
 
 /*	advc: Called once the EXE signals that graphics have been initialized

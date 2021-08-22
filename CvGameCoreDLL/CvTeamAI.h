@@ -254,10 +254,6 @@ public:
 		return m_aiSharedWarSuccess.get(eWarAlly);
 	}
 	void AI_setSharedWarSuccess(TeamTypes eWarAlly, int iWS); // </advc.130m>
-	// <advc.130n>
-	int AI_getReligionKnownSince(ReligionTypes eReligion) const;
-	void AI_reportNewReligion(ReligionTypes eReligion);
-	// </advc.130n>
 	int AI_getEnemyPeacetimeTradeValue(TeamTypes eIndex) const
 	{
 		return m_aiEnemyPeacetimeTradeValue.get(eIndex);
@@ -365,9 +361,6 @@ protected:
 	ArrayEnumMap<TeamTypes,int> m_aiEnemyPeacetimeGrantValue;
 	ArrayEnumMap<WarPlanTypes,int,char> m_aiWarPlanCounts; // advc.opt
 	ArrayEnumMap<TeamTypes,WarPlanTypes> m_aeWarPlan;
-	/*	Tbd.: Should be EnumMap<ReligionTypes,short> - or rather:
-		remove this whole ill-conceived (by me) mechanism. */
-	std::map<ReligionTypes,int> m_religionKnownSince; // advc.130n
 	// </advc.enum>
 	bool m_bAnyWarPlan; // advc.opt
 	bool m_bLonely; // advc.109

@@ -87,7 +87,6 @@ void CvTeamAI::AI_reset(bool bConstructor)
 			kLoopTeam.m_aeWarPlan.set(getID(), NO_WARPLAN);
 		}
 	}
-	m_religionKnownSince.clear(); // advc.130n
 	m_aiWarPlanCounts.reset(); // advc.opt
 	m_bAnyWarPlan = false; // advc.opt
 	m_bLonely = false; // advc.109
@@ -111,12 +110,6 @@ void CvTeamAI::AI_doTurnPre()
 			UWAI::Team::doWar requires the members to be up-to-date. */
 		m_pUWAI->turnPre();
 	} // </advc.104>
-	// <advc.130n> Game turn increment can affect attitudes now
-	if (isHuman())
-	{
-		for (PlayerAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
-			it->AI_updateAttitude();
-	} // </advc.130n>
 }
 
 
@@ -135,6 +128,9 @@ void CvTeamAI::AI_doTurnPost()
 		for (MemberAIIter it(getID()); it.hasNext(); ++it)
 		{
 			it->AI_updateCloseBorderAttitude();
+			/*	advc.130n: Once per turn, rather than updating after
+				every change in religious city population. */
+			it->AI_updateDifferentReligionThreat(NO_RELIGION, false);
 			it->AI_updateAttitude();
 		} // K-Mod end
 	}
@@ -4470,25 +4466,6 @@ void CvTeamAI::AI_setSharedWarSuccess(TeamTypes eWarAlly, int iWS)
 	m_aiSharedWarSuccess.set(eWarAlly, iWS);
 } // </advc.130m>
 
-/*  <advc.130n> Game turn on which eReligion was first encountered by this team;
-	-1 if never. */
-int CvTeamAI::AI_getReligionKnownSince(ReligionTypes eReligion) const
-{
-	std::map<ReligionTypes,int>::const_iterator pos = m_religionKnownSince.find(eReligion);
-	if(pos == m_religionKnownSince.end())
-		return -1;
-	return pos->second;
-}
-
-// Report encounter with a religion; callee will check if it's the first encounter.
-void CvTeamAI::AI_reportNewReligion(ReligionTypes eReligion)
-{
-	std::map<ReligionTypes,int>::const_iterator pos = m_religionKnownSince.find(eReligion);
-	if(pos != m_religionKnownSince.end())
-		return;
-	m_religionKnownSince.insert(std::make_pair(eReligion, GC.getGame().getGameTurn()));
-}// </advc.130n>
-
 
 void CvTeamAI::AI_setEnemyPeacetimeTradeValue(TeamTypes eIndex, int iNewValue)
 {
@@ -4967,14 +4944,16 @@ void CvTeamAI::read(FDataStreamBase* pStream)
 		m_aiSharedWarSuccess.readArray<int>(pStream); // advc.130m
 	}
 	// <advc.130n>
-	int iReligions;
-	pStream->Read(&iReligions);
-	for(int i = 0; i < iReligions; i++)
-	{
-		int first; int second;
-		pStream->Read(&first);
-		pStream->Read(&second);
-		m_religionKnownSince.insert(std::make_pair((ReligionTypes)first, second));
+	if (uiFlag < 7)
+	{	// Discard data b/c obsolete
+		int iReligions;
+		pStream->Read(&iReligions);
+		for(int i = 0; i < iReligions; i++)
+		{
+			int first; int second;
+			pStream->Read(&first);
+			pStream->Read(&second);
+		}
 	} // </advc.130n>
 	if (uiFlag >= 6)
 	{
@@ -5049,7 +5028,8 @@ void CvTeamAI::write(FDataStreamBase* pStream)
 	//uiFlag = 3; // advc.opt: m_aiWarPlanCounts
 	//uiFlag = 4; // advc.158
 	//uiFlag = 5; // advc.650
-	uiFlag = 6; // advc.enum: new enum map save behavior
+	//uiFlag = 6; // advc.enum: new enum map save behavior
+	uiFlag = 7; // advc.130n (Now handled by CvPlayerAI)
 	pStream->Write(uiFlag);
 
 	m_aiWarPlanStateCounter.write(pStream);
@@ -5061,14 +5041,6 @@ void CvTeamAI::write(FDataStreamBase* pStream)
 	m_aiShareWarCounter.write(pStream);
 	m_aiWarSuccess.write(pStream);
 	m_aiSharedWarSuccess.write(pStream); // advc.130m
-	// <advc.130n>
-	pStream->Write((int)m_religionKnownSince.size());
-	for(std::map<ReligionTypes,int>::const_iterator it = m_religionKnownSince.begin();
-		it != m_religionKnownSince.end(); ++it)
-	{
-		pStream->Write(it->first);
-		pStream->Write(it->second);
-	} // </advc.130n>
 	m_aiEnemyPeacetimeTradeValue.write(pStream);
 	m_aiEnemyPeacetimeGrantValue.write(pStream);
 	m_aiWarPlanCounts.write(pStream); // advc.opt

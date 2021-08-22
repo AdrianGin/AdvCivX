@@ -884,7 +884,7 @@ public:
 	{
 		return (isStateReligion() ? getLastStateReligion() : NO_RELIGION);
 	}
-	void setLastStateReligion(ReligionTypes eNewValue);																// Exposed to Python
+	void setLastStateReligion(ReligionTypes eNewReligion);																// Exposed to Python
 
 	PlayerTypes getParent() const { return m_eParent; }
 	void setParent(PlayerTypes eParent);

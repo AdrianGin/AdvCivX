@@ -239,6 +239,11 @@ public:
 	//int AI_getKnownPlayerRank(PlayerTypes ePlayer) const; // advc.sha
 	// END: Show Hidden Attitude Mod
 	int AI_getExpansionistAttitude(PlayerTypes ePlayer) const; // advc.130w
+	// <advc.130n>
+	void AI_updateDifferentReligionThreat(ReligionTypes eReligion = NO_RELIGION,
+			bool bUpdateAttitude = true);
+	void AI_setDifferentReligionThreat(ReligionTypes eReligion, scaled rNewValue,
+			bool bUpdateAttitude = true); // </advc.130n>
 
 	PlayerVoteTypes AI_diploVote(const VoteSelectionSubData& kVoteData, VoteSourceTypes eVoteSource, bool bPropose);
 
@@ -777,6 +782,7 @@ protected:
 	int* m_aiBonusValueTrade; // advc.036
 	int* m_aiUnitClassWeights;
 	int* m_aiUnitCombatWeights;
+	ArrayEnumMap<ReligionTypes,scaled> m_arDifferentReligionThreat; // advc.130n
 	// <advc.130c>
 	bool m_abTheyFarAhead[MAX_CIV_PLAYERS];
 	bool m_abTheyBarelyAhead[MAX_CIV_PLAYERS]; // </advc.130c>

@@ -248,6 +248,7 @@ public:
 		int r = floor();
 		return r + ((m_i >= 0 && m_i - r * SCALE > 0) ? 1 : 0);
 	}
+	int uceil() const;
 	bool isInt() const
 	{
 		return (m_i % SCALE == 0);
@@ -855,6 +856,17 @@ int ScaledNum_T::uround() const
 	FAssert(m_i >= 0 && m_i <= static_cast<IntType>(INTMAX - SCALE / 2));
 	return (m_i + SCALE / 2) / SCALE;
 }
+
+
+template<ScaledNum_PARAMS>
+int ScaledNum_T::uceil() const
+{
+	BOOST_STATIC_ASSERT(bSIGNED); // Use ceil() instead
+	BOOST_STATIC_ASSERT(INTMAX >= SCALE);
+	FAssert(m_i >= 0 && m_i <= static_cast<IntType>(INTMAX - SCALE + 1));
+	return (m_i + SCALE - 1) / SCALE;
+}
+
 
 template<ScaledNum_PARAMS>
 bool ScaledNum_T::bernoulliSuccess(CvRandom& kRand, char const* szLog,

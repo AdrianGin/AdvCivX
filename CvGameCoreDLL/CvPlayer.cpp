@@ -6735,7 +6735,7 @@ void CvPlayer::convert(ReligionTypes eReligion, /* <advc.001v> */ bool bForce)
 	setConversionTimer(std::max(1, ((100 + getAnarchyModifier()) *
 			GC.getDefineINT("MIN_CONVERSION_TURNS")) / 100) + iAnarchyLength);
 	// <advc.004x>
-	if(getID() == GC.getGame().getActivePlayer())
+	if (getID() == GC.getGame().getActivePlayer())
 	{
 		killAll(BUTTONPOPUP_CHANGERELIGION);
 		if(iAnarchyLength > 0) {
@@ -8115,7 +8115,12 @@ void CvPlayer::changeStateReligionCount(int iChange)
 	updateMaintenance();
 	updateReligionHappiness();
 	updateReligionCommerce();
-
+	// <advc.130n>
+	for (PlayerAIIter<MAJOR_CIV,KNOWN_TO> itPlayer(getTeam());
+		itPlayer.hasNext(); ++itPlayer)
+	{
+		itPlayer->AI_updateDifferentReligionThreat();
+	} // </advc.130n>
 	GC.getGame().AI_makeAssignWorkDirty();
 	gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 }
@@ -9236,16 +9241,16 @@ void CvPlayer::setCurrentEra(EraTypes eNewValue)
 }
 
 
-void CvPlayer::setLastStateReligion(ReligionTypes eNewValue)
+void CvPlayer::setLastStateReligion(ReligionTypes eNewReligion)
 {
-	if(getLastStateReligion() == eNewValue)
+	if(getLastStateReligion() == eNewReligion)
 		return;
 	FAssert(!isBarbarian()); // advc.003n
 	// religion visibility now part of espionage
 	//GC.getGame().updateCitySight(false, true);
 
 	ReligionTypes const eOldReligion = getLastStateReligion();
-	m_eLastStateReligion = eNewValue;
+	m_eLastStateReligion = eNewReligion;
 
 	// religion visibility now part of espionage
 	//GC.getGame().updateCitySight(true, true);
@@ -9260,11 +9265,10 @@ void CvPlayer::setLastStateReligion(ReligionTypes eNewValue)
 	gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 
 	if (!GC.getGame().isFinalInitialized())
-		return; // advc
+		return;
+
 	if (gDLL->isDiplomacy() && (gDLL->getDiplomacyPlayer() == getID()))
-	{
 		gDLL->updateDiplomacyAttitude(true);
-	}
 
 	if (!isBarbarian() &&
 		/*  advc.150a: Message superfluous when already reported switch to
@@ -9273,13 +9277,13 @@ void CvPlayer::setLastStateReligion(ReligionTypes eNewValue)
 	{
 		CvWString szBuffer;
 		// <advc.150a> Sufficient to set szBuffer once (always the same message)
-		if(eNewValue == NO_RELIGION)
+		if(eNewReligion == NO_RELIGION)
 			szBuffer = gDLL->getText("TXT_KEY_MISC_PLAYER_RENOUNCE_RELIGION",
 					getNameKey(), GC.getInfo(eOldReligion).getTextKeyWide());
 		else
 		{
 			szBuffer = gDLL->getText("TXT_KEY_MISC_PLAYER_CONVERT_RELIGION",
-					getNameKey(), GC.getInfo(eNewValue).getTextKeyWide());
+					getNameKey(), GC.getInfo(eNewReligion).getTextKeyWide());
 			// <advc.151>
 			if(eOldReligion != NO_RELIGION)
 			{
@@ -9306,7 +9310,27 @@ void CvPlayer::setLastStateReligion(ReligionTypes eNewValue)
 	verifyCityProduction();
 
 	// Python Event
-	CvEventReporter::getInstance().playerChangeStateReligion(getID(), eNewValue, eOldReligion);
+	CvEventReporter::getInstance().playerChangeStateReligion(getID(), eNewReligion, eOldReligion);
+	// <advc.130n>
+	AI().AI_updateDifferentReligionThreat();
+	for (PlayerAIIter<MAJOR_CIV,OTHER_KNOWN_TO> itPlayer(getTeam());
+		itPlayer.hasNext(); ++itPlayer)
+	{
+		if (eNewReligion != NO_RELIGION &&
+			itPlayer->getStateReligion() == eNewReligion)
+		{
+			/*	Number of (known) adherents of itPlayer's state religion has
+				(or may have) changed -- need to update all threat values. */
+			itPlayer->AI_updateDifferentReligionThreat();
+		}
+		else // Threat value of rival religions may have changed
+		{
+			if (eOldReligion != NO_RELIGION)
+				itPlayer->AI_updateDifferentReligionThreat(eOldReligion);
+			if (eNewReligion != NO_RELIGION)
+				itPlayer->AI_updateDifferentReligionThreat(eNewReligion);
+		}
+	} // </advc.130n>
 	if (isMajorCiv()) // advc.003n
 	{	// <K-Mod>
 		for (PlayerAIIter<MAJOR_CIV> it; it.hasNext(); ++it) // advc.003n
@@ -10291,7 +10315,7 @@ void CvPlayer::setCivics(CivicOptionTypes eCivicOption, CivicTypes eNewValue)
 	if(eOldCivic == eNewValue)
 		return;
 
-	bool bWasStateReligion = isStateReligion(); // advc.106
+	bool const bWasStateReligion = isStateReligion(); // advc.106
 
 	m_aeCivics.set(eCivicOption, eNewValue);
 	if (eOldCivic != NO_CIVIC)
@@ -10355,10 +10379,11 @@ void CvPlayer::setCivics(CivicOptionTypes eCivicOption, CivicTypes eNewValue)
 	GC.getGame().updateGwPercentAnger();
 	if (isMajorCiv()) // advc.003n
 	{	// <K-Mod>
-		for (PlayerAIIter<MAJOR_CIV> it(getTeam()); it.hasNext(); ++it) // advc.003n
+		for (PlayerAIIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(getTeam()); // advc.003n
+			itOther.hasNext(); ++itOther)
 		{
-			AI().AI_updateAttitude(it->getID());
-			it->AI_updateAttitude(getID());
+			AI().AI_updateAttitude(itOther->getID());
+			itOther->AI_updateAttitude(getID());
 		} // </K-Mod>
 	}
 }

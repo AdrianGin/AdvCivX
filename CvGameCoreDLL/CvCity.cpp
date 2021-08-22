@@ -8084,8 +8084,12 @@ void CvCity::setRevealed(TeamTypes eTeam, bool bNewValue)
 		// <advc.130n>
 		FOR_EACH_ENUM(Religion)
 		{
-			if(isHasReligion(eLoopReligion))
-				GET_TEAM(eTeam).AI_reportNewReligion(eLoopReligion);
+			if (!isHasReligion(eLoopReligion))
+				continue;
+			for (MemberAIIter itMember(eTeam); itMember.hasNext(); ++itMember)
+			{
+				itMember->AI_updateDifferentReligionThreat(eLoopReligion);
+			}
 		} // </advc.130n>
 	} // K-Mod end
 
@@ -9185,10 +9189,10 @@ void CvCity::setHasReligion(ReligionTypes eReligion, bool bNewValue, bool bAnnou
 	{
 		CvEventReporter::getInstance().religionSpread(eReligion, kOwner.getID(), this);
 		// <advc.130n>
-		for (TeamAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
+		for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
 		{
-			if(isRevealed(it->getID()))
-				it->AI_reportNewReligion(eReligion);
+			if (isRevealed(itPlayer->getTeam()))
+				itPlayer->AI_updateDifferentReligionThreat(eReligion);
 		} // </advc.130n>
 	}
 	else CvEventReporter::getInstance().religionRemove(eReligion, kOwner.getID(), this);

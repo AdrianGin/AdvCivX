@@ -298,6 +298,7 @@ void CvPlayerAI::AI_reset(bool bConstructor)
 	{
 		m_aiUnitCombatWeights[iI] = 0;
 	}
+	m_arDifferentReligionThreat.reset(); // advc.130n
 
 	/*for (iI = 0; iI < MAX_PLAYERS; iI++) {
 		m_aiCloseBordersAttitude[iI] = 0;
@@ -337,8 +338,8 @@ int CvPlayerAI::AI_getFlavorValue(FlavorTypes eFlavor) const
 void CvPlayerAI::AI_updateCacheData()
 {
 	// AI_updateCloseBorderAttitude();
-	/*	attitude of this player is relevant to other players too,
-		so this needs to be done elsewhere. */
+	/*	Attitude of this player is relevant to other players too, so this needs
+		to be done elsewhere. (advc: Namely in CvTeamAI::AI_doTurnPost, I guess.) */
 	// AI_updateAttitude();
 	AI_updateNeededExplorers(); // advc.opt
 	AI_calculateAverages();
@@ -7696,38 +7697,39 @@ int CvPlayerAI::AI_getSameReligionAttitude(PlayerTypes ePlayer) const
 
 int CvPlayerAI::AI_getDifferentReligionAttitude(PlayerTypes ePlayer) const
 {
-	// <advc.130n> Functional changes only start at iTimeKnown=...
 	CvPlayer const& kPlayer = GET_PLAYER(ePlayer);
-	if(getStateReligion() == NO_RELIGION || kPlayer.getStateReligion() == NO_RELIGION ||
+	if(getStateReligion() == NO_RELIGION ||
+		kPlayer.getStateReligion() == NO_RELIGION ||
 		getStateReligion() == kPlayer.getStateReligion())
 	{
 		return 0;
 	}
-	CvLeaderHeadInfo& lh = GC.getInfo(getPersonalityType());
-	int r = lh.getDifferentReligionAttitudeChange();
-	int div = lh.getDifferentReligionAttitudeDivisor();
-	if (div != 0)
-	{
-		int iLimit = AI_ideologyDiploLimit(ePlayer, DIFFERENT_RELIGION); // advc.130x
-		r += range(AI_getDifferentReligionCounter(ePlayer) / div, -iLimit, iLimit);
-	}
-	int iTimeKnown = GET_TEAM(getTeam()).AI_getReligionKnownSince(kPlayer.getStateReligion());
-	if (iTimeKnown < 0)
+	CvLeaderHeadInfo const& kPersonality = GC.getInfo(getPersonalityType());
+	int iDiv = kPersonality.getDifferentReligionAttitudeDivisor();
+	if (iDiv == 0)
 		return 0;
-	iTimeKnown = GC.getGame().getGameTurn() - iTimeKnown;
-	FAssert(iTimeKnown >= 0);
-	if (div != 0)
-	{
-		// max b/c they're negative values
-		r = std::max(r, (2 * iTimeKnown) / (3 * div));
-	}
-	if (r < 0)
-	{
-		// No change to this, but apply it after the iTimeKnown cap:
+	int iPersonalModifier = kPersonality.getDifferentReligionAttitudeChange();
+	int iAttitude = iPersonalModifier;
+	int iLimit = AI_ideologyDiploLimit(ePlayer, DIFFERENT_RELIGION); // advc.130x
+	iAttitude += range(AI_getDifferentReligionCounter(ePlayer) / iDiv, -iLimit, iLimit);
+	if (iAttitude < 0)
+	{	// <advc.130n>
+		scaled rThreatFactor = m_arDifferentReligionThreat.get(
+				kPlayer.getStateReligion());
+		rThreatFactor = (rThreatFactor * 3).pow(fixp(2/3.));
+		iAttitude = -((-iAttitude * rThreatFactor).uceil());
+		/*	Allow threat factor to increase the penalty (if the threat
+			is unusually high), but respect the limit. This gets complicated
+			b/c iPersonalModifier isn't supposed to be subject to the limit ... */
+		iAttitude = std::max(iAttitude, -iLimit + (iPersonalModifier < 0 ? iPersonalModifier : 0));
+		// Also don't want 0 threat to eliminate a personal modifier of -2
+		if (iPersonalModifier < -1)
+			iAttitude = std::min(iAttitude, iPersonalModifier / 2);
+		// </advc.130n>
 		if (hasHolyCity(getStateReligion()))
-			r--;
-	} // </advc.130n>
-	return r;
+			iAttitude--;
+	}
+	return iAttitude;
 }
 
 
@@ -7851,6 +7853,90 @@ int CvPlayerAI::AI_getExpansionistAttitude(PlayerTypes ePlayer) const
 			(rPersonalFactor * fixp(2.4) * rForeignCities / rCitiesPerCiv).round());
 }
 
+// advc.130n:
+void CvPlayerAI::AI_updateDifferentReligionThreat(ReligionTypes eReligion,
+	bool bUpdateAttitude)
+{
+	ReligionTypes const eStateReligion = getStateReligion();
+	if (eStateReligion == NO_RELIGION || getNumCities() <= 0)
+	{	// Just to save time
+		if (!bUpdateAttitude)
+		{
+			m_arDifferentReligionThreat.reset();
+			return;
+		}
+		if (!m_arDifferentReligionThreat.isAnyNonDefault())
+			return;
+		FOR_EACH_ENUM(Religion)
+			AI_setDifferentReligionThreat(eLoopReligion, 0, bUpdateAttitude);
+		return;
+	}
+	if (eReligion == NO_RELIGION)
+	{
+		FOR_EACH_ENUM(Religion)
+		{
+			AI_updateDifferentReligionThreat(eLoopReligion); // recursion
+		}
+		return;
+	}
+	if (!GC.getGame().isReligionFounded(eReligion))
+		return;
+	if (eStateReligion == eReligion)
+	{
+		AI_setDifferentReligionThreat(eReligion, 0, bUpdateAttitude);
+		return;
+	}
+	int iDifferentReligionPop = 0;
+	int iSameReligionPop = 0;
+	int iTotalPop = 0;
+	for (PlayerIter<ALIVE,KNOWN_TO> itPlayer(getTeam()); itPlayer.hasNext(); ++itPlayer)
+	{
+		FOR_EACH_CITY(pCity, *itPlayer)
+		{
+			if (!pCity->isRevealed(getTeam()))
+				continue;
+			int const iPop = pCity->getPopulation();
+			iTotalPop += iPop;
+			if (pCity->isHasReligion(eReligion))
+				iDifferentReligionPop += iPop;
+			if (pCity->isHasReligion(eStateReligion))
+				iSameReligionPop += iPop;
+		}
+	}
+	/*	The bigger our religion is and the more widespread theirs,
+		the more threatened/ antagonistic we feel. */
+	scaled rThreat(std::min(iDifferentReligionPop, iSameReligionPop), iTotalPop);
+	AI_setDifferentReligionThreat(eReligion, rThreat, bUpdateAttitude);
+}
+
+// advc.130n:
+void CvPlayerAI::AI_setDifferentReligionThreat(ReligionTypes eReligion,
+	scaled rNewValue, bool bUpdateAttitude)
+{
+	if (rNewValue == m_arDifferentReligionThreat.get(eReligion))
+		return;
+	CivPlayerMap<int> aeiCachedAttitude;
+	if (bUpdateAttitude)
+	{
+		for (PlayerAIIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(getTeam());
+			itOther.hasNext(); ++itOther)
+		{
+			aeiCachedAttitude.set(itOther->getID(),
+					AI_getDifferentReligionAttitude(itOther->getID()));
+		}
+	}
+	m_arDifferentReligionThreat.set(eReligion, rNewValue);
+	if (bUpdateAttitude)
+	{
+		for (PlayerAIIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(getTeam());
+			itOther.hasNext(); ++itOther)
+		{
+			AI_changeCachedAttitude(itOther->getID(),
+					AI_getDifferentReligionAttitude(itOther->getID())
+					- aeiCachedAttitude.get(itOther->getID()));
+		}
+	}
+}
 
 int CvPlayerAI::AI_getRivalVassalAttitude(PlayerTypes ePlayer) const
 {
@@ -22299,6 +22385,9 @@ void CvPlayerAI::read(FDataStreamBase* pStream)
 
 	pStream->Read(GC.getNumUnitClassInfos(), m_aiUnitClassWeights);
 	pStream->Read(GC.getNumUnitCombatInfos(), m_aiUnitCombatWeights);
+	// <advc.130n>
+	if (uiFlag >= 18) // (Otherwise update it in CvGame::onAllGameDataRead)
+		m_arDifferentReligionThreat.read(pStream); // </advc.130n>
 	// K-Mod
 	m_GreatPersonWeights.clear();
 	if (uiFlag >= 5)
@@ -22390,7 +22479,8 @@ void CvPlayerAI::write(FDataStreamBase* pStream)
 	//uiFlag = 14; // advc.130c
 	//uiFlag = 15; // advc.104: Don't save UWAI cache of dead civ
 	//uiFlag = 16; // advc.651
-	uiFlag = 17; // advc.550g
+	//uiFlag = 17; // advc.550g
+	uiFlag = 18; // advc.130n
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iPeaceWeight);
@@ -22472,6 +22562,7 @@ void CvPlayerAI::write(FDataStreamBase* pStream)
 
 	pStream->Write(GC.getNumUnitClassInfos(), m_aiUnitClassWeights);
 	pStream->Write(GC.getNumUnitCombatInfos(), m_aiUnitCombatWeights);
+	m_arDifferentReligionThreat.write(pStream); // advc.130n
 	// K-Mod. save great person weights.
 	{
 		int iItems = m_GreatPersonWeights.size();
