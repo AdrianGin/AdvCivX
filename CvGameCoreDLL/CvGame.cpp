@@ -2123,11 +2123,11 @@ void CvGame::normalizeAddFoodBonuses(/* advc.027: */ NormalizationTarget const* 
 			int const iHighFoodThreshold = 2 * iFoodPerPop;
 			int const iNaturalFood = p.calculateBestNatureYield(YIELD_FOOD, kPlayer.getTeam());
 			// (+1 just as a shortcut to save time for obvious cases.)
-			bool bHighFood = iNaturalFood + 1 >= iHighFoodThreshold;
-			for (ImprovementTypes eImp = (ImprovementTypes)0;
-				!bHighFood && eImp < GC.getNumImprovementInfos();
-				eImp=(ImprovementTypes)(eImp+1))
+			bool bHighFood = (iNaturalFood + 1 >= iHighFoodThreshold);
+			FOR_EACH_ENUM2(Improvement, eImp)
 			{
+				if (bHighFood)
+					break;
 				if (GC.getInfo(eImp).isImprovementBonusTrade(eBonus))
 				{
 					bHighFood = (iNaturalFood + p.calculateImprovementYieldChange(

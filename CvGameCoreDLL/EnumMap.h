@@ -185,7 +185,7 @@ public:
 		Derived classes with bARITHMETIC=false can implement setUnsafe
 		(or setCompact) instead of lookup.*/
 	V get(E eKey) const
-	{
+	{	// Derived classes can assert that eKey is within its bounds here
 		return derived().getUnsafe(eKey);
 	}
 	void set(E eKey, V vValue)
@@ -316,12 +316,7 @@ public:
 	void writeArray(FDataStreamBase* pStream) const
 	{
 		FOR_EACH_KEY(eKey)
-		{	/*	If internal representation is no bigger than ValueType,
-				then bounds don't need to be checked. */
-			if (IS_SAFE_INT_CAST(CompactV, ValueType))
-				writeVal(pStream, (ValueType)derived().getUnsafe(eKey));
-			else writeVal(pStream, safeCast<ValueType>(derived().getUnsafe(eKey)));
-		}
+			writeVal(pStream, safeCast<ValueType>(derived().getUnsafe(eKey)));
 	}
 	template<typename ValueType>
 	void readArray(FDataStreamBase* pStream)

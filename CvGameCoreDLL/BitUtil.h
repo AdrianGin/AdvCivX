@@ -4,10 +4,11 @@
 #define BIT_UTIL_H
 
 /*  advc.enum: Helper functions for bitwise operations. Copied from the
-	"We the People" mod (all code by Nightinggale), which keeps these functions
-	directly in CvGameCoreDLL.h. */
+	"We the People" mod (WtP) in 2020 (all code by Nightinggale).
+	WtP used to keep these functions in the global namespace (in CvGameCoreDLL.h);
+	the current WtP code wraps them into a "BoolToken" struct. */
 
-namespace BitUtil // advc: Don't want these in the global namespace
+namespace BitUtil
 {
 	template <typename T>
 	bool GetBit(const T x, const int y) // advc: renamed from "HasBit"

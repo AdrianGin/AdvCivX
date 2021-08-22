@@ -1709,7 +1709,7 @@ bool CvUnit::isActionRecommended(int iAction)
 	/*  <advc.002e> This needs to be done in some CvUnit function that gets called
 		by the EXE after read, after isPromotionReady and late enough for IsSelected
 		to work. (E.g. setupGraphical and shouldShowEnemyGlow are too early.) */
-	if(iAction == 0 && !BUGOption::isEnabled("PLE__ShowPromotionGlow", false))
+	if (iAction == 0 && !BUGOption::isEnabled("PLE__ShowPromotionGlow", false))
 	{
 		FOR_EACH_UNIT_VAR_IN(pUnit, *getGroup())
 		{
@@ -1722,7 +1722,7 @@ bool CvUnit::isActionRecommended(int iAction)
 	} // </advc.002e>
 
 	// <advc.004h> Hack for replacing the founding borders shown around Settlers
-	if(iAction == 0 && isFound())
+	if (iAction == 0 && isFound())
 		updateFoundingBorder(); // </advc.004h>
 
 	if (GET_PLAYER(getOwner()).isOption(PLAYEROPTION_NO_UNIT_RECOMMENDATIONS))
@@ -1740,7 +1740,7 @@ bool CvUnit::isActionRecommended(int iAction)
 		pTmpPlot = getGroup()->lastMissionPlot();
 	CvPlot const& kPlot = (pTmpPlot == NULL ? getPlot() : *pTmpPlot);
 	// </advc>
-	switch(GC.getActionInfo(iAction).getMissionType()) // advc
+	switch (GC.getActionInfo(iAction).getMissionType()) // advc
 	{
 	case MISSION_FORTIFY:
 		if (kPlot.getOwner() == getOwner() && // advc.004

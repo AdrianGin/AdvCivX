@@ -98,7 +98,8 @@ bool CvUnitAI::AI_update()
 	if (AI_afterAttack())
 		return false;
 
-	if (getGroup()->isAutomated() && isHuman())
+	if (getGroup()->isAutomated() &&
+		isHuman()) // K-Mod: for AI Auto Play
 	{
 		switch (getGroup()->getAutomateType())
 		{
@@ -17360,11 +17361,11 @@ bool CvUnitAI::AI_fortTerritory(bool bCanal, bool bAirbase)
 			}
 		}
 		// <advc.121>
-		if(eBestTempBuild != NO_BUILD && !canBuild(kPlot, eBestTempBuild))
+		if (eBestTempBuild != NO_BUILD && !canBuild(kPlot, eBestTempBuild))
 			eBestTempBuild = NO_BUILD; // </advc.121>
-		if(eBestTempBuild != NO_BUILD)
+		if (eBestTempBuild != NO_BUILD)
 		{
-			if(!kPlot.isVisibleEnemyUnit(this))
+			if (!kPlot.isVisibleEnemyUnit(this))
 			{
 				bool bValid = true;
 				if (GET_PLAYER(getOwner()).isHumanOption(PLAYEROPTION_LEAVE_FORESTS) &&

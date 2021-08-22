@@ -2249,9 +2249,8 @@ CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
 	/* if (pbWrap != NULL)
 		*pbWrap = false;*/
 	// <K-Mod>
-	bool bDummy = false;
-	// this means we can just use bWrap directly and it will update *pbWrap if need be.
-	bool& bWrap = (pbWrap != NULL ? *pbWrap : bDummy); // <K-Mod>
+	bool bWrap_local = false;
+	bool& bWrap = (pbWrap != NULL ? *pbWrap : bWrap_local); // <K-Mod>
 	bWrap = false;
 	// advc.154: Copy the set
 	std::set<int> kCycledGroups = GC.getGame().getActivePlayerCycledGroups(); // K-Mod
@@ -10391,7 +10390,7 @@ void CvPlayer::changeImprovementYieldChange(ImprovementTypes eImprov, YieldTypes
 /*	K-Mod. I've changed this function from using pUnit to using pGroup.
 	I've also rewritten most of the code, to give more natural ordering,
 	and to be more robust and readable code. */
-void CvPlayer::updateGroupCycle(CvSelectionGroup const& kGroup)  // advc: const reference param
+void CvPlayer::updateGroupCycle(CvSelectionGroup const& kGroup)
 {
 	PROFILE_FUNC();
 

@@ -10842,7 +10842,8 @@ bool CvCityAI::AI_finalImprovementYieldDifference(/* advc: */ CvPlot const& kPlo
 		{
 			int iYieldDiff = kPlot.calculateImprovementYieldChange(
 					eFinalImprovement, eLoopYield, getOwner()) -
-					kPlot.calculateImprovementYieldChange(eCurrentImprovement, eLoopYield, getOwner());
+					kPlot.calculateImprovementYieldChange(
+					eCurrentImprovement, eLoopYield, getOwner());
 			// <advc.908a>
 			int extraYieldThresh = kOwner.getExtraYieldThreshold(eLoopYield);
 			if(extraYieldThresh > 0 &&
@@ -10916,7 +10917,8 @@ bool CvCityAI::AI_timeWeightedImprovementYields(CvPlot const& kPlot, Improvement
 		}
 		FOR_EACH_ENUM(Yield)
 		{
-			int iYieldDiff = kPlot.calculateImprovementYieldChange(eImprovement, eLoopYield, getOwner());
+			int iYieldDiff = kPlot.calculateImprovementYieldChange(
+					eImprovement, eLoopYield, getOwner());
 			/*	todo: Extra yield for finacial civs
 				(see AI_finalImprovementYieldDifference for guidence.) */
 			//if (kOwner.getExtraYieldThreshold(i) > 0)
@@ -11167,7 +11169,7 @@ int CvCityAI::AI_buildUnitProb(bool bDraft)
 }
 
 
-void CvCityAI::AI_bestPlotBuild(CvPlot const& kPlot, int* piBestValue, BuildTypes* peBestBuild, // advc: 1st param was pointer
+void CvCityAI::AI_bestPlotBuild(CvPlot const& kPlot, int* piBestValue, BuildTypes* peBestBuild,
 	int iFoodPriority, int iProductionPriority, int iCommercePriority, bool bChop,
 	int iHappyAdjust, int iHealthAdjust, // advc (note): obsolete
 	int iDesiredFoodChange)

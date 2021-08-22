@@ -2719,13 +2719,12 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 			int iYield = 0;
 			if (eImprovement != NO_IMPROVEMENT)
 			{
-				iYield += kMissionPlot.calculateImprovementYieldChange(eImprovement,
-						eYield, kUnitOwner.getID());
+				iYield += kMissionPlot.calculateImprovementYieldChange(
+						eImprovement, eYield, kUnitOwner.getID());
 				if (kMissionPlot.isImproved())
 				{
 					iYield -= kMissionPlot.calculateImprovementYieldChange(
-							kMissionPlot.getImprovementType(), eYield,
-							kUnitOwner.getID());
+							kMissionPlot.getImprovementType(), eYield, kUnitOwner.getID());
 				}
 			}
 			if (kMissionPlot.isFeature())
