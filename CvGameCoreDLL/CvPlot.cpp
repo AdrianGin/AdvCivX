@@ -5159,26 +5159,27 @@ int CvPlot::calculateImprovementYieldChange(
 		iYield += kImpr.getHillsYieldChange(eYield);
 	if (isIrrigationAvailable())
 		iYield += kImpr.getIrrigatedYieldChange(eYield);
-	{
-		RouteTypes eRoute = getRouteType();
-		if (eRoute != NO_ROUTE)
-			iYield += kImpr.getRouteYieldChanges(eRoute, eYield);
-	}
 	/*	<advc.182> Compute the yield of the plot owner. Fall back on ePlayer
-		only for (apparently) unowned tiles. Use the map knowledge of ePlayer.
-		Call locations changed accordingly. */
+		only for (apparently) unowned tiles. Use the map knowledge of ePlayer. */
 	TeamTypes const eObs = (ePlayer == NO_PLAYER ? NO_TEAM : TEAMID(ePlayer));
 	PlayerTypes eRevealedOwner = (eObs == NO_TEAM ? getOwner() :
 			getRevealedOwner(eObs));
 	PlayerTypes eYieldPlayer = (eRevealedOwner == NO_PLAYER ? ePlayer :
 			eRevealedOwner); // </advc.182>
+	{	// <advc.001i>
+		RouteTypes eRoute = (eObs == NO_TEAM ? getRouteType() :
+				getRevealedRouteType(eObs)); // </advc.001i>
+		if (eRoute != NO_ROUTE)
+			iYield += kImpr.getRouteYieldChanges(eRoute, eYield);
+	}
+	
 	if (eYieldPlayer == NO_PLAYER)
 	{
 		FOR_EACH_ENUM(Tech)
 		{
 			iYield += kImpr.getTechYieldChanges(eLoopTech, eYield);
 		}
-		/*	K-Mod not: this doesn't calculate the 'optimal' yield, because it
+		/*	K-Mod (note): this doesn't calculate the 'optimal' yield, because it
 			will count negative effects and it will count effects from competing civics. */
 		/*FOR_EACH_ENUM(Civic)
 			iYield += GC.getInfo(eLoopCivic).getImprovementYieldChanges(eImprovement, eYield);*/
