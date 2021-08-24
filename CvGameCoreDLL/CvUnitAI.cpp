@@ -21616,11 +21616,17 @@ bool CvUnitAI::AI_choke(int iRange, bool bDefensive, MovementFlags eFlags)
 	CvPlot* pBestPlot = 0;
 	CvPlot* pEndTurnPlot = 0;
 	int iBestValue = 0;
+	// <advc.300> Don't use more than a couple of units for choking Barbarians
+	bool const bSmallGroup = (getGroup()->getNumUnits() <=
+			GET_PLAYER(getOwner()).AI_getCurrEraFactor() + 1); // </advc.300>
 	for (SquareIter it(*this, iRange); it.hasNext(); ++it)
 	{
 		CvPlot& p = *it;
 		if (!p.isOwned() || !isEnemy(p.getTeam()) || p.isVisibleEnemyUnit(this))
 			continue;
+		// <advc.300>
+		if (p.getOwner() == BARBARIAN_PLAYER && !bSmallGroup)
+			continue; // </advc.300>
 
 		int iPathTurns;
 		if (p.getWorkingCity() == NULL ||
