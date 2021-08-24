@@ -8077,17 +8077,20 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 		}
 		// <advc.301>
 		BonusTypes const eAndBonus = kUnit.getPrereqAndBonus();
-		std::vector<TechTypes> aeAndBonusTechs(2, NO_TECH);
+		std::vector<TechTypes> aeAndBonusTechs;
 		if (eAndBonus != NO_BONUS)
 		{
 			CvBonusInfo const& kAndBonus = GC.getInfo(eAndBonus);
-			aeAndBonusTechs.push_back(kAndBonus.getTechCityTrade()); // (as in BtS)
-			aeAndBonusTechs.push_back(kAndBonus.getTechReveal());
+			TechTypes eTradeTech = kAndBonus.getTechCityTrade(); // (as in BtS)
+			if (eTradeTech != NO_TECH)
+				aeAndBonusTechs.push_back(eTradeTech);
+			TechTypes eRevealTech = kAndBonus.getTechReveal();
+			if (eRevealTech != NO_TECH)
+				aeAndBonusTechs.push_back(eRevealTech);
 			bool bValid = true;
 			for (size_t j = 0; j < aeAndBonusTechs.size(); j++)
 			{
-				if (aeAndBonusTechs[j] != NO_TECH &&
-					!GET_TEAM(BARBARIAN_TEAM).isHasTech(aeAndBonusTechs[j]))
+				if (!GET_TEAM(BARBARIAN_TEAM).isHasTech(aeAndBonusTechs[j]))
 				{
 					bValid = false;
 					break;
@@ -8106,36 +8109,25 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 			iUnitEra = GC.getInfo(eAndTech).getEra();
 		for (size_t j = 0; j < aeAndBonusTechs.size(); j++)
 		{
-			if (aeAndBonusTechs[j] != NO_TECH)
-			{
-				iUnitEra = std::max<int>(iUnitEra,
-						GC.getInfo(aeAndBonusTechs[j]).getEra());
-			}
+			iUnitEra = std::max<int>(iUnitEra,
+					GC.getInfo(aeAndBonusTechs[j]).getEra());
 		}
 		if (iUnitEra + 1 < getCurrentEra())
 			continue; // </advc.301>
 		bool bFound = false;
 		bool bRequires = false;
 		for (int j = 0; j < kUnit.getNumPrereqOrBonuses() &&
-			!bFound; j++) // advc.301
+			!bFound; j++)
 		{
+			bRequires = true;
 			BonusTypes const eOrBonus = kUnit.getPrereqOrBonuses(j);
 			CvBonusInfo const& kOrBonus = GC.getInfo(eOrBonus);
-			// <advc.301>
-			std::vector<TechTypes> aeOrBonusTechs(2, NO_TECH);
-			aeOrBonusTechs.push_back(kOrBonus.getTechCityTrade()); // (as in BtS)
-			aeOrBonusTechs.push_back(kOrBonus.getTechReveal());
-			for (size_t k = 0; k < aeOrBonusTechs.size(); k++)
+			if (GET_TEAM(BARBARIAN_TEAM).isHasTech(kOrBonus.getTechCityTrade()) &&
+				// <advc.301>
+				GET_TEAM(BARBARIAN_TEAM).isHasTech(kOrBonus.getTechReveal()) &&
+				kArea.hasAnyAreaPlayerBonus(eOrBonus)) // </advc.301>
 			{
-				if (aeOrBonusTechs[k] == NO_TECH)
-					continue;
-				bRequires = true;
-				if (GET_TEAM(BARBARIAN_TEAM).isHasTech(aeOrBonusTechs[k]) &&
-					kArea.hasAnyAreaPlayerBonus(eOrBonus)) // </advc.301>
-				{
-					bFound = true;
-					break;
-				}
+				bFound = true;
 			}
 		}
 		if (bRequires && !bFound)
