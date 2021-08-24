@@ -7011,4 +7011,77 @@
 		<Spanish>Probabilidad de [COLOR_NEGATIVE_TEXT]intercepción[COLOR_REVERT] (%s1_TeamName): %d2%%</Spanish>
 	</TEXT>
 
+	<!-- advc.004g: "Plot" is slang; "tile" is the proper game term.
+		 I haven't bothered changing this in texts that only concern
+		 map scripts, WorldBuilder, Pedia, random events or
+		 loading screen hints. -->
+	<!-- From CIV4GameText_Misc1.xml ... -->
+	<TEXT>
+		<Tag>TXT_KEY_COMBAT_MESSAGE_PLOT_DEFENSE</Tag>
+		<English>(Tile Defense: %D1%%)</English>
+		<French>(D&#233;fense case : %D1%%)</French>
+		<German>(Gel&#228;ndefeldverteidigung: %D1%%)</German>
+		<Italian>(Difesa territorio: %D1%%)</Italian>
+		<Spanish>(Defensa de la casilla: %D1%%)</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_ACTION_SIGN_HELP</Tag>
+		<English>Adds a sign to a specific tile that you and your teammates can see.</English>
+		<French>Ajoutez un panneau &#224; un endroit pr&#233;cis pour vous et vos co&#233;quipiers.</French>
+		<German>Markieren Sie ein Gel&#228;ndefeld mit einem Zeichen, das nur Sie und Ihre Teammitglieder sehen k&#246;nnen.</German>
+		<Italian>Aggiunge in una determinata casella un segnale visibile soltanto a te e ai tuoi alleati.</Italian>
+		<Spanish>A&#241;ade a una casilla concreta un letrero que pod&#225;is ver tus compa&#241;eros y t&#250;.</Spanish>
+	</TEXT>
+	<!-- From Civ4GameText_Help.xml ... -->
+	<TEXT>
+		<Tag>TXT_KEY_ACTION_CONTROL_NEXT_PLOT_UNIT_HELP</Tag>
+		<English>Cycle unit selection to the next unit on the tile.</English>
+		<French>Faire d&#233;filer les unit&#233;s jusqu'&#224; l'unit&#233; suivante sur la case.</French>
+		<German>Zur n&#228;chsten Einheit auf dem Gel&#228;ndefeld.</German>
+		<Italian>Passa la selezione dell'unit&#224; a quella successiva sulla casella.</Italian>
+		<Spanish>La unidad seleccionada pasa a ser la siguiente en la casilla.</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_ACTION_CONTROL_PREVIOUS_PLOT_UNIT_HELP</Tag>
+		<English>Cycle unit selection to the previous unit on the tile.</English>
+		<French>Faire d&#233;filer les unit&#233;s jusqu'&#224; l'unit&#233; pr&#233;c&#233;dente sur la case.</French>
+		<German>Zur vorherigen Einheit auf dem Gel&#228;ndefeld.</German>
+		<Italian>Passa la selezione dell'unit&#224; a quella precedente sulla casella.</Italian>
+		<Spanish>La unidad seleccionada pasa a ser la anterior en la casilla.</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_MISSION_MOVE_TO_HELP</Tag>
+		<English>Set your unit to move to a specific tile</English>
+		<French>Ordonner &#224; l'unit&#233; de rejoindre une position sur la carte.</French>
+		<German>Schicken Sie Ihre Einheit auf ein bestimmtes Gel&#228;ndefeld.</German>
+		<Italian>Ordina alla tua unit&#224; di muoversi in una casella specifica.</Italian>
+		<Spanish>Para decirle a la unidad que vaya a una casilla concreta.</Spanish>
+	</TEXT>
+	<!-- From Civ4GameText_BtS.xml -->
+	<TEXT>
+		<Tag>TXT_KEY_ESPIONAGE_MISSIONS_SPY</Tag>
+		<English>Must be enacted by Spy units in an opponent's city or other valid tile</English>
+		<French>Doit &#234;tre ex&#233;cut&#233;e par des espions dans une ville ennemie ou dans un autre site autoris&#233;</French>
+		<German>Muss von Spionageeinheiten in einer gegnerischen Stadt oder auf einem anderen g&#252;ltigen Gel&#228;ndefeld ausgef&#252;hrt werden.</German>
+		<Italian>Dev'essere eseguita da una Spia in citt&#224; nemiche o altre caselle valide</Italian>
+		<Spanish>Lo han de realizar unidades de esp&#237;as en la ciudad de un oponente o en otra casilla v&#225;lida</Spanish>
+	</TEXT>
+	<!-- From Civ4GameTextInfos.xml ... -->
+	<TEXT>
+		<Tag>TXT_KEY_ACTION_CANNOT_FOUND</Tag>
+		<English>[COLOR_WARNING_TEXT]Cannot found within %d1_Num tiles of city.[COLOR_REVERT]</English>
+		<French>[COLOR_WARNING_TEXT]Introuvable &#224; moins de %d1_Num cases de la ville.[COLOR_REVERT]</French>
+		<German>[COLOR_WARNING_TEXT]Kann nicht innerhalb eines Radius von %d1_Num Gel&#228;ndefeldern um die Stadt gegr&#252;ndet werden.[COLOR_REVERT]</German>
+		<Italian>[COLOR_WARNING_TEXT]Non &#232; stato trovato all'interno di %d1_Num [NUM1:spazio:spazi] della citt&#224;.[COLOR_REVERT]</Italian>
+		<Spanish>[COLOR_WARNING_TEXT]No se encuentra en un radio de %d1_Num casillas de la ciudad.[COLOR_REVERT]</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_TRAIT_EXTRA_YIELD_THRESHOLDS</Tag>
+		<English>[NEWLINE][SPACE][SPACE][ICON_BULLET]+1%F1_yield on Tiles with %d2%F3_yield</English>
+		<French>[NEWLINE][SPACE][SPACE][ICON_BULLET]+1%F1_yield sur les cases avec : %d2%F3_yield</French>
+		<German>[NEWLINE][SPACE][SPACE][ICON_BULLET]+1%F1_yield auf Gel&#228;ndefeldern mit %d2%F3_yield</German>
+		<Italian>[NEWLINE][SPACE][SPACE][ICON_BULLET]+1%F1_yield su caselle con %d2%F3_yield</Italian>
+		<Spanish>[NEWLINE][SPACE][SPACE][ICON_BULLET]+1 %F1_yield en las casillas con %d2 %F3_yield</Spanish>
+	</TEXT>
+
 </Civ4GameText>
