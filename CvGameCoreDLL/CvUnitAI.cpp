@@ -12473,6 +12473,9 @@ bool CvUnitAI::AI_patrol() // advc: refactored
 				iValue += 20000;
 			if (!kAdj.isAdjacentOwned())
 				iValue += 10000;
+			// <advc.300>
+			if (kAdj.isHabitable())
+				iValue += 5000; // </advc.300>
 		}
 		else
 		{
