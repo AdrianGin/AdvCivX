@@ -7613,8 +7613,8 @@ void CvGame::createBarbarianUnits()
 		/*  For performance -- countOwnedUnownedHabitableTiles isn't cached;
 			goes through the entire map for each land area, and archipelago-type maps
 			can have a lot of those. */
-		int iTotal = a.getNumTiles() + iTiles;
-		int iUnownedTotal = a.getNumUnownedTiles() + iUnowned;
+		int const iTotal = a.getNumTiles() + iTiles;
+		int const iUnownedTotal = a.getNumUnownedTiles() + iUnowned;
 		if (iUnownedTotal >= iTotal)
 			continue;
 
@@ -7732,7 +7732,7 @@ void CvGame::createAnimals()
 			continue;
 
 		iNeededAnimals = (iNeededAnimals / 5) + 1;
-		for (int iI = 0; iI < iNeededAnimals; iI++)
+		for (int i = 0; i < iNeededAnimals; i++)
 		{
 			CvPlot* pPlot = GC.getMap().syncRandPlot((RANDPLOT_NOT_VISIBLE_TO_CIV | RANDPLOT_PASSABLE
 					| RANDPLOT_WATERSOURCE), // advc.300: Also use no iTimeout (try all plots)
@@ -7744,9 +7744,9 @@ void CvGame::createAnimals()
 			int iBestValue = 0;
 			// advc (comment): This loop picks an animal that is suitable for pPlot
 			CvCivilization const& kCiv = GET_PLAYER(BARBARIAN_PLAYER).getCivilization(); // advc.003w
-			for (int i = 0; i < kCiv.getNumUnits(); i++)
+			for (int j = 0; j < kCiv.getNumUnits(); j++)
 			{
-				UnitTypes eLoopUnit = kCiv.unitAt(i);
+				UnitTypes eLoopUnit = kCiv.unitAt(j);
 				CvUnitInfo const& kUnit = GC.getInfo(eLoopUnit);
 				if (!kUnit.getUnitAIType(UNITAI_ANIMAL))
 					continue;
@@ -8060,21 +8060,22 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 	case UNITAI_ATTACK: bSea = false; break;
 	default: return NO_UNIT;
 	}
-	UnitTypes r = NO_UNIT;
+	UnitTypes eR = NO_UNIT;
 	int iBestValue = 0;
-	CvCivilization const& kCiv = GET_PLAYER(BARBARIAN_PLAYER).getCivilization(); // advc.003w
+	CvCivilization const& kCiv = GET_PLAYER(BARBARIAN_PLAYER).getCivilization();
 	for (int i = 0; i < kCiv.getNumUnits(); i++)
 	{
-		UnitTypes eUnit = kCiv.unitAt(i);
+		UnitTypes const eUnit = kCiv.unitAt(i);
 		CvUnitInfo const& kUnit = GC.getInfo(eUnit);
-		DomainTypes eDomain = kUnit.getDomainType();
-		if(kUnit.getCombat() <= 0 || eDomain == DOMAIN_AIR ||
+		DomainTypes const eDomain = kUnit.getDomainType();
+		if (kUnit.getCombat() <= 0 || eDomain == DOMAIN_AIR ||
 			kUnit.isMostlyDefensive() || // advc.315
 			(eDomain == DOMAIN_SEA) != bSea ||
 			!GET_PLAYER(BARBARIAN_PLAYER).canTrain(eUnit))
 		{
 			continue;
-		}  // <advc.301>
+		}
+		// <advc.301>
 		BonusTypes const eAndBonus = kUnit.getPrereqAndBonus();
 		std::vector<TechTypes> aeAndBonusTechs(2, NO_TECH);
 		if (eAndBonus != NO_BONUS)
@@ -8095,9 +8096,9 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 			if (!bValid || !kArea.hasAnyAreaPlayerBonus(eAndBonus))
 				continue;
 		}
-		/*  No units from more than 1 era ago (obsoletion too difficult to test).
-			hasTech already tested by canTrain, but era shouldn't be
-			tested there b/c it's OK for Barbarian cities to train outdated units
+		/*	No units from more than 1 era ago (obsolescence too difficult to test).
+			hasTech already tested by canTrain, but era shouldn't be tested there
+			b/c it's OK for Barbarian cities to train outdated units
 			(they only will if they can't train anything better). */
 		TechTypes const eAndTech = kUnit.getPrereqAndTech();
 		int iUnitEra = 0;
@@ -8144,11 +8145,11 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 			iValue += 200;
 		if (iValue > iBestValue)
 		{
-			r = eUnit;
+			eR = eUnit;
 			iBestValue = iValue;
 		}
 	}
-	return r;
+	return eR;
 }
 
 // (See documentation in XML)

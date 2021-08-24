@@ -119,6 +119,9 @@ public:
 	//struct CvFoundSettings { ... } // K-Mod
 	//short AI_foundValue_bulk(int iX, int iY, const CvFoundSettings& kSet) const; // K-Mod
 	//int AI_countDeadlockedBonuses(CvPlot const* pPlot) const;
+	// Obsoleted by K-Mod:
+	/*int AI_getOurPlotStrength(CvPlot* pPlot, int iRange, bool bDefensiveBonuses, bool bTestMoves) const;
+	int AI_getEnemyPlotStrength(CvPlot* pPlot, int iRange, bool bDefensiveBonuses, bool bTestMoves) const;*/ // BtS
 
 	bool AI_isAreaAlone(CvArea const& kArea) const;
 	bool AI_isCapitalAreaAlone() const;
@@ -571,7 +574,7 @@ public:
 	/*	Call locations of this function and similar functions at CvTeamAI, CvGameAI
 		aren't tagged with "advc.erai" comments. Note: Should not replace all uses of
 		era numbers in AI code with these functions. For example, a mod with only
-		3 eras	won't necessarily have more techs per era than BtS. */
+		3 eras won't necessarily have more techs per era than BtS. */
 	scaled AI_getCurrEraFactor() const { return m_rCurrEraFactor; }
 	int AI_getCurrEra() const { return AI_getCurrEraFactor().uround(); }
 	// </advc.erai>

@@ -5054,19 +5054,19 @@ bool CvPlot::isHabitable(bool bIgnoreSea) const
 {
 	if (getTerrainType() == NO_TERRAIN) // Can be called during map gen
 		return false;
-	if(calculateNatureYield(YIELD_FOOD, NO_TEAM, false, true) <= 0)
+	if (calculateNatureYield(YIELD_FOOD, NO_TEAM, false, true) <= 0)
 		return false;
-	if(!isWater() || isLake())
+	if (!isWater() || isLake())
 		return true;
-	if(bIgnoreSea)
+	if (bIgnoreSea)
 		return false;
 	// Count shelf as habitable, but not arctic shelf or adj. only to one land corner.
 	int iAdjHabitableLand = 0;
 	FOR_EACH_ADJ_PLOT(*this)
 	{
-		if(pAdj->isHabitable(true))
+		if (pAdj->isHabitable(true))
 			iAdjHabitableLand++;
-		if(iAdjHabitableLand >= 2)
+		if (iAdjHabitableLand >= 2)
 			return true;
 	}
 	return false;

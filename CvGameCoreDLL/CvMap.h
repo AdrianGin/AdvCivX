@@ -280,7 +280,6 @@ public: // advc: made several functions const
 	void verifyUnitValidPlot();
 	void combinePlotGroups(PlayerTypes ePlayer, CvPlotGroup* pPlotGroup1, CvPlotGroup* pPlotGroup2,
 			bool bVerifyProduction = true); // advc.064d
-
 	CvPlot* syncRandPlot(RandPlotFlags eFlags = RANDPLOT_ANY,								// Exposed to Python
 			CvArea const* pArea = NULL, // advc: was iArea
 			int iMinCivUnitDistance = -1,

@@ -171,7 +171,7 @@ void CvUnit::finalizeInit() // advc.003u: Body cut from init
 			the names are used in a long (space-race) game with 7 civs; therefore, skip every
 			iStep=2 then. Adjust this to the (current) number of civs. */
 		int iAlive = kGame.countCivPlayersAlive();
-		if(iAlive <= 0)
+		if (iAlive <= 0)
 		{
 			FAssert(iAlive > 0);
 			iAlive = 7;
@@ -187,15 +187,15 @@ void CvUnit::finalizeInit() // advc.003u: Body cut from init
 		iOffset += std::min(24, 8 * std::max(0, kGame.getStartEra() - 1));
 		bool bNameSet = false;
 		// If we run out of names, search backward.
-		if(iOffset >= iNumNames)
+		if (iOffset >= iNumNames)
 		{
 			/*  The first couple are still somewhat random, but then just
 				pick them chronologically. */
-			for(int i = iNumNames - 1 - iRand; i >= 0; i--)
+			for (int i = iNumNames - 1 - iRand; i >= 0; i--)
 			{
 				CvWString szName = gDLL->getText(m_pUnitInfo->getUnitNames(i));
 				// Copied from below
-				if(!kGame.isGreatPersonBorn(szName))
+				if (!kGame.isGreatPersonBorn(szName))
 				{
 					setName(szName);
 					bNameSet = true;
@@ -204,7 +204,7 @@ void CvUnit::finalizeInit() // advc.003u: Body cut from init
 				}
 			} // Otherwise, search forward.
 		}
-		if(!bNameSet) // </advc.005b>
+		if (!bNameSet) // </advc.005b>
 		{ 
 			for (int i = 0; i < iNumNames; i++)
 			{
@@ -227,79 +227,68 @@ void CvUnit::finalizeInit() // advc.003u: Body cut from init
 	GET_TEAM(getTeam()).changeUnitClassCount(eUnitClass, 1);
 	kOwner.changeUnitClassCount(eUnitClass, 1);
 	kOwner.changeExtraUnitCost(m_pUnitInfo->getExtraCost());
-
 	if (m_pUnitInfo->getNukeRange() != -1)
 		kOwner.changeNumNukeUnits(1);
-
 	if (m_pUnitInfo->isMilitarySupport())
 		kOwner.changeNumMilitaryUnits(1);
-
 	kOwner.changeAssets(m_pUnitInfo->getAssetValue());
-	kOwner.changePower(m_pUnitInfo->getPowerValue()
-			/ (getDomainType() == DOMAIN_SEA ? 2 : 1) // advc.104e
-	);
-
+	kOwner.changePower(m_pUnitInfo->getPowerValue() /
+			(getDomainType() == DOMAIN_SEA ? 2 : 1)); // advc.104e
 	// advc.104: To enable more differentiated tracking of power values
 	kOwner.uwai().getCache().reportUnitCreated(getUnitType());
+
 	if (m_pUnitInfo->isAnyFreePromotions()) // advc.003t
 	{
-		for (int i = 0; i < GC.getNumPromotionInfos(); i++)
+		FOR_EACH_ENUM(Promotion)
 		{
-			if (m_pUnitInfo->getFreePromotions(i))
-				setHasPromotion((PromotionTypes)i, true);
+			if (m_pUnitInfo->getFreePromotions(eLoopPromotion))
+				setHasPromotion(eLoopPromotion, true);
 		}
 	}
 	FAssert(GC.getNumTraitInfos() > 0);
-	for (int i = 0; i < GC.getNumTraitInfos(); i++)
+	FOR_EACH_ENUM2(Trait, eTrait)
 	{
-		TraitTypes eTrait = (TraitTypes)i;
 		if (!kOwner.hasTrait(eTrait))
 			continue;
-
 		CvTraitInfo const& kTrait = GC.getInfo(eTrait);
 		if (kTrait.isAnyFreePromotion()) // advc.003t
 		{
-			for (int j = 0; j < GC.getNumPromotionInfos(); j++)
+			FOR_EACH_ENUM(Promotion)
 			{
-				PromotionTypes ePromo = (PromotionTypes)j;
-				if (kTrait.isFreePromotion(ePromo))
+				if (kTrait.isFreePromotion(eLoopPromotion))
 				{
-					if (getUnitCombatType() != NO_UNITCOMBAT && kTrait.isFreePromotionUnitCombat(getUnitCombatType()))
-						setHasPromotion(ePromo, true);
+					if (getUnitCombatType() != NO_UNITCOMBAT &&
+						kTrait.isFreePromotionUnitCombat(getUnitCombatType()))
+					{
+						setHasPromotion(eLoopPromotion, true);
+					}
 				}
 			}
 		}
 	}
-
 	if (getUnitCombatType() != NO_UNITCOMBAT)
 	{
-		for (int i = 0; i < GC.getNumPromotionInfos(); i++)
+		FOR_EACH_ENUM(Promotion)
 		{
-			PromotionTypes ePromo = (PromotionTypes)i;
-			if (kOwner.isFreePromotion(getUnitCombatType(), ePromo))
-				setHasPromotion(ePromo, true);
+			if (kOwner.isFreePromotion(getUnitCombatType(), eLoopPromotion))
+				setHasPromotion(eLoopPromotion, true);
 		}
 	}
 
 	if (getUnitClassType() != NO_UNITCLASS)
 	{
-		for (int i = 0; i < GC.getNumPromotionInfos(); i++)
+		FOR_EACH_ENUM(Promotion)
 		{
-			PromotionTypes ePromo = (PromotionTypes)i;
-			if (kOwner.isFreePromotion(getUnitClassType(), ePromo))
-				setHasPromotion(ePromo, true);
+			if (kOwner.isFreePromotion(getUnitClassType(), eLoopPromotion))
+				setHasPromotion(eLoopPromotion, true);
 		}
 	}
-
-	if (getDomainType() == DOMAIN_LAND)
+	if (getDomainType() == DOMAIN_LAND && baseCombatStr() > 0)
 	{
-		if (baseCombatStr() > 0)
+		if (kGame.getBestLandUnit() == NO_UNIT || baseCombatStr() >
+			kGame.getBestLandUnitCombat())
 		{
-			if (kGame.getBestLandUnit() == NO_UNIT || baseCombatStr() >
-				kGame.getBestLandUnitCombat())
-			{
-				kGame.setBestLandUnit(getUnitType());
-			}
+			kGame.setBestLandUnit(getUnitType());
 		}
 	}
 
@@ -790,8 +779,8 @@ void CvUnit::resolveAirCombat(CvUnit* pInterceptor, CvPlot* pPlot, CvAirMissionD
 	int iOurRoundDamage = 0;
 	int iTheirRoundDamage = 0;
 
-	// Air v air is more like standard comabt
-	// Round damage in this case will now depend on strength and interception probability
+	/*	Air v air is more like standard combat
+		Round damage in this case will now depend on strength and interception probability */
 	// <advc.opt>
 	static bool const bBBAI_AIR_COMBAT = GC.getDefineBOOL("BBAI_AIR_COMBAT");
 	static int const iINTERCEPTION_MAX_ROUNDS = GC.getDefineINT("INTERCEPTION_MAX_ROUNDS");
@@ -1473,7 +1462,7 @@ void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted)
 		// <advc.130m>
 		int const iWS = GC.getDefineINT(CvGlobals::WAR_SUCCESS_DEFENDING);
 		GET_TEAM(pDefender->getTeam()).AI_changeWarSuccess(getTeam(), iWS);
-		if(ePlotOwner != NO_PLAYER)
+		if (ePlotOwner != NO_PLAYER)
 		{
 			TeamTypes ePlotMaster = GET_PLAYER(ePlotOwner).getMasterTeam();
 			/*  Success vs. Barbarians isn't normally counted. Do count it if
@@ -1481,24 +1470,24 @@ void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted)
 				Success within their borders against a shared war enemy is
 				already counted by changeWarSuccess, but count it again
 				for added weight. */
-			if(ePlotMaster != GET_TEAM(pDefender->getTeam()).getMasterTeam() &&
+			if (ePlotMaster != GET_TEAM(pDefender->getTeam()).getMasterTeam() &&
 				// Plot owner not happy if his own Privateer killed
 				ePlotMaster != GET_TEAM(getTeam()).getMasterTeam() &&
 				(isBarbarian() || m_pUnitInfo->isHiddenNationality() ||
 				GET_TEAM(getTeam()).isAtWar(pPlot->getTeam())))
 			{
 				GET_TEAM(ePlotOwner).AI_reportSharedWarSuccess(
-					iWS, pDefender->getTeam(), getTeam(), true);
+						iWS, pDefender->getTeam(), getTeam(), true);
 			}
 			// Same for the owner of the dead unit
-			if(ePlotMaster != GET_TEAM(pDefender->getTeam()).getMasterTeam() &&
+			if (ePlotMaster != GET_TEAM(pDefender->getTeam()).getMasterTeam() &&
 				ePlotMaster != GET_TEAM(getTeam()).getMasterTeam() &&
 				(pDefender->isBarbarian() ||
 				pDefender->m_pUnitInfo->isHiddenNationality() ||
 				GET_TEAM(pDefender->getTeam()).isAtWar(pPlot->getTeam())))
 			{
 				GET_TEAM(ePlotOwner).AI_reportSharedWarSuccess(
-					iWS, getTeam(), pDefender->getTeam(), true);
+						iWS, getTeam(), pDefender->getTeam(), true);
 			}
 		} // <advc.130m>
 
@@ -7611,11 +7600,10 @@ int CvUnit::airMaxCombatStr(const CvUnit* pOther) const
 
 	if (getKamikazePercent() != 0)
 		iModifier += getKamikazePercent();
-
+	/*  BETTER_BTS_AI_MOD, Bugfix, 8/16/08, DanF5771 & jdog5000:
+		(ExtraCombatPercent already counted above) */
 	/*if (getExtraCombatPercent() != 0)
 		iModifier += getExtraCombatPercent();*/ // BtS
-	/*  BETTER_BTS_AI_MOD, Bugfix, 8/16/08, DanF5771 & jdog5000: commented out
-		(ExtraCombatPercent already counted above) */
 	if (pOther != NULL)
 	{
 		if (pOther->getUnitCombatType() != NO_UNITCOMBAT)

@@ -10935,36 +10935,27 @@ bool CvUnitAI::AI_pickupTargetSpy()
 bool CvUnitAI::AI_chokeDefend()
 {
 	FAssert(AI_isCityAIType());
-
 	// XXX what about amphib invasions?
 
 	CvCityAI const* pCity = getPlot().AI_getPlotCity();
-	if (pCity != NULL)
+	if (pCity != NULL && pCity->getOwner() == getOwner() &&
+		pCity->AI_neededDefenders() > 1 &&
+		pCity->AI_isDefended(pCity->getPlot().plotCount(
+		PUF_canDefendGroupHead, -1, -1, getOwner(), NO_TEAM, PUF_isNotCityAIType)))
 	{
-		if (pCity->getOwner() == getOwner())
+		int const iDangerThresh = 4;
+		int iPlotDanger = GET_PLAYER(getOwner()).AI_getPlotDanger(getPlot(), 3, true,
+				iDangerThresh + 1); // advc.opt: Stop counting at thresh
+		if (iPlotDanger <= iDangerThresh)
 		{
-			if (pCity->AI_neededDefenders() > 1)
+			if (AI_anyAttack(1, 65, NO_MOVEMENT_FLAGS,
+				//std::max(0, (iPlotDanger - 1))
+				iPlotDanger > 1 ? 2 : 0)) // K-Mod
 			{
-				if (pCity->AI_isDefended(pCity->getPlot().plotCount(PUF_canDefendGroupHead,
-					-1, -1, getOwner(), NO_TEAM, PUF_isNotCityAIType)))
-				{
-					int const iDangerThresh = 4;
-					int iPlotDanger = GET_PLAYER(getOwner()).AI_getPlotDanger(getPlot(), 3, true,
-							iDangerThresh + 1); // advc.opt: Stop counting at thresh
-					if (iPlotDanger <= iDangerThresh)
-					{
-						if (AI_anyAttack(1, 65, NO_MOVEMENT_FLAGS,
-							//std::max(0, (iPlotDanger - 1))
-							iPlotDanger > 1 ? 2 : 0)) // K-Mod
-						{
-							return true;
-						}
-					}
-				}
+				return true;
 			}
 		}
 	}
-
 	return false;
 }
 
@@ -12419,7 +12410,7 @@ bool CvUnitAI::AI_patrol() // advc: refactored
 {
 	PROFILE_FUNC();
 	// <advc.102> Only patrol near own territory
-	if(!isBarbarian())
+	if (!isBarbarian())
 	{
 		bool bFound = false;
 		CvPlayer const& kOwner = GET_PLAYER(getOwner());
@@ -12462,7 +12453,7 @@ bool CvUnitAI::AI_patrol() // advc: refactored
 			owned tiles have visibility anyway. In order to get to unowned tiles,
 			however, units may have to traverse owned tiles, so they need to be
 			allowed to patrol into owned tiles at least under some circumstances. */
-		if(!isBarbarian() && kAdj.getOwner() == getOwner() &&
+		if (!isBarbarian() && kAdj.getOwner() == getOwner() &&
 			// Make sure not to hamper early exploration (perhaps not an issue)
 			kGame.getElapsedGameTurns() >= 25 &&
 			(kAdj.isUnit() || fixp(0.9).bernoulliSuccess(kGame.getSRand(),
@@ -12474,8 +12465,8 @@ bool CvUnitAI::AI_patrol() // advc: refactored
 		int iValue = 1 + kGame.getSorenRandNum(10000, "AI Patrol");
 		// advc.309: Moved this if/else up
 		if (isBarbarian() &&
-			/*  advc.306: Patrolling Barbarian ships should pretty much
-				move about randomly, neither seeking nor avoiding owned tiles. */
+			/*  advc.306: (Patrolling Barbarian ships should pretty much
+				move about randomly, neither seeking nor avoiding owned tiles.) */
 			!getPlot().isWater())
 		{
 			if (!kAdj.isOwned())
@@ -12492,14 +12483,14 @@ bool CvUnitAI::AI_patrol() // advc: refactored
 				iValue += 10000;*/
 		}
 		// <advc.309>
-		if(isAnimal())
+		if (isAnimal())
 		{
 			// Same check as in CvGame::createAnimals
-			if((kAdj.isFeature()) ?
+			if ((kAdj.isFeature()) ?
 				getUnitInfo().getFeatureNative(kAdj.getFeatureType()) :
 				getUnitInfo().getTerrainNative(kAdj.getTerrainType()))
 			{
-				iValue += kGame.getSorenRandNum(10000, "advc.309");
+				iValue += kGame.getSorenRandNum(10000, "AI_patrol (advc.309)");
 			}
 			/*	Neither a native terrain nor at least adjacent to
 				a native feature: probably avoid */
@@ -12543,7 +12534,7 @@ bool CvUnitAI::AI_patrol() // advc: refactored
 			FAssert(!atPlot(pBestPlot));
 		}
 	}
-	if(pBestPlot == NULL)
+	if (pBestPlot == NULL)
 		return false;
 
 	pushGroupMoveTo(*pBestPlot, NO_MOVEMENT_FLAGS, false, false, MISSIONAI_PATROL);
@@ -21555,9 +21546,8 @@ bool CvUnitAI::AI_poach()
 	if(GET_PLAYER(getOwner()).AI_isFocusWar(area())) // advc.105
 		return false;
 	FAssert(canAttack());
-	//Look for a unit which is non-combat
-	//and has a capture unit type
-	for (SquareIter it(*this, 1, false); it.hasNext(); ++it)
+	//Look for a unit which is non-combat and has a capture unit type
+	for (SquareIter it(*this, 1, false); it.hasNext(); ++it) {
 		//if (iX != 0 && iY != 0) // advc.001: Looks like an error; probably '||' intended.
 		CvPlot* pLoopPlot = &(*it);
 		if (pLoopPlot->getTeam() != getTeam() && pLoopPlot->isVisible(getTeam(), false)) {
@@ -21592,8 +21582,7 @@ bool CvUnitAI::AI_poach()
 			}
 		}
 	}
-	if (pBestPoachPlot != NULL) {
-		//No war roll.
+	if (pBestPoachPlot != NULL) { //No war roll.
 		if (!GET_TEAM(getTeam()).AI_performNoWarRolls(eBestPoachTeam)) {
 			GET_TEAM(getTeam()).declareWar(eBestPoachTeam, true, WARPLAN_LIMITED);
 			FAssert(!at(*pBestPoachPlot));

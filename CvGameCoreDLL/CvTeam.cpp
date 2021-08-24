@@ -4114,7 +4114,7 @@ bool CvTeam::isHasTech(TechTypes eIndex) const
 	return m_abHasTech.get(eIndex);
 }
 
-// <advc.039>
+// advc.039:
 CvWString const CvTeam::tradeItemString(TradeableItems eItem, int iData, TeamTypes eFrom) const
 {
 	CvTeam const& kFrom = GET_TEAM(eFrom);
@@ -4177,7 +4177,7 @@ CvWString const CvTeam::tradeItemString(TradeableItems eItem, int iData, TeamTyp
 	}
 	}
 	return L"";
-} // </advc.039>
+}
 
 void CvTeam::announceTechToPlayers(TechTypes eIndex, /* advc.156: */ PlayerTypes eDiscoverPlayer,
 	bool bPartial)
@@ -4367,7 +4367,8 @@ void CvTeam::setHasTech(TechTypes eTech, bool bNewValue, PlayerTypes ePlayer,
 			CvPlayerAI& kMember = *it;
 			if (kMember.isResearchingTech(eTech))
 				kMember.popResearch(eTech);
-			// notify the player they now have the tech, if they want to make immediate changes
+			/*	notify the player they now have the tech,
+				if they want to make immediate changes */
 			kMember.AI_nowHasTech(eTech);
 			kMember.invalidateYieldRankCache();
 		}
@@ -4400,8 +4401,10 @@ void CvTeam::setHasTech(TechTypes eTech, bool bNewValue, PlayerTypes ePlayer,
 				}
 				else
 				{
-					szBuffer = gDLL->getText("TXT_KEY_MISC_FIRST_TECH_CHOOSE_FREE", kTech.getTextKeyWide());
-					GET_PLAYER(ePlayer).chooseTech(kTech.getFirstFreeTechs(), szBuffer.GetCString());
+					szBuffer = gDLL->getText("TXT_KEY_MISC_FIRST_TECH_CHOOSE_FREE",
+							kTech.getTextKeyWide());
+					GET_PLAYER(ePlayer).chooseTech(kTech.getFirstFreeTechs(),
+							szBuffer.GetCString());
 				}
 				// advc.004: Announcement code moved into next block
 				// advc.106: Do it at the end instead
@@ -4417,7 +4420,8 @@ void CvTeam::setHasTech(TechTypes eTech, bool bNewValue, PlayerTypes ePlayer,
 			{
 				// Free GP only minor event
 				bool bMajor = (kTech.getFirstFreeTechs() > 0);
-				for (PlayerIter<MAJOR_CIV,NOT_SAME_TEAM_AS> it(TEAMID(ePlayer)); it.hasNext(); ++it)
+				for (PlayerIter<MAJOR_CIV,NOT_SAME_TEAM_AS> it(TEAMID(ePlayer));
+					it.hasNext(); ++it)
 				{
 					CvPlayer const& kObs = *it;
 					if (isHasMet(kObs.getTeam()) || /* advc.127: */ kObs.isSpectator())
@@ -4479,7 +4483,8 @@ void CvTeam::setHasTech(TechTypes eTech, bool bNewValue, PlayerTypes ePlayer,
 				{
 					continue;
 				}
-				CvCity const* pCity = kMap.findCity(kLoopPlot.getX(), kLoopPlot.getY(), NO_PLAYER,
+				CvCity const* pCity = kMap.findCity(
+						kLoopPlot.getX(), kLoopPlot.getY(), NO_PLAYER,
 						// advc.004r: Pass ID as eObserver (last param) instead of city owner
 						NO_TEAM, false, false, NO_TEAM, NO_DIRECTION, NULL, getID());
 				if (pCity == NULL)
@@ -4546,7 +4551,7 @@ void CvTeam::setHasTech(TechTypes eTech, bool bNewValue, PlayerTypes ePlayer,
 							if (GC.getInfo(eLoopCivic).getTechPrereq() == eTech)
 								eCivic = eLoopCivic;
 						}
-					} // <advc.004x>
+					}  // <advc.004x>
 					if (eCivic != NO_CIVIC && kMember.canDoCivics(eCivic))
 					{
 						// BtS code moved into subroutine

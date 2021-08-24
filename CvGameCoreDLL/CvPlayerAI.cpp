@@ -12998,33 +12998,32 @@ DenialTypes CvPlayerAI::AI_civicTrade(CivicTypes eCivic, PlayerTypes ePlayer) co
 {
 	if (isHuman())
 		return NO_DENIAL;
-
 	if (GET_TEAM(getTeam()).isVassal(GET_PLAYER(ePlayer).getTeam()))
 		return NO_DENIAL;
-
 	if (atWar(getTeam(), GET_PLAYER(ePlayer).getTeam()))
 		return NO_DENIAL;
-
 	if (TEAMID(ePlayer) == getTeam())
 		return NO_DENIAL;
 
-	CivicOptionTypes eCivicOption = GC.getInfo(eCivic).getCivicOptionType(); // advc
-	if (getCivicPercentAnger(getCivics(eCivicOption), true) > getCivicPercentAnger(eCivic))
-		return DENIAL_ANGER_CIVIC;
-
-	CivicTypes eFavoriteCivic = GC.getInfo(getPersonalityType()).getFavoriteCivic();
-	if (eFavoriteCivic != NO_CIVIC)
 	{
-		if (isCivic(eFavoriteCivic) &&
-			eCivicOption == GC.getInfo(eFavoriteCivic).getCivicOptionType())
+		CivicOptionTypes const eCivicOption = GC.getInfo(eCivic).getCivicOptionType();
+		if (getCivicPercentAnger(getCivics(eCivicOption), true) >
+			getCivicPercentAnger(eCivic))
 		{
-			return DENIAL_FAVORITE_CIVIC;
+			return DENIAL_ANGER_CIVIC;
 		}
+		CivicTypes eFavoriteCivic = GC.getInfo(getPersonalityType()).getFavoriteCivic();
+		if (eFavoriteCivic != NO_CIVIC)
+		{
+			if (isCivic(eFavoriteCivic) &&
+				eCivicOption == GC.getInfo(eFavoriteCivic).getCivicOptionType())
+			{
+				return DENIAL_FAVORITE_CIVIC;
+			}
+		}
+		if (getCivilization().getInitialCivic(eCivicOption) == eCivic)
+			return DENIAL_JOKING;
 	}
-
-	if (getCivilization().getInitialCivic(eCivicOption) == eCivic)
-		return DENIAL_JOKING;
-
 	if (AI_getAttitude(ePlayer) <= GC.getInfo(getPersonalityType()).
 		getAdoptCivicRefuseAttitudeThreshold())
 	{

@@ -117,9 +117,11 @@ public:
 	DllExport bool canMoveOrAttackInto(CvPlot* pPlot, bool bDeclareWar = false)											// Exposed to Python
 	{
 		return canMoveOrAttackInto(*pPlot, bDeclareWar, false);
-	} // K-Mod. (avoid breaking the DllExport)			advc: 2x const, CvPlot&
-	bool canMoveOrAttackInto(CvPlot const& kPlot, bool bDeclareWar = false, bool bCheckMoves = false, bool bAssumeVisible = true) const;
-	bool canMoveThrough(CvPlot const& kPlot, bool bDeclareWar = false, bool bAssumeVisible = true) const; // Exposed to Python, K-Mod added bDeclareWar and bAssumeVisible; advc: CvPlot const&
+	} // K-Mod. (Avoid breaking the DllExport; EXE calls the above for NumPad help.)
+	bool canMoveOrAttackInto(CvPlot const& kPlot, bool bDeclareWar = false,
+			bool bCheckMoves = false, bool bAssumeVisible = true) const;
+	bool canMoveThrough(CvPlot const& kPlot,																			// Exposed to Python
+			bool bDeclareWar = false, bool bAssumeVisible = true) const; // K-Mod
 	bool canFight() const;																																										// Exposed to Python
 	bool canDefend() const;																																										// Exposed to Python
 	bool canBombard(CvPlot const& kPlot) const;

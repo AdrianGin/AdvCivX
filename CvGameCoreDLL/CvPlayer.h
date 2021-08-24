@@ -1654,9 +1654,9 @@ protected:  // <advc.210>
 
 	CvEventMap m_mapEventsOccured;
 	CvEventMap m_mapEventCountdown;
+	// advc.enum (tbd.): These should be ListEnumMap ...
 	UnitCombatPromotionArray m_aFreeUnitCombatPromotions;
 	UnitClassPromotionArray m_aFreeUnitClassPromotions;
-
 	std::vector<std::pair<int, PlayerVoteTypes> > m_aVote;
 	std::vector<std::pair<UnitClassTypes,int> > m_aUnitExtraCosts;
 
