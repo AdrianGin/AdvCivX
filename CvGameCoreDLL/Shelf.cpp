@@ -3,7 +3,7 @@
 #include "CvGameCoreDLL.h"
 #include "Shelf.h"
 #include "CvGame.h"
-#include "CvPlot.h"
+#include "CvMap.h"
 #include "CvUnit.h"
 #include "CvPlayer.h"
 
@@ -15,18 +15,19 @@ void Shelf::add(CvPlot* pPlot)
 
 
 CvPlot* Shelf::randomPlot(RandPlotFlags eRestrictions, int iUnitDistance,
-	int* piLegalCount) const
+	int* piValidCount, RandPlotWeightMap const* pWeights) const
 {
-	int iLegal_local=0;
-	int& iLegal = (piLegalCount == NULL ? iLegal_local : *piLegalCount);
+	int iValid_local=0;
+	int& iValid = (piValidCount == NULL ? iValid_local : *piValidCount);
 	/*	Based on CvMap::syncRandPlot, but shelves are (normally) so small
-		that random sampling isn't efficient. Instead, compute the legal
+		that random sampling isn't efficient. Instead, compute the valid
 		plots first, then return one of those at random (NULL if none). */
-	std::vector<CvPlot*> apLegal;
+	std::vector<CvPlot*> apValid;
+	std::vector<int> aiWeights;
 	for (size_t i = 0; i < m_apPlots.size(); i++)
 	{
 		CvPlot& p = *m_apPlots[i];
-		bool isLegal = (
+		bool const bValid = (
 				!(RANDPLOT_LAND & eRestrictions) &&
 				(!(RANDPLOT_UNOWNED & eRestrictions) || !p.isOwned()) &&
 				(!(RANDPLOT_ADJACENT_UNOWNED & eRestrictions) || !p.isAdjacentOwned()) &&
@@ -37,13 +38,16 @@ CvPlot* Shelf::randomPlot(RandPlotFlags eRestrictions, int iUnitDistance,
 				!p.isUnit());
 		/*	RANDPLOT_PASSIBLE, RANDPLOT_ADJACENT_LAND, RANDPLOT_HABITABLE:
 			Ensured by CvMap::computeShelves. */
-		if (isLegal)
-			apLegal.push_back(&p);
+		if (bValid)
+		{
+			apValid.push_back(&p);
+			if (pWeights != NULL)
+				aiWeights.push_back(pWeights->getProbWeight(p));
+		}
 	}
-	iLegal = (int)apLegal.size();
-	if (iLegal == 0)
-		return NULL;
-	return apLegal[GC.getGame().getSorenRandNum(iLegal, "random shelf plot")];
+	iValid = apValid.size();
+	return weightedRandChoice(GC.getGame().getSRand(), apValid,
+			pWeights == NULL ? NULL : &aiWeights);
 }
 
 

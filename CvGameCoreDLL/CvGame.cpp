@@ -20,6 +20,7 @@
 #include "CvReplayInfo.h"
 #include "CvGameTextMgr.h"
 #include "CvMessageControl.h"
+#include "BarbarianWeightMap.h" // advc.304
 #include "StartingPositionIteration.h" // advc.027
 #include "StartPointsAsHandicap.h" // advc.250b
 #include "RiseFall.h" // advc.700
@@ -35,7 +36,8 @@
 
 CvGame::CvGame() :
 	m_pRiseFall(new RiseFall()), // advc.700
-	m_pSpah(new StartPointsAsHandicap()) // advc.250b
+	m_pSpah(new StartPointsAsHandicap()), // advc.250b
+	m_pBarbarianWeightMap(new BarbarianWeightMap()) // advc.304
 {
 	m_aiRankPlayer = new int[MAX_PLAYERS];        // Ordered by rank...
 	m_aiPlayerRank = new int[MAX_PLAYERS];        // Ordered by player ID...
@@ -83,8 +85,9 @@ CvGame::~CvGame()
 	SAFE_DELETE_ARRAY(m_aiTeamRank);
 	SAFE_DELETE_ARRAY(m_aiTeamScore);
 
-	SAFE_DELETE(m_pSpah); // advc.250b
 	SAFE_DELETE(m_pRiseFall); // advc.700
+	SAFE_DELETE(m_pSpah); // advc.250b
+	SAFE_DELETE(m_pBarbarianWeightMap); // advc.304
 }
 
 void CvGame::init(HandicapTypes eHandicap)
@@ -682,6 +685,8 @@ void CvGame::reset(HandicapTypes eHandicap, bool bConstructorCall)
 			m_aiSecretaryGeneralTimer[iI] = 0;
 			m_aiVoteTimer[iI] = 0;
 		}
+
+		getBarbarianWeightMap().getActivityMap().reset(); // advc.304
 	}
 
 	m_deals.removeAll();
@@ -6535,6 +6540,7 @@ void CvGame::doTurn()
 
 	GC.getMap().doTurn();
 
+	getBarbarianWeightMap().getActivityMap().decay(); // advc.304
 	createBarbarianCities();
 	createBarbarianUnits();
 
@@ -7924,33 +7930,10 @@ int CvGame::createBarbarianUnits(int iUnitsToCreate, CvArea& kArea, Shelf* pShel
 	} // </advc.306>
 
 	for (int i = 0; i < iUnitsToCreate; i++) 
-	{
-		// <advc.300>
-		CvPlot* pPlot = NULL;
-		// Reroll twice if the tile has poor yield
-		for (int j = 0; j < 3; j++)
-		{
-			pPlot = randomBarbarianPlot(kArea, pShelf);
-			/*  If we can't find a plot once, we won't find one in a later
-				iteration either. */
-			if (pPlot == NULL)
-				return iCreated;
-			int iTotalYield = 0;
-			FOR_EACH_ENUM(Yield)
-				iTotalYield += pPlot->getYield(eLoopYield);
-			// Want to re-roll flat Tundra Forest as well
-			if (iTotalYield == 2 && !pPlot->isImproved())
-			{
-				iTotalYield = 0;
-				FOR_EACH_ENUM(Yield)
-				{
-					iTotalYield += pPlot->calculateNatureYield(eLoopYield, NO_TEAM,
-							/* bIgnoreFeature=*/true);
-				}
-			}
-			if (iTotalYield >= 2)
-				break;
-		}
+	{	// <advc.300>
+		CvPlot* pPlot = randomBarbarianPlot(kArea, pShelf);
+		if (pPlot == NULL)
+			return iCreated;
 		UnitAITypes eUnitAI = UNITAI_ATTACK;
 		if (pShelf != NULL)
 			eUnitAI = UNITAI_ATTACK_SEA;
@@ -7960,21 +7943,24 @@ int CvGame::createBarbarianUnits(int iUnitsToCreate, CvArea& kArea, Shelf* pShel
 			return iCreated;
 		CvUnit* pNewUnit = GET_PLAYER(BARBARIAN_PLAYER).initUnit(eUnitType,
 				pPlot->getX(), pPlot->getY(), eUnitAI);
-		if (pNewUnit != NULL && !pPlot->isWater())
+		if (!pPlot->isWater())
 			iCreated++;
 		// </advc.300>
 		// K-Mod. Give a combat penalty to barbarian boats.
-		if (pNewUnit && pPlot->isWater() &&
-				!pNewUnit->getUnitInfo().isHiddenNationality()) // kekm.12
+		if (pPlot->isWater() &&
+			!pNewUnit->getUnitInfo().isHiddenNationality()) // kekm.12
 		{	// find the "disorganized" promotion. (is there a better way to do this?)
 			PromotionTypes eDisorganized = (PromotionTypes)
 					GC.getInfoTypeForString("PROMOTION_DISORGANIZED", true);
 			if (eDisorganized != NO_PROMOTION)
-			{	/*	sorry, barbarians. Free boats are just too dangerous for
+			{	/*	Sorry, barbarians. Free ships are just too dangerous for
 					real civilizations to defend against. */
 				pNewUnit->setHasPromotion(eDisorganized, true);
 			}
 		} // K-Mod end
+		// <advc.304> Discourage nearby unit placement for some time
+		getBarbarianWeightMap().getActivityMap().change(*pPlot,
+				BarbarianActivityMap::maxStrength() / 2, 2); // </advc.304>
 	}
 	return iCreated; // advc.306
 }
@@ -7994,23 +7980,29 @@ CvPlot* CvGame::randomBarbarianPlot(CvArea const& kArea, Shelf const* pShelf)
 		no longer apply to Barbarians previously spawned; see
 		CvPlot::isVisibleToCivTeam, CvMap::isCivUnitNearby. */
 	static int const iDist = GC.getDefineINT("MIN_BARBARIAN_STARTING_DISTANCE");
-	// <advc.304> Sometimes don't pick a plot if there are few legal plots
-	int iLegal = 0;
+	// <advc.304>
+	int iValid = 0; // Sometimes don't pick a plot if there are few valid plots
 	CvPlot* pRandPlot = NULL;
 	if (pShelf == NULL)
-		pRandPlot = GC.getMap().syncRandPlot(eFlags, &kArea, iDist, -1, &iLegal);
+	{
+		pRandPlot = GC.getMap().syncRandPlot(eFlags, &kArea, iDist, -1,
+				&iValid, &getBarbarianWeightMap());
+	}
 	else
 	{
-		pRandPlot = pShelf->randomPlot(eFlags, iDist, &iLegal);
-		if (pRandPlot != NULL && iLegal * 100 < pShelf->size())
+		pRandPlot = pShelf->randomPlot(eFlags, iDist,
+				&iValid, &getBarbarianWeightMap());
+		if (pRandPlot != NULL && iValid * 100 < pShelf->size())
 			pRandPlot = NULL;
 	}
-	if (pRandPlot != NULL && iLegal > 0 && iLegal < 4)
+	int const iFewValidThresh = 5; // (Should perhaps be based on a.getNumTiles()?)
+	if (pRandPlot != NULL && iValid > 0 && iValid < iFewValidThresh)
 	{
-		// Tbd.: Should perhaps be based on a.getNumTiles()
-		scaled rSkipProb = 1 - scaled(1, 5 - iLegal);
-		if(rSkipProb.bernoulliSuccess(getSRand(), "randomBarbarianPlot"))
-		pRandPlot = NULL;
+		scaled rSkipProb = 1 - scaled(1, 1 + iFewValidThresh - iValid);
+		// Especially don't want a constant stream of units from low-weight plots
+		rSkipProb *= scaled::max(1, 2 - per100(getBarbarianWeightMap().get(*pRandPlot)));
+		if (rSkipProb.bernoulliSuccess(getSRand(), "randomBarbarianPlot skip"))
+			pRandPlot = NULL;
 	}
 	return pRandPlot; // </advc.304>
 }

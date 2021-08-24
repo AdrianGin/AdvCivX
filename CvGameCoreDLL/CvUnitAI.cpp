@@ -9,6 +9,7 @@
 #include "CvPlotGroup.h" // (just for AI_betterPlotBuild)
 #include "PlotRange.h"
 #include "CvArea.h"
+#include "BarbarianWeightMap.h" // advc.304
 #include "CvInfo_Terrain.h"
 #include "CvInfo_GameOption.h"
 #include "CvInfo_Building.h" // advc.003x: Only needed for the special buildings that GP can construct
@@ -12473,9 +12474,10 @@ bool CvUnitAI::AI_patrol() // advc: refactored
 				iValue += 20000;
 			if (!kAdj.isAdjacentOwned())
 				iValue += 10000;
-			// <advc.300>
-			if (kAdj.isHabitable())
-				iValue += 5000; // </advc.300>
+			// <advc.304>
+			if (!isAnimal())
+				iValue += GC.getGame().getBarbarianWeightMap().get(kAdj) * 60;
+			// </advc.304>
 		}
 		else
 		{
@@ -13235,7 +13237,8 @@ CvCity* CvUnitAI::AI_pickTargetCity(MovementFlags eFlags, int iMaxPathTurns, boo
 				/*	Reduce the value if we can see, or remember,
 					that the city is well defended.
 					Note. This adjustment can be more heavy-handed
-					because it is harder to feign strong defence than weak defence. */
+					because it is harder to feign strong defence than weak defence.
+					advc (note): Barbarians are never dissuaded (no strength memory). */
 				iEnemyDefence = kOurTeam.AI_strengthMemory().get(pLoopCity->getPlot());
 				if (iEnemyDefence > iTotalOffence)
 				{

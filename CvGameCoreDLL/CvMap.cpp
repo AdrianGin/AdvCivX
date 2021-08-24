@@ -22,6 +22,7 @@
 #include "CvInfo_Terrain.h" // advc.pf (for pathfinder initialization)
 #include "CvInfo_GameOption.h"
 #include "CvReplayInfo.h" // advc.106n
+#include "BarbarianWeightMap.h" // advc.304
 #include "CvDLLIniParserIFaceBase.h"
 
 
@@ -518,9 +519,13 @@ void CvMap::combinePlotGroups(PlayerTypes ePlayer, CvPlotGroup* pPlotGroup1, CvP
 CvPlot* CvMap::syncRandPlot(RandPlotFlags eFlags, CvArea const* pArea,
 	int iMinCivUnitDistance, // advc.300: Renamed from iMinUnitDistance
 	int iTimeout,
-	int* piValidCount) // advc.304: Number of valid tiles
+	/* <advc.304> */ int* piValidCount, // Number of valid tiles
+	RandPlotWeightMap const* pWeights)
 {
-	/*  <advc.304> Look exhaustively for a valid plot by default. Rationale:
+	int iValid_local = 0;
+	int& iValid = (piValidCount == NULL ? iValid_local : *piValidCount);
+	iValid = 0;
+	/*  Look exhaustively for a valid plot by default. Rationale:
 		The biggest maps have about 10000 plots. If there is only one valid plot,
 		then the BtS default of considering 100 plots drawn at random has only a
 		(ca.) 1% chance of success. 10000 trials - slower than exhaustive search! -
@@ -530,20 +535,23 @@ CvPlot* CvMap::syncRandPlot(RandPlotFlags eFlags, CvArea const* pArea,
 	if (iTimeout < 0)
 	{
 		std::vector<CvPlot*> apValidPlots;
-		for(int i = 0; i < numPlots(); i++)
+		std::vector<int> aiWeights;
+		for (int i = 0; i < numPlots(); i++)
 		{
 			CvPlot& kPlot = getPlotByIndex(i);
 			if (isValidRandPlot(kPlot, eFlags, pArea, iMinCivUnitDistance))
+			{
 				apValidPlots.push_back(&kPlot);
+				if (pWeights != NULL)
+					aiWeights.push_back(pWeights->getProbWeight(kPlot));
+			}
 		}
-		int iValid = (int)apValidPlots.size();
-		if(piValidCount != NULL)
-			*piValidCount = iValid;
-		if(iValid == 0)
-			return NULL;
-		return apValidPlots[GC.getGame().getSorenRandNum(iValid, "advc.304")];
+		iValid = (int)apValidPlots.size();
+		return weightedRandChoice(GC.getGame().getSRand(), apValidPlots,
+				pWeights == NULL ? NULL : &aiWeights);
 	}
 	FAssert(iTimeout != 0);
+	FAssert(pWeights == NULL); // Not compatible with limited trials
 	/*  BtS code (refactored): Limited number of trials
 		(can be faster or slower than the above; that's not really the point) */
 	// </advc.304>
@@ -553,15 +561,12 @@ CvPlot* CvMap::syncRandPlot(RandPlotFlags eFlags, CvArea const* pArea,
 				GC.getGame().getSorenRandNum(getGridWidth(), "Rand Plot Width"),
 				GC.getGame().getSorenRandNum(getGridHeight(), "Rand Plot Height"));
 		if (isValidRandPlot(kTestPlot, eFlags, pArea, iMinCivUnitDistance))
-		{	/*  <advc.304> Not useful, but want to make sure it doesn't stay
-				uninitialized. 1 since we found only 1 valid plot. */
-			if(piValidCount != NULL)
-				*piValidCount = 1; // </advc.304>
+		{	/*  <advc.304> Not going to be useful ...
+				Use 1 to indicate that we found one valid plot. */
+			iValid = 1; // </advc.304>
 			return &kTestPlot;
 		}
-	} // <advc.304>
-	if(piValidCount != NULL)
-		*piValidCount = 0; // </advc.304>
+	}
 	return NULL;
 }
 
@@ -1155,6 +1160,10 @@ void CvMap::read(FDataStreamBase* pStream)
 		m_aiNumBonus.readArray<int>(pStream);
 		m_aiNumBonusOnLand.readArray<int>(pStream);
 	}
+	// <advc.304>
+	if (uiFlag >= 5)
+		GC.getGame().getBarbarianWeightMap().getActivityMap().read(pStream);
+	// </advc.304>
 	if (numPlots() > 0)
 	{
 		m_pMapPlots = new CvPlot[numPlots()];
@@ -1205,7 +1214,8 @@ void CvMap::write(FDataStreamBase* pStream)
 	//uiFlag = 1; // advc.106n
 	//uiFlag = 2; // advc.opt: CvPlot::m_bAnyIsthmus
 	//uiFlag = 3; // advc.opt: m_ePlots
-	uiFlag = 4; // advc.enum: new enum map save behavior
+	//uiFlag = 4; // advc.enum: new enum map save behavior
+	uiFlag = 5; // advc.304: Barbarian weight map
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iGridWidth);
@@ -1223,6 +1233,9 @@ void CvMap::write(FDataStreamBase* pStream)
 	FAssertMsg((0 < GC.getNumBonusInfos()), "GC.getNumBonusInfos() is not greater than zero but an array is being allocated");
 	m_aiNumBonus.write(pStream);
 	m_aiNumBonusOnLand.write(pStream);
+	/*	advc.304: Serialize this for CvGame b/c the map size isn't known
+		when CvGame gets deserialized. (kludge) */
+	GC.getGame().getBarbarianWeightMap().getActivityMap().write(pStream);
 	REPRO_TEST_END_WRITE();
 	for (int i = 0; i < numPlots(); i++)
 		m_pMapPlots[i].write(pStream);

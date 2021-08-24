@@ -10,6 +10,7 @@
 #include "RiseFall.h" // advc.705
 #include "PlotRange.h"
 #include "CvArea.h"
+#include "BarbarianWeightMap.h" // advc.304
 #include "CvInfo_Command.h"
 #include "CvInfo_Terrain.h"
 #include "CvInfo_GameOption.h"
@@ -1449,8 +1450,15 @@ void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted)
 	if (isDead())
 	{
 		if (isBarbarian())
+		{
 			GET_PLAYER(pDefender->getOwner()).changeWinsVsBarbs(1);
-
+			// <advc.304>
+			if (!isAnimal())
+			{
+				GC.getGame().getBarbarianWeightMap().getActivityMap().change(
+						getPlot());
+			} // </advc.304>
+		}
 		if (!m_pUnitInfo->isHiddenNationality() &&
 			!pDefender->getUnitInfo().isHiddenNationality())
 		{
@@ -1498,8 +1506,15 @@ void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted)
 	else if (pDefender->isDead())
 	{
 		if (pDefender->isBarbarian())
+		{
 			GET_PLAYER(getOwner()).changeWinsVsBarbs(1);
-
+			// <advc.304>
+			if (!pDefender->isAnimal())
+			{
+				GC.getGame().getBarbarianWeightMap().getActivityMap().change(
+						pDefender->getPlot());
+			} // </advc.304>
+		}
 		if (!m_pUnitInfo->isHiddenNationality() &&
 			!pDefender->getUnitInfo().isHiddenNationality())
 		{

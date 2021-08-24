@@ -182,10 +182,58 @@ namespace fmath
 	}
 } // </advc.003g>
 
-DllExport int* shuffle(int iNum, CvRandom& rand);
-// advc (tbd.): Move these two to CvRandom (as it's done by Civ4Col too)
-void shuffleArray(int* piShuffle, int iNum, CvRandom& rand);
-void shuffleVector(std::vector<int>& aiIndices, CvRandom& rand); // advc.enum
+DllExport int* shuffle(int iNum, CvRandom& kRand);
+/*	advc (tbd.): Move these two to CvRandom (as it's done by Civ4Col too).
+	And also shuffle (with a global wrapper the EXE) and weightedRandChoice. */
+void shuffleArray(int* piShuffle, int iNum, CvRandom& kRand);
+void shuffleVector(std::vector<int>& aiIndices, CvRandom& kRand); // advc.enum
+// advc.304 (may find other uses too):
+template<class Item>
+Item* weightedRandChoice(CvRandom& kRand, std::vector<Item*> const& kItems,
+	/*	NULL means uniform weights. Uniform choice isn't what this function is for,
+		but it's convenient to have as an option. */
+	std::vector<int> const* pWeights = NULL)
+{
+	std::vector<int> aiLowPrecisionWeights;
+	int iTotal = 0;
+	if (pWeights == NULL)
+		iTotal = (int)kItems.size();
+	else
+	{
+		FAssert(pWeights->size() == kItems.size());
+		for (size_t i = 0; i < pWeights->size(); i++)
+			iTotal += (*pWeights)[i];
+		FAssertMsg(iTotal >= 0, "overflow?");
+		// This we'll need to be able to recover from I think:
+		if (iTotal > kRand.getRange())
+		{
+			scaled rDownScaleFactor(kRand.getRange(), iTotal);
+			aiLowPrecisionWeights = *pWeights; // copy
+			pWeights = &aiLowPrecisionWeights;
+			iTotal = 0; // recompute
+			for (size_t i = 0; i < aiLowPrecisionWeights.size(); i++)
+			{
+				aiLowPrecisionWeights[i] = (aiLowPrecisionWeights[i] *
+						rDownScaleFactor).floor();
+				iTotal += aiLowPrecisionWeights[i];
+			}
+			FAssert(iTotal > 0 && iTotal <= kRand.getRange());
+		}
+	}
+	if (iTotal == 0)
+		return NULL;
+	int iRoll = kRand.get(iTotal, "weightedRandChoice");
+	if (pWeights == NULL)
+		return kItems[iRoll];
+	for (size_t i = 0; i < kItems.size(); i++)
+	{
+		iRoll -= (*pWeights)[i];
+		if (iRoll < 0)
+			return kItems[i];
+	}
+	FErrorMsg("Negative weights?");
+	return NULL;
+}
 
 int getTurnMonthForGame(int iGameTurn, int iStartYear, CalendarTypes eCalendar, GameSpeedTypes eSpeed);
 int getTurnYearForGame(int iGameTurn, int iStartYear, CalendarTypes eCalendar, GameSpeedTypes eSpeed);

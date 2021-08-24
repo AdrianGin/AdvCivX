@@ -283,7 +283,10 @@ public: // advc: made several functions const
 	CvPlot* syncRandPlot(RandPlotFlags eFlags = RANDPLOT_ANY,								// Exposed to Python
 			CvArea const* pArea = NULL, // advc: was iArea
 			int iMinCivUnitDistance = -1,
-			int iTimeout = -1, int* piValidCount = NULL); // advc.304 (default timeout was 100)
+			// <advc.304> Default timeout was 100
+			int iTimeout = -1, int* piValidCount = NULL,
+			// NULL means uniform
+			RandPlotWeightMap const* pWeights = NULL); // </advc.304>
 	// <advc>
 	bool isValidRandPlot(CvPlot const& kPlot, RandPlotFlags eFlags,
 			CvArea const* pArea, int iMinCivUnitDistance) const; // </advc>
@@ -567,6 +570,14 @@ protected:
 	void updateLakes();
 	// </advc.030>
 	void updateNumPlots(); // advc.opt
+};
+
+/*	advc.304: Interface for CvMap::syncRandPlot weights. Would prefer to
+	nest this in CvMap, but that leads to trouble with fwd declarations. */
+class RandPlotWeightMap
+{
+public:
+	virtual int getProbWeight(CvPlot const& kPlot) const { return 100; }
 };
 
 // advc.enum:

@@ -10870,7 +10870,9 @@ void CvCity::doGreatPeople()
 		{
 			iTotalGreatPeopleUnitProgress += getGreatPeopleUnitProgress(kCiv.unitAt(i));
 		}
-		// <advc> Should only happen in old savegames (due to a bug in AdvCiv 0.97)
+		/*	<advc> Should only happen in old savegames (due to a bug in AdvCiv 0.97).
+			NB: If we break savegame compatibility, then we should call
+			::weightedRandChoice here (to avoid code duplication). */
 		bool const bOverflow = (iTotalGreatPeopleUnitProgress > CvRandom::getRange());
 		if (bOverflow)
 			iTotalGreatPeopleUnitProgress = per100(iTotalGreatPeopleUnitProgress).ceil(); // </advc>

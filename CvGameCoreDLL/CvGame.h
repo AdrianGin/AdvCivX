@@ -15,6 +15,7 @@ class CvDeal;
 class CvCivilization; // advc.003w
 class NormalizationTarget; // advc.027
 class Shelf; // advc.300
+class BarbarianWeightMap; // advc.304
 class StartPointsAsHandicap; // advc.250b
 class RiseFall; // advc.700
 
@@ -866,7 +867,10 @@ public:
 	StartPointsAsHandicap const& startPointsAsHandicap() const;
 	int getBarbarianStartTurn() const; // advc.300		(exposed to Python)
 	bool isBarbarianCreationEra() const; // advc.307
-	// <advc.703>
+	// <advc.304>
+	BarbarianWeightMap& getBarbarianWeightMap() { return *m_pBarbarianWeightMap; }
+	BarbarianWeightMap const& getBarbarianWeightMap() const { return *m_pBarbarianWeightMap; }
+	// </advc.304>  <advc.703>
 	RiseFall const& getRiseFall() const { return *m_pRiseFall; }
 	RiseFall& getRiseFall() { return *m_pRiseFall; }
 	// </advc.703>
@@ -1011,6 +1015,7 @@ protected:
 	int m_iNumSessions;
 	CvHallOfFameInfo* m_pHallOfFame; // advc.106i
 
+	BarbarianWeightMap* m_pBarbarianWeightMap; // advc.304 (serialized by CvMap)
 	std::vector<PlotExtraYield> m_aPlotExtraYields;
 	std::vector<PlotExtraCost> m_aPlotExtraCosts;
 	// advc: Replacing a hash_map

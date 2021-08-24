@@ -5,6 +5,7 @@
 
 class CvPlot;
 class CvUnit;
+class RandPlotWeightMap; // (see CvMap::syncRandPlot)
 enum RandPlotFlags;
 
 /*	advc.300: New class representing a continental shelf, akin to a CvArea
@@ -17,7 +18,7 @@ public:
 
 	void add(CvPlot* pPlot);
 	CvPlot* randomPlot(RandPlotFlags eRestrictions, int iUnitDistance,
-			int* piLegalCount = NULL) const;
+			int* piValidCount = NULL, RandPlotWeightMap const* pWeights = NULL) const;
 	int size() const { return (int)m_apPlots.size(); }
 	int countUnownedPlots() const;
 	int countBarbarians() const;

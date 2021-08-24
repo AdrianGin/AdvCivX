@@ -12,6 +12,7 @@
 #include "RiseFall.h" // advc.705
 #include "PlotRange.h"
 #include "CvArea.h"
+#include "BarbarianWeightMap.h" // advc.304
 #include "CvDiploParameters.h"
 #include "CvInfo_City.h"
 #include "CvInfo_Terrain.h"
@@ -3036,6 +3037,13 @@ int CvPlayerAI::AI_targetCityValue(CvCity const& kCity, bool bRandomize,
 	/*if (kCity.isAutoRaze(getID()))
 		iValue = intdiv::round(iValue + 2, 3);*/ // K-Mod
 	// </advc.104d>
+	/*	<advc.304> (On a side note, some adjustments for Barbarians
+		in the code above might not be a bad idea.) */
+	if (isBarbarian())
+	{	/*	Relucant to hit cities where Barbarian units were recently killed
+			(or created; also avoids cities on poor terrain - fair enough). */
+		iValue += GC.getGame().getBarbarianWeightMap().get(kCity.getPlot()) / 10;
+	} // </advc.304>
 	return iValue;
 }
 
