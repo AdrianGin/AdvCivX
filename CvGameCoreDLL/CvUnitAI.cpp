@@ -12522,13 +12522,16 @@ bool CvUnitAI::AI_patrol() // advc: refactored
 			int iX = kAdj.getX();
 			int iY = kAdj.getY();
 			int iDelta = ::abs(iFacedX - iX) + ::abs(iFacedY - iY);
-			if(iDelta <= 1)
-				iValue += kGame.getSorenRandNum(10000, "advc.102");
+			if (iDelta <= 1)
+				iValue += kGame.getSorenRandNum(10000, "AI_patrol (advc.102)");
 			/*  Prefer to stay/get out of foreign borders: AI patrols inside
 				human borders are annoying */
-			PlayerTypes eAdjOwner = kAdj.getOwner();
-			if(eAdjOwner != NO_PLAYER && eAdjOwner != getOwner())
-				iValue -= 4000; // </advc.102>
+			PlayerTypes const eAdjOwner = kAdj.getOwner();
+			if (eAdjOwner != NO_PLAYER && eAdjOwner != getOwner() &&
+				!isEnemy(TEAMID(eAdjOWner), kAdj))
+			{
+				iValue -= 4000;
+			} // </advc.102>
 		}
 		if (iValue > iBestValue)
 		{
