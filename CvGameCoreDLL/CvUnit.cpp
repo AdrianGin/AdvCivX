@@ -1417,7 +1417,6 @@ void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted)
 		else
 		{
 			resolveCombat(pDefender, pPlot, bVisible);
-
 			FAssert(!bVisible || getCombatTimer() > 0);
 			if (!bVisible)
 				bFinish = true;
@@ -1557,7 +1556,6 @@ void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted)
 		if (isSuicide())
 		{
 			kill(true);
-
 			pDefender->kill(false);
 			pDefender = NULL;
 		}
@@ -11133,7 +11131,7 @@ bool CvUnit::isTargetOf(CvUnit const& kAttacker) const
 /*	advc (note): Says whether this unit's combat owner in kPlot
 	as viewed by eTeam is hostile to eTeam (same as in BtS).
 	advc.opt: This needs to be faster. So pPlot==NULL and eTeam==NO_TEAM
-	are no longer allowed. Too bad that it still can't be inlined. */
+	are no longer allowed. */
 bool CvUnit::isEnemy(TeamTypes eTeam, CvPlot const& kPlot) const
 {
 	return GET_TEAM(eTeam).isAtWar(TEAMID(getCombatOwner(eTeam, kPlot)));
@@ -11410,7 +11408,7 @@ bool CvUnit::verifyStackValid()
 	return true;
 }
 
-//check if quick combat
+//check if quick combat (in which case false is returned)
 bool CvUnit::isCombatVisible(const CvUnit* pDefender) const
 {
 	bool bVisible = false;
@@ -11433,7 +11431,6 @@ bool CvUnit::isCombatVisible(const CvUnit* pDefender) const
 			}
 		}
 	}
-
 	return bVisible;
 }
 

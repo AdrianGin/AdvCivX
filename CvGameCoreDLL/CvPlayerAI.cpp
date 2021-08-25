@@ -2910,11 +2910,11 @@ int CvPlayerAI::AI_targetCityValue(CvCity const& kCity, bool bRandomize,
 			bThwartVictory = true;
 		}
 	} // Target the capital area of civs aiming at a peaceful victory
-	if(kOwner.AI_atVictoryStage(AI_VICTORY_CULTURE2 | AI_VICTORY_SPACE2) &&
+	if (kOwner.AI_atVictoryStage(AI_VICTORY_CULTURE2 | AI_VICTORY_SPACE2) &&
 		!kOwner.AI_atVictoryStage3() && !AI_atVictoryStage3())
 	{
 		CvCity* pTargetCapital = kOwner.getCapital();
-		if(pTargetCapital != NULL && pTargetCapital->sameArea(kCity))
+		if (pTargetCapital != NULL && pTargetCapital->sameArea(kCity))
 			bThwartVictory = true;
 	}
 	// Prefer easy targets unless very powerful
@@ -11148,9 +11148,9 @@ int CvPlayerAI::AI_bonusVal(BonusTypes eBonus, int iChange, bool bAssumeEnabled,
 	bool bTrade) const // advc.036
 {
 	PROFILE_FUNC(); // advc.opt
-	// <advc.304> Relevant for Barbarian city placement
+	// <advc.303> Relevant for Barbarian city placement
 	if (isBarbarian())
-		return 10; // </advc.304>
+		return 10; // </advc.303>
 	int iValue = 0;
 	int const iBonusCount = getNumAvailableBonuses(eBonus);
 	// <advc.036>

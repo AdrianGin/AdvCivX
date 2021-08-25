@@ -147,7 +147,7 @@ void CvGame::init(HandicapTypes eHandicap)
 
 		for (int i = 0; i < iNumPlayers; i++)
 		{
-			int j = (getSorenRand().get(iNumPlayers - i, NULL) + i);
+			int j = getSorenRand().get(iNumPlayers - i, NULL) + i;
 			if (i != j)
 			{
 				int iTemp = aiTeams[i];
@@ -354,7 +354,7 @@ void CvGame::regenerateMap()
 			(!isOption(GAMEOPTION_ADVANCED_START) || isOption(GAMEOPTION_SPAH)));
 	// </advc.004j>
 	// <advc.700>
-	if(isOption(GAMEOPTION_RISE_FALL))
+	if (isOption(GAMEOPTION_RISE_FALL))
 	{
 		m_pRiseFall->reset();
 		m_pRiseFall->init();
@@ -718,7 +718,7 @@ void CvGame::reset(HandicapTypes eHandicap, bool bConstructorCall)
 	m_bDoMShown = false; // advc.004x
 	m_bFPTestDone = false; // advc.003g
 	// <advc.003r>
-	for(int i = 0; i < NUM_UPDATE_TIMER_TYPES; i++)
+	for (int i = 0; i < NUM_UPDATE_TIMER_TYPES; i++)
 		m_aiUpdateTimers[i] = -1; // </advc.003r>
 	/*  <advc.003v> No need to read data from a savegame first; CvInitCore
 		is responsible for the game options and is loaded before CvGame. */
@@ -918,12 +918,12 @@ void CvGame::initFreeState()
 		}
 	} // </advc.084>
 	// <advc.250b>
-	if(!isOption(GAMEOPTION_ADVANCED_START) ||
+	if (!isOption(GAMEOPTION_ADVANCED_START) ||
 		PlayerIter<HUMAN>::count() == PlayerIter<CIV_ALIVE>::count())
 	{
 		setOption(GAMEOPTION_SPAH, false);
 	}
-	if(isOption(GAMEOPTION_SPAH))
+	if (isOption(GAMEOPTION_SPAH))
 		// Reassigns start plots and start points
 		m_pSpah->setInitialItems(); // </advc.250b>
 	if (GC.getInitCore().getScenario())
@@ -2964,7 +2964,7 @@ void CvGame::update()
 			gDLL->UI().setInAdvancedStart(true);
 			gDLL->UI().setWorldBuilder(true);
 		} // <advc.705>
-		if(isOption(GAMEOPTION_RISE_FALL))
+		if (isOption(GAMEOPTION_RISE_FALL))
 			m_pRiseFall->restoreDiploText(); // </advc.705>
 	}
 	PROFILE_END();
@@ -7635,12 +7635,12 @@ void CvGame::createBarbarianUnits()
 		// NB: Animals are included in this count
 		int iLandUnits = a.getUnitsPerPlayer(BARBARIAN_PLAYER);
 		//  Kill a Barbarian unit if the area gets crowded
-		if(killBarbarian(iLandUnits, iTiles,
+		if (killBarbarian(iLandUnits, iTiles,
 			a.getPopulationPerPlayer(BARBARIAN_PLAYER), a, NULL))
 		{
 			iLandUnits--;
 		}
-		if(iUnownedTotal < iBaseTilesPerLandUnit / 2)
+		if (iUnownedTotal < iBaseTilesPerLandUnit / 2)
 			continue;
 		int iBarbCities = a.getCitiesPerPlayer(BARBARIAN_PLAYER);
 		int iNeededLand = numBarbariansToCreate(iBaseTilesPerLandUnit, iTiles,
@@ -7648,8 +7648,8 @@ void CvGame::createBarbarianUnits()
 		for (size_t i = 0; i < shelves.size(); i++)
 		{
 			int iShips = shelves[i]->countBarbarians();
-			if (killBarbarian(iShips, shelves[i]->size(), a.getPopulationPerPlayer(BARBARIAN_PLAYER),
-				a, shelves[i]))
+			if (killBarbarian(iShips, shelves[i]->size(),
+				a.getPopulationPerPlayer(BARBARIAN_PLAYER), a, shelves[i]))
 			{
 				iShips--;
 			}
@@ -7740,7 +7740,8 @@ void CvGame::createAnimals()
 		iNeededAnimals = (iNeededAnimals / 5) + 1;
 		for (int i = 0; i < iNeededAnimals; i++)
 		{
-			CvPlot* pPlot = GC.getMap().syncRandPlot((RANDPLOT_NOT_VISIBLE_TO_CIV | RANDPLOT_PASSABLE
+			CvPlot* pPlot = GC.getMap().syncRandPlot(
+					(RANDPLOT_NOT_VISIBLE_TO_CIV | RANDPLOT_PASSABLE
 					| RANDPLOT_WATERSOURCE), // advc.300: Also use no iTimeout (try all plots)
 					pLoopArea, iMinAnimalStartingDist);
 			if (pPlot == NULL)
@@ -7749,7 +7750,7 @@ void CvGame::createAnimals()
 			UnitTypes eBestUnit = NO_UNIT;
 			int iBestValue = 0;
 			// advc (comment): This loop picks an animal that is suitable for pPlot
-			CvCivilization const& kCiv = GET_PLAYER(BARBARIAN_PLAYER).getCivilization(); // advc.003w
+			CvCivilization const& kCiv = GET_PLAYER(BARBARIAN_PLAYER).getCivilization();
 			for (int j = 0; j < kCiv.getNumUnits(); j++)
 			{
 				UnitTypes eLoopUnit = kCiv.unitAt(j);
@@ -7780,7 +7781,7 @@ void CvGame::createAnimals()
 // advc.307:
 bool CvGame::isBarbarianCreationEra() const
 {
-	if(isOption(GAMEOPTION_NO_BARBARIANS))
+	if (isOption(GAMEOPTION_NO_BARBARIANS))
 		return false;
 	EraTypes eCurrentEra = getCurrentEra();
 	return (!GC.getInfo(eCurrentEra).isNoBarbUnits() &&
@@ -9263,10 +9264,10 @@ void CvGame::read(FDataStreamBase* pStream)
 		pStream->Read(&m_initialRandSeed.uiSync);
 	} // </advc.027b>
 	// <advc.250b>
-	if(isOption(GAMEOPTION_SPAH))
+	if (isOption(GAMEOPTION_SPAH))
 		m_pSpah->read(pStream); // </advc.250b>
 	// <advc.701>
-	if(uiFlag >= 2)
+	if (uiFlag >= 2)
 	{
 		if(isOption(GAMEOPTION_RISE_FALL))
 			m_pRiseFall->read(pStream);
@@ -9522,10 +9523,10 @@ void CvGame::write(FDataStreamBase* pStream)
 	pStream->Write(m_initialRandSeed.uiSync); // </advc.027b>
 	REPRO_TEST_END_WRITE();
 	// <advc.250b>
-	if(isOption(GAMEOPTION_SPAH))
+	if (isOption(GAMEOPTION_SPAH))
 		m_pSpah->write(pStream); // </advc.250b>
 	// <advc.701>
-	if(isOption(GAMEOPTION_RISE_FALL))
+	if (isOption(GAMEOPTION_RISE_FALL))
 		m_pRiseFall->write(pStream); // </advc.701>
 	ReplayMessageList::_Alloc::size_type iSize = m_listReplayMessages.size();
 	pStream->Write(iSize);
@@ -9539,6 +9540,7 @@ void CvGame::write(FDataStreamBase* pStream)
 	// m_pReplayInfo not saved
 	pStream->Write(m_iNumSessions);
 	REPRO_TEST_BEGIN_WRITE("Game pt3"); // (skip replay messages, sessions)
+
 	pStream->Write(m_aPlotExtraYields.size());
 	for (std::vector<PlotExtraYield>::iterator it = m_aPlotExtraYields.begin();
 		it != m_aPlotExtraYields.end(); ++it)

@@ -953,6 +953,9 @@ protected:
 	PlayerTypes m_eEventPlayer;
 	StartingPlotNormalizationLevel m_eNormalizationLevel; // advc.108
 
+	CvRandom m_mapRand;
+	CvRandom m_sorenRand;
+
 	CvString m_szScriptData;
 
 	int m_aiUpdateTimers[NUM_UPDATE_TIMER_TYPES]; // advc.003r
@@ -1001,8 +1004,6 @@ protected:
 	mutable bool m_bShowingCurrentDeals;
 	// </advc.072>
 
-	CvRandom m_mapRand;
-	CvRandom m_sorenRand;
 	// <advc.027b>
 	struct InitialRandSeed
 	{

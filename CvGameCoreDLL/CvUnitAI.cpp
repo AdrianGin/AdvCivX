@@ -2051,9 +2051,9 @@ void CvUnitAI::AI_barbAttackMove()
 			return;
 		} // BETTER_BTS_AI_MOD: END
 
-		if (getPlot().plotCount(PUF_isUnitAIType, UNITAI_ATTACK, -1, getOwner()) == 1
-				// BETTER_BTS_AI_MOD, Barbarian AI, 05/15/10, jdog5000:
-				&& getGroup()->getNumUnits() == 1)
+		if (getPlot().plotCount(PUF_isUnitAIType, UNITAI_ATTACK, -1, getOwner()) == 1 &&
+			// BETTER_BTS_AI_MOD, Barbarian AI, 05/15/10, jdog5000:
+			getGroup()->getNumUnits() == 1)
 		{
 			getGroup()->pushMission(MISSION_SKIP);
 			return;
@@ -2074,7 +2074,7 @@ void CvUnitAI::AI_barbAttackMove()
 	}
 
 	// <advc.300> See also CvTeamAI::AI_calculateAreaAIType
-	if(getArea().getAreaAIType(getTeam()) != AREAAI_ASSAULT)
+	if (getArea().getAreaAIType(getTeam()) != AREAAI_ASSAULT)
 	{
 		int iCivsInArea = 0;
 		for (PlayerIter<CIV_ALIVE> itCivPlayer; itCivPlayer.hasNext(); ++itCivPlayer)
@@ -2091,7 +2091,7 @@ void CvUnitAI::AI_barbAttackMove()
 		int const iBabarianCitiesInArea = getArea().getNumCities() - iCivCitiesInArea;
 		int const iCivCities = kGame.getNumCivCities();
 		int const iCivs = kGame.countCivPlayersAlive(); // </advc.300>
-		if(kGame.isOption(GAMEOPTION_RAGING_BARBARIANS) &&
+		if (kGame.isOption(GAMEOPTION_RAGING_BARBARIANS) &&
 			/*  <advc.300> On slower than Normal game speed, don't start to rage
 				until 3 in 5 civs have founded a second city. */
 			((iCivsInArea > 1 ?
@@ -2131,9 +2131,9 @@ void CvUnitAI::AI_barbAttackMove()
 			}
 		}
 		/* <advc.300> Now checked per area unless there is only one civ (to avoid an
-		   isolated human civ deliberately steering Barbarian activity in its area).
+		   isolated human civ deliberately curbing Barbarian activity in its area).
 		   Barbarian cities no longer count, but threshold lowered to 2.5. */
-		else if(iCivsInArea > 1 ?
+		else if (iCivsInArea > 1 ?
 			(2 * iCivCitiesInArea > 5 * iCivsInArea) :
 			// The BtS condition: // </advc.300>
 			(iCivCities > iCivs * 3))
@@ -2174,15 +2174,15 @@ void CvUnitAI::AI_barbAttackMove()
 			}
 		}
 		// <advc.300>
-		else if(iCivsInArea > 1 ?
+		else if (iCivsInArea > 1 ?
 			(iCivCitiesInArea > 2 * iCivsInArea ||
 			// For areas that have only room for 2 or 3 cities
 			(iBabarianCitiesInArea <= 0 && iCivCities > 3 * iCivs)) : // </advc.300>
 			(iCivCities > iCivs * 2))
 		{
-			if(AI_pillageRange(2))
+			if (AI_pillageRange(2))
 				return;
-			if(AI_cityAttack(1, 10))
+			if (AI_cityAttack(1, 10))
 				return;
 		}
 	}
@@ -3236,7 +3236,7 @@ void CvUnitAI::AI_attackCityMove()
 		return;
 
 	// K-Mod - replacing some stuff I moved / removed from the BBAI code
-	if (pTargetCity && bTargetTooStrong && iStepDistToTarget <= (bReadyToAttack ? 3 : 2))
+	if (pTargetCity != NULL && bTargetTooStrong && iStepDistToTarget <= (bReadyToAttack ? 3 : 2))
 	{
 		// Pillage around enemy city
 		if (generatePath(pTargetCity->getPlot(), eMoveFlags, true, 0, 5))
@@ -10162,7 +10162,7 @@ bool CvUnitAI::AI_guardCity(bool bLeave, bool bSearch, int iMaxPath, MovementFla
 				Don't want cities to be abandoned unnecessarily just b/c few units
 				were garrisoned when the enemy stack arrived, but don't want them
 				to move in and out either.
-				CvCityAI::updateEvacuating already checks for potential defenders
+				CvCityAI::AI_updateSafety already checks for potential defenders
 				within 3 tiles of the city. If this stack is farther away than that,
 				it'll probably not arrive in time to save the city, but it might,
 				or could quickly retake the city. */
@@ -12530,7 +12530,7 @@ bool CvUnitAI::AI_patrol() // advc: refactored
 				human borders are annoying */
 			PlayerTypes const eAdjOwner = kAdj.getOwner();
 			if (eAdjOwner != NO_PLAYER && eAdjOwner != getOwner() &&
-				!isEnemy(TEAMID(eAdjOWner), kAdj))
+				!isEnemy(TEAMID(eAdjOwner), kAdj))
 			{
 				iValue -= 4000;
 			} // </advc.102>
@@ -13043,9 +13043,10 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 	return false;
 }
 
-// BETTER_BTS_AI_MOD, 03/29/10, jdog5000 (War tactics AI, Efficiency):
-/*	Returns target city. K-Mod: heavily edited */
-CvCity* CvUnitAI::AI_pickTargetCity(MovementFlags eFlags, int iMaxPathTurns, bool bHuntBarbs)
+/*	BETTER_BTS_AI_MOD, 03/29/10, jdog5000 (War tactics AI, Efficiency):
+	Returns target city. K-Mod: heavily edited */
+CvCity* CvUnitAI::AI_pickTargetCity(MovementFlags eFlags, int iMaxPathTurns,
+	bool bHuntBarbs)
 {
 	PROFILE_FUNC();
 
@@ -13071,16 +13072,19 @@ CvCity* CvUnitAI::AI_pickTargetCity(MovementFlags eFlags, int iMaxPathTurns, boo
 	for (int i = 0; i < (bHuntBarbs ? MAX_PLAYERS : MAX_CIV_PLAYERS); i++)
 	{
 		CvPlayer const& kTargetPlayer = GET_PLAYER((PlayerTypes)i);
-		if(!kTargetPlayer.isAlive() ||
+		if (!kTargetPlayer.isAlive() ||
 			!kOurTeam.AI_mayAttack(kTargetPlayer.getTeam()))
 		{
 			continue;
 		}
 		FOR_EACH_CITY_VAR(pLoopCity, kTargetPlayer)
 		{
-			if(!pLoopCity->isArea(getArea())/*|| !AI_plotValid(pLoopCity->plot())*/) // advc.opt: Area check suffices
+			if (!pLoopCity->isArea(getArea()))
+				//|| !AI_plotValid(pLoopCity->plot()) // advc.opt: area check suffices
+			{
 				continue;
-			if(!AI_mayAttack(kTargetPlayer.getTeam(), pLoopCity->getPlot()))
+			}
+			if (!AI_mayAttack(kTargetPlayer.getTeam(), pLoopCity->getPlot()))
 				continue;
 			if (kOwner.AI_deduceCitySite(*pLoopCity))
 			{
@@ -13107,8 +13111,7 @@ CvCity* CvUnitAI::AI_pickTargetCity(MovementFlags eFlags, int iMaxPathTurns, boo
 					/*  (I also wonder if such randomization would fit better near the
 						"we have to walk" comment in AI_attackCityMove. AI_pickTargetCity
 						only decides which units target which city, not how they
-						ultimately move there.) */
-					// </advc.001>
+						ultimately move there.) */ // </advc.001>
 					if (pBestTransport != NULL && iPathTurns > iLandBias + 2)
 					{
 						pBestTransport = AI_findTransport(UNITAI_ASSAULT_SEA, eFlags,
@@ -13285,7 +13288,7 @@ CvCity* CvUnitAI::AI_pickTargetCity(MovementFlags eFlags, int iMaxPathTurns, boo
 				//iPathTurns += bombardRate() > 0 ? std::min(5, getGroup()->getBombardTurns(pLoopCity)/3) : 0; // K-Mod
 				// (already taken into account.)
 
-				iValue /= 8 + iPathTurns*iPathTurns; // was 4+
+				iValue /= 8 + SQR(iPathTurns); // was 4+
 				if (iValue > iBestValue)
 				{
 					iBestValue = iValue;
@@ -15190,7 +15193,7 @@ bool CvUnitAI::AI_assaultSeaTransport(bool bAttackBarbs, bool bLocal,
 		/*	If the plot can't be seen, then just roughly estimate
 			what the AI might think is there... */
 		int iEnemyDefenders = ((kPlot.isVisible(kOurTeam.getID()) ||
-				kOurTeam.AI_strengthMemory().get(kPlot)) ?
+				kOurTeam.AI_strengthMemory().get(kPlot) > 0) ?
 				AI_countEnemyDefenders(kPlot) :
 				(pCity != NULL ? pCity->AI_neededDefenders() : 0));
 
