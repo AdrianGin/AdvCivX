@@ -3,7 +3,7 @@
 #define BARBARIAN_WEIGHT_MAP_H
 
 /*	advc.304: Memory of Barbarian activity and (based on that past activity)
-	weighted probability distribution for plots where Barbarians get placed. */
+	weight distribution for future Barbarian activity. */
 
 #include "CvMap.h"
 

@@ -27,14 +27,13 @@ int BarbarianWeightMap::get(CvPlot const& kPlot) const
 				break;
 		}
 		if (iYieldScore < iTargetYieldScore)
-		{	/*	A fairly big decrease. Note that strength memory will have
+		{	/*	A fairly big decrease. Note that activity memory will have
 				a bit of a leveling effect. */
 			iWeight /= 5;
 		}
 	} // </advc.300>
 	iWeight *= std::max(0, 100
-			/*	The higher the memory value of nearby Barbarian defeats,
-				the less likely are new Barbarians. */
+			// Past activity discourages future activity
 			- m_activityMap.get(kPlot));
 	iWeight /= 100;
 	return iWeight;
