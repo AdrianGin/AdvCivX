@@ -73,6 +73,33 @@ void CvRandom::write(FDataStreamBase* pStream)
 	pStream->Write(m_uiRandomSeed);
 }
 
+// advc: Moved from CvGameCoreUtils
+void CvRandom::shuffle(int* piShuffle, int iNum)
+{
+	for (int i = 0; i < iNum; i++)
+		piShuffle[i] = i;
+	for (int i = 0; i < iNum; i++)
+	{
+		int j = (get(iNum - i, NULL) + i);
+		if (i != j)
+		{
+			int iTemp = piShuffle[i];
+			piShuffle[i] = piShuffle[j];
+			piShuffle[j] = iTemp;
+		}
+	}
+} // </advc>
+
+// advc.enum:
+void CvRandom::shuffle(std::vector<int>& aiIndices)
+{
+	std11::iota(aiIndices.begin(), aiIndices.end(), 0);
+	int const iSize = (int)aiIndices.size();
+	FAssertMsg(iSize > 0, "Shuffling empty vector; intended?");
+	for (int i = 0; i < iSize; i++)
+		std::swap(aiIndices[i], aiIndices[get(iSize - i, NULL) + i]);
+}
+
 // <advc.007b>
 /*	Two function calls that won't get inlined, but it doesn't really matter -
 	only gets called if the log is enabled. */

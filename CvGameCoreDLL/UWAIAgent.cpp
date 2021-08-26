@@ -843,8 +843,8 @@ bool UWAI::Team::considerCapitulation(TeamTypes eMaster, int iAgentWarUtility,
 bool UWAI::Team::tryFindingMaster(TeamTypes eEnemy)
 {
 	CvPlayerAI& kAgentPlayer = GET_PLAYER(GET_TEAM(m_eAgent).getRandomMemberAlive(false));
-	for (TeamAIIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF,true> itMaster(m_eAgent);
-		itMaster.hasNext(); ++itMaster)
+	for (TeamAIRandIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itMaster(
+		GC.getGame().getSRand(), m_eAgent); itMaster.hasNext(); ++itMaster)
 	{
 		CvTeamAI& kMaster = *itMaster;
 		if (kMaster.isAtWar(m_eAgent) ||

@@ -45,6 +45,25 @@ public:
 	void reseed(unsigned int uiNewValue);
 	unsigned int getSeed();
 
+	/*	<advc> Shuffle functions moved from CvGameCoreUtils
+		(as it's also done in Civ4Col). */
+	int* shuffle(int iNum) // Caller deletes the returned array
+	{
+		int* piShuffle = new int[iNum];
+		shuffle(piShuffle, iNum);
+		return piShuffle;
+	}
+	// renamed from "shuffleArray"
+	void shuffle(int* piShuffle, int iNum); // Caller allocates and frees the array
+	// </advc>  advc.enum:
+	void shuffle(std::vector<int>& kIndices); // Caller sets the vector size
+	// advc.304 (may find other uses too):
+	template<class ItemType>
+	ItemType* weightedChoice(std::vector<ItemType*> const& kItems,
+		/*	NULL means uniform weights. Uniform choice isn't what this function
+			is for, but it's convenient to have as an option. */
+		std::vector<int> const* pWeights = NULL);
+
 protected:
 	virtual void printToLog(TCHAR const* szMsg, unsigned short usNum, // advc.007b
 			int iData1, int iData2); // advc.001n
@@ -75,8 +94,59 @@ protected:
 	CvString m_szFileName;
 };
 
-/*	Some macros that should make the logging aspect less tedious.
-	Still unsure if I want to use them. Unused (and untested) so far. */
+// advc: Moved from CvGameCoreUtils, exported through .def file.
+int* shuffleExternal(int iNum, CvRandom& kRand)
+{
+	return kRand.shuffle(iNum);
+}
+
+// advc.304:
+template<class ItemType>
+ItemType* CvRandom::weightedChoice(std::vector<ItemType*> const& kItems,
+	std::vector<int> const* pWeights)
+{
+	std::vector<int> aiLowPrecisionWeights;
+	int iTotal = 0;
+	if (pWeights == NULL)
+		iTotal = (int)kItems.size();
+	else
+	{
+		FAssert(pWeights->size() == kItems.size());
+		for (size_t i = 0; i < pWeights->size(); i++)
+			iTotal += (*pWeights)[i];
+		FAssertMsg(iTotal >= 0, "overflow?");
+		// This we'll need to be able to recover from I think:
+		if (iTotal > getRange())
+		{
+			scaled rDownScaleFactor(getRange(), iTotal);
+			aiLowPrecisionWeights = *pWeights; // copy
+			pWeights = &aiLowPrecisionWeights;
+			iTotal = 0; // recompute
+			for (size_t i = 0; i < aiLowPrecisionWeights.size(); i++)
+			{
+				aiLowPrecisionWeights[i] = (aiLowPrecisionWeights[i] *
+						rDownScaleFactor).floor();
+				iTotal += aiLowPrecisionWeights[i];
+			}
+			FAssert(iTotal > 0 && iTotal <= getRange());
+		}
+	}
+	if (iTotal == 0)
+		return NULL;
+	int iRoll = get(iTotal, "weightedChoice");
+	if (pWeights == NULL)
+		return kItems[iRoll];
+	for (size_t i = 0; i < kItems.size(); i++)
+	{
+		iRoll -= (*pWeights)[i];
+		if (iRoll < 0)
+			return kItems[i];
+	}
+	FErrorMsg("Negative weights?");
+	return NULL;
+}
+
+// Some macros that should make the logging aspect less tedious ...
 
 // May well be useful elsewhere, but let's put it where it gets used for now.
 #define STRINGIFY_HELPER2(x) #x

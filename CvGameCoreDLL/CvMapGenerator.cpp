@@ -208,7 +208,7 @@ void CvMapGenerator::addRivers()  // advc: refactored
 	int const iSeaWaterRange = GC.getDefineINT("RIVER_SOURCE_MIN_SEAWATER_RANGE");
 	int const iPlotsPerRiverEdge =  GC.getDefineINT("PLOTS_PER_RIVER_EDGE");
 	// advc.129: Randomize the traversal
-	int* aiShuffledIndices = ::shuffle(GC.getMap().numPlots(), GC.getGame().getMapRand());
+	int* aiShuffledIndices = GC.getGame().getMapRand().shuffle(GC.getMap().numPlots());
 	for (int iPass = 0; iPass < 4; iPass++)
 	{
 		int iRiverSourceRangeLoop = (iPass <= 1 ? iRiverSourceRange : iRiverSourceRange / 2);
@@ -661,7 +661,7 @@ void CvMapGenerator::addUniqueBonusType(BonusTypes eBonus)
 					pBestArea->getNumTiles() / 25; // </advc.129>
 
 			// Place the bonuses ...
-			int* aiShuffledIndices = shuffle(kMap.numPlots(), kGame.getMapRand());
+			int* aiShuffledIndices = kGame.getMapRand().shuffle(kMap.numPlots());
 			for (int i = 0; i < kMap.numPlots() &&
 				(bIgnoreAreaLimit || iAdded < iAreaLimit) && // advc.129
 				kMap.getNumBonuses(eBonus) < iTarget; i++)
@@ -735,7 +735,7 @@ void CvMapGenerator::addNonUniqueBonusType(BonusTypes eBonus)
 	if (iBonusCount == 0)
 		return;
 
-	int *aiShuffledIndices = shuffle(GC.getMap().numPlots(), GC.getGame().getMapRand());
+	int *aiShuffledIndices = GC.getGame().getMapRand().shuffle(GC.getMap().numPlots());
 	bool const bIgnoreLatitude = GC.getPythonCaller()->isBonusIgnoreLatitude();
 	for (int i = 0; i < GC.getMap().numPlots(); i++)
 	{
@@ -779,7 +779,7 @@ int CvMapGenerator::placeGroup(BonusTypes eBonus, CvPlot const& kCenter,
 	if (iSize <= 0)
 		return 0;
 	std::vector<int> aiShuffled(iSize);
-	::shuffleVector(aiShuffled, GC.getGame().getMapRand());
+	GC.getGame().getMapRand().shuffle(aiShuffled);
 	for (int j = 0; j < iSize &&
 		iLimit > 0; j++)
 	{
@@ -814,7 +814,7 @@ void CvMapGenerator::addGoodies()
 		return;
 
 	CvMap const& kMap = GC.getMap();
-	int* aiShuffledIndices = shuffle(kMap.numPlots(), GC.getGame().getMapRand());
+	int* aiShuffledIndices = GC.getGame().getMapRand().shuffle(kMap.numPlots());
 	FOR_EACH_ENUM(Improvement)
 	{
 		ImprovementTypes const eGoody = eLoopImprovement;

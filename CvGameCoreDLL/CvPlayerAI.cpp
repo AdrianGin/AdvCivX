@@ -20113,7 +20113,7 @@ void CvPlayerAI::AI_doDiplo()
 	int aiContacts[MAX_CIV_PLAYERS];
 	for(int i = 0; i < MAX_CIV_PLAYERS; i++)
 		aiContacts[i] = i;
-	::shuffleArray(aiContacts, MAX_CIV_PLAYERS, kGame.getSorenRand());
+	kGame.getSorenRand().shuffle(aiContacts, MAX_CIV_PLAYERS);
 	// </advc.024>
 	for (int iPass = 0; iPass < 2; iPass++)
 	{	/*  Loop counter renamed from iI b/c it's important for advc.024 that ePlayer

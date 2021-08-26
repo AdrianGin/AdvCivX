@@ -52,9 +52,13 @@ StartingPositionIteration::StartingPositionIteration() :
 		Map scripts might depend on this order. If a map script sets the
 		starting sites, then we have to bail anyway, but we don't know that yet. */
 	vector<CvPlayer*> apCivPlayers;
-	for (PlayerIter<HUMAN,ANY_AGENT_RELATION,true> it; it.hasNext(); ++it)
+	for (PlayerRandIter<HUMAN,ANY_AGENT_RELATION> it(GC.getGame().getMapRand());
+		it.hasNext(); ++it)
+	{
 		apCivPlayers.push_back(&(*it));
-	for (PlayerIter<CIV_ALIVE,ANY_AGENT_RELATION,true> it; it.hasNext(); ++it)
+	}
+	for (PlayerRandIter<CIV_ALIVE,ANY_AGENT_RELATION> it(GC.getGame().getMapRand());
+		it.hasNext(); ++it)
 	{
 		if (!it->isHuman())
 			apCivPlayers.push_back(&*it);

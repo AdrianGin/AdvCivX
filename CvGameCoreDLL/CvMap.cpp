@@ -545,7 +545,7 @@ CvPlot* CvMap::syncRandPlot(RandPlotFlags eFlags, CvArea const* pArea,
 			}
 		}
 		iValid = (int)apValidPlots.size();
-		return weightedRandChoice(GC.getGame().getSRand(), apValidPlots,
+		return GC.getGame().getSRand().weightedChoice(apValidPlots,
 				pWeights == NULL ? NULL : &aiWeights);
 	}
 	FAssert(iTimeout != 0);

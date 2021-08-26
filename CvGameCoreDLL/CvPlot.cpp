@@ -3831,9 +3831,9 @@ CvPlot* CvPlot::getInlandCorner() const
 {
 	CvPlot* pRiverPlot = NULL; // Plot through whose SE corner we want the river to run
 	int aiShuffle[4];
-	shuffleArray(aiShuffle, 4, GC.getGame().getMapRand());
+	GC.getGame().getMapRand().shuffle(aiShuffle, ARRAYSIZE(aiShuffle));
 	CvMap const& m = GC.getMap();
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < ARRAYSIZE(aiShuffle); i++)
 	{
 		switch (aiShuffle[i])
 		{

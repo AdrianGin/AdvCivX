@@ -143,13 +143,15 @@ private:
 	CvPlot* m_pNext;
 	int m_iCenterX, m_iCenterY;
 	CvCity const* m_pCity; // not used if eWORKING_PLOT_TYPE is ANY_CITY_PLOT
-	// Only used if bRAND_ORDER ...
+	/*	Only used if bRAND_ORDER ...
+		(Could move these into a separate class at the expense of having to
+		duplicate the derived classes; see AgentIterator for reference.) */
 	CvRandom* m_pRandom;
 	int* m_aiShuffledIndices;
 
 	void shuffle(bool bIncludeHomePlot)
 	{
-		m_aiShuffledIndices = ::shuffle(NUM_CITY_PLOTS, *m_pRandom);
+		m_aiShuffledIndices = m_pRandom->shuffle(NUM_CITY_PLOTS);
 		if (!bIncludeHomePlot)
 		{
 			// Swap home plot to the front, then advance past it.

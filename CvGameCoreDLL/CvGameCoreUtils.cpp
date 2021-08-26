@@ -799,41 +799,6 @@ int intHash(std::vector<int> const& kInputs, PlayerTypes ePlayer)
 	return iHashVal;
 }
 
-// create an array of shuffled numbers
-int* shuffle(int iNum, CvRandom& kRand)
-{
-	int* piShuffle = new int[iNum];
-	shuffleArray(piShuffle, iNum, kRand);
-	return piShuffle;
-}
-
-
-void shuffleArray(int* piShuffle, int iNum, CvRandom& kRand)
-{
-	for (int i = 0; i < iNum; i++)
-		piShuffle[i] = i;
-
-	for (int i = 0; i < iNum; i++)
-	{
-		int j = (kRand.get(iNum - i, NULL) + i);
-		if (i != j)
-		{
-			int iTemp = piShuffle[i];
-			piShuffle[i] = piShuffle[j];
-			piShuffle[j] = iTemp;
-		}
-	}
-}
-
-// advc.enum: Caller needs to set the vector size
-void shuffleVector(std::vector<int>& aiIndices, CvRandom& kRand)
-{
-	std11::iota(aiIndices.begin(), aiIndices.end(), 0);
-	int const iSize = (int)aiIndices.size();
-	for (int i = 0; i < iSize; i++)
-		std::swap(aiIndices[i], aiIndices[kRand.get(iSize - i, NULL) + i]);
-}
-
 
 int getTurnYearForGame(int iGameTurn, int iStartYear, CalendarTypes eCalendar, GameSpeedTypes eSpeed)
 {

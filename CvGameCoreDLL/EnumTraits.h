@@ -220,7 +220,7 @@ namespace enum_traits_detail
 #define FOR_EACH_ENUM_RAND(TypeName, kRand) \
 	std::vector<int> CONCATVARNAME(aiLoop##TypeName##Indices_, __LINE__) \
 			(enum_traits<TypeName##Types>::length()); \
-	::shuffleVector(CONCATVARNAME(aiLoop##TypeName##Indices_, __LINE__), (kRand)); \
+	(kRand).shuffle(CONCATVARNAME(aiLoop##TypeName##Indices_, __LINE__)); \
 	int CONCATVARNAME(iLoop##TypeName##Counter_, __LINE__) = 0; \
 	for ( TypeName##Types eLoop##TypeName; \
 			CONCATVARNAME(iLoop##TypeName##Counter_, __LINE__) < \
@@ -232,7 +232,7 @@ namespace enum_traits_detail
 /*	Example. FOR_EACH_ENUM_RAND(CardinalDirection, GC.getGame().getMapRand())
 	expands to:
 	std::vector<int> aiLoopCardinalDirectionIndices_443(getEnumLength((CardinalDirectionTypes)0));
-	::shuffleVector(aiLoopCardinalDirectionIndices_443, (GC.getGame().getMapRand()));
+	(GC.getGame().getMapRand()).shuffle(aiLoopCardinalDirectionIndices_443);
 	int iLoopCardinalDirectionCounter_443 = 0;
 	for ( CardinalDirectionTypes eLoopCardinalDirection;
 			iLoopCardinalDirectionCounter_443 <

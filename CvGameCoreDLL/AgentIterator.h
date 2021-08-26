@@ -10,9 +10,6 @@
 
 #include "AgentPredicates.h"
 #include "CvAgents.h"
-/*	For bSYNCRAND_ORDER
-	(Tbd.: Let AgentIterator take a CvRandom parameter as in CityPlotIterator.h.) */
-#include "CvGame.h"
 
 class CvTeam;
 class CvPlayer;
@@ -35,7 +32,7 @@ protected:
 template<class AgentType, AgentStatusPredicate eSTATUS, AgentRelationPredicate eRELATION,
 	/*	The iterator should be able to provide non-AI agent instances, but it still needs
 		to know the AI agent type b/c that's what's stored in the cached sequences. */
-	class AgentAIType = AgentType>
+	class AgentAIType>
 class ExplicitAgentIterator : protected AgentIteratorBase
 {
 protected:
@@ -93,8 +90,8 @@ protected:
 		eRELATION != NOT_A_RIVAL_OF && ((bAPPLY_FILTERS && _bADD_BARBARIANS(eCACHE_SUPER)) || \
 		(!bAPPLY_FILTERS && _bADD_BARBARIANS(eCACHE_SUBSETEQ))))
 
-template<class AgentType, AgentStatusPredicate eSTATUS, AgentRelationPredicate eRELATION,
-		bool bSYNCRAND_ORDER = false, class AgentAIType = AgentType>
+template<class Derived, // CRT pattern (just for the setNextFromCache function)
+	class AgentType, AgentStatusPredicate eSTATUS, AgentRelationPredicate eRELATION, class AgentAIType>
 class AgentIterator : ExplicitAgentIterator<AgentType, eSTATUS, eRELATION, AgentAIType>
 {
 public:
@@ -126,7 +123,7 @@ public:
 
 	static int count(TeamTypes eTeam = NO_TEAM)
 	{
-		AgentIterator<AgentType,eSTATUS,eRELATION,bSYNCRAND_ORDER,AgentAIType> it(eTeam);
+		AgentIterator it(eTeam);
 		if (bAPPLY_FILTERS)
 		{
 			while (it.hasNext())
@@ -143,6 +140,11 @@ public:
 	}
 
 protected:
+	void setNextFromCache()
+	{	// static polymorphism
+		static_cast<Derived*>(this)->setNextFromCache();
+	}
+
 	AgentIterator(TeamTypes eTeam = NO_TEAM)
 	:	ExplicitAgentIterator<AgentType,eSTATUS,eRELATION,AgentAIType>(eTeam)
 	{
@@ -170,21 +172,13 @@ protected:
 		m_iPos = 0;
 		// Cache the cache size (std::vector computes it as 'end' minus 'begin')
 		m_iCacheSize = static_cast<short>(m_pCache->size());
-		if (bSYNCRAND_ORDER)
-			m_aiShuffledIndices = ::shuffle(m_iCacheSize, GC.getGame().getSorenRand());
-		generateNext();
-	}
-
-	~AgentIterator()
-	{
-		if (bSYNCRAND_ORDER)
-			delete[] m_aiShuffledIndices;
+		//generateNext(); // Leave this up to the ctor of Derived
 	}
 
 	AgentIterator& operator++()
 	{
 		FErrorMsg("Derived classes should define their own operator++ function");
-		// This is what derived classes should do
+		// This is what (non-abstract) derived classes should do
 		generateNext();
 		return *this;
 	}
@@ -238,20 +232,12 @@ protected:
 		}
 	}
 
-private:
 	std::vector<AgentAIType*> const* m_pCache;
+	AgentAIType* m_pNext;
 	short m_iCacheSize;
 	short m_iPos;
+private:
 	short m_iSkipped;
-	AgentAIType* m_pNext;
-	int* m_aiShuffledIndices; // only used if bSYNCRAND_ORDER
-
-	void setNextFromCache()
-	{
-		if (bSYNCRAND_ORDER)
-			m_pNext = (*m_pCache)[m_aiShuffledIndices[m_iPos]];
-		else m_pNext = (*m_pCache)[m_iPos];
-	}
 
 	// Don't want to assume that BARBARIAN_PLAYER==BARBARIAN_TEAM
 	static AgentAIType* getBarbarianAgent()
@@ -276,18 +262,84 @@ private:
 #undef bADD_BARBARIANS
 #undef _bADD_BARBARIANS
 
+// Traversal in random order
+#define RandAgentIteratorBase \
+	AgentIterator<RandAgentIterator<AgentType,eSTATUS,eRELATION,AgentAIType>, \
+	AgentType, eSTATUS, eRELATION, AgentAIType>
+template<class AgentType, AgentStatusPredicate eSTATUS, AgentRelationPredicate eRELATION, class AgentAIType>
+class RandAgentIterator : public RandAgentIteratorBase
+{
+	friend class RandAgentIteratorBase;
+protected:
+	int* m_aiShuffledIndices;
+
+	RandAgentIterator(CvRandom& kRand, TeamTypes eTeam = NO_TEAM)
+	:	RandAgentIteratorBase(eTeam)
+	{
+		m_aiShuffledIndices = kRand.shuffle(m_iCacheSize);
+		generateNext();
+	}
+
+	~RandAgentIterator()
+	{
+		delete[] m_aiShuffledIndices;
+	}
+	
+	void setNextFromCache() // override
+	{
+		m_pNext = (*m_pCache)[m_aiShuffledIndices[m_iPos]];
+	}
+};
+#undef RandAgentIteratorBase
+
+// Normal (non-randomized) traversal
+#define FwdAgentIteratorBase \
+	AgentIterator<FwdAgentIterator<AgentType,eSTATUS,eRELATION,AgentAIType>, \
+	AgentType, eSTATUS, eRELATION, AgentAIType>
+template<class AgentType, AgentStatusPredicate eSTATUS, AgentRelationPredicate eRELATION, class AgentAIType>
+class FwdAgentIterator : public FwdAgentIteratorBase
+{
+	friend class FwdAgentIteratorBase;
+protected:
+	FwdAgentIterator(TeamTypes eTeam = NO_TEAM) : FwdAgentIteratorBase(eTeam)
+	{
+		generateNext();
+	}
+	
+	void setNextFromCache() // override
+	{
+		m_pNext = (*m_pCache)[m_iPos];
+	}
+};
+#undef FwdAgentIteratorBase
+
 /*	Want separate classes for AI and non-AI iterators - if only so that
-	AI headers don't need to be included in non-AI code. */
+	AI headers don't need to be included in non-AI code. Will need separate
+	templates for randomization b/c they'll need a different constructor.
+	(Or could specialize on a bRANDOMIZE parameter, but that wouldn't save me
+	from typing the same redundant code either.) */
 #define DEFINE_PLAYER_ITER(PlayerClassName) \
-template<AgentStatusPredicate eSTATUS = ANY_AGENT_STATUS, AgentRelationPredicate eRELATION = ANY_AGENT_RELATION, \
-		bool bSYNCRAND_ORDER = false> \
-class PlayerClassName##Iter : public AgentIterator<Cv##PlayerClassName, eSTATUS, eRELATION, bSYNCRAND_ORDER, CvPlayerAI> \
+template<AgentStatusPredicate eSTATUS = ANY_AGENT_STATUS, AgentRelationPredicate eRELATION = ANY_AGENT_RELATION> \
+class PlayerClassName##Iter : public FwdAgentIterator<Cv##PlayerClassName, eSTATUS, eRELATION, CvPlayerAI> \
 { \
 public: \
 	explicit PlayerClassName##Iter(TeamTypes eTeam = NO_TEAM) : \
-	AgentIterator<Cv##PlayerClassName,eSTATUS,eRELATION,bSYNCRAND_ORDER,CvPlayerAI>(eTeam) \
+	FwdAgentIterator<Cv##PlayerClassName,eSTATUS,eRELATION,CvPlayerAI>(eTeam) \
 	{} \
 	PlayerClassName##Iter& operator++() \
+	{ \
+		generateNext(); \
+		return *this; \
+	} \
+}; \
+template<AgentStatusPredicate eSTATUS = ANY_AGENT_STATUS, AgentRelationPredicate eRELATION = ANY_AGENT_RELATION> \
+class PlayerClassName##RandIter : public RandAgentIterator<Cv##PlayerClassName, eSTATUS, eRELATION, CvPlayerAI> \
+{ \
+public: \
+	explicit PlayerClassName##RandIter(CvRandom& kRand, TeamTypes eTeam = NO_TEAM) : \
+	RandAgentIterator<Cv##PlayerClassName,eSTATUS,eRELATION,CvPlayerAI>(kRand, eTeam) \
+	{} \
+	PlayerClassName##RandIter& operator++() \
 	{ \
 		generateNext(); \
 		return *this; \
@@ -299,18 +351,32 @@ DEFINE_PLAYER_ITER(PlayerAI)
 #undef DEFINE_PLAYER_ITER
 
 #define DEFINE_TEAM_ITER(TeamClassName) \
-template<AgentStatusPredicate eSTATUS = ANY_AGENT_STATUS, AgentRelationPredicate eRELATION = ANY_AGENT_RELATION, \
-		bool bSYNCRAND_ORDER = false> \
-class TeamClassName##Iter : public AgentIterator<Cv##TeamClassName, eSTATUS, eRELATION, bSYNCRAND_ORDER, CvTeamAI> \
+template<AgentStatusPredicate eSTATUS = ANY_AGENT_STATUS, AgentRelationPredicate eRELATION = ANY_AGENT_RELATION> \
+class TeamClassName##Iter : public FwdAgentIterator<Cv##TeamClassName, eSTATUS, eRELATION, CvTeamAI> \
 { \
 public: \
 	explicit TeamClassName##Iter(TeamTypes eTeam = NO_TEAM) : \
-	AgentIterator<Cv##TeamClassName,eSTATUS,eRELATION,bSYNCRAND_ORDER,CvTeamAI>(eTeam) \
+	FwdAgentIterator<Cv##TeamClassName,eSTATUS,eRELATION,CvTeamAI>(eTeam) \
 	{ \
 		/* Can't loop over all "teams that are members of eTeam" */ \
 		BOOST_STATIC_ASSERT(eRELATION != MEMBER_OF); \
 	} \
 	TeamClassName##Iter& operator++() \
+	{ \
+		generateNext(); \
+		return *this; \
+	} \
+}; \
+template<AgentStatusPredicate eSTATUS = ANY_AGENT_STATUS, AgentRelationPredicate eRELATION = ANY_AGENT_RELATION> \
+class TeamClassName##RandIter : public RandAgentIterator<Cv##TeamClassName, eSTATUS, eRELATION, CvTeamAI> \
+{ \
+public: \
+	explicit TeamClassName##RandIter(CvRandom& kRand, TeamTypes eTeam = NO_TEAM) : \
+	RandAgentIterator<Cv##TeamClassName,eSTATUS,eRELATION,CvTeamAI>(kRand, eTeam) \
+	{ \
+		BOOST_STATIC_ASSERT(eRELATION != MEMBER_OF); \
+	} \
+	TeamClassName##RandIter& operator++() \
 	{ \
 		generateNext(); \
 		return *this; \

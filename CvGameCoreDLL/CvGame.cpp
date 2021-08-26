@@ -1588,13 +1588,13 @@ void CvGame::rearrangeTeamStarts(/* advc.027: */ bool bOnlyWithinArea, scaled rI
 
 	int iBestScore = getTeamClosenessScore(aaiDistances, aeStartingLocs);
 	bool bFoundSwap = true;
-	/*	<advc.027> I worry that going through the players in turn order
-		can lead to biases toward or against the (human) team of player 0.
-		(PlayerIter unfortunately only knows how to use SRand; I want MapRand here.) */
-	int aiPlayersShuffled[MAX_CIV_PLAYERS];
-	::shuffleArray(aiPlayersShuffled, MAX_CIV_PLAYERS, getMapRand()); // </advc.027>
 	while (bFoundSwap)
-	{
+	{	/*	<advc.027> I worry that going through the players in turn order
+			can lead to biases toward or against the (human) team of player 0.
+			(Not using PlayerRandIter b/c I want the outer and inner loop
+			to use the same order.) */
+		int aiPlayersShuffled[MAX_CIV_PLAYERS];
+		getMapRand().shuffle(aiPlayersShuffled, MAX_CIV_PLAYERS); // </advc.027>
 		bFoundSwap = false;
 		for (int i = 0; i < MAX_CIV_PLAYERS; i++)
 		{
@@ -6581,7 +6581,7 @@ void CvGame::doTurn()
 	if (isMPOption(MPOPTION_SIMULTANEOUS_TURNS))
 	{
 		int aiShuffle[MAX_PLAYERS];
-		::shuffleArray(aiShuffle, MAX_PLAYERS, getSorenRand());
+		getSorenRand().shuffle(aiShuffle, MAX_PLAYERS);
 		std::set<TeamTypes> activeTeams; // K-Mod
 		for (int i = 0; i < MAX_PLAYERS; i++)
 		{
@@ -8193,7 +8193,7 @@ void CvGame::updateMoves()
 {
 	int aiShuffle[MAX_PLAYERS];
 	if (isMPOption(MPOPTION_SIMULTANEOUS_TURNS))
-		shuffleArray(aiShuffle, MAX_PLAYERS, getSorenRand());
+		getSorenRand().shuffle(aiShuffle, MAX_PLAYERS);
 	else
 	{
 		for (int iI = 0; iI < MAX_PLAYERS; iI++)
