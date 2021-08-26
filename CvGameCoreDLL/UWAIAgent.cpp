@@ -453,8 +453,7 @@ bool UWAI::Team::reviewPlan(TeamTypes eTarget, int iU, int iPrepTurns)
 				scaled rSwitchProb = std::min(fixp(1/3.), iWPAge * fixp(0.04));
 				m_pReport->log("pr of considering to switch target: %d",
 						rSwitchProb.getPercent());
-				if (rSwitchProb.bernoulliSuccess(GC.getGame().getSRand(),
-					"UWAI: switch while war imminent"))
+				if (SyncRandSuccess(rSwitchProb))
 				{
 					/*  Hack: considerSwitchTarget was written under the assumption
 						that no war is imminent. Might be difficult to rectify;
@@ -635,8 +634,7 @@ bool UWAI::Team::considerPeace(TeamTypes eTarget, int iU)
 	{
 		m_pReport->log("Probability for peace negotiation: %d percent",
 				rPeaceProb.getPercent());
-		if ((1 - rPeaceProb).bernoulliSuccess(
-			GC.getGame().getSRand(), "UWAI: peace roll"))
+		if (SyncRandSuccess(1 - rPeaceProb))
 		{
 			m_pReport->log("Peace negotiation randomly skipped");
 			if (!bHuman)
@@ -789,7 +787,7 @@ bool UWAI::Team::considerCapitulation(TeamTypes eMaster, int iAgentWarUtility,
 		rSkipProb -= fixp(0.1);
 	m_pReport->log("%d percent probability to delay capitulation based on master's "
 			"reluctance to peace (%d)", rSkipProb.getPercent(), iMasterReluctancePeace);
-	if (rSkipProb.bernoulliSuccess(GC.getGame().getSRand(), "UWAI: capitulation roll"))
+	if (SyncRandSuccess(rSkipProb))
 	{
 		m_pReport->log("No capitulation this turn");
 		return true;
@@ -843,8 +841,8 @@ bool UWAI::Team::considerCapitulation(TeamTypes eMaster, int iAgentWarUtility,
 bool UWAI::Team::tryFindingMaster(TeamTypes eEnemy)
 {
 	CvPlayerAI& kAgentPlayer = GET_PLAYER(GET_TEAM(m_eAgent).getRandomMemberAlive(false));
-	for (TeamAIRandIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itMaster(
-		GC.getGame().getSRand(), m_eAgent); itMaster.hasNext(); ++itMaster)
+	for (TeamAIRandIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itMaster(syncRand(), m_eAgent);
+		itMaster.hasNext(); ++itMaster)
 	{
 		CvTeamAI& kMaster = *itMaster;
 		if (kMaster.isAtWar(m_eAgent) ||
@@ -983,7 +981,7 @@ bool UWAI::Team::considerPlanTypeChange(TeamTypes eTarget, int iU)
 	m_pReport->log("Probability of switching: %d percent", rSwitchProb.getPercent());
 	if (!rSwitchProb.isPositive())
 		return true;
-	if (rSwitchProb.bernoulliSuccess(GC.getGame().getSRand(), "UWAI: switch WP type roll"))
+	if (SyncRandSuccess(rSwitchProb))
 	{
 		m_pReport->log("Switching to war plan \"%s\"", m_pReport->warPlanName(eAltWP));
 		if (!isInBackground())
@@ -1043,7 +1041,7 @@ bool UWAI::Team::considerAbandonPreparations(TeamTypes eTarget, int iU,
 	rAbandonProb.decreaseTo(1);
 	m_pReport->log("Abandoning preparations with probability %d percent (warRand=%d)",
 			rAbandonProb.getPercent(), iWarRand);
-	if (rAbandonProb.bernoulliSuccess(GC.getGame().getSRand(), "UWAI: Abandon roll"))
+	if (SyncRandSuccess(rAbandonProb))
 	{
 		m_pReport->log("Preparations abandoned");
 		if (!isInBackground())
@@ -1103,7 +1101,7 @@ bool UWAI::Team::considerSwitchTarget(TeamTypes eTarget, int iU,
 		rSwitchProb += fixp(1.8);
 	m_pReport->log("Switching target for war preparations to %s (u=%d) with pr=%d percent",
 			m_pReport->teamName(eBestAltTarget), iBestUtility, rSwitchProb.getPercent());
-	if (!rSwitchProb.bernoulliSuccess(GC.getGame().getSRand(), "UWAI: switch target roll"))
+	if (!SyncRandSuccess(rSwitchProb))
 	{
 		m_pReport->log("Target not switched");
 		return true;
@@ -1159,8 +1157,7 @@ bool UWAI::Team::considerConcludePreparations(TeamTypes eTarget, int iU,
 		m_pReport->log("Utility of immediate switch to direct war plan: %d", iDirectU);
 		if (iDirectU > 0)
 		{
-			scaled rRandWeight = scaled::rand(GC.getGame().getSRand(),
-					"UWAI: conclude war prep");
+			scaled rRandWeight = SyncRandFract(scaled);
 			/*  The more time remains, the longer we'd still have to wait in order
 				to achieve utility iU. Therefore use a low threshold
 				if iTurnsRemaining is high.
@@ -1494,7 +1491,7 @@ void UWAI::Team::scheme()
 				WARPLAN_PREPARING_LIMITED);
 		m_pReport->log("Drive for war preparations against %s: %d percent",
 				m_pReport->teamName(eTarget), rDrive.getPercent());
-		if (rDrive.bernoulliSuccess(GC.getGame().getSRand(), "UWAI: war prep roll"))
+		if (SyncRandSuccess(rDrive))
 		{
 			if (!isInBackground())
 			{
@@ -2445,9 +2442,7 @@ bool UWAI::Player::amendTensions(PlayerTypes eHuman)
 			{
 				scaled rContactProb = (fixp(8.5) - rEra) / (2 * iContactRand);
 				// Exclude Gandhi (iContactRand=10000 => rAcceptProb<0.0005)
-				if (rContactProb * 1000 > 1 &&
-					rContactProb.bernoulliSuccess(
-					GC.getGame().getSRand(), "UWAI: make demand") &&
+				if (rContactProb * 1000 > 1 && SyncRandSuccess(rContactProb) &&
 					GET_PLAYER(m_eAgent).AI_demandTribute(eHuman, eLoopAIDemand))
 				{
 					return true;
@@ -2461,8 +2456,7 @@ bool UWAI::Player::amendTensions(PlayerTypes eHuman)
 		if (iContactRand > 0)
 		{
 			scaled rContactProb = (fixp(5.5) - rEra) / (fixp(1.25) * iContactRand);
-			if (rContactProb.bernoulliSuccess(
-				GC.getGame().getSRand(), "UWAI: make plea") &&
+			if (SyncRandSuccess(rContactProb) &&
 				GET_PLAYER(m_eAgent).AI_askHelp(eHuman))
 			{
 				return true;
@@ -2476,8 +2470,7 @@ bool UWAI::Player::amendTensions(PlayerTypes eHuman)
 		if (iContactRandReligion > 0)
 		{
 			scaled rContactProb = (8 - rEra) / iContactRandReligion;
-			if (rContactProb.bernoulliSuccess(
-				GC.getGame().getSRand(), "UWAI: religion pressure") &&
+			if (SyncRandSuccess(rContactProb) &&
 				GET_PLAYER(m_eAgent).AI_contactReligion(eHuman))
 			{
 				return true;
@@ -2490,8 +2483,7 @@ bool UWAI::Player::amendTensions(PlayerTypes eHuman)
 		{
 			scaled rContactProb = fixp(2.5) / iContactRandCivics;
 			// Exclude Saladin (contact rand 10000)
-			if (rContactProb * 1000 > 1 && rContactProb.bernoulliSuccess(
-				GC.getGame().getSRand(), "UWAI: civics pressure") &&
+			if (rContactProb * 1000 > 1 && SyncRandSuccess(rContactProb) &&
 				GET_PLAYER(m_eAgent).AI_contactCivics(eHuman))
 			{
 				return true;
@@ -2500,14 +2492,11 @@ bool UWAI::Player::amendTensions(PlayerTypes eHuman)
 	}
 	//  Embargo request - too unlikely to succeed I think.
 	/*int const iContactRand = kPersonality.getContactRand(CONTACT_STOP_TRADING);
-	if (iContactRand > 0)
-	{
+	if (iContactRand > 0) {
 		scaled rContactProb = ?;
-		if (rContactProb.bernoulliSuccess(GC.getGame().getSRand(),
-			"UWAI: embargo") && GET_PLAYER(m_eAgent).AI_proposeEmbargo(eHuman))
-		{
+		if (SyncRandSuccess(rContactProb) && GET_PLAYER(m_eAgent).AI_proposeEmbargo(eHuman)) {
 			return true;
-			}
+		}
 	}*/
 	return false;
 }

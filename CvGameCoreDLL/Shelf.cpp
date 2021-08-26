@@ -45,7 +45,7 @@ CvPlot* Shelf::randomPlot(RandPlotFlags eRestrictions, int iUnitDistance,
 		}
 	}
 	iValid = apValid.size();
-	return GC.getGame().getSRand().weightedChoice(apValid,
+	return syncRand().weightedChoice(apValid,
 			pWeights == NULL ? NULL : &aiWeights);
 }
 
@@ -122,7 +122,7 @@ CvUnit* Shelf::randomBarbarianTransport() const
 		return NULL;
 	int iValid = apValid.size();
 	scaled rNoneProb = fixp(0.2) + scaled(iValid, 10);
-	if (!rNoneProb.bernoulliSuccess(GC.getGame().getSRand(), "no Barbarian transport"))
+	if (!SyncRandSuccess(rNoneProb))
 		return NULL;
 	return apValid[GC.getGame().getSorenRandNum(iValid, "choose Barbarian transport")];
 }

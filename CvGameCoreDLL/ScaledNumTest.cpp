@@ -38,7 +38,7 @@ void TestScaledNum()
 	int iSuccesses = 0;
 	CvRandom& kRand = GC.getASyncRand();
 	for(int i = 0; i < 1000; i++)
-		if(fixp(0.4).bernoulliSuccess(kRand, ""))
+		if(fixp(0.4).randSuccess(kRand, ""))
 			iSuccesses++;
 	FAssertBounds(355, 445, iSuccesses);
 	scaled rSum;

@@ -1902,7 +1902,7 @@ void CvUnitAI::AI_workerMove(/* advc.113b: */ bool bUpdateWorkersHave)
 			return;
 		bCanRoute = false; // advc.113: Don't try again
 	}
-	scaled prLoad = 0; // advc.113: Needed for the scrap decision
+	scaled rLoadProb = 0; // advc.113: Needed for the scrap decision
 	if (!isHuman() || (isAutomated() && GET_TEAM(getTeam()).getNumWars() <= 0))
 	{
 		if (!isHuman() || getGameTurnCreated() < GC.getGame().getGameTurn())
@@ -1918,15 +1918,16 @@ void CvUnitAI::AI_workerMove(/* advc.113b: */ bool bUpdateWorkersHave)
 				into transports.) */
 			int const iAreaWorkers = kOwner.AI_totalAreaUnitAIs(getArea(), UNITAI_WORKER);
 			int const iAreaCities = getArea().getCitiesPerPlayer(getOwner());
-			prLoad = scaled(3 * iAreaWorkers - 2 * iAreaCities, 24);
+			rLoadProb = scaled(3 * iAreaWorkers - 2 * iAreaCities, 24);
 			if (pCity != NULL)
 			{
 				int iLocalMissing = pCity->AI_getWorkersNeeded() - pCity->AI_getWorkersHave();
 				if (iLocalMissing > 0)
-					prLoad /= 1 + iLocalMissing;
+					rLoadProb /= 1 + iLocalMissing;
 			}
-			if (iAreaCities <= 0 || (iMissingWorkersInArea <= 0 && iAreaWorkers > 1 &&
-				prLoad.bernoulliSuccess(GC.getGame().getSRand(), "advc.113 (load worker)")))
+			if (iAreaCities <= 0 ||
+				(iMissingWorkersInArea <= 0 && iAreaWorkers > 1 &&
+				SyncRandSuccess(rLoadProb)))
 			{ // </advc.113>
 				/*if (AI_load(UNITAI_SETTLER_SEA, MISSIONAI_LOAD_SETTLER, NO_UNITAI, -1, -1, -1, -1, MOVE_SAFE_TERRITORY))
 					return; */
@@ -1943,7 +1944,7 @@ void CvUnitAI::AI_workerMove(/* advc.113b: */ bool bUpdateWorkersHave)
 				{
 					return;
 				} // BETTER_BTS_AI_MOD: END
-				prLoad = 0; // advc.113: OK to scrap
+				rLoadProb = 0; // advc.113: OK to scrap
 			}
 		}
 	}
@@ -1996,17 +1997,17 @@ void CvUnitAI::AI_workerMove(/* advc.113b: */ bool bUpdateWorkersHave)
 				if (pCity == NULL || pCity->AI_getWorkersNeeded() < pCity->AI_getWorkersHave() + 1)
 				{	/*  Scrap eventually b/c the worker could be stuck in this area,
 						but there's no hurry. */
-					scaled prScrap(iTotalHave, std::max(1, iTotalThresh));
-					prScrap -= 1;
-					prScrap *= prScrap;
+					scaled rScrapProb(iTotalHave, std::max(1, iTotalThresh));
+					rScrapProb -= 1;
+					rScrapProb *= rScrapProb;
 					// Don't scrap if waiting to load
-					prScrap *= scaled::max(0, 1 - 3 * prLoad);
-					if (prScrap > 0) // to save time
+					rScrapProb *= scaled::max(0, 1 - 3 * rLoadProb);
+					if (rScrapProb > 0) // to save time
 					{
 						int iFinancialTroubleMargin = kOwner.AI_financialTroubleMargin();
-						prScrap *= per100(100 - std::min(iFinancialTroubleMargin, 85));
+						rScrapProb *= per100(100 - std::min(iFinancialTroubleMargin, 85));
 					}
-					if(prScrap.bernoulliSuccess(GC.getGame().getSRand(), "advc.113 (scrap worker)"))
+					if (SyncRandSuccess(rScrapProb))
 					{ // </advc.113>
 						scrap();
 						return;
@@ -5933,8 +5934,8 @@ void CvUnitAI::AI_barbAttackSeaMove()
 		Should also resolve an issue where Barbarian ships are indefinitely stuck
 		patrolling an unowned stretch surrounded by borders. (Patrolling Barbarians
 		never enter borders.) */
-	if ((getGroup()->getMissionType(0) == MISSION_MOVE_TO ||
-		fixp(0.2).bernoulliSuccess(GC.getGame().getSRand(), "Barb ship retreat")))
+	if (getGroup()->getMissionType(0) == MISSION_MOVE_TO ||
+		SyncRandSuccess(fixp(0.2)))
 	{
 		if (AI_safety())
 		{
@@ -6666,12 +6667,12 @@ void CvUnitAI::AI_exploreSeaMove()
 	{	// <advc.017b>
 		bool bTransform = false;
 		// Don't be too quick to decide that there are too many explorers
-		if(fixp(0.13).bernoulliSuccess(GC.getGame().getSRand(), "transform explorer"))
+		if (SyncRandSuccess(fixp(0.13)))
 		{
 			bTransform = kOwner.AI_isExcessSeaExplorers(*pWaterArea);
 			bExcessExplorers = bTransform;
 		}
-		if(!bTransform &&
+		if (!bTransform &&
 			/*  In the early game, it'll often take a better explorer (Galley
 				vs Work Boat) too long to reach an unexplored area; better to
 				let the outdated explorer continue. */
@@ -6681,7 +6682,7 @@ void CvUnitAI::AI_exploreSeaMove()
 			bTransform = true;
 		}
 		// Moved the obsoletion test; now only required for scrapping
-		if(bTransform) // </advc.017b>
+		if (bTransform) // </advc.017b>
 		{
 			// <advc> Made this more concise (original code deleted)
 			std::vector<UnitAITypes> transformTypes;
@@ -6703,7 +6704,7 @@ void CvUnitAI::AI_exploreSeaMove()
 				transformTypes.push_back(UNITAI_ASSAULT_SEA);
 			}
 			// <advc.017b> Instead of always trying MISSIONARY_SEA before RESERVE_SEA
-			if((kOwner.AI_totalUnitAIs(UNITAI_MISSIONARY) > 0 ||
+			if ((kOwner.AI_totalUnitAIs(UNITAI_MISSIONARY) > 0 ||
 					kOwner.AI_isDoStrategy(AI_STRATEGY_MISSIONARY)) &&
 					kOwner.AI_totalUnitAIs(UNITAI_MISSIONARY_SEA) <= 1)
 			{
@@ -6715,9 +6716,9 @@ void CvUnitAI::AI_exploreSeaMove()
 				transformTypes.push_back(UNITAI_RESERVE_SEA);
 				transformTypes.push_back(UNITAI_MISSIONARY_SEA);
 			} // </advc.017b>
-			for(size_t i = 0; i < transformTypes.size(); i++)
+			for (size_t i = 0; i < transformTypes.size(); i++)
 			{
-				if(getUnitInfo().getUnitAIType(transformTypes[i]) &&
+				if (getUnitInfo().getUnitAIType(transformTypes[i]) &&
 					kOwner.AI_unitValue(getUnitType(), transformTypes[i], pWaterArea) > 0)
 				{
 					// Before transforming a Work Boat, check if there is sth. to improve.
@@ -8433,8 +8434,8 @@ void CvUnitAI::AI_defenseAirMove()
 		return;
 	}
 
-	if (!bTriedAirStrike
-		&& GC.getGame().getSorenRandNum(3, "AI_defenseAirMove airstrike2") <=
+	if (!bTriedAirStrike &&
+		GC.getGame().getSorenRandNum(3, "AI_defenseAirMove airstrike2") <=
 		(bOffensive ? 1 : 0) - (bDefensive ? 1 : 0))
 	{
 		if (AI_airStrike())
@@ -8443,13 +8444,13 @@ void CvUnitAI::AI_defenseAirMove()
 	}
 
 	// <advc.650>
-	if(GET_PLAYER(getOwner()).AI_isDangerFromSubmarines() && getPlot().isCoastalLand(-1) &&
-		fixp(0.38).bernoulliSuccess(GC.getGame().getSRand(), "search for submarines"))
+	if (GET_PLAYER(getOwner()).AI_isDangerFromSubmarines() && getPlot().isCoastalLand(-1) &&
+		SyncRandSuccess(fixp(0.38)))
 	{
 		/*	Would be better to check for matching Invisible Types (modded aircraft
 			may not be able to see invisible units). Also, isCoastalLand is a bit
 			narrow -- can often scout the seas from landlocked cities. */
-		if(AI_exploreAirRange())
+		if (AI_exploreAirRange())
 			return;
 	} // </advc.650>
 
@@ -10989,9 +10990,11 @@ bool CvUnitAI::AI_singleUnitHeal(int iMaxTurnsExposed, int iMaxTurnsOutsideCity)
 	if (!bHeal && isBarbarian())
 	{
 		int iHeal = healRate();
-		scaled rHealPr(2 * iHeal, getDomainType() == DOMAIN_SEA ? 35 : 45);
-		if (iHeal >= 5 && rHealPr.bernoulliSuccess(GC.getGame().getSRand(), "Barbarian Heal"))
+		if (iHeal >= 5 && SyncRandSuccess(scaled(2 * iHeal,
+			getDomainType() == DOMAIN_SEA ? 35 : 45)))
+		{
 			bHeal = true;
+		}
 	} // </advc.306>
 	if (bHeal)
 	{
@@ -12457,8 +12460,8 @@ bool CvUnitAI::AI_patrol() // advc: refactored
 		if (!isBarbarian() && kAdj.getOwner() == getOwner() &&
 			// Make sure not to hamper early exploration (perhaps not an issue)
 			kGame.getElapsedGameTurns() >= 25 &&
-			(kAdj.isUnit() || fixp(0.9).bernoulliSuccess(kGame.getSRand(),
-			iFirst++ <= 0 ? "advc.102" : NULL))) // advc.007: Don't pollute MPLog
+			(kAdj.isUnit() || fixp(0.9).randSuccess(syncRand(), 
+			iFirst++ <= 0 ? "AI_patrol (first)" : NULL))) // advc.007: Don't pollute MPLog
 		{
 			continue;
 		}
@@ -14059,7 +14062,7 @@ bool CvUnitAI::AI_evacuateCity()
 	}
 	/*  retreatToCity isn't perfect for this; selects the city based on plot danger.
 		Hopefully sufficient most of the time. */
-	if (rEvacProb.bernoulliSuccess(GC.getGame().getSRand(), "evac city"))
+	if (SyncRandSuccess(rEvacProb))
 		return AI_retreatToCity();
 	return false;
 }
@@ -17130,8 +17133,7 @@ bool CvUnitAI::AI_nextCityToImprove(CvCity const* pCity) // advc: const param
 	// <advc.121>
 	MissionTypes eMission = MISSION_MOVE_TO;
 	if (!getPlot().isSamePlotGroup(*pBestPlot, getOwner()) || !getPlot().isRoute() ||
-		scaled(1, stepDistance(plot(), pBestPlot) + 1).bernoulliSuccess(
-		GC.getGame().getSRand(), "advc.121: route-to"))
+		SyncRandSuccess(scaled(1, stepDistance(plot(), pBestPlot) + 1)))
 	{
 		eMission = MISSION_ROUTE_TO;
 	}

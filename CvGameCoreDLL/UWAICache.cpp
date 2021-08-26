@@ -908,8 +908,7 @@ void UWAICache::updateCanBeHiredAgainst(TeamTypes eTeam,
 	if (!m_abCanBeHiredAgainst.get(eTeam))
 		rProb = std::min(fixp(0.58), (iWarUtility - fixp(1.5) * iUtilityThresh) / 100);
 	else rProb = scaled(1 - (iUtilityThresh - iWarUtility), 100);
-	m_abCanBeHiredAgainst.set(eTeam, rProb.bernoulliSuccess(
-			GC.getGame().getSRand(), "UWAI: can hire roll"));
+	m_abCanBeHiredAgainst.set(eTeam, SyncRandSuccess(rProb));
 }
 
 

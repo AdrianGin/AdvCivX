@@ -57,6 +57,12 @@
 // <advc.003s> For generating variable names. (The layer of indirection is necessary.)
 #define CONCATVARNAME_IMPL(prefix, suffix) prefix##suffix
 #define CONCATVARNAME(prefix, suffix) CONCATVARNAME_IMPL(prefix, suffix) // </advc.003s>
+// <advc.007b> For debug output
+#define STRINGIFY_HELPER2(x) #x
+#define STRINGIFY_HELPER1(x) STRINGIFY_HELPER2(x)
+// (__FILE__ prints some path info; that gets too verbose.)
+#define CALL_LOC_STR __FUNCTION__ /*"(" __FILE__ ")"*/ "@L" STRINGIFY_HELPER1(__LINE__)
+// </advc.007b>
 
 /*	advc.enum (note): The order of these inclusions is tricky b/c the type trait
 	headers sometimes require other types to be defined, not just declared. */

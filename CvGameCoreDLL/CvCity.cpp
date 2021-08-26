@@ -627,7 +627,7 @@ void CvCity::doRevolt()
 	// <advc.023>
 	{
 		scaled rDecrementProb = probabilityOccupationDecrement();
-		if (rDecrementProb.bernoulliSuccess(GC.getGame().getSRand(), "occupation decrement"))
+		if (SyncRandSuccess(rDecrementProb))
 		{
 			changeOccupationTimer(-1);
 			return;
@@ -645,7 +645,7 @@ void CvCity::doRevolt()
 		compute the revolt probability in a separate function. */
 	{
 		scaled rRevoltProb = revoltProbability();
-		if (!rRevoltProb.bernoulliSuccess(GC.getGame().getSRand(), "CvCity::doRevolt"))
+		if (!SyncRandSuccess(rRevoltProb))
 			return;
 	} // </advc.101>
 	damageGarrison(eCulturalOwner); // advc: Code moved into subroutine
@@ -10804,7 +10804,7 @@ void CvCity::doReligion()
 		static scaled const rRELIGION_SPREAD_DIV = std::max(scaled::epsilon(),
 				per100(GC.getDefineINT("RELIGION_SPREAD_RAND")));
 		rSpreadProb /= rRELIGION_SPREAD_DIV;
-		if (rSpreadProb.bernoulliSuccess(GC.getGame().getSRand(), "Religion Spread"))
+		if (SyncRandSuccess(rSpreadProb))
 		{	// </advc>
 			setHasReligion(eLoopReligion, true, true, true);
 			if (iWeakestGrip < iLoopGrip)
@@ -10923,12 +10923,14 @@ void CvCity::doMeltdown()
 			continue;
 		// advc.opt: Roll the dice before checking for a safe power source.
 		int const iOddsDivisor = GC.getInfo(eDangerBuilding).getNukeExplosionRand();
-		// advc.652: Adjust to game speed
-		scaled rNukePr = 1 / (iOddsDivisor * GC.getGame().gameSpeedMultiplier());
-		if (!rNukePr.bernoulliSuccess(GC.getGame().getSRand(), "Meltdown") ||
-			isMeltdownBuildingSuperseded(eDangerBuilding)) // kekm5
 		{
-			continue;
+			// advc.652: Adjust to game speed
+			scaled rNukeProb = 1 / (iOddsDivisor * GC.getGame().gameSpeedMultiplier());
+			if (!SyncRandSuccess(rNukeProb) ||
+				isMeltdownBuildingSuperseded(eDangerBuilding)) // kekm5
+			{
+				continue;
+			}
 		}
 		if (getNumRealBuilding(eDangerBuilding) > 0)
 			setNumRealBuilding(eDangerBuilding, 0);

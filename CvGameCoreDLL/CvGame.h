@@ -715,16 +715,7 @@ public:
 	CvRandom& getSorenRand()																								// Exposed to Python
 	{
 		return m_sorenRand;
-	}  // <advc> Shorter. "S" could also stand for "synchronized" (or "Soren"). (Tbd.: Move to CvGlobals.)
-	CvRandom& getSRand()																										// Exposed to Python
-	{
-		return getSorenRand();
 	}
-	int getSRandNum(int iNum, const char* pszLog,
-		int iData1 = MIN_INT, int iData2 = MIN_INT)
-	{
-		return getSorenRandNum(iNum, pszLog, iData1, iData2);
-	} // </advc>
 	//  Returns a value from the half-closed interval [0,iNum)
 	int getSorenRandNum(int iNum, const char* pszLog,
 		int iData1 = MIN_INT, int iData2 = MIN_INT) // advc.007
@@ -1141,5 +1132,34 @@ private: // advc.003u: (See comments in the private section of CvPlayer.h)
 	virtual void AI_updateAssignWorkExternal();
 	virtual int AI_combatValueExternal(UnitTypes eUnit);
 };
+
+/*	<advc.007b> Some macros to make the RNG functions of the singleton
+	CvGame instance less tedious to use */
+
+// Implementation files can re-define this to use a different CvGame instance
+#define CVGAME_INSTANCE_FOR_RNG GC.getGame()
+
+inline CvRandom& syncRand()
+{
+	return CVGAME_INSTANCE_FOR_RNG.getSorenRand();
+}
+inline CvRandom& mapRand()
+{
+	return CVGAME_INSTANCE_FOR_RNG.getMapRand();
+}
+// These have to be macros to let CALL_LOC_STR expand to the proper code location
+#define SyncRandNum(iNumOutcomes) \
+	CVGAME_INSTANCE_FOR_RNG.getSorenRandNum((iNumOutcomes), CALL_LOC_STR)
+#define MapRandNum(iNumOutcomes) \
+	CVGAME_INSTANCE_FOR_RNG.getMapRandNum((iNumOutcomes), CALL_LOC_STR)
+#define SyncRandFract(ScaledNumType) \
+	ScaledNumType::rand(syncRand(), CALL_LOC_STR)
+#define SyncRandSuccess(rSuccessProb) \
+	(rSuccessProb).randSuccess(syncRand(), CALL_LOC_STR)
+#define MapRandFract(ScaledNumType) \
+	ScaledNumType::rand(mapRand(), CALL_LOC_STR)
+#define MapRandSuccess(rSuccessProb) \
+	(rSuccessProb).randSuccess(mapRand(), CALL_LOC_STR)
+// </advc.007b>
 
 #endif

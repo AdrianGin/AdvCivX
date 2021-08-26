@@ -13,10 +13,10 @@
  +	intdiv::round, fmath::round  in ArithmeticUtils.h.
  +	intHash in CvGameCoreUtils.h.
  +	integer_limits in IntegerTraits.h.
-	For inclusion in PCH, one may have to define NOMINMAX before including windows.h;
-	see CvGameCoreDLL.h.
-	The bernoulliSuccess function assumes that CvRandom can include two integer values
-	in its log messages; see comment in bernoulliSuccess. */
+	For precompiling this header, one may have to define NOMINMAX
+	before including windows.h; see CvGameCoreDLL.h.
+	The randSuccess function assumes that CvRandom can include two integer values
+	in its log messages; see comment in randSuccess. */
 
 // Defined in BaseTsd.h. Easy to get them mixed up with ScaledNum::INTMAX, INTMIN.
 #ifdef MAXINT
@@ -62,7 +62,7 @@ CvString ScaledNumBase<Dummy>::szBuf = "";
 	Performance: Generally comparable to floating-point types when the scale factor is
 	a power of 2; see ScaledNumTest.cpp.
 	Overloads commonly used arithmetic operators and offers some conveniences that the
-	built-in types don't have, e.g. abs, clamp, approxEquals, bernoulliSuccess (coin flip).
+	built-in types don't have, e.g. abs, clamp, approxEquals, randSuccess (coin flip).
 	Compile-time converter from double: macro 'fixp'
 	Conversion from percentage: macro 'per100' (also 'per1000', 'per10000')
 	'scaled' and 'uscaled' typedefs for default precision.
@@ -309,7 +309,7 @@ public:
 	}
 
 	// Bernoulli trial (coin flip) with success probability equal to m_i/SCALE
-	bool bernoulliSuccess(CvRandom& kRand, char const* szLog,
+	bool randSuccess(CvRandom& kRand, char const* szLog,
 			int iLogData1 = MIN_INT, int iLogData2 = MIN_INT) const;
 
 	ScaledNum pow(int iExp) const;
@@ -869,7 +869,7 @@ int ScaledNum_T::uceil() const
 
 
 template<ScaledNum_PARAMS>
-bool ScaledNum_T::bernoulliSuccess(CvRandom& kRand, char const* szLog,
+bool ScaledNum_T::randSuccess(CvRandom& kRand, char const* szLog,
 	int iLogData1, int iLogData2) const
 {
 	// Guards for better performance and to avoid unnecessary log output

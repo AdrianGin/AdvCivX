@@ -3831,20 +3831,20 @@ CvPlot* CvPlot::getInlandCorner() const
 {
 	CvPlot* pRiverPlot = NULL; // Plot through whose SE corner we want the river to run
 	int aiShuffle[4];
-	GC.getGame().getMapRand().shuffle(aiShuffle, ARRAYSIZE(aiShuffle));
-	CvMap const& m = GC.getMap();
+	mapRand().shuffle(aiShuffle, ARRAYSIZE(aiShuffle));
+	CvMap const& kMap = GC.getMap();
 	for (int i = 0; i < ARRAYSIZE(aiShuffle); i++)
 	{
 		switch (aiShuffle[i])
 		{
 		case 0:
-			pRiverPlot = m.plotSoren(getX(), getY()); break;
+			pRiverPlot = kMap.plotSoren(getX(), getY()); break;
 		case 1:
-			pRiverPlot = m.plotDirection(getX(), getY(), DIRECTION_NORTH); break;
+			pRiverPlot = kMap.plotDirection(getX(), getY(), DIRECTION_NORTH); break;
 		case 2:
-			pRiverPlot = m.plotDirection(getX(), getY(), DIRECTION_NORTHWEST); break;
+			pRiverPlot = kMap.plotDirection(getX(), getY(), DIRECTION_NORTHWEST); break;
 		case 3:
-			pRiverPlot = m.plotDirection(getX(), getY(), DIRECTION_WEST); break;
+			pRiverPlot = kMap.plotDirection(getX(), getY(), DIRECTION_WEST); break;
 		}
 		if (pRiverPlot != NULL && !pRiverPlot->hasCoastAtSECorner())
 			break;

@@ -2359,7 +2359,7 @@ PlayerTypes CvTeam::getRandomMemberAlive(bool bHuman) const
 		bHuman = false;
 	int iValid = (bHuman ? PlayerIter<HUMAN,MEMBER_OF>::count(getID()) :
 			getAliveCount());
-	int iIndex = GC.getGame().getSRandNum(iValid, "CvTeam::getRandomMemberAlive");
+	int iIndex = SyncRandNum(iValid);
 	for (MemberIter itMember(getID()); itMember.hasNext(); ++itMember)
 	{
 		if ((!bHuman || itMember->isHuman()) && itMember.nextIndex() >= iIndex)

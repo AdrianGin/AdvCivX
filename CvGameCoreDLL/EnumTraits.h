@@ -229,10 +229,10 @@ namespace enum_traits_detail
 			(eLoop##TypeName = (TypeName##Types)CONCATVARNAME(aiLoop##TypeName##Indices_, __LINE__) \
 			[CONCATVARNAME(iLoop##TypeName##Counter_, __LINE__)], \
 			(CONCATVARNAME(iLoop##TypeName##Counter_, __LINE__)++, true)); )
-/*	Example. FOR_EACH_ENUM_RAND(CardinalDirection, GC.getGame().getMapRand())
+/*	Example. FOR_EACH_ENUM_RAND(CardinalDirection, mapRand())
 	expands to:
 	std::vector<int> aiLoopCardinalDirectionIndices_443(getEnumLength((CardinalDirectionTypes)0));
-	(GC.getGame().getMapRand()).shuffle(aiLoopCardinalDirectionIndices_443);
+	(mapRand()).shuffle(aiLoopCardinalDirectionIndices_443);
 	int iLoopCardinalDirectionCounter_443 = 0;
 	for ( CardinalDirectionTypes eLoopCardinalDirection;
 			iLoopCardinalDirectionCounter_443 <

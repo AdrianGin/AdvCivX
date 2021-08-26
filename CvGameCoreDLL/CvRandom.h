@@ -76,8 +76,7 @@ protected:
 // advc.003k: Gets instantiated (also) externally; size mustn't change.
 BOOST_STATIC_ASSERT(sizeof(CvRandom) == 8);
 
-// <advc.007b>
-/*	Since I can't store a log file name at CvRandom,
+/*	advc.007b: Since I can't store a log file name at CvRandom,
 	let's make a class that'll only get instantiated in the DLL. */
 class CvRandomExtended : public CvRandom
 {
@@ -145,35 +144,5 @@ ItemType* CvRandom::weightedChoice(std::vector<ItemType*> const& kItems,
 	FErrorMsg("Negative weights?");
 	return NULL;
 }
-
-// Some macros that should make the logging aspect less tedious ...
-
-// May well be useful elsewhere, but let's put it where it gets used for now.
-#define STRINGIFY_HELPER2(x) #x
-#define STRINGIFY_HELPER1(x) STRINGIFY_HELPER2(x)
-#define CALL_LOC_STR __FUNCTION__ "(" __FILE__ "):" STRINGIFY_HELPER1(__LINE__)
-
-// ASyncRand gets used so little in the DLL; don't need a macro.
-/*#define AsyncRandNum(iNumOutcomes) \
-	GC.getASyncRand().get((iNumOutcomes), CALL_LOC_STR)*/
-
-// The rest will require the CvGame header:
-
-/*	Implementation files that include the CvRandom header can re-define this
-	to use a different CvGame instance */
-#define CVGAME_INSTANCE_FOR_RNG GC.getGame()
-
-#define SyncRandNum(iNumOutcomes) \
-	CVGAME_INSTANCE_FOR_RNG.getSRandNum((iNumOutcomes), CALL_LOC_STR)
-#define MapRandNum(iNumOutcomes) \
-	CVGAME_INSTANCE_FOR_RNG.getMapRandNum((iNumOutcomes), CALL_LOC_STR)
-/*	These take a ScaledNum instance or instantiation as parameter
-	and will therefore require the ScaledNum header. */
-#define SyncRandFract(T) \
-	T::rand(CVGAME_INSTANCE_FOR_RNG.getSRand(), CALL_LOC_STR)
-#define SyncRandSuccess(rSuccessProbability) \
-	(rSuccessProbability).bernoulliSuccess( \
-	CVGAME_INSTANCE_FOR_RNG.getSRand(), CALL_LOC_STR)
-// </advc.007b>
 
 #endif

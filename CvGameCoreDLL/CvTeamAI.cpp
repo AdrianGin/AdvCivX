@@ -5624,9 +5624,9 @@ int CvTeamAI::AI_randomCounterChange(int iUpperCap, scaled rProb) const
 		iSpeedPercent = (kSpeed.getGrowthPercent() + kSpeed.getGoldenAgePercent()) / 2;
 	rProb *= scaled(100, std::max(50, iSpeedPercent));
 	int r = 0;
-	if(rProb.bernoulliSuccess(GC.getGame().getSRand(), "random counter change"))
+	if (SyncRandSuccess(rProb))
 		r++;
-	if(rProb.bernoulliSuccess(GC.getGame().getSRand(), "random counter change"))
+	if (SyncRandSuccess(rProb))
 		r++;
 	if(iUpperCap < 0)
 		return r;
@@ -5685,11 +5685,8 @@ void CvTeamAI::AI_doCounter()
 		if(AI_shareWar(eOther))
 			AI_changeShareWarCounter(eOther, AI_randomCounterChange()); // </advc.130k>
 		// <advc.130m> Decay by 1 with 10% probability
-		else if(AI_getShareWarCounter(eOther) > 0 &&
-			fixp(0.1).bernoulliSuccess(GC.getGame().getSRand(), "share war decay"))
-		{
+		else if(AI_getShareWarCounter(eOther) > 0 && SyncRandSuccess(fixp(0.1)))
 			AI_changeShareWarCounter(eOther, -1);
-		}
 		AI_setSharedWarSuccess(eOther,
 				(AI_getSharedWarSuccess(eOther) * rDecayFactor).floor());
 		// </advc.130m>  <advc.130p>

@@ -178,7 +178,7 @@ namespace fmath
 	inline float hash(std::vector<int> const& kInputs, PlayerTypes ePlayer = NO_PLAYER)
 	{
 		/*  Use ASyncRand to avoid the overhead of creating a new object?
-			Or use stdlib's rand/sRand? I don't think it matters. */
+			Or use stdlib's rand/srand? I don't think it matters. */
 		/*CvRandom& rng = GC.getASyncRand();
 		rng.reset(hashVal);*/
 		CvRandom rng;

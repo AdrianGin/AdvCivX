@@ -4587,13 +4587,13 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 	szBuffer = kGoody.getDescription();
 
 	// <advc.314>
-	scaled prUpgrade = (kGoody.isBad() ? 0 : per100(kGoody.getBarbarianUnitProb()));
+	scaled rUpgradeProb = (kGoody.isBad() ? 0 : per100(kGoody.getBarbarianUnitProb()));
 	/*  Coefficient chosen such that it's 100% on turn 150. Would be better to
 		program that computation and set the 100%-turn in XML ... */
-	prUpgrade *= (fixp(0.225) * (kGame.goodyHutEffectFactor(false) - 1));
+	rUpgradeProb *= (fixp(0.225) * (kGame.goodyHutEffectFactor(false) - 1));
 	/*  Meaning that an upgraded version of kGoody should be used, or, if there
 		is none, that an additional outcome should be rolled. */
-	bool bUpgrade = prUpgrade.bernoulliSuccess(kGame.getSRand(), "advc.314");
+	bool bUpgrade = SyncRandSuccess(rUpgradeProb);
 	// </advc.314>
 	int iGold = kGoody.getGold() + kGame.getSorenRandNum(kGoody.getGoldRand1(), "Goody Gold 1") +
 			kGame.getSorenRandNum(kGoody.getGoldRand2(), "Goody Gold 2");
@@ -4756,7 +4756,7 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 				addGoodyMsg(szBuffer, *pPlot, kGoody.getSound());
 				szBuffer.clear();
 				if(pNewUnit->canAcquirePromotionAny())
-					promoteFreeUnit(*pNewUnit, prUpgrade);
+					promoteFreeUnit(*pNewUnit, rUpgradeProb);
 			}
 		}
 	}
@@ -19821,7 +19821,7 @@ void CvPlayer::promoteFreeUnit(CvUnit& u, scaled pr)
 	}
 	for (int i = 0; i < 2; i++)
 	{
-		if (!pr.bernoulliSuccess(GC.getGame().getSRand(), "advc.314"))
+		if (!SyncRandSuccess(pr))
 			break;
 		int iBestValue = -1;
 		PromotionTypes eBestPromo = NO_PROMOTION;

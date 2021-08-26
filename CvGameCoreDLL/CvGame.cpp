@@ -110,9 +110,9 @@ void CvGame::init(HandicapTypes eHandicap)
 		really matter, and actually makes it easier to reproduce maps
 		as only one seed has to be read off the screen. */
 	getMapRand().init(ic.getMapRandSeed());
-	getSRand().init(ic.getSyncRandSeed());
+	getSorenRand().init(ic.getSyncRandSeed());
 	m_initialRandSeed.uiMap = getMapRand().getSeed();
-	m_initialRandSeed.uiSync = getSRand().getSeed(); // <advc.027b>
+	m_initialRandSeed.uiSync = getSorenRand().getSeed(); // <advc.027b>
 
 	// Init non-serialized data ...
 
@@ -1107,7 +1107,7 @@ NormalizationTarget* CvGame::assignStartingPlots()
 				continue;
 			}
 			// advc.027b: was getSorenRandNum
-			int iRandOffset = getMapRandNum(apStartingPlots.size(), "Starting Plot");
+			int iRandOffset = MapRandNum(apStartingPlots.size());
 			itPlayer->setStartingPlot(apStartingPlots[iRandOffset]/*, true*/); // advc.opt
 			// remove this plot from the list.
 			apStartingPlots[iRandOffset] = apStartingPlots[apStartingPlots.size() - 1];
@@ -1160,8 +1160,7 @@ NormalizationTarget* CvGame::assignStartingPlots()
 			{
 				bool bStartFound = false;
 				// advc.027b: was getSorenRandNum
-				int const iRandOffset = getMapRandNum(countCivTeamsAlive(),
-						"Team Starting Plot");
+				int const iRandOffset = MapRandNum(countCivTeamsAlive());
 				gDLL->callUpdater(); // advc
 				for (int i = 0; i < MAX_CIV_TEAMS; i++)
 				{
@@ -1318,7 +1317,7 @@ void CvGame::applyStartingLocHandicaps(
 		in multiplayer games, and the BtS random assignment of human starts
 		didn't really work - had favored player 0 when humans are in slots 0, 1 ... */
 	/*else if (isGameMultiPlayer()) {
-		int iRandOffset = getMapRandNum(PlayerIter<CIV_ALIVE>::count(), "Player Starting Plot");
+		int iRandOffset = MapRandNum(PlayerIter<CIV_ALIVE>::count());
 		// ... (deleted on 14 June 2020)
 	}
 	else
@@ -1489,7 +1488,7 @@ CvGame::sortByStartingLocHandicap(
 	{
 		bool bHuman = (iPass == 0);
 		int iLoopAgents = (bHuman ? iHumanAgents : iAIAgents);
-		int iRandOffset = getMapRandNum(iLoopAgents, "sortByStartingLocHandicap");
+		int iRandOffset = MapRandNum(iLoopAgents);
 		int iSkipped = 0;
 		for (int i = 0; i < iAgents; i++)
 		{
@@ -1759,8 +1758,7 @@ void CvGame::normalizeAddRiver()
 					(Will also get a lake when no river possible or a lake already happens
 					to be present.) Note that a coastal river normally has only one segment.
 					Want to reduce the lake chance and coastal bias a bit. */
-				(pStartingPlot->isCoastalLand() ? fixp(0.62) : fixp(0.74)).
-				bernoulliSuccess(GC.getGame().getMapRand(), "normalize add river"))
+				MapRandSuccess(pStartingPlot->isCoastalLand() ? fixp(0.62) : fixp(0.74)))
 			{	// </advc.108>
 				CvPlot* pRiverPlot = pStartingPlot->getInlandCorner();
 				if (pRiverPlot != NULL)
@@ -1783,8 +1781,8 @@ void CvGame::normalizeAddRiver()
 				}
 				//if (GC.getInfo(eLoopFeature).getAppearanceProbability() == 10000)
 				// <advc.108> Cleaner to do the proper dice roll
-				if (scaled(GC.getInfo(eLoopFeature).getAppearanceProbability(), 10000).
-					bernoulliSuccess(getMapRand(), "normalize add river feature"))
+				if (MapRandSuccess(per10000(GC.getInfo(eLoopFeature).
+					getAppearanceProbability())))
 				{	// </advc.108>
 					if (kPlot.getBonusType() != NO_BONUS)
 						kPlot.setBonusType(NO_BONUS);
@@ -1813,11 +1811,8 @@ void CvGame::normalizeRemovePeaks()
 		// advc 027 (note): Range corresponds to AIFoundValue::adjustToLandAreaBoundary
 		for (SquareIter itPlot(*pStartingPlot, 3); itPlot.hasNext(); ++itPlot)
 		{
-			if (itPlot->isPeak() &&
-				rRemovalProb.bernoulliSuccess(getMapRand(), "advc.108")) // advc.108
-			{
+			if (itPlot->isPeak() && /* advc.108: */ MapRandSuccess(rRemovalProb))
 				itPlot->setPlotType(PLOT_HILLS);
-			}
 		}
 	}
 }
@@ -1926,7 +1921,7 @@ void CvGame::normalizeRemoveBadFeatures()
 					// <advc.108>
 					if (itPlot.currID() < NUM_INNER_PLOTS ||
 						(!isPowerfulStartingBonus(p, itPlayer->getID()) &&
-						(rRemovalProb.bernoulliSuccess(getMapRand(), "Remove Bad Feature 1") ||
+						(MapRandSuccess(rRemovalProb) ||
 						isWeakStartingFoodBonus(p, itPlayer->getID()))))
 					{	// </advc.108>
 						p.setFeatureType(NO_FEATURE);
@@ -1948,26 +1943,26 @@ void CvGame::normalizeRemoveBadFeatures()
 				{
 					if (p.isAdjacentToLand() || (iDistance <= iCityRange + 1 &&
 						// advc.027b: was getSorenRandNum
-						fixp(0.5).bernoulliSuccess(getMapRand(), "Remove Bad Feature 2")))
+						MapRandSuccess(fixp(0.5))))
 					{
 						p.setFeatureType(NO_FEATURE);
 					}
 				}
 				else if (iDistance <= iCityRange + 1)
 				{
-					scaled prRemoval(1, 2);
+					scaled rRemovalProb(1, 2);
 					if (m_eNormalizationLevel > NORMALIZE_MEDIUM) // advc.108
 					{	/*	Smaller pr when there is a resource. I wonder if that's
 							really what the BtS programmer meant to do. */
 						//getSorenRandNum(2 + (p.getBonusType() == NO_BONUS ? 0 : 2),"...") == 0)
 						if (p.getBonusType() != NO_BONUS)
-							prRemoval = scaled(1, 4);
+							rRemovalProb = scaled(1, 4);
 					}
 					// <advc.108>
 					else if (p.getBonusType() == NO_BONUS)
-						prRemoval = scaled(1, 3); // </advc.108>
+						rRemovalProb = scaled(1, 3); // </advc.108>
 					// advc.027b: was getSorenRandNum
-					if (prRemoval.bernoulliSuccess(getMapRand(), "Remove Bad Feature 3"))
+					if (MapRandSuccess(rRemovalProb))
 						p.setFeatureType(NO_FEATURE);
 				}
 			}
@@ -1995,8 +1990,8 @@ void CvGame::normalizeRemoveBadTerrain()
 			CvPlot& p = *itPlot;
 			int iDistance = itPlot.currPlotDist();
 			if (!p.isWater() && (iDistance <= iCityRange ||
-				p.isCoastalLand() || scaled(1, 1 + iDistance - iCityRange).
-				bernoulliSuccess(getMapRand(), "Map Upgrade Terrain Food 1")))
+				p.isCoastalLand() ||
+				MapRandSuccess(scaled(1, 1 + iDistance - iCityRange))))
 			{
 				CvTerrainInfo const& kTerrain = GC.getInfo(p.getTerrainType());
 				int iPlotFood = kTerrain.getYield(YIELD_FOOD);
@@ -2014,13 +2009,13 @@ void CvGame::normalizeRemoveBadTerrain()
 				{
 					continue;
 				}
-				if (rKeepProb.bernoulliSuccess(getMapRand(), "Map Upgrade Terrain Food 2"))
+				if (MapRandSuccess(rKeepProb))
 				{
 					if (iPlotFood > 0 ||
 					/*  advc.129b: Two chances of removal for Snow river
 						(BuildModifier=50), but not for Desert river. */
 						(p.isRiver() && kTerrain.getBuildModifier() < 30) ||
-						rKeepProb.bernoulliSuccess(getMapRand(), "Map Upgrade Terrain Food 3"))
+						MapRandSuccess(rKeepProb))
 					{
 						if (!isWeakStartingFoodBonus(p, itPlayer->getID()))
 							continue;
@@ -2032,7 +2027,7 @@ void CvGame::normalizeRemoveBadTerrain()
 					iTargetFood = 1;
 				else if (iPlotFood == 1 || iDistance <= iCityRange)
 				{	// advc.027b: was getSorenRandNum
-					iTargetFood = 1 + getMapRandNum(2, "Map Upgrade Terrain Food 4");
+					iTargetFood = 1 + MapRandNum(2);
 				}
 				else iTargetFood = (p.isCoastalLand() ? 2 : 1);
 				FOR_EACH_ENUM(Terrain)
@@ -2161,7 +2156,7 @@ void CvGame::normalizeAddFoodBonuses(/* advc.027: */ NormalizationTarget const* 
 				++itPlot)
 			{	// <advc.108>
 				if (bInnerRingBias && itPlot.currID() >= NUM_INNER_PLOTS &&
-					fixp(0.63).bernoulliSuccess(getMapRand(), "inner ring bias food"))
+					MapRandSuccess(fixp(0.63)))
 				{
 					continue;
 				} // </advc.108>
@@ -2426,7 +2421,7 @@ void CvGame::normalizeAddExtras(/* advc.027: */ NormalizationTarget const* pTarg
 				CvPlot& kLoopPlot = *itPlot;
 				if (kLoopPlot.getBonusType() != NO_BONUS || kLoopPlot.isFeature())
 					continue;
-				/*if (getSRandNum(iCount + 2, "Setting Feature Type") > 1)
+				/*if (getSorenRandNum(iCount + 2, "Setting Feature Type") > 1)
 					continue;*/ // advc.108: Replaced below
 				/*	advc.129: Randomize - for mod-mods (for forest, oasis, flood plains
 					the order doesn't matter b/c they have mutually exclusive prereqs) */
@@ -2464,8 +2459,8 @@ void CvGame::normalizeAddExtras(/* advc.027: */ NormalizationTarget const* pTarg
 					{
 						iProductionFeatures++;
 						// Replacing a BtS clause higher up
-						if (!scaled(1, std::max(iProductionFeatures - 2, 1)).
-							bernoulliSuccess(getSRand(), "Place Production Feature (1)"))
+						if (!SyncRandSuccess(scaled(1,
+							std::max(iProductionFeatures - 2, 1))))
 						{
 							bProductionFeatureDone = true;
 						}
@@ -2516,18 +2511,20 @@ void CvGame::normalizeAddExtras(/* advc.027: */ NormalizationTarget const* pTarg
 			for (CityPlotRandIter itPlot(*pStartingPlot, getMapRand(), false);
 				itPlot.hasNext() &&
 				//iLandBonus * 3 +
-				iLandFood * 4 + (iLandBonus - iLandFood) * 3 + // advc.108
-				iOceanBonus * 2 + iCoastBonus * 3 < 12; ++itPlot) // advc.108: iCoastBonus multiplier was 2
-			{	// <advc.108>
+				// <advc.108>
+				iLandFood * 4 + (iLandBonus - iLandFood) * 3 +
+				// aiCoastBonus multiplier was 2
+				iOceanBonus * 2 + iCoastBonus * 3 < 12; ++itPlot)
+			{
 				if (bInnerRingBias && itPlot.currID() >= NUM_INNER_PLOTS &&
-					fixp(0.47).bernoulliSuccess(getMapRand(), "inner ring bias extras"))
+					MapRandSuccess(fixp(0.47)))
 				{
 					continue;
 				} // </advc.108>
 				CvPlot& p = *itPlot;
 				//if (getSorenRandNum(bLandBias && p.isWater() ? 2 : 1,"...") == 0) {
 				// advc.027b: (note that getSorenRandNum(1) is always 0)
-				if (bLandBias && p.isWater() && fixp(0.5).bernoulliSuccess(getMapRand(), "Placing Bonuses"))
+				if (bLandBias && p.isWater() && MapRandSuccess(fixp(0.5)))
 					continue;
 				if (pTarget != NULL ? pTarget->isNearlyReached(*pStartingPlot) : // advc.027
 					citySiteEval.evaluate(*pStartingPlot) >= rTargetValue)
@@ -2585,8 +2582,7 @@ void CvGame::normalizeAddExtras(/* advc.027: */ NormalizationTarget const* pTarg
 							  getYieldChange(YIELD_PRODUCTION) <= 0 ||
 							// Don't clear production features if they're scarce
 							iProductionFeatures >= 4) && // </advc.108>
-							iCoastBonus + iOceanBonus > 2 &&
-							fixp(0.5).bernoulliSuccess(getMapRand(), "Clear feature to add bonus"))
+							iCoastBonus + iOceanBonus > 2 && MapRandSuccess(fixp(0.5)))
 						{
 							// advc: Selection, clearing of feature and placement moved into auxiliary function.
 							if (placeExtraBonus(kPlayer.getID(), p, iPass == 0,
@@ -2641,8 +2637,8 @@ void CvGame::normalizeAddExtras(/* advc.027: */ NormalizationTarget const* pTarg
 				if (bFood)
 				{
 					iFoodFeatures++;
-					if (!scaled(1, std::max(iFoodFeatures, 1)).
-						bernoulliSuccess(getSRand(), "Place Food Feature"))
+					if (!SyncRandSuccess(scaled(1,
+						std::max(iFoodFeatures, 1))))
 					{
 						bFoodFeatureDone = true;
 					}
@@ -2650,8 +2646,8 @@ void CvGame::normalizeAddExtras(/* advc.027: */ NormalizationTarget const* pTarg
 				else
 				{
 					iProductionFeatures++;
-					if (!scaled(1, std::max(iProductionFeatures - 2, 1)).
-						bernoulliSuccess(getSRand(), "Place Production Feature (2)"))
+					if (!SyncRandSuccess(scaled(1,
+						std::max(iProductionFeatures - 2, 1))))
 					{
 						bProductionFeatureDone = true;
 					}
@@ -2802,11 +2798,8 @@ bool CvGame::skipDuplicateNormalizationBonus(CvPlot const& kStartPlot, CvPlot co
 			continue;
 		// Adjacent duplicates look especially ugly
 		int iDist = stepDistance(&*it, &kPlot);
-		if ((2 * rSkipPr / iDist).bernoulliSuccess(
-			getMapRand(), "Avoid double extra bonus"))
-		{
+		if (MapRandSuccess(2 * rSkipPr / iDist))
 			return true;
-		}
 	}
 	return false;
 }
@@ -6801,9 +6794,8 @@ void CvGame::doGlobalWarming()
 		CvFeatureInfo const* pProtectedFeature = NULL;
 		if (eImprov != NO_IMPROVEMENT && eFeature != NO_FEATURE)
 		{
-			if (per100(GC.getInfo(eImprov).get(
-				CvImprovementInfo::GWFeatureProtection)).bernoulliSuccess(
-				getSRand(), "GWFeatureProtection"))
+			if (SyncRandSuccess(per100(GC.getInfo(eImprov).get(
+				CvImprovementInfo::GWFeatureProtection))))
 			{
 				bProtectFeature = true;
 				pProtectedFeature = &GC.getInfo(eFeature);
@@ -7698,7 +7690,7 @@ void CvGame::createBarbarianUnits()
 			continue;
 		int iUnits = pCity->getPlot().getNumDefenders(BARBARIAN_PLAYER);
 		scaled rKillProb = (iUnits - scaled::max(fixp(1.5) * pCity->getPopulation(), 4)) / 4;
-		if (rKillProb.bernoulliSuccess(getSRand(), "kill random Barbarian"))
+		if (SyncRandSuccess(rKillProb))
 			pCity->getPlot().killRandomUnit(BARBARIAN_PLAYER, DOMAIN_LAND);
 	} // </advc.300>
 }
@@ -7878,7 +7870,7 @@ int CvGame::numBarbariansToCreate(int iTilesPerUnit, int iTiles, int iUnowned,
 		Probabilistic instead. */
 	if (r < 1)
 	{
-		if (r.bernoulliSuccess(getSRand(), "numBarbariansToCreate"))
+		if (SyncRandSuccess(r))
 			return 1;
 		return 0;
 	}
@@ -7919,11 +7911,8 @@ int CvGame::createBarbarianUnits(int iUnitsToCreate, CvArea& kArea, Shelf* pShel
 					way, i.e. a ship receiving a second passenger while travelling
 					to its target through fog of war. (I don't think that happens
 					often enough though ...) */
-				if (pTransport->getCargo() > 1 ||
-					fixp(0.7).bernoulliSuccess(getSRand(), "Barbarian on transport"))
-				{
+				if (pTransport->getCargo() > 1 || SyncRandSuccess(fixp(0.7)))
 					break;
-				}
 			}
 		}
 		if (bOnlyCargo)
@@ -8002,7 +7991,7 @@ CvPlot* CvGame::randomBarbarianPlot(CvArea const& kArea, Shelf const* pShelf)
 		scaled rSkipProb = 1 - scaled(1, 1 + iFewValidThresh - iValid);
 		// Especially don't want a constant stream of units from low-weight plots
 		rSkipProb *= scaled::max(1, 2 - per100(getBarbarianWeightMap().get(*pRandPlot)));
-		if (rSkipProb.bernoulliSuccess(getSRand(), "randomBarbarianPlot skip"))
+		if (SyncRandSuccess(rSkipProb))
 			pRandPlot = NULL;
 	}
 	return pRandPlot; // </advc.304>
@@ -8022,7 +8011,7 @@ bool CvGame::killBarbarian(int iUnitsPresent, int iTiles, int iPop,
 	// Don't want large Barbarian continents crawling with units
 	rDivisor.exponentiate(fixp(0.7));
 	rDivisor *= 5;
-	if ((iUnitsPresent / rDivisor).bernoulliSuccess(getSRand(), "killBarbarian2"))
+	if (SyncRandSuccess(iUnitsPresent / rDivisor))
 	{
 		if(pShelf != NULL)
 			return pShelf->killBarbarian();

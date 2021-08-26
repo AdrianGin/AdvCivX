@@ -8625,8 +8625,7 @@ void CvCityAI::AI_doDraft(bool bForce)
 	if (bWait)
 	{
 		// Non-critical, only burn population if population is not worth much
-		// advc.017:
-		if (per100(AI_buildUnitProb(true)).bernoulliSuccess(GC.getGame().getSRand(), "advc.017") &&
+		if (SyncRandSuccess(per100(AI_buildUnitProb(true))) && // advc.017
 			(getConscriptAngerTimer() == 0 || isNoUnhappiness()) && // K-Mod
 			(bGoodValue || bTooMuchPop)) // advc.017  (no functional change here)
 		{
