@@ -2246,12 +2246,7 @@ CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
 	bool bWorkers, bool* pbWrap) const
 {
 	FAssert(GC.getGame().getActivePlayer() == getID() && isHuman());
-	/* if (pbWrap != NULL)
-		*pbWrap = false;*/
-	// <K-Mod>
-	bool bWrap_local = false;
-	bool& bWrap = (pbWrap != NULL ? *pbWrap : bWrap_local); // <K-Mod>
-	bWrap = false;
+	LOCAL_REF(bool, bWrap, pbWrap, false); // K-Mod
 	// advc.154: Copy the set
 	std::set<int> kCycledGroups = GC.getGame().getActivePlayerCycledGroups(); // K-Mod
 	CLLNode<int>* pSelectionGroupNode = headGroupCycleNode();

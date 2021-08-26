@@ -3973,8 +3973,7 @@ int CvUnit::nukeInterceptionChance(CvPlot const& kTarget,
 	// Allow caller to provide set of affected teams (just to save time)
 	EagerEnumMap<TeamTypes,bool> const* pTeamsAffected) const
 {
-	TeamTypes eBestTeam_local = NO_TEAM;
-	TeamTypes& eBestTeam = (pBestTeam == NULL ? eBestTeam_local : *pBestTeam);
+	LOCAL_REF(TeamTypes, eBestTeam, pBestTeam, NO_TEAM);
 	EagerEnumMap<TeamTypes,bool> abTeamsAffected_local;
 	if (pTeamsAffected == NULL)
 	{

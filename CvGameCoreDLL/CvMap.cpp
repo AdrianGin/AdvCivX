@@ -522,9 +522,7 @@ CvPlot* CvMap::syncRandPlot(RandPlotFlags eFlags, CvArea const* pArea,
 	/* <advc.304> */ int* piValidCount, // Number of valid tiles
 	RandPlotWeightMap const* pWeights)
 {
-	int iValid_local = 0;
-	int& iValid = (piValidCount == NULL ? iValid_local : *piValidCount);
-	iValid = 0;
+	LOCAL_REF(int, iValid, piValidCount, 0);
 	/*  Look exhaustively for a valid plot by default. Rationale:
 		The biggest maps have about 10000 plots. If there is only one valid plot,
 		then the BtS default of considering 100 plots drawn at random has only a

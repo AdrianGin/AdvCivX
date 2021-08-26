@@ -48,6 +48,17 @@ void iota(ForwardIt first, ForwardIt last, T value)
 }
 };
 
+/*	advc: Based K-Mod code in CvPlayer::getNextGroupInCycle; I find myself using
+	this pattern from time to time:
+	When a function optionally returns an additional value through a
+	pointer argument that can be NULL, then define a local reference that
+	refers to the same memory as the pointer arg - unless the pointer arg
+	is NULL, in which case a local dummy variable is referenced instead. */
+#define LOCAL_REF(T, localRefVarName, pointerArgName, tInitialVal) \
+	T localRefVarName##_local = tInitialVal; /* dummy */ \
+	T& localRefVarName = (pointerArgName == NULL ? localRefVarName##_local : *pointerArgName); \
+	localRefVarName = tInitialVal; /* ensure initialization */
+
 void contestedPlots(std::vector<CvPlot*>& r, TeamTypes t1, TeamTypes t2); // advc.035
 // advc.130h:
 template<typename T> void removeDuplicates(std::vector<T>& v)
