@@ -245,8 +245,8 @@ public:
 	}
 	int ceil() const
 	{
-		int r = floor();
-		return r + ((m_i >= 0 && m_i - r * SCALE > 0) ? 1 : 0);
+		int iR = floor();
+		return iR + ((m_i >= 0 && m_i - iR * SCALE > 0) ? 1 : 0);
 	}
 	int uceil() const;
 	bool isInt() const
@@ -878,7 +878,7 @@ bool ScaledNum_T::randSuccess(CvRandom& kRand, char const* szLog,
 	if (m_i >= SCALE)
 		return true;
 	BOOST_STATIC_ASSERT(SCALE <= USHRT_MAX);
-	/*	When porting ScaledNum to another mod, you may want to use:
+	/*	When porting ScaledNum to another mod, one may want to use:
 		return (kRand.get(static_cast<unsigned short>(SCALE), szLog) < m_i); */
 	return (kRand.getInt(SCALE, szLog, iLogData1, iLogData2) < m_i);
 }

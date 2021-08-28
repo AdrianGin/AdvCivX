@@ -785,13 +785,13 @@ void CvSelectionGroup::startMission()
 		{
 			setActivityType(ACTIVITY_MISSION);
 			// <advc.029> (Not sure if this is the best place for this)
-			if(getHeadUnit() != NULL && getDomainType() == DOMAIN_AIR)
+			if (getHeadUnit() != NULL && getDomainType() == DOMAIN_AIR)
 			{
 				MissionData data = headMissionQueueNode()->m_data;
 				CvPlot* pDest = GC.getMap().plot(data.iData1, data.iData2);
 				/*  Both air attack and rebase are MOVE_TO missions. Want to
 					clear the recon-plot only for rebase. */
-				if(data.eMissionType == MISSION_MOVE_TO && pDest != NULL &&
+				if (data.eMissionType == MISSION_MOVE_TO && pDest != NULL &&
 					GET_TEAM(getTeam()).isRevealedAirBase(*pDest))
 				{
 					getHeadUnit()->setReconPlot(NULL);
@@ -1483,7 +1483,7 @@ bool CvSelectionGroup::continueMission_bulk(int iSteps)
 	}
 
 	pHeadMission = headMissionQueueNode();
-	if(pHeadMission == NULL || getNumUnits() <= 0)
+	if (pHeadMission == NULL || getNumUnits() <= 0)
 		return false;
 	missionData = pHeadMission->m_data;
 

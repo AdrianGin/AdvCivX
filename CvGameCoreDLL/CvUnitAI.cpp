@@ -1612,7 +1612,7 @@ bool CvUnitAI::AI_foundFirstCity()
 				|| (getPlot().isCoastalLand(GC.getMIN_WATER_SIZE_FOR_OCEAN()) && !pBestPlot->isCoastalLand(GC.getMIN_WATER_SIZE_FOR_OCEAN()))
 				|| (pBestPlot->getBonusType(NO_TEAM) != NO_BONUS && pBestPlot->calculateNatureYield(YIELD_FOOD, getTeam(), true) > 0))*/
 			// advc: I think AI_foundValue can handle the other stuff
-			if(getPlot().isFreshWater() && !pBestPlot->isFreshWater())
+			if (getPlot().isFreshWater() && !pBestPlot->isFreshWater())
 				pBestPlot = NULL;
 		}
 		if (pBestPlot != NULL)
@@ -1636,12 +1636,12 @@ bool CvUnitAI::AI_foundFirstCity()
 // advc.113b: Cut from AI_workerMove
 CvCityAI* CvUnitAI::AI_getCityToImprove() const
 {
-	if(getPlot().getOwner() != getOwner() /* advc.113b: */ || isCargo())
+	if (getPlot().getOwner() != getOwner() /* advc.113b: */ || isCargo())
 		return NULL;
-	CvCityAI* r = getPlot().AI_getPlotCity();
-	if(r == NULL)
-		r = getPlot().AI_getWorkingCity();
-	return r;
+	CvCityAI* pCity = getPlot().AI_getPlotCity();
+	if (pCity == NULL)
+		pCity = getPlot().AI_getWorkingCity();
+	return pCity;
 }
 
 
