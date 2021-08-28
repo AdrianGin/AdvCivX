@@ -555,8 +555,7 @@ void CvCity::doTurn()
 	if (isOccupation() || (angryPopulation() > 0) || (healthRate() < 0))
 		setWeLoveTheKingDay(false);
 	else if (getPopulation() >= GC.getDefineINT("WE_LOVE_THE_KING_POPULATION_MIN_POPULATION") &&
-		GC.getGame().getSorenRandNum(GC.getDefineINT(
-		"WE_LOVE_THE_KING_RAND"), "Do We Love The King?") < getPopulation())
+		SyncRandNum(GC.getDefineINT("WE_LOVE_THE_KING_RAND")) < getPopulation())
 	{
 		setWeLoveTheKingDay(true);
 	}
@@ -10719,8 +10718,7 @@ void CvCity::doReligion()
 				is allowed to spread here, add it to the list. */
 			int iGrip = getReligionGrip(eLoopReligion);
 			// only half the weight for self-spread
-			iGrip += GC.getGame().getSorenRandNum(iRandomWeight / 2,
-					"Religion influence");
+			iGrip += SyncRandNum(iRandomWeight / 2);
 			religion_grips.push_back(std::make_pair(iGrip, eLoopReligion));
 		}
 	}
@@ -10814,7 +10812,7 @@ void CvCity::doReligion()
 					the existing religion can get removed. */
 				int iOdds = getReligionCount() * 100 * (iLoopGrip - iWeakestGrip) /
 						std::max(1, iLoopGrip);
-				if (GC.getGame().getSorenRandNum(100, "Religion departure") < iOdds)
+				if (SyncRandSuccess100(iOdds))
 				{
 					setHasReligion(eWeakestReligion, false, true, true);
 					break; // end the loop
@@ -10875,27 +10873,26 @@ void CvCity::doGreatPeople()
 			CvRandom::weightedChoice here (to avoid code duplication). */
 		bool const bOverflow = (iTotalGreatPeopleUnitProgress > CvRandom::getRange());
 		if (bOverflow)
-			iTotalGreatPeopleUnitProgress = per100(iTotalGreatPeopleUnitProgress).ceil(); // </advc>
-
-		int iGreatPeopleUnitRand = GC.getGame().getSorenRandNum(
-				iTotalGreatPeopleUnitProgress, "Great Person");
-
+			iTotalGreatPeopleUnitProgress = per100(iTotalGreatPeopleUnitProgress).ceil();
+		// </advc>
 		UnitTypes eGreatPeopleUnit = NO_UNIT;
-		for (int i = 0; i < kCiv.getNumUnits(); i++)
 		{
-			UnitTypes eLoopGP = kCiv.unitAt(i);
-			int iLoopProgress = getGreatPeopleUnitProgress(eLoopGP);
-			// <advc> (see above)
-			if (bOverflow)
-				iLoopProgress = per100(iLoopProgress).ceil(); // </advc>
-			if (iGreatPeopleUnitRand < iLoopProgress)
+			int iGreatPeopleUnitRand = SyncRandNum(iTotalGreatPeopleUnitProgress);
+			for (int i = 0; i < kCiv.getNumUnits(); i++)
 			{
-				eGreatPeopleUnit = eLoopGP;
-				break;
+				UnitTypes eLoopGP = kCiv.unitAt(i);
+				int iLoopProgress = getGreatPeopleUnitProgress(eLoopGP);
+				// <advc> (see above)
+				if (bOverflow)
+					iLoopProgress = per100(iLoopProgress).ceil(); // </advc>
+				if (iGreatPeopleUnitRand < iLoopProgress)
+				{
+					eGreatPeopleUnit = eLoopGP;
+					break;
+				}
+				iGreatPeopleUnitRand -= iLoopProgress;
 			}
-			iGreatPeopleUnitRand -= iLoopProgress;
 		}
-
 		if (eGreatPeopleUnit != NO_UNIT)
 		{
 			changeGreatPeopleProgress(-GET_PLAYER(getOwner()).greatPeopleThreshold(false));
@@ -12257,14 +12254,12 @@ void CvCity::applyEvent(EventTypes eEvent,
 		{
 			FAssert(kEvent.getMaxPillage() >= kEvent.getMinPillage());
 			int iNumPillage = kEvent.getMinPillage() +
-					GC.getGame().getSorenRandNum(kEvent.getMaxPillage() -
-					kEvent.getMinPillage(), "Pick number of event pillaged plots");
+					SyncRandNum(kEvent.getMaxPillage() - kEvent.getMinPillage());
 
 			int iNumPillaged = 0;
 			for (int i = 0; i < iNumPillage; i++)
 			{
-				int iRandOffset = GC.getGame().getSorenRandNum(
-						NUM_CITY_PLOTS, "Pick event pillage plot");
+				int iRandOffset = SyncRandNum(NUM_CITY_PLOTS);
 				FOR_EACH_ENUM(CityPlot)
 				{
 					CityPlotTypes const ePlot = (CityPlotTypes)

@@ -370,20 +370,19 @@ void CvPlot::doImprovement()
 			if (!GET_TEAM(kOwner.getTeam()).isHasTech(kLoopBonus.getTechReveal()))
 				continue;
 			/*if (GC.getInfo(getImprovementType()).getImprovementBonusDiscoverRand(eLoopBonus) > 0) { // BtS
-				if (GC.getGame().getSorenRandNum(GC.getInfo(getImprovementType()).getImprovementBonusDiscoverRand(eLoopBonus), "Bonus Discovery") == 0) {*/
+				if (SyncRandOneChanceIn(GC.getInfo(getImprovementType()).getImprovementBonusDiscoverRand(eLoopBonus))) {*/
 			// UNOFFICIAL_PATCH, Gamespeed scaling, 03/04/10, jdog5000: START
 			int iOdds = GC.getInfo(getImprovementType()).
 					getImprovementBonusDiscoverRand(eLoopBonus);
-			if(iOdds <= 0)
+			if (iOdds <= 0)
 				continue;
 			// <advc.rom3>
 			//Afforess: check for valid terrains for this bonus before discovering it
-			if(!canHaveBonus(eLoopBonus), false, /* advc.129: */ true)
+			if (!canHaveBonus(eLoopBonus), false, /* advc.129: */ true)
 				continue; // </advc.rom3>
 			iOdds *= GC.getInfo(GC.getGame().getGameSpeedType()).getVictoryDelayPercent();
 			iOdds /= 100;
-
-			if (GC.getGame().getSorenRandNum(iOdds, "Bonus Discovery") == 0)
+			if (SyncRandOneChanceIn(iOdds))
 			{	// UNOFFICIAL_PATCH: END
 				setBonusType(eLoopBonus);
 				CvCity* pCity = GC.getMap().findCity(getX(), getY(), kOwner.getID(), NO_TEAM, false);
@@ -815,7 +814,7 @@ void CvPlot::nukeExplosion(int iRange, CvUnit* pNukeUnit, bool bBomb)
 				if (p.getFeatureType() == NO_FEATURE ||
 					!GC.getInfo(p.getFeatureType()).isNukeImmune())
 				{
-					if (GC.getGame().getSorenRandNum(100, "Nuke Fallout") < iNUKE_FALLOUT_PROB)
+					if (SyncRandSuccess100(iNUKE_FALLOUT_PROB))
 					{	// <advc.650>
 						if (p.isImproved())
 						{
@@ -869,9 +868,8 @@ void CvPlot::nukeExplosion(int iRange, CvUnit* pNukeUnit, bool bBomb)
 				// </kekm.7>
 			{
 				int iNukeDamage = (iNUKE_UNIT_DAMAGE_BASE +
-						GC.getGame().getSorenRandNum(iNUKE_UNIT_DAMAGE_RAND_1, "Nuke Damage 1") +
-						GC.getGame().getSorenRandNum(iNUKE_UNIT_DAMAGE_RAND_2, "Nuke Damage 2"));
-
+						SyncRandNum(iNUKE_UNIT_DAMAGE_RAND_1) +
+						SyncRandNum(iNUKE_UNIT_DAMAGE_RAND_2));
 				if (pCity != NULL)
 				{
 					iNukeDamage *= std::max(0, pCity->getNukeModifier() + 100);
@@ -898,7 +896,7 @@ void CvPlot::nukeExplosion(int iRange, CvUnit* pNukeUnit, bool bBomb)
 				}
 				//else if (iNukeDamage >= GC.getDefineINT("NUKE_NON_COMBAT_DEATH_THRESHOLD"))
 				// <kekm.20>
-				else if(GC.getGame().getSorenRandNum(100, "Non-Combat Nuke Rand") * 100 <
+				else if (SyncRandNum(100) * 100 <
 					std::max(0, ((pCity == NULL ? 0 : pCity->getNukeModifier()) + 100)) *
 					(iNUKE_UNIT_DAMAGE_BASE - 1 + (iNUKE_UNIT_DAMAGE_RAND_1 +
 					iNUKE_UNIT_DAMAGE_RAND_2 - 1) / 2)) // </kekm.20>
@@ -917,8 +915,7 @@ void CvPlot::nukeExplosion(int iRange, CvUnit* pNukeUnit, bool bBomb)
 		{
 			if (pCity->getNumRealBuilding(eBuilding) > 0 &&
 				!GC.getInfo(eBuilding).isNukeImmune() &&
-				GC.getGame().getSorenRandNum(100, "Building Nuked") <
-				iNUKE_BUILDING_DESTRUCTION_PROB)
+				SyncRandSuccess100(iNUKE_BUILDING_DESTRUCTION_PROB))
 			{
 				// <advc.650>
 				aBuildingDestroyed.push_back(NukeEffect(&p,
@@ -929,8 +926,8 @@ void CvPlot::nukeExplosion(int iRange, CvUnit* pNukeUnit, bool bBomb)
 		}
 		int iNukedPopulation = (pCity->getPopulation() *
 				(iNUKE_POPULATION_DEATH_BASE +
-				GC.getGame().getSorenRandNum(iNUKE_POPULATION_DEATH_RAND_1, "Population Nuked 1") +
-				GC.getGame().getSorenRandNum(iNUKE_POPULATION_DEATH_RAND_2, "Population Nuked 2")))
+				SyncRandNum(iNUKE_POPULATION_DEATH_RAND_1) +
+				SyncRandNum(iNUKE_POPULATION_DEATH_RAND_2)))
 				/ 100;
 		iNukedPopulation *= std::max(0, (pCity->getNukeModifier() + 100));
 		iNukedPopulation /= 100;
@@ -6758,14 +6755,12 @@ void CvPlot::doFeature()
 	{
 		int iProbability = GC.getInfo(getFeatureType()).getDisappearanceProbability();
 		if (iProbability > 0)
-		{	//if (GC.getGame().getSorenRandNum(10000, "Feature Disappearance") < iProbability)
+		{	//if (SyncRandNum(10000) < iProbability)
 			// UNOFFICIAL_PATCH, Gamespeed scaling, 03/04/10, jdog5000
-			int iOdds = (10000*GC.getInfo(GC.getGame().getGameSpeedType()).getVictoryDelayPercent())/100;
-			if (GC.getGame().getSorenRandNum(iOdds, "Feature Disappearance") < iProbability)
-			// UNOFFICIAL_PATCH: END
-			{
+			int iRoll = (10000 * GC.getInfo(GC.getGame().getGameSpeedType()).
+					getVictoryDelayPercent()) / 100;
+			if (SyncRandNum(iRoll) < iProbability) // UNOFFICIAL_PATCH: END
 				setFeatureType(NO_FEATURE);
-			}
 		}
 	}
 	else if (!isUnit() && !isImproved())
@@ -6803,11 +6798,11 @@ void CvPlot::doFeature()
 			}
 			if (iProbability > 0)
 			{
-				//if (GC.getGame().getSorenRandNum(10000, "Feature Growth") < iProbability)
+				//if (SyncRandNum(10000) < iProbability)
 				// UNOFFICIAL_PATCH, Gamespeed scaling, 03/04/10, jdog5000: START
-				int iOdds = (10000*GC.getInfo(GC.getGame().getGameSpeedType()).
+				int iRoll = (10000 * GC.getInfo(GC.getGame().getGameSpeedType()).
 						getVictoryDelayPercent()) / 100;
-				if (GC.getGame().getSorenRandNum(iOdds, "Feature Growth",
+				if (syncRand().get(iRoll, "CvPlot::doFeature",
 					getX(), getY()) < iProbability) // advc.007: Log coordinates
 				// UNOFFICIAL_PATCH: END
 				{
@@ -8265,17 +8260,17 @@ void CvPlot::killRandomUnit(PlayerTypes eOwner, DomainTypes eDomain)
 	int iBestValue = -1;
 	FOR_EACH_UNIT_VAR_IN(pUnit, *this)
 	{
-		if(pUnit->getOwner() == eOwner && pUnit->getDomainType() == eDomain)
+		if (pUnit->getOwner() == eOwner && pUnit->getDomainType() == eDomain)
 		{
-			int iValue = GC.getGame().getSorenRandNum(1000, "killRandomUnit");
-			if(iValue > iBestValue)
+			int iValue = SyncRandNum(1000);
+			if (iValue > iBestValue)
 			{
 				pVictim = pUnit;
 				iBestValue = iValue;
 			}
 		}
 	}
-	if(pVictim != NULL)
+	if (pVictim != NULL)
 		pVictim->kill(false);
 }
 

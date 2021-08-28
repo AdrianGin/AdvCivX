@@ -145,7 +145,7 @@ void CvPlayerAI::AI_updatePersonality()
 	FAssert(getPersonalityType() != NO_LEADER);
 	CvLeaderHeadInfo const& kPersonality = GC.getInfo(getPersonalityType());
 	AI_setPeaceWeight(kPersonality.getBasePeaceWeight() +
-			GC.getGame().getSorenRandNum(kPersonality.getPeaceWeightRand(), "AI Peace Weight"));
+			SyncRandNum(kPersonality.getPeaceWeightRand()));
 	AI_setEspionageWeight((kPersonality.getEspionageWeight() *
 			// K-Mod. (I've changed the meaning of this value)
 			GC.getInfo(COMMERCE_ESPIONAGE).getAIWeightPercent()) / 100);
@@ -445,15 +445,14 @@ void CvPlayerAI::AI_doTurnUnitsPre()
 
 	AI_updateFoundValues();
 
-	if (/* advc.300: */ !isBarbarian() &&
-		AI_getCityTargetTimer() == 0 && // K-Mod
-		GC.getGame().getSorenRandNum(8, "AI Update Area Targets") == 0)
+	if (AI_getCityTargetTimer() == 0 && // K-Mod
+		SyncRandOneChanceIn(8))
 	{
 		AI_updateAreaTargets();
 	}  // <advc.102>
 	FOR_EACH_GROUP_VAR(pGroup, *this)
 	{
-		if(pGroup->getNumUnits() > 0)
+		if (pGroup->getNumUnits() > 0)
 			pGroup->setInitiallyVisible(pGroup->getPlot().isVisibleToWatchingHuman());
 	} // </advc.102>
 
@@ -461,9 +460,11 @@ void CvPlayerAI::AI_doTurnUnitsPre()
 		return;
 
 	// Uncommented by K-Mod, and added warplan condition.
-	if (AI_isDoStrategy(AI_STRATEGY_CRUSH) /* advc.105: */ && AI_isFocusWar())
-			//GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0)
+	if (AI_isDoStrategy(AI_STRATEGY_CRUSH) && //GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0)
+		AI_isFocusWar()) // advc.105
+	{
 		AI_convertUnitAITypesForCrush();
+	}
 }
 
 
@@ -675,28 +676,26 @@ void CvPlayerAI::AI_doPeace()  // advc: refactored
 	{
 		CvPlayerAI const& kTarget = *itTarget;
 		PlayerTypes const eTarget = kTarget.getID();
-		if(AI_getContactTimer(eTarget, CONTACT_PEACE_TREATY) > 0)
+		if (AI_getContactTimer(eTarget, CONTACT_PEACE_TREATY) > 0)
 			continue;
-		if(kTarget.isHuman() && abContacted[kTarget.getTeam()])
+		if (kTarget.isHuman() && abContacted[kTarget.getTeam()])
 			continue;
-		if(!AI_willOfferPeace(eTarget)) // advc: Moved checks into new function
+		if (!AI_willOfferPeace(eTarget)) // advc: Moved checks into new function
 			continue;
 
-		if(canTradeItem(eTarget, TradeData(TRADE_SURRENDER), /* bTestDenial=*/true))
+		if (canTradeItem(eTarget, TradeData(TRADE_SURRENDER), /* bTestDenial=*/true))
 		{
 			// advc.104h: Moved into new function
 			AI_offerCapitulation(eTarget);
 			return;
 		}
-		// advc (comment): Peace offered with a 5-10% probability
-		if(GC.getGame().getSorenRandNum(GC.getInfo(
-			getPersonalityType()).getContactRand(CONTACT_PEACE_TREATY),
-			"AI Diplo Peace Treaty") != 0)
+		if (!SyncRandOneChanceIn(
+			GC.getInfo(getPersonalityType()).getContactRand(CONTACT_PEACE_TREATY)))
 		{
 			continue;
 		}
 		// advc: Replacing two canTradeItem calls
-		if(getTradeDenial(eTarget, TradeData(TRADE_PEACE_TREATY)) != NO_DENIAL ||
+		if (getTradeDenial(eTarget, TradeData(TRADE_PEACE_TREATY)) != NO_DENIAL ||
 			kTarget.getTradeDenial(getID(), TradeData(TRADE_PEACE_TREATY)) != NO_DENIAL)
 		{
 			continue;
@@ -704,10 +703,10 @@ void CvPlayerAI::AI_doPeace()  // advc: refactored
 		scaled rOurValue = GET_TEAM(getTeam()).AI_endWarVal(kTarget.getTeam());
 		scaled rTheirValue = GET_TEAM(eTarget).AI_endWarVal(getTeam());
 		// <advc.134a> Human discount
-		if(kTarget.isHuman())
+		if (kTarget.isHuman())
 		{
 			scaled const rDiscountFactor = fixp(1.2);
-			if(rOurValue > 0)
+			if (rOurValue > 0)
 				rOurValue = rOurValue * rDiscountFactor;
 			else rOurValue = rOurValue / rDiscountFactor;
 		} // </advc.134a>
@@ -886,12 +885,12 @@ int CvPlayerAI::AI_negotiatePeace(PlayerTypes eRecipient, PlayerTypes eGiver,
 					power of 1.65. */
 				int iValue = -std::abs(GET_TEAM(kRecipient.getTeam()).AI_techTradeVal(
 						eLoopTech, kGiver.getTeam(), true, true) - iDelta) +
-						GC.getGame().getSorenRandNum(scaled(
+						SyncRandNum(scaled(
 						GET_TEAM(kRecipient.getTeam()).
 						AI_getAtWarCounter(kGiver.getTeam())).pow(fixp(1.65)).
-						round(), "AI Peace Trading");
+						round());
 				// BtS code:
-				//iValue = (1 + GC.getGame().getSorenRandNum(10000, "AI Peace Trading (Tech #1)"));
+				//iValue = 1 + SyncRandNum(10000);
 				if (iValue > iBestValue)
 				{
 					iBestValue = iValue;
@@ -1081,8 +1080,8 @@ void CvPlayerAI::AI_updateAreaTargets()
 	{
 		if (pArea->isWater() /* advc.opt: */ || pArea->getNumCities() <= 0)
 			continue;
-		if(!bSneakAttackReady && // advc.104p
-			GC.getGame().getSorenRandNum(3, "AI_updateAreaTargets") == 0)
+		if (!bSneakAttackReady && // advc.104p
+			SyncRandOneChanceIn(3))
 		{
 			pArea->AI_setTargetCity(getID(), NULL);
 		}
@@ -1483,7 +1482,7 @@ void CvPlayerAI::AI_doCentralizedProduction()
 										}
 										else
 										{
-											iTempValue = GC.getGame().getSorenRandNum(GC.getInfo(getPersonalityType()).getWonderConstructRand(), "Wonder Construction Rand");
+											iTempValue = SyncRandNum(GC.getInfo(getPersonalityType()).getWonderConstructRand());
 										}
 
 										if (bAreaAlone)
@@ -1496,12 +1495,12 @@ void CvPlayerAI::AI_doCentralizedProduction()
 
 								if (bAsync)
 								{
-									iValue *= (GC.getASyncRand().get(25, "AI Best Building ASYNC") + 100);
+									iValue *= GC.getASyncRand().get(25, "AI Best Building ASYNC") + 100;
 									iValue /= 100;
 								}
 								else
 								{
-									iValue *= (GC.getGame().getSorenRandNum(25, "AI Best Building") + 100);
+									iValue *= SyncRandNum(25) + 100;
 									iValue /= 100;
 								}
 
@@ -1662,7 +1661,7 @@ void CvPlayerAI::AI_makeProductionDirty()
 void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity*
 	bool bEverOwned) // advc.ctr: We already own it; but had we ever previously owned it?
 {
-	if(!canRaze(kCity))
+	if (!canRaze(kCity))
 	{
 		CvEventReporter::getInstance().cityAcquiredAndKept(getID(), &kCity);
 		return;
@@ -1670,18 +1669,18 @@ void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity
 
 	CvPlayerAI const& kPreviousOwner = GET_PLAYER(kCity.getPreviousOwner());
 	CvTeam const& kPreviousTeam = GET_TEAM(kCity.getPreviousOwner());
-	CvGame& kGame = GC.getGame();
+	CvGame const& kGame = GC.getGame();
 
 	bool bCultureVictory = false; // advc.116
 	bool bRaze = false;
 	// Reasons to always raze
-	if(2 * kCity.getCulture(kPreviousOwner.getID()) >
+	if (2 * kCity.getCulture(kPreviousOwner.getID()) >
 		kCity.getCultureThreshold(kGame.culturalVictoryCultureLevel()))
 	{
 		int iHighCultureCount = 1;
 		FOR_EACH_CITY(pLoopCity, kPreviousOwner)
 		{
-			if(2*pLoopCity->getCulture(kPreviousOwner.getID()) >
+			if (2*pLoopCity->getCulture(kPreviousOwner.getID()) >
 				pLoopCity->getCultureThreshold(kGame.culturalVictoryCultureLevel()))
 			{
 				iHighCultureCount++;
@@ -1690,13 +1689,13 @@ void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity
 		}
 		int const iVictTarget = kGame.culturalVictoryNumCultureCities();
 		// Razing won't help if they have many high-culture cities
-		if(iHighCultureCount == iVictTarget || iHighCultureCount == iVictTarget + 1)
+		if (iHighCultureCount == iVictTarget || iHighCultureCount == iVictTarget + 1)
 		{
 			bCultureVictory = true;
 			bRaze = (bRaze ||
 					// BETTER_BTS_AI_MOD, 07/05/10, jdog5000 (not in K-Mod):
 					(GET_TEAM(getTeam()).AI_getEnemyPowerPercent(false) > 75));
-			if(!bRaze)
+			if (!bRaze)
 			{
 				int iAttStr = AI_localAttackStrength(kCity.plot(),
 						kPreviousTeam.getID(), DOMAIN_LAND, 4);
@@ -1714,17 +1713,17 @@ void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity
 		bRaze = true;
 	} // </advc.ctr>
 
-	if(!bRaze)
+	if (!bRaze)
 	{
 		int const iCloseness = kCity.AI_playerCloseness(getID());
 		// Reasons to not raze
-		if(!bCultureVictory) // advc.116
+		if (!bCultureVictory) // advc.116
 		{
-			if(getNumCities() <= 1 || (getNumCities() < 5 && iCloseness > 0))
+			if (getNumCities() <= 1 || (getNumCities() < 5 && iCloseness > 0))
 			{
 				if (gPlayerLogLevel >= 1) logBBAI("    Player %d (%S) decides not to raze %S because they have few cities", getID(), getCivilizationDescription(0), kCity.getName().GetCString());
 			}
-			else if(AI_atVictoryStage(AI_VICTORY_DOMINATION3) &&
+			else if (AI_atVictoryStage(AI_VICTORY_DOMINATION3) &&
 					GET_TEAM(getTeam()).AI_isPrimaryArea(kCity.getArea()))
 			{
 				// Do not raze, going for domination
@@ -1735,9 +1734,9 @@ void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity
 		}
 		//else // </advc>
 		int iRazeValue = 0;
-		if(isBarbarian())
+		if (isBarbarian())
 		{
-			if(!kCity.isHolyCity() && !kCity.hasActiveWorldWonder() &&
+			if (!kCity.isHolyCity() && !kCity.hasActiveWorldWonder() &&
 				kCity.getPreviousOwner() != BARBARIAN_PLAYER &&
 				kCity.getOriginalOwner() != BARBARIAN_PLAYER)
 			{
@@ -1748,7 +1747,7 @@ void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity
 						- kCity.getPopulation();
 				iRazeValue *= iDeltaEraPop;
 				// The BtS raze roll; now used exclusively for Barbarians
-				if(kGame.getSorenRandNum(100, "advc.300") < iRazeValue)
+				if (SyncRandSuccess100(iRazeValue))
 					bRaze = true;
 				// </advc.300>
 			}
@@ -2008,7 +2007,7 @@ void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity
 			}
 
 			// advc.116: Replacing the dice roll below. Hardly any randomness this way.
-			iRazeValue += kGame.getSorenRandNum(6, "");
+			iRazeValue += SyncRandNum(6);
 		} // End of !isBarbarian()
 
 		if(gPlayerLogLevel >= 1)
@@ -2048,13 +2047,8 @@ void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity
 				return;
 			}
 		} // </advc.ctr>
-
-		if (iRazeValue > 0)
-		{
-			// advc.116: Commented out
-			//if (kGame.getSorenRandNum(100, "AI Raze City") < iRazeValue)
+		if (iRazeValue > 0/*SyncRandNum(100)*/) // advc.116
 			bRaze = true;
-		}
 	}
 
 	if(bRaze)
@@ -3022,14 +3016,11 @@ int CvPlayerAI::AI_targetCityValue(CvCity const& kCity, bool bRandomize,
 	if (bRandomize)
 	{
 		if (pUWAICity == NULL) // advc.104d
-		{
-			iValue += GC.getGame().getSorenRandNum(kCity.getPopulation() / 2 + 1,
-					"AI Target City Value 1");
-		}
+			iValue += SyncRandNum(kCity.getPopulation() / 2 + 1);
 		// <advc.104d> Don't want to give high-pop cities another boost
 		else
 		{
-			iValue *= 100 + GC.getGame().getSorenRandNum(33, "AI Target City Value 2");
+			iValue *= 100 + SyncRandNum(33);
 			iValue /= 100;
 		}
 	}
@@ -7205,20 +7196,23 @@ bool CvPlayerAI::AI_demandRebukedSneak(PlayerTypes ePlayer) const
 	FAssert(!isAVassal());
 	FAssert(!(GET_TEAM(getTeam()).isHuman()));
 
-	if (GC.getGame().getSorenRandNum(100, "AI Demand Rebuked") < GC.getInfo(getPersonalityType()).getDemandRebukedSneakProb())
+	if (SyncRandSuccess100(GC.getInfo(getPersonalityType()).getDemandRebukedSneakProb()))
 	{	// <advc.104m>
-		if(getUWAI().isEnabled())
+		if (getUWAI().isEnabled())
 		{
 			GET_TEAM(getTeam()).uwai().respondToRebuke(TEAMID(ePlayer), true);
 			return false; // respondToRebuke handles any changes to war plans
 		} // </advc.104m>
 		//if (GET_TEAM(getTeam()).getPower(true) > GET_TEAM(GET_PLAYER(ePlayer).getTeam()).getDefensivePower(getTeam()))
-		// K-Mod. Don't start a war if we're already busy; and use AI_startWarVal to evaluate, rather than just power.
-		// The 50 value is arbitrary. zero would probably be fine. 50 war rating is also arbitrary, but zero would be too low!
-		const CvTeamAI& kTeam = GET_TEAM(getTeam());
+		/*	K-Mod. Don't start a war if we're already busy;
+			and use AI_startWarVal to evaluate, rather than just power.
+			The 50 value is arbitrary. zero would probably be fine.
+			50 war rating is also arbitrary, but zero would be too low! */
+		CvTeamAI const& kTeam = GET_TEAM(getTeam());
 		if (kTeam.AI_getWarPlan(GET_PLAYER(ePlayer).getTeam()) == NO_WARPLAN  &&
 			(!kTeam.AI_isAnyWarPlan() || kTeam.AI_getWarSuccessRating() > 50) &&
-			// advc.001n (comment): This should be synchronized code, so no need to set bConstCache.
+			/*	advc.001n (comment): This should be synchronized code,
+				so no need to set bConstCache. */
 			kTeam.AI_startWarVal(GET_PLAYER(ePlayer).getTeam(), WARPLAN_LIMITED) > 50)
 		// K-Mod end
 		{
@@ -7718,7 +7712,7 @@ int CvPlayerAI::AI_getSameReligionAttitude(PlayerTypes ePlayer) const
 int CvPlayerAI::AI_getDifferentReligionAttitude(PlayerTypes ePlayer) const
 {
 	CvPlayer const& kPlayer = GET_PLAYER(ePlayer);
-	if(getStateReligion() == NO_RELIGION ||
+	if (getStateReligion() == NO_RELIGION ||
 		kPlayer.getStateReligion() == NO_RELIGION ||
 		getStateReligion() == kPlayer.getStateReligion())
 	{
@@ -8430,7 +8424,7 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 {
 	PROFILE_FUNC();
 
-	CvGame& kGame = GC.getGame();
+	CvGame const& kGame = GC.getGame();
 	VoteTypes const eVote = kVoteData.eVote;
 	CvTeamAI const& kOurTeam = GET_TEAM(getTeam()); // K-Mod
 
@@ -8546,14 +8540,13 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 		if (iBestCivicValue * 100 > iNewCivicValue * 115)
 		{
 			bValid = false;
-			/*if (iBestCivicValue > ((iNewCivicValue * (140 +
-				(GC.getGame().getSorenRandNum(120,
-				"AI Erratic Defiance (Force Civic)"))) / 100)))*/ // BtS
+			/*if (iBestCivicValue > iNewCivicValue * (140 +
+				SyncRandNum(120)) / 100)*/ // BtS
 			// BETTER_BTS_AI_MOD, Diplomacy AI, 12/30/08, jdog5000: START
 			// Increase odds of defiance, particularly on AggressiveAI
-			if (iBestCivicValue > iNewCivicValue * (140 +
-				kGame.getSorenRandNum(kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ?
-				60 : 80, "AI Erratic Defiance (Force Civic)")) / 100)
+			if (iBestCivicValue * 100 >
+				iNewCivicValue * (140 + SyncRandNum(
+				kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ? 60 : 80)))
 			{	// BETTER_BTS_AI_MOD: END
 				bDefy = true;
 			}
@@ -8618,7 +8611,7 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 			}
 		} // BETTER_BTS_AI_MOD: END
 
-		bValid = (kGame.getSorenRandNum(100, "AI nuke ban vote") > iVoteBanThreshold);
+		bValid = (SyncRandNum(100) > iVoteBanThreshold);
 
 		if (AI_isDoStrategy(AI_STRATEGY_OWABWNW))
 			bValid = false;
@@ -8628,13 +8621,10 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 		{
 			bValid = false;
 		}
-		if (!bValid && AI_getNumTrainAIUnits(UNITAI_ICBM) > 0)
+		if (!bValid && AI_getNumTrainAIUnits(UNITAI_ICBM) > 0 &&
+			SyncRandOneChanceIn(AI_isDoStrategy(AI_STRATEGY_OWABWNW) ? 2 : 3))
 		{
-			if (kGame.getSorenRandNum(AI_isDoStrategy(AI_STRATEGY_OWABWNW) ? 2 : 3,
-				"AI Erratic Defiance (No Nukes)") == 0)
-			{
-				bDefy = true;
-			}
+			bDefy = true;
 		}
 	}
 
@@ -8720,12 +8710,12 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 		int iWarsWinning = 0;
 		int iWarsLosing = 0;
 		int iChosenWar = 0;
-		// K-Mod version of end-war vote decision.
-		/*	Note: Based on BBAI code. I'm not sure which bits are from BBAI
-			and which are from BtS. So I haven't marked individual changes
-			or preserved the original code.
-			The way "winning" and "losing" are calculated are mine. */
-		/*  advc.104n (comment): UWAI can mostly do this better and, if enabled, will
+		/*	K-Mod version of end-war vote decision. Based on
+			BETTER_BTS_AI_MOD, 01/03/09, jdog5000 (Diplomacy AI).
+			I'm not sure which bits are from BBAI and which are from BtS.
+			So I haven't marked individual changes or preserved the original code.
+			The way "winning" and "losing" are calculated are mine.
+			advc.104n (note): UWAI can mostly do this better and, if enabled, will
 			overwrite all the K-Mod results except bThisPlayerWinning. */
 		bool bLosingBig = false;
 		bool bWinningBig = false;
@@ -8825,18 +8815,20 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 		{
 			int iPeaceRand = kPersonality.getBasePeaceWeight();
 			// Note, base peace weight ranges between 0 and 10.
-			iPeaceRand /= (bAggressiveAI ? 2 : 1);
-			iPeaceRand /= (AI_atVictoryStage(AI_VICTORY_CONQUEST2) ? 2 : 1);
+			if (bAggressiveAI)
+				iPeaceRand /= 2;
+			if (AI_atVictoryStage(AI_VICTORY_CONQUEST2))
+				iPeaceRand /= 2;
 			// <advc.104n>
-			scaled prPeace;
+			scaled rPeaceProb;
 			if (iPeaceRand > 0)
-				prPeace = 1 - scaled(1, std::max(1, iPeaceRand));
+				rPeaceProb = 1 - scaled(1, std::max(1, iPeaceRand));
 			// </advc.104n>
 			if (bLosingBig &&
-				//(GC.getGame().getSorenRandNum(iPeaceRand, "AI Force Peace to avoid loss") || bPropose))
-				/*  advc.104n: The BtS code can have us randomly vote
+				//(!SyncRandOneChanceIn(iPeaceRand) || bPropose))
+				/*  advc.104n: The BBAI code can have us randomly vote
 					against our own proposal. */
-				scaled::hash(kGame.getGameTurn(), getID()) < prPeace)
+				scaled::hash(kGame.getGameTurn(), getID()) < rPeaceProb)
 			{
 				bValid = true; // Non-warmongers want peace to escape loss
 			}
@@ -8846,7 +8838,7 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 				// advc.104n: Military victory is covered by war utility
 				!getUWAI().isEnabled())))
 			{
-				bValid = false; // If chosen to be in most wars, keep it going
+				bValid = false; // If chosen to be in most wars, keep it going.
 			}
 			else
 			{	// If losing most wars, vote for peace
@@ -8855,10 +8847,10 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 			if (!bValid && !bLosingBig && bWinningBig)
 			{
 				// Can we continue this war with defiance penalties?
-				if (!AI_isFinancialTrouble())
+				if (!AI_isFinancialTrouble() &&
+					SyncRandOneChanceIn(iPeaceRand))
 				{
-					if (!kGame.getSorenRandNum(iPeaceRand, "AI defy Force Peace!"))
-						bDefy = true;
+					bDefy = true; // defy Force Peace
 				}
 			}
 		}
@@ -8891,12 +8883,10 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 						if (!AI_isFinancialTrouble())
 						{
 							int iDefyRand = kPersonality.getBasePeaceWeight();
-							iDefyRand /= (bAggressiveAI ? 2 : 1);
-							if (kGame.getSorenRandNum(iDefyRand,
-								"AI Erratic Defiance (Force Peace)") == 0)
-							{
+							if (bAggressiveAI)
+								iDefyRand /= 2;
+							if (SyncRandOneChanceIn(iDefyRand))
 								bDefy = true;
-							}
 						}
 					}
 				}
@@ -9099,9 +9089,9 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 						a safeguard against defying repeatedly. */
 					if (!AI_isFinancialTrouble())
 					{
-						scaled pr(-iWarUtil - 125 +
+						scaled rProb(-iWarUtil - 125 +
 								5 * kPersonality.getBasePeaceWeight(), 100);
-						if (SyncRandSuccess(pr))
+						if (SyncRandSuccess(rProb))
 							bDefy = true;
 					}
 				}
@@ -9109,9 +9099,7 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 				{
 					// advc.104y:
 					int iNoWarOdds = kOurTeam.AI_noWarProbAdjusted(eWarTeam);
-					bValid = (iNoWarOdds < 30 || (kGame.getSorenRandNum(100,
-							"AI War Vote Attitude Check (Force War)") > iNoWarOdds));
-					
+					bValid = (iNoWarOdds < 30 || SyncRandNum(100) > iNoWarOdds);
 				}
 			}
 			/*else{ // Consider defying resolution
@@ -9120,7 +9108,7 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 						if (GET_TEAM(getTeam()).AI_getAttitude(eWarTeam) > kPersonality.getDefensivePactRefuseAttitudeThreshold()) {
 							int iDefyRand = kPersonality.getBasePeaceWeight();
 							iDefyRand /= (GC.getGame().isOption(GAMEOPTION_AGGRESSIVE_AI) ? 2 : 1);
-							if (GC.getGame().getSorenRandNum(iDefyRand, "AI Erratic Defiance (Force War)") > 0)
+							if (SyncRandNum(iDefyRand) > 0)
 								bDefy = true;
 			} } } }*/
 			// BETTER_BTS_AI_MOD: END
@@ -9146,7 +9134,7 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 				// BBAI TODO: Wonders, holy city, aggressive AI?
 				// advc.118:
 				if ((kPlayer.getNumCities() <= 1 && kPlayer.getID() == getID()) ||
-					kGame.getSorenRandNum(3, "AI Erratic Defiance (Assign City)") == 0)
+					SyncRandOneChanceIn(3))
 				{
 					bDefy = true;
 				}
@@ -19023,14 +19011,11 @@ void CvPlayerAI::AI_doMilitary()
 					(iDisbandCount < std::max<int>(1, getCurrentEra()) || isStrike()));
 		}
 	} // K-Mod end
-	// <advc>
-	CvRandom& kRand = GC.getGame().getSorenRand();
 	CvLeaderHeadInfo const& kPersonality = GC.getInfo(getPersonalityType());
-	int const iAttackOddsChangeRand = kPersonality.getAttackOddsChangeRand(); // </advc>
+	int const iAttackOddsChangeRand = kPersonality.getAttackOddsChangeRand();
 	AI_setAttackOddsChange(kPersonality.getBaseAttackOddsChange() +
-			kRand.get(iAttackOddsChangeRand, "AI Attack Odds Change #1") +
-			kRand.get(iAttackOddsChangeRand, "AI Attack Odds Change #2")
-			/ 2); // advc.114d
+			SyncRandNum(iAttackOddsChangeRand) +
+			(SyncRandNum(iAttackOddsChangeRand) /* advc.114d: */ / 2));
 }
 
 
@@ -20111,7 +20096,7 @@ void CvPlayerAI::AI_doDiplo()
 	int aiContacts[MAX_CIV_PLAYERS];
 	for (int i = 0; i < MAX_CIV_PLAYERS; i++)
 		aiContacts[i] = i;
-	kGame.getSorenRand().shuffle(aiContacts, MAX_CIV_PLAYERS);
+	syncRand().shuffle(aiContacts, MAX_CIV_PLAYERS);
 	// </advc.024>
 	for (int iPass = 0; iPass < 2; iPass++)
 	{	/*  Loop counter renamed from iI b/c it's important for advc.024 that ePlayer
@@ -20174,7 +20159,7 @@ void CvPlayerAI::AI_doDiplo()
 						{
 							if (canTradeItem(ePlayer, TradeData(TRADE_RESOURCES, eLoopBonus), true))
 							{
-								int iValue = (1 + kGame.getSorenRandNum(10000, "AI Bonus Trading #1"));
+								int iValue = 1 + SyncRandNum(10000);
 								if (iValue > iBestValue)
 								{
 									iBestValue = iValue;
@@ -20239,10 +20224,10 @@ void CvPlayerAI::AI_doDiplo()
 							if (canTradeItem(ePlayer, TradeData(
 								TRADE_TECHNOLOGIES, eLoopTech), true))
 							{
-								//iValue = (1 + kGame.getSorenRandNum(10000, "AI Vassal Tech gift"));
+								//iValue = 1 + SyncRandNum(10000);
 								// <advc.112> Replacing the above
 								int iCost = GC.getInfo(eLoopTech).getResearchCost();
-								int iValue = -kGame.getSorenRandNum(iCost, "AI Vassal Tech gift");
+								int iValue = -SyncRandNum(iCost);
 								// </advc.112>
 								if (iValue > iBestValue)
 								{
@@ -20333,8 +20318,8 @@ void CvPlayerAI::AI_doDiplo()
 				AI_getContactTimer(ePlayer, CONTACT_PERMANENT_ALLIANCE) == 0)
 			{
 				bool bOffered = false;
-				if (kGame.getSorenRandNum(GC.getInfo(getPersonalityType()).
-					getContactRand(CONTACT_PERMANENT_ALLIANCE), "AI Diplo Alliance") == 0)
+				if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
+					getContactRand(CONTACT_PERMANENT_ALLIANCE)))
 				{
 					TradeData item(TRADE_PERMANENT_ALLIANCE);
 					if (canTradeItem(ePlayer, item, true) &&
@@ -20417,16 +20402,16 @@ void CvPlayerAI::AI_doDiplo()
 			{
 				if (!abContacted[kPlayer.getTeam()])
 				{
-					if (kGame.getSorenRandNum(GC.getInfo(getPersonalityType()).
-						getContactRand(CONTACT_RELIGION_PRESSURE), "AI Diplo Religion Pressure") == 0)
+					if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
+						getContactRand(CONTACT_RELIGION_PRESSURE)))
 					{
 						abContacted[kPlayer.getTeam()] = AI_contactReligion(ePlayer);
 					}
 				}
 				if (!abContacted[kPlayer.getTeam()])
 				{
-					if (kGame.getSorenRandNum(GC.getInfo(getPersonalityType()).
-						getContactRand(CONTACT_CIVIC_PRESSURE), "AI Diplo Civic Pressure") == 0)
+					if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
+						getContactRand(CONTACT_CIVIC_PRESSURE)))
 					{
 						abContacted[kPlayer.getTeam()] = AI_contactCivics(ePlayer);
 					}
@@ -20445,10 +20430,10 @@ void CvPlayerAI::AI_doDiplo()
 			if (kPlayer.isHuman() && kOurTeam.getLeaderID() == getID() &&
 				!kOurTeam.isVassal(kPlayer.getTeam()))
 			{
-				if (kGame.getSorenRandNum(GC.getInfo(getPersonalityType()).
-					getContactRand(CONTACT_STOP_TRADING), "AI Diplo Stop Trading") == 0)
+				if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
+					getContactRand(CONTACT_STOP_TRADING)))
 				{	// <advc> Moved into new function
-					if(!abContacted[kPlayer.getTeam()])
+					if (!abContacted[kPlayer.getTeam()])
 						abContacted[kPlayer.getTeam()] = AI_proposeEmbargo(ePlayer);
 					// </advc>
 				}
@@ -20495,7 +20480,7 @@ void CvPlayerAI::AI_doDiplo()
 							}
 							iRandMax = (iRandMax / rDiv).round();
 							// </advc.130z>
-							if (kGame.getSorenRandNum(iRandMax, "AI Diplo Give Help") == 0)
+							if (SyncRandOneChanceIn(iRandMax))
 							{	// XXX maybe do gold instead???
 								/*  advc.130z: The values are going to be negative.
 									Btw the XXX above is a bad idea I think. */
@@ -20506,10 +20491,10 @@ void CvPlayerAI::AI_doDiplo()
 									if (canTradeItem(ePlayer, TradeData(
 										TRADE_TECHNOLOGIES, eLoopTech), true))
 									{
-										//iValue = (1 + kGame.getSorenRandNum(10000, "AI Giving Help"));
+										//iValue = 1 + SyncRandNum(10000);
 										// <advc.130z> Replacing the above
 										int iCost = GC.getInfo(eLoopTech).getResearchCost();
-										int iValue = -kGame.getSorenRandNum(iCost, "AI Giving Help");
+										int iValue = -SyncRandNum(iCost);
 										// </advc.130z>
 										if (iValue > iBestValue)
 										{
@@ -20563,7 +20548,7 @@ void CvPlayerAI::AI_doDiplo()
 					// <advc.104m> Reduce pr to 80% b/c UWAI also calls AI_askHelp
 					if (getUWAI().isEnabled())
 						iRand = (iRand * 5) / 4; // </advc.104m>
-					if (kGame.getSorenRandNum(iRand, "AI Diplo Ask For Help") == 0)
+					if (SyncRandOneChanceIn(iRand))
 						abContacted[kPlayer.getTeam()] = AI_askHelp(ePlayer);
 				}
 				if (kOurTeam.canDeclareWar(kPlayer.getTeam()) &&
@@ -20582,11 +20567,10 @@ void CvPlayerAI::AI_doDiplo()
 					{
 						if (!abContacted[kPlayer.getTeam()])
 						{
-							if (kGame.getSorenRandNum(GC.getInfo(getPersonalityType()).
-								getContactRand(CONTACT_DEMAND_TRIBUTE)
+							if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
+								getContactRand(CONTACT_DEMAND_TRIBUTE) *
 								// advc.104m: Probability halved b/c UWAI also calls AI_demandTribute
-								* (getUWAI().isEnabled() ? 2 : 1),
-								"AI Diplo Demand Tribute") == 0)
+								(getUWAI().isEnabled() ? 2 : 1)))
 							{
 								FOR_EACH_ENUM_RAND(AIDemand, syncRand()) // advc.104m
 								{
@@ -20604,8 +20588,8 @@ void CvPlayerAI::AI_doDiplo()
 			if(kOurTeam.getLeaderID() == getID())
 			{
 				if (AI_getContactTimer(ePlayer, CONTACT_OPEN_BORDERS) == 0 &&
-					kGame.getSorenRandNum(GC.getInfo(getPersonalityType()).
-					getContactRand(CONTACT_OPEN_BORDERS), "AI Diplo Open Borders") == 0)
+					SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
+					getContactRand(CONTACT_OPEN_BORDERS)))
 				{
 					TradeData item(TRADE_OPEN_BORDERS);
 					if (canTradeItem(ePlayer, item, true) &&
@@ -20634,14 +20618,14 @@ void CvPlayerAI::AI_doDiplo()
 				if (AI_getContactTimer(ePlayer, CONTACT_DEFENSIVE_PACT) == 0)
 				{	// <cdtw.5>
 					int iRand = GC.getInfo(getPersonalityType()).getContactRand(CONTACT_DEFENSIVE_PACT);
-					if(AI_isDoStrategy(AI_STRATEGY_ALERT2) && !AI_isFocusWar() &&
+					if (AI_isDoStrategy(AI_STRATEGY_ALERT2) && !AI_isFocusWar() &&
 						!kPlayer.isHuman())
 					{
 						iRand = iRand / std::max(1, 10 - 2 * kOurTeam.getDefensivePactCount());
 					}
-					if(kGame.getSorenRandNum(iRand, "AI Diplo Defensive Pact") == 0)
+					if (SyncRandOneChanceIn(iRand))
 					// Replacing this: // </cdtw.5>
-					//if (kGame.getSorenRandNum(GC.getInfo(getPersonalityType()).getContactRand(CONTACT_DEFENSIVE_PACT), "AI Diplo Defensive Pact") == 0)
+					//if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).getContactRand(CONTACT_DEFENSIVE_PACT)))
 					{
 						TradeData item(TRADE_DEFENSIVE_PACT);
 						if (canTradeItem(ePlayer, item, true) &&
@@ -20695,7 +20679,7 @@ void CvPlayerAI::AI_doDiplo()
 						iRand = intdiv::uround(3 * iRand, 4);
 					}
 					iRand = std::max(1, iRand);
-					if (kGame.getSorenRandNum(iRand, "AI Diplo Trade Tech") == 0)
+					if (SyncRandOneChanceIn(iRand))
 					{	// BETTER_BTS_AI_MOD: END
 						TechTypes eBestReceiveTech = NO_TECH;
 						/*  advc.550f: This is normally going to be
@@ -20714,12 +20698,12 @@ void CvPlayerAI::AI_doDiplo()
 									/*  advc.001: Value can be 0 if tech already almost researched
 										and iI is human. Will then ask human to impart the tech for
 										nothing in return, which is pointless and confusing. */
-									if(kOurTeam.AI_techTradeVal(eLoopTech, kPlayer.getTeam()) == 0)
+									if (kOurTeam.AI_techTradeVal(eLoopTech, kPlayer.getTeam()) == 0)
 										continue;
-									int iValue = (1 + kGame.getSorenRandNum(10000, "AI Tech Trading #1"));
+									int iValue = 1 + SyncRandNum(10000);
 									// <advc.550f>
 									int iProgress = kOurTeam.getResearchProgress(eLoopTech);
-									if(iProgress > iBestProgress &&
+									if (iProgress > iBestProgress &&
 										!kPlayer.isHuman()) // This is only for inter-AI deals
 									{
 										iBestProgress = iProgress;
@@ -20747,15 +20731,15 @@ void CvPlayerAI::AI_doDiplo()
 								{
 									if (canTradeItem(ePlayer, TradeData(
 										TRADE_TECHNOLOGIES, eLoopTech), true))
-									{	/*iValue = (1 + kGame.getSorenRandNum(10000, "AI Tech Trading #2"));
+									{	/*iValue = 1 + SyncRandNum(10000);
 										if (iValue > iBestValue) {
 											iBestValue = iValue;
 											eBestGiveTech = eLoopTech;
 										} */ // BtS
 										// K-Mod
 										int iValue = GET_TEAM(ePlayer).AI_techTradeVal(eLoopTech, getTeam());
-										int iDelta = std::abs(iWeReceive - ((90 + kGame.getSorenRandNum(
-												21, "AI Tech Trading #2")) * iValue) / 100);
+										int iDelta = std::abs(
+												iWeReceive - ((90 + SyncRandNum(21)) * iValue) / 100);
 										if (iDelta < iBestDelta) // aim to trade values as close as possible
 										{
 											iBestDelta = iDelta;
@@ -20793,8 +20777,7 @@ void CvPlayerAI::AI_doDiplo()
 								// <advc.550b>
 								(!kPlayer.isHuman() ||
 								2 * iTheyReceive > iWeReceive || // else not likely to lead to an attractive offer
-								SyncRandSuccess(fixp(0.36))))
-								// </advc.550b>
+								SyncRandSuccess100(36))) // </advc.550b>
 							{	// advc.opt: Pushed this down into CvPlayer::buildTradeTable and CvPlayerAI::AI_counterPropose
 								//PROFILE("AI_doDiplo self-counter-propose");
 								// let the other team counter-propose (even if the other team is a human player)
@@ -20870,15 +20853,15 @@ void CvPlayerAI::AI_doDiplo()
 				iContactRand = (iContactRand * 4) / 5; // </advc.036>
 			/*  <advc.133> Moved the cheap abContacted check up, and the rest
 				of the resource trade code into a new function. */
-			if((!abContacted[kPlayer.getTeam()] || !kPlayer.isHuman()) &&
-				kGame.getSorenRandNum(iContactRand, "AI Diplo Trade Bonus") == 0)
+			if ((!abContacted[kPlayer.getTeam()] || !kPlayer.isHuman()) &&
+				SyncRandOneChanceIn(iContactRand))
 			{
 				abContacted[kPlayer.getTeam()] = AI_proposeResourceTrade(ePlayer);
 			} // </advc.133>
 			if (AI_getContactTimer(ePlayer, CONTACT_TRADE_MAP) == 0)
 			{
-				if (kGame.getSorenRandNum(GC.getInfo(getPersonalityType()).
-					getContactRand(CONTACT_TRADE_MAP), "AI Diplo Trade Map") == 0)
+				if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
+					getContactRand(CONTACT_TRADE_MAP)))
 				{
 					TradeData item(TRADE_MAPS);
 					if (kPlayer.canTradeItem(getID(), item, true) &&
@@ -20975,11 +20958,10 @@ bool CvPlayerAI::AI_proposeJointWar(PlayerTypes eHuman)
 		rMeanAtWarTurns = scaled::max(1, rTotalAtWarTurns /
 				std::max(1, iWars));
 	}
-	if (kGame.getSorenRandNum((GC.getInfo(getPersonalityType()).
+	if (!SyncRandOneChanceIn((GC.getInfo(getPersonalityType()).
 		/*  That's one tenth of the BtS probability on turn one of a war,
 			the BtS probability after 10 turns, and then grows to twice that. */
-		getContactRand(CONTACT_JOIN_WAR) * 10 / rMeanAtWarTurns).round(), // </advc.130m>
-		"AI Diplo Join War") != 0)
+		getContactRand(CONTACT_JOIN_WAR) * 10 / rMeanAtWarTurns).round())) // </advc.130m>
 	{
 		return false;
 	}
@@ -21006,10 +20988,10 @@ bool CvPlayerAI::AI_proposeJointWar(PlayerTypes eHuman)
 				GC.getDefineINT(CvGlobals::PEACE_TREATY_LENGTH)) * fixp(0.067);
 		if (SyncRandSuccess(rSkipProb))
 			continue; // </advc.130m>
-		int iTargetVal = kGame.getSorenRandNum(10000, "AI Joining War");
+		int iTargetVal = SyncRandNum(10000);
 		// advc.130m:
 		iTargetVal += std::min(20, kOurTeam.AI_getAtWarCounter(eTarget)) * 1000;
-		if(iTargetVal > iBestTargetVal)
+		if (iTargetVal > iBestTargetVal)
 		{
 			iBestTargetVal = iTargetVal;
 			eBestTarget = eTarget;
@@ -21082,15 +21064,14 @@ void CvPlayerAI::AI_proposeWarTrade(PlayerTypes eHireling)
 	if(iMinAtWarCounter == MAX_INT)
 		return;
 	iDeclareWarTradeRand = iDeclareWarTradeRand / 10 + std::min(10, iMinAtWarCounter);
-	CvGame& kGame = GC.getGame();
-	// BtS probability test:
-	//if(kGame.getSorenRandNum(iDeclareWarTradeRand, "AI Diplo Declare War Trade") != 0)
 	{
+		//if (SyncRandNum(iDeclareWarTradeRand) != 0) // BtS
 		scaled rOfferProb = (iDeclareWarTradeRand <= 0 ? 1 :
 				scaled(1, iDeclareWarTradeRand));
 		if (!SyncRandSuccess(rOfferProb))
 			return;
 	} // </advc.161>
+	CvGame& kGame = GC.getGame();
 	// <advc.104o>
 	int iBestTargetValue = 0;
 	int iBestTeamPrice = -1;
@@ -21145,7 +21126,7 @@ void CvPlayerAI::AI_proposeWarTrade(PlayerTypes eHireling)
 			if (kHireling.canTradeItem(getID(),
 				TradeData(TRADE_WAR, kTarget.getID()), true))
 			{
-				int iValue = 1 + kGame.getSorenRandNum(1000, "AI Declare War Trading");
+				int iValue = 1 + SyncRandNum(1000);
 				iValue *= (101 + kTarget.AI_getAttitudeWeight(getTeam()));
 				iValue /= 100;
 				if (iValue > iBestValue)
@@ -21167,7 +21148,7 @@ void CvPlayerAI::AI_proposeWarTrade(PlayerTypes eHireling)
 		{
 			if (canTradeItem(eHireling, TradeData(TRADE_TECHNOLOGIES, eLoopTech), true))
 			{
-				int iValue = 1 + kGame.getSorenRandNum(100, "AI Tech Trading #2");
+				int iValue = 1 + SyncRandNum(100);
 				// advc.001: was eBestTarget
 				iValue *= GET_TEAM(eHireling).getResearchLeft(eLoopTech);
 				if (iValue > iBestTechValue)
@@ -21197,7 +21178,7 @@ void CvPlayerAI::AI_proposeWarTrade(PlayerTypes eHireling)
 			if (canTradeItem(eHireling,
 				TradeData(TRADE_TECHNOLOGIES, eLoopTech), true))
 			{
-				int iValue = (1 + kGame.getSorenRandNum(100, "AI Tech Trading #2"));
+				int iValue = 1 + SyncRandNum(100);
 				// advc.001: was eBestTarget
 				iValue *= GET_TEAM(eHireling).getResearchLeft(eLoopTech);
 				if (iValue > iBestTechValue)
@@ -21423,8 +21404,7 @@ bool CvPlayerAI::AI_proposeResourceTrade(PlayerTypes eTo)
 			if (kTo.getTradeDenial(getID(), item) == NO_DENIAL)
 			{
 				// Was completely random before
-				int iValue = kGame.getSorenRandNum(25, "AI Bonus Trading #1")
-						+ iBias; // </advc.036>
+				int iValue = SyncRandNum(25) + iBias; // </advc.036>
 				if (iValue > iBestValue)
 				{
 					iBestValue = iValue;
@@ -21463,8 +21443,7 @@ bool CvPlayerAI::AI_proposeResourceTrade(PlayerTypes eTo)
 				continue;
 			if (getTradeDenial(eTo, item) == NO_DENIAL)
 			{
-				int iValue = (kGame.getSorenRandNum(30, "AI Bonus Trading #2")
-						+ iBias); // </advc.036>
+				int iValue = SyncRandNum(30) + iBias; // </advc.036>
 				if (iValue > iBestValue)
 				{
 					iBestValue = iValue;
@@ -21601,7 +21580,7 @@ bool CvPlayerAI::AI_askHelp(PlayerTypes eHuman)
 		setTradeItem(&item, TRADE_TECHNOLOGIES, eLoopTech);
 		if(!kHuman.canTradeItem(getID(), item))
 			continue;
-		int iValue = 1 + GC.getGame().getSorenRandNum(10000, "AI Asking For Help");
+		int iValue = 1 + SyncRandNum(10000);
 		if(iValue > iBestValue) {
 			iBestValue = iValue;
 			eBestReceiveTech = eLoopTech;
@@ -21721,8 +21700,7 @@ bool CvPlayerAI::AI_demandTribute(PlayerTypes eHuman, AIDemandTypes eDemand)
 			}
 			if(GC.getGame().countKnownTechNumTeams(eLoopTech) <= 1)
 				continue;
-			int iValue = 1 + GC.getGame().getSorenRandNum(10000,
-					"AI Demanding Tribute (Tech)");
+			int iValue = 1 + SyncRandNum(10000);
 			// <advc.144>
 			if(eLoopTech == eMostUsefulTech)
 				iValue *= 3; // </advc.144>
@@ -22650,7 +22628,7 @@ int CvPlayerAI::AI_eventValue(EventTypes eEvent,
 	int const iGameSpeedPercent = GC.getInfo(GC.getGame().getGameSpeedType()).
 			getVictoryDelayPercent();
 
-	int iValue = GC.getGame().getSorenRandNum(kEvent.getAIValue(), "AI Event choice");
+	int iValue = SyncRandNum(kEvent.getAIValue());
 	iValue += (getEventCost(eEvent, kTriggeredData.m_eOtherPlayer, false) +
 			getEventCost(eEvent, kTriggeredData.m_eOtherPlayer, true)) / 2;
 
@@ -22959,7 +22937,7 @@ int CvPlayerAI::AI_eventValue(EventTypes eEvent,
 		kTriggeredData.m_eOtherPlayer != BARBARIAN_PLAYER) // advc.003n
 	{
 		iOtherPlayerAttitudeWeight = AI_getAttitudeWeight(kTriggeredData.m_eOtherPlayer);
-		iOtherPlayerAttitudeWeight += 10 - GC.getGame().getSorenRandNum(20, "AI event value attitude");
+		iOtherPlayerAttitudeWeight += 10 - SyncRandNum(20);
 	}
 
 	//Religion
@@ -23153,7 +23131,7 @@ int CvPlayerAI::AI_eventValue(EventTypes eEvent,
 		}
 	}
 
-	iValue *= 100 + GC.getGame().getSorenRandNum(20, "AI Event choice");
+	iValue *= 100 + SyncRandNum(20);
 	iValue /= 100;
 
 	return iValue;
@@ -23555,7 +23533,7 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 		if(GET_TEAM(getTeam()).AI_isLonely())
 			iValue -= 25; // </advc.109>
 		//int iNonsense = AI_getStrategyRand() + 10;
-		iValue += (AI_getStrategyRand(0) % 70); // advc.115: was 100
+		iValue += (AI_getStrategyRand(0) % 70); // advc.115: was %100
 
 		if (iValue < 100)
 			return 0;
@@ -24413,8 +24391,7 @@ void CvPlayerAI::AI_initStrategyRand()
 	//const unsigned iBits = 24;
 	// advc.001: CvRandom uses unsigned short. We probably don't want to exceed that.
 	unsigned short const iBits = 12;
-	m_iStrategyRand = GC.getGame().getSorenRandNum((1 << (iBits + 1)) - 1,
-			"AI Strategy Rand");
+	m_iStrategyRand = SyncRandNum((1 << (iBits + 1)) - 1);
 }
 
 
@@ -26271,14 +26248,14 @@ UnitTypes CvPlayerAI::AI_bestAdvancedStartUnitAI(CvPlot const& kPlot, // advc: C
 			}
 		}
 
-		iValue *= (iPromotionValue + 100);
+		iValue *= iPromotionValue + 100;
 		iValue /= 100;
 
-		iValue *= (GC.getGame().getSorenRandNum(40, "AI Best Advanced Start Unit") + 100);
+		iValue *= SyncRandNum(40) + 100;
 		iValue /= 100;
 
-		iValue *= (getNumCities() + 2);
-		iValue /= (getUnitClassCountPlusMaking(eLoopUnitClass) + getNumCities() + 2);
+		iValue *= getNumCities() + 2;
+		iValue /= getUnitClassCountPlusMaking(eLoopUnitClass) + getNumCities() + 2;
 
 		FAssert((MAX_INT / 1000) > iValue);
 		iValue *= 1000;
@@ -26323,7 +26300,7 @@ CvPlot* CvPlayerAI::AI_advancedStartFindCapitalPlot()
 		int iValue = 1000;
 		if (kMember.getID() == getID())
 			iValue += 1000;
-		else iValue += GC.getGame().getSorenRandNum(100, "AI Advanced Start Choose Team Start");
+		else iValue += SyncRandNum(100);
 
 		int iX = pLoopPlot->getX();
 		int iY = pLoopPlot->getY();
@@ -26879,7 +26856,7 @@ void CvPlayerAI::AI_doAdvancedStart(bool bNoExit)
 	iCityPoints = std::min(iCityPoints, iLastPointsTotal);
 
 	//Spend econ points on a tech?
-	int iTechRand = 90 + GC.getGame().getSorenRandNum(20, "AI AS Buy Tech 1");
+	int iTechRand = 90 + SyncRandNum(20);
 	int iTotalTechSpending = 0;
 
 	if (getCurrentEra() <= 0)
@@ -26901,8 +26878,7 @@ void CvPlayerAI::AI_doAdvancedStart(bool bNoExit)
 	for (int iPass = 0; iPass < 100; ++iPass)
 	{
 		int iRand = iTechRand + 10 * getNumCities();
-		if (iRand > 0 &&
-			GC.getGame().getSorenRandNum(100, "AI AS Buy Tech 2") < iRand)
+		if (iRand > 0 && SyncRandNum(100) < iRand)
 		{
 			TechTypes eTech = AI_bestTech(1);
 			if (eTech != NO_TECH && !GC.getInfo(eTech).isRepeat())
@@ -26985,11 +26961,8 @@ void CvPlayerAI::AI_doAdvancedStart(bool bNoExit)
 		AI_advancedStartPlaceExploreUnits(false);
 		if (GC.getGame().circumnavigationAvailable())
 		{
-			if (GC.getGame().getSorenRandNum(GC.getGame().countCivPlayersAlive(),
-				"AI AS buy 2nd sea explorer") < 2)
-			{
+			if (SyncRandNum(GC.getGame().countCivPlayersAlive()) < 2)
 				AI_advancedStartPlaceExploreUnits(false);
-			}
 		}
 	}
 
@@ -27769,9 +27742,9 @@ int CvPlayerAI::AI_disbandValue(CvUnitAI const& kUnit, bool bMilitaryOnly) const
 	{
 		return MAX_INT;
 	}
-	int iValue = 1000 + GC.getGame().getSorenRandNum(200, "Disband Value");
+	int iValue = 1000 + SyncRandNum(200);
 
-	iValue *= 100 + (kUnit.getUnitInfo().getProductionCost() * 3);
+	iValue *= 100 + 3 * kUnit.getUnitInfo().getProductionCost();
 	iValue /= 100;
 
 	iValue *= 100 + std::max(kUnit.getExperience(),
@@ -27983,17 +27956,16 @@ ReligionTypes CvPlayerAI::AI_chooseReligion()
 	if (eFavorite != NO_RELIGION && !GC.getGame().isReligionFounded(eFavorite))
 		return eFavorite;
 
-	//std::vector<ReligionTypes> aeReligions;
+	//std::vector<ReligionTypes> aeReligions; // BtS
 	// <advc.171>
 	int iSmallest = MAX_INT;
 	ReligionTypes eBestReligion = NO_RELIGION; // </advc.171>
-	for (int iReligion = 0; iReligion < GC.getNumReligionInfos(); iReligion++)
+	FOR_EACH_ENUM(Religion)
 	{
-		ReligionTypes eLoopReligion = (ReligionTypes)iReligion; // advc
 		if (GC.getGame().isReligionFounded(eLoopReligion))
 			continue;
-		//aeReligions.push_back((ReligionTypes)iReligion);
-		// <advc.171> Replacing the above
+		//aeReligions.push_back(eLoopReligion); // BtS
+		// <advc.171>
 		int iValue = 0;
 		TechTypes eLoopTech = (TechTypes)GC.getInfo(eLoopReligion).getTechPrereq();
 		if(eLoopTech != NO_TECH)
@@ -28003,10 +27975,10 @@ ReligionTypes CvPlayerAI::AI_chooseReligion()
 			iSmallest = iValue;
 		}
 	}
-	return eBestReligion; // </advc.171> // BtS code:
+	return eBestReligion; // </advc.171>
 	/*if (aeReligions.size() > 0)
-		return aeReligions[GC.getGame().getSorenRandNum(aeReligions.size(), "AI pick religion")];
-	return NO_RELIGION;*/
+		return aeReligions[SyncRandNum(aeReligions.size())];
+	return NO_RELIGION;*/ // BtS
 }
 
 

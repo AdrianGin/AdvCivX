@@ -1417,8 +1417,7 @@ void UWAI::Team::scheme()
 				m_pReport->log("Bias for/against limited war: %d percent",
 						rLimitedWarWeight.uround());
 			}
-			int const iPadding = GC.getGame().getSorenRandNum(40,
-					"UWAI: total vs. limited war");
+			int const iPadding = SyncRandNum(40);
 			bTotal = (iTotalU + iPadding > (iPadding + iLimitedU) * rLimitedWarWeight);
 		}
 		int iU = std::max(iLimitedU, iTotalU);

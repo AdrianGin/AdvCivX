@@ -935,7 +935,7 @@ int CvTeamAI::AI_chooseElection(VoteSelectionData const& kVoteSelectionData) con
 		// </advc.115b>
 		if (bValid)
 		{
-			int iValue = (1 + GC.getGame().getSorenRandNum(10000, "AI Choose Vote"));
+			int iValue = 1 + SyncRandNum(10000);
 			/*  <advc.115b> Always pick victory. Probabilistically instead? 8000
 				would be an 80% chance if there's one other proposal. */
 			if(bCanWinDiplo)
@@ -4791,10 +4791,9 @@ bool CvTeamAI::AI_isMasterPlanningLandWar(CvArea const& kArea) const
 			return true;
 		}
 		else if (eMasterAreaAI == AREAAI_NEUTRAL)
-		{
-			// Master has no presence here
+		{	// Master has no presence here
 			if (kArea.getNumCities() - countNumCitiesByArea(kArea) > 2)
-				return (GC.getGame().getSorenRandNum(isCapitulated() ? 6 : 4, "Vassal land war") == 0);
+				return SyncRandOneChanceIn(isCapitulated() ? 6 : 4);
 		}
 	}
 	else if (kMaster.isHuman())
@@ -4804,7 +4803,7 @@ bool CvTeamAI::AI_isMasterPlanningLandWar(CvArea const& kArea) const
 			kArea.getNumCities() - countNumCitiesByArea(kArea) -
 			kMaster.countNumCitiesByArea(kArea) > 2)
 		{
-			return (GC.getGame().getSorenRandNum(4, "Vassal land war") == 0);
+			return SyncRandOneChanceIn(4);
 		}
 	}
 	return false;
@@ -4816,9 +4815,11 @@ bool CvTeamAI::AI_isMasterPlanningSeaWar(CvArea const& kArea) const
 	if (!isAVassal())
 		return false;
 	AreaAITypes eAreaAI = kArea.getAreaAIType(getID());
-	if (eAreaAI == AREAAI_ASSAULT || eAreaAI == AREAAI_ASSAULT_ASSIST || eAreaAI == AREAAI_ASSAULT_MASSING)
+	if (eAreaAI == AREAAI_ASSAULT || eAreaAI == AREAAI_ASSAULT_ASSIST ||
+		eAreaAI == AREAAI_ASSAULT_MASSING)
+	{
 		return true;
-
+	}
 	CvTeamAI const& kMaster = GET_TEAM(getMasterTeam());
 	if (kMaster.AI_isAnyWarPlan())
 	{
@@ -4826,7 +4827,7 @@ bool CvTeamAI::AI_isMasterPlanningSeaWar(CvArea const& kArea) const
 		if (eMasterAreaAI == AREAAI_ASSAULT || eMasterAreaAI == AREAAI_ASSAULT_ASSIST ||
 			eMasterAreaAI == AREAAI_ASSAULT_MASSING)
 		{
-			return (GC.getGame().getSorenRandNum(isCapitulated() ? 3 : 2, "Vassal sea war") == 0);
+			return SyncRandOneChanceIn(isCapitulated() ? 3 : 2);
 		}
 	}
 	return false;
@@ -5685,7 +5686,7 @@ void CvTeamAI::AI_doCounter()
 		if(AI_shareWar(eOther))
 			AI_changeShareWarCounter(eOther, AI_randomCounterChange()); // </advc.130k>
 		// <advc.130m> Decay by 1 with 10% probability
-		else if(AI_getShareWarCounter(eOther) > 0 && SyncRandSuccess(fixp(0.1)))
+		else if(AI_getShareWarCounter(eOther) > 0 && SyncRandSuccess100(10))
 			AI_changeShareWarCounter(eOther, -1);
 		AI_setSharedWarSuccess(eOther,
 				(AI_getSharedWarSuccess(eOther) * rDecayFactor).floor());
@@ -6057,7 +6058,7 @@ void CvTeamAI::AI_doWar()
 
 	// if at war, check for making peace
 	// Note: this section relates to automatic peace deals for inactive wars.
-	if (bAtWar && kGame.getSorenRandNum(AI_makePeaceRand(), "AI Make Peace") == 0)
+	if (bAtWar && SyncRandOneChanceIn(AI_makePeaceRand()))
 	{
 		for (TeamIter<MAJOR_CIV,ENEMY_OF> itEnemy(getID()); itEnemy.hasNext(); ++itEnemy)
 		{
@@ -6076,7 +6077,7 @@ void CvTeamAI::AI_doWar()
 				if (AI_getWarSuccess(eEnemy) + GET_TEAM(eEnemy).AI_getWarSuccess(getID()) <
 					2 * GC.getDefineINT(CvGlobals::WAR_SUCCESS_ATTACKING))
 				{
-					if (kGame.getSorenRandNum(8, "AI Make Peace 1") == 0)
+					if (SyncRandOneChanceIn(8))
 					{
 						bool bNoFighting = true; // advc: Refactored the computation of this
 						for (MemberAIIter itOurMember(getID());
@@ -6229,10 +6230,9 @@ void CvTeamAI::AI_doWar()
 		if ((iGetBetterUnitsCount - iDaggerCount) * 3 < iNumMembers * 2)
 		{
 			if (bFinancialProWar || !bFinancesOpposeWar)
-			{
-				// random overall war chance (at noble+ difficulties this is 100%)
-				if (kGame.getSorenRandNum(100, "AI Declare War 1") <
-					GC.getInfo(kGame.getHandicapType()).getAIDeclareWarProb())
+			{	// random overall war chance
+				if (SyncRandSuccess100(GC.getInfo(kGame.getHandicapType()).
+					getAIDeclareWarProb())) // (at noble+ difficulties this is 100%)
 				{
 					bMakeWarChecks = true;
 				}
@@ -6253,12 +6253,12 @@ void CvTeamAI::AI_doWar()
 			iOurPower /= 100;
 
 			if ((bFinancesProTotalWar || !bFinancesOpposeWar) &&
-				(kGame.getSorenRandNum(iTotalWarRand, "AI Maximum War") <= iTotalWarThreshold))
+				SyncRandNum(iTotalWarRand) <= iTotalWarThreshold)
 			{
-				int iNoWarRoll = kGame.getSorenRandNum(100, "AI No War");
-				iNoWarRoll = range(iNoWarRoll + (bAggressive ? 10 : 0) + (bFinancesProTotalWar ? 10 : 0) -
-						(20*iGetBetterUnitsCount)/iNumMembers, 0, 99);
-
+				int iNoWarRoll = SyncRandNum(100);
+				iNoWarRoll = range(iNoWarRoll + (bAggressive ? 10 : 0) +
+						(bFinancesProTotalWar ? 10 : 0)
+						- (20*iGetBetterUnitsCount)/iNumMembers, 0, 99);
 				// advc (note): This loop is mostly duplicated in the two "else if" branches below
 				TeamTypes eBestTarget = NO_TEAM;
 				/*	K-Mod. I've set the starting value above zero just as a buffer
@@ -6318,13 +6318,12 @@ void CvTeamAI::AI_doWar()
 				}
 			}
 			else if ((bFinancesProLimitedWar || !bFinancesOpposeWar) &&
-				kGame.getSorenRandNum(iLimitedWarRand, "AI Limited War") <=
-				// UNOFFICIAL_PATCH, Bugfix, 01/02/09, jdog5000: (was 0)
-				iLimitedWarThreshold)
+				// UNOFFICIAL_PATCH, Bugfix, 01/02/09, jdog5000: (right side was 0)
+				SyncRandNum(iLimitedWarRand) <= iLimitedWarThreshold)
 			{
-				int iNoWarRoll = kGame.getSorenRandNum(100, "AI No War") - 10;
-				iNoWarRoll = range(iNoWarRoll + (bAggressive ? 10 : 0) + (bFinancesProLimitedWar ? 10 : 0), 0, 99);
-
+				int iNoWarRoll = SyncRandNum(100) - 10;
+				iNoWarRoll = range(iNoWarRoll + (bAggressive ? 10 : 0) +
+						(bFinancesProLimitedWar ? 10 : 0), 0, 99);
 				TeamTypes eBestTarget = NO_TEAM;
 				int iBestValue = 0;
 				for (TeamIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> it(getID()); it.hasNext(); ++it)
@@ -6368,11 +6367,11 @@ void CvTeamAI::AI_doWar()
 				}
 			}
 			else if ((bFinancesProDogpileWar || !bFinancesOpposeWar) &&
-				(kGame.getSorenRandNum(iDogpileWarRand, "AI Dogpile War") <= iDogpileWarThreshold))
+				SyncRandNum(iDogpileWarRand) <= iDogpileWarThreshold)
 			{
-				int iNoWarRoll = kGame.getSorenRandNum(100, "AI No War") - 20;
-				iNoWarRoll = range(iNoWarRoll + (bAggressive ? 10 : 0) + (bFinancesProDogpileWar ? 10 : 0), 0, 99);
-
+				int iNoWarRoll = SyncRandNum(100) - 20;
+				iNoWarRoll = range(iNoWarRoll + (bAggressive ? 10 : 0) +
+						(bFinancesProDogpileWar ? 10 : 0), 0, 99);
 				TeamTypes eBestTarget = NO_TEAM;
 				int iBestValue = 0;
 				for (TeamIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itTarget(getID());
@@ -6434,17 +6433,14 @@ void CvTeamAI::AI_doWar()
 //returns true if war is veto'd by rolls.
 bool CvTeamAI::AI_performNoWarRolls(TeamTypes eTeam)
 {
-	if (GC.getGame().getSorenRandNum(100, "AI Declare War 1") >
-			GC.getInfo(GC.getGame().getHandicapType()).getAIDeclareWarProb())
-		return true;
-	if (GC.getGame().getSorenRandNum(100, "AI No War") <=
-			AI_noWarAttitudeProb(AI_getAttitude(eTeam)))
-		return true;
-	return false;
+	return (!SyncRandSuccess100(
+			GC.getInfo(GC.getGame().getHandicapType()).getAIDeclareWarProb()) ||
+			SyncRandSuccess100(
+			AI_noWarAttitudeProb(AI_getAttitude(eTeam))));
 }
 
 
-int CvTeamAI::AI_getAttitudeWeight(TeamTypes eTeam) const  // advc: refactored
+int CvTeamAI::AI_getAttitudeWeight(TeamTypes eTeam) const
 {
 	switch (AI_getAttitude(eTeam))
 	{

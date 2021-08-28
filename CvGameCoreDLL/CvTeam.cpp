@@ -4293,7 +4293,7 @@ void CvTeam::setHasTech(TechTypes eTech, bool bNewValue, PlayerTypes ePlayer,
 					CvPlayer const& kMember = *it;
 
 					int iValue = 10;
-					iValue += kGame.getSorenRandNum(10, "Found Religion (Player)");
+					iValue += SyncRandNum(10);
 					for (int iK = 0; iK < GC.getNumReligionInfos(); iK++)
 						iValue += kMember.getHasReligionCount((ReligionTypes)iK) * 10;
 
@@ -4345,7 +4345,7 @@ void CvTeam::setHasTech(TechTypes eTech, bool bNewValue, PlayerTypes ePlayer,
 				{
 					CvPlayer const& kMember = *it;
 					int iValue = 10;
-					iValue += kGame.getSorenRandNum(10, "Found Corporation (Player)");
+					iValue += SyncRandNum(10);
 					if (kMember.getCurrentResearch() != eTech)
 						iValue *= 10;
 					if (iValue < iBestValue)

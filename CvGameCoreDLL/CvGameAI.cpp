@@ -140,7 +140,7 @@ int CvGameAI::AI_combatValue(UnitTypes eUnit) /* K-Mod: */ const
 }
 
 
-int CvGameAI::AI_turnsPercent(int iTurns, int iPercent)
+int CvGameAI::AI_turnsPercent(int iTurns, int iPercent) const
 {
 	FAssert(iPercent > 0);
 	if (iTurns != MAX_INT)

@@ -160,47 +160,47 @@ public:
 	void clearSecretaryGeneral(VoteSourceTypes eVoteSource);
 	void updateSecretaryGeneral();
 
-	int countCivPlayersAlive() const;																		// Exposed to Python
-	int countCivPlayersEverAlive() const;																// Exposed to Python
-	int countCivTeamsAlive() const;																			// Exposed to Python
-	int countCivTeamsEverAlive() const;																	// Exposed to Python
-	int countHumanPlayersAlive() const;																	// Exposed to Python
+	int countCivPlayersAlive() const;																// Exposed to Python
+	int countCivPlayersEverAlive() const;															// Exposed to Python
+	int countCivTeamsAlive() const;																	// Exposed to Python
+	int countCivTeamsEverAlive() const;																// Exposed to Python
+	int countHumanPlayersAlive() const;																// Exposed to Python
 	int countFreeTeamsAlive() const; // K-Mod
 	// advc.137: Replaces getDefaultPlayers for most purposes
 	int getRecommendedPlayers() const;
 	int getSeaLevelChange() const; // advc.137, advc.140
 
-	int countTotalCivPower();																								// Exposed to Python
-	int countTotalNukeUnits();																							// Exposed to Python
-	int countKnownTechNumTeams(TechTypes eTech);														// Exposed to Python
-	int getNumFreeBonuses(BuildingTypes eBuilding) const;	// advc: const										// Exposed to Python
+	int countTotalCivPower() const;																	// Exposed to Python
+	int countTotalNukeUnits() const;																// Exposed to Python
+	int countKnownTechNumTeams(TechTypes eTech) const;												// Exposed to Python
+	int getNumFreeBonuses(BuildingTypes eBuilding) const;											// Exposed to Python
 
-	int countReligionLevels(ReligionTypes eReligion) /* advc: */ const;							// Exposed to Python
-	int calculateReligionPercent(ReligionTypes eReligion,								// Exposed to Python
+	int countReligionLevels(ReligionTypes eReligion) const;											// Exposed to Python
+	int calculateReligionPercent(ReligionTypes eReligion,											// Exposed to Python
 			bool bIgnoreOtherReligions = false) const; // advc.115b
-	int countCorporationLevels(CorporationTypes eCorporation) /* advc: */ const;							// Exposed to Python
+	int countCorporationLevels(CorporationTypes eCorporation) const;								// Exposed to Python
 	void replaceCorporation(CorporationTypes eCorporation1, CorporationTypes eCorporation2);
 
-	int goldenAgeLength() const;																					// Exposed to Python
-	int victoryDelay(VictoryTypes eVictory) const;										// Exposed to Python
-	int getImprovementUpgradeTime(ImprovementTypes eImprovement) const;					// Exposed to Python
+	int goldenAgeLength() const;																	// Exposed to Python
+	int victoryDelay(VictoryTypes eVictory) const;													// Exposed to Python
+	int getImprovementUpgradeTime(ImprovementTypes eImprovement) const;								// Exposed to Python
 	scaled gameSpeedMultiplier() const; // advc
 
 	bool canTrainNukes() const;																		// Exposed to Python
-	EraTypes getCurrentEra() const;														// Exposed to Python
+	EraTypes getCurrentEra() const;																	// Exposed to Python
 	EraTypes getHighestEra() const; // advc
 	scaled groundbreakingNormalizationModifier(TechTypes eTech) const; // advc.groundbr
 
-	DllExport TeamTypes getActiveTeam() const;																		// Exposed to Python
-	CivilizationTypes getActiveCivilizationType() const;								// Exposed to Python
+	DllExport TeamTypes getActiveTeam() const;														// Exposed to Python
+	CivilizationTypes getActiveCivilizationType() const;											// Exposed to Python
 	CvCivilization const* getActiveCivilization() const; // advc.003w
 
-	DllExport bool isNetworkMultiPlayer() const															// Exposed to Python
+	DllExport bool isNetworkMultiPlayer() const														// Exposed to Python
 	{
 		return GC.getInitCore().getMultiplayer();
 	}
-	DllExport bool isGameMultiPlayer() const;																			// Exposed to Python
-	DllExport bool isTeamGame() const;																						// Exposed to Python
+	DllExport bool isGameMultiPlayer() const;														// Exposed to Python
+	DllExport bool isTeamGame() const;																// Exposed to Python
 
 	bool isModem() const; // advc: const
 	void setModem(bool bModem);
@@ -1150,16 +1150,41 @@ inline CvRandom& mapRand()
 // These have to be macros to let CALL_LOC_STR expand to the proper code location
 #define SyncRandNum(iNumOutcomes) \
 	CVGAME_INSTANCE_FOR_RNG.getSorenRandNum((iNumOutcomes), CALL_LOC_STR)
-#define MapRandNum(iNumOutcomes) \
-	CVGAME_INSTANCE_FOR_RNG.getMapRandNum((iNumOutcomes), CALL_LOC_STR)
 #define SyncRandFract(ScaledNumType) \
 	ScaledNumType::rand(syncRand(), CALL_LOC_STR)
 #define SyncRandSuccess(rSuccessProb) \
 	(rSuccessProb).randSuccess(syncRand(), CALL_LOC_STR)
+/*	(Implementing this through conversion to ScaledNum would lead to
+	precision problems or unnecessary arithmetic operations.) */
+#define SyncRandSuccessRatio(iNumerator, iDenominator) \
+	((iNumerator) > 0 && ((iNumerator) >= (iDenominator) || (iNumerator) > SyncRandNum(iDenominator)))
+#define SyncRandSuccess100(iSuccessPercent) \
+	SyncRandSuccessRatio(iSuccessPercent, 100)
+#define SyncRandSuccess1000(iSuccessPermille) \
+	SyncRandSuccessRatio(iSuccessPermille, 1000)
+#define SyncRandSuccess10000(iSuccessPermyriad) \
+	SyncRandSuccessRatio(iSuccessPermyriad, 10000)
+// Not sure what to name this one. Success has 1 chance in iNumLots.
+#define SyncRandOneChanceIn(iNumLots) \
+	(SyncRandNum(iNumLots) == 0)
+
+// Same as above, replacing "Sync" with "Map".
+#define MapRandNum(iNumOutcomes) \
+	CVGAME_INSTANCE_FOR_RNG.getMapRandNum((iNumOutcomes), CALL_LOC_STR)
 #define MapRandFract(ScaledNumType) \
 	ScaledNumType::rand(mapRand(), CALL_LOC_STR)
 #define MapRandSuccess(rSuccessProb) \
 	(rSuccessProb).randSuccess(mapRand(), CALL_LOC_STR)
+#define MapRandSuccessRatio(iNumerator, iDenominator) \
+	((iNumerator) > 0 && ((iNumerator) >= (iDenominator) || (iNumerator) > MapRandNum(iDenominator)))
+#define MapRandSuccess100(iSuccessPercent) \
+	MapRandSuccessRatio(iSuccessPercent, 100)
+#define MapRandSuccess1000(iSuccessPermille) \
+	MapRandSuccessRatio(iSuccessPermille, 1000)
+#define MapRandSuccess10000(iSuccessPermyriad) \
+	MapRandSuccessRatio(iSuccessPermyriad, 10000)
+#define MapRandOneChanceIn(iNumLots) \
+	(MapRandNum(iNumLots) == 0)
 // </advc.007b>
 
 #endif

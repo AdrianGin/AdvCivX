@@ -414,7 +414,7 @@ void CvCityAI::AI_chooseProduction()
 	CvPlayerAI& kPlayer = GET_PLAYER(getOwner());
 	// <advc>
 	CvTeamAI const& kTeam = GET_TEAM(getTeam());
-	CvGame& kGame = GC.getGame();
+	CvGame const& kGame = GC.getGame();
 	CvArea const& kArea = getArea();
 	CvCityAI const* pCapital = kPlayer.AI_getCapital();
 	// </advc>
@@ -612,8 +612,7 @@ void CvCityAI::AI_chooseProduction()
 			(kPlayer.getNumCities() > (iCulturalVictoryNumCultureCities + 1)))
 		{
 			if (iNumAreaCitySites + iNumWaterAreaCitySites > 0 &&
-				kPlayer.getNumCities() < 6 &&
-				kGame.getSorenRandNum(2, "AI Less Culture More Expand") == 0)
+				kPlayer.getNumCities() < 6 && SyncRandOneChanceIn(2))
 			{
 				bImportantCity = false;
 			}
@@ -754,7 +753,7 @@ void CvCityAI::AI_chooseProduction()
 			if (eBestProject != NO_PROJECT && iProjectValue > iBestBuildingValue)
 			{
 				int iOdds = std::max(0, 100 * iProjectValue / (3 * iProjectValue + 300) - 10);
-				if (kGame.getSorenRandNum(100, "Build Project short circuit 1") < iOdds)
+				if (SyncRandSuccess100(iOdds))
 				{
 					pushOrder(ORDER_CREATE, eBestProject);
 					if (gCityLogLevel >= 2) logBBAI("      City %S uses choose project short-circuit 1. (project value: %d, building value: %d, odds: %d)", getName().GetCString(), iProjectValue, iBestBuildingValue, iOdds);
@@ -882,9 +881,9 @@ void CvCityAI::AI_chooseProduction()
 				// <advc.113>
 				iMissingWorkers > 0 &&
 				// Wait for the mainland to send a worker
-				(bPrimaryArea || (iMissingWorkers > 1 && kGame.getSorenRandNum(
-				100, "advc.113 (choose worker 1)") < 20 * iMissingWorkers))))
-				// </advc.113>
+				(bPrimaryArea ||
+				(iMissingWorkers > 1 && SyncRandSuccess100(20 * iMissingWorkers)))
+				/* </advc.113> */))
 			{
 				if (!bChooseWorker && AI_chooseUnit(UNITAI_WORKER))
 				{
@@ -1099,7 +1098,7 @@ void CvCityAI::AI_chooseProduction()
 			bool bValid = (3 * (AI_getWorkersHave() + 1) / 2 < AI_getWorkersNeeded() + 1  && // local
 					// Wait for existing workers if new city
 					getGameTurnFounded() + 5 < kGame.getGameTurn());
-			//|| kGame.getSorenRandNum(80, "choose worker 6") < iBestBuildingValue + (iBuildUnitProb + 50) / 2
+			//|| SyncRandNum(80) < iBestBuildingValue + (iBuildUnitProb + 50) / 2
 			// Replacing the alt. condition above
 			if(!bValid)
 			{
@@ -1116,8 +1115,7 @@ void CvCityAI::AI_chooseProduction()
 						(kTeam.AI_isSneakAttackPreparing() ? 1 : 2);
 				if(iWorkerOdds > 0 && !bPrimaryArea)
 					iWorkerOdds /= 2; // Wait for the mainland to send workers
-				bValid = (iWorkerOdds > 0 && // for efficiency
-						iWorkerOdds > kGame.getSorenRandNum(100, "choose worker 6"));
+				bValid = SyncRandSuccess100(iWorkerOdds);
 			}
 			if(bValid) // </advc.113>
 			{
@@ -1157,7 +1155,7 @@ void CvCityAI::AI_chooseProduction()
 		{
 			if (kArea.getAreaAIType(getTeam()) != AREAAI_NEUTRAL ||
 				kPlayer.AI_isDoStrategy(AI_STRATEGY_ALERT1) ||
-				kGame.getSorenRandNum(iNeededFloatingDefenders, "AI floating def 1") >
+				SyncRandNum(iNeededFloatingDefenders) >
 				iTotalFloatingDefenders * (2*iUnitSpending + iMaxUnitSpending) /
 				std::max(1, 3*iMaxUnitSpending))
 			{
@@ -1216,9 +1214,8 @@ void CvCityAI::AI_chooseProduction()
 			if (getPopulation() >= 3 || iProductionRank <= (kPlayer.getNumCities() + 1) / 2)
 			{
 				if (!bChooseWorker &&
-					// <advc.113> Wait for mainland to send workers
-					(bPrimaryArea || kGame.getSorenRandNum(100, "advc.113 (choose worker 4") <
-					15 * iMissingWorkers) && // </advc.113>
+					// advc.113: Wait for mainland to send workers
+					(bPrimaryArea || SyncRandSuccess100(15 * iMissingWorkers)) &&
 					AI_chooseUnit(UNITAI_WORKER))
 				{
 					if (gCityLogLevel >= 2) logBBAI("      City %S uses choose worker 4", getName().GetCString());
@@ -1355,10 +1352,11 @@ void CvCityAI::AI_chooseProduction()
 	{
 		// For small civ at war, don't build wonders unless winning
 		//if (!bLandWar || (iWarSuccessRating > 30))
-		if (kArea.getAreaAIType(getTeam()) == AREAAI_NEUTRAL) // K-Mod. Don't do this if there is any war at all.
+		// K-Mod. Don't do this if there is any war at all.
+		if (kArea.getAreaAIType(getTeam()) == AREAAI_NEUTRAL)
 		{
-			int iWonderTime = kGame.getSorenRandNum(GC.getInfo(getPersonalityType()).
-					getWonderConstructRand(), "Wonder Construction Rand");
+			int iWonderTime = SyncRandNum(GC.getInfo(getPersonalityType()).
+					getWonderConstructRand());
 			iWonderTime /= 5;
 			iWonderTime += 7;
 			if (AI_chooseBuilding(BUILDINGFOCUS_WORLDWONDER, iWonderTime))
@@ -1434,8 +1432,9 @@ void CvCityAI::AI_chooseProduction()
 	// K-Mod
 	if (eBestProject != NO_PROJECT && iProjectValue > iBestBuildingValue)
 	{
-		int iOdds = 100 * (iProjectValue - iBestBuildingValue) / (iProjectValue + iBestBuildingValue + iBuildUnitProb);
-		if (kGame.getSorenRandNum(100, "Build Project chance 1") < iOdds)
+		int iOdds = 100 * (iProjectValue - iBestBuildingValue) /
+				(iProjectValue + iBestBuildingValue + iBuildUnitProb);
+		if (SyncRandSuccess100(iOdds))
 		{
 			pushOrder(ORDER_CREATE, eBestProject);
 			if (gCityLogLevel >= 2) logBBAI("      City %S uses choose project 1. (project value: %d, building value: %d, odds: %d)", getName().GetCString(), iProjectValue, iBestBuildingValue, iOdds);
@@ -1705,8 +1704,8 @@ void CvCityAI::AI_chooseProduction()
 		// For civ at war, don't build wonders if losing
 		if (!bTotalWar && (!bLandWar || iWarSuccessRating > 0)) // was -30
 		{
-			int iWonderTime = kGame.getSorenRandNum(GC.getInfo(getPersonalityType()).
-					getWonderConstructRand(), "Wonder Construction Rand");
+			int iWonderTime = SyncRandNum(GC.getInfo(getPersonalityType()).
+					getWonderConstructRand());
 			iWonderTime /= 5;
 			iWonderTime += 8;
 			/*if (AI_chooseBuilding(BUILDINGFOCUS_WORLDWONDER, iWonderTime)) {
@@ -1960,7 +1959,7 @@ void CvCityAI::AI_chooseProduction()
 							iOdds /= 3;
 						// Note: there is a hard limit condition on iUnitSpending earlier in the code.
 
-						if (kGame.getSorenRandNum(100, "Build AttackSea") < iOdds &&
+						if (SyncRandSuccess100(iOdds) &&
 							AI_chooseUnit(eBestAttackSeaUnit, UNITAI_ATTACK_SEA))
 						{
 							AI_chooseBuilding(BUILDINGFOCUS_DOMAINSEA, 12);
@@ -1977,10 +1976,10 @@ void CvCityAI::AI_chooseProduction()
 					//if ((iUnitSpending < iMaxUnitSpending) || (iUnitsToTransport > 2*iTransportCapacity))
 					// K-Mod
 					if (iUnitSpending < iMaxUnitSpending ||
-						kGame.getSorenRandNum(100, "Build Transport") <
+						SyncRandSuccess100(
 						// advc.104p: Changed 100 to 350
 						(350 * (iTargetCapacity - iTransportCapacity)) /
-						std::max(1, iTransportCapacity))
+						std::max(1, iTransportCapacity)))
 					// K-Mod end
 					{
 						if (AI_chooseUnit(UNITAI_ASSAULT_SEA))
@@ -2071,8 +2070,7 @@ void CvCityAI::AI_chooseProduction()
 
 	if (iUnitSpending < iMaxUnitSpending + 12 && (!bImportantCity || bDefenseWar)) // K-Mod. was +4, now +12 for the new unit spending metric
 	{
-		if (bLandWar || bAssault || iFreeAirExperience > 0 ||
-			kGame.getSorenRandNum(3, "AI train air") == 0)
+		if (bLandWar || bAssault || iFreeAirExperience > 0 || SyncRandOneChanceIn(3))
 		{
 			int iBestAirValue = kPlayer.AI_bestCityUnitAIValue(UNITAI_ATTACK_AIR, this, &eBestAttackAircraft);
 			int iBestMissileValue = kPlayer.AI_bestCityUnitAIValue(UNITAI_MISSILE_AIR, this, &eBestMissile);
@@ -2209,11 +2207,11 @@ void CvCityAI::AI_chooseProduction()
 		}
 	} // </kekm.15>
 
-	/*if (!bAlwaysPeace && !(bLandWar || bAssault) && (kPlayer.AI_isDoStrategy(AI_STRATEGY_OWABWNW) || (kGame.getSorenRandNum(12, "AI consider Nuke") == 0))) {
+	/*if (!bAlwaysPeace && !(bLandWar || bAssault) && (kPlayer.AI_isDoStrategy(AI_STRATEGY_OWABWNW) || SyncRandOneChanceIn(12))) {
 		if (!bFinancialTrouble) {
 			int iTotalNukes = kPlayer.AI_totalUnitAIs(UNITAI_ICBM);
 			int iNukesWanted = 1 + 2 * std::min(kPlayer.getNumCities(), kGame.getNumCities() - kPlayer.getNumCities());
-			if ((iTotalNukes < iNukesWanted) && (kGame.getSorenRandNum(100, "AI train nuke MWAHAHAH") < (90 - (80 * iTotalNukes) / iNukesWanted))) {
+			if ((iTotalNukes < iNukesWanted) && (SyncRandNum(100) < (90 - (80 * iTotalNukes) / iNukesWanted))) {
 				if (pWaterArea != NULL) {
 					if (AI_chooseUnit(UNITAI_MISSILE_CARRIER_SEA, 50))
 						return;
@@ -2223,25 +2221,24 @@ void CvCityAI::AI_chooseProduction()
 			}
 		}
 	}*/ // BtS
-	// K-Mod. Roughly the same conditions for building a nuke, but with a few adjustments for flavour and strategy
+	/*	K-Mod. Roughly the same conditions for building a nuke,
+		but with a few adjustments for flavour and strategy */
 	if (!bLandWar && !bUnitExempt && !bFinancialTrouble &&
 		iNukeWeight > 0) // advc.143b
 	{
 		if ((kPlayer.AI_isDoStrategy(AI_STRATEGY_OWABWNW) ||
-			kGame.getSorenRandNum(1200, "AI consider Nuke") < std::min(400, iNukeWeight)) &&
-			(!bAssault ||
-			kGame.getSorenRandNum(400, "AI consider Nuke despite assault") < std::min(200, 50 + iNukeWeight/2)))
+			SyncRandNum(1200) < std::min(400, iNukeWeight)) &&
+			(!bAssault || SyncRandNum(400) < std::min(200, 50 + iNukeWeight/2)))
 		{
 			int iTotalNukes = kPlayer.AI_totalUnitAIs(UNITAI_ICBM);
 			int iNukesWanted = 1 + 2 * std::min(kPlayer.getNumCities(),
 					kGame.getNumCities() - kPlayer.getNumCities());
 			if (iTotalNukes < iNukesWanted &&
-				kGame.getSorenRandNum(100, "AI train nuke") * iNukesWanted <
-				90 - (80 * iTotalNukes))
+				SyncRandNum(100) * iNukesWanted < 90 - (80 * iTotalNukes))
 			{
 				if (pWaterArea != NULL &&
 					kPlayer.AI_totalUnitAIs(UNITAI_MISSILE_CARRIER_SEA) * 2 < iTotalNukes &&
-					kGame.getSorenRandNum(3, "AI train boat instead") == 0)
+					SyncRandOneChanceIn(3))
 				{
 					if (AI_chooseUnit(UNITAI_MISSILE_CARRIER_SEA, 50))
 						return;
@@ -2321,8 +2318,7 @@ void CvCityAI::AI_chooseProduction()
 				}
 			}
 			// K-Mod - get more siege units for crush
-			if (bCrushStrategy && kGame.getSorenRandNum(100,
-				"City AI extra crush bombard") < iTrainInvaderChance)
+			if (bCrushStrategy && SyncRandSuccess100(iTrainInvaderChance))
 			{
 				// <cdtw.8> Moved up
 				UnitTypes eCityAttackUnit = NO_UNIT;
@@ -2451,8 +2447,8 @@ void CvCityAI::AI_chooseProduction()
 	// Ideally we'd look at relative production, not just rank.
 	if (iProductionRank <= kPlayer.getNumCities() / 9 + 2 && getPopulation() > 3)
 	{
-		int iWonderRand = 8 + kGame.getSorenRandNum(GC.getInfo(getPersonalityType()).
-			getWonderConstructRand(), "Wonder Construction Rand");
+		int iWonderRand = 8 + SyncRandNum(GC.getInfo(getPersonalityType()).
+				getWonderConstructRand());
 
 		// increase chance of going for an early wonder
 		if (kGame.getElapsedGameTurns() * 100 <
@@ -2493,7 +2489,7 @@ void CvCityAI::AI_chooseProduction()
 			iWonderRand = iWonderRand * 10/(10-iWarSuccessRating);
 		// K-Mod end
 
-		int iWonderRoll = kGame.getSorenRandNum(100, "Wonder Build Rand");
+		int iWonderRoll = SyncRandNum(100);
 
 		if (iProductionRank == 1)
 			iWonderRoll /= 2;
@@ -2620,12 +2616,11 @@ void CvCityAI::AI_chooseProduction()
 		iBuildUnitProbAdjusted *= (250 + std::max(iProjectValue, iBestBuildingValue));
 		iBuildUnitProbAdjusted /= (100 + 3 * std::max(iProjectValue, iBestBuildingValue));
 		// K-Mod end
-		if(bLandWar || (kPlayer.getNumCities() <= 3 && kGame.getElapsedGameTurns() < 60) ||
-			(!bUnitExempt &&
-			kGame.getSorenRandNum(100, "AI Build Unit Production") < iBuildUnitProbAdjusted) ||
+		if (bLandWar || (kPlayer.getNumCities() <= 3 && kGame.getElapsedGameTurns() < 60) ||
+			(!bUnitExempt && SyncRandSuccess100(iBuildUnitProbAdjusted)) ||
 			(isHuman() && getGameTurnFounded() == kGame.getGameTurn()))
 		{
-			if (AI_chooseUnit()) // advc.031b (comment): Can train Settlers, but that rarely happens.
+			if (AI_chooseUnit()) // advc.031b (note): Can train Settlers, but that rarely happens.
 			{
 				if (gCityLogLevel >= 2) logBBAI("      City %S uses choose unit by probability", getName().GetCString());
 				return;
@@ -2673,7 +2668,7 @@ void CvCityAI::AI_chooseProduction()
 				iOdds = 100*(iScaledTime - 400)/(iScaledTime + 600); // <= 4 turns means 0%. 20 turns ~ 61%.
 			}
 		}
-		if (iOdds > 0 && kGame.getSorenRandNum(100, "AI choose process") < iOdds)
+		if (SyncRandSuccess100(iOdds))
 		{
 			pushOrder(ORDER_MAINTAIN, eBestProcess);
 			if (gCityLogLevel >= 2) logBBAI("      City %S uses choose process by value", getName().GetCString());
@@ -3046,11 +3041,7 @@ UnitTypes CvCityAI::AI_bestUnit(bool bAsync, AdvisorTypes eIgnoreAdvisor, UnitAI
 			aiUnitAIVal[eLoopUnitAI] += GC.getASyncRand().get(
 					iMilitaryWeight, "AI Best UnitAI ASYNC");
 		}
-		else
-		{
-			aiUnitAIVal[eLoopUnitAI] += GC.getGame().getSorenRandNum(
-					iMilitaryWeight, "AI Best UnitAI");
-		}
+		else aiUnitAIVal[eLoopUnitAI] += SyncRandNum(iMilitaryWeight);
 		if (aiUnitAIVal[eLoopUnitAI] > iBestValue)
 		{
 			UnitTypes eUnit = AI_bestUnitAI(eLoopUnitAI, bAsync, eIgnoreAdvisor);
@@ -3310,7 +3301,7 @@ UnitTypes CvCityAI::AI_bestUnitAI(UnitAITypes eUnitAI, bool bAsync, AdvisorTypes
 		}
 		else
 		{
-			iValue *= (GC.getGame().getSorenRandNum(50, "AI Best Unit") + 100);
+			iValue *= SyncRandNum(50) + 100;
 			iValue /= 100;
 		}
 
@@ -3382,7 +3373,6 @@ BuildingTypes CvCityAI::AI_bestBuildingThreshold(int iFocusFlags, int iMaxTurns,
 {
 	PROFILE_FUNC(); // advc.opt
 	CvPlayerAI const& kOwner = GET_PLAYER(getOwner()); // K-Mod
-	CvGame& kGame = GC.getGame(); // advc
 
 	bool bAreaAlone = kOwner.AI_isAreaAlone(getArea());
 	int iProductionRank = findYieldRateRank(YIELD_PRODUCTION);
@@ -3560,8 +3550,8 @@ BuildingTypes CvCityAI::AI_bestBuildingThreshold(int iFocusFlags, int iMaxTurns,
 				}
 				else
 				{
-					iTempValue = kGame.getSorenRandNum(GC.getInfo(getPersonalityType()).
-							getWonderConstructRand(), "Wonder Construction Rand");
+					iTempValue = SyncRandNum(GC.getInfo(getPersonalityType()).
+							getWonderConstructRand());
 				}
 				if (bAreaAlone)
 					iTempValue *= 2;
@@ -3576,7 +3566,7 @@ BuildingTypes CvCityAI::AI_bestBuildingThreshold(int iFocusFlags, int iMaxTurns,
 		}
 		else
 		{
-			iValue *= 100 + kGame.getSorenRandNum(25, "AI Best Building",
+			iValue *= 100 + syncRand().get(25, "AI Best Building",
 					eLoopClass, m_iID); // advc.007
 			iValue /= 100;
 		}
@@ -3587,8 +3577,8 @@ BuildingTypes CvCityAI::AI_bestBuildingThreshold(int iFocusFlags, int iMaxTurns,
 		bool bValid = iMaxTurns <= 0 ? true : false;
 		if (!bValid)
 		{
-			bValid = (iTurnsLeft <= kGame.AI().AI_turnsPercent(
-					iMaxTurns, GC.getInfo(kGame.getGameSpeedType()).
+			bValid = (iTurnsLeft <= GC.AI_getGame().AI_turnsPercent(
+					iMaxTurns, GC.getInfo(GC.getGame().getGameSpeedType()).
 					getConstructPercent()));
 		}
 		if (!bValid)
@@ -5984,14 +5974,15 @@ ProjectTypes CvCityAI::AI_bestProject(int* piBestValue, /* advc.001n: */ bool bA
 
 		int iValue = AI_projectValue(eProject);
 
-		// give a small chance of building global projects, regardless of strategy, just for a bit of variety.
+		/*	give a small chance of building global projects
+			regardless of strategy, just for a bit of variety. */
 		if (kProject.getEveryoneSpecialUnit() != NO_SPECIALUNIT ||
 			kProject.getEveryoneSpecialBuilding() != NO_SPECIALBUILDING ||
 			kProject.isAllowsNukes())
 		{	// <advc.001n>
 			if ((bAsync ?
 				GC.getASyncRand().get(100, "Project Everyone ASYNC") : // </advc.001n>
-				GC.getGame().getSorenRandNum(100, "Project Everyone")) == 0)
+				SyncRandNum(100)) == 0)
 			{
 				iValue++;
 			}
@@ -8625,7 +8616,7 @@ void CvCityAI::AI_doDraft(bool bForce)
 	if (bWait)
 	{
 		// Non-critical, only burn population if population is not worth much
-		if (SyncRandSuccess(per100(AI_buildUnitProb(true))) && // advc.017
+		if (SyncRandSuccess100(AI_buildUnitProb(true)) && // advc.017
 			(getConscriptAngerTimer() == 0 || isNoUnhappiness()) && // K-Mod
 			(bGoodValue || bTooMuchPop)) // advc.017  (no functional change here)
 		{
@@ -9056,12 +9047,11 @@ bool CvCityAI::AI_chooseUnit(UnitAITypes eUnitAI, int iOdds)
 
 		/*if (iOdds < 0 ||
 			getUnitProduction(eBestUnit) > 0 ||
-			GC.getGame().getSorenRandNum(100, "City AI choose unit") < iOdds)*/ // BtS
+			SyncRandNum(100) < iOdds)*/ // BtS
 		// K-Mod. boost the odds based on our completion percentage.
-		if (iOdds < 0 ||
-			GC.getGame().getSorenRandNum(100, "City AI choose unit") <
-			iOdds + 100 * getUnitProduction(eBestUnit) /
-			std::max(1, getProductionNeeded(eBestUnit))) // K-Mod end
+		if (iOdds < 0 || SyncRandSuccess100(iOdds +
+			(100 * getUnitProduction(eBestUnit)) /
+			std::max(1, getProductionNeeded(eBestUnit)))) // K-Mod end
 		{
 			pushOrder(ORDER_TRAIN, eBestUnit, eUnitAI);
 			return true;
@@ -9111,7 +9101,7 @@ bool CvCityAI::AI_chooseLeastRepresentedUnit(UnitTypeWeightArray &allowedTypes, 
 	for (it = allowedTypes.begin(); it != allowedTypes.end(); ++it)
 	{
 		int iValue = it->second;
-		iValue *= 750 + GC.getGame().getSorenRandNum(250, "AI choose least represented unit",
+		iValue *= 750 + syncRand().get(250, "AI choose least represented unit",
 				it->first); // advc.007
 		iValue /= 1 + GET_PLAYER(getOwner()).AI_totalAreaUnitAIs(getArea(), it->first);
 		//bestTypes.insert(std::make_pair(iValue, it->first));
@@ -9136,7 +9126,7 @@ bool CvCityAI::AI_bestSpreadUnit(bool bMissionary, bool bExecutive, int iBaseCha
 {
 	CvPlayerAI const& kPlayer = GET_PLAYER(getOwner());
 	CvTeamAI const& kTeam = GET_TEAM(getTeam());
-	CvGame& g = GC.getGame();
+	CvGame const& kGame = GC.getGame();
 
 	FAssert(eBestSpreadUnit != NULL && iBestSpreadUnitValue != NULL);
 
@@ -9144,34 +9134,34 @@ bool CvCityAI::AI_bestSpreadUnit(bool bMissionary, bool bExecutive, int iBaseCha
 
 	if (bMissionary)
 	{
-		for (int iReligion = 0; iReligion < GC.getNumReligionInfos(); iReligion++)
+		FOR_EACH_ENUM2(Religion, eReligion)
 		{
-			ReligionTypes eReligion = (ReligionTypes)iReligion;
 			if (!isHasReligion(eReligion))
 				continue;
-
 			int iHasCount = kPlayer.getHasReligionCount(eReligion);
 			FAssert(iHasCount > 0);
-			int iRoll = (iHasCount > 4) ? iBaseChance : (((100 - iBaseChance) / iHasCount) + iBaseChance);
-			if (kPlayer.AI_isDoStrategy(AI_STRATEGY_MISSIONARY))
 			{
-				iRoll *= (kPlayer.getStateReligion() == eReligion) ? 170 : 65;
-				iRoll /= 100;
+				int iChance = (iHasCount > 4) ? iBaseChance :
+						(((100 - iBaseChance) / iHasCount) + iBaseChance);
+				if (kPlayer.AI_isDoStrategy(AI_STRATEGY_MISSIONARY))
+				{
+					iChance *= (kPlayer.getStateReligion() == eReligion ? 170 : 65);
+					iChance /= 100;
+				}
+				// BETTER_BTS_AI_MOD (03/08/10, jdog5000, Victory Strategy AI): START
+				if (kPlayer.AI_atVictoryStage(AI_VICTORY_CULTURE2))
+					iChance += 25; // BETTER_BTS_AI_MOD: END
+				else if (!kTeam.hasHolyCity(eReligion) &&
+					kPlayer.getStateReligion() != eReligion)
+				{
+					iChance /= 2;
+					/*if (kPlayer.isNoNonStateReligionSpread())
+						iChance /= 2;*/ // disabled by K-mod
+				}
+				if (!SyncRandSuccess100(iChance))
+					continue;
 			}
-			// BETTER_BTS_AI_MOD (03/08/10, jdog5000, Victory Strategy AI): START
-			if (kPlayer.AI_atVictoryStage(AI_VICTORY_CULTURE2))
-				iRoll += 25; // BETTER_BTS_AI_MOD: END
-			else if (!kTeam.hasHolyCity(eReligion) && !(kPlayer.getStateReligion() == eReligion))
-			{
-				iRoll /= 2;
-				/*if (kPlayer.isNoNonStateReligionSpread())
-				iRoll /= 2;*/ // disabled by K-mod
-			}
-
-			if (iRoll <= g.getSorenRandNum(100, "AI choose missionary"))
-				continue;
-
-				int iReligionValue = kPlayer.AI_missionaryValue(eReligion, area());
+			int iReligionValue = kPlayer.AI_missionaryValue(eReligion, area());
 			if (iReligionValue <= 0)
 				continue;
 
@@ -9200,25 +9190,25 @@ bool CvCityAI::AI_bestSpreadUnit(bool bMissionary, bool bExecutive, int iBaseCha
 
 	if (bExecutive)
 	{
-		for (int iCorporation = 0; iCorporation < GC.getNumCorporationInfos(); iCorporation++)
+		FOR_EACH_ENUM2(Corporation, eCorporation)
 		{
-			CorporationTypes eCorporation = (CorporationTypes)iCorporation;
 			if (!isActiveCorporation(eCorporation))
 				continue;
-
 			int iHasCount = kPlayer.getHasCorporationCount(eCorporation);
 			FAssert(iHasCount > 0);
-			int iRoll = (iHasCount > 4) ? iBaseChance : (((100 - iBaseChance) / iHasCount) + iBaseChance);
-			/* if (!kTeam.hasHeadquarters(eCorporation))
-				iRoll /= 8;*/
-			// K-Mod
-			if (kTeam.hasHeadquarters(eCorporation))
-				iRoll += 10;
-			else iRoll /= 2;
-			// K-Mod end
-			if (iRoll <= g.getSorenRandNum(100, "AI choose executive"))
-				continue;
-
+			{
+				int iChance = (iHasCount > 4) ? iBaseChance :
+						(((100 - iBaseChance) / iHasCount) + iBaseChance);
+				/* if (!kTeam.hasHeadquarters(eCorporation))
+					iChance /= 8;*/
+				// K-Mod
+				if (kTeam.hasHeadquarters(eCorporation))
+					iChance += 10;
+				else iChance /= 2;
+				// K-Mod end
+				if (!SyncRandSuccess100(iChance))
+					continue;
+			}
 			int iCorporationValue = kPlayer.AI_executiveValue(eCorporation, area());
 			if (iCorporationValue <= 0)
 				continue;
@@ -9285,15 +9275,15 @@ bool CvCityAI::AI_chooseBuilding(int iFocusFlags, int iMaxTurns, int iMinThresho
 	eBestBuilding = AI_bestBuildingThreshold(iFocusFlags, iMaxTurns, iMinThreshold);
 	if (eBestBuilding != NO_BUILDING)
 	{
-		/* bbai code
-		if (iOdds < 0 ||
+		/*if (iOdds < 0 ||
 			getBuildingProduction(eBestBuilding) > 0 ||
-			GC.getGame().getSorenRandNum(100,"City AI choose building") < iOdds)*/
+			SyncRandNum(100) < iOdds)*/ // BBAI
 		// K-Mod
-		int iRand=0; // advc
+		int iRand=0;
 		if (iOdds < 0 ||
-			(iRand = GC.getGame().getSorenRandNum(100, "City AI choose building")) < iOdds ||
-			iRand < iOdds + 100*getBuildingProduction(eBestBuilding)/std::max(1, getProductionNeeded(eBestBuilding)))
+			(iRand = SyncRandNum(100)) < iOdds ||
+			iRand < iOdds + (100*getBuildingProduction(eBestBuilding)) /
+			std::max(1, getProductionNeeded(eBestBuilding)))
 		// K-Mod end
 		{
 			pushOrder(ORDER_CONSTRUCT, eBestBuilding);
@@ -11616,8 +11606,7 @@ void CvCityAI::AI_doPanic() // advc: Unused return type bool removed, body refac
 		AI_doHurry(true);
 		return;
 	}
-	if ((GC.getGame().getSorenRandNum(2, "AI choose panic unit") == 0 &&
-		AI_chooseUnit(UNITAI_CITY_COUNTER)) ||
+	if ((SyncRandOneChanceIn(2) && AI_chooseUnit(UNITAI_CITY_COUNTER)) ||
 		AI_chooseUnit(UNITAI_CITY_DEFENSE) || AI_chooseUnit(UNITAI_ATTACK))
 	{
 		AI_doHurry(rRatio > fixp(1.4));
@@ -11716,7 +11705,8 @@ void CvCityAI::AI_buildGovernorChooseProduction()
 
 		//military
 		bool bWar = getArea().getAreaAIType(kOwner.getTeam()) != AREAAI_NEUTRAL;
-		// (I'd like to check AI_neededFloatingDefenders, but I don't want to have to calculate it just for this singluar case.)
+		/*	(I'd like to check AI_neededFloatingDefenders, but I don't want to
+			have to calculate it just for this singluar case.) */
 		if (bDanger || iBestBuildingValue < (bWar ? 70 : 35))
 		{
 			int iOdds = (bWar ? 100 : 60) - kOwner.AI_unitCostPerMil()/2;
@@ -11727,18 +11717,17 @@ void CvCityAI::AI_buildGovernorChooseProduction()
 			iOdds *= 60 + iBestBuildingValue;
 			iOdds /= 60 + 10 * iBestBuildingValue;
 
-			if (GC.getGame().getSorenRandNum(100, "City governor choose military") < iOdds)
+			if (SyncRandSuccess100(iOdds))
 			{
 				UnitAITypes eUnitAI;
 				UnitTypes eBestUnit = AI_bestUnit(false, NO_ADVISOR, &eUnitAI);
 				if (eBestUnit != NO_UNIT)
 				{
-					const CvUnitInfo& kUnit = GC.getInfo(eBestUnit);
-
+					CvUnitInfo const& kUnit = GC.getInfo(eBestUnit);
 					if (kUnit.getUnitCombatType() != NO_UNITCOMBAT)
 					{
-						BuildingTypes eExperienceBuilding = AI_bestBuildingThreshold(BUILDINGFOCUS_EXPERIENCE);
-
+						BuildingTypes eExperienceBuilding = AI_bestBuildingThreshold(
+								BUILDINGFOCUS_EXPERIENCE);
 						if (eExperienceBuilding != NO_BUILDING)
 						{
 							const CvBuildingInfo& kBuilding = GC.getInfo(eExperienceBuilding);
@@ -11829,7 +11818,7 @@ void CvCityAI::AI_buildGovernorChooseProduction()
 				iOdds = 100 * (iScaledTime - 400) / (iScaledTime + 600);
 			}
 		}
-		if (iOdds > 0 && GC.getGame().getSorenRandNum(100, "AI choose process") < iOdds)
+		if (SyncRandSuccess100(iOdds))
 		{
 			pushOrder(ORDER_MAINTAIN, eBestProcess);
 			return;
@@ -11939,7 +11928,7 @@ void CvCityAI::AI_barbChooseProduction()
 		}
 	}
 
-	if (!bDanger && GC.getGame().getSorenRandNum(100, "AI Build Unit Production") > iBuildUnitProb)
+	if (!bDanger && !SyncRandSuccess100(iBuildUnitProb))
 	{
 		int iBarbarianFlags = 0;
 		if (getPopulation() < 4) iBarbarianFlags |= BUILDINGFOCUS_FOOD;
@@ -11952,8 +11941,7 @@ void CvCityAI::AI_barbChooseProduction()
 			if (gCityLogLevel >= 2) logBBAI("      City %S uses barb AI_chooseBuilding with flags and iBuildUnitProb = %d", getName().GetCString(), iBuildUnitProb);
 			return;
 		}
-
-		if (GC.getGame().getSorenRandNum(100, "AI Build Unit Production") > iBuildUnitProb)
+		if (!SyncRandSuccess100(iBuildUnitProb))
 		{
 			if (AI_chooseBuilding())
 			{
@@ -11974,7 +11962,7 @@ void CvCityAI::AI_barbChooseProduction()
 
 	if (!bDanger && pWaterArea != NULL && iWaterPercent > 30)
 	{
-		if (GC.getGame().getSorenRandNum(3, "AI Coast Raiders!") == 0)
+		if (SyncRandOneChanceIn(3)) // AI Coast Raiders
 		{
 			if (kPlayer.AI_totalUnitAIs(UNITAI_ASSAULT_SEA) <= 1 + kPlayer.getNumCities() / 2)
 			{
@@ -11985,7 +11973,7 @@ void CvCityAI::AI_barbChooseProduction()
 				}
 			}
 		}
-		if (GC.getGame().getSorenRandNum(110, "AI arrrr!") < iWaterPercent + 10)
+		if (SyncRandNum(110) < iWaterPercent + 10)
 		{
 			if (kPlayer.AI_totalUnitAIs(UNITAI_PIRATE_SEA) <= kPlayer.getNumCities())
 			{
@@ -12007,7 +11995,7 @@ void CvCityAI::AI_barbChooseProduction()
 		}
 	}
 
-	if (GC.getGame().getSorenRandNum(2, "Barb worker") == 0)
+	if (SyncRandOneChanceIn(2))
 	{
 		if (!bDanger && iExistingWorkers < iNeededWorkers &&
 			AI_getWorkersNeeded() > 0 && AI_getWorkersHave() == 0)

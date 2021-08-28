@@ -169,8 +169,8 @@ void CvUnit::finalizeInit() // advc.003u: Body cut from init
 	if (iCreated < iNumNames)
 	{	// <advc.005b>
 		/*  Skip every iStep'th name on average. Basic assumption: About half of
-			the names are used in a long (space-race) game with 7 civs; therefore, skip every
-			iStep=2 then. Adjust this to the (current) number of civs. */
+			the names are used in a long (space-race) game with 7 civs; therefore,
+			skip every iStep=2 then. Adjust this to the (current) number of civs. */
 		int iAlive = kGame.countCivPlayersAlive();
 		if (iAlive <= 0)
 		{
@@ -179,7 +179,7 @@ void CvUnit::finalizeInit() // advc.003u: Body cut from init
 		}
 		int const iStep = std::max(1, intdiv::uround(14, iAlive));
 		// This gives iRand an expected value of iStep
-		int iRand = kGame.getSorenRandNum(2 * iStep + 1, "advc.005b");
+		int iRand = SyncRandNum(2 * iStep + 1);
 		/*	The index of the most recently used name isn't available; instead,
 			take iStep times the number of previously used names in order to
 			pick up roughly where we left off. */
@@ -821,16 +821,14 @@ void CvUnit::resolveAirCombat(CvUnit* pInterceptor, CvPlot* pPlot, CvAirMissionD
 	for (int iRound = 0; iRound < iMaxRounds; ++iRound)
 	// BETTER_BTS_AI_MOD: END
 	{
-		if (GC.getGame().getSorenRandNum(100, "Air combat") < iOurOdds)
+		if (SyncRandSuccess100(iOurOdds))
 		{
 			if (DOMAIN_AIR == pInterceptor->getDomainType())
 			{
 				iTheirDamage += iTheirRoundDamage;
 				pInterceptor->changeDamage(iTheirRoundDamage, getOwner());
 				if (pInterceptor->isDead())
-				{
 					break;
-				}
 			}
 		}
 		else
@@ -1096,12 +1094,12 @@ void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible)
 
 	while (true)
 	{
-		if (GC.getGame().getSorenRandNum(GC.getCOMBAT_DIE_SIDES(), "Combat") < iDefenderOdds)
+		if (SyncRandNum(GC.getCOMBAT_DIE_SIDES()) < iDefenderOdds)
 		{
 			if (getCombatFirstStrikes() == 0)
 			{
 				if (getDamage() + iAttackerDamage >= maxHitPoints() &&
-					GC.getGame().getSorenRandNum(100, "Withdrawal") < withdrawalProbability())
+					SyncRandSuccess100(withdrawalProbability()))
 				{
 					flankingStrikeCombat(pPlot, iAttackerStrength, iAttackerFirepower,
 							iAttackerKillOdds, iDefenderDamage, pDefender);
@@ -3785,7 +3783,7 @@ bool CvUnit::nuke(int iX, int iY)
 	int const iMissionTime = getGroup()->nukeMissionTime();
 	bool const bShortAnimation = (iMissionTime <= 8); // </advc.002m>
 
-	if (GC.getGame().getSorenRandNum(100, "Nuke") < iBestInterception)
+	if (SyncRandSuccess100(iBestInterception))
 	{
 		for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it) // advc.003n: Only major civs
 		{
@@ -4276,10 +4274,8 @@ bool CvUnit::airBomb(int iX, int iY, /* <advc.004c> */ bool* pbIntercepted)
 		if (kPlot.isImproved())
 		{	/*	advc.004c (note) Changes to this dice roll should be matched with
 				changes to the probability display in CvGameTextMgr::getAirBombPlotHelp */
-			if (GC.getGame().getSorenRandNum(
-				airBombCurrRate(), "Air Bomb - Offense") >=
-				GC.getGame().getSorenRandNum(
-				GC.getInfo(kPlot.getImprovementType()).getAirBombDefense(), "Air Bomb - Defense"))
+			if (SyncRandNum(airBombCurrRate()) >=
+				SyncRandNum(GC.getInfo(kPlot.getImprovementType()).getAirBombDefense()))
 			{
 				szBuffer = gDLL->getText("TXT_KEY_MISC_YOU_UNIT_DESTROYED_IMP", getNameKey(),
 						GC.getInfo(kPlot.getImprovementType()).getTextKeyWide());
@@ -4602,14 +4598,12 @@ bool CvUnit::pillageImprovement()
 					getPillageGold();
 			if (iPillageBase > 0) // advc
 			{
-				iPillageGold += GC.getGame().getSorenRandNum(iPillageBase,
-						"Pillage Gold 1");
+				iPillageGold += SyncRandNum(iPillageBase);
 				/*	<advc.004> Add 1, and subtract 1 from the upper bound of the 2nd roll.
 					To guarantee that at least 1 gold is pillaged -
 					so that a message gets shown. */
 				iPillageGold++;
-				iPillageGold += GC.getGame().getSorenRandNum(
-						iPillageBase - 1, /* </advc.004> */ "Pillage Gold 2");
+				iPillageGold += SyncRandNum(iPillageBase - 1); // </advc.004>
 				iPillageGold += (getPillageChange() * iPillageGold) / 100;
 				// K-Mod end
 			}
@@ -4867,7 +4861,7 @@ bool CvUnit::sabotage()
 		return false;
 
 	CvPlot& kPlot = getPlot();
-	bool bCaught = (GC.getGame().getSorenRandNum(100, "Spy: Sabotage") > sabotageProb(&kPlot));
+	bool const bCaught = !SyncRandSuccess100(sabotageProb(&kPlot));
 	GET_PLAYER(getOwner()).changeGold(-sabotageCost(&kPlot));
 	CvWString szBuffer;
 	if (!bCaught)
@@ -4992,7 +4986,7 @@ bool CvUnit::destroy()
 	if (!canDestroy(plot()))
 		return false;
 
-	bool bCaught = (GC.getGame().getSorenRandNum(100, "Spy: Destroy") > destroyProb(plot()));
+	bool const bCaught = !SyncRandSuccess100(destroyProb(plot()));
 
 	CvCity* pCity = getPlot().getPlotCity();
 	FAssert(pCity != NULL);
@@ -5112,7 +5106,7 @@ bool CvUnit::stealPlans()
 	if (!canStealPlans(plot()))
 		return false;
 
-	bool bCaught = (GC.getGame().getSorenRandNum(100, "Spy: Steal Plans") > stealPlansProb(plot()));
+	bool const bCaught = !SyncRandSuccess100(stealPlansProb(plot()));
 
 	CvCity* pCity = getPlot().getPlotCity();
 	FAssertMsg(pCity != NULL, "City is not assigned a valid value");
@@ -5256,7 +5250,7 @@ bool CvUnit::spread(ReligionTypes eReligion)
 		bool bSuccess;
 		// K-Mod end
 
-		if (GC.getGame().getSorenRandNum(100, "Unit Spread Religion") < iSpreadProb)
+		if (SyncRandSuccess100(iSpreadProb))
 		{
 			pCity->setHasReligion(eReligion, true, true, false,
 					getOwner()); // advc.106e
@@ -5268,7 +5262,7 @@ bool CvUnit::spread(ReligionTypes eReligion)
 			bSuccess = false;*/ // BtS
 			/*	K-Mod. Instead of simply failing, give some chance of
 				removing one of the existing religions. */
-			std::vector<std::pair<int, ReligionTypes> > rankedReligions;
+			std::vector<std::pair<int,ReligionTypes> > aieRankedReligions;
 			int iRandomWeight = GC.getDefineINT("RELIGION_INFLUENCE_RANDOM_WEIGHT");
 			FOR_EACH_ENUM(Religion)
 			{
@@ -5278,18 +5272,17 @@ bool CvUnit::spread(ReligionTypes eReligion)
 					if (pCity != GC.getGame().getHolyCity(eLoopReligion))
 					{
 						int iInfluence = pCity->getReligionGrip(eLoopReligion);
-						iInfluence += GC.getGame().getSorenRandNum(iRandomWeight,
-								"Religion influence");
+						iInfluence += SyncRandNum(iRandomWeight);
 						if (eLoopReligion == eReligion)
 							iInfluence += m_pUnitInfo->getReligionSpreads(eReligion) / 2;
-						rankedReligions.push_back(std::make_pair(
+						aieRankedReligions.push_back(std::make_pair(
 								iInfluence, eLoopReligion));
 					}
 				}
 			}
-			std::partial_sort(rankedReligions.begin(), rankedReligions.begin() + 1,
-					rankedReligions.end());
-			ReligionTypes eFailedReligion = rankedReligions[0].second;
+			std::partial_sort(aieRankedReligions.begin(), aieRankedReligions.begin() + 1,
+					aieRankedReligions.end());
+			ReligionTypes eFailedReligion = aieRankedReligions[0].second;
 			if (eFailedReligion == eReligion)
 			{
 				CvWString szBuffer(gDLL->getText("TXT_KEY_MISC_RELIGION_FAILED_TO_SPREAD",
@@ -5412,7 +5405,7 @@ bool CvUnit::spreadCorporation(CorporationTypes eCorporation)
 
 		iSpreadProb += (((GC.getNumCorporationInfos() - pCity->getCorporationCount()) *
 				(100 - iSpreadProb)) / GC.getNumCorporationInfos());
-		if (GC.getGame().getSorenRandNum(100, "Unit Spread Corporation") < iSpreadProb)
+		if (SyncRandSuccess100(iSpreadProb))
 			pCity->setHasCorporation(eCorporation, true, true, false);
 		else
 		{
@@ -5879,8 +5872,8 @@ bool CvUnit::testSpyIntercepted(PlayerTypes eTargetPlayer, bool bMission, int iM
 	if (kTargetPlayer.isBarbarian())
 		return false;
 
-	if (GC.getGame().getSorenRandNum(10000, "Spy Interception") >=
-		getSpyInterceptPercent(kTargetPlayer.getTeam(), bMission) * (100 + iModifier))
+	if (!SyncRandSuccess10000((100 + iModifier) *
+		getSpyInterceptPercent(kTargetPlayer.getTeam(), bMission)))
 	{
 		return false;
 	}
@@ -5916,7 +5909,7 @@ bool CvUnit::testSpyIntercepted(PlayerTypes eTargetPlayer, bool bMission, int iM
 			"AS2D_EXPOSED", MESSAGE_TYPE_INFO, getButton(), GC.getColorType("RED"));
 
 	static int const iESPIONAGE_SPY_REVEAL_IDENTITY_PERCENT = GC.getDefineINT("ESPIONAGE_SPY_REVEAL_IDENTITY_PERCENT"); // advc.opt
-	if (GC.getGame().getSorenRandNum(100, "Spy Reveal identity") < iESPIONAGE_SPY_REVEAL_IDENTITY_PERCENT)
+	if (SyncRandSuccess100(iESPIONAGE_SPY_REVEAL_IDENTITY_PERCENT))
 	{
 		if (!isEnemy(kTargetPlayer.getTeam()))
 		{   // advc.130j:
@@ -9650,13 +9643,17 @@ void CvUnit::setCombatUnit(CvUnit* pCombatUnit, bool bAttacking)
 
 		FAssert(getCombatUnit() == NULL);
 		FAssert(!getPlot().isFighting());
-		m_bCombatFocus = (bAttacking && !(gDLL->UI().isFocusedWidget()) && ((getOwner() == GC.getGame().getActivePlayer()) || ((pCombatUnit->getOwner() == GC.getGame().getActivePlayer()) && !(GC.getGame().isMPOption(MPOPTION_SIMULTANEOUS_TURNS)))));
+		m_bCombatFocus = (bAttacking && !gDLL->UI().isFocusedWidget() &&
+				(getOwner() == GC.getGame().getActivePlayer() ||
+				(pCombatUnit->getOwner() == GC.getGame().getActivePlayer() &&
+				!GC.getGame().isMPOption(MPOPTION_SIMULTANEOUS_TURNS))));
 		m_combatUnit = pCombatUnit->getIDInfo();
-		setCombatFirstStrikes((pCombatUnit->immuneToFirstStrikes()) ? 0 : (firstStrikes() + GC.getGame().getSorenRandNum(chanceFirstStrikes() + 1, "First Strike")));
+		setCombatFirstStrikes(pCombatUnit->immuneToFirstStrikes() ? 0 :
+				(firstStrikes() + SyncRandNum(chanceFirstStrikes() + 1)));
 	}
 	else
 	{
-		if(getCombatUnit() != NULL)
+		if (getCombatUnit() != NULL)
 		{
 			FAssert(getCombatUnit() != NULL);
 			FAssert(getPlot().isFighting());
@@ -10430,9 +10427,8 @@ void CvUnit::collateralCombat(CvPlot const* pPlot, CvUnit const* pSkipUnit)
 			pLoopUnit->canDefend() && !pLoopUnit->isInvisible(getTeam(), false))
 		{
 			// This value thing is a bit bork. It's directly from the original code...
-			int iValue = (1 + GC.getGame().getSorenRandNum(10000, "Collateral Damage"));
+			int iValue = 1 + SyncRandNum(10000);
 			iValue *= pLoopUnit->currHitPoints();
-
 			aTargetUnits.push_back(std::make_pair(iValue, pLoopUnit->getIDInfo()));
 		}
 	}
@@ -10529,8 +10525,7 @@ void CvUnit::flankingStrikeCombat(const CvPlot* pPlot, int iAttackerStrength,
 						iAttackerFirepower, iFlankedDefenderOdds, iFlankedDefenderStrength,
 						iAttackerDamage, iFlankedDefenderDamage);
 
-				if (GC.getGame().getSorenRandNum(GC.getCOMBAT_DIE_SIDES(),
-					"Flanking Combat") >= iDefenderOdds)
+				if (SyncRandNum(GC.getCOMBAT_DIE_SIDES()) >= iDefenderOdds)
 				{
 					int iCollateralDamage = (iFlankingStrength * iDefenderDamage) / 100;
 					int iUnitDamage = std::max(pLoopUnit->getDamage(), std::min(
@@ -10545,9 +10540,9 @@ void CvUnit::flankingStrikeCombat(const CvPlot* pPlot, int iAttackerStrength,
 	int iNumUnitsHit = std::min<int>(aFlankDamagePerUnit.size(),
 			collateralDamageMaxUnits());
 
-	for (int i = 0; i < iNumUnitsHit; ++i)
+	for (int i = 0; i < iNumUnitsHit; i++)
 	{
-		int iIndexHit = GC.getGame().getSorenRandNum(aFlankDamagePerUnit.size(), "Pick Flanked Unit");
+		int iIndexHit = SyncRandNum(aFlankDamagePerUnit.size());
 		CvUnit& kDamagedUnit = *aFlankDamagePerUnit[iIndexHit].first;
 		int const iDamage = aFlankDamagePerUnit[iIndexHit].second;
 		kDamagedUnit.setDamage(iDamage, getOwner());
@@ -10602,7 +10597,7 @@ bool CvUnit::interceptTest(CvPlot const& kPlot, /* <advc.004c> */ IDInfo* pInter
 {
 	if (pInterceptorID != NULL)
 		*pInterceptorID = IDInfo(); // </advc.004c>
-	if (GC.getGame().getSorenRandNum(100, "Evasion Rand") >= evasionProbability())
+	if (!SyncRandSuccess100(evasionProbability()))
 	{
 		CvUnit const* pInterceptor = bestInterceptor(kPlot);
 		if (pInterceptor != NULL)

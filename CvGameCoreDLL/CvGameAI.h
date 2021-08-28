@@ -24,7 +24,7 @@ public:
 
 	int AI_combatValue(UnitTypes eUnit) const;
 
-	int AI_turnsPercent(int iTurns, int iPercent);
+	int AI_turnsPercent(int iTurns, int iPercent) const;
 	// <advc.erai>
 	scaled AI_getCurrEraFactor() const;
 	int AI_getCurrEra() const { return AI_getCurrEraFactor().uround(); }

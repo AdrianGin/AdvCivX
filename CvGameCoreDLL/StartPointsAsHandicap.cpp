@@ -267,7 +267,7 @@ void StartPointsAsHandicap::bounce(int i, int j) {
 			i, civs[i]->startPoints_configured(),
 			j, civs[j]->startPoints_configured(),
 			deltaMax);
-	int delta = GC.getGame().getSorenRandNum(deltaMax, "advc.250b");
+	int delta = SyncRandNum(deltaMax);
 	civs[i]->setStartPoints_actual(civs[i]->startPoints_configured() - delta);
 	civs[j]->setStartPoints_actual(civs[j]->startPoints_configured() + delta);
 }

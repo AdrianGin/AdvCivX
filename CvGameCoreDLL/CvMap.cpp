@@ -556,8 +556,7 @@ CvPlot* CvMap::syncRandPlot(RandPlotFlags eFlags, CvArea const* pArea,
 	for (int i = 0; i < iTimeout; i++)
 	{
 		CvPlot& kTestPlot = getPlot(
-				GC.getGame().getSorenRandNum(getGridWidth(), "Rand Plot Width"),
-				GC.getGame().getSorenRandNum(getGridHeight(), "Rand Plot Height"));
+				SyncRandNum(getGridWidth()), SyncRandNum(getGridHeight()));
 		if (isValidRandPlot(kTestPlot, eFlags, pArea, iMinCivUnitDistance))
 		{	/*  <advc.304> Not going to be useful ...
 				Use 1 to indicate that we found one valid plot. */

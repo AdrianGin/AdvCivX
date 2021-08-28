@@ -642,7 +642,7 @@ void CvPlayer::changePersonalityType()
 		if (eLoopPersonality == iBARBARIAN_LEADER) // XXX minor civ???
 			continue;
 
-		int iValue = 1 + GC.getGame().getSorenRandNum(10000, "Choosing Personality");
+		int iValue = 1 + SyncRandNum(10000);
 		for (int i = 0; i < MAX_CIV_PLAYERS; i++)
 		{
 			if (GET_PLAYER((PlayerTypes)i).isAlive())
@@ -1065,8 +1065,8 @@ void CvPlayer::addFreeUnit(UnitTypes eUnit, UnitAITypes eUnitAI)
 		(GC.getPythonCaller()->isHumanExplorerPlacementRandomized() ||
 		!isHuman())) // advc.108
 	{
-		//int iRandOffset = GC.getGame().getSorenRandNum(NUM_CITY_PLOTS, "Place Units (Player)");
-		for (CityPlotRandIter it(*pStartingPlot, GC.getGame().getSorenRand(), true);
+		//int iRandOffset = SyncRandNum(NUM_CITY_PLOTS);
+		for (CityPlotRandIter it(*pStartingPlot, syncRand(), true);
 			it.hasNext(); ++it)
 		{
 			CvPlot& kLoopPlot = *it;
@@ -1337,15 +1337,15 @@ CvPlot* CvPlayer::findStartingPlot(
 				} // </kekm.35>
 				//the distance factor is now done inside foundValue
 				int iValue = pLoopPlot->getFoundValue(getID(),
-						/*	advc.027: Replacing the randomization below, which is crude
-							and too much. Also, findStartingPlot no longer has a
-							bRandomize param. It had only been used by the WB scenario
-							parser for the RandomStartLocation flag. The parser now uses
-							CyPlayer::forceRandomWBStart. Note: Among the BtS scenarios,
-							only "Europe" uses RandomStartLocation=true. */
+					/*	advc.027: Replacing the randomization below, which is crude
+						and too much. Also, findStartingPlot no longer has a
+						bRandomize param. It had only been used by the WB scenario
+						parser for the RandomStartLocation flag. The parser now uses
+						CyPlayer::forceRandomWBStart. Note: Among the BtS scenarios,
+						only "Europe" uses RandomStartLocation=true. */
 						m_bRandomWBStart);
 				/*if (bRandomize && iValue > 0)
-					iValue += GC.getGame().getSorenRandNum(10000, "Randomize Starting Location");*/
+					iValue += SyncRandNum(10000);*/
 				if (iValue > iBestValue)
 				{
 					iBestValue = iValue;
@@ -1716,8 +1716,8 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 		}
 		// Capture roll unless recapture
 		int iOdds = kBuilding.getConquestProbability();
-		if (!bConquest || bRecapture || (iOdds > 0 &&
-			iOdds > GC.getGame().getSorenRandNum(100, "Capture Probability")))
+		if (!bConquest || bRecapture || //(iOdds > 0 && // advc: redundant
+			SyncRandSuccess100(iOdds))
 		{
 			kNewCity.setNumRealBuildingTimed(eBuilding,
 					std::min(GC.getDefineINT(CvGlobals::CITY_MAX_NUM_BUILDINGS),
@@ -1990,8 +1990,7 @@ CvWString CvPlayer::getNewCityName() const
 	if (szName.empty())
 	{
 		// Pick a name from another random civ
-		int iRandOffset = GC.getGame().getSorenRandNum(GC.getNumCivilizationInfos(),
-				"Place Units (Player)");
+		int iRandOffset = SyncRandNum(GC.getNumCivilizationInfos());
 		FOR_EACH_ENUM(Civilization)
 		{
 			CivilizationTypes eRandCiv = (CivilizationTypes)
@@ -2012,14 +2011,11 @@ void CvPlayer::getCivilizationCityName(CvWString& szBuffer, CivilizationTypes eC
 {
 	int iRandOffset=-1;
 	/*if (isBarbarian() || isMinorCiv())
-		iRandOffset = GC.getGame().getSorenRandNum(GC.getInfo(eCivilization).getNumCityNames(), "Place Units (Player)");
+		iRandOffset = SyncRandNum(GC.getInfo(eCivilization).getNumCityNames());
 	else iRandOffset = 0;*/ // BtS
 	// K-Mod
 	if (eCivilization != getCivilizationType() || isBarbarian() || isMinorCiv())
-	{
-		iRandOffset = GC.getGame().getSorenRandNum(GC.getInfo(eCivilization).getNumCityNames(),
-				"City name offset");
-	}
+		iRandOffset = SyncRandNum(GC.getInfo(eCivilization).getNumCityNames());
 	else
 	{	// note: the explicit city names list is checked before this function is called.
 		iRandOffset = std::max(0, getPlayerRecord()->getNumCitiesBuilt() - getNumCityNames());
@@ -2100,13 +2096,13 @@ void CvPlayer::disbandUnit(bool bAnnounce)
 		{
 			continue;
 		}
-		int iValue = (10000 + GC.getGame().getSorenRandNum(1000, "Disband Unit"));
-		iValue += (pLoopUnit->getUnitInfo().getProductionCost() * 5);
-		iValue += (pLoopUnit->getExperience() * 20);
-		iValue += (pLoopUnit->getLevel() * 100);
+		int iValue = 10000 + SyncRandNum(1000);
+		iValue += pLoopUnit->getUnitInfo().getProductionCost() * 5;
+		iValue += pLoopUnit->getExperience() * 20;
+		iValue += pLoopUnit->getLevel() * 100;
 
 		if (pLoopUnit->canDefend() && pLoopUnit->getPlot().isCity() &&
-			/*  advc.001s: I suppose this clause is intended for
+			/*	advc.001s: I suppose this clause is intended for
 				potential city defenders */
 			pLoopUnit->getDomainType() == DOMAIN_LAND)
 		{
@@ -4582,7 +4578,7 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 	FAssert(canReceiveGoody(pPlot, eGoody, pUnit));
 	// <advc>
 	CvGoodyInfo const& kGoody = GC.getInfo(eGoody);
-	CvGame& kGame = GC.getGame();
+	CvGame const& kGame = GC.getGame();
 	// </advc>
 	szBuffer = kGoody.getDescription();
 
@@ -4595,8 +4591,9 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 		is none, that an additional outcome should be rolled. */
 	bool bUpgrade = SyncRandSuccess(rUpgradeProb);
 	// </advc.314>
-	int iGold = kGoody.getGold() + kGame.getSorenRandNum(kGoody.getGoldRand1(), "Goody Gold 1") +
-			kGame.getSorenRandNum(kGoody.getGoldRand2(), "Goody Gold 2");
+	int iGold = kGoody.getGold() +
+			SyncRandNum(kGoody.getGoldRand1()) +
+			SyncRandNum(kGoody.getGoldRand2());
 	//iGold  = (iGold * GC.getInfo(kGame.getGameSpeedType()).getGrowthPercent()) / 100;
 	// advc.314: Replacing the above
 	iGold = (iGold * kGame.goodyHutEffectFactor()).round();
@@ -4623,7 +4620,7 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 				CvPlot& kLoopPlot = *it;
 				if (kLoopPlot.isRevealed(getTeam()))
 					continue;
-				int iValue = 1 + kGame.getSorenRandNum(10000, "Goody Map");
+				int iValue = 1 + SyncRandNum(10000);
 				iValue *= it.currPlotDist();
 				if (iValue > iBestValue)
 				{
@@ -4637,7 +4634,7 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 
 		for (PlotCircleIter it(*pBestPlot, iMapRange, false); it.hasNext(); ++it)
 		{
-			if (kGame.getSorenRandNum(100, "Goody Map") < kGoody.getMapProb())
+			if (SyncRandSuccess100(kGoody.getMapProb()))
 				it->setRevealed(getTeam(), true, false, NO_TEAM, true);
 		}
 	}
@@ -4658,7 +4655,7 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 				if (canResearch((TechTypes)iI), false, true) { // K-Mod */
 			if (!isGoodyTech(eLoopTech, iGold)) // advc.314
 				continue;
-			int iValue = kGame.getSorenRandNum(10000, "Goody Tech");
+			int iValue = SyncRandNum(10000);
 			if (iValue > iBestValue)
 			{
 				iBestValue = iValue;
@@ -4668,7 +4665,7 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 		FAssert(eBestTech != NO_TECH);
 		// <advc.314> Most of the code from here on is modified
 		CvTeam& kOurTeam = GET_TEAM(getTeam());
-		if(iGold <= 0 || fixp(0.8) * kOurTeam.getResearchLeft(eBestTech) <= iGold)
+		if (iGold <= 0 || fixp(0.8) * kOurTeam.getResearchLeft(eBestTech) <= iGold)
 		{
 			kOurTeam.setHasTech(eBestTech, true, getID(), true, true);
 			if(isSignificantDiscovery(eBestTech))
@@ -4685,10 +4682,10 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 	CvCivilization const& kCiv = GET_PLAYER(BARBARIAN_PLAYER).getCivilization();
 	/*  When units need to be placed, but no unit class is given.
 		Times 3 b/c MinBarbarians is only a lower bound. */
-	for(int i = 0; i < 3 * kGoody.getMinBarbarians(); i++)
+	for (int i = 0; i < 3 * kGoody.getMinBarbarians(); i++)
 	{
 		UnitTypes eBestUnit = NO_UNIT;
-		if(kGoody.getUnitClassType() == NO_UNITCLASS &&
+		if (kGoody.getUnitClassType() == NO_UNITCLASS &&
 			kGoody.getBarbarianUnitClass() == NO_UNITCLASS)
 		{
 			int iBestValue = 0;
@@ -4696,9 +4693,9 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 			{
 				UnitTypes eUnit = kCiv.unitAt(j);
 				CvUnitInfo const& kUnit = GC.getInfo(eUnit);
-				if(kUnit.getDomainType() != DOMAIN_LAND)
+				if (kUnit.getDomainType() != DOMAIN_LAND)
 					continue;
-				if(kUnit.getNumPrereqOrBonuses() <= 0 &&
+				if (kUnit.getNumPrereqOrBonuses() <= 0 &&
 					kUnit.getPrereqAndBonus() == NO_BONUS &&
 					kUnit.getCombat() > 0 &&
 					(kUnit.getPrereqAndTech() == NO_TECH ||
@@ -4707,9 +4704,8 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 					GET_PLAYER(BARBARIAN_PLAYER).canTrain(eUnit, false, true))
 				{
 					int iValue = kUnit.getCombat() + (kGoody.isBad() ?
-							// Randomize hostile units a bit
-							kGame.getSorenRandNum(10, "advc.314") : 0);
-					if(iValue > iBestValue)
+							SyncRandNum(10) : 0); // Randomize hostile units a bit
+					if (iValue > iBestValue)
 					{
 						iBestValue = iValue;
 						eBestUnit = eUnit;
@@ -4726,10 +4722,10 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 	{
 		UnitTypes eUnit = NO_UNIT; // Declaration moved down
 		UnitClassTypes eUnitClass = (UnitClassTypes)kGoody.getUnitClassType();
-		if(eUnitClass != NO_UNITCLASS)
+		if (eUnitClass != NO_UNITCLASS)
 		{
 			// Interpret BarbarianUnitClass as an upgrade to replace UnitClassType
-			if(bUpgrade && kGoody.getBarbarianUnitClass() != NO_UNITCLASS)
+			if (bUpgrade && kGoody.getBarbarianUnitClass() != NO_UNITCLASS)
 			{
 				eUnitClass = (UnitClassTypes)kGoody.getBarbarianUnitClass();
 				// Upgrade applied, don't roll an additional outcome.
@@ -4739,38 +4735,38 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 		}
 		/*  Let MinBarbarians > 1 generate more than 1 unit
 			(though I'm not using this so far; not tested either) */
-		for(int i = 0; i < std::max(1, kGoody.getMinBarbarians()); i++)
+		for (int i = 0; i < std::max(1, kGoody.getMinBarbarians()); i++)
 		{
 			UnitTypes eLoopUnit = eUnit;
-			if(eLoopUnit == NO_UNIT && !aeBestUnits.empty())
+			if (eLoopUnit == NO_UNIT && !aeBestUnits.empty())
 				eLoopUnit = aeBestUnits[std::min((int)aeBestUnits.size() - 1, i)];
 			FAssert(eLoopUnit != NO_UNIT);
-			if(eLoopUnit != NO_UNIT)
+			if (eLoopUnit != NO_UNIT)
 			{
 				CvUnit* pNewUnit = initUnit(eLoopUnit, pPlot->getX(), pPlot->getY());
-				if(pNewUnit == NULL)
+				if (pNewUnit == NULL)
 					continue;
 				else FAssert(pNewUnit != NULL);
 				szBuffer = gDLL->getText("TXT_KEY_GOODY_FREE_UNIT",
 						GC.getInfo(eLoopUnit).getDescription());
 				addGoodyMsg(szBuffer, *pPlot, kGoody.getSound());
 				szBuffer.clear();
-				if(pNewUnit->canAcquirePromotionAny())
+				if (pNewUnit->canAcquirePromotionAny())
 					promoteFreeUnit(*pNewUnit, rUpgradeProb);
 			}
 		}
 	}
-	if(!szBuffer.empty()) // Moved from higher up
+	if (!szBuffer.empty()) // Moved from higher up
 		addGoodyMsg(szBuffer, *pPlot, kGoody.getSound());
 	/*  If not isBad, then BarbarianUnitClass has a different meaning, which is
 		handled above. */
-	if(kGoody.isBad() && (kGoody.getBarbarianUnitClass() != NO_UNITCLASS ||
+	if (kGoody.isBad() && (kGoody.getBarbarianUnitClass() != NO_UNITCLASS ||
 		// Will use eBestUnit in this case
 		(kGoody.getMinBarbarians() > 0 && kGoody.getBarbarianUnitProb() > 0)))
 	{
 		UnitTypes eUnit = NO_UNIT;
 		UnitClassTypes eUnitClass = (UnitClassTypes)kGoody.getBarbarianUnitClass();
-		if(eUnitClass != NO_UNITCLASS)
+		if (eUnitClass != NO_UNITCLASS)
 			eUnit = GET_PLAYER(BARBARIAN_PLAYER).getCivilization().getUnit(eUnitClass);
 		int iMinBarbs = std::max(kGoody.getMinBarbarians(),
 				(kGoody.getMinBarbarians() * kGame.goodyHutEffectFactor(false)).sqrt().
@@ -4779,18 +4775,18 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 		int iProb = (kGoody.getBarbarianUnitProb() * iMinBarbs) / kGoody.getMinBarbarians();
 		int iMaxBarbs = iMinBarbs + 2; // upper bound for iPass=0
 		int iBarbCount = 0;
-		for(int iPass = 0; iPass < 2; iPass++)
+		for (int iPass = 0; iPass < 2; iPass++)
 		{
-			if(iBarbCount >= iMinBarbs)
+			if (iBarbCount >= iMinBarbs)
 				continue;
 			FOR_EACH_ADJ_PLOT(*pPlot)
 			{
-				if(!pAdj->sameArea(*pPlot) || pAdj->isImpassable() ||
+				if (!pAdj->sameArea(*pPlot) || pAdj->isImpassable() ||
 					pAdj->getNumUnits() > 0)
 				{
 					continue;
 				}
-				if(iPass > 0 || (kGame.getSorenRandNum(100, "Goody Barbs") < iProb))
+				if (iPass > 0 || SyncRandSuccess100(iProb))
 				{
 					UnitTypes eLoopUnit = eUnit;
 					if(eLoopUnit == NO_UNIT && !aeBestUnits.empty())
@@ -4825,7 +4821,7 @@ void CvPlayer::doGoody(CvPlot* pPlot, CvUnit* pUnit, /* advc.314: */ GoodyTypes 
 	FAssert(pPlot->isGoody() /* advc.314: */ || eTaboo != NO_GOODY);
 	pPlot->removeGoody();
 	// <advc>
-	if(isBarbarian())
+	if (isBarbarian())
 	{
 		FAssertMsg(pPlot->isOwned(), "Barbarians should remove hut only when receiving a city");
 		return;
@@ -4835,9 +4831,8 @@ void CvPlayer::doGoody(CvPlot* pPlot, CvUnit* pUnit, /* advc.314: */ GoodyTypes 
 	{
 		if (GC.getInfo(getHandicapType()).getNumGoodies() <= 0)
 			continue;
-		GoodyTypes eGoody = (GoodyTypes)GC.getInfo(getHandicapType()).
-				getGoodies(GC.getGame().getSorenRandNum(
-				GC.getInfo(getHandicapType()).getNumGoodies(), "Goodies"));
+		GoodyTypes eGoody = (GoodyTypes)GC.getInfo(getHandicapType()).getGoodies(
+				SyncRandNum(GC.getInfo(getHandicapType()).getNumGoodies()));
 		FAssert(eGoody >= 0 && eGoody < GC.getNumGoodyInfos());
 		// <advc.314>
 		if(eGoody == eTaboo || (eTaboo != NO_GOODY && GC.getInfo(eGoody).isBad() !=
@@ -6794,12 +6789,11 @@ void CvPlayer::foundReligion(ReligionTypes eReligion, ReligionTypes eSlotReligio
 
 		int iValue = 10;
 		iValue += pLoopCity->getPopulation();
-		iValue += kGame.getSorenRandNum(GC.getDefineINT("FOUND_RELIGION_CITY_RAND"), "Found Religion");
-		iValue /= (pLoopCity->getReligionCount() + 1);
+		iValue += SyncRandNum(GC.getDefineINT("FOUND_RELIGION_CITY_RAND"));
+		iValue /= pLoopCity->getReligionCount() + 1;
 		if (pLoopCity->isCapital())
 			iValue /= 8;
 		iValue = std::max(1, iValue);
-
 		if (iValue > iBestValue)
 		{
 			iBestValue = iValue;
@@ -6882,8 +6876,7 @@ void CvPlayer::foundCorporation(CorporationTypes eCorporation)
 			iValue += 10 * pLoopCity->getNumBonuses(
 					GC.getInfo(eCorporation).getPrereqBonus(i));
 		}
-		iValue += GC.getGame().getSorenRandNum(GC.getDefineINT("FOUND_CORPORATION_CITY_RAND"),
-				"Found Corporation");
+		iValue += SyncRandNum(GC.getDefineINT("FOUND_CORPORATION_CITY_RAND"));
 		iValue /= (pLoopCity->getCorporationCount() + 1);
 		iValue = std::max(1, iValue);
 		if (iValue > iBestValue)
@@ -6892,7 +6885,6 @@ void CvPlayer::foundCorporation(CorporationTypes eCorporation)
 			pBestCity = pLoopCity;
 		}
 	}
-
 	if (pBestCity != NULL)
 		pBestCity->setHeadquarters(eCorporation);
 }
@@ -8432,13 +8424,11 @@ void CvPlayer::setCombatExperience(int iExperience)
 {
 	FAssert(iExperience >= 0);
 	// <advc>
-	if(iExperience == getCombatExperience())
+	if (iExperience == getCombatExperience())
 		return;
 	m_iCombatExperience = iExperience;
-	if(isBarbarian())
-		return;
-	CvGame& kGame = GC.getGame();
-	// </advc>
+	if (isBarbarian())
+		return; // </advc>
 
 	int iExperienceThreshold = greatPeopleThreshold(true);
 	if (m_iCombatExperience >= iExperienceThreshold && iExperienceThreshold > 0)
@@ -8448,8 +8438,7 @@ void CvPlayer::setCombatExperience(int iExperience)
 		int iBestValue = MAX_INT;
 		FOR_EACH_CITY(pLoopCity, *this)
 		{
-			int iValue = 4 * kGame.getSorenRandNum(getNumCities(),
-					"Warlord City Selection");
+			int iValue = 4 * SyncRandNum(getNumCities());
 			FOR_EACH_ENUM(Yield)
 				iValue += pLoopCity->findYieldRateRank(eLoopYield);
 			iValue += pLoopCity->findPopulationRank();
@@ -8462,8 +8451,7 @@ void CvPlayer::setCombatExperience(int iExperience)
 
 		if (pBestCity != NULL)
 		{
-			int iRandOffset = kGame.getSorenRandNum(GC.getNumUnitInfos(),
-					"Warlord Unit Generation");
+			int iRandOffset = SyncRandNum(GC.getNumUnitInfos());
 			FOR_EACH_ENUM(Unit)
 			{
 				UnitTypes eRandUnit = (UnitTypes)
@@ -8477,8 +8465,8 @@ void CvPlayer::setCombatExperience(int iExperience)
 				}
 			}
 		}
-	} // <advc.078>
-	if (getID() == kGame.getActivePlayer() &&
+	}  // <advc.078>
+	if (getID() == GC.getGame().getActivePlayer() &&
 		BUGOption::isEnabled("MainInterface__Combat_Counter", false))
 	{
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
@@ -13668,12 +13656,11 @@ int CvPlayer::doCaptureGold(CvCity const& kOldCity) // "old": city still fully i
 		static int const iCAPTURE_GOLD_MAX_TURNS = GC.getDefineINT("CAPTURE_GOLD_MAX_TURNS");
 		iCaptureGold += iBASE_CAPTURE_GOLD;
 		iCaptureGold += kOldCity.getPopulation() * iCAPTURE_GOLD_PER_POPULATION;
-		CvGame& kGame = GC.getGame();
-		iCaptureGold += kGame.getSorenRandNum(iCAPTURE_GOLD_RAND1, "Capture Gold 1");
-		iCaptureGold += kGame.getSorenRandNum(iCAPTURE_GOLD_RAND2, "Capture Gold 2");
+		iCaptureGold += SyncRandNum(iCAPTURE_GOLD_RAND1) + SyncRandNum(iCAPTURE_GOLD_RAND2);
 		if (iCAPTURE_GOLD_MAX_TURNS > 0)
 		{
-			iCaptureGold *= ::range(kGame.getGameTurn() - kOldCity.getGameTurnAcquired(),
+			iCaptureGold *= ::range(
+					GC.getGame().getGameTurn() - kOldCity.getGameTurnAcquired(),
 					0, iCAPTURE_GOLD_MAX_TURNS);
 			iCaptureGold /= iCAPTURE_GOLD_MAX_TURNS;
 		}
@@ -15163,8 +15150,7 @@ EventTriggeredData* CvPlayer::initTriggeredData(EventTriggerTypes eEventTrigger,
 			}
 			else
 			{
-				int iOffset = GC.getGame().getSorenRandNum(GC.getNumReligionInfos(),
-						"Event pick religion");
+				int iOffset = SyncRandNum(GC.getNumReligionInfos());
 				FOR_EACH_ENUM(Religion)
 				{
 					ReligionTypes eRandReligion = (ReligionTypes)
@@ -15183,10 +15169,9 @@ EventTriggeredData* CvPlayer::initTriggeredData(EventTriggerTypes eEventTrigger,
 
 	if (kTrigger.isPickCorporation())
 	{
-		if (NO_CORPORATION == eCorporation)
+		if (eCorporation == NO_CORPORATION)
 		{
-			int iOffset = GC.getGame().getSorenRandNum(GC.getNumCorporationInfos(),
-					"Event pick corporation");
+			int iOffset = SyncRandNum(GC.getNumCorporationInfos());
 			FOR_EACH_ENUM(Corporation)
 			{
 				CorporationTypes eRandCorp = (CorporationTypes)
@@ -15207,7 +15192,7 @@ EventTriggeredData* CvPlayer::initTriggeredData(EventTriggerTypes eEventTrigger,
 	{
 		if (apPlots.size() > 0)
 		{
-			int iChosen = GC.getGame().getSorenRandNum(apPlots.size(), "Event pick plot");
+			int iChosen = SyncRandNum(apPlots.size());
 			pPlot = apPlots[iChosen];
 			if (pCity == NULL)
 			{
@@ -15235,7 +15220,8 @@ EventTriggeredData* CvPlayer::initTriggeredData(EventTriggerTypes eEventTrigger,
 				{
 					BuildingTypes eTestBuilding = getCivilization().getBuilding(
 							(BuildingClassTypes)kTrigger.getBuildingRequired(i));
-					if (eTestBuilding != NO_BUILDING && pCity->getNumRealBuilding(eTestBuilding) > 0)
+					if (eTestBuilding != NO_BUILDING &&
+						pCity->getNumRealBuilding(eTestBuilding) > 0)
 					{
 						aeBuildings.push_back(eTestBuilding);
 					}
@@ -15243,7 +15229,7 @@ EventTriggeredData* CvPlayer::initTriggeredData(EventTriggerTypes eEventTrigger,
 			}
 			if (aeBuildings.size() > 0)
 			{
-				int iChosen = GC.getGame().getSorenRandNum(aeBuildings.size(), "Event pick building");
+				int iChosen = SyncRandNum(aeBuildings.size());
 				eBuilding = aeBuildings[iChosen];
 			}
 			else return NULL;
@@ -15330,8 +15316,7 @@ EventTriggeredData* CvPlayer::initTriggeredData(EventTriggerTypes eEventTrigger,
 			}
 			if (aePlayers.size() > 0)
 			{
-				int iChosen = GC.getGame().getSorenRandNum(aePlayers.size(),
-						"Event pick player");
+				int iChosen = SyncRandNum(aePlayers.size());
 				eOtherPlayer = aePlayers[iChosen];
 				pOtherPlayerCity = apCities[iChosen];
 			}
@@ -15378,7 +15363,7 @@ EventTriggeredData* CvPlayer::initTriggeredData(EventTriggerTypes eEventTrigger,
 
 	if (aszTexts.size() > 0)
 	{
-		int iText = GC.getGame().getSorenRandNum(aszTexts.size(), "Event Text choice");
+		int iText = SyncRandNum(aszTexts.size());
 		pTriggerData->m_szText = gDLL->getText(aszTexts[iText].GetCString(),
 			eOtherPlayer != NO_PLAYER ? GET_PLAYER(eOtherPlayer).getCivilizationAdjectiveKey() : L"",
 			NULL != pCity ? pCity->getNameKey() : L"",
@@ -15398,7 +15383,7 @@ EventTriggeredData* CvPlayer::initTriggeredData(EventTriggerTypes eEventTrigger,
 
 	if (kTrigger.getNumWorldNews() > 0)
 	{
-		int iText = GC.getGame().getSorenRandNum(kTrigger.getNumWorldNews(), "Trigger World News choice");
+		int iText = SyncRandNum(kTrigger.getNumWorldNews());
 		pTriggerData->m_szGlobalText = gDLL->getText(kTrigger.getWorldNews(iText).GetCString(),
 			getCivilizationAdjectiveKey(),
 			NULL != pCity ? pCity->getNameKey() : L"",
@@ -15705,7 +15690,7 @@ void CvPlayer::applyEvent(EventTypes eEvent, int iEventTriggeredId, bool bUpdate
 	// advc (note): This computation of iGold seems overcomplicated - but correct.
 	int const iRandomGold = getEventCost(eEvent, pTriggeredData->m_eOtherPlayer, true);
 	int iGold = getEventCost(eEvent, pTriggeredData->m_eOtherPlayer, false);
-	iGold += GC.getGame().getSorenRandNum(iRandomGold - iGold + 1, "Event random gold");
+	iGold += SyncRandNum(iRandomGold - iGold + 1);
 
 	if (iGold != 0)
 	{
@@ -15779,8 +15764,7 @@ void CvPlayer::applyEvent(EventTypes eEvent, int iEventTriggeredId, bool bUpdate
 		if (kEvent.getClearEventChance(eLoopEvent) <= 0)
 			continue;
 
-		bClear = (GC.getGame().getSorenRandNum(100, "Event Clear") <
-				kEvent.getClearEventChance(eLoopEvent));
+		bClear = (SyncRandNum(100) < kEvent.getClearEventChance(eLoopEvent));
 		if (!bClear)
 			continue;
 		if (kEvent.isGlobal())
@@ -15871,13 +15855,11 @@ void CvPlayer::applyEvent(EventTypes eEvent, int iEventTriggeredId, bool bUpdate
 		{
 			FAssert(kEvent.getMaxPillage() >= kEvent.getMinPillage());
 			int const iPillage = kEvent.getMinPillage() +
-					GC.getGame().getSorenRandNum(kEvent.getMaxPillage() -
-					kEvent.getMinPillage(), "Pick number of event pillaged plots");
+					SyncRandNum(kEvent.getMaxPillage() - kEvent.getMinPillage());
 			int iDone = 0;
 			for (int i = 0; i < iPillage; i++)
 			{
-				int const iRandOffset = GC.getGame().getSorenRandNum(
-						GC.getMap().numPlots(), "Pick event pillage plot (any city)");
+				int const iRandOffset = SyncRandNum(GC.getMap().numPlots());
 				for (int iPlot = 0; iPlot < GC.getMap().numPlots(); iPlot++)
 				{
 					int iRandPlot = (iPlot + iRandOffset) % GC.getMap().numPlots();
@@ -16026,8 +16008,7 @@ void CvPlayer::applyEvent(EventTypes eEvent, int iEventTriggeredId, bool bUpdate
 		}
 		while (kEvent.getConvertOwnCities() < (int)apSpreadReligionCities.size())
 		{
-			int iChosen = GC.getGame().getSorenRandNum(apSpreadReligionCities.size(),
-					"Even Spread Religion (own)");
+			int iChosen = SyncRandNum(apSpreadReligionCities.size());
 			int i = 0;
 			for (std::vector<CvCity*>::iterator it = apSpreadReligionCities.begin();
 				it != apSpreadReligionCities.end(); ++it)
@@ -16066,8 +16047,7 @@ void CvPlayer::applyEvent(EventTypes eEvent, int iEventTriggeredId, bool bUpdate
 		}
 		while (kEvent.getConvertOtherCities() < (int)apSpreadReligionCities.size())
 		{
-			int iChosen = GC.getGame().getSorenRandNum(apSpreadReligionCities.size(),
-					"Even Spread Religion (other)");
+			int iChosen = SyncRandNum(apSpreadReligionCities.size());
 			int i = 0;
 			for (std::vector<CvCity*>::iterator it = apSpreadReligionCities.begin();
 				it != apSpreadReligionCities.end(); ++it)
@@ -16145,8 +16125,7 @@ void CvPlayer::applyEvent(EventTypes eEvent, int iEventTriggeredId, bool bUpdate
 
 	if (kEvent.getNumWorldNews() > 0)
 	{
-		int iText = GC.getGame().getSorenRandNum(kEvent.getNumWorldNews(),
-				"Event World News choice");
+		int iText = SyncRandNum(kEvent.getNumWorldNews());
 		CvWString szGlobalText = gDLL->getText(kEvent.getWorldNews(iText).GetCString(),
 			getCivilizationAdjectiveKey(),
 			NULL != pCity ? pCity->getNameKey() : L"",
@@ -16245,8 +16224,7 @@ void CvPlayer::applyEvent(EventTypes eEvent, int iEventTriggeredId, bool bUpdate
 		{
 			if (kEvent.getAdditionalEventChance(eLoopEvent) > 0 &&
 				canDoEvent(eLoopEvent, *pTriggeredData) &&
-				GC.getGame().getSorenRandNum(100, "Additional Event") <
-				kEvent.getAdditionalEventChance(eLoopEvent))
+				SyncRandNum(100) < kEvent.getAdditionalEventChance(eLoopEvent))
 			{
 				applyEvent(eLoopEvent, iEventTriggeredId, false);
 			}
@@ -16255,8 +16233,7 @@ void CvPlayer::applyEvent(EventTypes eEvent, int iEventTriggeredId, bool bUpdate
 		{
 			bool bSetTimer = true;
 			if (kEvent.getAdditionalEventChance(eLoopEvent) > 0 &&
-				GC.getGame().getSorenRandNum(100, "Additional Event 2") >=
-				kEvent.getAdditionalEventChance(eLoopEvent))
+				SyncRandNum(100) >= kEvent.getAdditionalEventChance(eLoopEvent))
 			{
 				bSetTimer = false;
 			}
@@ -16408,8 +16385,8 @@ void CvPlayer::doEvents()
 		bNewEventEligible = false;
 
 	if (bNewEventEligible &&
-		GC.getGame().getSorenRandNum(GC.getDefineINT("EVENT_PROBABILITY_ROLL_SIDES"),
-		"Global event check") >= GC.getInfo(getCurrentEra()).getEventChancePerTurn())
+		SyncRandNum(GC.getDefineINT("EVENT_PROBABILITY_ROLL_SIDES")) >=
+		GC.getInfo(getCurrentEra()).getEventChancePerTurn())
 	{
 		bNewEventEligible = false;
 	}
@@ -16436,7 +16413,7 @@ void CvPlayer::doEvents()
 	if (iTotalWeight > 0)
 	{
 		bool bFired = false;
-		int iValue = GC.getGame().getSorenRandNum(iTotalWeight, "Event trigger");
+		int iValue = SyncRandNum(iTotalWeight);
 		for (std::vector<std::pair<EventTriggeredData*,int> >::iterator it =
 			aePossibleEventTriggerWeights.begin();
 			it != aePossibleEventTriggerWeights.end(); ++it)
@@ -16704,13 +16681,8 @@ CvCity* CvPlayer::pickTriggerCity(EventTriggerTypes eTrigger) const
 			apCities.push_back(pLoopCity);
 		}
 	}
-
 	if (apCities.size() > 0)
-	{
-		int iChosen = GC.getGame().getSorenRandNum(apCities.size(), "Event pick city");
-		pCity = apCities[iChosen];
-	}
-
+		pCity = apCities[SyncRandNum(apCities.size())];
 	return pCity;
 }
 
@@ -16732,13 +16704,8 @@ CvUnit* CvPlayer::pickTriggerUnit(EventTriggerTypes eTrigger, CvPlot* pPlot, boo
 			apUnits.push_back(pLoopUnit);
 		}
 	}
-
 	if (apUnits.size() > 0)
-	{
-		int iChosen = GC.getGame().getSorenRandNum(apUnits.size(), "Event pick unit");
-		pUnit = apUnits[iChosen];
-	}
-
+		pUnit = apUnits[SyncRandNum(apUnits.size())];
 	return pUnit;
 }
 
@@ -17084,7 +17051,7 @@ bool CvPlayer::splitEmpire(CvArea& kArea) // advc: was iAreaId
 			CivLeaderArray::iterator it;
 			for (it = aLeaders.begin(); it != aLeaders.end(); ++it)
 			{
-				int iValue = (1 + kGame.getSorenRandNum(100, "Choosing Split Personality"));
+				int iValue = 1 + SyncRandNum(100);
 				if (GC.getInfo(getCivilizationType()).getDerivativeCiv() == it->first)
 					iValue += 1000;
 
@@ -19855,7 +19822,7 @@ void CvPlayer::promoteFreeUnit(CvUnit& u, scaled pr)
 				continue;*/
 			if (!u.canAcquirePromotion(ePromo))
 				continue;
-			int iValue = GC.getGame().getSorenRandNum(100, "advc.314");
+			int iValue = SyncRandNum(100);
 			std::vector<CvPlot const*> apSurroundings;
 			apSurroundings.push_back(u.plot());
 			FOR_EACH_ADJ_PLOT(u.getPlot())

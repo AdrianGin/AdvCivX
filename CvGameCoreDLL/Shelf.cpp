@@ -124,5 +124,5 @@ CvUnit* Shelf::randomBarbarianTransport() const
 	scaled rNoneProb = fixp(0.2) + scaled(iValid, 10);
 	if (!SyncRandSuccess(rNoneProb))
 		return NULL;
-	return apValid[GC.getGame().getSorenRandNum(iValid, "choose Barbarian transport")];
+	return apValid[SyncRandNum(iValid)];
 }
