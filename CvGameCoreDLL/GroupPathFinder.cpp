@@ -719,7 +719,7 @@ template bool GroupStepMetric::updatePathData<FAStarNode>(FAStarNode&, FAStarNod
 void GroupPathFinder::setGroup(CvSelectionGroup const& kGroup,
 	MovementFlags eFlags, int iMaxPath, int iHeuristicWeight)
 {	// <advc.test>
-	#ifdef VERIFY_PATHF
+	#if VERIFY_PATHF
 	kLegacyPathf.SetSettings(&kGroup, eFlags, iMaxPath, iHeuristicWeight);
 	#endif //</advc.test>
 	CvSelectionGroup const* pOldGroup = m_stepMetric.getGroup();
@@ -774,7 +774,7 @@ void GroupPathFinder::invalidateGroup(CvSelectionGroup const& kGroup)
 		resetNodes();
 		m_stepMetric = GroupStepMetric();
 		// <advc.test>
-		#ifdef VERIFY_PATHF
+		#if VERIFY_PATHF
 		kLegacyPathf.SetSettings(NULL, NO_MOVEMENT_FLAGS, -1, -1);
 		#endif // </advc.test>
 	}
@@ -797,7 +797,7 @@ CvPlot& GroupPathFinder::getPathEndTurnPlot() const
 		pNode = pNode->m_pParent;
 	}
 	FAssert(pNode != NULL);
-	#ifndef VERIFY_PATHF // advc.test
+	#if VERIFY_PATHF == 0 // advc.test
 	return pNode->getPlot();
 	// <advc.test>
 	#else
@@ -808,7 +808,7 @@ CvPlot& GroupPathFinder::getPathEndTurnPlot() const
 }
 
 // <advc.test>
-#ifdef VERIFY_PATHF
+#if VERIFY_PATHF
 bool GroupPathFinder::generatePath(CvPlot const& kFrom, CvPlot const& kTo)
 {
 	bool bSuccess = KmodPathFinder<GroupStepMetric,GroupPathNode>::generatePath(kFrom, kTo);

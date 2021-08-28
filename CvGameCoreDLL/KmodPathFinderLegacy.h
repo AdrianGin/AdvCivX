@@ -8,10 +8,11 @@
 #ifdef FASSERT_ENABLE
 	#define VERIFY_PATHF 0
 #else
+	// (No point in setting this to 1 - we need assertions.)
 	#define VERIFY_PATHF 0
 #endif
 
-#ifdef VERIFY_PATHF // </advc.test>
+#if VERIFY_PATHF // </advc.test>
 
 #include "FAStarNode.h"
 

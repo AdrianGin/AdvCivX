@@ -135,7 +135,7 @@ public:
 			MovementFlags eFlags = NO_MOVEMENT_FLAGS,
 			int iMaxPath = -1, int iHeuristicWeight = -1);
 	bool generatePath(CvPlot const& kTo);
-	#ifndef VERIFY_PATHF // advc.test
+	#if VERIFY_PATHF == 0 // advc.test
 	// Unhide 2-argument version
 	using KmodPathFinder<GroupStepMetric,GroupPathNode>::generatePath;
 	int getPathTurns() const { return getPathLength(); }
@@ -159,7 +159,7 @@ public:
 		return m_pEndNode;
 	}
 	// <advc.test>
-	#ifdef VERIFY_PATHF
+	#if VERIFY_PATHF
 	bool generatePath(CvPlot const& kFrom, CvPlot const& kTo);
 	int getPathTurns() const
 	{
