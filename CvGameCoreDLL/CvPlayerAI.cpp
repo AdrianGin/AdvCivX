@@ -15801,9 +15801,9 @@ int CvPlayerAI::AI_localDefenceStrength(const CvPlot* pDefencePlot, TeamTypes eD
 		}
 		/*	since we're here, we might as well update our memory.
 			(human players don't track strength memory)
-			advc.158: They do track it now (unless bNoCache). But not the Barbarians.
+			advc.158: They do track it now (unless bNoCache).
 			Note that this is currently the _only_ place where strength memory is set. */
-		if (!bNoCache && /*!isHuman() &&*/ !isBarbarian() && eDefenceTeam == NO_TEAM &&
+		if (!bNoCache && /*!isHuman() &&*/ eDefenceTeam == NO_TEAM &&
 			eDomainType == DOMAIN_LAND && !bCheckMoves &&
 			(!bMoveToTarget || &p == pDefencePlot))
 		{

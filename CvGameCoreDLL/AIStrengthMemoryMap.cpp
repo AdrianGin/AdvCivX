@@ -111,9 +111,6 @@ void AIStrengthMemoryMap::decay()
 	/*if (m_aiMap.size() != GC.getMap().numPlots())
 		return;*/
 	CvTeam const& kTeam = CvTeam::getTeam(m_eTeam);
-	/*	advc.304: Barbarians shouldn't use strength memory.
-		They use activity memory instead. */
-	FAssert(!kTeam.isBarbarian() || m_map.empty());
 	// K-Mod: reduce by 4% (arbitrary number), rounding down.
 	int const iDecayPercent = 4;
 	/*for (int i = 0; i < GC.getMap().numPlots(); i++)
