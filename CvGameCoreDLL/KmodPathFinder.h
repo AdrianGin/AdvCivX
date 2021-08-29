@@ -456,7 +456,7 @@ bool KmodPathFinder<StepMetric,Node>::generatePath(
 			(power of 2 does seem to help). K-Mod didn't reserve any memory. */
 		m_openList.reserve(128);
 	}
-	if (&kStart != m_pStart)
+	if (&kStart != m_pStart && /* don't need to reset twice */ m_pStart != NULL)
 	{
 		/*	Note: It may be possible to salvage some of the old data to
 			get more speed. E.g. if the moves recorded on the node match the group
@@ -522,7 +522,15 @@ bool KmodPathFinder<StepMetric,Node>::generatePath(
 	{
 		// nothing
 	}
-
+	/*	advc: Uncomment in order to inspect full node map in debugger. (I've also
+		found it helpful to inspect m_openList at the start of processNode.) */
+	/*std::vector<std::vector<Node*> > nodeMap2D;
+	nodeMap2D.resize(m_kMap.getGridWidth(),
+			std::vector<Node*>(m_kMap.getGridHeight()));
+	FOR_EACH_ENUM(PlotNum) {
+		CvPlot const& kPlot = m_kMap.getPlotByIndex(eLoopPlotNum);
+		nodeMap2D[kPlot.getX()][kPlot.getY()] = &m_pNodeMap->get(eLoopPlotNum);
+	}*/
 	if (m_pEndNode != NULL &&
 		(m_pEndNode->getPathLength() <= m_stepMetric.getMaxPath()))
 	{
@@ -546,6 +554,7 @@ void KmodPathFinder<StepMetric,Node>::resetNodes()
 	if (m_pNodeMap != NULL)
 		m_pNodeMap->reset();
 	m_openList.clear();
+	m_pStart = m_pDest = NULL;
 	m_pEndNode = NULL;
 }
 
