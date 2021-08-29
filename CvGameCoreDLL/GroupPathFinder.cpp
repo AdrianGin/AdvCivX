@@ -30,7 +30,10 @@ bool GroupStepMetric::isValidStep(CvPlot const& kFrom, CvPlot const& kTo,
 			kGroup.canMoveAllTerrain());
 }
 
-// "pathValid_source" in K-Mod
+/*	"pathValid_source" in K-Mod
+	advc.pf (note): Checks based on the path data are problematic in this function.
+	In rare circumstances, the plot danger check can cause the pathfinder to fail;
+	see comment in KmodPathFinder::processChild. */
 bool GroupStepMetric::canStepThrough(CvPlot const& kPlot, CvSelectionGroup const& kGroup,
 	MovementFlags eFlags, int iMoves, int iPathTurns)
 {
@@ -238,8 +241,9 @@ bool GroupStepMetric::isValidDest(CvPlot const& kPlot, CvSelectionGroup const& k
 #define PATH_DOW_WEIGHT				(7) // advc.082
 // advc.pf: Was 4 in K-Mod, 2 in BtS.
 #define PATH_STEP_WEIGHT			(7)
-#define PATH_STRAIGHT_WEIGHT       (2) // K-Mod: was 1
-//#define PATH_ASYMMETRY_WEIGHT    (1) // K-Mod
+#define PATH_STRAIGHT_WEIGHT		(2) // K-Mod: was 1
+#define PATH_NOROUTE_WEIGHT			(2) // advc.pf
+//#define PATH_ASYMMETRY_WEIGHT		(1) // K-Mod
 
 // #define PATH_DAMAGE_WEIGHT      (500) // K-Mod (gets loaded from XML)
 // advc.pf: Was 300 in K-Mod
@@ -379,7 +383,10 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 		who are just trying to move in a straight line.
 		So let the pathfinding for human groups prefer cardinal movement. */
 	bool const bAIControl = kGroup.AI_isControlled();
-	if (bAIControl)
+	if (bAIControl &&
+		/*	advc.pf: AI map visibility is generally unimportant and a relatively
+			high weight makes it harder to give routes the proper weight (see below). */
+		iExploreModifier < 3)
 	{
 		if (kFrom.getX() == kTo.getX() || kFrom.getY() == kTo.getY())
 			iWorstCost += PATH_STRAIGHT_WEIGHT;
@@ -392,7 +399,9 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 					(1 + ((kTo.getX() + kTo.getY()) % 2));
 		}
 		iWorstCost += (kTo.getX() + kTo.getY() + 1) % 3;
-		iWorstCost++; // advc.pf: Essentially 1 extra
+		/*	advc.pf: Essentially 1 extra step weight for humans
+			(and for non-exploring AI) */
+		iWorstCost++;
 	}
 	/*	unfortunately, this simple method may have problems at the world-wrap boundaries.
 		It's difficult to tell when to correct for wrap effects and when not to,
@@ -400,6 +409,12 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 		and so it's no longer possible to tell whether or not the unit started
 		on the other side of the boundary. Drat. */
 
+	/*	<advc.pf> A route at kTo may or may not have decreased our movementCost;
+		either way, it'll likely help on subsequent turns. Preferring routes should
+		also help the pathfinder process the nodes in an order that is efficient and
+		safe (see comment about "dead end" nodes in KmodPathFinder::processChild).*/
+	if (kTo.getRevealedRouteType(eTeam) == NO_ROUTE)
+		iWorstCost += PATH_NOROUTE_WEIGHT; // </advc.pf>
 	// end symmetry breaking.
 
 	if (!kTo.isRevealed(eTeam))

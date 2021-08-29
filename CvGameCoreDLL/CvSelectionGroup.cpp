@@ -2887,6 +2887,9 @@ bool CvSelectionGroup::groupPathTo(int iX, int iY, MovementFlags eFlags)
 			Also, I've changed it to use a different pathfinder,
 			to avoid clearing the path data - and to avoid OOS errors. */
 		kFinalPath.setGroup(*this, eFlags & ~MOVE_DECLARE_WAR);
+		/*	advc.pf (note): If no path is found here for a worker retreating from
+			enemy units, then the use of path data in GroupStepMetric::cost
+			could be responsible. OK (with me) so long as it's very rare. */
 		if (!kFinalPath.generatePath(kDestPlot))
 			return false;
 
