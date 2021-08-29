@@ -32,6 +32,9 @@
 	(Won't matter so long as CvGame is a singleton class.) */
 #undef CVGAME_INSTANCE_FOR_RNG
 #define CVGAME_INSTANCE_FOR_RNG (*this) // </advc.007b>
+// <advc>
+#undef CVGAME_INSTANCE_FOR_ACTIVE_AGENT
+#define CVGAME_INSTANCE_FOR_ACTIVE_AGENT (*this) // </advc>
 
 
 CvGame::CvGame() :
