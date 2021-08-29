@@ -1956,11 +1956,11 @@ void CvUnitAI::AI_workerMove(/* advc.113b: */ bool bUpdateWorkersHave)
 	if (bCanRoute && AI_routeTerritory())
 		return; // </advc.113>
 
-	if(AI_improveLocalPlot(3, NULL, /* advc.117: */ iMissingWorkersInArea))
+	if (AI_improveLocalPlot(3, NULL, /* advc.117: */ iMissingWorkersInArea))
 		return;
 	/*  <advc.113> Want to base the scrap decision on the working city. Try retreating
 		before scrapping if there is none. */
-	if(pCity == NULL && bCanRetreat)
+	if (pCity == NULL && bCanRetreat)
 	{
 		if (AI_retreatToCity(false, true))
 			return;
@@ -18167,7 +18167,7 @@ bool CvUnitAI::AI_travelToUpgradeCity()
 	but other cities are still accepted. */
 bool CvUnitAI::AI_retreatToCity(bool bPrimary, bool bPrioritiseAirlift, int iMaxPath)
 {
-	PROFILE_FUNC();
+	PROFILE_FUNC(); // (advc: iMaxPath mostly unused here; changing that could save time.)
 
 	//int iCurrentDanger = GET_PLAYER(getOwner()).AI_getPlotDanger(plot());
 	int const iCurrentDanger = getGroup()->alwaysInvisible() ? 0 : // K-Mod
@@ -18256,7 +18256,7 @@ bool CvUnitAI::AI_retreatToCity(bool bPrimary, bool bPrioritiseAirlift, int iMax
 						Don't just want to use MOVE_IGNORE_DANGER b/c then a single enemy could
 						stop a dozen units from evacuating. Using era isn't much better ...
 						Moreover, I'm only considering the fastest path, not any detours
-						that could be safer. Adding a maxDanger parameter to generatePath
+						that could be safer. Adding a iMaxDanger parameter to generatePath
 						(or generalizing MOVE_IGNORE_DANGER) could help. */
 						(!bEvac ||
 						kOwner.AI_getPlotDanger(getPathEndTurnPlot()) <=
@@ -18284,11 +18284,14 @@ bool CvUnitAI::AI_retreatToCity(bool bPrimary, bool bPrioritiseAirlift, int iMax
 			getGroup()->pushMission(MISSION_SKIP, -1, -1, NO_MOVEMENT_FLAGS,
 					false, false, MISSIONAI_RETREAT);
 		}
-		else pushGroupMoveTo(*pBestPlot,
+		else
+		{
+			pushGroupMoveTo(*pBestPlot,
 					/*	was iPass >= 3
 						advc (caveat): Flags here need to be consistent with those in the loop */
 					iPass >= 2 ? MOVE_IGNORE_DANGER : NO_MOVEMENT_FLAGS,
 					false, false, MISSIONAI_RETREAT);
+		}
 		return true;
 	}
 

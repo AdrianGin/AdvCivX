@@ -3830,8 +3830,7 @@ bool CvSelectionGroup::generatePath(CvPlot const& kFrom, CvPlot const& kTo,
 	/*	Not getClearPathFinder -- want bTempFinder to work correctly even when called
 		while generating a path. */
 	GroupPathFinder tempFinder;
-	GroupPathFinder& kPathFinder = (!bUseTempFinder ?
-			pathFinder() : tempFinder);
+	GroupPathFinder& kPathFinder = (bUseTempFinder ? tempFinder : pathFinder());
 	// </advc.128>
 	/*if (!bReuse)
 		pathFinder().Reset();*/

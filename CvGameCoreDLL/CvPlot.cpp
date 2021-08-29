@@ -3232,11 +3232,11 @@ bool CvPlot::canHaveFeature(FeatureTypes eFeature,
 	return true;
 }
 
-
-bool CvPlot::isValidRoute(const CvUnit* pUnit, /* advc.001i: */ bool bAssumeRevealed) const  // advc: rewritten
+// advc: rewritten
+bool CvPlot::isValidRoute(CvUnit const* pUnit,
+	/* <advc.001i> */ bool bAssumeRevealed) const
 {
 	//if (!isRoute()) return false;
-	// <advc.001i>
 	CvTeam const& kTeam = GET_TEAM(pUnit->getOwner());
 	RouteTypes const eRoute = (bAssumeRevealed ? getRouteType() :
 			getRevealedRouteType(kTeam.getID()));

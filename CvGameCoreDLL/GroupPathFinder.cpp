@@ -48,7 +48,7 @@ bool GroupStepMetric::canStepThrough(CvPlot const& kPlot, CvSelectionGroup const
 			return false;
 	}
 	// <advc.pf> No new AI routes in human territory (but upgrade to railroad OK)
-	if(eFlags & MOVE_ROUTE_TO)
+	if (eFlags & MOVE_ROUTE_TO)
 	{
 		if(kPlot.getRevealedRouteType(kGroup.getHeadTeam()) == NO_ROUTE &&
 			!kGroup.isHuman())
@@ -228,16 +228,16 @@ bool GroupStepMetric::isValidDest(CvPlot const& kPlot, CvSelectionGroup const& k
 
 //#define PATH_MOVEMENT_WEIGHT    (1024) // advc: moved to the header (for inline function)
 // advc.pf: Was 20 in K-Mod, 100 in BtS.
-#define PATH_RIVER_WEIGHT         (32) // river crossing penalty
+#define PATH_RIVER_WEIGHT	(32) // river crossing penalty
 // advc.pf: Was 200 in K-Mod, 100 in BtS.
-#define PATH_CITY_WEIGHT         (225) // K-Mod
+#define PATH_CITY_WEIGHT			(225) // K-Mod
 // advc.pf: Was 4 in K-Mod, 10 in BtS.
-#define PATH_DEFENSE_WEIGHT        (7) // defence bonus
+#define PATH_DEFENSE_WEIGHT			(7) // defence bonus
 // advc.pf: Was 5 in K-Mod, 3 in BtS.
-#define PATH_TERRITORY_WEIGHT      (9)
-#define PATH_DOW_WEIGHT	           (7) // advc.082
+#define PATH_TERRITORY_WEIGHT		(9)
+#define PATH_DOW_WEIGHT				(7) // advc.082
 // advc.pf: Was 4 in K-Mod, 2 in BtS.
-#define PATH_STEP_WEIGHT           (7)
+#define PATH_STEP_WEIGHT			(7)
 #define PATH_STRAIGHT_WEIGHT       (2) // K-Mod: was 1
 //#define PATH_ASYMMETRY_WEIGHT    (1) // K-Mod
 
@@ -455,7 +455,7 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 	/*  The AVOID_ENEMY code in the no-moves-left branch below doesn't stop the AI
 		from trying to move _through_ enemy territory and thus declaring war
 		earlier than necessary */
-	if(bAIControl && (eFlags & MOVE_DECLARE_WAR) && eToPlotTeam != NO_TEAM &&
+	if (bAIControl && (eFlags & MOVE_DECLARE_WAR) && eToPlotTeam != NO_TEAM &&
 		eToPlotTeam != eTeam && GET_TEAM(eTeam).AI_isSneakAttackReady(eToPlotTeam))
 	{
 		iWorstCost += PATH_DOW_WEIGHT;
