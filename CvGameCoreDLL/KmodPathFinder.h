@@ -638,10 +638,11 @@ void KmodPathFinder<StepMetric,Node>::processChild(
 			/*	advc: Which is to say, we can never enter it, not even on a
 				later call to generatePath - except if it is the destination;
 				that remains to be checked.
-				Actually, this isn't quite correct: If there is plot danger to
-				be avoided in kChildPlot, then we might be able to enter via
-				a shorter path and avoid ending the turn in kChildPlot that way.
-				I don't see a reasonably fast way to address this rare problem. */
+				However: If there is plot danger to be avoided in kChildPlot,
+				then we might be able to enter via a shorter path and avoid ending
+				the turn in kChildPlot that way. I don't see a reasonably fast way
+				to address this rare problem. (And it's not really a problem
+				with this base class but with GroupPathFinder.)*/
 			kChild.setState(PATHNODE_CLOSED);
 		}
 	}

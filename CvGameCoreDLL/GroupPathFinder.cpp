@@ -383,10 +383,9 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 		who are just trying to move in a straight line.
 		So let the pathfinding for human groups prefer cardinal movement. */
 	bool const bAIControl = kGroup.AI_isControlled();
-	if (bAIControl &&
-		/*	advc.pf: AI map visibility is generally unimportant and a relatively
-			high weight makes it harder to give routes the proper weight (see below). */
-		iExploreModifier < 3)
+	/*	advc.pf: AI map visibility is generally unimportant and a relatively
+		high weight makes it harder to give routes the proper weight (see below). */
+	if (/*bAIControl*/ iExploreModifier < 3)
 	{
 		if (kFrom.getX() == kTo.getX() || kFrom.getY() == kTo.getY())
 			iWorstCost += PATH_STRAIGHT_WEIGHT;
@@ -400,7 +399,7 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 		}
 		iWorstCost += (kTo.getX() + kTo.getY() + 1) % 3;
 		/*	advc.pf: Essentially 1 extra step weight for humans
-			(and for non-exploring AI) */
+			(and now also for non-exploring AI) */
 		iWorstCost++;
 	}
 	/*	unfortunately, this simple method may have problems at the world-wrap boundaries.
