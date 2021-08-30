@@ -430,7 +430,7 @@ int CvSelectionGroup::nukeMissionTime() const
 	if (iBUGChoice == ZERO)
 		return 0;
 	CvGame const& kGame = GC.getGame();
-	if (getOwner() != kGame.getActivePlayer())
+	if (!isActiveOwned())
 		return iShortened / 2;
 	// Nothing to see when particle effects aren't enabled
 	if (gDLL->getGraphicOption(GRAPHICOPTION_EFFECTS_DISABLED) ||
@@ -560,7 +560,7 @@ void CvSelectionGroup::pushMission(MissionTypes eMission, int iData1, int iData2
 
 	if (bManual)
 	{
-		if (getOwner() == GC.getGame().getActivePlayer())
+		if (isActiveOwned())
 		{
 			if (isBusy() && GC.getInfo(eMission).isSound())
 				playActionSound();
@@ -648,7 +648,7 @@ void CvSelectionGroup::updateMission()
 				continueMission();
 			else
 			{
-				if (getOwner() == GC.getGame().getActivePlayer())
+				if (isActiveOwned())
 				{
 					if (gDLL->UI().getHeadSelectedUnit() == NULL)
 						GC.getGame().cycleSelectionGroups_delayed(1, true);
@@ -754,7 +754,7 @@ void CvSelectionGroup::startMission()
 
 	if (!GC.getGame().isMPOption(MPOPTION_SIMULTANEOUS_TURNS) && !kOwner.isTurnActive())
 	{
-		if (kOwner.getID() == GC.getGame().getActivePlayer())
+		if (isActiveOwned())
 		{
 			if (IsSelected())
 				GC.getGame().cycleSelectionGroups_delayed(1, true);
@@ -1224,7 +1224,7 @@ void CvSelectionGroup::startMission()
 				if (headMissionQueueNode())
 					activateHeadMission();
 				// K-Mod end
-				if (kOwner.getID() == GC.getGame().getActivePlayer() && IsSelected())
+				if (isActiveOwned() && IsSelected())
 				{
 					GC.getGame().cycleSelectionGroups_delayed(
 							kOwner.isOption(PLAYEROPTION_QUICK_MOVES) ?
@@ -1234,8 +1234,7 @@ void CvSelectionGroup::startMission()
 			else if (getActivityType() == ACTIVITY_MISSION)
 				continueMission();
 			// K-Mod
-			else if (kOwner.getID() == GC.getGame().getActivePlayer() &&
-				IsSelected() && !canAnyMove())
+			else if (isActiveOwned() && IsSelected() && !canAnyMove())
 			{
 				GC.getGame().cycleSelectionGroups_delayed(kOwner.
 						isOption(PLAYEROPTION_QUICK_MOVES) ? 1 : 2, true);
@@ -1319,7 +1318,7 @@ bool CvSelectionGroup::continueMission_bulk(int iSteps)
 		setActivityType(ACTIVITY_AWAKE);
 		/*	K-Mod. Since I removed the cycle trigger from deactivateHeadMission,
 			we need it here. */
-		if (getOwner() == kGame.getActivePlayer() && IsSelected())
+		if (isActiveOwned() && IsSelected())
 			kGame.cycleSelectionGroups_delayed(1, true, canAnyMove());
 		return false;
 	}
@@ -1574,32 +1573,32 @@ bool CvSelectionGroup::continueMission_bulk(int iSteps)
 		bool bDestVisible = getPlot().isVisibleToWatchingHuman();
 		bool bStartVisible = pFromPlot->isVisibleToWatchingHuman();
 		// Previously only DestVisible was checked
-		if(bDestVisible || (bStartVisible && m->bInitiallyVisible))
+		if (bDestVisible || (bStartVisible && m->bInitiallyVisible))
 		{
 			// Pass pFromPlot
 			updateMissionTimer(iSteps, pFromPlot);
-			if(kGame.getActivePlayer() != NO_PLAYER && getOwner() != kGame.getActivePlayer())
+			if (kGame.getActivePlayer() != NO_PLAYER && !isActiveOwned())
 			{
 				bool bDestActiveVisible = !isInvisible(kGame.getActiveTeam());
 				CvDLLInterfaceIFaceBase* pInterface = gDLL->getInterfaceIFace();
-				if(gDLL->getEngineIFace()->isGlobeviewUp())
+				if (gDLL->getEngineIFace()->isGlobeviewUp())
 				{
-					if(bDestActiveVisible && kGame.getCurrentLayer() == GLOBE_LAYER_UNIT &&
+					if (bDestActiveVisible && kGame.getCurrentLayer() == GLOBE_LAYER_UNIT &&
 						getPlot().isActiveVisible(true))
 					{
 						pInterface->setDirty(GlobeLayer_DIRTY_BIT, true);
 					}
 				}
-				else if(showMoves(*pFromPlot))
+				else if (showMoves(*pFromPlot))
 				{
 					// Show FromPlot when moving out of sight
 					bool bStartActiveVisible = (bDestActiveVisible &&
 							pFromPlot->isActiveVisible(false));
 					bDestActiveVisible = (bDestActiveVisible &&
 							getPlot().isActiveVisible(false));
-					if(bDestActiveVisible && bDestVisible)
+					if (bDestActiveVisible && bDestVisible)
 						pInterface->lookAt(getPlot().getPoint(), CAMERALOOKAT_NORMAL);
-					else if(bStartActiveVisible && bStartVisible)
+					else if (bStartActiveVisible && bStartVisible)
 						pInterface->lookAt(pFromPlot->getPoint(), CAMERALOOKAT_NORMAL);
 					// </advc.102>
 				}
@@ -1609,7 +1608,7 @@ bool CvSelectionGroup::continueMission_bulk(int iSteps)
 
 	if (bDone)
 	{	/*if (!isBusy()) {
-			if (getOwner() == kGame.getActivePlayer()) {
+			if (isActiveOwned()) {
 				if (IsSelected()) {
 					if ((headMissionQueueNode()->m_data.eMissionType == MISSION_MOVE_TO) ||
 						(headMissionQueueNode()->m_data.eMissionType == MISSION_ROUTE_TO) ||
@@ -1623,7 +1622,7 @@ bool CvSelectionGroup::continueMission_bulk(int iSteps)
 			Otherwise, I want to mimic the original behaviour.
 			Note: I've removed cycleSelectionGroups_delayed(1, true, canAnyMove())
 			from inside CvSelectionGroup::deactivateHeadMission */
-		if (getOwner() == kGame.getActivePlayer() && IsSelected())
+		if (isActiveOwned() && IsSelected())
 		{
 			if ((missionData.eMissionType == MISSION_MOVE_TO ||
 				missionData.eMissionType == MISSION_ROUTE_TO ||
@@ -1712,7 +1711,7 @@ bool CvSelectionGroup::continueMission_bulk(int iSteps)
 			//continueMission(iSteps + 1);
 			return true;
 		}
-		else if (!isBusy() && getOwner() == kGame.getActivePlayer())
+		else if (!isBusy() && isActiveOwned())
 		{
 			if (IsSelected())
 				kGame.cycleSelectionGroups_delayed(1, true);
@@ -3701,10 +3700,10 @@ void CvSelectionGroup::updateMissionTimer(int iSteps,  // advc: refactored
 			iTime += iSteps;
 		else iTime = std::min(iTime, 2);
 	}
-	if (isHuman() && (isAutomated() || (GET_PLAYER(
-		kGame.isNetworkMultiPlayer() ? getOwner() :
-		kGame.getActivePlayer()).
-		isOption(PLAYEROPTION_QUICK_MOVES))))
+	if (isHuman() &&
+		(isAutomated() ||
+		GET_PLAYER(kGame.isNetworkMultiPlayer() ? getOwner() : kGame.getActivePlayer()).
+		isOption(PLAYEROPTION_QUICK_MOVES)))
 	{
 		iTime = std::min(iTime, 1);
 	}
@@ -3755,7 +3754,7 @@ void CvSelectionGroup::setActivityType(ActivityTypes eNewValue)
 				pUnit->NotifyEntity(MISSION_IDLE); // don't idle intercept animation
 			}
 		}
-		if (getTeam() == GC.getGame().getActiveTeam())
+		if (isActiveTeam())
 		{
 			if (pPlot != NULL) // advc (note): This can occur
 				pPlot->setFlagDirty(true);
@@ -4296,7 +4295,7 @@ void CvSelectionGroup::clearMissionQueue()
 
 	deactivateHeadMission();
 	m_missionQueue.clear();
-	if (getOwner() == GC.getGame().getActivePlayer() && IsSelected())
+	if (isActiveOwned() && IsSelected())
 	{
 		gDLL->UI().setDirty(Waypoints_DIRTY_BIT, true);
 		gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
@@ -4324,7 +4323,7 @@ void CvSelectionGroup::insertAtEndMissionQueue(MissionData mission, bool bStart)
 	if (getLengthMissionQueue() == 1 && bStart)
 		activateHeadMission();
 
-	if (getOwner() == GC.getGame().getActivePlayer() && IsSelected())
+	if (isActiveOwned() && IsSelected())
 	{
 		gDLL->UI().setDirty(Waypoints_DIRTY_BIT, true);
 		gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
@@ -4348,7 +4347,7 @@ CLLNode<MissionData>* CvSelectionGroup::deleteMissionQueueNode(CLLNode<MissionDa
 	/*	Disabled by K-Mod. It should be possible to delete the head mission
 		without immediately starting the next one! */
 
-	if (getOwner() == GC.getGame().getActivePlayer() && IsSelected())
+	if (isActiveOwned() && IsSelected())
 	{
 		gDLL->UI().setDirty(Waypoints_DIRTY_BIT, true);
 		gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
@@ -4576,7 +4575,7 @@ void CvSelectionGroup::deactivateHeadMission()
 			setActivityType(ACTIVITY_AWAKE);
 
 		setMissionTimer(0);
-		/* if (getOwner() == GC.getGame().getActivePlayer()) {
+		/* if (isActiveOwned()) {
 			if (IsSelected())
 				GC.getGame().cycleSelectionGroups_delayed(1, true, canAnyMove());
 		} */

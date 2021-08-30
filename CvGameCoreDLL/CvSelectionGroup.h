@@ -175,7 +175,7 @@ public:
 	bool isAmphibPlot(CvPlot const* pPlot) const;																																		// Exposed to Python
 	bool groupAmphibMove(CvPlot const& kPlot, MovementFlags eFlags);
 
-	DllExport bool readyToSelect(bool bAny = false);																							// Exposed to Python
+	DllExport bool readyToSelect(bool bAny = false);														// Exposed to Python
 	bool readyToMove(bool bAny = false) const; // Exposed to Python
 	bool readyToAuto() const; // Exposed to Python
 	// K-Mod.
@@ -199,7 +199,10 @@ public:
 
 	//DllExport PlayerTypes getOwner() const; // advc.inl: Not called externally
 	PlayerTypes getOwner() const { return m_eOwner; } // advc.inl: was "getOwnerINLINE"
-	TeamTypes getTeam() const;																																					// Exposed to Python
+	TeamTypes getTeam() const;																				// Exposed to Python
+	// <advc>
+	bool isActiveOwned() const { return (GC.getInitCore().getActivePlayer() == getOwner()); }
+	bool isActiveTeam() const { return (GC.getInitCore().getActiveTeam() == getTeam()); } // </advc>
 
 	ActivityTypes getActivityType() const { return m_eActivityType; } 										// Exposed to Python
 	void setActivityType(ActivityTypes eNewValue);																											// Exposed to Python

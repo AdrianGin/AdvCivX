@@ -191,7 +191,10 @@ public:
 	EraTypes getHighestEra() const; // advc
 	scaled groundbreakingNormalizationModifier(TechTypes eTech) const; // advc.groundbr
 
-	DllExport TeamTypes getActiveTeam() const;														// Exposed to Python
+	DllExport TeamTypes getActiveTeam() const														// Exposed to Python
+	{
+		return GC.getInitCore().getActiveTeam(); // advc.opt (cached)
+	}
 	CivilizationTypes getActiveCivilizationType() const;											// Exposed to Python
 	CvCivilization const* getActiveCivilization() const; // advc.003w
 
@@ -1186,21 +1189,5 @@ inline CvRandom& mapRand()
 #define MapRandOneChanceIn(iNumLots) \
 	(MapRandNum(iNumLots) == 0)
 // </advc.007b>
-
-// <advc> This was also more tedious than it needs to be
-#define CVGAME_INSTANCE_FOR_ACTIVE_AGENT GC.getGame()
-
-inline PlayerTypes activePlayer()
-{
-	return CVGAME_INSTANCE_FOR_ACTIVE_AGENT.getActivePlayer();
-}
-inline TeamTypes activeTeam()
-{
-	return CVGAME_INSTANCE_FOR_ACTIVE_AGENT.getActiveTeam();
-}
-inline CivilizationTypes activeCivilization()
-{
-	return CVGAME_INSTANCE_FOR_ACTIVE_AGENT.getActiveCivilizationType();
-} // </advc>
 
 #endif

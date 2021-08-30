@@ -856,13 +856,15 @@ public:
 		// advc.inl: Split this function up so that part of it can be inlined
 		return (isAlwaysHostile() ? getCombatOwner_bulk(eForTeam, kPlot) : getOwner());
 	}
-
 	// advc (for convenience)
 	PlayerTypes getCombatOwner(TeamTypes eForTeam) const
 	{
 		return getCombatOwner(eForTeam, getPlot());
 	}
 	DllExport TeamTypes getTeam() const;																	// Exposed to Python
+	// <advc>
+	bool isActiveOwned() const { return (GC.getInitCore().getActivePlayer() == getOwner()); }
+	bool isActiveTeam() const { return (GC.getInitCore().getActiveTeam() == getTeam()); } // </advc>
 
 	PlayerTypes getCapturingPlayer() const;
 	void setCapturingPlayer(PlayerTypes eNewValue);

@@ -174,6 +174,7 @@ public:
 
 	PlayerTypes getActivePlayer() const { return m_eActivePlayer; }
 	DllExport void setActivePlayer(PlayerTypes eActivePlayer);
+	TeamTypes getActiveTeam() const { return m_eActiveTeam; } // advc.opt
 
 	DllExport GameType getType() const { return m_eType; }
 	DllExport void setType(GameType eType);
@@ -338,6 +339,9 @@ protected:
 
 	// advc (note): From here on, it seems to be OK to change the memory layout.
 
+	// advc.opt: Convenient to cache this here b/c this header gets precompiled
+	TeamTypes m_eActiveTeam;
+
 	// Temp var so we don't return locally scoped var
 	mutable CvWString m_szTemp;
 	mutable CvString m_szTempA;
@@ -398,6 +402,6 @@ protected:
 /*  advc.003k: OK to increase the size of CvInitCore (and to update or remove this
 	assertion). Just make sure that new data members are added in the right place. */
 BOOST_STATIC_ASSERT(sizeof(CvInitCore) ==
-		(sizeof(ArrayEnumMap<PlayerTypes,bool>) > 4 ? 440 : 416)); 
+		(sizeof(ArrayEnumMap<PlayerTypes,bool>) > 4 ? 444 : 420)); 
 
 #endif

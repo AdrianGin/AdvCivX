@@ -27,6 +27,19 @@ bool CvPlot::m_bAllFog = false; // advc.706
 int CvPlot::m_iMaxVisibilityRangeCache = -1; // advc.003h
 #define NO_BUILD_IN_PROGRESS (-2) // advc.011
 
+// advc:
+namespace
+{
+	__inline PlayerTypes getActivePlayer()
+	{
+		return GC.getGame().getActivePlayer();
+	}
+	__inline TeamTypes getActiveTeam()
+	{
+		return GC.getGame().getActiveTeam();
+	}
+}
+
 
 CvPlot::CvPlot() // advc: Merged with the deleted reset function
 {
@@ -456,9 +469,9 @@ void CvPlot::updateFog()
 	if (!GC.IsGraphicsInitialized())
 		return;
 
-	FAssert(GC.getGame().getActiveTeam() != NO_TEAM);
+	FAssert(getActiveTeam() != NO_TEAM);
 
-	if (isRevealed(GC.getGame().getActiveTeam()))
+	if (isRevealed(getActiveTeam()))
 	{
 		if (gDLL->UI().isBareMapMode())
 			gDLL->getEngineIFace()->LightenVisibility(getFOWIndex());
@@ -532,7 +545,7 @@ void CvPlot::updateSymbolVisibility()
 
 		if (pLoopSymbol != NULL)
 		{
-			if (isRevealed(GC.getGame().getActiveTeam(), true) &&
+			if (isRevealed(getActiveTeam(), true) &&
 				(isShowCitySymbols() ||
 				(gDLL->UI().isShowYields() && !gDLL->UI().isCityScreenUp())))
 			{
@@ -618,10 +631,10 @@ void CvPlot::updateCenterUnit()
 	setCenterUnit(getSelectedUnit());
 
 	/*if (getCenterUnit() == NULL) {
-		setCenterUnit(getBestDefender(GC.getGame().getActivePlayer(), NO_PLAYER,
+		setCenterUnit(getBestDefender(getActivePlayer(), NO_PLAYER,
 				NULL, false, false, true));
 	}*/
-	PlayerTypes eActivePlayer = GC.getGame().getActivePlayer(); // advc
+	PlayerTypes eActivePlayer = getActivePlayer();
 	if (getCenterUnit() == NULL)
 		setCenterUnit(getBestDefender(eActivePlayer));
 
@@ -638,7 +651,7 @@ void CvPlot::updateCenterUnit()
 
 	if (getCenterUnit() == NULL)
 	{
-		//setCenterUnit(getBestDefender(NO_PLAYER, GC.getGame().getActivePlayer(), gDLL->UI().getHeadSelectedUnit()));
+		//setCenterUnit(getBestDefender(NO_PLAYER, getActivePlayer(), gDLL->UI().getHeadSelectedUnit()));
 		// <advc.028> Replacing the above
 		CvUnit* pBestDef = getBestDefender(NO_PLAYER, eActivePlayer,
 				gDLL->UI().getHeadSelectedUnit(), false,
@@ -649,7 +662,7 @@ void CvPlot::updateCenterUnit()
 
 	if (getCenterUnit() == NULL)
 	{
-		//setCenterUnit(getBestDefender(NO_PLAYER, GC.getGame().getActivePlayer()));
+		//setCenterUnit(getBestDefender(NO_PLAYER, getActivePlayer()));
 		// <advc.028> Replacing the above
 		CvUnit* pBestDef = getBestDefender(NO_PLAYER, eActivePlayer, NULL, false,
 				false, true); // advc.061
@@ -1376,7 +1389,7 @@ bool CvPlot::isVisibleWorked() const
 {
 	if (isBeingWorked())
 	{
-		if (getTeam() == GC.getGame().getActiveTeam() || GC.getGame().isDebugMode())
+		if (isActiveTeam() || GC.getGame().isDebugMode())
 			return true;
 	}
 	return false;
@@ -2534,7 +2547,7 @@ int CvPlot::defenseModifier(TeamTypes eDefender, bool bIgnoreBuilding,
 		iModifier += GC.getDefineINT(CvGlobals::HILLS_EXTRA_DEFENSE);
 	ImprovementTypes eImprovement;
 	if (bHelp)
-		eImprovement = getRevealedImprovementType(GC.getGame().getActiveTeam());
+		eImprovement = getRevealedImprovementType(getActiveTeam());
 	else eImprovement = getImprovementType();
 	// <advc.183> No city defense should apply then
 	if (eDefender == NO_TEAM)
@@ -2942,7 +2955,7 @@ CvUnit* CvPlot::plotCheck(ConstPlotUnitFunc funcA, int iData1A, int iData2A,
 
 bool CvPlot::isRevealedBarbarian() const
 {
-	return (getRevealedOwner(GC.getGame().getActiveTeam(), true) == BARBARIAN_PLAYER);
+	return (getRevealedOwner(getActiveTeam(), true) == BARBARIAN_PLAYER);
 }
 
 
@@ -3021,7 +3034,7 @@ bool CvPlot::isActiveVisible(bool bDebug) const
 {	// <advc.706>
 	if (m_bAllFog)
 		return false; // </advc.706>
-	return isVisible(GC.getGame().getActiveTeam(), bDebug);
+	return isVisible(getActiveTeam(), bDebug);
 }
 
 
@@ -4714,7 +4727,7 @@ void CvPlot::setImprovementType(ImprovementTypes eNewValue,
 	if (bWasGoody && (!isImproved() || !GC.getInfo(getImprovementType()).isGoody()) &&
 		GC.getGame().getCurrentLayer() == GLOBE_LAYER_RESOURCE &&
 		isVisibleToWatchingHuman() &&
-		GET_PLAYER(GC.getGame().getActivePlayer()).showGoodyOnResourceLayer())
+		GET_PLAYER(getActivePlayer()).showGoodyOnResourceLayer())
 	{
 		gDLL->UI().setDirty(GlobeInfo_DIRTY_BIT, true);
 	} // </advc.004z>
@@ -4938,7 +4951,7 @@ void CvPlot::updateWorkingCity()
 	updateFog();
 	updateShowCitySymbols();
 
-	if (getOwner() == GC.getGame().getActivePlayer())
+	if (isActiveOwned())
 	{
 		if (gDLL->getGraphicOption(GRAPHICOPTION_CITY_RADIUS))
 		{
@@ -5232,11 +5245,11 @@ int CvPlot::calculateYield(YieldTypes eYield, bool bDisplay) const
 	RouteTypes eRoute;
 	if (bDisplay)
 	{
-		ePlayer = getRevealedOwner(GC.getGame().getActiveTeam());
-		eImprovement = getRevealedImprovementType(GC.getGame().getActiveTeam());
-		eRoute = getRevealedRouteType(GC.getGame().getActiveTeam());
+		ePlayer = getRevealedOwner(getActiveTeam());
+		eImprovement = getRevealedImprovementType(getActiveTeam());
+		eRoute = getRevealedRouteType(getActiveTeam());
 		if (ePlayer == NO_PLAYER)
-			ePlayer = GC.getGame().getActivePlayer();
+			ePlayer = getActivePlayer();
 	}
 	else
 	{
@@ -5246,7 +5259,7 @@ int CvPlot::calculateYield(YieldTypes eYield, bool bDisplay) const
 	}
 	int iNatureYield = // advc.908a: Preserve this for later
 			calculateNatureYield(eYield,
-			bDisplay ? GC.getGame().getActiveTeam() : // advc.182
+			bDisplay ? getActiveTeam() : // advc.182
 			/*	(advc: Note that NO_TEAM means that bonus resources are ignored.
 				In most other places it means god mode.) */
 			(ePlayer != NO_PLAYER ? TEAMID(ePlayer) : NO_TEAM));
@@ -5256,7 +5269,7 @@ int CvPlot::calculateYield(YieldTypes eYield, bool bDisplay) const
 	if (eImprovement != NO_IMPROVEMENT)
 	{
 		iYield += calculateImprovementYieldChange(eImprovement, eYield, //ePlayer
-				bDisplay ? GC.getGame().getActivePlayer() : ePlayer); // advc.182
+				bDisplay ? getActivePlayer() : ePlayer); // advc.182
 	}
 	if (eRoute != NO_ROUTE)
 		iYield += GC.getInfo(eRoute).getYieldChange(eYield);
@@ -5269,7 +5282,7 @@ int CvPlot::calculateYield(YieldTypes eYield, bool bDisplay) const
 			CvCity* pWorkingCity = getWorkingCity();
 			if (pWorkingCity != NULL)
 			{
-				if (!bDisplay || pWorkingCity->isRevealed(GC.getGame().getActiveTeam()))
+				if (!bDisplay || pWorkingCity->isRevealed(getActiveTeam()))
 					iYield += pWorkingCity->getSeaPlotYield(eYield);
 			}
 		}
@@ -5279,14 +5292,14 @@ int CvPlot::calculateYield(YieldTypes eYield, bool bDisplay) const
 			CvCity* pWorkingCity = getWorkingCity();
 			if (pWorkingCity != NULL)
 			{
-				if (!bDisplay || pWorkingCity->isRevealed(GC.getGame().getActiveTeam()))
+				if (!bDisplay || pWorkingCity->isRevealed(getActiveTeam()))
 					iYield += pWorkingCity->getRiverPlotYield(eYield);
 			}
 		}
 
 		CvCity* pCity = getPlotCity(); // advc: Moved down (no functional change intended)
 		if (pCity != NULL &&
-			(!bDisplay || pCity->isRevealed(GC.getGame().getActiveTeam())))
+			(!bDisplay || pCity->isRevealed(getActiveTeam())))
 		{
 			// advc.031: Moved into new function
 			iYield += calculateCityPlotYieldChange(eYield, iYield, pCity->getPopulation());
@@ -5791,7 +5804,7 @@ void CvPlot::changeVisibilityCount(TeamTypes eTeam, int iChange,
 			changeStolenVisibilityCount(itTeam->getID(), isVisible(eTeam) ? 1 : -1);
 	}
 
-	if (eTeam == GC.getGame().getActiveTeam())
+	if (eTeam == getActiveTeam())
 	{
 		updateFog();
 		updateMinimapColor();
@@ -5819,7 +5832,7 @@ void CvPlot::changeStolenVisibilityCount(TeamTypes eTeam, int iChange)
 		if (pCity != NULL)
 			pCity->setInfoDirty(true);
 
-		if (eTeam == GC.getGame().getActiveTeam())
+		if (eTeam == getActiveTeam())
 		{
 			updateFog();
 			updateMinimapColor();
@@ -5883,7 +5896,7 @@ void CvPlot::setRevealedOwner(TeamTypes eTeam, PlayerTypes eNewValue)
 		if (eRevImprov != NO_IMPROVEMENT && GC.getInfo(eRevImprov).isGoody())
 			setRevealedImprovementType(eTeam, NO_IMPROVEMENT); // </advc.001>
 	}
-	if (eTeam == GC.getGame().getActiveTeam())
+	if (eTeam == getActiveTeam())
 	{
 		updateMinimapColor();
 		if (GC.IsGraphicsInitialized())
@@ -6059,7 +6072,7 @@ void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly, Tea
 	}
 	if (bOldValue != bNewValue) // advc.124
 	{
-		if (eTeam == GC.getGame().getActiveTeam())
+		if (eTeam == getActiveTeam())
 		{
 			updateSymbols();
 			updateFog();
@@ -6158,7 +6171,7 @@ void CvPlot::setRevealedImprovementType(TeamTypes eTeam, ImprovementTypes eNewVa
 
 	m_aeRevealedImprovementType.set(eTeam, eNewValue);
 
-	if (eTeam == GC.getGame().getActiveTeam())
+	if (eTeam == getActiveTeam())
 	{
 		updateSymbols();
 		setLayoutDirty(true);
@@ -6185,7 +6198,7 @@ void CvPlot::setRevealedRouteType(TeamTypes eTeam, RouteTypes eNewValue)
 
 	m_aeRevealedRouteType.set(eTeam, eNewValue);
 
-	if (eTeam == GC.getGame().getActiveTeam())
+	if (eTeam == getActiveTeam())
 	{
 		updateSymbols();
 		updateRouteSymbol(true, true);
@@ -6301,7 +6314,7 @@ void CvPlot::updateFeatureSymbolVisibility()
 	if (m_pFeatureSymbol == NULL)
 		return;
 
-	bool bVisible = isRevealed(GC.getGame().getActiveTeam(), true);
+	bool bVisible = isRevealed(getActiveTeam(), true);
 	if (isFeature())
 	{
 		if(GC.getInfo(getFeatureType()).isVisibleAlways())
@@ -6371,7 +6384,7 @@ void CvPlot::updateRouteSymbol(bool bForce, bool bAdjacent)
 		}
 	}
 
-	RouteTypes eRoute = getRevealedRouteType(GC.getGame().getActiveTeam(), true);
+	RouteTypes eRoute = getRevealedRouteType(getActiveTeam(), true);
 	if (eRoute == NO_ROUTE)
 	{
 		gDLL->getRouteIFace()->destroy(m_pRouteSymbol);
@@ -6509,8 +6522,8 @@ void CvPlot::updateFlagSymbol()
 	if (gDLL->UI().getSingleMoveGotoPlot() == this)
 	{
 		if(ePlayer == NO_PLAYER)
-			ePlayer = GC.getGame().getActivePlayer();
-		else ePlayerOffset = GC.getGame().getActivePlayer();
+			ePlayer = getActivePlayer();
+		else ePlayerOffset = getActivePlayer();
 	}
 
 	//don't put two of the same flags
@@ -6639,7 +6652,7 @@ void CvPlot::changeInvisibleVisibilityCount(TeamTypes eTeam, InvisibleTypes eInv
 	FAssert(m_aaiInvisibleVisibilityCount.get(eTeam, eInvisible) >= 0); // advc
 	if (bOldInvisibleVisible != isInvisibleVisible(eTeam, eInvisible))
 	{
-		if (eTeam == GC.getGame().getActiveTeam())
+		if (eTeam == getActiveTeam())
 			updateCenterUnit();
 	}
 }
@@ -7054,11 +7067,11 @@ ColorTypes CvPlot::plotMinimapColor()
 	static ColorTypes const eColorClear = GC.getColorType("CLEAR");
 	static ColorTypes const eColorWhite = GC.getColorType("WHITE");
 	// </advc.opt>
-	if (GC.getGame().getActivePlayer() == NO_PLAYER)
+	if (getActivePlayer() == NO_PLAYER)
 		return eColorClear;
 
 	CvCity* pCity = getPlotCity();
-	TeamTypes eActiveTeam = GC.getGame().getActiveTeam(); // advc
+	TeamTypes eActiveTeam = getActiveTeam();
 	if (pCity != NULL && pCity->isRevealed(eActiveTeam, true))
 		return eColorWhite;
 
@@ -7511,10 +7524,10 @@ void CvPlot::getVisibleImprovementState(ImprovementTypes& eType, bool& bWorked)
 	eType = NO_IMPROVEMENT;
 	bWorked = false;
 
-	if (GC.getGame().getActiveTeam() == NO_TEAM)
+	if (getActiveTeam() == NO_TEAM)
 		return;
 
-	eType = getRevealedImprovementType(GC.getGame().getActiveTeam(), true);
+	eType = getRevealedImprovementType(getActiveTeam(), true);
 	if (eType == NO_IMPROVEMENT)
 	{
 		if (isActiveVisible(true))
@@ -7540,18 +7553,18 @@ void CvPlot::getVisibleBonusState(BonusTypes& eType, bool& bImproved, bool& bWor
 	bImproved = false;
 	bWorked = false;
 
-	if (GC.getGame().getActiveTeam() == NO_TEAM)
+	if (getActiveTeam() == NO_TEAM)
 		return;
 
 	if (GC.getGame().isDebugMode())
 		eType = getBonusType();
-	else if (isRevealed(GC.getGame().getActiveTeam()))
-		eType = getBonusType(GC.getGame().getActiveTeam());
+	else if (isRevealed(getActiveTeam()))
+		eType = getBonusType(getActiveTeam());
 
 	if (eType != NO_BONUS) // improved and worked states ...
 	{
 		ImprovementTypes eRevealedImprovement = getRevealedImprovementType(
-				GC.getGame().getActiveTeam(), true);
+				getActiveTeam(), true);
 		if (eRevealedImprovement != NO_IMPROVEMENT &&
 			GC.getInfo(eRevealedImprovement).isImprovementBonusTrade(eType))
 		{
@@ -8237,7 +8250,7 @@ bool CvPlot::checkLateEra() const
 	PlayerTypes eBestPlayer = getOwner();
 	if (eBestPlayer == NO_PLAYER)
 	{
-		eBestPlayer = GC.getGame().getActivePlayer();
+		eBestPlayer = getActivePlayer();
 		int iBestCulture = getCulture(eBestPlayer);
 		// advc: ALIVE - shouldn't rely on era of dead players
 		for (PlayerIter<ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)

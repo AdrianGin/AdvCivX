@@ -131,6 +131,8 @@ public:
 	DllExport bool isHuman() const { return m_bHuman; }																// Exposed to Python
 	DllExport bool isBarbarian() const { return (m_eID == BARBARIAN_PLAYER); }										// Exposed to Python
 	DllExport void updateHuman();
+	// advc: (Don't call CvGame::getActivePlayer b/c that header is not available here.)
+	bool isActive() const { return GC.getInitCore().getActivePlayer() == getID(); }
 
 	DllExport wchar const* getName(uint uiForm = 0) const;															// Exposed to Python
 	wchar const* getKnownName(TeamTypes eObserver = NO_TEAM) const; // advc.058

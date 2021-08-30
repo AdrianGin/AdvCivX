@@ -143,7 +143,9 @@ public:
 	bool hasBonus(BonusTypes eBonus) const;
 	bool isBonusObsolete(BonusTypes eBonus) const;
 
-	bool isHuman() const;																																// Exposed to Python
+	bool isHuman() const;													// Exposed to Python
+	// advc: see CvPlayer::isActive
+	bool isActive() const { return (GC.getInitCore().getActiveTeam() == getID()); }
 	// advc: (The Barbarians aren't a proper civ)
 	bool isMajorCiv() const { return (!isBarbarian() && !isMinorCiv()); }
 	bool isBarbarian() const { return (m_eID == BARBARIAN_TEAM); }								// Exposed to Python

@@ -7094,7 +7094,7 @@ bool CvPlayerAI::AI_isWillingToTalk(PlayerTypes ePlayer, /* advc.104l: */ bool b
 	FAssert(ePlayer != getID());
 	// <advc.104i>
 	CvGame const& kGame = GC.getGame();
-	if (ePlayer == kGame.getActivePlayer())
+	if (GET_PLAYER(ePlayer).isActive())
 	{
 		/*  The EXE keeps calling this function when the diplo screen is already up,
 			and some of the new code (isPeaceDealPossible) is expensive. */

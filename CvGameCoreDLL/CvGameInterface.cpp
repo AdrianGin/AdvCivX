@@ -1644,8 +1644,7 @@ void CvGame::doControl(ControlTypes eControl)
 		break;
 
 	case CONTROL_RELIGION_SCREEN:
-		// advc.004x:
-		GET_PLAYER(GC.getGame().getActivePlayer()).killAll(BUTTONPOPUP_CHANGERELIGION);
+		GET_PLAYER(getActivePlayer()).killAll(BUTTONPOPUP_CHANGERELIGION); // advc.004x
 		GC.getPythonCaller()->showPythonScreen("ReligionScreen");
 		break;
 
@@ -1654,8 +1653,7 @@ void CvGame::doControl(ControlTypes eControl)
 		break;
 
 	case CONTROL_CIVICS_SCREEN:
-		// advc.004x:
-		GET_PLAYER(GC.getGame().getActivePlayer()).killAll(BUTTONPOPUP_CHANGECIVIC);
+		GET_PLAYER(getActivePlayer()).killAll(BUTTONPOPUP_CHANGECIVIC); // advc.004x
 		GC.getPythonCaller()->showPythonScreen("CivicsScreen");
 		break;
 

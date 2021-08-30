@@ -678,6 +678,9 @@ public:
 
 	DllExport PlayerTypes getOwner() const { return m_eOwner; } // advc.inl: was "getOwnerINLINE"				// Exposed to Python
 	DllExport TeamTypes getTeam() const;																		// Exposed to Python
+	// <advc>
+	bool isActiveOwned() const { return (GC.getInitCore().getActivePlayer() == getOwner()); }
+	bool isActiveTeam() const { return (GC.getInitCore().getActiveTeam() == getTeam()); } // </advc>
 	PlayerTypes getPreviousOwner() const { return m_ePreviousOwner; }											// Exposed to Python
 	void setPreviousOwner(PlayerTypes eNewValue);
 	PlayerTypes getOriginalOwner() const { return m_eOriginalOwner; }											// Exposed to Python

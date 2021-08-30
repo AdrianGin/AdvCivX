@@ -824,7 +824,7 @@ void CvPlayer::changeCiv(CivilizationTypes eNewCiv)
 			// (advc: Deleted flag update code that wasn't working and had already been commented out)
 		}
 
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			kUI.setDirty(Soundtrack_DIRTY_BIT, true);
 		kUI.makeInterfaceDirty();
 
@@ -842,7 +842,7 @@ void CvPlayer::changeCiv(CivilizationTypes eNewCiv)
 		kUI.setDirty(InfoPane_DIRTY_BIT, true);
 		kUI.setDirty(GlobeLayer_DIRTY_BIT, true);
 		// <advc.003p>
-		if(getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			setBonusHelpDirty(); // </advc.003p>
 		kUI.setDirty(MinimapSection_DIRTY_BIT, true);
 		kEngine.SetDirty(MinimapTexture_DIRTY_BIT, true);
@@ -2241,7 +2241,7 @@ void CvPlayer::killUnits()
 CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
 	bool bWorkers, bool* pbWrap) const
 {
-	FAssert(GC.getGame().getActivePlayer() == getID() && isHuman());
+	FAssert(isActive() && isHuman());
 	LOCAL_REF(bool, bWrap, pbWrap, false); // K-Mod
 	// advc.154: Copy the set
 	std::set<int> kCycledGroups = GC.getGame().getActivePlayerCycledGroups(); // K-Mod
@@ -2326,7 +2326,7 @@ CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
 CvSelectionGroup* CvPlayer::cycleSelectionGroups(CvUnit* pUnit, bool bForward,
 	bool bWorkers, bool* pbWrap)
 {
-	FAssert(GC.getGame().getActivePlayer() == getID() && isHuman());
+	FAssert(isActive() && isHuman());
 	if (pbWrap != NULL)
 		*pbWrap = false;
 	// <advc.004h>
@@ -2363,13 +2363,11 @@ void CvPlayer::setHumanDisabled(bool bNewVal)
 	// <advc.127>
 	m_bAutoPlayJustEnded = true;
 	CvGame& kGame = GC.getGame();
-	// Not sure if this is needed:
-	bool const bActive = (kGame.getActivePlayer() == getID());
 	CvWString szReplayText;
 	if (bNewVal && !m_bDisableHuman)
 	{
 		AI().AI_setHuman(false);
-		if(bActive)
+		if (isActive()) // (Not sure if this test is needed)
 		{	// advc.004h:
 			gDLL->getEngineIFace()->clearAreaBorderPlots(AREA_BORDER_LAYER_FOUNDING_BORDER);
 			gDLL->UI().clearQueuedPopups();
@@ -2380,10 +2378,10 @@ void CvPlayer::setHumanDisabled(bool bNewVal)
 	{
 		AI().AI_setHuman(true);
 		m_iNewMessages = 0; // Don't open Event Log when coming out of Auto Play
-		if(bActive)
+		if (isActive())
 			szReplayText = gDLL->getText("TXT_KEY_AUTO_PLAY_ENDED");
 	}
-	if(!szReplayText.empty())
+	if (!szReplayText.empty())
 	{
 		kGame.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szReplayText,
 				-1, -1, GC.getColorType("HIGHLIGHT_TEXT"));
@@ -2423,11 +2421,11 @@ void CvPlayer::updateHuman()
 // K-Mod:
 static bool concealUnknownCivs()
 {
-	return GC.getGame().getActiveTeam() != NO_TEAM &&
+	return (GC.getGame().getActiveTeam() != NO_TEAM &&
 			//gDLL->getChtLvl() == 0
 			// advc.135c: Replacing the above (which doesn't work in multiplayer)
 			!GC.getGame().isDebugMode() &&
-			!gDLL->GetWorldBuilderMode();
+			!gDLL->GetWorldBuilderMode());
 }
 
 // advc.106i:
@@ -2462,14 +2460,22 @@ const wchar* CvPlayer::getName(uint uiForm) const
 	return GC.getInitCore().getLeaderName(getID(), uiForm);
 }
 
+// advc.058:
+namespace
+{
+	__inline CvTeam& activeTeamIfNone(TeamTypes eTeam)
+	{
+		return GET_TEAM(eTeam == NO_TEAM ? GC.getGame().getActiveTeam() : eTeam);
+	}
+}
+
 // advc.058: New function; unused, see getKnownCivDescription.
 const wchar* CvPlayer::getKnownName(TeamTypes eObserver) const
 {
 	// advc.058: Moved from getName
 	// K-Mod. Conceal the leader name of unmet players.
 	if (concealUnknownCivs() &&
-		!GET_TEAM(eObserver == NO_TEAM ? GC.getGame().getActiveTeam() : eObserver).
-		isHasSeen(getTeam()))
+		!activeTeamIfNone(eObserver).isHasSeen(getTeam()))
 	{	// hack to stop the string from going out of scope.
 		static CvWString szUnknown = gDLL->getText("TXT_KEY_UNKNOWN");
 		return szUnknown;
@@ -2521,8 +2527,7 @@ wchar const* CvPlayer::getKnownCivDescription(TeamTypes eObserver) const
 		with eObserver. */
 	// K-Mod. Conceal the civilization of unmet players.
 	if (concealUnknownCivs() &&
-		!GET_TEAM(eObserver == NO_TEAM ? GC.getGame().getActiveTeam() : eObserver).
-		isHasSeen(getTeam()))
+		!activeTeamIfNone(eObserver).isHasSeen(getTeam()))
 	{	// hack to stop the string from going out of scope.
 		static CvWString string = gDLL->getText("TXT_KEY_TOPCIVS_UNKNOWN");
 		return string;
@@ -2551,9 +2556,7 @@ const wchar* CvPlayer::getKnownCivShortDescription(TeamTypes eObserver) const
 {
 	// advc.058: Moved from getCivilizationShortDescription
 	// K-Mod. Conceal the civilization of unmet players.
-	if (concealUnknownCivs() &&
-		!GET_TEAM(eObserver == NO_TEAM ? GC.getGame().getActiveTeam() : eObserver).
-		isHasSeen(getTeam()))
+	if (concealUnknownCivs() && !activeTeamIfNone(eObserver).isHasSeen(getTeam()))
 	{
 		static CvWString szUnknown = gDLL->getText("TXT_KEY_UNKNOWN");
 		return szUnknown;
@@ -2856,7 +2859,7 @@ void CvPlayer::doTurnUnits()
 		updateGroupCycle(pLoopSelectionGroup);*/
 	// K-Mod end
 
-	if (getID() == GC.getGame().getActivePlayer())
+	if (isActive())
 	{
 		gDLL->getFAStarIFace()->ForceReset(&GC.getInterfacePathFinder());
 		gDLL->UI().setDirty(Waypoints_DIRTY_BIT, true);
@@ -6641,7 +6644,7 @@ void CvPlayer::revolution(CivicMap const& kNewCivics, bool bForce)
 	// advc: Revolution turns calculation moved into auxiliary function
 	setRevolutionTimer(iAnarchyLength + getMinTurnsBetweenRevolutions());
 
-	if (getID() == GC.getGame().getActivePlayer())
+	if (isActive())
 	{
 		// to force an update of the civic chooser popup
 		gDLL->UI().setDirty(Popup_DIRTY_BIT, true);
@@ -6725,7 +6728,7 @@ void CvPlayer::convert(ReligionTypes eReligion, /* <advc.001v> */ bool bForce)
 	setConversionTimer(std::max(1, ((100 + getAnarchyModifier()) *
 			GC.getDefineINT("MIN_CONVERSION_TURNS")) / 100) + iAnarchyLength);
 	// <advc.004x>
-	if (getID() == GC.getGame().getActivePlayer())
+	if (isActive())
 	{
 		killAll(BUTTONPOPUP_CHANGERELIGION);
 		if(iAnarchyLength > 0) {
@@ -7198,7 +7201,7 @@ void CvPlayer::setGold(int iNewValue)
 	if (getGold() != iNewValue)
 	{
 		m_iGold = iNewValue;
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 		{
 			gDLL->UI().setDirty(MiscButtons_DIRTY_BIT, true);
 			gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
@@ -7219,7 +7222,7 @@ void CvPlayer::setAdvancedStartPoints(int iNewValue)
 	if (getAdvancedStartPoints() != iNewValue)
 	{
 		m_iAdvancedStartPoints = iNewValue;
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 		{
 			gDLL->UI().setDirty(MiscButtons_DIRTY_BIT, true);
 			gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
@@ -7295,7 +7298,7 @@ void CvPlayer::changeGoldenAgeTurns(int iChange)
 		}
 	}
 
-	if (getID() == GC.getGame().getActivePlayer())
+	if (isActive())
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 }
 // advc.001x:
@@ -7327,26 +7330,26 @@ void CvPlayer::changeStrikeTurns(int iChange)
 
 void CvPlayer::changeAnarchyTurns(int iChange) // advc: Refactored
 {
-	if(iChange == 0)
+	if (iChange == 0)
 		return;
 
 	CvGame const& kGame = GC.getGame();
-	if(getID() == kGame.getActivePlayer())
+	if (isActive())
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 
 	bool bOldAnarchy = isAnarchy();
 	m_iAnarchyTurns += iChange;
 	FAssert(getAnarchyTurns() >= 0);
-	if(bOldAnarchy == isAnarchy())
+	if (bOldAnarchy == isAnarchy())
 		return;
 
-	if(getID() == kGame.getActivePlayer())
+	if (isActive())
 	{
 		gDLL->UI().setDirty(MiscButtons_DIRTY_BIT, true);
 		// advc.004x:
 		gDLL->UI().setDirty(ResearchButtons_DIRTY_BIT, true);
 	}
-	if(getTeam() == kGame.getActiveTeam())
+	if (GET_TEAM(getTeam()).isActive())
 		gDLL->UI().setDirty(CityInfo_DIRTY_BIT, true);
 
 	updateCommerce();
@@ -7593,7 +7596,7 @@ void CvPlayer::changeNumOutsideUnits(int iChange)
 	{
 		m_iNumOutsideUnits += iChange;
 		FAssert(getNumOutsideUnits() >= 0);
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 	}
 }
@@ -7604,7 +7607,7 @@ void CvPlayer::changeBaseFreeUnits(int iChange)
 	if (iChange != 0)
 	{
 		m_iBaseFreeUnits += iChange;
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 	}
 }
@@ -7615,7 +7618,7 @@ void CvPlayer::changeBaseFreeMilitaryUnits(int iChange)
 	if (iChange != 0)
 	{
 		m_iBaseFreeMilitaryUnits += iChange;
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 	}
 }
@@ -7626,7 +7629,7 @@ void CvPlayer::changeFreeUnitsPopulationPercent(int iChange)
 	if (iChange != 0)
 	{
 		m_iFreeUnitsPopulationPercent += iChange;
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 	}
 }
@@ -7637,7 +7640,7 @@ void CvPlayer::changeFreeMilitaryUnitsPopulationPercent(int iChange)
 	if (iChange != 0)
 	{
 		m_iFreeMilitaryUnitsPopulationPercent += iChange;
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 	}
 }
@@ -7674,7 +7677,7 @@ void CvPlayer::changeGoldPerUnit(int iChange)
 	if (iChange != 0)
 	{
 		m_iGoldPerUnit += iChange;
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 	}
 }
@@ -7685,7 +7688,7 @@ void CvPlayer::changeGoldPerMilitaryUnit(int iChange)
 	if (iChange != 0)
 	{
 		m_iGoldPerMilitaryUnit += iChange;
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 	}
 }
@@ -7696,7 +7699,7 @@ void CvPlayer::changeExtraUnitCost(int iChange)
 	if (iChange != 0)
 	{
 		m_iExtraUnitCost += iChange;
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 	}
 }
@@ -7708,7 +7711,7 @@ void CvPlayer::changeNumMilitaryUnits(int iChange)
 	{
 		m_iNumMilitaryUnits += iChange;
 		FAssert(getNumMilitaryUnits() >= 0);
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 	}
 }
@@ -7741,7 +7744,7 @@ void CvPlayer::changeMilitaryFoodProductionCount(int iChange)
 	{
 		m_iMilitaryFoodProductionCount += iChange;
 		FAssert(getMilitaryFoodProductionCount() >= 0);
-		if (getTeam() == GC.getGame().getActiveTeam())
+		if (GET_TEAM(getTeam()).isActive())
 			gDLL->UI().setDirty(CityInfo_DIRTY_BIT, true);
 	}
 }
@@ -8068,7 +8071,7 @@ void CvPlayer::setRevolutionTimer(int iNewValue)
 	{
 		m_iRevolutionTimer = iNewValue;
 		FAssert(getRevolutionTimer() >= 0);
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(MiscButtons_DIRTY_BIT, true);
 	}
 }
@@ -8080,7 +8083,7 @@ void CvPlayer::setConversionTimer(int iNewValue)
 	{
 		m_iConversionTimer = iNewValue;
 		FAssert(getConversionTimer() >= 0);
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(MiscButtons_DIRTY_BIT, true);
 	}
 }
@@ -8145,7 +8148,7 @@ void CvPlayer::changeStateReligionUnitProductionModifier(int iChange)
 	if (iChange != 0)
 	{
 		m_iStateReligionUnitProductionModifier += iChange;
-		if (getTeam() == GC.getGame().getActiveTeam())
+		if (GET_TEAM(getTeam()).isActive())
 			gDLL->UI().setDirty(CityInfo_DIRTY_BIT, true);
 	}
 }
@@ -8156,7 +8159,7 @@ void CvPlayer::changeStateReligionBuildingProductionModifier(int iChange)
 	if (iChange != 0)
 	{
 		m_iStateReligionBuildingProductionModifier += iChange;
-		if (getTeam() == GC.getGame().getActiveTeam())
+		if (GET_TEAM(getTeam()).isActive())
 			gDLL->UI().setDirty(CityInfo_DIRTY_BIT, true);
 	}
 }
@@ -8466,7 +8469,7 @@ void CvPlayer::setCombatExperience(int iExperience)
 			}
 		}
 	}  // <advc.078>
-	if (getID() == GC.getGame().getActivePlayer() &&
+	if (isActive() &&
 		BUGOption::isEnabled("MainInterface__Combat_Counter", false))
 	{
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
@@ -8661,7 +8664,7 @@ void CvPlayer::verifyAlive()
 	}
 	if (bKill)
 	{	// <advc.127> Defeat of active player during AI Auto Play
-		if (isHumanDisabled() && kGame.getActivePlayer() == getID() &&
+		if (isHumanDisabled() && isActive() &&
 			!kGame.isOption(GAMEOPTION_RISE_FALL)) // advc.701
 		{
 			// Automatically change active player
@@ -8779,7 +8782,7 @@ void CvPlayer::setTurnActive(bool bNewValue, bool bDoTurn)
 				doTurnUnits();
 			}
 
-			if (getID() == kGame.getActivePlayer() && kGame.getElapsedGameTurns() > 0)
+			if (isActive() && kGame.getElapsedGameTurns() > 0)
 			{
 				if (kGame.isNetworkMultiPlayer())
 				{
@@ -8798,7 +8801,7 @@ void CvPlayer::setTurnActive(bool bNewValue, bool bDoTurn)
 				if (isHuman())
 				{
 					validateDiplomacy(); // advc.001e
-					if(kGame.getActivePlayer() == getID())
+					if (isActive())
 					{
 						/*  Make sure that Python events like Civ4lerts are
 							triggered before processing messages */
@@ -8825,7 +8828,7 @@ void CvPlayer::setTurnActive(bool bNewValue, bool bDoTurn)
 			m_aMajorMsgs.clear(); // </106b>
 		}
 
-		if (getID() == kGame.getActivePlayer())
+		if (isActive())
 		{
 			if (gDLL->UI().getLengthSelectionList() == 0)
 				kGame.cycleSelectionGroups_delayed(1, false);
@@ -8836,14 +8839,14 @@ void CvPlayer::setTurnActive(bool bNewValue, bool bDoTurn)
 	{
 		GC.getLogger().logTurnActive(getID()); // advc.003t
 
-		if (getID() == kGame.getActivePlayer())
+		if (isActive())
 		{
 			gDLL->UI().setForcePopup(false);
 			gDLL->UI().clearQueuedPopups();
 			gDLL->UI().flushTalkingHeadMessages();
 		}
 
-		if (getID() == kGame.getActivePlayer())
+		if (isActive())
 			startProfilingDLL(true); // start profiling DLL if desired
 
 		kGame.changeNumGameTurnActive(-1);
@@ -9019,7 +9022,7 @@ void CvPlayer::setAutoMoves(bool bNewValue)
 			setTurnActive(false);
 		else
 		{
-			if (getID() == GC.getGame().getActivePlayer())
+			if (isActive())
 			{
 				gDLL->UI().setCycleSelectionCounter(1);
 				// this is a subtle case. I think it's best to just use the normal delay
@@ -9066,7 +9069,7 @@ void CvPlayer::setFoundedFirstCity(bool bNewValue)
 		return;
 
 	m_bFoundedFirstCity = bNewValue;
-	if (getID() == GC.getGame().getActivePlayer())
+	if (isActive())
 	{
 		gDLL->UI().setDirty(PercentButtons_DIRTY_BIT, true);
 		gDLL->UI().setDirty(ResearchButtons_DIRTY_BIT, true);
@@ -9099,7 +9102,7 @@ void CvPlayer::setStrike(bool bNewValue)
 		m_bStrike = bNewValue;
 		if (isStrike())
 		{
-			if (getID() == GC.getGame().getActivePlayer())
+			if (isActive())
 			{
 				gDLL->UI().addMessage(getID(), false, -1,
 						gDLL->getText("TXT_KEY_MISC_UNITS_ON_STRIKE").GetCString(),
@@ -9161,8 +9164,8 @@ void CvPlayer::setCurrentEra(EraTypes eNewValue)
 			if (kPlot.getRevealedImprovementType(
 				GC.getGame().getActiveTeam(), true) != NO_IMPROVEMENT)
 			{
-				if (kPlot.getOwner() == getID() || (!kPlot.isOwned() &&
-					getID() == GC.getGame().getActivePlayer()))
+				if (kPlot.getOwner() == getID() ||
+					(!kPlot.isOwned() && isActive()))
 				{
 					kPlot.setLayoutDirty(true);
 				}
@@ -9185,7 +9188,7 @@ void CvPlayer::setCurrentEra(EraTypes eNewValue)
 	//update main interface flag
 	gDLL->UI().setDirty(Flag_DIRTY_BIT, true);
 
-	if (getID() == GC.getGame().getActivePlayer())
+	if (isActive())
 	{
 		gDLL->UI().setDirty(Soundtrack_DIRTY_BIT, true);
 		// advc.004m: Default cam distance can depend on era
@@ -9416,12 +9419,8 @@ PlayerColorTypes CvPlayer::getKnownPlayerColor(TeamTypes eObserver) const
 {
 	// advc.058: Moved from getPlayerColor
 	// K-Mod. Conceal the player colour of unmet players.
-	if (concealUnknownCivs() &&
-		!GET_TEAM(eObserver == NO_TEAM ? GC.getGame().getActiveTeam() : eObserver).
-		isHasSeen(getTeam()))
-	{
-		return GC.getInitCore().getColor(BARBARIAN_PLAYER);
-	} // K-Mod end
+	if (concealUnknownCivs() && !activeTeamIfNone(eObserver).isHasSeen(getTeam()))
+		return GC.getInitCore().getColor(BARBARIAN_PLAYER); // K-Mod end
 	return getPlayerColor();
 }
 
@@ -9487,7 +9486,7 @@ void CvPlayer::changeYieldRateModifier(YieldTypes eYield, int iChange)
 		updateCommerce();
 
 	AI_makeAssignWorkDirty();
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (GET_TEAM(getTeam()).isActive())
 		gDLL->UI().setDirty(CityInfo_DIRTY_BIT, true);
 }
 
@@ -9639,16 +9638,16 @@ bool CvPlayer::setCommercePercent(CommerceTypes eCommerce, int iNewValue, bool b
 		AI().AI_updateCommerceWeights();
 	} // K-Mod end
 	AI_makeAssignWorkDirty();
-	/*if (getTeam() == GC.getGame().getActiveTeam()) {
+	/*if (GET_TEAM(getTeam()).isActive()) {
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 		gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 		gDLL->UI().setDirty(CityScreen_DIRTY_BIT, true);
 		gDLL->UI().setDirty(Financial_Screen_DIRTY_BIT, true);
 	}*/ // BtS
 	// K-Mod
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (GET_TEAM(getTeam()).isActive())
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true); // research turns left?
-	if (getID() == GC.getGame().getActivePlayer())
+	if (isActive())
 	{
 		gDLL->UI().setDirty(CityInfo_DIRTY_BIT, true);
 		gDLL->UI().setDirty(Financial_Screen_DIRTY_BIT, true);
@@ -9695,7 +9694,7 @@ void CvPlayer::changeCommerceRate(CommerceTypes eCommerce, int iChange)
 	{
 		m_aiCommerceRate.add(eCommerce, iChange);
 		FAssert(getCommerceRate(eCommerce) >= 0);
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 	}
 }
@@ -9775,7 +9774,7 @@ void CvPlayer::changeCommerceFlexibleCount(CommerceTypes eCommerce, int iChange)
 		setCommercePercent(eCommerce, //0
 				GC.getInfo(eCommerce).getInitialPercent(), true); // K-Mod
 	}
-	if (getID() == GC.getGame().getActivePlayer())
+	if (isActive())
 	{
 		gDLL->UI().setDirty(PercentButtons_DIRTY_BIT, true);
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
@@ -9790,7 +9789,7 @@ void CvPlayer::changeGoldPerTurnByPlayer(PlayerTypes ePlayer, int iChange)
 		m_iGoldPerTurn += iChange;
 		m_aiGoldPerTurnByPlayer.add(ePlayer, iChange);
 
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 
 		if (!isHuman() /* advc: */ && isAlive())
@@ -9974,7 +9973,7 @@ void CvPlayer::changeUnitClassMaking(UnitClassTypes eUnitClass, int iChange)
 	{
 		m_aiUnitClassMaking.add(eUnitClass, iChange);
 		FAssert(getUnitClassMaking(eUnitClass) >= 0);
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(Help_DIRTY_BIT, true);
 	}
 }
@@ -10006,7 +10005,7 @@ void CvPlayer::changeBuildingClassMaking(BuildingClassTypes eBuildingClass, int 
 	{
 		m_aiBuildingClassMaking.add(eBuildingClass, iChange);
 		FAssert(getBuildingClassMaking(eBuildingClass) >= 0);
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(Help_DIRTY_BIT, true);
 	}
 }
@@ -10072,7 +10071,7 @@ void CvPlayer::changeNoCivicUpkeepCount(CivicOptionTypes eCivicOption, int iChan
 	{
 		m_aiNoCivicUpkeepCount.add(eCivicOption, iChange);
 		FAssert(getNoCivicUpkeepCount(eCivicOption) >= 0);
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 	}
 }
@@ -10175,7 +10174,7 @@ void CvPlayer::changeUpkeepCount(UpkeepTypes eUpkeep, int iChange)
 	{
 		m_aiUpkeepCount.add(eUpkeep, iChange);
 		FAssert(getUpkeepCount(eUpkeep) >= 0);
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 	}
 }
@@ -10197,7 +10196,7 @@ void CvPlayer::setResearchingTech(TechTypes eTech, bool bNewValue)
 	if (isResearchingTech(eTech) != bNewValue)
 	{
 		m_abResearchingTech.set(eTech, bNewValue);
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 		{
 			// to check whether we still need the tech chooser popup
 			gDLL->UI().setDirty(Popup_DIRTY_BIT, true);
@@ -10449,7 +10448,7 @@ void CvPlayer::updateGroupCycle(CvSelectionGroup const& kGroup)
 		m_groupCycle.insertBefore(kUnit.getGroupID(), pBestSelectionGroupNode);
 	else m_groupCycle.insertAtEnd(kUnit.getGroupID());
 	// <advc.154>
-	if (isHuman() && GC.getGame().getActivePlayer() == getID())
+	if (isHuman() && isActive())
 		gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true); // </advc.154>
 }
 
@@ -10589,7 +10588,7 @@ void CvPlayer::clearResearchQueue()
 	FOR_EACH_ENUM(Tech)
 		setResearchingTech(eLoopTech, false);
 
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (GET_TEAM(getTeam()).isActive())
 	{
 		gDLL->UI().setDirty(ResearchButtons_DIRTY_BIT, true);
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
@@ -10670,13 +10669,13 @@ bool CvPlayer::pushResearch(TechTypes eTech, bool bClear, /* advc.004x: */ bool 
 	setResearchingTech(eTech, true);
 
 	// Set the dirty bits
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (GET_TEAM(getTeam()).isActive())
 	{
 		gDLL->UI().setDirty(ResearchButtons_DIRTY_BIT, true);
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 		gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 		// <advc.004x>
-		if(bKillPopup && bWasEmpty && getID() == GC.getGame().getActivePlayer())
+		if(bKillPopup && bWasEmpty && isActive())
 			killAll(BUTTONPOPUP_CHOOSETECH, 0); // </advc.004x>
 	}
 	// ONEVENT - Tech selected (any)
@@ -10700,7 +10699,7 @@ void CvPlayer::popResearch(TechTypes eTech)
 
 	setResearchingTech(eTech, false);
 
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (GET_TEAM(getTeam()).isActive())
 	{
 		gDLL->UI().setDirty(ResearchButtons_DIRTY_BIT, true);
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
@@ -10809,7 +10808,7 @@ void CvPlayer::addMessage(CvTalkingHeadMessage const& kMessage)
 {
 	// <advc.706> Remove messages arriving during interlude from display immediately
 	CvGame const& kGame = GC.getGame();
-	if(kGame.isOption(GAMEOPTION_RISE_FALL) && kGame.getActivePlayer() == getID() &&
+	if(kGame.isOption(GAMEOPTION_RISE_FALL) && isActive() &&
 		kGame.getRiseFall().getInterludeCountdown() >= 0)
 	{
 		gDLL->UI().clearEventMessages();
@@ -10817,7 +10816,7 @@ void CvPlayer::addMessage(CvTalkingHeadMessage const& kMessage)
 	m_listGameMessages.push_back(kMessage);
 	// <advc.106b>
 	// Special treatment only for events in other civs' turns.
-	if(!kGame.isInBetweenTurns() && kGame.getActivePlayer() == getID())
+	if(!kGame.isInBetweenTurns() && isActive())
 		return;
 	/* DISPLAY_ONLY, COMBAT, CHAT, QUEST don't show up on the Event tab
 	   of the Turn Log, and therefore shouldn't count.
@@ -10897,7 +10896,7 @@ void CvPlayer::postProcessMessages()
 			}
 		}
 	}
-	if(!GC.getGame().getAIAutoPlay() && iLimit >= 0 && (m_iNewMessages > iLimit ||
+	if (!GC.getGame().getAIAutoPlay() && iLimit >= 0 && (m_iNewMessages > iLimit ||
 		(m_iNewMessages > 0 && (bRelevantDiplo ||
 		/*  Hotseat seems to show messages only if there hasn't been another
 			human turn since the message was triggered (can't check that here;
@@ -10985,7 +10984,8 @@ void CvPlayer::addPopup(CvPopupInfo* pInfo, bool bFront)
 	else if (eType == BUTTONPOPUP_PYTHON_SCREEN)
 	{
 		CvGame& kGame = GC.getGame();
-		if (kGame.getElapsedGameTurns() <= 0 && kGame.getActivePlayer() != NO_PLAYER)
+		if (kGame.getElapsedGameTurns() <= 0 &&
+			kGame.getActivePlayer() != NO_PLAYER)
 		{
 			// Must be DawnOfMan then
 			kGame.setDawnOfManShown(true);
@@ -11024,9 +11024,7 @@ CvPopupInfo* CvPlayer::popFrontPopup()
 
 const CvPopupQueue& CvPlayer::getPopups() const
 {
-	// advc.test:
-	FAssertMsg(GC.getGame().getActivePlayer() == getID(),
-			"Just to see under which circumstances (if any) the EXE adds popups to AI players");
+	FAssertMsg(isActive(), "EXE shouldn't add popups to AI players"); // advc
 	return m_listPopups;
 }
 
@@ -11392,7 +11390,7 @@ void CvPlayer::doResearch()
 		bool bForceResearchChoice = false;
 		if (getCurrentResearch() == NO_TECH /* K-Mod: */ && isHuman())
 		{
-			if (getID() == GC.getGame().getActivePlayer())
+			if (isActive())
 				chooseTech();
 			//if (GC.getGame().getElapsedGameTurns() > 4) { // advc.124g (commented out)
 			AI().AI_chooseResearch();
@@ -12379,8 +12377,8 @@ bool CvPlayer::doEspionageMission(EspionageMissionTypes eMission, PlayerTypes eT
 
 	if (bShowExplosion && pPlot != NULL)
 	{
-		if (pPlot->isVisible(GC.getGame().getActiveTeam()) &&
-			GC.getGame().getActiveTeam() == getTeam()) // advc.120i
+		if (GET_TEAM(getTeam()).isActive() && // advc.120i
+			pPlot->isVisible(getTeam()))
 		{
 			EffectTypes eEffect = GC.getInfo(GC.getInfo(MISSION_BOMBARD).
 					getEntityEvent()).getEffectType();
@@ -12409,7 +12407,7 @@ bool CvPlayer::doEspionageMission(EspionageMissionTypes eMission, PlayerTypes eT
 					GC.getColorType("GREEN"), iX, iY, true, true);
 		}
 	}
-	else if (getID() == GC.getGame().getActivePlayer())
+	else if (isActive())
 	{
 		CvPopupInfo* pInfo = new CvPopupInfo(BUTTONPOPUP_TEXT);
 		if (iHave < iMissionCost)
@@ -12473,10 +12471,10 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 		{
 		case ADVANCEDSTARTACTION_EXIT:
 			//Try to build this player's empire
-			if (getID() == GC.getGame().getActivePlayer())
+			if (isActive())
 				gDLL->UI().setBusy(true);
 			AI().AI_doAdvancedStart(true);
-			if (getID() == GC.getGame().getActivePlayer())
+			if (isActive())
 				gDLL->UI().setBusy(false);
 			break;
 		case ADVANCEDSTARTACTION_AUTOMATE:
@@ -12496,7 +12494,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 	case ADVANCEDSTARTACTION_EXIT:
 		changeGold(getAdvancedStartPoints());
 		setAdvancedStartPoints(-1);
-		if (GC.getGame().getActivePlayer() == getID())
+		if (isActive())
 			gDLL->UI().setInAdvancedStart(false);
 
 		if (isHuman())
@@ -12515,10 +12513,10 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 		}
 		break;
 	case ADVANCEDSTARTACTION_AUTOMATE:
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setBusy(true);
 		AI().AI_doAdvancedStart(true);
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setBusy(false);
 		break;
 	case ADVANCEDSTARTACTION_UNIT:
@@ -12572,7 +12570,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 				}
 			}
 		}
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(Advanced_Start_DIRTY_BIT, true);
 		break;
 	}
@@ -12630,7 +12628,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 			pPlot->setImprovementType(NO_IMPROVEMENT);
 			changeAdvancedStartPoints(iCost);
 		}
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(Advanced_Start_DIRTY_BIT, true);
 		break;
 	}
@@ -12734,7 +12732,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 		}
 		/*	advc (note): This used to be executed even for pCity==NULL,
 			but I don't think that could've occurred. */
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(Advanced_Start_DIRTY_BIT, true);
 		break;
 	}
@@ -12767,7 +12765,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 			pPlot->setRouteType(NO_ROUTE, true);
 			changeAdvancedStartPoints(iCost);
 		}
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(Advanced_Start_DIRTY_BIT, true);
 		break;
 	}
@@ -12813,7 +12811,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 			pPlot->setImprovementType(NO_IMPROVEMENT);
 			changeAdvancedStartPoints(iCost);
 		}
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(Advanced_Start_DIRTY_BIT, true);
 		break;
 	}
@@ -12837,7 +12835,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 			GET_TEAM(getTeam()).setHasTech(eTech, false, getID(), false, false);
 			changeAdvancedStartPoints(iCost);
 		}
-		if (getID() == GC.getGame().getActivePlayer())
+		if (isActive())
 			gDLL->UI().setDirty(Advanced_Start_DIRTY_BIT, true);
 		break;
 	}
@@ -14605,7 +14603,7 @@ void CvPlayer::write(FDataStreamBase* pStream)
 		/*	<advc.001> Don't store popups for AI players. The EXE sometimes adds popups
 			to AI players through CvPlayer::getPopups; not sure when and why. Those popups
 			linger and appear when switching to an AI player through Alt+Z. */
-		if (GC.getGame().getActivePlayer() != getID())
+		if (!isActive())
 		{
 			currentPopups.clear();
 			clearPopups();
@@ -18782,8 +18780,7 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 		implement the peace treaty twice. No harm in that.
 		I don't know if updateTradeList gets called for all AI trades;
 		don't want to rely on it. */
-	if ((GC.getGame().getActivePlayer() != getID() &&
-		GC.getGame().getActivePlayer() != eOtherPlayer) ||
+	if ((!isActive() && !GET_PLAYER(eOtherPlayer).isActive()) ||
 		GET_TEAM(eOtherPlayer).isAtWar(getTeam()))
 	{
 		return;
@@ -18941,7 +18938,7 @@ void CvPlayer::getGlobeLayerColors(GlobeLayerTypes eGlobeLayerType, int iOption,
 	/*  <advc> These get cleared by some of the subroutines, but should be
 		empty to begin with. If not, there could be a memory leak. */
 	FAssert(aColors.empty() && aIndicators.empty());
-	FAssert(getID() == kGame.getActivePlayer()); // </advc>
+	FAssert(isActive()); // </advc>
 	// <advc.706>
 	if(kGame.isOption(GAMEOPTION_RISE_FALL) && CvPlot::isAllFog())
 		return; // </advc.706>
@@ -19638,8 +19635,7 @@ void CvPlayer::checkAlert(int iAlertID, bool bSilent)
 // <advc.004x>
 void CvPlayer::killAll(ButtonPopupTypes ePopupType, int iData1)
 {
-	CvGame const& kGame = GC.getGame();
-	if (getID() != kGame.getActivePlayer() || !isHuman() ||
+	if (!isActive() || !isHuman() ||
 		/*	Non-minimized popups don't usually become outdated, but
 			it can happen when multiple popups trigger at the same time and
 			the handler for one popup affects game state relevant for another.
@@ -19648,7 +19644,7 @@ void CvPlayer::killAll(ButtonPopupTypes ePopupType, int iData1)
 		//!isOption(PLAYEROPTION_MINIMIZE_POP_UPS) ||
 		/*	I can't get this to work in network games. The delays introduced by
 			net messages cause popups to appear several times. */
-		kGame.isNetworkMultiPlayer())
+		GC.getGame().isNetworkMultiPlayer())
 	{
 		return;
 	}

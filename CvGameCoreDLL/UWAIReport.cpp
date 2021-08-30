@@ -49,11 +49,10 @@ void UWAIReport::writeToFile()
 {
 	if (m_iMuted > 0)
 		return;
-	CvGame const& g = GC.getGame();
 	ostringstream logFileName;
-	/*if(g.isNetworkMultiPlayer()) // For OOS debugging on a single PC
-		logFileName << (int)g.getActivePlayer() << "_";*/
-	logFileName << "uwai" << g.getGameTurn() << ".log";
+	/*if(GC.getGame().isNetworkMultiPlayer()) // For OOS debugging on a single PC
+		logFileName << (int)GC.getGame().getActivePlayer() << "_";*/
+	logFileName << "uwai" << GC.getGame().getGameTurn() << ".log";
 	gDLL->logMsg(logFileName.str().c_str(), m_report, false, false);
 	m_report.clear();
 }

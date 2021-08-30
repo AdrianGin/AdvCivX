@@ -293,7 +293,7 @@ void CvUnit::finalizeInit() // advc.003u: Body cut from init
 		}
 	}
 
-	if (kOwner.getID() == kGame.getActivePlayer())
+	if (isActiveOwned())
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 
 	if (m_pUnitInfo->isWorldUnit())
@@ -1079,9 +1079,8 @@ void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible)
 			&cdDefenderDetails);
 	int iAttackerKillOdds = iDefenderOdds * (100 - withdrawalProbability()) / 100;
 
-	// <advc.001> Replacing isHuman checks
-	if (getOwner() == GC.getGame().getActivePlayer() ||
-		pDefender->getOwner() == GC.getGame().getActivePlayer()) // </advc.001>
+	// advc.001: Replacing isHuman checks
+	if (isActiveOwned() || pDefender->isActiveOwned())
 	{
 		CyArgsList pyArgsCD;
 		pyArgsCD.add(gDLL->getPythonIFace()->makePythonObject(&cdAttackerDetails));
@@ -1362,7 +1361,7 @@ void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted)
 						(getPlot().getPoint().z + pPlot->getPoint().z) / 2);
 				attackDirection.Unitize();
 				gDLL->UI().lookAt(lookAtPoint,
-						(getOwner() != GC.getGame().getActivePlayer() ||
+						(!isActiveOwned() ||
 						gDLL->getGraphicOption(GRAPHICOPTION_NO_COMBAT_ZOOM)) ?
 						CAMERALOOKAT_BATTLE : CAMERALOOKAT_BATTLE_ZOOM_IN,
 						attackDirection);
@@ -1430,7 +1429,7 @@ void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted)
 	{
 		if (isCombatFocus() && gDLL->UI().isCombatFocus())
 		{
-			if (getOwner() == GC.getGame().getActivePlayer())
+			if (isActiveOwned())
 				gDLL->UI().releaseLockedCamera();
 		}
 	}
@@ -1669,7 +1668,7 @@ void CvUnit::addDefenseSuccessMessages(CvUnit const& kDefender) const
 // advc.002l:
 bool CvUnit::suppressStackAttackSound(CvUnit const& kDefender) const
 {
-	if (getOwner() != GC.getGame().getActivePlayer())
+	if (!isActiveOwned())
 		return false;
 	CvSelectionGroup const* pAttackGroup = gDLL->UI().getSelectionList();
 	if (pAttackGroup == NULL ||
@@ -1701,11 +1700,8 @@ void CvUnit::checkRemoveSelectionAfterAttack()
 
 bool CvUnit::isActionRecommended(int iAction)
 {
-	if (getOwner() != GC.getGame().getActivePlayer() ||
-		!isHuman()) // advc.127
-	{
+	if (!isActiveOwned() || /* advc.127: */ !isHuman())
 		return false;
-	}
 	/*  <advc.002e> This needs to be done in some CvUnit function that gets called
 		by the EXE after read, after isPromotionReady and late enough for IsSelected
 		to work. (E.g. setupGraphical and shouldShowEnemyGlow are too early.) */
@@ -1934,16 +1930,15 @@ void CvUnit::updateFoundingBorder(bool bForceClear) const
 	Doesn't check isVisible. */
 bool CvUnit::isUnowned() const
 {
-	TeamTypes eActiveTeam = GC.getGame().getActiveTeam();
-	PlayerTypes eVisualOwner = getVisualOwner(eActiveTeam);
-	if(eVisualOwner == NO_PLAYER)
+	PlayerTypes eVisualOwner = getVisualOwner(GC.getGame().getActiveTeam());
+	if (eVisualOwner == NO_PLAYER)
 	{
 		FAssert(eVisualOwner != NO_PLAYER);
 		return true;
 	}
-	if(eVisualOwner != BARBARIAN_PLAYER)
+	if (eVisualOwner != BARBARIAN_PLAYER)
 		return false;
-	if(isAnimal() || m_pUnitInfo->isHiddenNationality())
+	if (isAnimal() || m_pUnitInfo->isHiddenNationality())
 		return true;
 	// The way this function is used, I guess it's possible that the unit has just died, so:
 	// Erik: bugfix, the current plot could be NULL
@@ -2759,7 +2754,7 @@ void CvUnit::attackForDamage(CvUnit *pDefender, int attackerDamageChange, int de
 					(getPlot().getPoint().z + pPlot->getPoint().z) / 2);
 			attackDirection.Unitize();
 			gDLL->UI().lookAt(lookAtPoint,
-					getOwner() != GC.getGame().getActivePlayer() ||
+					!isActiveOwned() ||
 					gDLL->getGraphicOption(GRAPHICOPTION_NO_COMBAT_ZOOM) ?
 					CAMERALOOKAT_BATTLE : CAMERALOOKAT_BATTLE_ZOOM_IN,
 					attackDirection);
@@ -2868,7 +2863,7 @@ void CvUnit::move(CvPlot& kPlot, bool bShow, /* advc.163: */ bool bJump, bool bG
 		}
 	}
 
-	if (getOwner() == GC.getGame().getActivePlayer() && !kPlot.isOwned() &&
+	if (isActiveOwned() && !kPlot.isOwned() &&
 		eFeature != NO_FEATURE) // spawn birds if trees present - JW
 	{
 		CvFeatureInfo const& kFeature = GC.getInfo(eFeature);
@@ -5170,7 +5165,7 @@ bool CvUnit::found()
 {
 	if (!canFound(plot()))
 		return false;
-	if (GC.getGame().getActivePlayer() == getOwner() &&
+	if (isActiveOwned() &&
 		isHuman()) // advc.127, advc.706
 	{
 		gDLL->UI().lookAt(getPlot().getPoint(), CAMERALOOKAT_NORMAL);
@@ -5856,7 +5851,7 @@ bool CvUnit::espionage(EspionageMissionTypes eMission, int iData)
 				}
 			}
 			// K-Mod
-			if (getTeam() == GC.getGame().getActiveTeam())
+			if (isActiveTeam())
 				gDLL->UI().setDirty(CityInfo_DIRTY_BIT, true);
 			// K-Mod end
 			return true;
@@ -8264,7 +8259,7 @@ void CvUnit::joinGroup(CvSelectionGroup* pSelectionGroup, bool bRemoveSelected, 
 			//else GET_PLAYER(getOwner()).updateGroupCycle(this); // BtS
 		}
 
-		if (getTeam() == GC.getGame().getActiveTeam())
+		if (isActiveTeam())
 		{
 			if (pPlot != NULL)
 				pPlot->setFlagDirty(true);
@@ -8820,7 +8815,7 @@ void CvUnit::setMoves(int iNewValue)
 	FAssert(getMoves() >= 0);
 
 	CvPlot* pPlot = plot();
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (isActiveTeam())
 	{
 		if (pPlot != NULL)
 			pPlot->setFlagDirty(true);
@@ -9545,7 +9540,7 @@ void CvUnit::collectBlockadeGold()
 
 PlayerTypes CvUnit::getVisualOwner(TeamTypes eForTeam) const
 {
-	if (NO_TEAM == eForTeam)
+	if (eForTeam == NO_TEAM)
 		eForTeam = GC.getGame().getActiveTeam();
 
 	PlayerTypes eR = getOwner(); // advc.061
@@ -9644,8 +9639,8 @@ void CvUnit::setCombatUnit(CvUnit* pCombatUnit, bool bAttacking)
 		FAssert(getCombatUnit() == NULL);
 		FAssert(!getPlot().isFighting());
 		m_bCombatFocus = (bAttacking && !gDLL->UI().isFocusedWidget() &&
-				(getOwner() == GC.getGame().getActivePlayer() ||
-				(pCombatUnit->getOwner() == GC.getGame().getActivePlayer() &&
+				(isActiveOwned() ||
+				(pCombatUnit->isActiveOwned() &&
 				!GC.getGame().isMPOption(MPOPTION_SIMULTANEOUS_TURNS))));
 		m_combatUnit = pCombatUnit->getIDInfo();
 		setCombatFirstStrikes(pCombatUnit->immuneToFirstStrikes() ? 0 :

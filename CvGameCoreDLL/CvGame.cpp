@@ -32,9 +32,6 @@
 	(Won't matter so long as CvGame is a singleton class.) */
 #undef CVGAME_INSTANCE_FOR_RNG
 #define CVGAME_INSTANCE_FOR_RNG (*this) // </advc.007b>
-// <advc>
-#undef CVGAME_INSTANCE_FOR_ACTIVE_AGENT
-#define CVGAME_INSTANCE_FOR_ACTIVE_AGENT (*this) // </advc>
 
 
 CvGame::CvGame() :
@@ -4122,14 +4119,6 @@ scaled CvGame::groundbreakingNormalizationModifier(TechTypes eTech) const
 	if (eTechEra <= GC.getGame().getStartEra())
 		return 0;
 	return -per100(GC.getInfo(eTechEra).get(CvEraInfo::AIMaxGroundbreakingPenalty)) / 4;
-}
-
-
-TeamTypes CvGame::getActiveTeam() const
-{
-	if (getActivePlayer() == NO_PLAYER)
-		return NO_TEAM;
-	return (TeamTypes)GET_PLAYER(getActivePlayer()).getTeam();
 }
 
 

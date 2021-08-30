@@ -414,6 +414,9 @@ public:
 		return (PlayerTypes)m_eOwner;
 	}
 	void setOwner(PlayerTypes eNewValue, bool bCheckUnits, bool bUpdatePlotGroup);
+	// <advc>
+	bool isActiveOwned() const { return (GC.getInitCore().getActivePlayer() == getOwner()); }
+	bool isActiveTeam() const { return (GC.getInitCore().getActiveTeam() == getTeam()); } // </advc>
 	/*  <advc.035> The returned player becomes the owner if war/peace changes
 		between that player and the current owner */
 	PlayerTypes getSecondOwner() const;

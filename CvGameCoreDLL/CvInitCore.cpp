@@ -481,6 +481,7 @@ void CvInitCore::resetGame(/* advc.enum: */ bool bBeforeRead)
 	m_uiSyncRandSeed = 0;
 	m_uiMapRandSeed = 0;
 	m_eActivePlayer = NO_PLAYER;
+	m_eActiveTeam = NO_TEAM; // advc.opt
 
 	// Temp vars
 	m_szTemp.clear();
@@ -1001,9 +1002,13 @@ void CvInitCore::setForceControl(ForceControlTypes eIndex, bool bOption)
 
 void CvInitCore::setActivePlayer(PlayerTypes eActivePlayer)
 {
+	// <advc>
+	if (m_eActivePlayer == eActivePlayer)
+		return; // </advc>
 	/*	<advc.004s>, advc.001: Player switching skips the player history updates.
 		In BtS, this merely results in a discontinuity in the graphs, but the new
-		PlayerHistory class doesn't tolerate this at all. */
+		PlayerHistory class doesn't tolerate this at all. (Tbd.: Move this to
+		CvGame::setActivePlayer? Not sure if all calls go through there ...) */
 	if (m_eActivePlayer != NO_PLAYER)
 	{
 		CvPlayer& kPrevActivePlayer = GET_PLAYER(m_eActivePlayer);
@@ -1018,9 +1023,11 @@ void CvInitCore::setActivePlayer(PlayerTypes eActivePlayer)
 	m_eActivePlayer = eActivePlayer;
 	if (m_eActivePlayer != NO_PLAYER)
 	{
+		m_eActiveTeam = GET_PLAYER(m_eActivePlayer).getTeam(); // advc.opt
 		// Automatically claim this slot
 		setSlotClaim(m_eActivePlayer, SLOTCLAIM_ASSIGNED);
 	}
+	else m_eActiveTeam = NO_TEAM; // advc.opt
 }
 
 void CvInitCore::setType(GameType eType)

@@ -271,7 +271,7 @@ void CvCity::init(int iID, PlayerTypes eOwner, int iX, int iY, bool bBumpUnits,
 		if (!isHuman() /* advc.250b: */ && !kGame.isOption(GAMEOPTION_SPAH))
 			changeOverflowProduction(GC.getDefineINT("INITIAL_AI_CITY_PRODUCTION"), 0);
 		// <advc.124g>
-		if(isHuman() && eOwner == kGame.getActivePlayer() &&
+		if (isHuman() && isActiveOwned() &&
 			kOwner.getCurrentResearch() == NO_TECH)
 		{
 			kOwner.chooseTech();
@@ -402,7 +402,7 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 	FAssert(getBaseYieldRate(YIELD_COMMERCE) == 0);
 	FAssert(!isProduction());
 
-	PlayerTypes eOwner = getOwner();
+	PlayerTypes const eOwner = getOwner();
 	bool const bCapital = isCapital();
 	// <advc.106> Moved up so that the old capital can be announced
 	if (bCapital)
@@ -442,7 +442,7 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 	if (bUpdatePlotGroups)
 		GC.getGame().updatePlotGroups();
 
-	if (eOwner == GC.getGame().getActivePlayer())
+	if (isActiveOwned())
 		gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
 }
 
@@ -738,16 +738,17 @@ bool CvCity::isCitySelected()
 }
 
 
-bool CvCity::canBeSelected() const  // advc: refactored
+bool CvCity::canBeSelected() const
 {
 	CvGame const& kGame = GC.getGame();
-	TeamTypes eActiveTeam = kGame.getActiveTeam();
-	if(m_bInvestigate || // advc.103
-		getTeam() == eActiveTeam || kGame.isDebugMode())
+
+	if (m_bInvestigate || // advc.103
+		isActiveTeam() || kGame.isDebugMode())
 	{
 		return true;
 	}
-	if(eActiveTeam != NO_TEAM && getPlot().isInvestigate(eActiveTeam))
+	TeamTypes const eActiveTeam = kGame.getActiveTeam();
+	if (eActiveTeam != NO_TEAM && getPlot().isInvestigate(eActiveTeam))
 		return true;
 
 	FOR_EACH_ENUM(EspionageMission)
@@ -772,7 +773,7 @@ void CvCity::updateSelectedCity(bool bTestProduction)
 	}
 	if (bTestProduction)
 	{
-		if (getOwner() == GC.getGame().getActivePlayer() && !isProduction() &&
+		if (isActiveOwned() && !isProduction() &&
 			!isProductionAutomated()) // K-Mod
 		{
 			chooseProduction(NO_UNIT, NO_BUILDING, NO_PROJECT, false, true);
@@ -2534,7 +2535,7 @@ void CvCity::hurry(HurryTypes eHurry)
 		logBBAI("    City %S hurrying production of %S at cost of %d pop, %d gold, %d anger length", getName().GetCString(), szString.GetCString(), iHurryPopulation, iHurryGold, iHurryAngerLength);
 	}
 
-	if (getOwner() == GC.getGame().getActivePlayer() && isCitySelected())
+	if (isActiveOwned() && isCitySelected())
 		gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
 
 	CvEventReporter::getInstance().cityHurry(this, eHurry);
@@ -2781,7 +2782,7 @@ void CvCity::conscript()
 
 	if (pUnit != NULL)
 	{
-		if (GC.getGame().getActivePlayer() == getOwner() &&
+		if (isActiveOwned() &&
 			isHuman()) // advc.127, advc.706
 		{
 			/*	advc.001o: Conscription had caused the main map to black out.
@@ -2857,7 +2858,6 @@ int CvCity::getBonusYieldRateModifier(YieldTypes eYield, BonusTypes eBonus) cons
 
 void CvCity::processBonus(BonusTypes eBonus, int iChange)
 {
-	bool const bActivePlayer = (getOwner() == GC.getGame().getActivePlayer());
 	CvCivilization const& kCiv = getCivilization();
 	{
 		int iValue = GC.getInfo(eBonus).getHealth();
@@ -2872,7 +2872,7 @@ void CvCity::processBonus(BonusTypes eBonus, int iChange)
 				iGoodValue += iValue;
 			else iBadValue += iValue;
 		}  // <advc.001w>
-		if ((iGoodValue != 0 || iBadValue != 0) && bActivePlayer)
+		if ((iGoodValue != 0 || iBadValue != 0) && isActiveOwned())
 		{
 			int iHealth = healthRate();
 			if((iHealth < 0) != (iHealth + (iGoodValue - iBadValue) * iChange < 0))
@@ -2894,7 +2894,7 @@ void CvCity::processBonus(BonusTypes eBonus, int iChange)
 				iGoodValue += iValue;
 			else iBadValue += iValue;
 		}  // <advc.001w>
-		if ((iGoodValue != 0 || iBadValue != 0) && bActivePlayer)
+		if ((iGoodValue != 0 || iBadValue != 0) && isActiveOwned())
 		{
 			int iHappy = happyLevel() - unhappyLevel();
 			if((iHappy < 0) != (iHappy + (iGoodValue - iBadValue) * iChange < 0))
@@ -3128,11 +3128,8 @@ void CvCity::processBuilding(BuildingTypes eBuilding, int iChange, bool bObsolet
 		{
 			// Update text of resource indicators (CvGameTextMgr::setBonusExtraHelp)
 			PlayerTypes eDirtyPlayer = NO_PLAYER;
-			if (kBuilding.isNationalWonder() &&
-				getOwner() == kGame.getActivePlayer())
-			{
+			if (kBuilding.isNationalWonder() && isActiveOwned())
 				eDirtyPlayer = getOwner();
-			}
 			else if (kBuilding.isWorldWonder())
 				eDirtyPlayer = kGame.getActivePlayer();
 			if (eDirtyPlayer != NO_PLAYER)
@@ -4475,7 +4472,7 @@ void CvCity::setPopulation(int iNewValue)
 
 	getPlot().plotAction(PUF_makeInfoBarDirty);
 
-	if (getOwner() == GC.getGame().getActivePlayer() && isCitySelected())
+	if (isActiveOwned() && isCitySelected())
 	{
 		gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
 		gDLL->UI().setDirty(CityScreen_DIRTY_BIT, true);
@@ -4936,7 +4933,7 @@ void CvCity::updateFreshWaterHealth()
 
 		AI_setAssignWorkDirty(true);
 
-		if (getTeam() == GC.getGame().getActiveTeam())
+		if (isActiveTeam())
 			setInfoDirty(true);
 	}
 }
@@ -4992,7 +4989,7 @@ void CvCity::updateSurroundingHealthHappiness()
 		FAssert(getSurroundingGoodHealth() >= 0);
 		FAssert(getSurroundingBadHealth() <= 0);
 		AI_setAssignWorkDirty(true);
-		if (getTeam() == GC.getGame().getActiveTeam())
+		if (isActiveTeam())
 			setInfoDirty(true);
 	}
 }
@@ -5256,11 +5253,11 @@ int CvCity::getBuildingBadHealth(BuildingTypes eBuilding) const
 void CvCity::changeBuildingGoodHealth(int iChange)
 {
 	if (iChange == 0)
-		return; // advc
+		return;
 	m_iBuildingGoodHealth += iChange;
 	FAssert(getBuildingGoodHealth() >= 0);
 	AI_setAssignWorkDirty(true);
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (isActiveTeam())
 		setInfoDirty(true);
 }
 
@@ -5268,11 +5265,11 @@ void CvCity::changeBuildingGoodHealth(int iChange)
 void CvCity::changeBuildingBadHealth(int iChange)
 {
 	if (iChange == 0)
-		return; // advc
+		return;
 	m_iBuildingBadHealth += iChange;
 	FAssert(getBuildingBadHealth() <= 0);
 	AI_setAssignWorkDirty(true);
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (isActiveTeam())
 		setInfoDirty(true);
 }
 
@@ -5306,7 +5303,7 @@ void CvCity::updatePowerHealth()
 		FAssert(getPowerGoodHealth() >= 0);
 		FAssert(getPowerBadHealth() <= 0);
 		AI_setAssignWorkDirty(true);
-		if (getTeam() == GC.getGame().getActiveTeam())
+		if (isActiveTeam())
 			setInfoDirty(true);
 	}
 }
@@ -5319,7 +5316,7 @@ void CvCity::changeBonusGoodHealth(int iChange)
 	m_iBonusGoodHealth += iChange;
 	FAssert(getBonusGoodHealth() >= 0);
 	AI_setAssignWorkDirty(true);
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (isActiveTeam())
 		setInfoDirty(true);
 }
 
@@ -5331,7 +5328,7 @@ void CvCity::changeBonusBadHealth(int iChange)
 	m_iBonusBadHealth += iChange;
 	FAssert(getBonusBadHealth() <= 0);
 	AI_setAssignWorkDirty(true);
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (isActiveTeam())
 		setInfoDirty(true);
 }
 
@@ -5351,7 +5348,7 @@ void CvCity::changeMilitaryHappinessUnits(int iChange)
 		FAssert(getMilitaryHappinessUnits() >= 0);
 		AI_setAssignWorkDirty(true);
 		// <advc.004> Update the unhappiness indicator
-		if (getOwner() == GC.getGame().getActivePlayer())
+		if (isActiveOwned())
 			gDLL->UI().setDirty(CityInfo_DIRTY_BIT, true); // </advc.004>
 	}
 }
@@ -5894,7 +5891,7 @@ void CvCity::setFood(int iNewValue)
 	if (getFood() != iNewValue)
 	{
 		m_iFood = iNewValue;
-		if (getTeam() == GC.getGame().getActiveTeam())
+		if (isActiveTeam())
 			setInfoDirty(true);
 	}
 }
@@ -6159,7 +6156,7 @@ void CvCity::changePowerCount(int iChange, bool bDirty)
 	{
 		GET_PLAYER(getOwner()).invalidateYieldRankCache();
 		updateCommerce();
-		if (getTeam() == GC.getGame().getActiveTeam())
+		if (isActiveTeam())
 			setInfoDirty(true);
 	}
 
@@ -6408,7 +6405,7 @@ void CvCity::setCitizensAutomated(bool bNewValue)
 			FOR_EACH_ENUM(Specialist)
 				setForceSpecialistCount(eLoopSpecialist, 0);
 		}
-		if (getOwner() == GC.getGame().getActivePlayer() && isCitySelected())
+		if (isActiveOwned() && isCitySelected())
 			gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
 	}
 }
@@ -6420,7 +6417,7 @@ void CvCity::setProductionAutomated(bool bNewValue, bool bClear)
 		return; // advc
 
 	m_bProductionAutomated = bNewValue;
-	if (getOwner() == GC.getGame().getActivePlayer() && isCitySelected())
+	if (isActiveOwned() && isCitySelected())
 	{
 		gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
 
@@ -6891,7 +6888,7 @@ void CvCity::setBaseYieldRate(YieldTypes eYield, int iNewValue)
 
 	updateCommerce();
 
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (isActiveTeam())
 	{
 		setInfoDirty(true);
 		if (isCitySelected())
@@ -6922,7 +6919,7 @@ void CvCity::changeYieldRateModifier(YieldTypes eYield, int iChange)
 		updateCommerce();
 	AI_setAssignWorkDirty(true);
 
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (isActiveTeam())
 		setInfoDirty(true);
 }
 
@@ -6940,7 +6937,7 @@ void CvCity::changePowerYieldRateModifier(YieldTypes eYield, int iChange)
 		updateCommerce();
 	AI_setAssignWorkDirty(true);
 
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (isActiveTeam())
 		setInfoDirty(true);
 }
 
@@ -6958,7 +6955,7 @@ void CvCity::changeBonusYieldRateModifier(YieldTypes eYield, int iChange)
 		updateCommerce();
 	AI_setAssignWorkDirty(true);
 
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (isActiveTeam())
 		setInfoDirty(true);
 }
 
@@ -8346,15 +8343,15 @@ bool CvCity::isActiveCorporation(CorporationTypes eCorporation) const
 void CvCity::setBuildingProduction(BuildingTypes eBuilding, int iNewValue)
 {
 	if (getBuildingProduction(eBuilding) == iNewValue)
-		return; // advc
+		return;
 
 	m_aiBuildingProduction.set(eBuilding, iNewValue);
 	FAssert(getBuildingProduction(eBuilding) >= 0);
 
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (isActiveTeam())
 		setInfoDirty(true);
 
-	if (getOwner() == GC.getGame().getActivePlayer() && isCitySelected())
+	if (isActiveOwned() && isCitySelected())
 		gDLL->UI().setDirty(CityScreen_DIRTY_BIT, true);
 }
 
@@ -8381,15 +8378,15 @@ void CvCity::changeBuildingProductionTime(BuildingTypes eBuilding, int iChange)
 void CvCity::setProjectProduction(ProjectTypes eProject, int iNewValue)
 {
 	if (getProjectProduction(eProject) == iNewValue)
-		return; // advc
+		return;
 
 	m_aiProjectProduction.set(eProject, iNewValue);
 	FAssert(getProjectProduction(eProject) >= 0);
 
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (isActiveTeam())
 		setInfoDirty(true);
 
-	if (getOwner() == GC.getGame().getActivePlayer() && isCitySelected())
+	if (isActiveOwned() && isCitySelected())
 		gDLL->UI().setDirty(CityScreen_DIRTY_BIT, true);
 }
 
@@ -8408,10 +8405,10 @@ void CvCity::setUnitProduction(UnitTypes eUnit, int iNewValue)
 	m_aiUnitProduction.set(eUnit, iNewValue);
 	FAssert(getUnitProduction(eUnit) >= 0);
 
-	if (getTeam() == GC.getGame().getActiveTeam())
+	if (isActiveTeam())
 		setInfoDirty(true);
 
-	if (getOwner() == GC.getGame().getActivePlayer() && isCitySelected())
+	if (isActiveOwned() && isCitySelected())
 		gDLL->UI().setDirty(CityScreen_DIRTY_BIT, true);
 }
 
@@ -8792,7 +8789,7 @@ void CvCity::setWorkingPlot(CityPlotTypes ePlot, bool bNewValue) // advc.enum: C
 				changeBaseYieldRate(eLoopYield, -pPlot->getYield(eLoopYield));
 		}
 
-		if (getTeam() == GC.getGame().getActiveTeam() || GC.getGame().isDebugMode())
+		if (isActiveTeam() || GC.getGame().isDebugMode())
 			pPlot->updateSymbolDisplay();
 	}
 	if (bSelected)
@@ -9149,8 +9146,7 @@ void CvCity::setHasReligion(ReligionTypes eReligion, bool bNewValue, bool bAnnou
 				}
 				/*	<advc.004w> Update text of resource indicators
 					(CvGameTextMgr::setBonusExtraHelp) */
-				if (kOwner.getID() == kGame.getActivePlayer() &&
-					kGame.getCurrentLayer() == GLOBE_LAYER_RESOURCE)
+				if (isActiveOwned() && kGame.getCurrentLayer() == GLOBE_LAYER_RESOURCE)
 				{
 					gDLL->UI().setDirty(GlobeLayer_DIRTY_BIT, true);
 					// advc.003p:
@@ -9234,7 +9230,10 @@ int CvCity::getReligionGrip(ReligionTypes eReligion) const
 	{
 		BuildingTypes eBuilding = kCiv.buildingAt(i);
 		if (GC.getInfo(eBuilding).getPrereqReligion() == eReligion)
-			iScore += iRELIGION_INFLUENCE_BUILDING_WEIGHT * getNumActiveBuilding(eBuilding);
+		{
+			iScore += iRELIGION_INFLUENCE_BUILDING_WEIGHT *
+					getNumActiveBuilding(eBuilding);
+		}
 	}
 
 	CvCity* pHolyCity = GC.getGame().getHolyCity(eReligion);
@@ -9532,7 +9531,7 @@ void CvCity::clearOrderQueue()
 	{
 		popOrder(0);
 	}
-	if (getTeam() == GC.getGame().getActiveTeam() || GC.getGame().isDebugMode())
+	if (isActiveTeam() || GC.getGame().isDebugMode())
 		setInfoDirty(true);
 }
 
@@ -9660,7 +9659,7 @@ void CvCity::pushOrder(OrderTypes eOrder, int iData1, int iData2, bool bSave,
 	else if (bBuildingBuilding)
 		CvEventReporter::getInstance().cityBuildingBuilding(this, (BuildingTypes)iData1);
 	// </advc.test>
-	if (getTeam() == GC.getGame().getActiveTeam() || GC.getGame().isDebugMode())
+	if (isActiveTeam() || GC.getGame().isDebugMode())
 	{
 		setInfoDirty(true);
 		if (isCitySelected())
@@ -9672,7 +9671,7 @@ void CvCity::pushOrder(OrderTypes eOrder, int iData1, int iData2, bool bSave,
 		}
 	}
 	// <advc.004x>
-	if(bWasEmpty && getOwner() == GC.getGame().getActivePlayer())
+	if (bWasEmpty && isActiveOwned())
 		GET_PLAYER(getOwner()).killAll(BUTTONPOPUP_CHOOSEPRODUCTION, getID());
 	// </advc.004x>
 }
@@ -9754,7 +9753,7 @@ void CvCity::popOrder(int iNum, bool bFinish,
 			{
 				pUnit->jumpToNearestValidPlot(); // (as in BtS)
 				bool const bDead = pUnit->isDead();
-				if (getOwner() == GC.getGame().getActivePlayer())
+				if (isActiveOwned())
 				{
 					CvWString szMsg(gDLL->getText("TXT_KEY_AIR_CAPACITY_EXCEEDED",
 							pUnit->getNameKey(), getNameKey(), gDLL->getText(bDead ?
@@ -9963,7 +9962,7 @@ void CvCity::popOrder(int iNum, bool bFinish,
 	} // </advc.123f>
 
 	CvDLLInterfaceIFaceBase& kUI = gDLL->UI();
-	if (getTeam() == GC.getGame().getActiveTeam() || GC.getGame().isDebugMode())
+	if (isActiveTeam() || GC.getGame().isDebugMode())
 	{
 		setInfoDirty(true);
 		if (isCitySelected())
@@ -10054,7 +10053,7 @@ void CvCity::popOrder(int iNum, bool bFinish,
 				szIcon);
 	}
 
-	if (getTeam() == GC.getGame().getActiveTeam() || GC.getGame().isDebugMode())
+	if (isActiveTeam() || GC.getGame().isDebugMode())
 	{
 		setInfoDirty(true);
 		if (isCitySelected())
@@ -11836,7 +11835,7 @@ void CvCity::getVisibleEffects(ZoomLevelTypes eCurZoom,
 		return;
 	}
 
-	if (getTeam() == GC.getGame().getActiveTeam() || GC.getGame().isDebugMode())
+	if (isActiveTeam() || GC.getGame().isDebugMode())
 	{
 		if (angryPopulation() > 0)
 			kEffectNames.push_back("EFFECT_CITY_BURNING_SMOKE");
@@ -11890,7 +11889,7 @@ void CvCity::getCityBillboardSizeIconColors(NiColorA& kDotColor, NiColorA& kText
 	NiColorA kWhite(1, 1, 1, 1);
 	NiColorA kBlack(0, 0, 0, 1);
 
-	if (getTeam() == GC.getGame().getActiveTeam() /* advc.127: */ && isHuman())
+	if (isActiveTeam() /* advc.127: */ && isHuman())
 	{
 		kTextColor = kBlack;
 		int const iFoodDifference = foodDifference();
@@ -12797,7 +12796,7 @@ bool CvCity::isAutoRaze(/* <advc> */ PlayerTypes eConqueror) const
 int CvCity::getMusicScriptId() const
 {
 	bool bHappy = true;
-	if (GC.getGame().getActiveTeam() == getTeam())
+	if (isActiveTeam())
 	{
 		if (angryPopulation() > 0)
 			bHappy = false;

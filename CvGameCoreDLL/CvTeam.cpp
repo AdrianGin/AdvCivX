@@ -1080,7 +1080,7 @@ void CvTeam::declareWar(TeamTypes eTarget, bool bNewDiplo, WarPlanTypes eWarPlan
 
 	GC.getGame().AI_makeAssignWorkDirty();
 
-	if (getID() == GC.getGame().getActiveTeam() || eTarget == GC.getGame().getActiveTeam())
+	if (isActive() || GET_TEAM(eTarget).isActive())
 	{
 		gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 		gDLL->UI().setDirty(CityInfo_DIRTY_BIT, true);
@@ -1350,7 +1350,7 @@ void CvTeam::makePeace(TeamTypes eTarget, bool bBumpUnits,  // advc: refactored
 
 	GC.getGame().AI_makeAssignWorkDirty();
 
-	if (getID() == GC.getGame().getActiveTeam() || eTarget == GC.getGame().getActiveTeam())
+	if (isActive() || GET_TEAM(eTarget).isActive())
 	{
 		gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 		gDLL->UI().setDirty(CityInfo_DIRTY_BIT, true);
@@ -2595,7 +2595,7 @@ void CvTeam::setMapCentering(bool bNewValue)
 	if (isMapCentering() != bNewValue)
 	{
 		m_bMapCentering = bNewValue;
-		if (getID() == GC.getGame().getActiveTeam())
+		if (isActive())
 			gDLL->UI().setDirty(MinimapSection_DIRTY_BIT, true);
 	}
 }
@@ -2698,7 +2698,7 @@ void CvTeam::changeCommerceFlexibleCount(CommerceTypes eIndex, int iChange)
 	m_aiCommerceFlexibleCount.add(eIndex, iChange);
 	FAssert(getCommerceFlexibleCount(eIndex) >= 0);
 
-	if (getID() == GC.getGame().getActiveTeam())
+	if (isActive())
 	{
 		gDLL->UI().setDirty(PercentButtons_DIRTY_BIT, true);
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
@@ -2756,7 +2756,7 @@ void CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 	// K-Mod: Initialize attitude cache for players on our team towards player's on their team.
 	// advc.001: Too early for that. Moved to caller (CvTeam::meet).
 
-	if (getID() == GC.getGame().getActiveTeam() || eOther == GC.getGame().getActiveTeam())
+	if (isActive() || GET_TEAM(eOther).isActive())
 		gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 	// <advc.071>
 	bool bShowMessage = (isHuman() && pData != NULL);
@@ -2990,7 +2990,7 @@ void CvTeam::setOpenBorders(TeamTypes eIndex, bool bNewValue)
 
 	GC.getMap().verifyUnitValidPlot();
 
-	if (getID() == GC.getGame().getActiveTeam() || eIndex == GC.getGame().getActiveTeam())
+	if (isActive() || GET_TEAM(eIndex).isActive())
 		gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 
 	if (bOldFreeTrade != isFreeTrade(eIndex))
@@ -3029,7 +3029,7 @@ void CvTeam::setDefensivePact(TeamTypes eIndex, bool bNewValue)
 	if (isDefensivePact(eIndex) == bNewValue)
 		return; // advc
 	m_abDefensivePact.set(eIndex, bNewValue);
-	if(getID() == GC.getGame().getActiveTeam() || eIndex == GC.getGame().getActiveTeam())
+	if (isActive() || GET_TEAM(eIndex).isActive())
 		gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 	CvTeam const& kOther = GET_TEAM(eIndex); // advc
 	if (bNewValue && !kOther.isDefensivePact(getID()))
@@ -3861,14 +3861,14 @@ void CvTeam::setResearchProgress(TechTypes eIndex, int iNewValue, PlayerTypes eP
 	m_aiResearchProgress.set(eIndex, iNewValue);
 	FAssert(getResearchProgress(eIndex) >= 0);
 
-	if (getID() == GC.getGame().getActiveTeam())
+	if (isActive())
 	{
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 		gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 		/*  <advc.004x> Update research-turns shown in popup (tbd.: perhaps setting
 			Popup_DIRTY_BIT would suffice here?) */
 		CvPlayer& kActivePlayer = GET_PLAYER(GC.getGame().getActivePlayer());
-		if(kActivePlayer.getCurrentResearch() == NO_TECH &&
+		if (kActivePlayer.getCurrentResearch() == NO_TECH &&
 			kActivePlayer.isFoundedFirstCity() &&
 			kActivePlayer.isHuman()) // i.e. not during Auto Play
 		{
@@ -4530,7 +4530,7 @@ void CvTeam::setHasTech(TechTypes eTech, bool bNewValue, PlayerTypes ePlayer,
 		}
 		/*  advc.004x: Don't check bAnnounce for civics popup. FinalInitialized:
 			Let CvPlayer::doChangeCivicsPopup handle that. */
-		if (!gDLL->GetWorldBuilderMode() && getID() == kGame.getActiveTeam())
+		if (!gDLL->GetWorldBuilderMode() && isActive())
 		{
 			for (PlayerIter<HUMAN,MEMBER_OF> it(getID()); it.hasNext(); ++it)
 			{	// advc: Un-nested the conditions
@@ -4586,7 +4586,7 @@ void CvTeam::setHasTech(TechTypes eTech, bool bNewValue, PlayerTypes ePlayer,
 		}
 	}
 
-	if (getID() == kGame.getActiveTeam())
+	if (isActive())
 	{
 		gDLL->UI().setDirty(MiscButtons_DIRTY_BIT, true);
 		gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
