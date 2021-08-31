@@ -1291,6 +1291,7 @@ void CvXMLLoadUtility::SetGlobalClassInfo(std::vector<T*>& aInfos, const char* s
 		}
 		else
 		{
+			FAssertMsg(gDLL->isModularXMLLoading(), "CvInfo element loaded repeatedly"); // advc.006k
 			SAFE_DELETE(aInfos[iIndex]);
 			aInfos[iIndex] = pClassInfo;
 		}
