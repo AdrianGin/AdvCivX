@@ -76,21 +76,21 @@ bool CvTerrainInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"Yields"))
 	{
-		pXML->SetYields(&m_piYields);
+		pXML->SetYieldArray(&m_piYields);
 	}
 	else pXML->InitList(&m_piYields, NUM_YIELD_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"RiverYieldChange"))
 	{
-		pXML->SetYields(&m_piRiverYieldChange);
+		pXML->SetYieldArray(&m_piRiverYieldChange);
 	}
 	else pXML->InitList(&m_piRiverYieldChange, NUM_YIELD_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"HillsYieldChange"))
 	{
-		pXML->SetYields(&m_piHillsYieldChange);
+		pXML->SetYieldArray(&m_piHillsYieldChange);
 	}
 	else pXML->InitList(&m_piHillsYieldChange, NUM_YIELD_TYPES);
 
@@ -327,7 +327,7 @@ bool CvFeatureInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"YieldChanges"))
 	{
-		pXML->SetYields(&m_piYieldChange);
+		pXML->SetYieldArray(&m_piYieldChange);
 	}
 	else
 	{
@@ -337,7 +337,7 @@ bool CvFeatureInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"RiverYieldChange"))
 	{
-		pXML->SetYields(&m_piRiverYieldChange);
+		pXML->SetYieldArray(&m_piRiverYieldChange);
 	}
 	else
 	{
@@ -347,7 +347,7 @@ bool CvFeatureInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"HillsYieldChange"))
 	{
-		pXML->SetYields(&m_piHillsYieldChange);
+		pXML->SetYieldArray(&m_piHillsYieldChange);
 	}
 	else pXML->InitList(&m_piHillsYieldChange, NUM_YIELD_TYPES);
 
@@ -730,7 +730,7 @@ bool CvBonusInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"YieldChanges"))
 	{
-		pXML->SetYields(&m_piYieldChange);
+		pXML->SetYieldArray(&m_piYieldChange);
 	}
 	else pXML->InitList(&m_piYieldChange, NUM_YIELD_TYPES);
 
@@ -917,7 +917,7 @@ bool CvRouteInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"Yields"))
 	{
-		pXML->SetYields(&m_piYieldChange);
+		pXML->SetYieldArray(&m_piYieldChange);
 	}
 	else pXML->InitList(&m_piYieldChange, NUM_YIELD_TYPES);
 
@@ -1343,35 +1343,35 @@ bool CvImprovementInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"PrereqNatureYields"))
 	{
-		pXML->SetYields(&m_piPrereqNatureYield);
+		pXML->SetYieldArray(&m_piPrereqNatureYield);
 	}
 	else pXML->InitList(&m_piPrereqNatureYield, NUM_YIELD_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"YieldChanges"))
 	{
-		pXML->SetYields(&m_piYieldChange);
+		pXML->SetYieldArray(&m_piYieldChange);
 	}
 	else pXML->InitList(&m_piYieldChange, NUM_YIELD_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"RiverSideYieldChange"))
 	{
-		pXML->SetYields(&m_piRiverSideYieldChange);
+		pXML->SetYieldArray(&m_piRiverSideYieldChange);
 	}
 	else pXML->InitList(&m_piRiverSideYieldChange, NUM_YIELD_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"HillsYieldChange"))
 	{
-		pXML->SetYields(&m_piHillsYieldChange);
+		pXML->SetYieldArray(&m_piHillsYieldChange);
 	}
 	else pXML->InitList(&m_piHillsYieldChange, NUM_YIELD_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"IrrigatedYieldChange"))
 	{
-		pXML->SetYields(&m_piIrrigatedChange);
+		pXML->SetYieldArray(&m_piIrrigatedChange);
 	}
 	else pXML->InitList(&m_piIrrigatedChange, NUM_YIELD_TYPES);
 
@@ -1439,7 +1439,7 @@ bool CvImprovementInfo::read(CvXMLLoadUtility* pXML)
 								if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), bTech ?
 									"TechYields": "RouteYields"))
 								{
-									pXML->SetYields(&(*pppiYieldChanges)[iIndex]);
+									pXML->SetYieldArray(&(*pppiYieldChanges)[iIndex]);
 								}
 								else pXML->InitList(&(*pppiYieldChanges)[iIndex], NUM_YIELD_TYPES);
 							}

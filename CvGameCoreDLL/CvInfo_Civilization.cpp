@@ -1245,7 +1245,7 @@ bool CvTraitInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"ExtraYieldThresholds"))
 	{
-		pXML->SetYields(&m_paiExtraYieldThreshold);
+		pXML->SetYieldArray(&m_paiExtraYieldThreshold);
 	}
 	else pXML->InitList(&m_paiExtraYieldThreshold, NUM_YIELD_TYPES);
 	// <advc.908a>
@@ -1259,21 +1259,21 @@ bool CvTraitInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"TradeYieldModifiers"))
 	{
-		pXML->SetYields(&m_paiTradeYieldModifier);
+		pXML->SetYieldArray(&m_paiTradeYieldModifier);
 	}
 	else pXML->InitList(&m_paiTradeYieldModifier, NUM_YIELD_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"CommerceChanges"))
 	{
-		pXML->SetCommerce(&m_paiCommerceChange);
+		pXML->SetCommerceArray(&m_paiCommerceChange);
 	}
 	else pXML->InitList(&m_paiCommerceChange, NUM_COMMERCE_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"CommerceModifiers"))
 	{
-		pXML->SetCommerce(&m_paiCommerceModifier);
+		pXML->SetCommerceArray(&m_paiCommerceModifier);
 	}
 	else pXML->InitList(&m_paiCommerceModifier, NUM_COMMERCE_TYPES);
 

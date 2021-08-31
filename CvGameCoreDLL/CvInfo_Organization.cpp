@@ -173,21 +173,21 @@ bool CvReligionInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"GlobalReligionCommerces"))
 	{
-		pXML->SetCommerce(&m_paiGlobalReligionCommerce);
+		pXML->SetCommerceArray(&m_paiGlobalReligionCommerce);
 	}
 	else pXML->InitList(&m_paiGlobalReligionCommerce, NUM_COMMERCE_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"HolyCityCommerces"))
 	{
-		pXML->SetCommerce(&m_paiHolyCityCommerce);
+		pXML->SetCommerceArray(&m_paiHolyCityCommerce);
 	}
 	else pXML->InitList(&m_paiHolyCityCommerce, NUM_COMMERCE_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"StateReligionCommerces"))
 	{
-		pXML->SetCommerce(&m_paiStateReligionCommerce);
+		pXML->SetCommerceArray(&m_paiStateReligionCommerce);
 	}
 	else pXML->InitList(&m_paiStateReligionCommerce, NUM_COMMERCE_TYPES);
 
@@ -286,21 +286,21 @@ bool CvCorporationInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"HeadquarterCommerces"))
 	{
-		pXML->SetCommerce(&m_paiHeadquarterCommerce);
+		pXML->SetCommerceArray(&m_paiHeadquarterCommerce);
 	}
 	else pXML->InitList(&m_paiHeadquarterCommerce, NUM_COMMERCE_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"CommercesProduced"))
 	{
-		pXML->SetCommerce(&m_paiCommerceProduced);
+		pXML->SetCommerceArray(&m_paiCommerceProduced);
 	}
 	else pXML->InitList(&m_paiCommerceProduced, NUM_COMMERCE_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"YieldsProduced"))
 	{
-		pXML->SetYields(&m_paiYieldProduced);
+		pXML->SetYieldArray(&m_paiYieldProduced);
 	}
 	else pXML->InitList(&m_paiYieldProduced, NUM_YIELD_TYPES);
 

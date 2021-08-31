@@ -1536,16 +1536,16 @@ void CvXMLLoadUtility::LoadDiplomacyInfo(std::vector<CvDiplomacyInfo*>& DiploInf
 
 /*	advc: All call locations call SetToParent after SetYields, so let's do that
 	only once in a single place. */
-int CvXMLLoadUtility::SetYields(int** ppiYield)
+int CvXMLLoadUtility::SetYieldArray(int** ppiYield)
 {
-	int iSet = SetYieldsImpl(ppiYield);
+	int iSet = SetYields(ppiYield);
 	gDLL->getXMLIFace()->SetToParent(m_pFXml);
 	return iSet;
 }
 
 /*  Allocate memory for the yield parameter and set it to the values in XML.
 	The current/last located node must be the first child of the yield changes node */
-int CvXMLLoadUtility::SetYieldsImpl(int** ppiYield)
+int CvXMLLoadUtility::SetYields(int** ppiYield)
 {
 	if (!SkipToNextVal()) // Skip any comments and stop at the next value we might want
 		return 0;
@@ -1685,7 +1685,7 @@ void CvXMLLoadUtility::SetImprovementBonuses(CvImprovementBonusInfo** ppImprovem
 							if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml,
 								"YieldChanges"))
 							{
-								SetYields(&paImprovementBonus[iBonusIndex].m_piYieldChange);
+								SetYieldArray(&paImprovementBonus[iBonusIndex].m_piYieldChange);
 							}
 							else InitList(&paImprovementBonus[iBonusIndex].m_piYieldChange, NUM_YIELD_TYPES);
 						}
@@ -1864,13 +1864,13 @@ CvXMLLoadUtility::XMLTagPairRateIterator<EncodableMap>::next()
 					}
 					setToParent();
 				}
-				// Increases parser depth; the SetYields/Commerce call will undo that.
+				// Increases parser depth; the SetYield/CommerceArray call will undo that.
 				else if (gDLL->getXMLIFace()->SetToChildByTagName(m_pParser, m_szRateTagName))
 				{
 					// Not beautiful ...
 					if (is_same_type<typename EncodableMap::EnumType,YieldTypes>::value)
-						iValuesSet = m_util.SetYields(&m_aiRates);
-					else iValuesSet = m_util.SetCommerce(&m_aiRates);
+						iValuesSet = m_util.SetYieldArray(&m_aiRates);
+					else iValuesSet = m_util.SetCommerceArray(&m_aiRates);
 				}
 				if (iValuesSet > 0)
 				{

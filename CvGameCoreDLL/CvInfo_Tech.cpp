@@ -320,7 +320,7 @@ bool CvTechInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"SpecialistExtraCommerces"))
 	{
-		pXML->SetCommerce(&m_piSpecialistExtraCommerce);
+		pXML->SetCommerceArray(&m_piSpecialistExtraCommerce);
 	}
 	else pXML->InitList(&m_piSpecialistExtraCommerce, NUM_COMMERCE_TYPES);
 	// K-Mod end
@@ -328,7 +328,7 @@ bool CvTechInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"CommerceFlexible"))
 	{
-		pXML->SetCommerce(&m_pbCommerceFlexible);
+		pXML->SetCommerceArray(&m_pbCommerceFlexible);
 	}
 	else pXML->InitList(&m_pbCommerceFlexible, NUM_COMMERCE_TYPES);
 

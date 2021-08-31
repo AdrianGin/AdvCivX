@@ -32,7 +32,7 @@ bool CvProcessInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"ProductionToCommerceModifiers"))
 	{
-		pXML->SetCommerce(&m_aiProductionToCommerceModifier);
+		pXML->SetCommerceArray(&m_aiProductionToCommerceModifier);
 	}
 	else pXML->InitList(&m_aiProductionToCommerceModifier, NUM_COMMERCE_TYPES);
 
@@ -129,10 +129,10 @@ bool CvSpecialistInfo::read(CvXMLLoadUtility* pXML)
 	}
 	pXML->GetChildXmlValByName(&m_iGreatPeopleRateChange, "iGreatPeopleRateChange");
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "Yields"))
-		pXML->SetYields(&m_piYieldChange);
+		pXML->SetYieldArray(&m_piYieldChange);
 	else pXML->InitList(&m_piYieldChange, NUM_YIELD_TYPES);
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "Commerces"))
-		pXML->SetCommerce(&m_piCommerceChange);
+		pXML->SetCommerceArray(&m_piCommerceChange);
 	else pXML->InitList(&m_piCommerceChange, NUM_COMMERCE_TYPES);
 	pXML->GetChildXmlValByName(&m_iExperience, "iExperience");
 	pXML->SetVariableListTagPair(&m_piFlavorValue, "Flavors", GC.getNumFlavorTypes());
@@ -217,14 +217,14 @@ bool CvEmphasizeInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"YieldModifiers"))
 	{
-		pXML->SetYields(&m_piYieldModifiers);
+		pXML->SetYieldArray(&m_piYieldModifiers);
 	}
 	else pXML->InitList(&m_piYieldModifiers, NUM_YIELD_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"CommerceModifiers"))
 	{
-		pXML->SetCommerce(&m_piCommerceModifiers);
+		pXML->SetCommerceArray(&m_piCommerceModifiers);
 	}
 	else pXML->InitList(&m_piCommerceModifiers, NUM_COMMERCE_TYPES);
 

@@ -130,9 +130,15 @@ public:
 	#ifdef _USRDLL
 	FXml* GetXML() { return m_pFXml; }
 	#endif
-
+	/*	advc: Wrapper that calls SetToParent. SetYields remains (functionally)
+		unchanged - to avoid breaking XML loading code in mod-mods. Such errors
+		would be difficult to debug b/c the parser level is stored in the EXE. */
+	int SetYieldArray(int** ppiYield);
 	int SetYields(int** ppiYield);
 	#ifdef _USRDLL
+	// <advc> See comment above
+	template <class T>
+	int SetCommerceArray(T** ppiCommerce); // </advc>
 	template <class T>
 	int SetCommerce(T** ppiCommerce);
 	#endif
@@ -292,14 +298,15 @@ public:
 			kMap.insert(pair.first, pair.second);
 		}
 	}
-	// Wrappers for the SetYields (int only), SetCommerce (bool only) functions ...
+	/*	Wrappers for the SetYieldArray (int only) and
+		SetCommerceArray (bool only) functions ... */
 	template<class InfoMap>
 	void SetVariableListPerYield(InfoMap& kMap, TCHAR const* szRootTagName)
 	{
 		if (!gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szRootTagName))
 			return;
 		int* piTmp = NULL;
-		int iSet = SetYields(&piTmp);
+		int iSet = SetYieldArray(&piTmp);
 		if (piTmp != NULL)
 		{
 			FOR_EACH_ENUM(Yield)
@@ -319,7 +326,7 @@ public:
 		if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szRootTagName))
 		{
 			bool* pbTmp = NULL;
-			int iSet = SetCommerce(&pbTmp);
+			int iSet = SetCommerceArray(&pbTmp);
 			if (pbTmp != NULL)
 			{
 				FOR_EACH_ENUM(Commerce)
@@ -359,7 +366,7 @@ public:
 		if (gDLL->getXMLIFace()->SetToChildByTagName(GetXML(), szTagName))
 		{
 			int* piArray=NULL;
-			int iValuesSet = (bYIELD ? SetYields(&piArray) : SetCommerce(&piArray));
+			int iValuesSet = (bYIELD ? SetYieldArray(&piArray) : SetCommerceArray(&piArray));
 			for (int i = 0; i < iValuesSet; i++)
 			{
 				kMap.insert(i, piArray[i]);
@@ -395,10 +402,7 @@ private:
 	//ProgressCB m_pCBFxn;// Also unused, but have no other use for that memory, so:
 	void* m_pDummy;
 	Data* m; // additional members
-	// <advc.003t> Wrappers that call SetToParent 
-	template <class T>
-	int SetCommerceImpl(T** ppiCommerce);
-	int SetYieldsImpl(int** ppiYield); // </advc.003t>
+
 	// <advc.006j> Helper struct for asserting bounds of enum values read from XML
 	template<typename T, bool bENUM = enum_traits<T>::is_enum>
 	struct InfoIDFromChild;
@@ -495,15 +499,15 @@ void CvXMLLoadUtility::InitList(T **ppList, int iListLen, T val)
 /*	advc: All call locations call SetToParent after SetCommerce, so let's do that
 	only once in a single place. */
 template <class T>
-int CvXMLLoadUtility::SetCommerce(T** ppbCommerce)
+int CvXMLLoadUtility::SetCommerceArray(T** ppbCommerce)
 {
-	int iSet = SetCommerceImpl(ppbCommerce);
+	int iSet = SetCommerce(ppbCommerce);
 	gDLL->getXMLIFace()->SetToParent(m_pFXml);
 	return iSet;
 }
 
 template <class T>
-int CvXMLLoadUtility::SetCommerceImpl(T** ppbCommerce)
+int CvXMLLoadUtility::SetCommerce(T** ppbCommerce)
 {
 	T *pbCommerce; // local pointer for the Commerce memory
 	// Skip any comments and stop at the next value we might want

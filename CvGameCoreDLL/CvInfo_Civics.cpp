@@ -443,42 +443,42 @@ bool CvCivicInfo::read(CvXMLLoadUtility* pXML)
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"YieldModifiers"))
 	{
-		pXML->SetYields(&m_piYieldModifier);
+		pXML->SetYieldArray(&m_piYieldModifier);
 	}
 	else pXML->InitList(&m_piYieldModifier, NUM_YIELD_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"CapitalYieldModifiers"))
 	{
-		pXML->SetYields(&m_piCapitalYieldModifier);
+		pXML->SetYieldArray(&m_piCapitalYieldModifier);
 	}
 	else pXML->InitList(&m_piCapitalYieldModifier, NUM_YIELD_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"TradeYieldModifiers"))
 	{
-		pXML->SetYields(&m_piTradeYieldModifier);
+		pXML->SetYieldArray(&m_piTradeYieldModifier);
 	}
 	else pXML->InitList(&m_piTradeYieldModifier, NUM_YIELD_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"CommerceModifiers"))
 	{
-		pXML->SetCommerce(&m_piCommerceModifier);
+		pXML->SetCommerceArray(&m_piCommerceModifier);
 	}
 	else pXML->InitList(&m_piCommerceModifier, NUM_COMMERCE_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"CapitalCommerceModifiers"))
 	{
-		pXML->SetCommerce(&m_piCapitalCommerceModifier);
+		pXML->SetCommerceArray(&m_piCapitalCommerceModifier);
 	}
 	else pXML->InitList(&m_piCapitalCommerceModifier, NUM_COMMERCE_TYPES);
 
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"SpecialistExtraCommerces"))
 	{
-		pXML->SetCommerce(&m_piSpecialistExtraCommerce);
+		pXML->SetCommerceArray(&m_piSpecialistExtraCommerce);
 	}
 	else pXML->InitList(&m_piSpecialistExtraCommerce, NUM_COMMERCE_TYPES);
 
@@ -512,7 +512,7 @@ bool CvCivicInfo::read(CvXMLLoadUtility* pXML)
 							if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 								"ImprovementYields"))
 							{
-								pXML->SetYields(&m_ppiImprovementYieldChanges[iIndex]);
+								pXML->SetYieldArray(&m_ppiImprovementYieldChanges[iIndex]);
 							}
 							else pXML->InitList(&m_ppiImprovementYieldChanges[iIndex], NUM_YIELD_TYPES);
 						}

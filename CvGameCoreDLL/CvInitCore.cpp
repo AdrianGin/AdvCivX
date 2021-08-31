@@ -892,7 +892,7 @@ void CvInitCore::clearCustomMapOptions()
 	m_iNumCustomMapOptions = 0;
 }
 
-void CvInitCore::refreshCustomMapOptions()  // advc.003y: refactored
+void CvInitCore::refreshCustomMapOptions()
 {
 	clearCustomMapOptions();
 
