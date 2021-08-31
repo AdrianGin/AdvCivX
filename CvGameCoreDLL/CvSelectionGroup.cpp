@@ -2106,10 +2106,9 @@ int CvSelectionGroup::groupCycleDistance(CvSelectionGroup const& kOther) const
 	{	/*  <advc.075> When a unit in cargo is told to skip its turn, we want
 			the ship to be selected before its cargo on the next turn.
 			(Or would it be better to do this through isBeforeGroupOnPlot?) */
-		if(kHead.isHuman() && kHead.isCargo() != kOtherHead.isCargo())
+		if (kHead.isHuman() && kHead.isCargo() != kOtherHead.isCargo())
 			iPenalty += 5;
-		else // </advc.075>
-			if (kHead.canFight() != kOtherHead.canFight())
+		else /* </advc.075> */ if (kHead.canFight() != kOtherHead.canFight())
 			iPenalty += 4;
 		else
 		{
@@ -2125,8 +2124,13 @@ int CvSelectionGroup::groupCycleDistance(CvSelectionGroup const& kOther) const
 					iPenalty += 1;
 				}
 			}
-			else
-				iPenalty += 2;
+			//else iPenalty += 2;
+			// <advc.004c> Distinguish civilians from military (air) units
+			else if (kHead.canCombat() != kOtherHead.canCombat())
+				iPenalty += 3;
+			else if (kHead.canCombat())
+				iPenalty += 1;
+			else iPenalty += 2; // </advc.004c>
 		}
 	}
 
