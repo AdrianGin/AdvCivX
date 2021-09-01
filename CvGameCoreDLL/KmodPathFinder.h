@@ -370,7 +370,7 @@ public:
 		/*new NodeMap(m_kMap.numPlots())*/)
 	{}
 	virtual ~KmodPathFinder();
-	void resetNodes();
+	void reset();
 	bool generatePath(CvPlot const& kStart, CvPlot const& kDest);
 	bool isPathComplete() const { return (m_pEndNode != NULL); }
 	int getPathLength() const // advc: Was "getPathTurns"; too specific.
@@ -393,6 +393,7 @@ protected:
 	static int iAdmissibleBaseWeight;
 	static int iAdmissibleScaledWeight;
 
+	void resetNodes();
 	void recalculateHeuristics();
 	bool processNode();
 	// <advc> Cut out of process node
@@ -456,7 +457,7 @@ bool KmodPathFinder<StepMetric,Node>::generatePath(
 			(power of 2 does seem to help). K-Mod didn't reserve any memory. */
 		m_openList.reserve(128);
 	}
-	if (&kStart != m_pStart && /* don't need to reset twice */ m_pStart != NULL)
+	if (&kStart != m_pStart && /* advc: Don't reset twice */ m_pStart != NULL)
 	{
 		/*	Note: It may be possible to salvage some of the old data to
 			get more speed. E.g. if the moves recorded on the node match the group
@@ -554,8 +555,16 @@ void KmodPathFinder<StepMetric,Node>::resetNodes()
 	if (m_pNodeMap != NULL)
 		m_pNodeMap->reset();
 	m_openList.clear();
-	m_pStart = m_pDest = NULL;
 	m_pEndNode = NULL;
+}
+
+/*	advc: Allow derived classes to make a full reset, including the start plot
+	- which the internal resetNodes function mustn't reset. */
+template<class StepMetric, class Node>
+void KmodPathFinder<StepMetric,Node>::reset()
+{
+	resetNodes();
+	m_pStart = m_pDest = NULL;
 }
 
 template<class StepMetric, class Node>

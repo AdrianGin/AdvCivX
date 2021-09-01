@@ -139,7 +139,6 @@ public:
 	// Unhide 2-argument version
 	using KmodPathFinder<GroupStepMetric,GroupPathNode>::generatePath;
 	int getPathTurns() const { return getPathLength(); }
-	void reset() { resetNodes(); }
 	#endif // advc.test
 	CvPlot& getPathEndTurnPlot() const;
 	int getFinalMoves() const
@@ -167,7 +166,11 @@ public:
 		FAssert(iTurns == kLegacyPathf.GetPathTurns());
 		return iTurns;
 	}
-	void reset() { resetNodes(); kLegacyPathf.Reset(); }
+	void reset()
+	{
+		KmodPathFinder<GroupStepMetric, GroupPathNode>::reset();
+		kLegacyPathf.Reset();
+	}
 	CvPlot& getPathFirstPlot() const
 	{
 		CvPlot& kPlot = KmodPathFinder<GroupStepMetric, GroupPathNode>::getPathFirstPlot();

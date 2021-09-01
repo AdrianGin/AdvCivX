@@ -738,7 +738,7 @@ void GroupPathFinder::setGroup(CvSelectionGroup const& kGroup,
 	#endif //</advc.test>
 	CvSelectionGroup const* pOldGroup = m_stepMetric.getGroup();
 	if (pOldGroup != &kGroup)
-		resetNodes();
+		reset();
 	else
 	{
 		/*	some flags are not relevant to pathfinder.
@@ -754,7 +754,7 @@ void GroupPathFinder::setGroup(CvSelectionGroup const& kGroup,
 			if ((m_stepMetric.getFlags() & eRelevantFlags) != (eFlags & eRelevantFlags) ||
 				GET_TEAM(pOldGroup->getHeadTeam()).AI_isSneakAttackReady())
 			{
-				resetNodes();
+				reset();
 			}
 		}
 	}
@@ -785,7 +785,7 @@ void GroupPathFinder::invalidateGroup(CvSelectionGroup const& kGroup)
 	if (m_stepMetric.getGroup() == &kGroup)
 	{
 		PROFILE("GroupPathFinder::invalidateGroup - resetNodes");
-		resetNodes();
+		reset();
 		m_stepMetric = GroupStepMetric();
 		// <advc.test>
 		#if VERIFY_PATHF
