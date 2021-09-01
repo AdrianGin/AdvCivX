@@ -895,15 +895,19 @@ void CvInitCore::clearCustomMapOptions()
 void CvInitCore::refreshCustomMapOptions()
 {
 	clearCustomMapOptions();
-
 	if (getWBMapScript())
 		return;
-
 	CvString szMapScriptNameNarrow(getMapScriptName());
 	char const* szMapScriptName = szMapScriptNameNarrow.GetCString();
 	if (!gDLL->pythonMapExists(szMapScriptName))
-	{	// advc: Map script doesn't have to be present when loading a game
-		FAssertMsg(getType() == GAME_SP_LOAD, "Map script not found");
+	{	/*	advc: GAME_NONE means we're on the opening menu. The map script actually
+			needs to be present at that point b/c that's (apparently) when the EXE
+			caches the number of custom map options. However, this won't matter
+			if the player then selects to load a savegame or start a scenario.
+			We'll get another call upon entering a non-WB game setup screen;
+			lets wait for that with the assertion - if the script can't be found
+			earlier, it still won't be found then. */
+		FAssertMsg(getType() == GAME_NONE || getType() == GAME_SP_LOAD, "Map script not found");
 		return;
 	}
 	CvPythonCaller const& py = *GC.getPythonCaller();
@@ -932,7 +936,7 @@ void CvInitCore::setCustomMapOptions(int iNumCustomMapOptions,
 	clearCustomMapOptions();
 	if (iNumCustomMapOptions > 0)
 	{
-		FAssertMsg(aeCustomMapOptions, "CustomMap Num/Pointer mismatch in CvInitCore::setCustomMapOptions");
+		FAssertMsg(aeCustomMapOptions != NULL, "CustomMap Num/Pointer mismatch in CvInitCore::setCustomMapOptions");
 		m_iNumCustomMapOptions = iNumCustomMapOptions;
 		m_aeCustomMapOptions = new CustomMapOptionTypes[m_iNumCustomMapOptions];
 		for (int i = 0; i < m_iNumCustomMapOptions; ++i)
