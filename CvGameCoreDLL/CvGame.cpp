@@ -28,10 +28,10 @@
 #include "BBAILog.h" // BBAI
 #include "CvBugOptions.h" // K-Mod
 
-/*	<advc.007b> Use this CvGame instance instead of GC.getGame() for RNG calls.
+/*	<advc.007c> Use this CvGame instance instead of GC.getGame() for RNG calls.
 	(Won't matter so long as CvGame is a singleton class.) */
 #undef CVGAME_INSTANCE_FOR_RNG
-#define CVGAME_INSTANCE_FOR_RNG (*this) // </advc.007b>
+#define CVGAME_INSTANCE_FOR_RNG (*this) // </advc.007c>
 
 
 CvGame::CvGame() :

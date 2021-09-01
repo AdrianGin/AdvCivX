@@ -216,9 +216,9 @@ void CvGlobals::init() // allocate
 
 	m_VarSystem = new FVariableSystem();
 	//m_asyncRand = new CvRandom();
-	// <advc.007b>
+	// <advc.007c>
 	m_asyncRand = new CvRandomExtended();
-	m_asyncRand->setLogFileName("ASyncRand.log"); // </advc.007b>
+	m_asyncRand->setLogFileName("ASyncRand.log"); // </advc.007c>
 	m_initCore = new CvInitCore();
 	m_loadedInitCore = new CvInitCore();
 	m_iniInitCore = new CvInitCore();

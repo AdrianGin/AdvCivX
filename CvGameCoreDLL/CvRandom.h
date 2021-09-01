@@ -12,8 +12,8 @@ public:
 	DllExport void init(unsigned long ulSeed);
 	void reset(unsigned int uiSeed = 0);
 	// for serialization
-	virtual void read(FDataStreamBase* pStream); // advc.007b: virtual
-	virtual void write(FDataStreamBase* pStream); // advc.007b: virtual
+	virtual void read(FDataStreamBase* pStream); // advc.007c: virtual
+	virtual void write(FDataStreamBase* pStream); // advc.007c: virtual
 	/*	Returns a value from the half-open interval [0, iNum).
 		advc.006: iNum taken as an int but needs to be in [0, 65535].
 		Will return 0 for iNum=0 (and also for iNum=1). */
@@ -65,7 +65,7 @@ public:
 		std::vector<int> const* pWeights = NULL);
 
 protected:
-	virtual void printToLog(TCHAR const* szMsg, unsigned short usNum, // advc.007b
+	virtual void printToLog(TCHAR const* szMsg, unsigned short usNum, // advc.007c
 			int iData1, int iData2); // advc.001n
 
 	unsigned int m_uiRandomSeed;
@@ -76,7 +76,7 @@ protected:
 // advc.003k: Gets instantiated (also) externally; size mustn't change.
 BOOST_STATIC_ASSERT(sizeof(CvRandom) == 8);
 
-/*	advc.007b: Since I can't store a log file name at CvRandom,
+/*	advc.007c: Since I can't store a log file name at CvRandom,
 	let's make a class that'll only get instantiated in the DLL. */
 class CvRandomExtended : public CvRandom
 {

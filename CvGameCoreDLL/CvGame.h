@@ -1136,7 +1136,7 @@ private: // advc.003u: (See comments in the private section of CvPlayer.h)
 	virtual int AI_combatValueExternal(UnitTypes eUnit);
 };
 
-/*	<advc.007b> Some macros to make the RNG functions of the singleton
+/*	<advc.007c> Some macros to make the RNG functions of the singleton
 	CvGame instance less tedious to use */
 
 // Implementation files can re-define this to use a different CvGame instance
@@ -1188,6 +1188,6 @@ inline CvRandom& mapRand()
 	MapRandSuccessRatio(iSuccessPermyriad, 10000)
 #define MapRandOneChanceIn(iNumLots) \
 	(MapRandNum(iNumLots) == 0)
-// </advc.007b>
+// </advc.007c>
 
 #endif

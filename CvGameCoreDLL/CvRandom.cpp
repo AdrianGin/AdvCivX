@@ -100,7 +100,7 @@ void CvRandom::shuffle(std::vector<int>& aiIndices)
 		std::swap(aiIndices[i], aiIndices[get(iSize - i, NULL) + i]);
 }
 
-// <advc.007b>
+// <advc.007c>
 /*	Two function calls that won't get inlined, but it doesn't really matter -
 	only gets called if the log is enabled. */
 void CvRandom::printToLog(TCHAR const* szMsg, unsigned short usNum,
@@ -137,4 +137,4 @@ void CvRandomExtended::write(FDataStreamBase* pStream)
 	CvRandom::write(pStream);
 	pStream->WriteString(m_szFileName);
 }
-// </advc.007b>
+// </advc.007c>

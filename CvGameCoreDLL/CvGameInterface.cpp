@@ -22,10 +22,10 @@
 	out of the EXE and thus exposing it to mods.
 	The near name clash with CyGameInterface.cpp is coincidental. */
 
-/*	<advc.007b> The functions in this header arguably shouldn't use any of the
+/*	<advc.007c> The functions in this header arguably shouldn't use any of the
 	synchronized RNGs that are part of CvGame. */
 #undef CVGAME_INSTANCE_FOR_RNG
-#define CVGAME_INSTANCE_FOR_RNG NULL // </advc.007b>
+#define CVGAME_INSTANCE_FOR_RNG NULL // </advc.007c>
 
 void CvGame::updateColoredPlots()
 {

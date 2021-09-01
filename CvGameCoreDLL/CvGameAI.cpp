@@ -6,9 +6,9 @@
 #include "CvInfo_GameOption.h"
 #include "CvInfo_Building.h" // advc.erai
 
-// <advc.007b>
+// <advc.007c>
 #undef CVGAME_INSTANCE_FOR_RNG
-#define CVGAME_INSTANCE_FOR_RNG (*this) // </advc.007b>
+#define CVGAME_INSTANCE_FOR_RNG (*this) // </advc.007c>
 
 
 

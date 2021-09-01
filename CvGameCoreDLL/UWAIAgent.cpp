@@ -79,7 +79,7 @@ void UWAI::Team::reportWarEnding(TeamTypes eEnemy,
 {
 	/*  This isn't team-level data b/c each member can have its
 		own interpretation of whether the war was successful. */
-	for(MemberAIIter it(m_eAgent); it.hasNext(); ++it)
+	for (MemberAIIter it(m_eAgent); it.hasNext(); ++it)
 		it->uwai().getCache().reportWarEnding(eEnemy, pWeReceive, pWeGive);
 }
 
@@ -90,7 +90,7 @@ void UWAI::Team::turnPre()
 		That's OK b/c AI_turnPre doesn't do anything crucial for UWAI::Player.
 		Need to call Player::turnPre already during the team turn b/c
 		the update to UWAICache is important for war planning. */
-	for(MemberAIIter it(m_eAgent); it.hasNext(); ++it)
+	for (MemberAIIter it(m_eAgent); it.hasNext(); ++it)
 		it->uwai().turnPre();
 }
 
