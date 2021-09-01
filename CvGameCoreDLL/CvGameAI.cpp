@@ -52,8 +52,11 @@ void CvGameAI::AI_initScenario()
 			c->AI_assignWorkingPlots();
 		}
 	}
-	for (TeamAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
-		it->uwai().turnPre();
+	if (getUWAI().isEnabled() || getUWAI().isEnabled(true))
+	{
+		for (TeamAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
+			it->uwai().turnPre();
+	}
 } // </advc.104u>
 
 /*  advc.104: I'm repurposing the Aggressive AI option so that it disables UWAI
