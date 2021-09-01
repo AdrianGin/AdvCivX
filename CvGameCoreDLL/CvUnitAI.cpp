@@ -12476,8 +12476,8 @@ bool CvUnitAI::AI_patrol() // advc: refactored
 			if (!kAdj.isAdjacentOwned())
 				iValue += 10000;
 			// <advc.304>
-			if (!isAnimal())
-				iValue += GC.getGame().getBarbarianWeightMap().get(kAdj) * 60;
+			if (!isAnimal() && getPlot().isHabitable())
+				iValue += GC.getGame().getBarbarianWeightMap().get(kAdj) * 50;
 			// </advc.304>
 		}
 		else
