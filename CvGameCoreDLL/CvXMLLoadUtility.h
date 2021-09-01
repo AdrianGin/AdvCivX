@@ -134,13 +134,13 @@ public:
 		unchanged - to avoid breaking XML loading code in mod-mods. Such errors
 		would be difficult to debug b/c the parser level is stored in the EXE. */
 	int SetYieldArray(int** ppiYield);
-	int SetYields(int** ppiYield);
+	int SetYields(int** ppiYield); // (advc: deprecated)
 	#ifdef _USRDLL
 	// <advc> See comment above
 	template <class T>
 	int SetCommerceArray(T** ppiCommerce); // </advc>
 	template <class T>
-	int SetCommerce(T** ppiCommerce);
+	int SetCommerce(T** ppiCommerce); // (advc: deprecated)
 	#endif
 
 	void SetFeatureStruct(int** ppiFeatureTech, int** ppiFeatureTime, int** ppiFeatureProduction, bool** ppbFeatureRemove);
