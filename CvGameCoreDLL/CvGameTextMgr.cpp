@@ -2078,7 +2078,6 @@ void CvGameTextMgr::setPlotListHelpDebug(CvWStringBuffer& szString, CvPlot const
 		// Is this unit the head of a group, not cargo, and visible?
 		if(pHeadUnit == NULL || !pHeadUnit->isGroupHead() || pHeadUnit->isCargo())
 			continue;
-		CvGame const& kGame = GC.getGame();
 		TeamTypes eActiveTeam = getActiveTeam();
 		if(pHeadUnit->isInvisible(eActiveTeam, true))
 			continue;

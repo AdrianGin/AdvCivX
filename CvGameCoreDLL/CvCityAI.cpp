@@ -9126,7 +9126,6 @@ bool CvCityAI::AI_bestSpreadUnit(bool bMissionary, bool bExecutive, int iBaseCha
 {
 	CvPlayerAI const& kPlayer = GET_PLAYER(getOwner());
 	CvTeamAI const& kTeam = GET_TEAM(getTeam());
-	CvGame const& kGame = GC.getGame();
 
 	FAssert(eBestSpreadUnit != NULL && iBestSpreadUnitValue != NULL);
 

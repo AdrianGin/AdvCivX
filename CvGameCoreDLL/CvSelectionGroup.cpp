@@ -429,7 +429,6 @@ int CvSelectionGroup::nukeMissionTime() const
 	int const iBUGChoice = BUGOption::getValue("MainInterface__NukeMissionTime", 0);
 	if (iBUGChoice == ZERO)
 		return 0;
-	CvGame const& kGame = GC.getGame();
 	if (!isActiveOwned())
 		return iShortened / 2;
 	// Nothing to see when particle effects aren't enabled

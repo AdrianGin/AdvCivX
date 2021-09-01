@@ -7333,7 +7333,6 @@ void CvPlayer::changeAnarchyTurns(int iChange) // advc: Refactored
 	if (iChange == 0)
 		return;
 
-	CvGame const& kGame = GC.getGame();
 	if (isActive())
 		gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 

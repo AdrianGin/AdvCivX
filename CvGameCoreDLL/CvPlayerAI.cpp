@@ -7093,7 +7093,6 @@ bool CvPlayerAI::AI_isWillingToTalk(PlayerTypes ePlayer, /* advc.104l: */ bool b
 	FAssert(getPersonalityType() != NO_LEADER);
 	FAssert(ePlayer != getID());
 	// <advc.104i>
-	CvGame const& kGame = GC.getGame();
 	if (GET_PLAYER(ePlayer).isActive())
 	{
 		/*  The EXE keeps calling this function when the diplo screen is already up,
@@ -20929,7 +20928,6 @@ bool CvPlayerAI::AI_proposeJointWar(PlayerTypes eHuman)
 	CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
 	if (kOurTeam.getNumWars(true, true) <= 0)
 		return false;
-	CvGame& kGame = GC.getGame();
 	// <advc.130m> Replacing this with an attitude check at the end:
 		//AI_getMemoryCount(eHuman, MEMORY_DECLARED_WAR) > 0 ||
 		//AI_getMemoryCount(eHuman, MEMORY_HIRED_WAR_ALLY) > 0
