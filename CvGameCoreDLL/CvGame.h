@@ -1064,7 +1064,7 @@ protected:
 	// <advc.300>
 	void createBarbarianCity(bool bNoCivCities, int iProbModifierPercent = 100);
 	int numBarbariansToCreate(int iTilesPerUnit, int iTiles, int iUnowned,
-			int iUnitsPresent, int iBarbarianCities = 0);
+			int iUnitsPresent);
 	int createBarbarianUnits(int iUnitsToCreate, int iUnitsPresent, CvArea& kArea,
 			Shelf* pShelf = NULL, bool bCargoAllowed = false, bool bOnlyCargo = false);
 	CvPlot* randomBarbarianPlot(int& iValid, CvArea const& kArea,
