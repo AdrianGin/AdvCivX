@@ -64,7 +64,7 @@ void BarbarianActivityMap::change(CvPlot const& kPlot, int iChange,
 	{
 		if (itPlot->isWater() == kPlot.isWater())
 		{
-			m_map.set(kPlot.plotNum(), std::min(iMAX_STR, get(*itPlot) +
+			m_map.set(itPlot->plotNum(), std::min(iMAX_STR, get(*itPlot) +
 					// Geometric progression. Stopping at iPlotRange mainly saves time.
 					iChange / std::max(1, itPlot.currPlotDist())));
 		}
