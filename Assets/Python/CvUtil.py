@@ -213,7 +213,8 @@ def spawnUnit(iUnit, pPlot, pPlayer):
 	return 1
 
 def findInfoTypeNum(infoGetter, numInfos, typeStr):
-	if (typeStr == 'NONE'):
+	# advc.001: Also tolerate empty string - now that the bug in pyAssert has been fixed. Raising an error (that no one catches) would render WB saves unplayable that load w/o a hitch in BtS.
+	if (not typeStr or typeStr == 'NONE'):
 		return -1
 	idx = gc.getInfoTypeForString(typeStr)
 	pyAssert(idx != -1, "Can't find type enum for type tag %s" %(typeStr,))
