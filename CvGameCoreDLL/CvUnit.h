@@ -1254,17 +1254,18 @@ struct CombatDetails											// Exposed to Python
 	int iCurrCombatStr;
 	PlayerTypes eOwner;
 	PlayerTypes eVisualOwner;
-	// <advc>
-	// Unused - and gets in the way of zeroing the memory
-	//std::wstring sUnitName;
+	std::wstring sUnitName;
 	// advc:
-	void reset(PlayerTypes eOwner, PlayerTypes eVisualOwner/*, std::wstring sUnitName*/)
+	void reset(PlayerTypes eOwner, PlayerTypes eVisualOwner, std::wstring sUnitName)
 	{
-		ZeroMemory(this, sizeof(*this));
+		/*	Not nice - but we mustn't zero the string, and we don't want to
+			repeat all the int members. */
+		ZeroMemory(this, 39 * sizeof(int));
+		BOOST_STATIC_ASSERT(sizeof(CombatDetails) == 39 * sizeof(int) + 2 * sizeof(PlayerTypes) + sizeof(std::wstring));
 		this->eOwner = eOwner;
 		this->eVisualOwner = eVisualOwner;
-		//this->sUnitName = sUnitName;
-	} // </advc>
+		this->sUnitName = sUnitName;
+	}
 };
 
 #endif
