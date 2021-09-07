@@ -4696,7 +4696,7 @@ void CvCity::changeGovernmentCenterCount(int iChange)
 	Doesn't check if the building can be constructed in this city. */
 int CvCity::getSavedMaintenanceTimes100ByBuilding(BuildingTypes eBuilding) const
 {
-	CvBuildingInfo& kBuilding = GC.getInfo(eBuilding);
+	CvBuildingInfo const& kBuilding = GC.getInfo(eBuilding);
 	int iModifier = kBuilding.getMaintenanceModifier();
 	if (iModifier != 0 && !isNoMaintenance())
 	{
@@ -7200,7 +7200,8 @@ void CvCity::updateCommerce(CommerceTypes eCommerce)
 
 		m_aiCommerceRate.set(eCommerce, iNewRate);
 		FAssert(m_aiCommerceRate.get(eCommerce) >= 0);
-		GET_PLAYER(getOwner()).changeCommerceRate(eCommerce, iNewRate - iOldRate);
+		GET_PLAYER(getOwner()).changeCommerceRateTimes100(eCommerce,
+				iNewRate - iOldRate);
 	}
 	GET_PLAYER(getOwner()).invalidateCommerceRankCache(eCommerce);
 	if (isCitySelected())

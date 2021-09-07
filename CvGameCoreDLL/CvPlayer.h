@@ -937,8 +937,13 @@ public:
 		return setCommercePercent(eCommerce, getCommercePercent(eCommerce) + iChange);
 	}
 
-	int getCommerceRate(CommerceTypes eCommerce) const;																// Exposed to Python
-	void changeCommerceRate(CommerceTypes eCommerce, int iChange);
+	int getCommerceRate(CommerceTypes eCommerce) const																// Exposed to Python
+	{
+		return m_aiCommerceRate.get(eCommerce); // advc.157: cached
+	}
+	void updateCommerceRates(); // advc.157
+	// advc.157: Renamed from "changeCommerceRate"
+	void changeCommerceRateTimes100(CommerceTypes eCommerce, int iChange);
 
 	int getCommerceRateModifier(CommerceTypes eCommerce) const { return m_aiCommerceRateModifier.get(eCommerce); }	// Exposed to Python
 	void changeCommerceRateModifier(CommerceTypes eCommerce, int iChange);
@@ -1588,7 +1593,9 @@ protected:  // <advc.210>
 	YieldPercentMap m_aiTradeYieldModifier;
 	CommerceChangeMap m_aiFreeCityCommerce;
 	CommercePercentMap m_aiCommercePercent;
-	EagerEnumMap<CommerceTypes,int> m_aiCommerceRate; // (at times-100 precision)
+	EagerEnumMap<CommerceTypes,int> m_aiCommerceRateTimes100;
+	// advc.157: Cache actual rate (not times 100) separately
+	EagerEnumMap<CommerceTypes,int,short> m_aiCommerceRate;
 	CommercePercentMap m_aiCommerceRateModifier;
 	CommercePercentMap m_aiCapitalCommerceRateModifier;
 	CommerceChangeMap m_aiStateReligionBuildingCommerce;

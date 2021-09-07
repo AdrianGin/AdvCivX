@@ -457,7 +457,8 @@ void CvPlayer::reset(PlayerTypes eID, bool bConstructorCall)
 	m_aiTradeYieldModifier.reset();
 	m_aiFreeCityCommerce.reset();
 	m_aiCommercePercent.reset();
-	m_aiCommerceRate.reset();
+	m_aiCommerceRateTimes100.reset();
+	m_aiCommerceRate.reset(); // advc.157
 	m_aiCommerceRateModifier.reset();
 	m_aiCapitalCommerceRateModifier.reset();
 	m_aiStateReligionBuildingCommerce.reset();
@@ -9666,33 +9667,69 @@ bool CvPlayer::setCommercePercent(CommerceTypes eCommerce, int iNewValue, bool b
 	return true;
 }
 
-
-int CvPlayer::getCommerceRate(CommerceTypes eCommerce) const
+/*	advc.157: Based on the BtS getCommerceRate(CommerceTypes) function.
+	The part that redistributes rounding errors is new - and the reason
+	why all all commerce rates are updated at once. */
+void CvPlayer::updateCommerceRates()
 {
-	int iRate = m_aiCommerceRate.get(eCommerce);
-	if (GC.getGame().isOption(GAMEOPTION_NO_ESPIONAGE))
+	/*	advc.test: In CvPlayer::updateCommerce, it should suffice to call
+		updateCommerceRates only once in the end and to suppress the calls
+		currently coming from CvCity. Well, let's first see if there's any
+		performance problem. */
+	PROFILE_FUNC();
+
+	EagerEnumMap<CommerceTypes,int,short> aiError;
+	int iTotalError = 0;
+	FOR_EACH_ENUM2(Commerce, eCommerce)
 	{
-		if (eCommerce == COMMERCE_CULTURE)
-			iRate += m_aiCommerceRate.get(COMMERCE_ESPIONAGE);
-		else if (eCommerce == COMMERCE_ESPIONAGE)
-			iRate = 0;
-	}  // <advc.004x>
-	iRate /= 100;
-	if (eCommerce == COMMERCE_RESEARCH)
-	{	// advc.910:
-		static int const iBASE_RESEARCH_RATE = GC.getDefineINT("BASE_RESEARCH_RATE");
-		iRate += iBASE_RESEARCH_RATE;
+		int iRate = m_aiCommerceRateTimes100.get(eCommerce);
+		if (GC.getGame().isOption(GAMEOPTION_NO_ESPIONAGE))
+		{
+			if (eCommerce == COMMERCE_CULTURE)
+				iRate += m_aiCommerceRateTimes100.get(COMMERCE_ESPIONAGE);
+			else if (eCommerce == COMMERCE_ESPIONAGE)
+				iRate = 0;
+		}
+		{
+			int iError = (iRate < 0 ? -1 : 1) * (abs(iRate) % 100);
+			aiError.set(eCommerce, iError);
+			iTotalError += iError;
+		}
+		iRate /= 100;
+		m_aiCommerceRate.set(eCommerce, iRate);
 	}
-	return iRate; // </advc.004x>
+	// Implicit selection sort (b/c the error is going to be small)
+	for (int i = 0; i < abs(iTotalError) / 100; i++)
+	{
+		/*	Not sure if negative error needs to be supported here;
+			maintenance isn't included. Well, let's future-proof. */
+		int const iSign = (iTotalError > 0 ? 1 : -1);
+		CommerceTypes eArgMax = NO_COMMERCE;
+		int iMaxAbsError = MIN_INT;
+		FOR_EACH_ENUM2(Commerce, eCommerce)
+		{
+			int const iError = aiError.get(eCommerce) * iSign;
+			if (iError > iMaxAbsError)
+			{
+				eArgMax = eCommerce;
+				iMaxAbsError = iError;
+			}
+		}
+		m_aiCommerceRate.add(eArgMax, iSign * 1);
+	}
+	// <advc.004x>
+	static int const iBASE_RESEARCH_RATE = GC.getDefineINT("BASE_RESEARCH_RATE"); // advc.910
+	m_aiCommerceRate.add(COMMERCE_RESEARCH, iBASE_RESEARCH_RATE); // </advc.004x>
 }
 
 
-void CvPlayer::changeCommerceRate(CommerceTypes eCommerce, int iChange)
+void CvPlayer::changeCommerceRateTimes100(CommerceTypes eCommerce, int iChange)
 {
 	if (iChange != 0)
 	{
-		m_aiCommerceRate.add(eCommerce, iChange);
+		m_aiCommerceRateTimes100.add(eCommerce, iChange);
 		FAssert(getCommerceRate(eCommerce) >= 0);
+		updateCommerceRates(); // advc.157
 		if (isActive())
 			gDLL->UI().setDirty(GameData_DIRTY_BIT, true);
 	}
@@ -13997,7 +14034,11 @@ void CvPlayer::read(FDataStreamBase* pStream)
 		m_aiTradeYieldModifier.read(pStream);
 		m_aiFreeCityCommerce.read(pStream);
 		m_aiCommercePercent.read(pStream);
-		m_aiCommerceRate.read(pStream);
+		m_aiCommerceRateTimes100.read(pStream);
+		// <advc.157>
+		if (uiFlag >= 17)
+			m_aiCommerceRate.read(pStream);
+		else updateCommerceRates(); // </advc.157>
 		m_aiCommerceRateModifier.read(pStream);
 		m_aiCapitalCommerceRateModifier.read(pStream);
 		m_aiStateReligionBuildingCommerce.read(pStream);
@@ -14013,7 +14054,7 @@ void CvPlayer::read(FDataStreamBase* pStream)
 		m_aiTradeYieldModifier.readArray<int>(pStream);
 		m_aiFreeCityCommerce.readArray<int>(pStream);
 		m_aiCommercePercent.readArray<int>(pStream);
-		m_aiCommerceRate.readArray<int>(pStream);
+		m_aiCommerceRateTimes100.readArray<int>(pStream);
 		m_aiCommerceRateModifier.readArray<int>(pStream);
 		m_aiCapitalCommerceRateModifier.readArray<int>(pStream);
 		m_aiStateReligionBuildingCommerce.readArray<int>(pStream);
@@ -14382,7 +14423,8 @@ void CvPlayer::write(FDataStreamBase* pStream)
 	//uiFlag = 13; // advc.004s
 	//uiFlag = 14; // advc.027 (m_bRandomWBStart)
 	//uiFlag = 15; // advc.908a (separate tag for nerfed trait effect), advc.908c
-	uiFlag = 16; // advc.enum: new enum map save behavior
+	//uiFlag = 16; // advc.enum: new enum map save behavior
+	uiFlag = 17; // advc.157
 	pStream->Write(uiFlag);
 
 	// <advc.027>
@@ -14521,7 +14563,8 @@ void CvPlayer::write(FDataStreamBase* pStream)
 	m_aiTradeYieldModifier.write(pStream);
 	m_aiFreeCityCommerce.write(pStream);
 	m_aiCommercePercent.write(pStream);
-	m_aiCommerceRate.write(pStream);
+	m_aiCommerceRateTimes100.write(pStream);
+	m_aiCommerceRate.write(pStream); // advc.157
 	m_aiCommerceRateModifier.write(pStream);
 	m_aiCapitalCommerceRateModifier.write(pStream);
 	m_aiStateReligionBuildingCommerce.write(pStream);
