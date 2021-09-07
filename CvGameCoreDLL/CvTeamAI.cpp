@@ -98,12 +98,8 @@ void CvTeamAI::AI_reset(bool bConstructor)
 void CvTeamAI::AI_doTurnPre()
 {
 	AI_doCounter();
-
-	/*if (isHuman() || isBarbarian() || isMinorCiv()) // advc: Caller handles these
-		return;*/
 	// <advc.104>
-	if ((getUWAI().isEnabled() || getUWAI().isEnabled(true)) && !isBarbarian() &&
-		!isMinorCiv() && isAlive())
+	if ((getUWAI().isEnabled() || getUWAI().isEnabled(true)) && isMajorCiv())
 	{
 		/*  Calls turnPre on the team members, i.e. UWAI::Civ::turnPre
 			happens before CvPlayerAI::AI_turnPre. Needs to be this way b/c

@@ -10584,9 +10584,9 @@ int CvCityAI::AI_jobChangeValue(std::pair<bool, int> new_job, std::pair<bool, in
 
 		if (old_job.second >= 0)
 		{
-		iYield -= old_job.first ?
-				kOwner.specialistYield((SpecialistTypes)old_job.second, eLoopYield) :
-				getCityIndexPlot((CityPlotTypes)old_job.second)->getYield(eLoopYield);
+			iYield -= old_job.first ?
+					kOwner.specialistYield((SpecialistTypes)old_job.second, eLoopYield) :
+					getCityIndexPlot((CityPlotTypes)old_job.second)->getYield(eLoopYield);
 		}
 
 		if (iYield >= 0)
