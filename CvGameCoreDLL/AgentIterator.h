@@ -123,7 +123,7 @@ public:
 
 	static int count(TeamTypes eTeam = NO_TEAM)
 	{
-		AgentIterator it(eTeam);
+		Derived it(eTeam);
 		if (bAPPLY_FILTERS)
 		{
 			while (it.hasNext())
