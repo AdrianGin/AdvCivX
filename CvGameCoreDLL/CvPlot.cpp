@@ -4729,7 +4729,7 @@ void CvPlot::setImprovementType(ImprovementTypes eNewValue,
 		isVisibleToWatchingHuman() &&
 		GET_PLAYER(getActivePlayer()).showGoodyOnResourceLayer())
 	{
-		gDLL->UI().setDirty(GlobeInfo_DIRTY_BIT, true);
+		gDLL->UI().setDirty(GlobeLayer_DIRTY_BIT, true);
 	} // </advc.004z>
 	CvCity* pWorkingCity = getWorkingCity();
 	if (pWorkingCity != NULL)
