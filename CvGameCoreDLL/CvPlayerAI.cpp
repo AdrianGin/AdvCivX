@@ -2445,7 +2445,8 @@ void CvPlayerAI::AI_updateCommerceWeights()
 	for (size_t i = 0; i < city_countdown_list.size(); i++)
 	{
 		CvCityAI* pCity = AI_getCity(city_countdown_list[i].second);
-
+		/*	advc.192 (note): Expanding borders in order to work additional plots
+			is not taken into account here. CvCity::AI_buildingValue handles that. */
 		// COMMERCE_CULTURE AIWeightPercent is set to 30% in the current xml.
 		int iWeight = GC.getInfo(COMMERCE_CULTURE).getAIWeightPercent();
 
