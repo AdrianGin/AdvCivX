@@ -1856,7 +1856,11 @@ void CvUnitAI::AI_workerMove(/* advc.113b: */ bool bUpdateWorkersHave)
 	if (isBarbarian())
 	{
 		if (!bCanRetreat || !AI_retreatToCity(false, true))
-			getGroup()->pushMission(MISSION_SKIP);
+		{
+			if (SyncRandOneChanceIn(6))
+				scrap(); // Don't let it stand around indefinitely
+			else getGroup()->pushMission(MISSION_SKIP);
+		}
 		return;
 	} // </advc.300>
 
