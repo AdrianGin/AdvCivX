@@ -5478,21 +5478,23 @@
 		<Spanish>Dobla la velocidad de [ICON_PRODUCTION] con [LINK=literal]%s1_Bonus[\LINK]</Spanish>
 	</TEXT>
 	<!-- advc.004w: These two are from CIV4GameText_BTS.xml. Replace "production"
-		 with the production icon for consistency. -->
+		 with the production icon for consistency.
+		 Don't know how to get the German Pedia links right for the trait articles
+		 (advc.004y) while still being concise. -->
 	<TEXT>
 		<Tag>TXT_KEY_DOUBLE_SPEED_TRAIT</Tag>
-		<English>Double [ICON_PRODUCTION] Speed for %s1_trait Leaders</English>
-		<French>Vitesse de [ICON_PRODUCTION] doubl&#233;e avec le trait %s1_trait</French>
+		<English>Double [ICON_PRODUCTION] Speed for [LINK=literal]%s1_trait[\LINK] Leaders</English>
+		<French>Vitesse de [ICON_PRODUCTION] doubl&#233;e avec le trait [LINK=literal]%s1_trait[\LINK]</French>
 		<German>Doppelte [ICON_PRODUCTION]/Runde f&#252;r %s1:2_trait Staatsoberhaupt</German>
-		<Italian>Doppia velocit&#224; [ICON_PRODUCTION] con un leader %s1_trait</Italian>
+		<Italian>Doppia velocit&#224; [ICON_PRODUCTION] con un leader [LINK=literal]%s1_trait[\LINK]</Italian>
 		<Spanish>Doble velocidad de [ICON_PRODUCTION] con l&#237;der %s1:1_trait</Spanish>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_PRODUCTION_MODIFIER_TRAIT</Tag>
-		<English>%D1_change%% [ICON_PRODUCTION] Speed for %s2_trait Leaders</English>
-		<French>Vitesse de [ICON_PRODUCTION] de %D1_change%% avec le trait %s2_trait</French>
+		<English>%D1_change%% [ICON_PRODUCTION] Speed for [LINK=literal]%s2_trait[\LINK] Leaders</English>
+		<French>Vitesse de [ICON_PRODUCTION] de %D1_change%% avec le trait [LINK=literal]%s2_trait[\LINK]</French>
 		<German>%D1_change%% [ICON_PRODUCTION]/Runde f&#252;r %s2:2_trait Staatsoberhaupt</German>
-		<Italian>%D1_change%% di velocit&#224; [ICON_PRODUCTION] con un leader %s2_trait</Italian>
+		<Italian>%D1_change%% di velocit&#224; [ICON_PRODUCTION] con un leader [LINK=literal]%s2_trait[\LINK]</Italian>
 		<Spanish>%D1_change%% de velocidad de [ICON_PRODUCTION] con l&#237;der %s2:1_trait</Spanish>
 	</TEXT>
 	<!-- Shorter version -->
