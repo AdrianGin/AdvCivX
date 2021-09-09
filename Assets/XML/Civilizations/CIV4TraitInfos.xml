@@ -11,7 +11,7 @@
 			<Type>TRAIT_PHILOSOPHICAL</Type>
 			<Description>TXT_KEY_TRAIT_PHILOSOPHICAL</Description>
 			<ShortDescription>TXT_KEY_TRAIT_PHILOSOPHICAL_SHORT</ShortDescription>
-			<Civilopedia>TXT_KEY_CIVIC_PHILOSOPHICAL_PEDIA</Civilopedia>
+			<Civilopedia>TXT_KEY_TRAIT_PHILOSOPHICAL_PEDIA</Civilopedia>
 			<iHealth>0</iHealth>
 			<iHappiness>0</iHappiness>
 			<iMaxAnarchy>-1</iMaxAnarchy>
@@ -35,7 +35,7 @@
 			<Type>TRAIT_AGGRESSIVE</Type>
 			<Description>TXT_KEY_TRAIT_AGGRESSIVE</Description>
 			<ShortDescription>TXT_KEY_TRAIT_AGGRESSIVE_SHORT</ShortDescription>
-			<Civilopedia>TXT_KEY_CIVIC_AGGRESSIVE_PEDIA</Civilopedia>
+			<Civilopedia>TXT_KEY_TRAIT_AGGRESSIVE_PEDIA</Civilopedia>
 			<iHealth>0</iHealth>
 			<iHappiness>0</iHappiness>
 			<iMaxAnarchy>-1</iMaxAnarchy>
@@ -72,7 +72,7 @@
 			<Type>TRAIT_SPIRITUAL</Type>
 			<Description>TXT_KEY_TRAIT_SPIRITUAL</Description>
 			<ShortDescription>TXT_KEY_TRAIT_SPIRITUAL_SHORT</ShortDescription>
-			<Civilopedia>TXT_KEY_CIVIC_SPIRITUAL_PEDIA</Civilopedia>
+			<Civilopedia>TXT_KEY_TRAIT_SPIRITUAL_PEDIA</Civilopedia>
 			<iHealth>0</iHealth>
 			<iHappiness>0</iHappiness>
 			<iMaxAnarchy>0</iMaxAnarchy>
@@ -95,7 +95,7 @@
 			<Type>TRAIT_EXPANSIVE</Type>
 			<Description>TXT_KEY_TRAIT_EXPANSIVE</Description>
 			<ShortDescription>TXT_KEY_TRAIT_EXPANSIVE_SHORT</ShortDescription>
-			<Civilopedia>TXT_KEY_CIVIC_EXPANSIVE_PEDIA</Civilopedia>
+			<Civilopedia>TXT_KEY_TRAIT_EXPANSIVE_PEDIA</Civilopedia>
 			<iHealth>2</iHealth>
 			<iHappiness>0</iHappiness>
 			<iMaxAnarchy>-1</iMaxAnarchy>
@@ -118,7 +118,7 @@
 			<Type>TRAIT_INDUSTRIOUS</Type>
 			<Description>TXT_KEY_TRAIT_INDUSTRIOUS</Description>
 			<ShortDescription>TXT_KEY_TRAIT_INDUSTRIOUS_SHORT</ShortDescription>
-			<Civilopedia>TXT_KEY_CIVIC_INDUSTRIOUS_PEDIA</Civilopedia>
+			<Civilopedia>TXT_KEY_TRAIT_INDUSTRIOUS_PEDIA</Civilopedia>
 			<iHealth>0</iHealth>
 			<iHappiness>0</iHappiness>
 			<iMaxAnarchy>-1</iMaxAnarchy>
@@ -141,7 +141,7 @@
 			<Type>TRAIT_CREATIVE</Type>
 			<Description>TXT_KEY_TRAIT_CREATIVE</Description>
 			<ShortDescription>TXT_KEY_TRAIT_CREATIVE_SHORT</ShortDescription>
-			<Civilopedia>TXT_KEY_CIVIC_CREATIVE_PEDIA</Civilopedia>
+			<Civilopedia>TXT_KEY_TRAIT_CREATIVE_PEDIA</Civilopedia>
 			<iHealth>0</iHealth>
 			<iHappiness>0</iHappiness>
 			<iMaxAnarchy>-1</iMaxAnarchy>
@@ -171,7 +171,7 @@
 			<Type>TRAIT_FINANCIAL</Type>
 			<Description>TXT_KEY_TRAIT_FINANCIAL</Description>
 			<ShortDescription>TXT_KEY_TRAIT_FINANCIAL_SHORT</ShortDescription>
-			<Civilopedia>TXT_KEY_CIVIC_FINANCIAL_PEDIA</Civilopedia>
+			<Civilopedia>TXT_KEY_TRAIT_FINANCIAL_PEDIA</Civilopedia>
 			<iHealth>0</iHealth>
 			<iHappiness>0</iHappiness>
 			<iMaxAnarchy>-1</iMaxAnarchy>
@@ -202,7 +202,7 @@
 			<Type>TRAIT_ORGANIZED</Type>
 			<Description>TXT_KEY_TRAIT_ORGANIZED</Description>
 			<ShortDescription>TXT_KEY_TRAIT_ORGANIZED_SHORT</ShortDescription>
-			<Civilopedia>TXT_KEY_CIVIC_ORGANIZED_PEDIA</Civilopedia>
+			<Civilopedia>TXT_KEY_TRAIT_ORGANIZED_PEDIA</Civilopedia>
 			<iHealth>0</iHealth>
 			<iHappiness>0</iHappiness>
 			<iMaxAnarchy>-1</iMaxAnarchy>
@@ -225,7 +225,7 @@
 			<Type>TRAIT_CHARISMATIC</Type>
 			<Description>TXT_KEY_TRAIT_CHARISMATIC</Description>
 			<ShortDescription>TXT_KEY_TRAIT_CHARISMATIC_SHORT</ShortDescription>
-			<Civilopedia>TXT_KEY_CIVIC_CHARISMATIC_PEDIA</Civilopedia>
+			<Civilopedia>TXT_KEY_TRAIT_CHARISMATIC_PEDIA</Civilopedia>
 			<iHealth>0</iHealth>
 			<iHappiness>1</iHappiness>
 			<iMaxAnarchy>-1</iMaxAnarchy>
@@ -248,7 +248,7 @@
 			<Type>TRAIT_PROTECTIVE</Type>
 			<Description>TXT_KEY_TRAIT_PROTECTIVE</Description>
 			<ShortDescription>TXT_KEY_TRAIT_PROTECTIVE_SHORT</ShortDescription>
-			<Civilopedia>TXT_KEY_CIVIC_PROTECTIVE_PEDIA</Civilopedia>
+			<Civilopedia>TXT_KEY_TRAIT_PROTECTIVE_PEDIA</Civilopedia>
 			<iHealth>0</iHealth>
 			<iHappiness>0</iHappiness>
 			<iMaxAnarchy>-1</iMaxAnarchy>
@@ -289,7 +289,7 @@
 			<Type>TRAIT_IMPERIALIST</Type>
 			<Description>TXT_KEY_TRAIT_IMPERIALIST</Description>
 			<ShortDescription>TXT_KEY_TRAIT_IMPERIALIST_SHORT</ShortDescription>
-			<Civilopedia>TXT_KEY_CIVIC_IMPERIALIST_PEDIA</Civilopedia>
+			<Civilopedia>TXT_KEY_TRAIT_IMPERIALIST_PEDIA</Civilopedia>
 			<iHealth>0</iHealth>
 			<iHappiness>0</iHappiness>
 			<iMaxAnarchy>-1</iMaxAnarchy>

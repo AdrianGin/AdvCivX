@@ -1153,31 +1153,31 @@
 	</TEXT>
 	<!-- advc.908c (new text key) -->
 	<TEXT>
-		<Tag>TXT_KEY_CIVIC_PHILOSOPHICAL_PEDIA</Tag>
+		<Tag>TXT_KEY_TRAIT_PHILOSOPHICAL_PEDIA</Tag>
 		<English>The AdvCiv mod has reduced the birth rate from originally 100%% as part of an effort to weaken the strongest traits. Fractional birth rates get rounded down, so the reduction is not as modest as it may appear.</English>
 		<German>AdvCiv hat die Geburtsrate reduziert (ehemals 100%%), um dieses spielstarke Merkmale zu schwächen. Da Geburtsraten auf ganze Zahlen abgerundet werden, macht selbst eine gringfügige Reduzierung einen deutlichen Unterschied.</German>
 	</TEXT>
 	<!-- advc -->
 	<TEXT>
-		<Tag>TXT_KEY_CIVIC_AGGRESSIVE_PEDIA</Tag>
+		<Tag>TXT_KEY_TRAIT_AGGRESSIVE_PEDIA</Tag>
 		<English>The faster [ICON_PRODUCTION] of Jail was added by K-Mod in order to strengthen this trait.</English>
 		<German>Die erhöhte [ICON_PRODUCTION]-Geschwindigkeit von Gefängnissen wurde von K-Mod ergänzt, um dieses Merkmal spielstärker zu machen.</German>
 	</TEXT>
 	<!-- advc.908b -->
 	<TEXT>
-		<Tag>TXT_KEY_CIVIC_CREATIVE_PEDIA</Tag>
+		<Tag>TXT_KEY_TRAIT_CREATIVE_PEDIA</Tag>
 		<English>Since K-Mod and AdvCiv make [ICON_CULTURE] points more worthwhile in several ways, AdvCiv reduces the [ICON_CULTURE] rate (was 2 in BtS) and adds some free initial [ICON_CULTURE] instead. AdvCiv has also removed the faster [ICON_PRODUCTION] of Colosseum - which doesn't seem to fit the culture theme well.</English>
 		<German>Da verschiedene Änderungen in K-Mod und AdvCiv den Nutzen von [ICON_CULTURE]-Punkten erhöhen, reduziert AdvCiv die [ICON_CULTURE]/Runde (war 2 in BtS) und erhöht stattdessen die anfängliche [ICON_CULTURE]-Stufe von Städten. AdvCiv entfernt außerdem die erhöhte [ICON_PRODUCTION]-Geschwindigkeit fürs Kolosseum - welches nicht so recht zu den kulturellen Effekten passte.</German>
 	</TEXT>
 	<!-- advc.908a -->
 	<TEXT>
-		<Tag>TXT_KEY_CIVIC_FINANCIAL_PEDIA</Tag>
+		<Tag>TXT_KEY_TRAIT_FINANCIAL_PEDIA</Tag>
 		<English>In order to weaken this trait and to prevent a synergy with the K-Mod effect of the [LINK=CIVIC_SERFDOM]Serfdom[\LINK] civic, AdvCiv increases the threshold for the extra [ICON_COMMERCE] - unless the natural [ICON_COMMERCE] (not counting terrain improvements) reaches the original threshold.</English>
 		<German>Um dieses Merkmal zu schwächen und eine Wechselwirkung mit der durch K-Mod veränderten Staatsform [LINK=CIVIC_SERFDOM]Leibeigenschaft[\LINK] zu verhindern, erhöht AdvCiv die Schwelle für den zusätzlichen [ICON_COMMERCE]-Ertrag - außer wenn der natürliche [ICON_COMMERCE]-Ertrag (ohne Geländeverbesserungen) die ursprüngliche Schwelle erreicht.</German>
 	</TEXT>
 	<!-- advc -->
 	<TEXT>
-		<Tag>TXT_KEY_CIVIC_PROTECTIVE_PEDIA</Tag>
+		<Tag>TXT_KEY_TRAIT_PROTECTIVE_PEDIA</Tag>
 		<English>The faster [ICON_PRODUCTION] of Security Bureau was added by K-Mod in order to strengthen this trait.</English>
 		<German>Die erhöhte [ICON_PRODUCTION]-Geschwindigkeit des Sicherheitsdienstes wurde von K-Mod ergänzt, um dieses Merkmal spielstärker zu machen.</German>
 	</TEXT>
