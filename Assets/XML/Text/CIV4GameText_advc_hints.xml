@@ -952,4 +952,11 @@
 	<German>Um einer Stadt einen neuen Produktionsauftrag zu erteilen genügt es, den Stadtbalken per Klick auszuwählen; es ist nicht notwendig, den Stadtbildschirm zu öffnen. Der Hilfetext des Stadtbalkens liefert einen Kompakt-Überblick.</German>
 </TEXT>
 
+<!-- advc.650 -->
+<TEXT>
+	<Tag>TXT_KEY_ADVC_HINT_51</Tag>
+	<English>(AdvCiv) A pair of nukes should be expected to destroy 4 in 5 units in an enemy stack, a single nuke less than 2 in 5. Double is still better, but the BtS damage roll had resulted in a much starker difference between one and two nukes.</English>
+	<German>(AdvCiv) Ein Paar von Atomsprengköpfen sollte etwa 4 von 5 betroffenen Einheiten zerstören, ein einzlner weniger als 2 in 5. Doppelt hält immer noch besser, aber mit dem Original-Schadenswurf war der Unterschied noch deutlich größer.</German>
+</TEXT>
+
 </Civ4GameText>
