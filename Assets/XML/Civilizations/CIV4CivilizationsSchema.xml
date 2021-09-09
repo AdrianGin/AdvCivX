@@ -366,6 +366,8 @@
 		<element type="Type"/>
 		<element type="Description"/>
 		<element type="ShortDescription"/>
+		<!-- advc.004y: -->
+		<element type="Civilopedia" minOccurs="0"/>
 		<element type="Help" minOccurs="0"/>
 		<element type="iHealth"/>
 		<element type="iHappiness"/>
