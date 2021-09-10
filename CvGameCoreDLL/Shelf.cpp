@@ -105,16 +105,14 @@ CvUnit* Shelf::randomBarbarianTransport() const
 	for (size_t i = 0; i < m_apPlots.size(); i++)
 	{
 		CvPlot const& p = *m_apPlots[i];
-		if (p.isVisibleToCivTeam())
-			continue;
 		FOR_EACH_UNIT_VAR_IN(pTransport, p)
 		{
-			if (pTransport->getOwner() != BARBARIAN_PLAYER)
+			if (!pTransport->isBarbarian())
 				break;
 			// Load at most 2
 			int iCargo = std::min(2, GC.getInfo(pTransport->getUnitType()).getCargoSpace());
 			iCargo -= std::max(0, pTransport->getCargo());
-			if (iCargo > 0)
+			if (iCargo > 0 && !p.isVisibleToCivTeam())
 				apValid.push_back(pTransport);
 		}
 	}

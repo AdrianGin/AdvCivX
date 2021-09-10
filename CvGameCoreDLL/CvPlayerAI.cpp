@@ -8230,12 +8230,12 @@ int CvPlayerAI::AI_getRivalTradeAttitude(PlayerTypes ePlayer) const
 		decay happens explicitly in AI_doCounter.) */
 }
 
-int CvPlayerAI::AI_getBonusTradeCounter(TeamTypes eTo) const {
-
-	int r = 0;
+int CvPlayerAI::AI_getBonusTradeCounter(TeamTypes eTo) const
+{
+	int iR = 0;
 	for (MemberIter it(eTo); it.hasNext(); ++it)
-		r += AI_getBonusTradeCounter(it->getID());
-	return r;
+		iR += AI_getBonusTradeCounter(it->getID());
+	return iR;
 } // </advc.130p>
 
 
@@ -18805,8 +18805,9 @@ void CvPlayerAI::AI_doCounter()
 							kPlayer.getBonusExport(eLoopBonus);
 					if (iAvail > 1)
 						rExportable += std::min(iAvail - 1, 3);
-				} /* Mean of capBonuses and a multiple of exportable, but
-					 no more than 1.33 times capBonuses. */
+				}
+				/*	Weighted mean of rCapitalBonuses and a multiple of rExportable,
+					but no more than 5/3 times rCapitalBonuses. */
 				scaled rWeight1 = (rCapitalBonuses + std::min(rCapitalBonuses * fixp(5/3.),
 						fixp(2.4) * std::max(rBonusVal, rExportable))) / 2;
 				scaled rWeight2(400, iAttitudeDiv);

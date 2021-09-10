@@ -2243,9 +2243,9 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible)
 		return false;
 	{
 		bool bPyOverride=false;
-		bool r = GC.getPythonCaller()->canBuild(*this, eBuild, ePlayer, bPyOverride);
+		bool bCanBuild = GC.getPythonCaller()->canBuild(*this, eBuild, ePlayer, bPyOverride);
 		if (bPyOverride)
-			return r;
+			return bCanBuild;
 	}
 	bool bValid = false;
 	ImprovementTypes const eImprovement = GC.getInfo(eBuild).getImprovement();

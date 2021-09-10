@@ -19691,7 +19691,9 @@ void CvPlayer::killAll(ButtonPopupTypes ePopupType, int iData1)
 		return;
 	}
 	/*	Not sure about this. Perhaps it should essentially be 0, but can be 1
-		due to the EXE/DLL/async call sequence, or something. */
+		due to the EXE/DLL/async call sequence, or something.
+		Seems that 2 can also be correct when receiving 2 techs in 1 trade that
+		each enable a new civic. */
 	FAssert(m_iButtonPopupsRelaunching <= 1);
 	CvPopupQueue relaunchDisplayed;
 	CvPopupQueue relaunchQueued;
