@@ -7915,7 +7915,7 @@ int CvGame::createBarbarianUnits(int iUnitsToCreate, int iUnitsPresent,
 				FAssert(iValid > 0);
 				// Don't create any units if far too few valid tiles remain
 				if ((pShelf != NULL && iValid * 100 < pShelf->size()) ||
-					iUnitsTarget >= iValid)
+					iUnitsTarget > iValid)
 				{
 					pPlot = NULL;
 				}
@@ -7927,6 +7927,8 @@ int CvGame::createBarbarianUnits(int iUnitsToCreate, int iUnitsPresent,
 			scaled rSkipProb = std::max(scaled(iUnitsTarget, iValid),
 					// In case that both valid count and target number are very small
 					scaled(std::min(iUnitsTarget + 2, 3), iValid + 2));
+			// Don't let unguarded plots go entirely unpunished forever
+			rSkipProb.decreaseTo(fixp(0.9));
 			// Especially don't want a constant stream of units from low-weight plots
 			rSkipProb *= scaled::max(1, 2 - per100(getBarbarianWeightMap().get(*pPlot)));
 			if (SyncRandSuccess(rSkipProb))
