@@ -1173,7 +1173,7 @@
 	<TEXT>
 		<Tag>TXT_KEY_TRAIT_FINANCIAL_PEDIA</Tag>
 		<English>In order to weaken this trait and to prevent a synergy with the K-Mod effect of the [LINK=CIVIC_SERFDOM]Serfdom[\LINK] civic, AdvCiv increases the threshold for the extra [ICON_COMMERCE] - unless the natural [ICON_COMMERCE] (not counting terrain improvements) reaches the original threshold.</English>
-		<German>Um dieses Merkmal zu schwächen und eine Wechselwirkung mit der durch K-Mod veränderten Staatsform [LINK=CIVIC_SERFDOM]Leibeigenschaft[\LINK] zu verhindern, erhöht AdvCiv die Schwelle für den zusätzlichen [ICON_COMMERCE]-Ertrag - außer wenn der natürliche [ICON_COMMERCE]-Ertrag (ohne Geländeverbesserungen) die ursprüngliche Schwelle erreicht.</German>
+		<German>Um dieses Merkmal zu schwächen und eine Wechselwirkung mit der durch K-Mod veränderten Staatsform [LINK=CIVIC_SERFDOM]Leibeigenschaft[\LINK] zu verhindern, erhöht AdvCiv die Schwelle für den zusätzlichen [ICON_COMMERCE]-Ertrag - außer wenn der natürliche [ICON_COMMERCE]-Ertrag (ohne Modernisierungen) die ursprüngliche Schwelle erreicht.</German>
 	</TEXT>
 	<!-- advc -->
 	<TEXT>
@@ -1261,6 +1261,92 @@
 		<German>Der [COLOR_BUILDING_TEXT]Sicherheitsdienst[COLOR_REVERT] bewirkt eine Kostensteigerung f&#252;r die Durchf&#252;hrung feindlicher Spionagemissionen in einer Stadt. Die schnellere [ICON_PRODUCTION] für schützende Staatsoberhäupter wurde von [BOLD]K-Mod[\BOLD] hinzugefügt.</German>
 		<Italian>Costruisci un'[COLOR_BUILDING_TEXT]Agenzia di sicurezza[COLOR_REVERT] per aumentare il costo delle missioni nemiche di spionaggio nella tua citt&#224;.</Italian>
 		<Spanish>Construye un [COLOR_BUILDING_TEXT]Servicio de contraespionaje[COLOR_REVERT] para aumentar el coste de las misiones de espionaje enemigas en la ciudad.</Spanish>
+	</TEXT>
+
+	<!-- advc.912c -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_HEREDITARY_RULE_CHANGES_PEDIA</Tag>
+		<English>[BOLD]AdvCiv[\BOLD] has reduced the amount of [ICON_HAPPY] per unit and added a small [ICON_HAPPY] increase for luxury resources. In part, because AI civs, with their large city garrisons, were swimming in [ICON_HAPPY] during the midgame, and that caused problems with the more rational resource trade behavior in AdvCiv.</English>
+		<German>[BOLD]AdvCiv[\BOLD] reduziert die [ICON_HAPPY] pro Einheit und fügt ein wenig zusätzliche [ICON_HAPPY] durch Luxusgüter hinzu. Zum Teil, weil die KI-Städte durch ihre großzügig bemessenen Garnisonen ab der Spielmitte mit [ICON_HAPPY] überversorgt waren, was zu Problemen mit AdvCivs vernuftbasierten KI-Verhalten beim Handel mit Ressourcen führte.</German>
+	</TEXT>
+	<!-- advc: Point out K-Mod change -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_VASSALAGE_CHANGES_PEDIA</Tag>
+		<English>[BOLD]K-Mod[\BOLD] has made this civic more powerful by letting it reduce city maintenance costs.</English>
+		<German>[BOLD]K-Mod[\BOLD] hat diese Staatsform durch eine Reduktion von Unterhaltskosten für Städte - nicht nur für Einheiten - spielstärker gemacht.</German>
+	</TEXT>
+	<!-- advc: Had said that 3 units can be drafted. Depends on the map size,
+		 and we shouldn't commit to a specific number in any case. -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_NATIONHOOD_STRATEGY</Tag>
+		<English>Can draft population into the military; happiness from barracks; increased espionage</English>
+		<French>Permet de mobiliser 3 unit&#233;s par tour, la caserne accro&#238;t le bonheur.</French>
+		<German>Erm&#246;glicht die Rekrutierung von Zivilisten, Zufriedenheit durch Kasernen, verbessert Spionage</German>
+		<Italian>Pu&#242; reclutare tre unit&#224; per turno; le caserme producono felicit&#224; extra</Italian>
+		<Spanish>Se pueden reclutar tres unidades por turno, los cuarteles generan felicidad adicional.</Spanish>
+	</TEXT>
+	<!-- advc: Point out K-Mod change -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_FREE_SPEECH_CHANGES_PEDIA</Tag>
+		<English>[BOLD]K-Mod[\BOLD] has significantly reduced the [ICON_CULTURE] modifier (was 100%% in BtS), in part, because K-Mod increases the range of [ICON_CULTURE] spread from cities onto surrounding tiles.</English>
+		<French>Augmente le commerce des petites villes et am&#233;liore la culture g&#233;n&#233;r&#233;e par toutes les villes.</French>
+		<German>[BOLD]K-Mod[\BOLD] hat den [ICON_CULTURE]-Effekt deutlich verringert (war 100%% in BtS), zum Teil, da K-Mod die Reichweite der [ICON_CULTURE]-Ausbreitung von Städten auf umliegende Geländerfelder vergrößert.</German>
+		<Italian>Commercio extra dai paesi; aumenta la cultura in tutte le citt&#224;</Italian>
+		<Spanish>Comercio adicional en los pueblos, aumenta la producci&#243;n cultural en todas las ciudades.</Spanish>
+	</TEXT>
+	<!-- advc.912a -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_SERFDOM_CHANGES_PEDIA</Tag>
+		<English>[BOLD]K-Mod[\BOLD] has added effects on tile improvement yields in order to make this civic competitive with the other early Labor civics. AdvCiv has toned this balance change down a bit by increasing the upkeep cost (was Low in Bts and K-Mod). Also note that an AdvCiv change to the [LINK=literal]Financial[\LINK] trait mostly prevents a synergy between that trait and Serfdom.</English>
+		<German>[BOLD]K-Mod[\BOLD] hat Ertrags-Effekte hinzugefügt, um diese Staatsform an die Spielstärke anderer Arbeits-Staatsformen anzunähern. AdvCiv schwächt diese Änderung durch höhere Unterhaltskosten (ursprünglich "gering") ein wenig ab. AdvCiv nimmt auch eine Änderung am Merkmal "finanzorientiert" vor, die verhindert, dass finanzorientierte Staatsoberhäupter besonders von den Leibeigenschafts-Erträgen profitieren.</German>
+	</TEXT>
+	<!-- advc: BtS had added "increased espionage output" here, but that
+		 actually ended up at Nationhood.  -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_POLICE_STATE_STRATEGY</Tag>
+		<English>Faster military unit production; less war anger</English>
+		<French>Acc&#233;l&#232;re la production des unit&#233;s militaires. R&#233;duit le m&#233;contentement d&#251; &#224; la guerre. Augmente la production de l'espionnage.</French>
+		<German>Beschleunigte Produktion von Milit&#228;reinheiten, geringere Kriegsm&#252;digkeit</German>
+		<Italian>Produzione delle unit&#224; militari pi&#249; veloce; ridotta stanchezza della guerra; maggiore resa dello spionaggio.</Italian>
+		<Spanish>Producci&#243;n m&#225;s r&#225;pida de unidades militares, menor hast&#237;o b&#233;lico, mayor rendimiento del espionaje</Spanish>
+	</TEXT>
+	<!-- advc: Point out K-Mod changes -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_MERCANTILISM_CHANGES_PEDIA</Tag>
+		<English>[BOLD]K-Mod[\BOLD] has strengthened this civic a little by decreasing its upkeep cost (was Medium in BtS).</English>
+		<German>[BOLD]K-Mod[\BOLD] hat diese Staatsform durch verringerte Unterhaltskosten (ursprünglich "mittel") etwas spielstärker gemacht.</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_STATE_PROPERTY_CHANGES_PEDIA</Tag>
+		<English>[BOLD]K-Mod[\BOLD] treats colony maintenance as separate from distance maintenance, so this civic no longer affects colony maintenance.</English>
+		<German>[BOLD]K-Mod[\BOLD] behandelt Kolonialunterhalt nicht als Teil der Entfernungs-basierten Unterhaltsstrafe. Diese Staatsform wirkt sich also nicht mehr auf Kolonialunterhalt aus.</German>
+	</TEXT>
+	<!-- advc: Rewritten; vague now, but at least not wrong. -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_ENVIRONMENTALISM_STRATEGY</Tag>
+		<English>Increased health; extra yields from eco-friendly terrain improvements</English>
+		<French>Meilleure sant&#233; dans toutes les villes. Les for&#234;ts et jungles &#224; proximit&#233; des villes rendent les citoyens heureux.</French>
+		<German>Gr&#246;&#223;ere Gesundheit; Zusatzerträge für umweltfreundliche Modernisierungen</German>
+		<Italian>Salute extra nelle citt&#224;; le foreste e le giungle vicine rendono felici gli abitanti</Italian>
+		<Spanish>Salud adicional en todas las ciudades. Los bosques y selvas cercanos hacen m&#225;s felices a los ciudadanos.</Spanish>
+	</TEXT>
+	<!-- advc: Describe K-Mod changes -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_ENVIRONMENTALISM_CHANGES_PEDIA</Tag>
+		<English>[BOLD]K-Mod[\BOLD] removes a penalty for corporations that the BtS expansion had added, adds [ICON_HAPPY] from [LINK=BUILDING_PUBLIC_TRANSPORTATION]Public Transportation[\LINK] instead of [ICON_HEALTHY] and increases the civic upkeep (was Medium). Moreover, Environmentalism (and Public Transportation) now reduce [ICON_UNHEALTHY] from population instead of granting [ICON_HEALTHY], which makes them more effective against Global Warming.</English>
+		<German>[BOLD]K-Mod[\BOLD] deaktiviert einen Malus für Kapitalgesellschaften den die BtS-Erweiterung eingeführt hatte, ersetzt die zusätzlichen [ICON_HEALTHY]-Punkte durch [LINK=BUILDING_PUBLIC_TRANSPORTATION]Öffentliche Verkehrsmittel[\LINK] durch [ICON_HAPPY]-Punkte und erhöht die Unterhaltskosten ("mittel" in BtS). Ferner verringern Umweltschutz (und auch Öffentliche Verkehrsmittel) nun durch Bürger verursachte [ICON_UNHEALTHY]-Punkte anstatt [ICON_HEALTHY]-Punkte zu erzeugen; ersteres wirkt der Erderwärmung besser entgegen.</German>
+	</TEXT>
+	<!-- advc.123a -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_THEOCRACY_CHANGES_PEDIA</Tag>
+		<English>[BOLD]AdvCiv[\BOLD] also prevents civs in this civic from receiving Missionaries as a gift.</English>
+		<German>[BOLD]AdvCiv[\BOLD] verhindert auch das verschenken von Missionaren an Spieler mit dieser Staatsform.</German>
+	</TEXT>
+	<!-- advc.912b -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_PACIFISM_CHANGES_PEDIA</Tag>
+		<English>[BOLD]K-Mod[\BOLD] uncouples the extra cost from the difficulty level and AdvCiv sets the cost to the amount that BtS had charged on Deity difficulty (1[ICON_GOLD]/unit) - meaning that this powerful civic has become costlier on all other difficulty levels. When an AI civ uses Pacifism, only half of the extra cost is charged (as was already the case in BtS when playing on Deity difficulty - because the AI is treated as playing on Noble difficulty).</English>
+		<German>[BOLD]K-Mod[\BOLD] entkoppelt den zusätzlichen Militärunterhalt von der Schwierigkeitsstufe und AdvCiv verwendet 1[ICON_GOLD]/Einheit, was in BtS der höchsten Schwierigkeitsstufe entsprach. Das heißt, der Unterhalt auf allen niedrigeren Schwierigkeitsstufen hat sich erhöht. Pazifistische KI-Spieler zahlen nur die Hälfte - das war auf höchster Schwierigkeit auch in BtS so, weil KI-Spieler stets auf mittlerer Schwierigkeit (Adliger) spielen.</German>
 	</TEXT>
 
 </Civ4GameText>
