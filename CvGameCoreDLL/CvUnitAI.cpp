@@ -5936,12 +5936,33 @@ void CvUnitAI::AI_barbAttackSeaMove()
 	}
 	// K-Mod / BBAI end
 
-	/*  <advc.306> Have ships retreat more often, so that they can receive cargo.
+	/*	<advc.306> Have ships retreat more often, so that they can receive cargo.
 		Should also resolve an issue where Barbarian ships are indefinitely stuck
 		patrolling an unowned stretch surrounded by borders. (Patrolling Barbarians
-		never enter borders.) */
-	if (getGroup()->getMissionType(0) == MISSION_MOVE_TO ||
-		SyncRandSuccess100(20))
+		avoid borders.) */
+	bool const bMovingToSafety = (getGroup()->getMissionType(0) == MISSION_MOVE_TO);
+	bool bAwaitCargo = (!bMovingToSafety && getPlot().isWater() &&
+			!hasCargo() && !getPlot().isVisibleToCivTeam());
+	if (bAwaitCargo)
+	{
+		bAwaitCargo = false;
+		FOR_EACH_ADJ_PLOT(getPlot())
+		{
+			if (pAdj->isHabitable())
+			{
+				bAwaitCargo = true;
+				break;
+			}
+		}
+		/*	(Could consider suicide here if bAwaitCargo has become false.
+			Unlikely to ever receive cargo. But we should also make sure
+			that there are no resources we might want to go back to pillaging;
+			that's no so easy to check ...) */
+	}
+	if (bMovingToSafety ||
+		/*	May want to wait an extra turn or two if we think that we're
+			ready for cargo. AI_safety will then skip since we're already safe. */
+		SyncRandSuccess100(bAwaitCargo ? 53 : 24))
 	{
 		if (AI_safety())
 		{
@@ -12606,9 +12627,11 @@ bool CvUnitAI::AI_safety()
 	CvPlot* pBestPlot = 0;
 	int iBestValue = 0;
 	bool bIgnoreDanger = false;
-	int const iSearchRange = AI_searchRange(1);
+	// <advc.306>
+	bool const bBarbarianSeaUnit = (isBarbarian() && getDomainType() == DOMAIN_SEA);
+	int const iSearchTurns = (bBarbarianSeaUnit ? 3  : 1); // </advc.306>
+	int const iSearchRange = AI_searchRange(iSearchTurns);
 	bool const bEnemyTerritory = isEnemy(getPlot());
-	bool const bBarbarianSeaUnit = (isBarbarian() && getDomainType() == DOMAIN_SEA); // advc.306
 	//for (iPass = 0; iPass < 2; iPass++)
 	do // K-Mod. What's the point of the first pass if it is just ignored? (see break condition at the end)
 	{
@@ -12620,7 +12643,7 @@ bool CvUnitAI::AI_safety()
 			int iPathTurns;
 			if (!generatePath(p,
 				bIgnoreDanger ? MOVE_IGNORE_DANGER : NO_MOVEMENT_FLAGS,
-				true, &iPathTurns, 1))
+				true, &iPathTurns, iSearchTurns))
 			{
 				continue;
 			}
