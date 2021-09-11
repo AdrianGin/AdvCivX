@@ -414,6 +414,9 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 	kPlot.updateCulture(/*true*/ bBumpUnits, false); // advc.001
 	FOR_EACH_ADJ_PLOT_VAR(kPlot)
 		pAdj->updateCulture(true, false);
+	/*	advc: Surrounding plots can affect plot ownership. Important to update again
+		when regenerating the map. (Don't know why this wasn't an issue in BtS/K-Mod.) */
+	kPlot.updateCulture(bBumpUnits, false);
 
 	if (GET_TEAM(eOwner).isAVassal()) // advc: Replacing a loop over "all" masters
 	{

@@ -4334,6 +4334,8 @@ void CvPlayer::findNewCapital()
 		if (pOldCapital != NULL)
 			pOldCapital->setNumRealBuilding(eCapitalBuilding, 0);
 	}
+	// advc: Important for hasCapital after map regen
+	else setCapital(NULL);
 }
 
 
