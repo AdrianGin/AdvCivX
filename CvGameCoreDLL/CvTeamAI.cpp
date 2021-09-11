@@ -4121,7 +4121,7 @@ DenialTypes CvTeamAI::AI_permanentAllianceTrade(TeamTypes eWithTeam) const
 			return DENIAL_POWER_US;
 		return DENIAL_POWER_YOU;
 	} // <advc.test>
-	#ifdef TEST_PERMANENT_ALLIANCES
+	#if TEST_PERMANENT_ALLIANCES
 	if (AI_getAttitude(eWithTeam) >= ATTITUDE_CAUTIOUS)
 		return NO_DENIAL;
 	#endif // </advc.test>

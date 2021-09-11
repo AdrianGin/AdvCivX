@@ -3948,7 +3948,7 @@ bool CvPlayer::canPossiblyTradeItem(PlayerTypes eWhoTo, TradeableItems eItemType
 		return (!kOurTeam.isAVassal() && !kToTeam.isAVassal() &&
 				getTeam() != kToTeam.getID() && //!kToTeam.isVassal(getTeam()) // advc: redundant
 				!kOurTeam.isAtWar(kToTeam.getID()) &&
-				#ifndef TEST_PERMANENT_ALLIANCES // advc.test
+				#if TEST_PERMANENT_ALLIANCES == 0 // advc.test
 				(kOurTeam.isPermanentAllianceTrading() || kToTeam.isPermanentAllianceTrading()) &&
 				#endif
 				kOurTeam.getNumMembers() == 1 && kToTeam.getNumMembers() == 1);
