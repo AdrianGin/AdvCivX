@@ -132,14 +132,14 @@ iEndOfTurnButtonSize = 32
 iEndOfTurnPosX = 296 # distance from right
 iEndOfTurnPosY = 147 # distance from bottom
 
-# MINIMAP BUTTON POSITIONS
+# MINIMAP BUTTON POSITIONS (advc: unused constants commented out)
 ######################
-iMinimapButtonsExtent = 228
-iMinimapButtonsX = 227
+#iMinimapButtonsExtent = 228
+#iMinimapButtonsX = 227
 iMinimapButtonsY_Regular = 160
 iMinimapButtonsY_Minimal = 32
-iMinimapButtonWidth = 24
-iMinimapButtonHeight = 24
+#iMinimapButtonWidth = 24
+#iMinimapButtonHeight = 24
 
 # Globe button
 iGlobeButtonX = 48
@@ -2629,6 +2629,9 @@ class CvMainInterface:
 		iUnitCycleButtonY = kScreen.getYResolution() - iBottomButtonContainerOffsetY + iUnitCycleButtonMargin
 		pNextUnit = gc.getGame().getNextUnitInCycle(True, False)
 		if pNextUnit:
+			# The button looks weird when the HUD is partly hidden and no unit selected. Can be a nuisance when taking screenshots.
+			if not pHeadSelectedUnit and CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_HIDE:
+				return
 			if pNextUnit.hasMoved():
 				szOverlay = "OVERLAY_HASMOVED"
 			else:
@@ -2652,7 +2655,6 @@ class CvMainInterface:
 			self.showUnitCycleButtonGFC("Unselect", kScreen, pHeadSelectedUnit, iUnitCycleButtonX, iUnitCycleButtonY, iUnitCycleButtonSize, False, True, ArtFileMgr.getInterfaceArtInfo(szOverlay).getPath())
 
 	def showUnitCycleButtonGFC(self, szName, kScreen, kUnit, iX, iY, iSize, bWorkers, bUnselect, szOverlayPath):
-
 		iWidgetData2 = -1
 		if not bUnselect:
 			iWidgetData2 = kUnit.getID()
@@ -5216,7 +5218,7 @@ class CvMainInterface:
 			bGlobeViewOptions = (iCurrentLayerID != -1 and kGLM.getLayer(iCurrentLayerID).getNumOptions() != 0 and (MainOpt.isResourceIconOptions() or kGLM.getLayer(iCurrentLayerID).getName() != "RESOURCES") and (gc.getDefineINT("SHOW_UNIT_LAYER_OPTIONS") > 0 or kGLM.getLayer(iCurrentLayerID).getName() != "UNITS"))
 			# </advc.004z>
 			# advc.004z: Globe view options clause added
-			if CyInterface().isScoresVisible() and not CyInterface().isCityScreenUp() and (not CyEngine().isGlobeviewUp() or (not bGlobeViewOptions and MainOpt.isScoresInGlobeView())):
+			if CyInterface().isScoresVisible() and not CyInterface().isCityScreenUp() and (not CyEngine().isGlobeviewUp() or (not bGlobeViewOptions and MainOpt.isScoresInGlobeView() and CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_HIDE)):
 
 # BUG - Align Icons - start
 				bAlignIcons = ScoreOpt.isAlignIcons()
