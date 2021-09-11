@@ -5194,7 +5194,7 @@ bool CvUnit::canSpread(const CvPlot* pPlot, ReligionTypes eReligion, bool bTestV
 	if (pCity->isHasReligion(eReligion))
 		return false;
 	// <advc.099d>
-	if(pCity->isDisorder())
+	if(pCity->isOccupation())
 		return false; // </advc.099d>
 	if (!canEnterTerritory(pPlot->getTeam(), false, pPlot->area()))
 		return false;
