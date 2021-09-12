@@ -15,7 +15,7 @@ class CvSelectionGroup /* advc.003k: */ : private boost::noncopyable
 {
 public:
 	// <advc.pf>
-	static inline GroupPathFinder& pathFinder()
+	static GroupPathFinder& pathFinder()
 	{
 		return *m_pPathFinder;
 	}
@@ -92,7 +92,7 @@ public:
 	int movesLeft() const; // K-Mod
 	bool isWaiting() const;																																							// Exposed to Python
 	// <advc> K-Mod functions moved from CvGameCoreUtils. (Kept isCycleGroup inlined as in K-Mod.)
-	inline bool isCycleGroup() const { return getNumUnits() > 0 && !isWaiting() && !isAutomated(); }
+	bool isCycleGroup() const { return getNumUnits() > 0 && !isWaiting() && !isAutomated(); }
 	bool isBeforeGroupOnPlot(CvSelectionGroup const& kOther) const;
 	int groupCycleDistance(CvSelectionGroup const& kOther) const; // </advc>
 	bool isFull() const;																																											// Exposed to Python
@@ -117,24 +117,17 @@ public:
 	DllExport bool canMoveOrAttackInto(CvPlot* pPlot, bool bDeclareWar = false)											// Exposed to Python
 	{
 		return canMoveOrAttackInto(*pPlot, bDeclareWar, false);
-	} // K-Mod. (avoid breaking the DllExport)			advc: 2x const, CvPlot&
-	bool canMoveOrAttackInto(CvPlot const& kPlot, bool bDeclareWar = false, bool bCheckMoves = false, bool bAssumeVisible = true) const;
-	bool canMoveThrough(CvPlot const& kPlot, bool bDeclareWar = false, bool bAssumeVisible = true) const; // Exposed to Python, K-Mod added bDeclareWar and bAssumeVisible; advc: CvPlot const&
+	} // K-Mod. (Avoid breaking the DllExport; EXE calls the above for NumPad help.)
+	bool canMoveOrAttackInto(CvPlot const& kPlot, bool bDeclareWar = false,
+			bool bCheckMoves = false, bool bAssumeVisible = true) const;
+	bool canMoveThrough(CvPlot const& kPlot,																			// Exposed to Python
+			bool bDeclareWar = false, bool bAssumeVisible = true) const; // K-Mod
 	bool canFight() const;																																										// Exposed to Python
 	bool canDefend() const;																																										// Exposed to Python
 	bool canBombard(CvPlot const& kPlot) const;
 	int visibilityRange() const;
-
-	// BETTER_BTS_AI_MOD, General AI, 08/19/09, jdog5000: START
-	int getBombardTurns(CvCity const* pCity) const;
-	bool isHasPathToAreaPlayerCity(PlayerTypes ePlayer, MovementFlags eFlags = NO_MOVEMENT_FLAGS,
-			int iMaxPathTurns = -1) /* Erik (CODE1): */ const;
-	// (advc: isHasPathToAreaEnemyCity moved to CvSelectionGroupAI)
-	bool isStranded() const; // Note: K-Mod no longer uses the stranded cache. I have a new system.
-	//void invalidateIsStrandedCache(); // deleted by K-Mod
-	//bool calculateIsStranded();
-	bool canMoveAllTerrain() const;
-	// BETTER_BTS_AI_MOD: END
+	// (advc: Other BBAI functions from same date moved to CvSelectionGroupAI)
+	bool canMoveAllTerrain() const; // BETTER_BTS_AI_MOD, General AI, 08/19/09, jdog5000
 
 	void unloadAll();
 	bool alwaysInvisible() const;																											// Exposed to Python
@@ -156,13 +149,13 @@ public:
 	bool atPlot(CvPlot const* pPlot) const																									// Exposed to Python
 	{
 		return (plot() == pPlot);
-	}  // advc.inl: (also in-lined the above)
-	__forceinline bool at(CvPlot const& kPlot) const
+	}  // advc.inl:
+	bool at(CvPlot const& kPlot) const
 	{
 		return atPlot(&kPlot);
 	}
 	DllExport CvPlot* plot() const;																											// Exposed to Python
-	inline CvPlot& getPlot() const { return *plot(); } // advc
+	CvPlot& getPlot() const { return *plot(); } // advc
 	//int getArea() const; // advc: removed
 	CvArea* area() const;																													// Exposed to Python
 	DomainTypes getDomainType() const;
@@ -182,7 +175,7 @@ public:
 	bool isAmphibPlot(CvPlot const* pPlot) const;																																		// Exposed to Python
 	bool groupAmphibMove(CvPlot const& kPlot, MovementFlags eFlags);
 
-	DllExport bool readyToSelect(bool bAny = false);																							// Exposed to Python
+	DllExport bool readyToSelect(bool bAny = false);														// Exposed to Python
 	bool readyToMove(bool bAny = false) const; // Exposed to Python
 	bool readyToAuto() const; // Exposed to Python
 	// K-Mod.
@@ -191,7 +184,7 @@ public:
 			bool bTestVisible, bool bCheckMoves) /* advc.002i: */ const;
 	// K-Mod end
 
-	inline int getID() const { return m_iID; } // advc.inl																																// Exposed to Python
+	int getID() const { return m_iID; }															// Exposed to Python
 	void setID(int iID);
 	IDInfo getIDInfo() const { return IDInfo(getOwner(), getID()); } // advc
 
@@ -200,18 +193,20 @@ public:
 	void changeMissionTimer(int iChange);
 	void updateMissionTimer(int iSteps = 0, /* advc.102: */ CvPlot* pFromPlot = NULL);
 
-	inline bool isForceUpdate() const { return m_bForceUpdate; } // K-Mod made inline // advc: const
-	inline void setForceUpdate(bool bNewValue) { m_bForceUpdate = bNewValue; } // K-Mod made inline
+	bool isForceUpdate() const { return m_bForceUpdate; } // K-Mod made inline // advc: const
+	void setForceUpdate(bool bNewValue) { m_bForceUpdate = bNewValue; } // K-Mod made inline
 	// void doForceUpdate(); // K-Mod. (disabled. force update doesn't work the same way anymore.)
 
-	//PlayerTypes getOwner() const;
-	// advc.inl: The EXE doesn't call this, so no need for an external version.
-	inline PlayerTypes getOwner() const { return m_eOwner; }
-	TeamTypes getTeam() const;																																					// Exposed to Python
+	//DllExport PlayerTypes getOwner() const; // advc.inl: Not called externally
+	PlayerTypes getOwner() const { return m_eOwner; } // advc.inl: was "getOwnerINLINE"
+	TeamTypes getTeam() const;																				// Exposed to Python
+	// <advc>
+	bool isActiveOwned() const { return (GC.getInitCore().getActivePlayer() == getOwner()); }
+	bool isActiveTeam() const { return (GC.getInitCore().getActiveTeam() == getTeam()); } // </advc>
 
-	ActivityTypes getActivityType() const { return m_eActivityType; } // advc.inl																	// Exposed to Python
+	ActivityTypes getActivityType() const { return m_eActivityType; } 										// Exposed to Python
 	void setActivityType(ActivityTypes eNewValue);																											// Exposed to Python
-	// advc.inl: 2x inline
+
 	AutomateTypes getAutomateType() const { return m->eAutomateType; }																									// Exposed to Python
 	bool isAutomated() const { return (getAutomateType() != NO_AUTOMATE); }							// Exposed to Python
 	void setAutomateType(AutomateTypes eNewValue);																											// Exposed to Python
@@ -239,26 +234,26 @@ public:
 	CLLNode<IDInfo>* headUnitNodeExternal() const;
 	CvUnit* getHeadUnitExternal() const;
 	// Safer to use const/ non-const pairs of functions
-	inline CLLNode<IDInfo> const* nextUnitNode(CLLNode<IDInfo> const* pNode) const
+	CLLNode<IDInfo> const* nextUnitNode(CLLNode<IDInfo> const* pNode) const
 	{
 		return m_units.next(pNode);
 	} 
-	inline CLLNode<IDInfo>* nextUnitNode(CLLNode<IDInfo>* pNode)
+	CLLNode<IDInfo>* nextUnitNode(CLLNode<IDInfo>* pNode)
 	{
 		return m_units.next(pNode);
 	}
-	inline CLLNode<IDInfo> const* headUnitNode() const
+	CLLNode<IDInfo> const* headUnitNode() const
 	{
 		return m_units.head();
 	}
-	inline CLLNode<IDInfo>* headUnitNode()
+	CLLNode<IDInfo>* headUnitNode()
 	{
 		return m_units.head();
 	}
 	CvUnit const* getHeadUnit() const;
 	CvUnit* getHeadUnit();
 	// </advc.003s>
-	DllExport inline int getNumUnits() const														// Exposed to Python
+	DllExport int getNumUnits() const														// Exposed to Python
 	{
 		return m_units.getLength();
 	}
@@ -268,31 +263,31 @@ public:
 	TeamTypes getHeadTeam() const;
 
 	void clearMissionQueue();																																	// Exposed to Python
-	int getLengthMissionQueue() const { return m_missionQueue.getLength(); } // advc.inl											// Exposed to Python
-	MissionData* getMissionFromQueue(int iIndex) const;																							// Exposed to Python
+	int getLengthMissionQueue() const { return m_missionQueue.getLength(); }						// Exposed to Python
+	MissionData* getMissionFromQueue(int iIndex) const;												// Exposed to Python
 	void insertAtEndMissionQueue(MissionData mission, bool bStart = true);
 	CLLNode<MissionData>* deleteMissionQueueNode(CLLNode<MissionData>* pNode);
 	DllExport CLLNode<MissionData>* nextMissionQueueNode(CLLNode<MissionData>* pNode) const
 	{
-		return m_missionQueue.next(pNode); // advc.inl
+		return m_missionQueue.next(pNode);
 	}
 	CLLNode<MissionData>* prevMissionQueueNode(CLLNode<MissionData>* pNode) const
 	{
-		return m_missionQueue.prev(pNode); // advc.inl
+		return m_missionQueue.prev(pNode);
 	}
-	DllExport CLLNode<MissionData>* headMissionQueueNode() const { return m_missionQueue.head(); } // advc.inl
-	CLLNode<MissionData>* tailMissionQueueNode() const { return m_missionQueue.tail(); } // advc.inl
+	DllExport CLLNode<MissionData>* headMissionQueueNode() const { return m_missionQueue.head(); }
+	CLLNode<MissionData>* tailMissionQueueNode() const { return m_missionQueue.tail(); }
 	int getMissionType(int iNode) const;																														// Exposed to Python
 	int getMissionData1(int iNode) const;																														// Exposed to Python
 	int getMissionData2(int iNode) const;																														// Exposed to Python
 	// <advc.003u>
-	__forceinline CvSelectionGroupAI& AI()
+	CvSelectionGroupAI& AI()
 	{	//return *static_cast<CvSelectionGroupAI*>(const_cast<CvSelectionGroup*>(this));
 		/*  The above won't work in an inline function b/c the compiler doesn't know
 			that CvSelectionGroupAI is derived from CvSelectionGroup */
 		return *reinterpret_cast<CvSelectionGroupAI*>(this);
 	}
-	__forceinline CvSelectionGroupAI const& AI() const
+	CvSelectionGroupAI const& AI() const
 	{	//return *static_cast<CvSelectionGroupAI const*>(this);
 		return *reinterpret_cast<CvSelectionGroupAI const*>(this);
 	} // </advc.003u>

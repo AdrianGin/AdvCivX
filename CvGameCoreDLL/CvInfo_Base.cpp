@@ -2,7 +2,6 @@
 
 #include "CvGameCoreDLL.h"
 #include "CvXMLLoadUtility.h"
-#include "CvDLLXMLIFaceBase.h"
 
 CvInfoBase::CvInfoBase() : m_bGraphicalOnly(false) {}
 
@@ -200,7 +199,7 @@ m_bCtrlDownAlt(false)
 
 bool CvHotkeyInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvXMLInfo::read(pXML)) // advc.tag
+	if (!base_t::read(pXML)) // advc.tag
 		return false;
 
 	// advc.006b: Default arguments added to GetChildXmlValByName calls
@@ -231,7 +230,7 @@ bool CvHotkeyInfo::read(CvXMLLoadUtility* pXML)
 #if ENABLE_XML_FILE_CACHE
 void CvHotkeyInfo::read(FDataStreamBase* pStream)
 {
-	CvXMLInfo::read(pStream); // advc.tag
+	base_t::read(pStream); // advc.tag
 	uint uiFlag=0;
 	pStream->Read(&uiFlag);
 
@@ -254,7 +253,7 @@ void CvHotkeyInfo::read(FDataStreamBase* pStream)
 
 void CvHotkeyInfo::write(FDataStreamBase* pStream)
 {
-	CvXMLInfo::write(pStream); // advc.tag
+	base_t::write(pStream); // advc.tag
 	uint uiFlag = 0;
 	pStream->Write(uiFlag);
 
@@ -275,12 +274,6 @@ void CvHotkeyInfo::write(FDataStreamBase* pStream)
 	pStream->WriteString(m_szHotKeyString);
 }
 #endif
-// <advc.tag>
-void CvHotkeyInfo::addElements(std::vector<XMLElement*>& r) const
-{
-	CvXMLInfo::addElements(r);
-	// (Could add CvHotKeyInfo elements here)
-} // </advc.tag>
 
 int CvHotkeyInfo::getActionInfoIndex() const
 {
@@ -384,134 +377,77 @@ std::wstring CvHotkeyInfo::getHotKeyShortDesc() const
 }
 
 // <advc.tag>
-CvXMLInfo::XMLElement::XMLElement(int iEnumValue, CvString szName) :
-		m_iEnumValue(iEnumValue), m_szName(szName), m_bMandatory(true) {}
-
-CvXMLInfo::XMLElement::XMLElement(int iEnumValue, CvString szName, bool bMandatory) :
-		m_iEnumValue(iEnumValue), m_szName(szName), m_bMandatory(bMandatory) {}
-
-int CvXMLInfo::XMLElement::getEnumValue() const { return m_iEnumValue; }
-
-CvString CvXMLInfo::XMLElement::getName() const { return m_szName; }
-	
-bool CvXMLInfo::XMLElement::isMandatory() const { return m_bMandatory; }
-
-CvXMLInfo::IntElement::IntElement(int iEnumValue, CvString szName) :
-		XMLElement(iEnumValue, szName), m_iDefaultValue(0) {}
-
-CvXMLInfo::IntElement::IntElement(int iEnumValue, CvString szName, int iDefault) :
-		XMLElement(iEnumValue, szName, false), m_iDefaultValue(iDefault) {}
-
-CvXMLInfo::ElementDataType CvXMLInfo::IntElement::getDataType() const
-{
-	return INT_ELEMENT;
-}
-
-int CvXMLInfo::IntElement::getDefaultValue() const { return m_iDefaultValue; }
-
-CvXMLInfo::BoolElement::BoolElement(int iEnumValue, CvString szName) :
-		XMLElement(iEnumValue, szName), m_bDefaultValue(false) {}
-
-CvXMLInfo::BoolElement::BoolElement(int iEnumValue, CvString szName, bool bDefault) :
-		XMLElement(iEnumValue, szName, false), m_bDefaultValue(bDefault) {}
-
-CvXMLInfo::ElementDataType CvXMLInfo::BoolElement::getDataType() const
-{
-	return BOOL_ELEMENT;
-}
-
-bool CvXMLInfo::BoolElement::getDefaultValue() const { return m_bDefaultValue; }
-
-void CvXMLInfo::addElements(std::vector<XMLElement*>& r) const
-{
-	// Could add elements common to all info classes here
-}
-
-void CvXMLInfo::set(IntElementTypes e, int iNewValue)
-{
-	FAssertBounds(0, m_aiData.size(), e);
-	m_aiData[e] = iNewValue;
-}
-
-void CvXMLInfo::set(BoolElementTypes e, bool bNewValue)
-{
-	FAssertBounds(0, m_abData.size(), e);
-	m_abData[e] = bNewValue;
-}
-
 bool CvXMLInfo::read(CvXMLLoadUtility* pXML)
 {
 	CvInfoBase::read(pXML);
 
-	std::vector<XMLElement*> apElements;
-	addElements(apElements);
-	{	// Allocate space in data vectors
-		int iIntElements = 0;
-		int iBoolElements = 0;
-		for (size_t i = 0; i < apElements.size(); i++)
-		{
-			switch(apElements[i]->getDataType())
-			{
-			case INT_ELEMENT: iIntElements++; break;
-			case BOOL_ELEMENT: iBoolElements++; break;
-			default: FErrorMsg("Data type misses element counting code");
-			}
-		}
-		m_aiData.resize(iIntElements);
-		m_abData.resize(iBoolElements);
-	}
-	for (size_t i = 0; i < apElements.size(); i++)
+	ElementList elements;
+	addElements(elements);
+	m_aiData.resize(elements.numIntElements());
+	for (int i = 0; i < elements.numIntElements(); i++)
 	{
-		XMLElement& kElement = *apElements[i];
-		int const iEnumValue = kElement.getEnumValue();
+		IntElement const& kElement = elements.intElementAt(i);
 		CvString szName = kElement.getName();
-		switch(kElement.getDataType())
+		szName.insert(0, "i");
+		int iTmp;
+		if (kElement.isMandatory())
+			pXML->GetChildXmlValByName(&iTmp, szName.GetCString());
+		else
 		{
-		case INT_ELEMENT:
-			szName.insert(0, "i");
-			int iTmp;
-			if (kElement.isMandatory())
-				pXML->GetChildXmlValByName(&iTmp, szName.GetCString());
-			else
-			{
-				pXML->GetChildXmlValByName(&iTmp, szName.GetCString(),
-						static_cast<IntElement&>(kElement).getDefaultValue());
-			}
-			FAssertBounds(0, m_aiData.size(), iEnumValue);
-			m_aiData[iEnumValue] = iTmp;
-			break;
-		case BOOL_ELEMENT:
-			szName.insert(0, "b");
-			bool bTmp;
-			if (kElement.isMandatory())
-				pXML->GetChildXmlValByName(&bTmp, szName.GetCString());
-			else
-			{
-				pXML->GetChildXmlValByName(&bTmp, szName.GetCString(),
-						static_cast<BoolElement&>(kElement).getDefaultValue());
-			}
-			FAssertBounds(0, m_abData.size(), iEnumValue);
-			m_abData[iEnumValue] = bTmp;
-			break;
-		default: FErrorMsg("Data type misses XML loading code");
+			pXML->GetChildXmlValByName(&iTmp, szName.GetCString(),
+					kElement.getDefaultValue());
 		}
-		delete &kElement;
+		set((IntElementTypes)kElement.getID(), iTmp);
+	}
+	m_abData.resize(elements.numBoolElements());
+	for (int i = 0; i < elements.numBoolElements(); i++)
+	{
+		BoolElement const& kElement = elements.boolElementAt(i);
+		CvString szName = kElement.getName();
+		szName.insert(0, "b");
+		bool bTmp;
+		if (kElement.isMandatory())
+			pXML->GetChildXmlValByName(&bTmp, szName.GetCString());
+		else
+		{
+			pXML->GetChildXmlValByName(&bTmp, szName.GetCString(),
+					kElement.getDefaultValue());
+		}
+		set((BoolElementTypes)kElement.getID(), bTmp);
 	}
 	return true;
 }
 
 #if ENABLE_XML_FILE_CACHE
+/*	Will probably never be needed. Cache version flag not implemented.
+	(Not sure how I'd go about that.) */
 void CvXMLInfo::read(FDataStreamBase* pStream)
 {
 	CvInfoBase::read(pStream);
-	pStream->Read((int)m_aiData.size(), m_aiData.data());
-	pStream->Read((int)m_abData.size(), m_abData.data());
+	for (size_t i = 0; i < m_aiData.size(); i++)
+	{
+		short iVal;
+		pStream->Read(&iVal);
+		m_aiData[i] = iVal;
+	}
+	for (size_t i = 0; i < m_abData.size(); i++)
+	{
+		bool bVal;
+		pStream->Read(&bVal);
+		m_abData[i] = bVal;
+	}
 }
 
 void CvXMLInfo::write(FDataStreamBase* pStream)
 {
 	CvInfoBase::write(pStream);
-	pStream->Write((int)m_aiData.size(), m_aiData.data());
-	pStream->Write((int)m_abData.size(), m_abData.data());
+	for (size_t i = 0; i < m_aiData.size(); i++)
+	{
+		pStream->Write(m_aiData[i]);
+	}
+	for (size_t i = 0; i < m_abData.size(); i++)
+	{
+		pStream->Write(m_abData[i]);
+	}
 }
 #endif // </advc.tag>

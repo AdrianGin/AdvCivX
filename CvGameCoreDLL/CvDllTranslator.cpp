@@ -46,9 +46,11 @@ void CvDllTranslator::initializeTags(CvWString& szTagStartIcon, CvWString& szTag
 	aIconMap[L"[ICON_FOOD]"] = std::wstring(1, (wchar)GC.getInfo(YIELD_FOOD).getChar());
 	aIconMap[L"[ICON_PRODUCTION]"] = std::wstring(1, (wchar)GC.getInfo(YIELD_PRODUCTION).getChar());
 	aIconMap[L"[ICON_COMMERCE]"] = std::wstring(1, (wchar)GC.getInfo(YIELD_COMMERCE).getChar());
+	// advc.064:
+	aIconMap[L"[ICON_CITIZEN]"] = std::wstring(1, (wchar)gDLL->getSymbolID(CITIZEN_CHAR));
 	// <advc.002f>
-	aIconMap[L"[ICON_AIRPORT]"] = std::wstring(1, (wchar)gDLL->getSymbolID(AIRPORT_CHAR));
 	aIconMap[L"[ICON_GREATGENERAL]"] = std::wstring(1, (wchar)gDLL->getSymbolID(GREAT_GENERAL_CHAR));
+	aIconMap[L"[ICON_AIRPORT]"] = std::wstring(1, (wchar)gDLL->getSymbolID(AIRPORT_CHAR));
 	// </advc.002f>
 	//create color map
 	aColorMap[L"[COLOR_REVERT]"] = CvWString(L"</color>");
@@ -66,34 +68,34 @@ void CvDllTranslator::initializeTags(CvWString& szTagStartIcon, CvWString& szTag
 
 bool CvDllTranslator::replaceOur(const CvWString& szKey, int iForm, CvWString& szReplacement)
 {
-	CvPlayer const& player = GET_PLAYER((PlayerTypes) gDLL->getDiplomacyPlayer());
+	CvPlayer const& kPlayer = GET_PLAYER((PlayerTypes) gDLL->getDiplomacyPlayer());
 	if (szKey == L"[OUR_NAME")
 	{
-		szReplacement = player.getName(iForm);
+		szReplacement = kPlayer.getName(iForm);
 	}
 	else if (szKey == L"[OUR_EMPIRE")
 	{
-		szReplacement = player.getCivilizationDescription(iForm);
+		szReplacement = kPlayer.getCivilizationDescription(iForm);
 	}
 	else if(szKey == L"[OUR_CIV_SHORT")
 	{
-		szReplacement = player.getCivilizationShortDescription(iForm);
+		szReplacement = kPlayer.getCivilizationShortDescription(iForm);
 	}
 	else if(szKey == L"[OUR_CIV_ADJ")
 	{
-		szReplacement = player.getCivilizationAdjective(iForm);
+		szReplacement = kPlayer.getCivilizationAdjective(iForm);
 	}
 	else if(szKey == L"[OUR_STATE_RELIGION")
 	{
-		szReplacement = player.getStateReligionName(iForm);
+		szReplacement = kPlayer.getStateReligionName(iForm);
 	}
 	else if(szKey == L"[OUR_BEST_UNIT")
 	{
-		szReplacement = player.getBestAttackUnitName(iForm);
+		szReplacement = kPlayer.getBestAttackUnitName(iForm);
 	}
 	else if(szKey == L"[OUR_WORST_ENEMY")
 	{
-		szReplacement = player.getWorstEnemyName();
+		szReplacement = kPlayer.getWorstEnemyName();
 	}
 	else
 	{
@@ -105,34 +107,34 @@ bool CvDllTranslator::replaceOur(const CvWString& szKey, int iForm, CvWString& s
 
 bool CvDllTranslator::replaceCt(const CvWString& szKey, int iForm, CvWString& szReplacement)
 {
-	CvPlayer const& player = GET_PLAYER(GC.getGame().getActivePlayer());
+	CvPlayer const& kPlayer = GET_PLAYER(GC.getGame().getActivePlayer());
 	if (szKey == L"[CT_NAME")
 	{
-		szReplacement = player.getName(iForm);
+		szReplacement = kPlayer.getName(iForm);
 	}
 	else if (szKey == L"[CT_EMPIRE")
 	{
-		szReplacement = player.getCivilizationDescription(iForm);
+		szReplacement = kPlayer.getCivilizationDescription(iForm);
 	}
 	else if(szKey == L"[CT_CIV_SHORT")
 	{
-		szReplacement = player.getCivilizationShortDescription(iForm);
+		szReplacement = kPlayer.getCivilizationShortDescription(iForm);
 	}
 	else if(szKey == L"[CT_CIV_ADJ")
 	{
-		szReplacement = player.getCivilizationAdjective(iForm);
+		szReplacement = kPlayer.getCivilizationAdjective(iForm);
 	}
 	else if(szKey == L"[CT_STATE_RELIGION")
 	{
-		szReplacement = player.getStateReligionName(iForm);
+		szReplacement = kPlayer.getStateReligionName(iForm);
 	}
 	else if(szKey == L"[CT_BEST_UNIT")
 	{
-		szReplacement = player.getBestAttackUnitName(iForm);
+		szReplacement = kPlayer.getBestAttackUnitName(iForm);
 	}
 	else if(szKey == L"[CT_WORST_ENEMY")
 	{
-		szReplacement = player.getWorstEnemyName();
+		szReplacement = kPlayer.getWorstEnemyName();
 	}
 	else
 	{

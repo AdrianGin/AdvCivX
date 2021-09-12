@@ -3,8 +3,6 @@
 #ifndef CvDLLSymbolIFaceBase_h
 #define CvDLLSymbolIFaceBase_h
 
-#include "CvDLLUtilityIFaceBase.h"
-
 // abstract interfaces for CvSymbol functions used by DLL
 
 class CvPlot;
@@ -67,7 +65,7 @@ public:
 	}
 private:
 	// advc: Put the (up-)casts in one place
-	static __forceinline CvSymbol* base(CvFeature* pFeature)
+	static CvSymbol* base(CvFeature* pFeature)
 	{
 		return reinterpret_cast<CvSymbol*>(pFeature);
 	}
@@ -105,7 +103,7 @@ public:
 	virtual void updateGraphicEra(CvRoute* pRoute) = 0;
 	// <advc>
 private:
-	static __forceinline CvSymbol* base(CvRoute* pRoute)
+	static CvSymbol* base(CvRoute* pRoute)
 	{
 		return reinterpret_cast<CvSymbol*>(pRoute);
 	} // </advc>
@@ -139,7 +137,7 @@ public:
 	}
 	// <advc>
 private:
-	static __forceinline CvRoute* base(CvRiver* pRiver)
+	static CvRoute* base(CvRiver* pRiver)
 	{
 		return reinterpret_cast<CvRoute*>(pRiver);
 	} // </advc>

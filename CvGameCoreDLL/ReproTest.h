@@ -33,7 +33,7 @@
 		if (ReproTest::getInstance() != NULL) \
 			ReproTest::getInstance()->endWrite(true);
 	#define INIT_STRUCT_PADDING_INL() \
-		memset(this, 0, sizeof(*this))
+		SecureZeroMemory(this, sizeof(*this))
 	#define INIT_STRUCT_PADDING(StructName) \
 		StructName() { INIT_STRUCT_PADDING_INL(); }
 #else
@@ -53,7 +53,7 @@ class ReproTest
 	static ReproTest* m_pReproTest;
 public:
 	static void startTest(int iTurns);
-	static inline ReproTest* getInstance() { return m_pReproTest; }
+	static ReproTest* getInstance() { return m_pReproTest; }
 	ReproTest(int iTurns);
 	void beginWrite(CvString szObjectId);
 	void endWrite(bool bFinal);

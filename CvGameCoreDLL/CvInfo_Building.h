@@ -9,41 +9,41 @@
 	CvSpecialBuildingInfo
 	CvVoteSourceInfo (tied to a building)
 	CvVoteInfo (should stay with CvVoteSourceInfo)
-	CvProjectInfo (very similar to a building) */
+	CvProjectInfo (very similar to a building)
+	advc.003t: All array members in this class replaced with CvInfoMaps or vectors. */
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  class : CvBuildingClassInfo  // advc: Moved up for inline function calls from CvBuilding
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvBuildingClassInfo : public CvInfoBase
 {
-public: // All the const functions are exposed to Python; advc.inl: Inlined most of them.
+public: // All the const functions are exposed to Python
 	CvBuildingClassInfo();
-	~CvBuildingClassInfo();
 
-	inline int getMaxGlobalInstances() const
+	int getMaxGlobalInstances() const
 	{
 		return m_iMaxGlobalInstances;
 	}
-	inline bool isWorldWonder() const // advc.003w: Replacing global isWorldWonderClass
+	bool isWorldWonder() const // advc.003w: Replacing global isWorldWonderClass
 	{
 		return (getMaxGlobalInstances() != -1);
 	}
-	inline int getMaxTeamInstances() const
+	int getMaxTeamInstances() const
 	{
 		return m_iMaxTeamInstances;
 	}
-	inline bool isTeamWonder() const // advc.003w: Replacing global isTeamWonderClass
+	bool isTeamWonder() const // advc.003w: Replacing global isTeamWonderClass
 	{
 		return (getMaxTeamInstances() != -1);
 	}
-	inline int getMaxPlayerInstances() const
+	int getMaxPlayerInstances() const
 	{
 		return m_iMaxPlayerInstances;
 	}
-	inline bool isNationalWonder() const // advc.003w: Replacing global isNationalWonderClass
+	bool isNationalWonder() const // advc.003w: Replacing global isNationalWonderClass
 	{
 		return (getMaxPlayerInstances() != -1);
 	}
-	inline bool isLimited() const // advc.003w: Replacing global isLimitedWonderClass
+	bool isLimited() const // advc.003w: Replacing global isLimitedWonderClass
 	{
 		return (isWorldWonder() || isTeamWonder() || isNationalWonder());
 	}
@@ -61,8 +61,10 @@ public: // All the const functions are exposed to Python; advc.inl: Inlined most
 	}
 	int getLimit() const; // advc.003w: Replacing global limitedWonderClassLimit
 
-	bool isMonument() const;
-	int getVictoryThreshold(int i) const;
+	bool isMonument() const { return m_bMonument; }
+	/*  advc (note): Unused in XML. Number of buildings of this class required for
+		team victory as a necessary (not sufficient) condition. No AI code for this. */
+	DEF_INFO_ENUM_MAP(VictoryThreshold, Victory, int, short, ListEnumMap);
 
 	bool read(CvXMLLoadUtility* pXML);
 	bool readPass3();
@@ -76,8 +78,6 @@ protected:
 
 	bool m_bNoLimit;
 	bool m_bMonument;
-
-	int* m_piVictoryThreshold;
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -85,32 +85,30 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvBuildingInfo : public CvHotkeyInfo
 {
-public: /*	All the const functions are exposed to Python. advc.inl: Inlined most of those.
-			Integers in signatures replaced with enum types (except for most of the array
-			accessors - tbd.). */
-	CvBuildingInfo();
-	~CvBuildingInfo();
 	// <advc.tag>
+	typedef CvHotkeyInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		kElements.addInt(RaiseDefense, "RaiseDefense"); // advc.004c
+	}
+public:
 	enum IntElementTypes
 	{
-		RaiseDefense = CvHotkeyInfo::NUM_INT_ELEMENT_TYPES, // advc.004c
+		RaiseDefense = base_t::NUM_INT_ELEMENT_TYPES, // advc.004c
 		NUM_INT_ELEMENT_TYPES
 	};
-	enum BoolElementTypes // unused so far
+	int get(IntElementTypes e) const
 	{
-		NUM_BOOL_ELEMENT_TYPES = CvHotkeyInfo::NUM_BOOL_ELEMENT_TYPES
-	};
-	using CvXMLInfo::get; // unhide
-	__forceinline int get(IntElementTypes e) const
-	{
-		return get(static_cast<CvXMLInfo::IntElementTypes>(e));
-	}
-	__forceinline int get(BoolElementTypes e) const
-	{
-		return get(static_cast<CvXMLInfo::BoolElementTypes>(e));
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
 	} // </advc.tag>
 
-	inline BuildingClassTypes getBuildingClassType() const
+	/*	All the const functions are exposed to Python.
+		Integers in signatures replaced with enum types. */
+	CvBuildingInfo();
+
+	BuildingClassTypes getBuildingClassType() const
 	{
 		return m_eBuildingClassType;
 	}
@@ -211,7 +209,7 @@ public: /*	All the const functions are exposed to Python. advc.inl: Inlined most
 	int getGlobalHealth() const { return m_iGlobalHealth; }
 	int getGlobalPopulationChange() const { return m_iGlobalPopulationChange; }
 	int getFreeTechs() const { return m_iFreeTechs; }
-	inline int getDefenseModifier() const { return m_iDefenseModifier; }
+	int getDefenseModifier() const { return m_iDefenseModifier; }
 	int getBombardDefenseModifier() const { return m_iBombardDefenseModifier; }
 	int getAllCityDefenseModifier() const { return m_iAllCityDefenseModifier; }
 	int getEspionageDefenseModifier() const { return m_iEspionageDefenseModifier; }
@@ -251,70 +249,37 @@ public: /*	All the const functions are exposed to Python. advc.inl: Inlined most
 	const TCHAR* getArtDefineTag() const;
 	const TCHAR* getMovieDefineTag() const;
 
-	// Array access:
+	// Array access ...
 
-	int getYieldChange(YieldTypes eYield) const;
-	iPY_WRAP(YieldChange, Yield)
-	int* getYieldChangeArray() const { return m_piYieldChange; }
-	int getYieldModifier(YieldTypes eYield) const;
-	iPY_WRAP(YieldModifier, Yield)
-	int* getYieldModifierArray() const { return m_piYieldModifier; }
-	int getPowerYieldModifier(YieldTypes eYield) const;
-	iPY_WRAP(PowerYieldModifier, Yield)
-	int* getPowerYieldModifierArray() const { return m_piPowerYieldModifier; }
-	int getAreaYieldModifier(YieldTypes eYield) const; // (not exposed to Python)
-	int* getAreaYieldModifierArray() const { return m_piAreaYieldModifier; }
-	int getGlobalYieldModifier(YieldTypes eYield) const;
-	iPY_WRAP(GlobalYieldModifier, Yield)
-	int* getGlobalYieldModifierArray() const { return m_piGlobalYieldModifier; }
-	int getSeaPlotYieldChange(YieldTypes eYield) const;
-	iPY_WRAP(SeaPlotYieldChange, Yield)
-	int* getSeaPlotYieldChangeArray() const { return m_piSeaPlotYieldChange; }
-	int getRiverPlotYieldChange(YieldTypes eYield) const;
-	iPY_WRAP(RiverPlotYieldChange, Yield)
-	int* getRiverPlotYieldChangeArray() const { return m_piRiverPlotYieldChange; }
-	int getGlobalSeaPlotYieldChange(YieldTypes eYield) const;
-	iPY_WRAP(GlobalSeaPlotYieldChange, Yield)
-	int* getGlobalSeaPlotYieldChangeArray() const { return m_piGlobalSeaPlotYieldChange; }
+	DEF_SHORT_INFO_ENUM_MAP(YieldChange, Yield, YieldChangeMap);
+	DEF_SHORT_INFO_ENUM_MAP(YieldModifier, Yield, YieldPercentMap);
+	DEF_SHORT_INFO_ENUM_MAP(PowerYieldModifier, Yield, YieldPercentMap);
+	DEF_SHORT_INFO_ENUM_MAP(AreaYieldModifier, Yield, YieldPercentMap);
+	DEF_SHORT_INFO_ENUM_MAP(GlobalYieldModifier, Yield, YieldPercentMap);
+	DEF_SHORT_INFO_ENUM_MAP(SeaPlotYieldChange, Yield, YieldChangeMap);
+	DEF_SHORT_INFO_ENUM_MAP(RiverPlotYieldChange, Yield, YieldChangeMap);
+	DEF_SHORT_INFO_ENUM_MAP(GlobalSeaPlotYieldChange, Yield, YieldChangeMap);
+	DEF_SHORT_INFO_ENUM_MAP(CommerceChange, Commerce, CommerceChangeMap);
+	DEF_SHORT_INFO_ENUM_MAP(ObsoleteSafeCommerceChange, Commerce, CommerceChangeMap);
+	DEF_SHORT_INFO_ENUM_MAP(CommerceChangeDoubleTime, Commerce, CommercePercentMap);
+	DEF_SHORT_INFO_ENUM_MAP(CommerceModifier, Commerce, CommercePercentMap);
+	DEF_SHORT_INFO_ENUM_MAP(GlobalCommerceModifier, Commerce, CommercePercentMap);
+	DEF_SHORT_INFO_ENUM_MAP(SpecialistExtraCommerce, Commerce, CommercePercentMap); // (not exposed to Python)
+	DEF_SHORT_INFO_ENUM_MAP(StateReligionCommerce, Commerce, CommerceChangeMap);
+	DEF_SHORT_INFO_ENUM_MAP(CommerceHappiness, Commerce, CommercePercentMap);
 
-	int getCommerceChange(CommerceTypes eCommerce) const;
-	iPY_WRAP(CommerceChange, Commerce)
-	int* getCommerceChangeArray() const { return m_piCommerceChange; }
-	int getObsoleteSafeCommerceChange(CommerceTypes eCommerce) const;
-	iPY_WRAP(ObsoleteSafeCommerceChange, Commerce)
-	int* getObsoleteSafeCommerceChangeArray() const { return m_piObsoleteSafeCommerceChange; }
-	int getCommerceChangeDoubleTime(CommerceTypes eCommerce) const;
-	iPY_WRAP(CommerceChangeDoubleTime, Commerce)
-	int getCommerceModifier(CommerceTypes eCommerce) const;
-	iPY_WRAP(CommerceModifier, Commerce)
-	int* getCommerceModifierArray() const { return m_piCommerceModifier; }
-	int getGlobalCommerceModifier(CommerceTypes eCommerce) const;
-	iPY_WRAP(GlobalCommerceModifier, Commerce)
-	int* getGlobalCommerceModifierArray() const { return m_piGlobalCommerceModifier; }
-	int getSpecialistExtraCommerce(CommerceTypes eCommerce) const; // (not exposed to Python)
-	int* getSpecialistExtraCommerceArray() const { return m_piSpecialistExtraCommerce; }
-	int getStateReligionCommerce(CommerceTypes eCommerce) const;
-	iPY_WRAP(StateReligionCommerce, Commerce)
-	int* getStateReligionCommerceArray() const { return m_piStateReligionCommerce; }
-	int getCommerceHappiness(CommerceTypes eCommerce) const;
-	iPY_WRAP(CommerceHappiness, Commerce)
+	DEF_INFO_ENUM_MAP(ReligionChange, Religion, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(SpecialistCount, Specialist, int, char, ArrayEnumMap);
+	DEF_INFO_ENUM_MAP(FreeSpecialistCount, Specialist, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(BonusHealthChanges, Bonus, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(BonusHappinessChanges, Bonus, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(BonusProductionModifier, Bonus, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(UnitCombatFreeExperience, UnitCombat, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(DomainFreeExperience, Domain, int, char, ArrayEnumMap);
+	DEF_INFO_ENUM_MAP(DomainProductionModifier, Domain, int, short, ArrayEnumMap);
 
-	int getReligionChange(int i) const;
-	inline bool isAnyReligionChange() const { return (m_piReligionChange != NULL); } // advc.003t
-	int getSpecialistCount(int i) const;
-	int getFreeSpecialistCount(int i) const;
-	int getBonusHealthChanges(int i) const;
-	inline bool isAnyBonusHealthChanges() const { return (m_piBonusHealthChanges != NULL); } // advc.003t
-	int getBonusHappinessChanges(int i) const;
-	inline bool isAnyBonusHappinessChanges() const { return (m_piBonusHappinessChanges != NULL); } // advc.003t
-	int getBonusProductionModifier(int i) const;
-	inline bool isAnyBonusProductionModifier() const { return (m_piBonusProductionModifier != NULL); } // advc.003t
-	int getUnitCombatFreeExperience(int i) const;
-	int getDomainFreeExperience(int i) const;
-	int getDomainProductionModifier(int i) const;
-	// <advc.003t>
-	inline int getNumPrereqAndTechs() const { return m_aePrereqAndTechs.size(); }
-	inline int getNumPrereqOrBonuses() const { return m_aePrereqOrBonuses.size(); }
+	int getNumPrereqAndTechs() const { return m_aePrereqAndTechs.size(); }
+	int getNumPrereqOrBonuses() const { return m_aePrereqOrBonuses.size(); }
 	TechTypes getPrereqAndTechs(int i) const
 	{
 		FAssertBounds(0, getNumPrereqAndTechs(), i);
@@ -327,44 +292,33 @@ public: /*	All the const functions are exposed to Python. advc.inl: Inlined most
 	}
 	int py_getPrereqAndTechs(int i) const;
 	int py_getPrereqOrBonuses(int i) const;
-	// </advc.003t>
-	int getProductionTraits(int i) const;
-	int getHappinessTraits(int i) const;
-	int getBuildingHappinessChanges(int i) const;
-	inline bool isAnyBuildingHappinessChanges() const { return (m_piBuildingHappinessChanges != NULL); } // advc.003t
-	int getPrereqNumOfBuildingClass(int i) const;
-	inline bool isAnyPrereqNumOfBuildingClass() const { return (m_piPrereqNumOfBuildingClass != NULL); } // advc.003t
-	int getFlavorValue(int i) const;
-	int getImprovementFreeSpecialist(int i) const;
-	inline bool isAnyImprovementFreeSpecialist() const { return (m_piImprovementFreeSpecialist != NULL); } // advc.003t
 
-	bool isCommerceFlexible(int i) const;
-	bool isCommerceChangeOriginalOwner(int i) const;
-	bool isBuildingClassNeededInCity(int i) const;
-	inline bool isAnyBuildingClassNeededInCity() const { return (m_pbBuildingClassNeededInCity != NULL); } // advc.003t
-
-	int getSpecialistYieldChange(int i, int j) const;
-	int* getSpecialistYieldChangeArray(int i) const;
-	int getBonusYieldModifier(int i, int j) const;
-	int* getBonusYieldModifierArray(int i) const;
-	// UNOFFICIAL_PATCH, Efficiency, 06/27/10, Afforess & jdog5000: START  // advc.003t: inlined
-	inline bool isAnySpecialistYieldChange() const { return m_bAnySpecialistYieldChange; }
-	inline bool isAnyBonusYieldModifier() const { return m_bAnyBonusYieldModifier; }
-	// UNOFFICIAL_PATCH: END
+	DEF_INFO_ENUM_MAP(ProductionTraits, Trait, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(HappinessTraits, Trait, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(BuildingHappinessChanges, BuildingClass, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(PrereqNumOfBuildingClass, BuildingClass, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(FlavorValue, Flavor, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(ImprovementFreeSpecialist, Improvement, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP_BOOL(CommerceFlexible, Commerce, ArrayEnumMap);
+	DEF_INFO_ENUM_MAP_BOOL(CommerceChangeOriginalOwner, Commerce, ArrayEnumMap);
+	DEF_INFO_ENUM_SET(BuildingClassNeededInCity, BuildingClass);
+	// (Replacing optimizations by UNOFFICIAL_PATCH, 06/27/10, Afforess & jdog5000)
+	DEF_INFO_ENUM2SHORT_MAP(SpecialistYieldChange, Specialist, Yield, YieldChangeMap, ListEnumMap);
+	DEF_INFO_ENUM2SHORT_MAP(BonusYieldModifier, Bonus, Yield, YieldPercentMap, ListEnumMap);
 	// <advc.003w> for convenience
-	inline bool isWorldWonder() const
+	bool isWorldWonder() const
 	{
 		return GC.getInfo(getBuildingClassType()).isWorldWonder();
 	}
-	inline bool isTeamWonder() const
+	bool isTeamWonder() const
 	{
 		return GC.getInfo(getBuildingClassType()).isTeamWonder();
 	}
-	inline bool isNationalWonder() const
+	bool isNationalWonder() const
 	{
 		return GC.getInfo(getBuildingClassType()).isNationalWonder();
 	}
-	inline bool isLimited() const
+	bool isLimited() const
 	{
 		return GC.getInfo(getBuildingClassType()).isLimited();
 	} // </advc.003w>
@@ -476,6 +430,7 @@ protected:
 	int m_iBombardDefenseModifier;
 	int m_iAllCityDefenseModifier;
 	int m_iEspionageDefenseModifier;
+	int m_iUnhealthyPopulationModifier; // K-Mod: was m_bNoUnhealthyPopulation
 	MissionTypes m_eMissionType;
 	VoteSourceTypes m_eVoteSourceType;
 
@@ -495,7 +450,6 @@ protected:
 	bool m_bGoldenAge;
 	bool m_bMapCentering;
 	bool m_bNoUnhappiness;
-	int m_iUnhealthyPopulationModifier; // K-Mod: was m_bNoUnhealthyPopulation
 	bool m_bBuildingOnlyHealthy;
 	bool m_bNeverCapture;
 	bool m_bNukeImmune;
@@ -508,52 +462,8 @@ protected:
 	CvString m_szArtDefineTag;
 	CvString m_szMovieDefineTag;
 
-	std::vector<TechTypes> m_aePrereqAndTechs; // advc.003t: was int*
-	std::vector<BonusTypes> m_aePrereqOrBonuses; // advc.003t: was int*
-	int* m_piProductionTraits;
-	int* m_piHappinessTraits;
-	int* m_piSeaPlotYieldChange;
-	int* m_piRiverPlotYieldChange;
-	int* m_piGlobalSeaPlotYieldChange;
-	int* m_piYieldChange;
-	int* m_piYieldModifier;
-	int* m_piPowerYieldModifier;
-	int* m_piAreaYieldModifier;
-	int* m_piGlobalYieldModifier;
-	int* m_piCommerceChange;
-	int* m_piObsoleteSafeCommerceChange;
-	int* m_piCommerceChangeDoubleTime;
-	int* m_piCommerceModifier;
-	int* m_piGlobalCommerceModifier;
-	int* m_piSpecialistExtraCommerce;
-	int* m_piStateReligionCommerce;
-	int* m_piCommerceHappiness;
-	int* m_piReligionChange;
-	int* m_piSpecialistCount;
-	int* m_piFreeSpecialistCount;
-	int* m_piBonusHealthChanges;
-	int* m_piBonusHappinessChanges;
-	int* m_piBonusProductionModifier;
-	int* m_piUnitCombatFreeExperience;
-	int* m_piDomainFreeExperience;
-	int* m_piDomainProductionModifier;
-	int* m_piBuildingHappinessChanges;
-	int* m_piPrereqNumOfBuildingClass;
-	int* m_piFlavorValue;
-	int* m_piImprovementFreeSpecialist;
-
-	bool* m_pbCommerceFlexible;
-	bool* m_pbCommerceChangeOriginalOwner;
-	bool* m_pbBuildingClassNeededInCity;
-
-	int** m_ppaiSpecialistYieldChange;
-	int** m_ppaiBonusYieldModifier;
-	// UNOFFICIAL_PATCH, Efficiency, 06/27/10, Afforess & jdog5000: START
-	bool m_bAnySpecialistYieldChange;
-	bool m_bAnyBonusYieldModifier;
-	// UNOFFICIAL_PATCH: END
-
-	void addElements(std::vector<XMLElement*>& r) const; // advc.tag
+	std::vector<TechTypes> m_aePrereqAndTechs;
+	std::vector<BonusTypes> m_aePrereqOrBonuses;
 	// <advc.310>
 	static bool m_bEnabledAreaBorderObstacle;
 	static bool m_bEnabledAreaTradeRoutes;
@@ -566,9 +476,8 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvSpecialBuildingInfo : public CvInfoBase
 {
-public: // All the const functions are exposed to Python. advc.inl: Inlined the non-array getters.
+public: // All the const functions are exposed to Python
 	CvSpecialBuildingInfo();
-	virtual ~CvSpecialBuildingInfo();
 
 	TechTypes getObsoleteTech() const { return m_eObsoleteTech; }
 	TechTypes getTechPrereq() const { return m_eTechPrereq; }
@@ -576,7 +485,7 @@ public: // All the const functions are exposed to Python. advc.inl: Inlined the 
 
 	bool isValid() const { return m_bValid; }
 
-	int getProductionTraits(int i) const;
+	DEF_INFO_ENUM_MAP(ProductionTraits, Trait, int, short, ListEnumMap);
 
 	bool read(CvXMLLoadUtility* pXML);
 
@@ -586,8 +495,6 @@ protected:
 	TechTypes m_eTechPrereqAnyone;
 
 	bool m_bValid;
-
-	int* m_piProductionTraits;
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -597,29 +504,25 @@ class CvVoteSourceInfo : public CvInfoBase
 {
 public: // The const functions are exposed to Python
 	CvVoteSourceInfo();
-	virtual ~CvVoteSourceInfo();
 
-	int getVoteInterval() const;
-	int getFreeSpecialist() const;
-	int getCivic() const;
+	int getVoteInterval() const { return m_iVoteInterval; }
+	SpecialistTypes getFreeSpecialist() const { return m_eFreeSpecialist; }
+	CivicTypes getCivic() const { return m_eCivic; }
 	const CvWString getPopupText() const; // (not exposed to python)
 	const CvWString getSecretaryGeneralText() const;
 
 	std::wstring pyGetSecretaryGeneralText() { return getSecretaryGeneralText(); }
 
-	int getReligionYield(int i) const;
-	int getReligionCommerce(int i) const;
+	DEF_SHORT_INFO_ENUM_MAP(ReligionYield, Yield, YieldChangeMap);
+	DEF_SHORT_INFO_ENUM_MAP(ReligionCommerce, Commerce, CommerceChangeMap);
 
 	bool read(CvXMLLoadUtility* pXML);
 	bool readPass3();
 
 protected:
 	int m_iVoteInterval;
-	int m_iFreeSpecialist;
-	int m_iCivic;
-
-	int* m_aiReligionYields;
-	int* m_aiReligionCommerces;
+	SpecialistTypes m_eFreeSpecialist;
+	CivicTypes m_eCivic;
 
 	CvString m_szPopupText;
 	CvString m_szSecretaryGeneralText;
@@ -632,28 +535,27 @@ class CvVoteInfo :	public CvInfoBase
 {
 public: // All the const functions are exposed to Python
 	CvVoteInfo();
-	virtual ~CvVoteInfo();
 
-	int getPopulationThreshold() const;
-	int getStateReligionVotePercent() const;
-	int getTradeRoutes() const;
-	int getMinVoters() const;
+	int getPopulationThreshold() const { return m_iPopulationThreshold; }
+	int getStateReligionVotePercent() const { return m_iStateReligionVotePercent; }
+	int getTradeRoutes() const { return m_iTradeRoutes; }
+	int getMinVoters() const { return m_iMinVoters; }
 
-	bool isSecretaryGeneral() const;
-	bool isVictory() const;
-	bool isFreeTrade() const;
-	bool isNoNukes() const;
-	bool isCityVoting() const;
-	bool isCivVoting() const;
-	bool isDefensivePact() const;
-	bool isOpenBorders() const;
-	bool isForcePeace() const;
-	bool isForceNoTrade() const;
-	bool isForceWar() const;
-	bool isAssignCity() const;
+	bool isSecretaryGeneral() const { return m_bSecretaryGeneral; }
+	bool isVictory() const { return m_bVictory; }
+	bool isFreeTrade() const { return m_bFreeTrade; }
+	bool isNoNukes() const { return m_bNoNukes; }
+	bool isCityVoting() const { return m_bCityVoting; }
+	bool isCivVoting() const { return m_bCivVoting; }
+	bool isDefensivePact() const { return m_bDefensivePact; }
+	bool isOpenBorders() const { return m_bOpenBorders; }
+	bool isForcePeace() const { return m_bForcePeace; }
+	bool isForceNoTrade() const { return m_bForceNoTrade; }
+	bool isForceWar() const { return m_bForceWar; }
+	bool isAssignCity() const { return m_bAssignCity; }
 
-	bool isForceCivic(int i) const;
-	bool isVoteSourceType(int i) const;
+	DEF_INFO_ENUM_SET(ForceCivic, Civic);
+	DEF_INFO_ENUM_MAP_BOOL(VoteSourceType, VoteSource, ArrayEnumMap);
 
 	bool read(CvXMLLoadUtility* pXML);
 
@@ -675,9 +577,6 @@ protected:
 	bool m_bForceNoTrade;
 	bool m_bForceWar;
 	bool m_bAssignCity;
-
-	bool* m_pbForceCivic;
-	bool* m_abVoteSourceTypes;
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -685,39 +584,38 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvProjectInfo : public CvInfoBase
 {
-public: // All const functions are exposed to Python. advc.inl: Most of them inlined.
+public: // All const functions are exposed to Python
 	CvProjectInfo();
-	~CvProjectInfo();
 
-	int getVictoryPrereq() const
+	VictoryTypes getVictoryPrereq() const
 	{
-		return m_iVictoryPrereq;
+		return m_eVictoryPrereq;
 	}
-	int getTechPrereq() const
+	TechTypes getTechPrereq() const
 	{
-		return m_iTechPrereq;
+		return m_eTechPrereq;
 	}
-	int getAnyoneProjectPrereq() const
+	ProjectTypes getAnyoneProjectPrereq() const
 	{
-		return m_iAnyoneProjectPrereq;
+		return m_eAnyoneProjectPrereq;
 	}
-	inline int getMaxGlobalInstances() const
+	int getMaxGlobalInstances() const
 	{
 		return m_iMaxGlobalInstances;
 	}
-	inline bool isWorldProject() const // advc.003w: Replacing global isWorldProject(ProjectTypes)
+	bool isWorldProject() const // advc.003w: Replacing global isWorldProject(ProjectTypes)
 	{
 		return (getMaxGlobalInstances() != -1);
 	}
-	inline int getMaxTeamInstances() const
+	int getMaxTeamInstances() const
 	{
 		return m_iMaxTeamInstances;
 	}
-	inline bool isTeamProject() const // advc.003w: Replacing global isTeamProject(ProjectTypes)
+	bool isTeamProject() const // advc.003w: Replacing global isTeamProject(ProjectTypes)
 	{
 		return (getMaxTeamInstances() != -1);
 	}
-	inline bool isLimited() const // advc.003w: Replacing global isLimitedProject(ProjectTypes)
+	bool isLimited() const // advc.003w: Replacing global isLimitedProject(ProjectTypes)
 	{
 		return (isWorldProject() || isTeamProject());
 	} 
@@ -729,17 +627,18 @@ public: // All const functions are exposed to Python. advc.inl: Most of them inl
 	{
 		return m_iNukeInterception;
 	}
+	// advc/ kekm38 (note): This returns a player count (not a player id)
 	int getTechShare() const
 	{
 		return m_iTechShare;
 	}
-	int getEveryoneSpecialUnit() const
+	SpecialUnitTypes getEveryoneSpecialUnit() const
 	{
-		return m_iEveryoneSpecialUnit;
+		return m_eEveryoneSpecialUnit;
 	}
-	int getEveryoneSpecialBuilding() const
+	SpecialBuildingTypes getEveryoneSpecialBuilding() const
 	{
-		return m_iEveryoneSpecialBuilding;
+		return m_eEveryoneSpecialBuilding;
 	}
 	int getVictoryDelayPercent() const
 	{
@@ -764,27 +663,26 @@ public: // All const functions are exposed to Python. advc.inl: Most of them inl
 
 	bool nameNeedsArticle() const;
 
-	// Arrays access:
-
-	int getBonusProductionModifier(int i) const;
-	int getVictoryThreshold(int i) const;
-	int getVictoryMinThreshold(int i) const;
-	int getProjectsNeeded(int i) const;
+	// Arrays access ...
+	DEF_INFO_ENUM_MAP(BonusProductionModifier, Bonus, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(VictoryThreshold, Victory, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(VictoryMinThreshold, Victory, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(ProjectsNeeded, Project, int, short, ListEnumMap);
 
 	bool read(CvXMLLoadUtility* pXML);
 	bool readPass2(CvXMLLoadUtility* pXML);
 
 protected:
-	int m_iVictoryPrereq;
-	int m_iTechPrereq;
-	int m_iAnyoneProjectPrereq;
+	VictoryTypes m_eVictoryPrereq;
+	TechTypes m_eTechPrereq;
+	ProjectTypes m_eAnyoneProjectPrereq;
 	int m_iMaxGlobalInstances;
 	int m_iMaxTeamInstances;
 	int m_iProductionCost;
 	int m_iNukeInterception;
 	int m_iTechShare;
-	int m_iEveryoneSpecialUnit;
-	int m_iEveryoneSpecialBuilding;
+	SpecialUnitTypes m_eEveryoneSpecialUnit;
+	SpecialBuildingTypes m_eEveryoneSpecialBuilding;
 	int m_iVictoryDelayPercent;
 	int m_iSuccessRate;
 
@@ -793,11 +691,6 @@ protected:
 
 	CvString m_szCreateSound;
 	CvString m_szMovieArtDef;
-
-	int* m_piBonusProductionModifier;
-	int* m_piVictoryThreshold;
-	int* m_piVictoryMinThreshold;
-	int* m_piProjectsNeeded;
 };
 
 #endif

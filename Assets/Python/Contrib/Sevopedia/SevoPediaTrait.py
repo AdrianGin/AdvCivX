@@ -67,7 +67,11 @@ class SevoPediaTrait:
 
 		self.placeLeaders()
 		self.placeSpecial()
-		#self.placeText() # advc.004y: Disable text box
+		#self.placeText()
+		# <advc.004y> Show changes instead of text box (if there are any)
+		szText = gc.getTraitInfo(self.iTrait).getCivilopedia()
+		if not szText.endswith("PEDIA"):
+			self.placeChanges(szText)
 
 
 
@@ -140,6 +144,15 @@ class SevoPediaTrait:
 		if not szText.endswith("PEDIA"):
 			screen.attachMultilineText( panelName, "Text", szText, WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 
+	# advc.004y:
+	def placeChanges(self, szText):
+		screen = self.top.getScreen()
+		panelName = self.top.getNextWidgetName()
+		screen.addPanel(panelName,
+				localText.getText("TXT_KEY_PEDIA_CHANGES", ()), "",
+				True, True, self.X_TEXT, self.Y_TEXT, self.W_TEXT, self.H_TEXT,
+				PanelStyles.PANEL_STYLE_BLUE50 )
+		screen.attachMultilineText(panelName, "Text", szText, WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 
 
 	def handleInput (self, inputClass):

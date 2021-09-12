@@ -1,10 +1,7 @@
-//
 // Python wrapper class for CySelectionGroup
-//
-//
 #include "CvGameCoreDLL.h"
 #include "CySelectionGroup.h"
-#include "CvSelectionGroup.h"
+#include "CvSelectionGroupAI.h"
 #include "CyArea.h"
 #include "CvArea.h"
 #include "CvPlot.h"
@@ -13,10 +10,10 @@
 CySelectionGroup::CySelectionGroup() : m_pSelectionGroup(NULL) {}
 
 CySelectionGroup::CySelectionGroup(CvSelectionGroup* pSelectionGroup) : m_pSelectionGroup(pSelectionGroup) {}
-// <advc.003y> (see CyCity.cpp)
+// advc.003y: (see CyCity.cpp)
 CySelectionGroup::CySelectionGroup(CvSelectionGroup const& kSelectionGroup) :
 	m_pSelectionGroup(const_cast<CvSelectionGroup*>(&kSelectionGroup)) {}
-// </advc.003y>
+
 void CySelectionGroup::pushMission(MissionTypes eMission, int iData1, int iData2, int iFlags, bool bAppend, bool bManual, MissionAITypes eMissionAI, CyPlot* pMissionAIPlot, CyUnit* pMissionAIUnit)
 {
 	if (m_pSelectionGroup)
@@ -159,11 +156,11 @@ bool CySelectionGroup::hasWorker()
 {
 	return m_pSelectionGroup ? m_pSelectionGroup->hasWorker() : false;
 }
-// BETTER_BTS_AI_MOD, General AI, 11/30/08, jdog5000: START
+// BETTER_BTS_AI_MOD, General AI, 11/30/08, jdog5000:
 bool CySelectionGroup::isStranded()
 {
-	return m_pSelectionGroup ? m_pSelectionGroup->isStranded() : false;
-} // BETTER_BTS_AI_MOD: END
+	return m_pSelectionGroup ? m_pSelectionGroup->AI().AI_isStranded() : false;
+}
 
 bool CySelectionGroup::at(int iX, int iY)
 {

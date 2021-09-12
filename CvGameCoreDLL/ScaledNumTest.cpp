@@ -20,7 +20,6 @@ void TestScaledNum()
 #ifndef SCALED_NUM_TEST
 	return;
 #else
-
 	// These numbers match the running example commented on in pow.
 	//FAssert(scaled(fixp(5.2)).pow(scaled(fixp(2.1))).round() == 32);
 	// The example assumes scale 1024, hence the explicit calls. */
@@ -39,7 +38,7 @@ void TestScaledNum()
 	int iSuccesses = 0;
 	CvRandom& kRand = GC.getASyncRand();
 	for(int i = 0; i < 1000; i++)
-		if(fixp(0.4).bernoulliSuccess(kRand, ""))
+		if(fixp(0.4).randSuccess(kRand, ""))
 			iSuccesses++;
 	FAssertBounds(355, 445, iSuccesses);
 	scaled rSum;
@@ -137,9 +136,9 @@ void TestScaledNum()
 	uscaled rAlmostSqrtOfTwo = scaled(2).sqrt() - scaled::epsilon();
 	ScaledNum<MAX_INT,uint> r1 = rAlmostSqrtOfTwo;
 	ScaledNum<MAX_INT - 1,uint> r2 = rAlmostSqrtOfTwo;
-	FAssert(r2.MAX() == 2);
+	FAssert(r2.MAX == 2);
 	r2 *= r1;
-	// (But an approxEquals check isn't possible so close to r2.MAX())
+	// (But an approxEquals check isn't possible so close to r2.MAX)
 	FAssert(r2 > fixp(1.99));
 	FAssert(r2 < 2);
 
@@ -176,7 +175,7 @@ void TestScaledNum()
 				dSum += std::pow(b, 1.24);
 			}
 		}
-		iDummy += ::round(dSum);
+		iDummy += fmath::round(dSum);
 	}
 
 	// Addition speed measurements
@@ -218,7 +217,7 @@ void TestScaledNum()
 				z += x + j;
 				z -= y - j;
 			}
-			iDummy += ::round(z);
+			iDummy += fmath::round(z);
 		}
 	}
 
@@ -303,7 +302,7 @@ void TestScaledNum()
 				dCost *= GC.getInfo((EraTypes)0).getResearchPercent() / 100.;
 				dCost *= (GC.getDefineINT(
 						CvGlobals::TECH_COST_EXTRA_TEAM_MEMBER_MODIFIER) + 100) / 100.;
-				int iCost = ::round(dCost) % 5;
+				int iCost = fmath::round(dCost) % 5;
 				dCost = range(iCost, 10, 2000);
 			}
 			iDummy += (int)dCost;
@@ -328,7 +327,7 @@ void TestScaledNum()
 				fCost *= GC.getInfo((EraTypes)0).getResearchPercent() / 100.f;
 				fCost *= (GC.getDefineINT(
 						CvGlobals::TECH_COST_EXTRA_TEAM_MEMBER_MODIFIER) + 100) / 100.f;
-				int iCost = ::round(fCost) % 5;
+				int iCost = fmath::round(fCost) % 5;
 				fCost = range(iCost, 10, 2000);
 			}
 			iDummy += (int)fCost;
@@ -410,27 +409,8 @@ void TestScaledNum()
 			iDummy += (int)dCost;
 		}
 	}
-
-	// Syntax test (How easy is it to convert floating-point calculations to ScaledNum?)
-	/*	Based on some calculations in InvasionGraph::step. Out of context,
-		the excerpts used here and their names are nonsensical. */
-	scaled rOtherDist = 2;
-	scaled rMod = scaled::max(100 - 2 * rOtherDist, 50) / 100;
-	scaled rOtherPow = 1282;
-	rOtherPow *= rMod;
-	scaled rPow = 1417;
-	scaled rDist = 5;
-	rPow *= scaled::max(100 - fixp(1.55) * rDist.pow(fixp(1.15)), 50) / 100;
-	scaled rWeight, rOtherWeight;
-	rWeight = rOtherWeight = 1;
-	rOtherWeight *= (rOtherPow > 1000 ? fixp(1.5) : fixp(4/3.));
-	rWeight += fixp(.25);
-	rWeight.clamp(fixp(.5), 1);
-	rPow *= rWeight;
-	if(rOtherWeight <= per100(99))
-		rOtherPow *= rOtherWeight;
-	iDummy += (rPow * (rOtherPow / 2) + rWeight).round();
-
+	/*	This will always be false, but the compiler can't tell.
+		See comment near the definition of iDummy. */
 	if (iDummy == -7)
 	{
 		FAssert(false);

@@ -3,103 +3,95 @@
 #include "CvGameCoreDLL.h"
 #include "Shelf.h"
 #include "CvGame.h"
-#include "CvPlot.h"
+#include "CvMap.h"
 #include "CvUnit.h"
 #include "CvPlayer.h"
 
-using std::vector;
 
-
-void Shelf::add(CvPlot* plot)
+void Shelf::add(CvPlot* pPlot)
 {
-	plots.push_back(plot);
+	m_apPlots.push_back(pPlot);
 }
 
 
-CvPlot* Shelf::randomPlot(RandPlotFlags restrictions, int unitDistance, int* legalCount) const
+CvPlot* Shelf::randomPlot(RandPlotFlags eRestrictions, int iUnitDistance,
+	int* piValidCount, RandPlotWeightMap const* pWeights) const
 {
-	/*  Based on CvMap::syncRandPlot, but shelves are (normally) so small
-		that random sampling isn't efficient. Instead, compute the legal
+	LOCAL_REF(int, iValid, piValidCount, 0);
+	/*	Based on CvMap::syncRandPlot, but shelves are (normally) so small
+		that random sampling isn't efficient. Instead, compute the valid
 		plots first, then return one of those at random (NULL if none). */
-	vector<CvPlot*> legal;
-	for(size_t i = 0; i < plots.size(); i++)
+	std::vector<CvPlot*> apValid;
+	std::vector<int> aiWeights;
+	for (size_t i = 0; i < m_apPlots.size(); i++)
 	{
-		CvPlot* plot = plots[i];
-		bool isLegal =
-		 plot != NULL &&
-		 !(RANDPLOT_LAND & restrictions) &&
-		 (!(RANDPLOT_UNOWNED & restrictions) || !plot->isOwned()) &&
-		 (!(RANDPLOT_ADJACENT_UNOWNED & restrictions) || !plot->isAdjacentOwned()) &&
-		 (!(RANDPLOT_NOT_VISIBLE_TO_CIV & restrictions) || !plot->isVisibleToCivTeam()) &&
-		 // In case a mod enables sea cities:
-		 (!(RANDPLOT_NOT_CITY & restrictions) || !plot->isCity()) &&
-		 (!plot->isCivUnitNearby(unitDistance)) &&
-		 !plot->isUnit();
-		/*  RANDPLOT_PASSIBLE, RANDPLOT_ADJACENT_LAND, RANDPLOT_HABITABLE:
+		CvPlot& p = *m_apPlots[i];
+		bool const bValid = (
+				!(RANDPLOT_LAND & eRestrictions) &&
+				(!(RANDPLOT_UNOWNED & eRestrictions) || !p.isOwned()) &&
+				(!(RANDPLOT_ADJACENT_UNOWNED & eRestrictions) || !p.isAdjacentOwned()) &&
+				(!(RANDPLOT_NOT_VISIBLE_TO_CIV & eRestrictions) || !p.isVisibleToCivTeam()) &&
+				// In case that a mod enables sea cities:
+				(!(RANDPLOT_NOT_CITY & eRestrictions) || !p.isCity()) &&
+				(!p.isCivUnitNearby(iUnitDistance)) &&
+				!p.isUnit());
+		/*	RANDPLOT_PASSIBLE, RANDPLOT_ADJACENT_LAND, RANDPLOT_HABITABLE:
 			Ensured by CvMap::computeShelves. */
-		if(isLegal)
-			legal.push_back(plot);
+		if (bValid)
+		{
+			apValid.push_back(&p);
+			if (pWeights != NULL)
+				aiWeights.push_back(pWeights->getProbWeight(p));
+		}
 	}
-	int nLegal = legal.size();
-	if(legalCount != NULL)
-		*legalCount = nLegal;
-	if(nLegal == 0)
-		return NULL;
-	return legal[GC.getGame().getSorenRandNum(nLegal, "advc.300")];
-}
-
-
-int Shelf::size() const
-{
-	return (int)plots.size();
+	iValid = apValid.size();
+	return syncRand().weightedChoice(apValid,
+			pWeights == NULL ? NULL : &aiWeights);
 }
 
 
 int Shelf::countUnownedPlots() const
 {
-	int r = 0;
-	for(size_t i = 0; i < plots.size(); i++)
+	int iR = 0;
+	for (size_t i = 0; i < m_apPlots.size(); i++)
 	{
-		CvPlot* plot = plots[i];
-		if(plot != NULL && !plot->isOwned())
-			r++;
+		if (!m_apPlots[i]->isOwned())
+			iR++;
 	}
-	return r;
+	return iR;
 }
 
 
 int Shelf::countBarbarians() const
 {
-	int r = 0;
-	for(size_t i = 0; i < plots.size(); i++)
+	int iR = 0;
+	for (size_t i = 0; i < m_apPlots.size(); i++)
 	{
-		CvPlot* plot = plots[i];
-		if(plot == NULL)
+		CvPlot const& p = *m_apPlots[i];
+		// Take advantage of Barbarians being unable to coexist with visible units
+		CLLNode<IDInfo> const* pUnitNode = p.headUnitNode();
+		if (pUnitNode == NULL)
 			continue;
-		CLLNode<IDInfo>* unitNode = plot->headUnitNode();
-		if(unitNode == NULL)
-			continue;
-		CvUnit* anyUnit = CvUnit::fromIDInfo(unitNode->m_data);
-		if(anyUnit != NULL && anyUnit->isBarbarian())
-			r += plot->getNumUnits();
+		CvUnit const* pAnyUnit = CvUnit::fromIDInfo(pUnitNode->m_data);
+		if (pAnyUnit != NULL && pAnyUnit->isBarbarian())
+			iR += p.plotCount(PUF_isVisible, BARBARIAN_PLAYER);
 	}
-	return r;
+	return iR;
 }
 
 
 bool Shelf::killBarbarian()
 {
-	for(size_t i = 0; i < plots.size(); i++)
+	for (size_t i = 0; i < m_apPlots.size(); i++)
 	{
-		CvPlot* plot = plots[i]; if(plot == NULL) continue;
-		CLLNode<IDInfo>* unitNode = plot->headUnitNode();
-		if(unitNode == NULL)
+		CLLNode<IDInfo>* pUnitNode = m_apPlots[i]->headUnitNode();
+		if (pUnitNode == NULL)
 			continue;
-		CvUnit* anyUnit = CvUnit::fromIDInfo(unitNode->m_data);
-		if(anyUnit != NULL && anyUnit->isBarbarian() &&
-			anyUnit->getUnitCombatType() != NO_UNITCOMBAT)
+		CvUnit* pAnyUnit = CvUnit::fromIDInfo(pUnitNode->m_data);
+		if (pAnyUnit != NULL && pAnyUnit->isBarbarian() &&
+			pAnyUnit->getUnitCombatType() != NO_UNITCOMBAT)
 		{
-			anyUnit->kill(false);
+			pAnyUnit->kill(false);
 			return true;
 		}
 	}
@@ -109,30 +101,26 @@ bool Shelf::killBarbarian()
 // advc.306:
 CvUnit* Shelf::randomBarbarianTransport() const
 {
-	vector<CvUnit*> apValid;
-	for(size_t i = 0; i < plots.size(); i++)
+	std::vector<CvUnit*> apValid;
+	for (size_t i = 0; i < m_apPlots.size(); i++)
 	{
-		if(plots[i] == NULL) continue; CvPlot const& plot = *plots[i];
-		if(plot.isVisibleToCivTeam())
-			continue;
-		FOR_EACH_UNIT_VAR_IN(pTransport, plot)
+		CvPlot const& p = *m_apPlots[i];
+		FOR_EACH_UNIT_VAR_IN(pTransport, p)
 		{
-			if(pTransport->getOwner() != BARBARIAN_PLAYER)
+			if (!pTransport->isBarbarian())
 				break;
-			CvUnitInfo const& u = GC.getInfo(pTransport->getUnitType());
-			int iCargo = std::min(2, u.getCargoSpace()); // Load at most 2
+			// Load at most 2
+			int iCargo = std::min(2, GC.getInfo(pTransport->getUnitType()).getCargoSpace());
 			iCargo -= std::max(0, pTransport->getCargo());
-			if(iCargo > 0)
+			if (iCargo > 0 && !p.isVisibleToCivTeam())
 				apValid.push_back(pTransport);
 		}
 	}
-	if(apValid.empty())
+	if (apValid.empty())
 		return NULL;
 	int iValid = apValid.size();
 	scaled rNoneProb = fixp(0.2) + scaled(iValid, 10);
-	if(!rNoneProb.bernoulliSuccess(GC.getGame().getSRand(), "no Barbarian transport"))
+	if (!SyncRandSuccess(rNoneProb))
 		return NULL;
-	return apValid[GC.getGame().getSorenRandNum(iValid, "choose Barbarian transport")];
+	return apValid[SyncRandNum(iValid)];
 }
-
-Shelf::Id::Id(int landId, int waterId) : std::pair<int,int>(landId, waterId) {}

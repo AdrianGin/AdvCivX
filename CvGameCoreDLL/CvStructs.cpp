@@ -188,33 +188,27 @@ void PlotExtraCost::write(FDataStreamBase* pStream)
 	pStream->Write(m_iCost);
 }
 
-void BuildingYieldChange::read(FDataStreamBase* pStream)
-{
+// advc.enum: Obsolete
+/*void BuildingYieldChange::read(FDataStreamBase* pStream) {
 	pStream->Read((int*)&eBuildingClass);
 	pStream->Read((int*)&eYield);
 	pStream->Read(&iChange);
 }
-
-void BuildingYieldChange::write(FDataStreamBase* pStream)
-{
+void BuildingYieldChange::write(FDataStreamBase* pStream) {
 	pStream->Write(eBuildingClass);
 	pStream->Write(eYield);
 	pStream->Write(iChange);
 }
-
-void BuildingCommerceChange::read(FDataStreamBase* pStream)
-{
+void BuildingCommerceChange::read(FDataStreamBase* pStream) {
 	pStream->Read((int*)&eBuildingClass);
 	pStream->Read((int*)&eCommerce);
 	pStream->Read(&iChange);
 }
-
-void BuildingCommerceChange::write(FDataStreamBase* pStream)
-{
+void BuildingCommerceChange::write(FDataStreamBase* pStream) {
 	pStream->Write(eBuildingClass);
 	pStream->Write(eCommerce);
 	pStream->Write(iChange);
-}
+}*/
 
 void checkBattleUnitType(BattleUnitTypes unitType)
 {

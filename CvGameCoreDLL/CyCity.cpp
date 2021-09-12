@@ -168,7 +168,13 @@ bool CyCity::canJoin()
 
 int CyCity::getFoodTurnsLeft()
 {
-	return m_pCity ? m_pCity->getFoodTurnsLeft() : 0;
+	if (m_pCity == NULL)
+		return 0;
+	// <advc.189>
+	int iR = m_pCity->getFoodTurnsLeft();
+	if (iR == MAX_INT)
+		return 0; // </advc.189>
+	return iR;
 }
 
 bool CyCity::isProduction()
@@ -693,7 +699,7 @@ int CyCity::cultureGarrison(int /*PlayerTypes*/ ePlayer)
 // <advc.ctr>
 float CyCity::revoltProbability()
 {
-	return m_pCity ? static_cast<float>(m_pCity->revoltProbability()) : -1;
+	return m_pCity ? m_pCity->revoltProbability().getFloat() : -1;
 }
 
 bool CyCity::canCultureFlip()
@@ -754,7 +760,8 @@ CyPlot* CyCity::plot()
 
 bool CyCity::isConnectedTo(CyCity* pCity)
 {
-	return m_pCity ? m_pCity->isConnectedTo(pCity->getCity()) : false;
+	return (m_pCity && pCity && pCity->getCity()) ?
+			m_pCity->isConnectedTo(*pCity->getCity()) : false;
 }
 
 bool CyCity::isConnectedToCapital(int /*PlayerTypes*/ ePlayer)
@@ -1935,6 +1942,42 @@ void CyCity::changeUnitProduction(int /*UnitTypes*/ iIndex, int iChange)
 	if (m_pCity)
 		m_pCity->changeUnitProduction((UnitTypes) iIndex, iChange);
 }
+
+// BULL - Production Decay - start (advc.094)
+int CyCity::getUnitProductionTime(int /*UnitTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->getUnitProductionTime((UnitTypes)eIndex) : -1;
+}
+
+bool CyCity::isBuildingProductionDecay(int /*BuildingTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->isBuildingProductionDecay((BuildingTypes)eIndex) : false;
+}
+
+int CyCity::getBuildingProductionDecay(int /*BuildingTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->getBuildingProductionDecay((BuildingTypes)eIndex) : 0;
+}
+
+int CyCity::getBuildingProductionDecayTurns(int /*BuildingTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->getBuildingProductionDecayTurns((BuildingTypes)eIndex) : 0;
+}
+
+bool CyCity::isUnitProductionDecay(int /*UnitTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->isUnitProductionDecay((UnitTypes)eIndex) : false;
+}
+
+int CyCity::getUnitProductionDecay(int /*UnitTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->getUnitProductionDecay((UnitTypes)eIndex) : 0;
+}
+
+int CyCity::getUnitProductionDecayTurns(int /*UnitTypes*/ eIndex)
+{
+	return m_pCity ? m_pCity->getUnitProductionDecayTurns((UnitTypes)eIndex) : 0;
+} // BULL - Production Decay - end
 
 int CyCity::getGreatPeopleUnitRate(int /*UnitTypes*/ iIndex)
 {

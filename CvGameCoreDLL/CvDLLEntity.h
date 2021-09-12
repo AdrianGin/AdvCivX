@@ -37,7 +37,7 @@ public:
 	void setVisible(bool b);
 	void setEntity(CvEntity* pEntity);
 
-	DllExport bool IsSelected() const // advc.inl
+	DllExport bool IsSelected() const
 	{
 		return gDLL->getEntityIFace()->IsSelected(getGenericEntity());
 	}

@@ -205,7 +205,9 @@ bool CyUnit::canNuke(CyPlot* pPlot)
 
 bool CyUnit::canNukeAt(CyPlot* pPlot, int iX, int iY)
 {
-	return m_pUnit ? m_pUnit->canNukeAt(pPlot->getPlot(), iX, iY) : false;
+	if (m_pUnit == NULL || pPlot == NULL || pPlot->getPlot() == NULL)
+		return false;
+	return m_pUnit->canNukeAt(*pPlot->getPlot(), iX, iY);
 }
 
 bool CyUnit::canRecon(CyPlot* pPlot)
@@ -609,7 +611,7 @@ bool CyUnit::isCounterSpy()
 
 bool CyUnit::isFound()
 {
-	return m_pUnit ? m_pUnit->canFound() : false; // advc.004h: was isFound
+	return m_pUnit ? m_pUnit->isFound() : false;
 }
 
 bool CyUnit::isGoldenAge()

@@ -3,7 +3,6 @@
 #include "CvGameCoreDLL.h"
 #include "CvInfo_GameOption.h"
 #include "CvXMLLoadUtility.h"
-#include "CvDLLXMLIFaceBase.h"
 #include "CvInitCore.h" // advc.137
 
 
@@ -211,28 +210,10 @@ int CvEraInfo::getCitySoundscapeScriptId(int i) const
 	FAssertBounds(0, NUM_CITYSIZE_TYPES, i); // advc: Check for upper bound added
 	return m_paiCitySoundscapeScriptIds ? m_paiCitySoundscapeScriptIds[i] : 0; // advc.003t
 }
-// advc.tag:
-void CvEraInfo::addElements(std::vector<XMLElement*>& r) const
-{
-	CvXMLInfo::addElements(r);
-	// <advc.groundbr>
-	r.push_back(new IntElement(AIMaxGroundbreakingPenalty, "AIMaxGroundbreakingPenalty", 0));
-	r.push_back(new IntElement(HumanMaxGroundbreakingPenalty, "HumanMaxGroundbreakingPenalty", 0));
-	// </advc.groundbr>  <advc.erai>
-	r.push_back(new IntElement(AIEraFactor, "AIEraFactor", -1));
-	r.push_back(new BoolElement(AIAgeOfExploration, "AIAgeOfExploration", false));
-	r.push_back(new BoolElement(AIAgeOfPestilence, "AIAgeOfPestilence", false));
-	r.push_back(new BoolElement(AIAgeOfPollution, "AIAgeOfPollution", false));
-	r.push_back(new BoolElement(AIAgeOfFertility, "AIAgeOfFertility", false));
-	r.push_back(new BoolElement(AIAgeOfGuns, "AIAgeOfGuns", false));
-	r.push_back(new BoolElement(AIAtomicAge, "AIAtomicAge", false));
-	// </advc.erai>
-	r.push_back(new BoolElement(AllGoodyTechs, "AllGoodyTechs", false)); // advc.314
-}
 
 bool CvEraInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvXMLInfo::read(pXML))
+	if (!base_t::read(pXML)) // advc.tag
 		return false;
 
 	pXML->GetChildXmlValByName(&m_bNoGoodies, "bNoGoodies");
@@ -304,7 +285,7 @@ void CvEraInfo::allInfosRead()
 		// Set default values for AI era factors
 		if (kLoopEra.get(CvEraInfo::AIEraFactor) == -1)
 		{
-			kLoopEra.set((CvXMLInfo::IntElementTypes)
+			kLoopEra.set((base_t::IntElementTypes)
 					CvEraInfo::AIEraFactor, 100 * eLoopEra);
 			/*	The idea is to map the eras of a mod to the BtS eras that the
 				AI code has been written for. Therefore shouldn't exceed 100 times
@@ -1067,27 +1048,16 @@ void CvHandicapInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_iStartingGold);
 	stream->Read(&m_iFreeUnits);
 	stream->Read(&m_iUnitCostPercent);
-	// <advc.251>
-	if(uiFlag >= 4)
-		stream->Read(&m_iBuildTimePercent);
-	else m_iBuildTimePercent = 100;
-	if(uiFlag >= 3) {
-		stream->Read(&m_iBaseGrowthThresholdPercent);
-		stream->Read(&m_iGPThresholdPercent);
-	}
-	else m_iBaseGrowthThresholdPercent = m_iGPThresholdPercent = 100;
-	if(uiFlag >= 5)
-		stream->Read(&m_iCultureLevelPercent);
-	else m_iCultureLevelPercent = 100;
+	stream->Read(&m_iBuildTimePercent);
+	stream->Read(&m_iBaseGrowthThresholdPercent);
+	stream->Read(&m_iGPThresholdPercent);
+	stream->Read(&m_iCultureLevelPercent);
 	// </advc.251>
 	stream->Read(&m_iResearchPercent);
 	// <advc.251>
-	if(uiFlag >= 3) {
-		stream->Read(&m_iTrainPercent);
-		stream->Read(&m_iConstructPercent);
-		stream->Read(&m_iCreatePercent);
-	}
-	else m_iTrainPercent = m_iConstructPercent = m_iCreatePercent = 100;
+	stream->Read(&m_iTrainPercent);
+	stream->Read(&m_iConstructPercent);
+	stream->Read(&m_iCreatePercent);
 	// </advc.251>
 	stream->Read(&m_iDistanceMaintenancePercent);
 	stream->Read(&m_iNumCitiesMaintenancePercent);
@@ -1125,12 +1095,8 @@ void CvHandicapInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_iAIWorkRateModifier);
 	stream->Read(&m_iAIGrowthPercent);
 	// <advc.251>
-	if(uiFlag >= 3)
-		stream->Read(&m_iAIGPThresholdPercent);
-	else m_iAIGPThresholdPercent = 100;
-	if(uiFlag >= 1)
-		stream->Read(&m_iAIResearchPercent);
-	else m_iAIResearchPercent = 100;
+	stream->Read(&m_iAIGPThresholdPercent);
+	stream->Read(&m_iAIResearchPercent);
 	// </advc.251>
 	stream->Read(&m_iAITrainPercent);
 	stream->Read(&m_iAIWorldTrainPercent);
@@ -1148,8 +1114,7 @@ void CvHandicapInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_iAIHandicapIncrementTurns); // advc.251
 	stream->Read(&m_iAIAdvancedStartPercent);
 	// <advc.148>
-	if(uiFlag >= 2)
-		stream->Read(&m_iAIAttitudeChangePercent); // </advc.148>
+	stream->Read(&m_iAIAttitudeChangePercent); // </advc.148>
 	stream->Read(&m_iNumGoodies);
 	stream->Read(&m_iDifficulty); // advc.250a
 	stream->ReadString(m_szHandicapName);
@@ -1167,12 +1132,7 @@ void CvHandicapInfo::read(FDataStreamBase* stream)
 void CvHandicapInfo::write(FDataStreamBase* stream)
 {
 	CvInfoBase::write(stream);
-	uint uiFlag;
-	//uiFlag = 1; // advc.251
-	//uiFlag = 2; // advc.148
-	//uiFlag = 3; // advc.251
-	//uiFlag = 4; // advc.251 (iBuildTimePercent)
-	uiFlag = 5; // advc.251 (iCultureLevelPercent)
+	uint uiFlag = 0;
 	stream->Write(uiFlag);
 	stream->Write(m_iFreeWinsVsBarbs);
 	stream->Write(m_iAnimalAttackProb);

@@ -18,17 +18,14 @@
 #include "CvBugOptions.h"
 #include <fstream> // advc.003d
 
-/*  advc: This file was, reportedly, added by patch 3.17:
-	forums.civfanatics.com/threads/sdk-using-microsoft-visual-c-2005-express-edition.196283/page-7#post-6942578
-	The near name clash with CyGameInterface.cpp is coincidental.
-	Functions previously implemented in CvGame.cpp were moved here.
-	I guess the idea is to separate the UI code from the game rules, and simply to
-	make the translation units smaller. */
+/*  advc: This file was added by patch 3.17, moving some UI functionality
+	out of the EXE and thus exposing it to mods.
+	The near name clash with CyGameInterface.cpp is coincidental. */
 
-/*	<advc.007b> The functions in this header arguably shouldn't use any of the
+/*	<advc.007c> The functions in this header arguably shouldn't use any of the
 	synchronized RNGs that are part of CvGame. */
 #undef CVGAME_INSTANCE_FOR_RNG
-#define CVGAME_INSTANCE_FOR_RNG NULL // </advc.007b>
+#define CVGAME_INSTANCE_FOR_RNG NULL // </advc.007c>
 
 void CvGame::updateColoredPlots()
 {
@@ -59,7 +56,7 @@ void CvGame::updateColoredPlots()
 	CvMap const& kMap = GC.getMap();
 	int const iPlots = kMap.numPlots();
 	// BETTER_BTS_AI_MOD, Debug, 06/25/09, jdog5000: START
-	if(kUI.isShowYields() && !gDLL->GetWorldBuilderMode()) // advc.007
+	if (kUI.isShowYields() && !gDLL->GetWorldBuilderMode()) // advc.007
 	{
 		// City circles for debugging
 		if (isDebugMode())
@@ -67,7 +64,7 @@ void CvGame::updateColoredPlots()
 			for (int i = 0; i < iPlots; i++)
 			{
 				CvPlot& kPlot = kMap.getPlotByIndex(i);
-				for (PlayerIter<CIV_ALIVE> it; it.hasNext(); ++it)
+				for (PlayerAIIter<CIV_ALIVE> it; it.hasNext(); ++it)
 				{
 					CvPlayerAI const& kPlayer = *it;
 					if (kPlayer.AI_isPlotCitySite(kPlot))
@@ -196,7 +193,7 @@ void CvGame::updateColoredPlots()
 	if (gDLL->getGraphicOption(GRAPHICOPTION_CITY_RADIUS))
 	{
 		//if (kUI.canSelectionListFound())
-		if (pHeadSelectedUnit->canFound()) // advc.004h
+		if (pHeadSelectedUnit->isFound()) // advc.004h
 		{
 			for (int iI = 0; iI < iPlots; iI++)
 			{
@@ -250,7 +247,8 @@ void CvGame::updateColoredPlots()
 		}
 	}
 
-	if (!GET_PLAYER(getActivePlayer()).isOption(PLAYEROPTION_NO_UNIT_RECOMMENDATIONS))
+	if (!GET_PLAYER(getActivePlayer()).isOption(PLAYEROPTION_NO_UNIT_RECOMMENDATIONS) ||
+		!GET_PLAYER(getActivePlayer()).isHuman()) // advc.127
 	{
 		CvUnitAI const& kRecommendUnit = pHeadSelectedUnit->AI(); // advc.003u
 		if (kRecommendUnit.AI_getUnitAIType() == UNITAI_WORKER ||
@@ -292,14 +290,14 @@ void CvGame::updateColoredPlots()
 		GroupPathFinder sitePath;
 		sitePath.setGroup(*pHeadSelectedUnit->getGroup(), NO_MOVEMENT_FLAGS,
 				7, GC.getMOVE_DENOMINATOR());
-		if (pHeadSelectedUnit->canFound()) // advc.004h: was isFound
+		if (pHeadSelectedUnit->isFound())
 		{
 			for (int i = 0; i < kActivePlayer.AI_getNumCitySites(); i++)
 			{
-				CvPlot* pSite = kActivePlayer.AI_getCitySite(i);
-				if (pSite != NULL && sitePath.generatePath(*pSite))
+				CvPlot const& kSite = kActivePlayer.AI_getCitySite(i);
+				if (sitePath.generatePath(kSite))
 				{
-					kEngine.addColoredPlot(pSite->getX(), pSite->getY(),
+					kEngine.addColoredPlot(kSite.getX(), kSite.getY(),
 							GC.getInfo(GC.getColorType("HIGHLIGHT_TEXT")).getColor(),
 							PLOT_STYLE_CIRCLE, PLOT_LANDSCAPE_LAYER_RECOMMENDED_PLOTS);
 				}
@@ -1147,8 +1145,7 @@ void CvGame::handleAction(int iAction)
 	if (kAction.getControlType() != NO_CONTROL)
 		doControl((ControlTypes)kAction.getControlType());
 
-	if (gDLL->UI().canDoInterfaceMode((InterfaceModeTypes)
-		kAction.getInterfaceModeType(),
+	if (gDLL->UI().canDoInterfaceMode((InterfaceModeTypes)kAction.getInterfaceModeType(),
 		gDLL->UI().getSelectionList()))
 	{
 		CvUnit* pHeadSelectedUnit = gDLL->UI().getHeadSelectedUnit();
@@ -1647,8 +1644,7 @@ void CvGame::doControl(ControlTypes eControl)
 		break;
 
 	case CONTROL_RELIGION_SCREEN:
-		// advc.004x:
-		GET_PLAYER(GC.getGame().getActivePlayer()).killAll(BUTTONPOPUP_CHANGERELIGION);
+		GET_PLAYER(getActivePlayer()).killAll(BUTTONPOPUP_CHANGERELIGION); // advc.004x
 		GC.getPythonCaller()->showPythonScreen("ReligionScreen");
 		break;
 
@@ -1657,8 +1653,7 @@ void CvGame::doControl(ControlTypes eControl)
 		break;
 
 	case CONTROL_CIVICS_SCREEN:
-		// advc.004x:
-		GET_PLAYER(GC.getGame().getActivePlayer()).killAll(BUTTONPOPUP_CHANGECIVIC);
+		GET_PLAYER(getActivePlayer()).killAll(BUTTONPOPUP_CHANGECIVIC); // advc.004x
 		GC.getPythonCaller()->showPythonScreen("CivicsScreen");
 		break;
 
@@ -1927,9 +1922,8 @@ void CvGame::startFlyoutMenu(const CvPlot* pPlot, std::vector<CvFlyoutMenuData>&
 			aFlyoutItems.push_back(CvFlyoutMenuData(FLYOUT_CONSTRUCT, eLoopBuilding,
 					pPlot->getX(), pPlot->getY(), szBuffer));
 		}
-		for (int iI = 0; iI < GC.getNumProjectInfos(); iI++)
+		FOR_EACH_ENUM(Project)
 		{
-			ProjectTypes eLoopProject = (ProjectTypes) iI;
 			if (!pCity->canCreate(eLoopProject))
 				continue;
 			szBuffer = GC.getInfo(eLoopProject).getDescription();
@@ -1939,9 +1933,8 @@ void CvGame::startFlyoutMenu(const CvPlot* pPlot, std::vector<CvFlyoutMenuData>&
 			aFlyoutItems.push_back(CvFlyoutMenuData(FLYOUT_CREATE, eLoopProject,
 					pPlot->getX(), pPlot->getY(), szBuffer));
 		}
-		for (int iI = 0; iI < GC.getNumProcessInfos(); iI++)
+		FOR_EACH_ENUM(Process)
 		{
-			ProcessTypes eLoopProcess = (ProcessTypes)iI;
 			if (!pCity->canMaintain(eLoopProcess))
 				continue;
 			szBuffer = GC.getInfo(eLoopProcess).getDescription();
@@ -1950,22 +1943,19 @@ void CvGame::startFlyoutMenu(const CvPlot* pPlot, std::vector<CvFlyoutMenuData>&
 		}
 
 		aFlyoutItems.push_back(CvFlyoutMenuData(NO_FLYOUT, -1, -1, -1, L""));
-		for (int iI = 0; iI < GC.getNumHurryInfos(); iI++)
+		FOR_EACH_ENUM(Hurry)
 		{
-			if (pCity->canHurry((HurryTypes)iI))
-			{
-				szBuffer = gDLL->getText("TXT_KEY_HURRY_PRODUCTION");
-
-				int iHurryGold = pCity->hurryGold((HurryTypes)iI);
-				if (iHurryGold > 0)
-					szBuffer += gDLL->getText("TXT_KEY_HURRY_PRODUCTION_GOLD", iHurryGold);
-
-				int iHurryPopulation = pCity->hurryPopulation((HurryTypes)iI);
-				if (iHurryPopulation > 0)
-					szBuffer += gDLL->getText("TXT_KEY_HURRY_PRODUCTION_POP", iHurryPopulation);
-
-				aFlyoutItems.push_back(CvFlyoutMenuData(FLYOUT_HURRY, iI, pPlot->getX(), pPlot->getY(), szBuffer));
-			}
+			if (!pCity->canHurry(eLoopHurry))
+				continue;
+			szBuffer = gDLL->getText("TXT_KEY_HURRY_PRODUCTION");
+			int iHurryGold = pCity->hurryGold(eLoopHurry);
+			if (iHurryGold > 0)
+				szBuffer += gDLL->getText("TXT_KEY_HURRY_PRODUCTION_GOLD", iHurryGold);
+			int iHurryPopulation = pCity->hurryPopulation(eLoopHurry);
+			if (iHurryPopulation > 0)
+				szBuffer += gDLL->getText("TXT_KEY_HURRY_PRODUCTION_POP", iHurryPopulation);
+				aFlyoutItems.push_back(CvFlyoutMenuData(FLYOUT_HURRY, eLoopHurry,
+						pPlot->getX(), pPlot->getY(), szBuffer));
 		}
 
 		if (pCity->canConscript())
@@ -2223,22 +2213,22 @@ void CvGame::loadBuildQueue(const CvString& strItem) const
 			return;
 		}
 	}
-	for (int iI = 0; iI < GC.getNumProjectInfos(); iI++)
+	FOR_EACH_ENUM(Project)
 	{
-		if (strItem == GC.getInfo((ProjectTypes)iI).getType())
+		if (strItem == GC.getInfo(eLoopProject).getType())
 		{
 			selectedCitiesGameNetMessage(GAMEMESSAGE_PUSH_ORDER, ORDER_CREATE,
-					(ProjectTypes)iI, -1, false, false, true);
+					eLoopProject, -1, false, false, true);
 			return;
 		}
 	}
 
-	for (int iI = 0; iI < GC.getNumProcessInfos(); iI++)
+	FOR_EACH_ENUM(Process)
 	{
-		if (strItem == GC.getInfo((ProcessTypes)iI).getType())
+		if (strItem == GC.getInfo(eLoopProcess).getType())
 		{
 			selectedCitiesGameNetMessage(GAMEMESSAGE_PUSH_ORDER, ORDER_MAINTAIN,
-					(ProcessTypes)iI, -1, false, false, true);
+					eLoopProcess, -1, false, false, true);
 			return;
 		}
 	}
@@ -2246,39 +2236,34 @@ void CvGame::loadBuildQueue(const CvString& strItem) const
 
 void CvGame::cheatSpaceship() const
 {	// <advc.007b> I don't know how this is triggered; it's safer to block it.
-	if(!isDebugMode())
+	if (!isDebugMode())
 		return; // </advc.007b>
 	//add one space project that is still available
 	CvTeam& kTeam = GET_TEAM(getActiveTeam());
-	for (int i = 0; i < GC.getNumProjectInfos(); i++)
+	FOR_EACH_ENUM2(Project, eProject)
 	{
-		ProjectTypes eProject = (ProjectTypes) i;
-		CvProjectInfo& kProject = GC.getInfo(eProject);
+		CvProjectInfo const& kProject = GC.getInfo(eProject);
 		if (kProject.isSpaceship())
 		{
 			//cheat required projects
-			for (int j = 0; j < GC.getNumProjectInfos(); j++)
+			FOR_EACH_ENUM2(Project, eReqProject)
 			{
-				ProjectTypes eRequiredProject = (ProjectTypes) j;
-				int iNumReqProjects = kProject.getProjectsNeeded(eRequiredProject);
-				while (kTeam.getProjectCount(eRequiredProject) < iNumReqProjects)
+				int iNumReqProjects = kProject.getProjectsNeeded(eReqProject);
+				while (kTeam.getProjectCount(eReqProject) < iNumReqProjects)
 				{
-					kTeam.changeProjectCount(eRequiredProject, 1);
+					kTeam.changeProjectCount(eReqProject, 1);
 				}
 			}
 
 			//cheat required techs
-			TechTypes eRequiredTech = (TechTypes) kProject.getTechPrereq();
+			TechTypes eRequiredTech = kProject.getTechPrereq();
 			if (!kTeam.isHasTech(eRequiredTech))
-			{
 				kTeam.setHasTech(eRequiredTech, true, getActivePlayer(), true, true);
-			}
 
 			//cheat one space component
 			if (kTeam.getProjectCount(eProject) < kProject.getMaxTeamInstances())
 			{
 				kTeam.changeProjectCount(eProject, 1);
-
 				CvPopupInfo* pInfo = new CvPopupInfo(BUTTONPOPUP_PYTHON_SCREEN, eProject);
 				pInfo->setText(L"showSpaceShip");
 				gDLL->UI().addPopup(pInfo, getActivePlayer());
@@ -2356,17 +2341,15 @@ CivilopediaWidgetShowTypes CvGame::getWidgetShow(ImprovementTypes eImprovement) 
 VictoryTypes CvGame::getSpaceVictory() const
 {
 	VictoryTypes eVictory = NO_VICTORY;
-	for (int i=0; i < GC.getNumProjectInfos(); i++)
+	FOR_EACH_ENUM(Project)
 	{
-		ProjectTypes eProject = (ProjectTypes) i;
-		if (GC.getInfo(eProject).isSpaceship())
+		if (GC.getInfo(eLoopProject).isSpaceship())
 		{
-			eVictory = (VictoryTypes) GC.getInfo(eProject).getVictoryPrereq();
+			eVictory = GC.getInfo(eLoopProject).getVictoryPrereq();
 			break;
 		}
 	}
-
-	FAssertMsg(eVictory != NO_VICTORY, "Invalid space victory type.");
+	FAssertMsg(eVictory != NO_VICTORY, "Invalid space victory type");
 	return eVictory;
 }
 
@@ -2656,7 +2639,7 @@ void CvGame::setCityBarWidth(bool bWide)
 		"INTERFACE_CITY_BAR_REGULAR_GLOW",
 		"INTERFACE_CITY_BAR_CAPITAL_GLOW"
 	};
-	int const iCityBarTags = ARRAY_LENGTH(aszCityBarTags);
+	int const iCityBarTags = ARRAYSIZE(aszCityBarTags);
 	CvArtInfoInterface* apCityBarArtInfos[iCityBarTags];
 	for (int i = 0; i < iCityBarTags; i++)
 	{

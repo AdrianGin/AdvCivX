@@ -160,8 +160,8 @@ void CyInfoPythonInterface3()
 
 		// Arrays
 
-		.def("isForceCivic", &CvVoteInfo::isForceCivic, "bool (int i)")
-		.def("isVoteSourceType", &CvVoteInfo::isVoteSourceType, "bool (int i)")
+		.def("isForceCivic", &CvVoteInfo::py_isForceCivic, "bool (int i)")
+		.def("isVoteSourceType", &CvVoteInfo::py_isVoteSourceType, "bool (int i)")
 		;
 
 	python::class_<CvProjectInfo, boost::noncopyable, python::bases<CvInfoBase> >("CvProjectInfo")
@@ -184,12 +184,12 @@ void CyInfoPythonInterface3()
 
 		// Arrays
 
-		.def("getBonusProductionModifier", &CvProjectInfo::getBonusProductionModifier, "int (int i)")
-		.def("getVictoryThreshold", &CvProjectInfo::getVictoryThreshold, "int (int i)")
-		.def("getVictoryMinThreshold", &CvProjectInfo::getVictoryMinThreshold, "int (int i)")
+		.def("getBonusProductionModifier", &CvProjectInfo::py_getBonusProductionModifier, "int (int i)")
+		.def("getVictoryThreshold", &CvProjectInfo::py_getVictoryThreshold, "int (int i)")
+		.def("getVictoryMinThreshold", &CvProjectInfo::py_getVictoryMinThreshold, "int (int i)")
 		.def("getVictoryDelayPercent", &CvProjectInfo::getVictoryDelayPercent, "int ()")
 		.def("getSuccessRate", &CvProjectInfo::getSuccessRate, "int ()")
-		.def("getProjectsNeeded", &CvProjectInfo::getProjectsNeeded, "int (int i)")
+		.def("getProjectsNeeded", &CvProjectInfo::py_getProjectsNeeded, "int (int i)")
 		;
 
 	python::class_<CvReligionInfo, boost::noncopyable, python::bases<CvInfoBase> >("CvReligionInfo")
@@ -253,6 +253,8 @@ void CyInfoPythonInterface3()
 
 		.def("getShortDescription", &CvTraitInfo::getShortDescription, "int (int i)")
 		.def("getExtraYieldThreshold", &CvTraitInfo::getExtraYieldThreshold, "int (int i)")
+		// advc.908a:
+		.def("getExtraYieldNaturalThreshold", &CvTraitInfo::py_getExtraYieldNaturalThreshold, "int (int i)")
 		.def("getTradeYieldModifier", &CvTraitInfo::getTradeYieldModifier, "int (int i)")
 		.def("getCommerceChange", &CvTraitInfo::getCommerceChange, "int (int i)")
 		.def("getCommerceModifier", &CvTraitInfo::getCommerceModifier, "int (int i)")
@@ -672,14 +674,16 @@ void CyInfoPythonInterface3()
 		.def("getUnitCombatPromotion", &CvEventInfo::getUnitCombatPromotion, "int (int)")
 		.def("getUnitClassPromotion", &CvEventInfo::getUnitClassPromotion, "int (int)")
 
-		.def("getBuildingYieldChange", &CvEventInfo::getBuildingYieldChange, "int (int /*BuildingClassTypes*/, int /*YieldTypes*/)")
-		.def("getNumBuildingYieldChanges", &CvEventInfo::getNumBuildingYieldChanges, "int ()")
-		.def("getBuildingCommerceChange", &CvEventInfo::getBuildingCommerceChange, "int (int /*BuildingClassTypes*/, int /*CommerceTypes*/)")
-		.def("getNumBuildingCommerceChanges", &CvEventInfo::getNumBuildingCommerceChanges, "int ()")
-		.def("getBuildingHappyChange", &CvEventInfo::getBuildingHappyChange, "int (int /*BuildingClassTypes*/)")
-		.def("getNumBuildingHappyChanges", &CvEventInfo::getNumBuildingHappyChanges, "int ()")
-		.def("getBuildingHealthChange", &CvEventInfo::getBuildingHealthChange, "int (int /*BuildingClassTypes*/)")
-		.def("getNumBuildingHealthChanges", &CvEventInfo::getNumBuildingHealthChanges, "int ()")
+		.def("getBuildingYieldChange", &CvEventInfo::py_getBuildingYieldChange, "int (int /*BuildingClassTypes*/, int /*YieldTypes*/)")
+		/*	advc.003t: The DLL doesn't need the getNum... functions, and
+			Python shouldn't need (and doesn't use) them either. */
+		//.def("getNumBuildingYieldChanges", &CvEventInfo::getNumBuildingYieldChanges, "int ()")
+		.def("getBuildingCommerceChange", &CvEventInfo::py_getBuildingCommerceChange, "int (int /*BuildingClassTypes*/, int /*CommerceTypes*/)")
+		//.def("getNumBuildingCommerceChanges", &CvEventInfo::getNumBuildingCommerceChanges, "int ()")
+		.def("getBuildingHappyChange", &CvEventInfo::py_getBuildingHappyChange, "int (int /*BuildingClassTypes*/)")
+		//.def("getNumBuildingHappyChanges", &CvEventInfo::getNumBuildingHappyChanges, "int ()")
+		.def("getBuildingHealthChange", &CvEventInfo::py_getBuildingHealthChange, "int (int /*BuildingClassTypes*/)")
+		//.def("getNumBuildingHealthChanges", &CvEventInfo::getNumBuildingHealthChanges, "int ()")
 		;
 
 	python::class_<CvEspionageMissionInfo, boost::noncopyable, python::bases<CvInfoBase> >("CvEspionageMissionInfo")
@@ -703,7 +707,7 @@ void CyInfoPythonInterface3()
 		// </advc.120d>
 		.def("getBuyUnitCostFactor", &CvEspionageMissionInfo::getBuyUnitCostFactor, "int ()")
 		.def("getBuyCityCostFactor", &CvEspionageMissionInfo::getBuyCityCostFactor, "int ()")
-		.def("getStealTreasuryTypes", &CvEspionageMissionInfo::getStealTreasuryTypes, "int ()")
+		.def("getStealTreasuryTypes", &CvEspionageMissionInfo::getStolenGoldPercent, "int ()")
 		.def("getCityInsertCultureAmountFactor", &CvEspionageMissionInfo::getCityInsertCultureAmountFactor, "int ()")
 		.def("getCityInsertCultureCostFactor", &CvEspionageMissionInfo::getCityInsertCultureCostFactor, "int ()")
 		.def("getCityPoisonWaterCounter", &CvEspionageMissionInfo::getCityPoisonWaterCounter, "int ()")
@@ -722,8 +726,8 @@ void CyInfoPythonInterface3()
 		.def("getVoteInterval", &CvVoteSourceInfo::getVoteInterval, "int ()")
 		.def("getCivic", &CvVoteSourceInfo::getCivic, "int ()")
 		.def("getFreeSpecialist", &CvVoteSourceInfo::getFreeSpecialist, "int ()")
-		.def("getReligionYield", &CvVoteSourceInfo::getReligionYield, "int (int)")
-		.def("getReligionCommerce", &CvVoteSourceInfo::getReligionCommerce, "int (int)")
+		.def("getReligionYield", &CvVoteSourceInfo::py_getReligionYield, "int (int)")
+		.def("getReligionCommerce", &CvVoteSourceInfo::py_getReligionCommerce, "int (int)")
 		.def("getSecretaryGeneralText", &CvVoteSourceInfo::pyGetSecretaryGeneralText, "wstring ()")
 		;
 

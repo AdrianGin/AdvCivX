@@ -6,8 +6,8 @@
 /*	advc.make: Header for custom compiler warnings through pragma.
 	(I'm using a shorthand that allows subtracting 4000 from warning numbers;
 	e.g. 251 corresponds to c4251 in compiler output and documentation.)
-	BtS had disabled number 251 (redundantly in several headers),
-	100 (through CvDLLEntityIFaceBase.h), 127 (through CvInfo.h).
+	BtS had disabled numbers 251 (redundantly in several headers),
+	100 (through CvDLLEntityIFaceBase.h) and 127 (through CvInfo.h).
 	I'm not sure if it was necessary to disable those explicitly in BtS,
 	but I do need to disable them now b/c of the /W4 compiler option.
 	I'm not disabling number 530 ("C++ exception handler used,

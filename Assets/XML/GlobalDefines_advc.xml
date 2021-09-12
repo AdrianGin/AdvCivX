@@ -574,22 +574,40 @@
 		<iDefineIntVal>1</iDefineIntVal>
 	</Define>
 
-	<!-- [advc.099b]
+	<!-- advc.099b:
 	     Each round, the tile culture value of each player (civ and barbarian)
 		 is decreased by this permillage. 0 to disable decay.
 		 (Will also have to set CITY_RADIUS_DECAY=0 to disable decay in
 		 foreign city radii.)
-		 Recommended: 10 (1% decay). -->
+		 Recommended: 15 (1.5% decay). -->
 	<Define>
 		<DefineName>TILE_CULTURE_DECAY_PER_MILL</DefineName>
-		<iDefineIntVal>10</iDefineIntVal>
+		<iDefineIntVal>15</iDefineIntVal>
 	</Define>
 	<!-- Per-mill decay rate of foreign culture on tiles within a city radius.
 		 The value gets doubled for tiles in the inner radius. Set to 0 to have
-		 foreign culture decay normally. Recommended: 20 -->
+		 foreign culture decay normally. Recommended: 25 -->
 	<Define>
 		<DefineName>CITY_RADIUS_DECAY</DefineName>
-		<iDefineIntVal>20</iDefineIntVal>
+		<iDefineIntVal>25</iDefineIntVal>
+	</Define>
+
+	<!-- advc.098: Was 20 in BtS and was unused in K-Mod. The K-Mod formula
+		 works differently - free culture isn't multiplied by the culture level -,
+		 but there's still such a thing as free culture, so I'm putting this
+		 parameter back in use. Recommended: 5; use 4 for K-Mod behavior. -->
+	<Define> <!-- redefine -->
+		<DefineName>CITY_FREE_CULTURE_GROWTH_FACTOR</DefineName>
+		<iDefineIntVal>5</iDefineIntVal>
+	</Define>
+
+	<!-- advc.098: If set to 1, then buildings with a positive
+		 CommerceChangeDoubleTimes value double their ObsoleteSafeCommerceChanges
+		 (immediately) upon becoming obsolete, not after a particular
+		 number of years. Set to 0 for BtS behavior. -->
+	<Define>
+		<DefineName>DOUBLE_OBSOLETE_BUILDING_COMMERCE</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
 	<!-- advc.300: The percentage of owned tiles per landmass at which
@@ -851,7 +869,7 @@
 
 	<!-- [advc.023] The per-turn probability of decrementing the occupation
 		 timer is computed as 1 minus the revolt probability raised to the
-		 power of UNREST_COUNTDOWN_EXPONENT.
+		 power of OCCUPATION_COUNTDOWN_EXPONENT.
 		 Recommended: 10, which results in a countdown probability of e.g.
 		 0.35 when revolt probability is 0.1.
 		 A value of 0 will decrement the timer with certainty.
@@ -1062,10 +1080,11 @@
 		<iDefineIntVal>1</iDefineIntVal>
 	</Define>
 
-	<!-- advc.162: 1 enables change 162 (see manual), 0 disables it (BtS
-		 behavior). -->
+	<!-- advc.162: 1 causes units to lose all remaining moves when they enter
+		 an enemy's territory on the same as declaring war on that enemy.
+		 See manual for details. 0 disables that change (BtS behavior). -->
 	<Define>
-		<DefineName>ENABLE_162</DefineName>
+		<DefineName>SPEND_ALL_MOVES_ON_INVASION</DefineName>
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
@@ -1179,6 +1198,37 @@
 	<Define>
 		<DefineName>PER_EXTRA_LEADER_CIV_SELECTION_WEIGHT</DefineName>
 		<iDefineIntVal>20</iDefineIntVal>
+	</Define>
+
+	<!-- advc.045: A value of 1 means that 3D models of all buildings in
+		 revealed rival cities are shown on the main map (as in BtS) and that
+		 the UI in general treats such buildings as open information.
+		 A value of 0 (recommended) treats rival buildings as secret unless
+		 the active (human) player has a unit in the city tile or the building
+		 can be inferred from tile yields (e.g. Lighthouse) or city
+		 defense modifier (e.g. Walls). -->
+	<Define>
+		<DefineName>TREAT_REVEALED_BUILDINGS_AS_VISIBLE</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+
+	<!-- advc.650: 30/50/50 in BtS. Recommended: 10/140/0,
+		 meaning that nuke damage is distributed uniformly in
+		 the half-open interval [10, 150) and thus
+		 less predictable than in BtS.
+		 Caveat: Not sure if a negative base damage value would work correctly.
+		 Negative values for the rands aren't going to work. -->
+	<Define> <!-- redefine -->
+		<DefineName>NUKE_UNIT_DAMAGE_BASE</DefineName>
+		<iDefineIntVal>10</iDefineIntVal>
+	</Define>
+	<Define> <!-- redefine -->
+		<DefineName>NUKE_UNIT_DAMAGE_RAND_1</DefineName>
+		<iDefineIntVal>140</iDefineIntVal>
+	</Define>
+	<Define> <!-- redefine -->
+		<DefineName>NUKE_UNIT_DAMAGE_RAND_2</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
 </Civ4Defines>

@@ -210,17 +210,21 @@ void CvPlotGroup::read(FDataStreamBase* pStream)
 	pStream->Read(&uiFlag);
 	pStream->Read(&m_iID);
 	pStream->Read((int*)&m_eOwner);
-	m_aiNumBonuses.Read(pStream);
+	if (uiFlag >= 1)
+		m_aiNumBonuses.read(pStream);
+	else m_aiNumBonuses.readArray<int>(pStream);
 	m_plots.Read(pStream);
 }
 
 
 void CvPlotGroup::write(FDataStreamBase* pStream)
 {
-	uint uiFlag=0;
+	uint uiFlag;
+	//uiFlag = 0;
+	uiFlag = 1; // advc.enum: new enum map save behavior
 	pStream->Write(uiFlag);
 	pStream->Write(m_iID);
 	pStream->Write(m_eOwner);
-	m_aiNumBonuses.Write(pStream);
+	m_aiNumBonuses.write(pStream);
 	m_plots.Write(pStream);
 }

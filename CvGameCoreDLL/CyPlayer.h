@@ -384,6 +384,8 @@ public:
 	int getYieldRateModifier(YieldTypes eIndex);
 	int getCapitalYieldRateModifier(YieldTypes eIndex);
 	int getExtraYieldThreshold(YieldTypes eIndex);
+	// advc.908a: (Not actually used, but let's expose it for symmetry's sake.)
+	int getExtraYieldNaturalThreshold(YieldTypes eIndex);
 	int getTradeYieldModifier(YieldTypes eIndex);
 	int getFreeCityCommerce(CommerceTypes eIndex);
 	int getCommercePercent(int /*CommerceTypes*/ eIndex);
@@ -527,8 +529,6 @@ public:
 	bool canHaveTradeRoutesWith(int iPlayer);
 
 	void forcePeace(int iPlayer);
-	// advc.038: returns int b/c I'm not sure if double would cause problems
-	int estimateYieldRate(YieldTypes yield) const;
 	void checkAlert(int alertId, bool silent); // advc.210
 	int AI_corporationBonusVal(int eBonus) const; // advc.210e, advc.073
 	// <advc.085>

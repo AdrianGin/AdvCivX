@@ -808,11 +808,17 @@
 	<German>(AdvCiv) Ihre Forschungsrate wird um 10% reduziert, wenn eines Ihrer Team-Mitglieder an der gleichen Technologie forscht wie Sie. Wenn das Team eine bestimmte Technologie dringend benötigt, kann es sich trotzdem lohnen, gemeinsam an einer Technologie zu forschen.</German>
 </TEXT>
 
-<!-- advc.099f -->
-<TEXT>
+<!-- advc.099f (always enabled as of AdvCiv v1.0) -->
+<!--TEXT>
 	<Tag>TXT_KEY_ADVC_HINT_34</Tag>
 	<English>(AdvCiv) To see the culture percentages of unowned tiles, hold down [Shift] or enable "Always Show Tile Culture" on the "Map" tab of the BUG menu.</English>
 	<German>(AdvCiv) Die Kulturanteile auf neutralen Feldern lassen sich mit der Umschalttaste einblenden, oder über die Option "Kultur stets anzeigen" auf dem Reiter "Karte" im BUG-Menü.</German>
+</TEXT-->
+<!-- advc.098: Would prefer to change this obscure rule, but it doesn't look like I will for now. -->
+<TEXT>
+	<Tag>TXT_KEY_ADVC_HINT_34</Tag>
+	<English>The culture rate of a building doubles 1000 years after its construction. For medieval buildings, this doubling can still occur early enough to contribute to a culture victory.</English>
+	<German>Die Kulturrate von Gebäuden verdoppelt sich 1000 Jahre nach ihrer Fertigstellung. Bei mittelalterlichen Gebäuden kann das noch rechtzeitig sein, um zu einem Kultursieg beizutragen.</German>
 </TEXT>
 
 <!-- The right-click behavior is pretty obscure, and therefore perhaps worth
@@ -937,6 +943,20 @@
 	<Tag>TXT_KEY_ADVC_HINT_49</Tag>
 	<English>(AdvCiv) When a city is set to [COLOR_HIGHLIGHT_TEXT]Avoid Growth[COLOR_REVERT], a warning icon is (optionally) shown above the city bar on the main map. On a related note, make sure that citizen automation is enabled if you want the governor maximize production and commerce while avoiding growth.</English>
 	<German>(AdvCiv) Wenn in einer Stadt [COLOR_HIGHLIGHT_TEXT]Wachstum vermeiden[COLOR_REVERT] aktiviert ist, erscheint (optional) zur Erinnerung ein Symbol über dem Stadtnamen auf der Hauptkarte. Übrigens: Wenn der KI-Gouverneur beim Vermeiden von Wachstum andere Erträge maximieren soll, muss auch die Bürgerautomatisierung aktiv sein.</German>
+</TEXT>
+
+<!-- advc.186 -->
+<TEXT>
+	<Tag>TXT_KEY_ADVC_HINT_50</Tag>
+	<English>To change the production order of a city, it suffices to select the city's billboard on the main screen; opening the city screen isn't necessary. Essential city statistics are shown in hover text.</English>
+	<German>Um einer Stadt einen neuen Produktionsauftrag zu erteilen genügt es, den Stadtbalken per Klick auszuwählen; es ist nicht notwendig, den Stadtbildschirm zu öffnen. Der Hilfetext des Stadtbalkens liefert einen Kompakt-Überblick.</German>
+</TEXT>
+
+<!-- advc.650 -->
+<TEXT>
+	<Tag>TXT_KEY_ADVC_HINT_51</Tag>
+	<English>(AdvCiv) A pair of nukes should be expected to destroy 4 in 5 units in an enemy stack, a single nuke less than 2 in 5. Double is still better, but the BtS damage roll had resulted in a much starker difference between one and two nukes.</English>
+	<German>(AdvCiv) Ein Paar von Atomsprengköpfen sollte etwa 4 von 5 betroffenen Einheiten zerstören, ein einzlner weniger als 2 in 5. Doppelt hält immer noch besser, aber mit dem Original-Schadenswurf war der Unterschied noch deutlich größer.</German>
 </TEXT>
 
 </Civ4GameText>

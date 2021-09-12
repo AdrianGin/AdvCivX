@@ -43,9 +43,10 @@
 			<option id="ClickMapToExit" key="Click Map To Exit" 
 					type="boolean" default="False"/>
 			
-			<!-- FoodAssist by EmperorFool -->
+			<!-- FoodAssist by EmperorFool
+				 advc.004: default was False in K-Mod -->
 			<option id="FoodAssist" key="FoodAssist" 
-					type="boolean" default="False" 
+					type="boolean" default="True" 
 					get="isShowFoodAssist" dirtyBit="CityScreen"/>
 			
 			<!-- WhipAssist by EmperorFool, Dresden -->
@@ -107,23 +108,25 @@
 			
 			<!-- Production Decay by EmperorFool [BULL] -->
 			<!-- Queue -->
-			<option id="ProductionDecayQueue" key="Production Decay Queue" dll="1" 
+			<!-- advc.094: dll=1 attributes removed -->
+			<option id="ProductionDecayQueue" key="Production Decay Queue"
 					type="boolean" default="True" dirtyBit="InfoPane" get="isShowProductionDecayQueue"/>
-			<list   id="ProductionDecayQueueBuildingThreshold" key="Production Decay Queue Building Threshold" dll="1" 
+			<list   id="ProductionDecayQueueBuildingThreshold" key="Production Decay Queue Building Threshold"
 					type="int" default="10" dirtyBit="InfoPane"
 					values="0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50"/>
-			<list   id="ProductionDecayQueueUnitThreshold" key="Production Decay Queue Unit Threshold" dll="1" 
+			<list   id="ProductionDecayQueueUnitThreshold" key="Production Decay Queue Unit Threshold" 
 					type="int" default="5" dirtyBit="InfoPane"
 					values="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10"/>
 			<!-- Hover -->
-			<option id="ProductionDecayHover" key="Production Decay Hover" dll="1" 
+			<!-- advc.094: Not making hover text optional -->
+			<!--option id="ProductionDecayHover" key="Production Decay Hover" dll="1" 
 					type="boolean" default="True" get="isShowProductionDecayHover"/>
 			<list   id="ProductionDecayHoverBuildingThreshold" key="Production Decay Hover Building Threshold" dll="1" 
 					type="int" default="20"
 					values="0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50"/>
 			<list   id="ProductionDecayHoverUnitThreshold" key="Production Decay Hover Unit Threshold" dll="1" 
 					type="int" default="5"
-					values="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10"/>
+					values="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10"/-->
 			
 			<!-- Production Popup by EmperorFool -->
 			<option id="ProductionPopupTrainCivilianUnitsForever" key="Production Popup Train Civilian Units Forever" dll="1" 
