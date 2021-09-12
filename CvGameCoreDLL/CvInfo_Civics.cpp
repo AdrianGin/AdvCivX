@@ -3,6 +3,7 @@
 #include "CvGameCoreDLL.h"
 #include "CvInfo_Civics.h"
 #include "CvXMLLoadUtility.h"
+#include "CvDLLXMLIFaceBase.h"
 
 
 CvCivicInfo::CvCivicInfo() :
@@ -211,11 +212,13 @@ void CvCivicInfo::read(FDataStreamBase* stream)
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
-	stream->Read((int*)&m_eCivicOptionType);
+	stream->Read(&m_eCivicOptionType);
 	stream->Read(&m_iAnarchyLength);
 	stream->Read(&m_iUpkeep);
 	stream->Read(&m_iAIWeight);
-	stream->Read(&m_bCanAlwaysForce); // advc.132
+	// <advc.132>
+	if (uiFlag >= 4)
+		stream->Read(&m_bCanAlwaysForce); // </advc.132>
 	stream->Read(&m_iGreatPeopleRateModifier);
 	stream->Read(&m_iGreatGeneralRateModifier);
 	stream->Read(&m_iDomesticGreatGeneralRateModifier);
@@ -224,7 +227,8 @@ void CvCivicInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_iNumCitiesMaintenanceModifier);
 	stream->Read(&m_iCorporationMaintenanceModifier);
 	stream->Read(&m_iExtraHealth);
-	stream->Read(&m_iExtraHappiness);
+	if (uiFlag >= 2)
+		stream->Read(&m_iExtraHappiness);
 	stream->Read(&m_iFreeExperience);
 	stream->Read(&m_iWorkerSpeedModifier);
 	stream->Read(&m_iImprovementUpgradeRateModifier);
@@ -235,13 +239,20 @@ void CvCivicInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_iFreeMilitaryUnitsPopulationPercent);
 	stream->Read(&m_iGoldPerUnit);
 	stream->Read(&m_iGoldPerMilitaryUnit);
+	if (uiFlag < 1)
+	{
+		m_iGoldPerUnit *= 100;
+		m_iGoldPerMilitaryUnit *= 100;
+	}
 	stream->Read(&m_iHappyPerMilitaryUnit);
-	stream->Read(&m_iLuxuryModifier); // advc.912c
+	// <advc.912c>
+	if(uiFlag >= 3)
+		stream->Read(&m_iLuxuryModifier); // </advc.912c>
 	stream->Read(&m_iLargestCityHappiness);
 	stream->Read(&m_iWarWearinessModifier);
 	stream->Read(&m_iFreeSpecialist);
 	stream->Read(&m_iTradeRoutes);
-	stream->Read((int*)&m_eTechPrereq);
+	stream->Read(&m_eTechPrereq);
 	stream->Read(&m_iCivicPercentAnger);
 	stream->Read(&m_iMaxConscript);
 	stream->Read(&m_iStateReligionHappiness);
@@ -313,7 +324,10 @@ void CvCivicInfo::read(FDataStreamBase* stream)
 void CvCivicInfo::write(FDataStreamBase* stream)
 {
 	CvInfoBase::write(stream);
-	uint uiFlag = 0;
+	uint uiFlag;
+	//uiFlag = 2; // K-Mod
+	//uiFlag = 3; // advc.912c
+	uiFlag = 4; // advc.132
 	stream->Write(uiFlag);
 
 	stream->Write(m_eCivicOptionType);
@@ -329,7 +343,7 @@ void CvCivicInfo::write(FDataStreamBase* stream)
 	stream->Write(m_iNumCitiesMaintenanceModifier);
 	stream->Write(m_iCorporationMaintenanceModifier);
 	stream->Write(m_iExtraHealth);
-	stream->Write(m_iExtraHappiness); // K-Mod
+	stream->Write(m_iExtraHappiness); // K-Mod, uiFlag >= 2
 	stream->Write(m_iFreeExperience);
 	stream->Write(m_iWorkerSpeedModifier);
 	stream->Write(m_iImprovementUpgradeRateModifier);
@@ -386,9 +400,9 @@ bool CvCivicInfo::read(CvXMLLoadUtility* pXML)
 	if (!CvInfoBase::read(pXML))
 		return false;
 
-	pXML->SetInfoIDFromChildXmlVal(m_eCivicOptionType, "CivicOptionType");
+	pXML->SetInfoIDFromChildXmlVal((int&)m_eCivicOptionType, "CivicOptionType");
 	FAssert(m_eCivicOptionType != NO_CIVICOPTION); // advc
-	pXML->SetInfoIDFromChildXmlVal(m_eTechPrereq, "TechPrereq");
+	pXML->SetInfoIDFromChildXmlVal((int&)m_eTechPrereq, "TechPrereq");
 
 	pXML->GetChildXmlValByName(&m_iAnarchyLength, "iAnarchyLength");
 
@@ -420,8 +434,7 @@ bool CvCivicInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_bMilitaryFoodProduction, "bMilitaryFoodProduction");
 	pXML->GetChildXmlValByName(&m_iMaxConscript, "iMaxConscript");
 	//pXML->GetChildXmlValByName(&m_bNoUnhealthyPopulation, "bNoUnhealthyPopulation");
-	// K-Mod (advc - optional):
-	pXML->GetChildXmlValByName(&m_iUnhealthyPopulationModifier, "iUnhealthyPopulationModifier", 0);
+	pXML->GetChildXmlValByName(&m_iUnhealthyPopulationModifier, "iUnhealthyPopulationModifier"); // K-Mod
 	pXML->GetChildXmlValByName(&m_bBuildingOnlyHealthy, "bBuildingOnlyHealthy");
 	pXML->GetChildXmlValByName(&m_iLargestCityHappiness, "iLargestCityHappiness");
 	pXML->GetChildXmlValByName(&m_iWarWearinessModifier, "iWarWearinessModifier");
@@ -440,45 +453,45 @@ bool CvCivicInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_iStateReligionFreeExperience, "iStateReligionFreeExperience");
 	pXML->GetChildXmlValByName(&m_iExpInBorderModifier, "iExpInBorderModifier");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"YieldModifiers"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"YieldModifiers"))
 	{
-		pXML->SetYieldArray(&m_piYieldModifier);
+		pXML->SetYields(&m_piYieldModifier);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_piYieldModifier, NUM_YIELD_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"CapitalYieldModifiers"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"CapitalYieldModifiers"))
 	{
-		pXML->SetYieldArray(&m_piCapitalYieldModifier);
+		pXML->SetYields(&m_piCapitalYieldModifier);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_piCapitalYieldModifier, NUM_YIELD_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"TradeYieldModifiers"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"TradeYieldModifiers"))
 	{
-		pXML->SetYieldArray(&m_piTradeYieldModifier);
+		pXML->SetYields(&m_piTradeYieldModifier);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_piTradeYieldModifier, NUM_YIELD_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"CommerceModifiers"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"CommerceModifiers"))
 	{
-		pXML->SetCommerceArray(&m_piCommerceModifier);
+		pXML->SetCommerce(&m_piCommerceModifier);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_piCommerceModifier, NUM_COMMERCE_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"CapitalCommerceModifiers"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"CapitalCommerceModifiers"))
 	{
-		pXML->SetCommerceArray(&m_piCapitalCommerceModifier);
+		pXML->SetCommerce(&m_piCapitalCommerceModifier);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_piCapitalCommerceModifier, NUM_COMMERCE_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"SpecialistExtraCommerces"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"SpecialistExtraCommerces"))
 	{
-		pXML->SetCommerceArray(&m_piSpecialistExtraCommerce);
+		pXML->SetCommerce(&m_piSpecialistExtraCommerce);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_piSpecialistExtraCommerce, NUM_COMMERCE_TYPES);
 
@@ -509,10 +522,10 @@ bool CvCivicInfo::read(CvXMLLoadUtility* pXML)
 						if (iIndex > -1)
 						{
 							SAFE_DELETE_ARRAY(m_ppiImprovementYieldChanges[iIndex]);
-							if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-								"ImprovementYields"))
+							if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"ImprovementYields"))
 							{
-								pXML->SetYieldArray(&m_ppiImprovementYieldChanges[iIndex]);
+								pXML->SetYields(&m_ppiImprovementYieldChanges[iIndex]);
+								gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 							}
 							else pXML->InitList(&m_ppiImprovementYieldChanges[iIndex], NUM_YIELD_TYPES);
 						}

@@ -3302,8 +3302,6 @@
 			<iGridX>13</iGridX>
 			<iGridY>9</iGridY>
 			<DomainExtraMoves/>
-			<!-- K-Mod 1.44
-				(K-Mod 1.45 uses CommerceModifiers for +10% research instead) -->
 			<SpecialistExtraCommerces>
 				<iCommerce>0</iCommerce>
 				<iCommerce>1</iCommerce>
@@ -4860,10 +4858,11 @@
 			<Help/>
 			<Strategy>TXT_KEY_TECH_IRON_WORKING_STRATEGY</Strategy>
 			<Advisor>ADVISOR_MILITARY</Advisor>
-			<iAIWeight>0</iAIWeight>
+			<!-- advc.131b -->
+			<iAIWeight>-50</iAIWeight>
 			<iAITradeModifier>0</iAITradeModifier>
 			<!-- advc.131b: was 200 -->
-			<iCost>210</iCost>
+			<iCost>220</iCost>
 			<iAdvancedStartCost>100</iAdvancedStartCost>
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
 			<Era>ERA_CLASSICAL</Era>

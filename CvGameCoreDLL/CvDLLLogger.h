@@ -12,13 +12,13 @@ class CvDLLLogger : private boost::noncopyable
 public:
 	CvDLLLogger(bool bEnabled, bool bRandEnabled);
 	// Requires "RandLog" to be set in addition to "MessageLog"
-	void logRandomNumber(const TCHAR* szMsg, unsigned short usNum, unsigned int uiSeed,
+	void logRandomNumber(const TCHAR* szMsg, unsigned short usNum, unsigned long ulSeed,
 			int iData1, int iData2, /* advc.007b: */ CvString const* pszFileName = NULL);
 	void logTurnActive(PlayerTypes ePlayer);
 	void logCityBuilt(CvCity const& kCity);
 	void logCombat(CvUnit const& kAttacker, CvUnit const& kDefender);
 	void logUnitStuck(CvUnit const& kUnit);
-	void logMapStats(bool bAfterNormalization = false); // advc.mapstat
+	void logMapStats(); // advc.mapstat
 
 private:
 	bool m_bEnabled;
@@ -29,11 +29,11 @@ private:
 		function when the RandLog is disabled. */
 	friend class CvRandom;
 
-	bool isEnabled() const
+	inline bool isEnabled() const
 	{
 		return m_bEnabled;
 	}
-	bool isEnabledRand() const
+	inline bool isEnabledRand() const
 	{
 		return m_bRandEnabled;
 	}

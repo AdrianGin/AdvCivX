@@ -110,6 +110,7 @@ class CvLeaderHeadInfo : public CvInfoBase
 {
 friend class UWAI; // advc.104x (for applyPersonalityWeight)
 public: // advc: All the const functions are exposed to Python except those added by mods
+		// advc.inl: Inlined all non-array getters
 	CvLeaderHeadInfo();
 	CvLeaderHeadInfo(CvLeaderHeadInfo const& kOther); // advc.xmldefault
 	~CvLeaderHeadInfo();
@@ -144,7 +145,7 @@ public: // advc: All the const functions are exposed to Python except those adde
 	int getDemandRebukedSneakProb() const { return m_iDemandRebukedSneakProb; }
 	int getDemandRebukedWarProb() const { return m_iDemandRebukedWarProb; }
 	int getRazeCityProb() const { return m_iRazeCityProb; }
-	int getBuildUnitProb() const { return m_iBuildUnitProb; }
+	inline int getBuildUnitProb() const { return m_iBuildUnitProb; }
 	int getBaseAttackOddsChange() const { return m_iBaseAttackOddsChange; }
 	int getAttackOddsChangeRand() const { return m_iAttackOddsChangeRand; }
 	int getWorseRankDifferenceAttitudeChange() const { return m_iWorseRankDifferenceAttitudeChange; }
@@ -342,27 +343,9 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  class : CvTraitInfo
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-class CvTraitInfo : /* <advc.tag> */ public CvXMLInfo
+class CvTraitInfo : public CvInfoBase
 {
-	typedef CvXMLInfo base_t;
-protected:
-	void addElements(ElementList& kElements) const
-	{
-		base_t::addElements(kElements);
-		kElements.addInt(FREE_CITY_CULTURE, "FreeCityCulture");
-	}
-public:
-	enum IntElementTypes
-	{
-		FREE_CITY_CULTURE = CvXMLInfo::NUM_INT_ELEMENT_TYPES, // advc.908b
-		NUM_INT_ELEMENT_TYPES
-	};
-	int get(IntElementTypes e) const
-	{
-		return base_t::get(static_cast<base_t::IntElementTypes>(e));
-	} // </advc.tag>
-
-	// advc: All the const functions are exposed to Python except those added by mods
+public: // advc: All the const functions are exposed to Python except those added by mods
 	CvTraitInfo();
 	~CvTraitInfo();
 
@@ -384,14 +367,12 @@ public:
 	// Array access:
 
 	int getExtraYieldThreshold(int i) const;
-	// advc.908a:
-	DEF_SHORT_INFO_ENUM_MAP(ExtraYieldNaturalThreshold, Yield, YieldChangeMap);
 	int getTradeYieldModifier(int i) const;
 	int getCommerceChange(int i) const;
 	int getCommerceModifier(int i) const;
 
 	bool isFreePromotion(int i) const; // advc.003t: Return type was int
-	bool isAnyFreePromotion() const { return (m_pabFreePromotion != NULL); } // advc.003t
+	inline bool isAnyFreePromotion() const { return (m_pabFreePromotion != NULL); } // advc.003t
 	bool isFreePromotionUnitCombat(int i) const; // advc.003t: Return type was int
 
 	bool read(CvXMLLoadUtility* pXML);
@@ -452,10 +433,11 @@ public: // advc: All the const functions are exposed to Python (some const quali
 	const TCHAR* getDiplomacyText(int i) const;
 	const CvString* getDiplomacyText() const;
 	void setDiplomacyText(int i, CvString szText);
-	#if ENABLE_XML_FILE_CACHE
-	void read(FDataStreamBase* stream);
-	void write(FDataStreamBase* stream);
-	#endif
+	// advc.003i: I don't think these were actually included in the XML cache
+	//#if ENABLE_XML_FILE_CACHE
+	/*void read(FDataStreamBase* stream);
+	void write(FDataStreamBase* stream);*/
+	//#endif
 	bool read(CvXMLLoadUtility* pXML);
 
 protected:
@@ -490,10 +472,11 @@ public: // advc: All the const functions are exposed to Python
 	int getNumDiplomacyText(int i) const;
 
 	const TCHAR* getDiplomacyText(int i, int j) const;
-	#if ENABLE_XML_FILE_CACHE
-	void read(FDataStreamBase* stream);
-	void write(FDataStreamBase* stream);
-	#endif
+	// advc.003i: I don't think these were actually included in the XML cache
+	//#if ENABLE_XML_FILE_CACHE
+	/*void read(FDataStreamBase* stream);
+	void write(FDataStreamBase* stream);*/
+	//#endif
 	bool read(CvXMLLoadUtility* pXML);
 
 protected:

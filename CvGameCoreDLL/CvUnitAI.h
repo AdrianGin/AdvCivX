@@ -41,10 +41,9 @@ public:
 	int AI_countEnemyDefenders(CvPlot const& kPlot) const; // Replacing CvPlot::getNumVisiblePotentialEnemyDefenders
 	bool AI_isAnyEnemyDefender(CvPlot const& kPlot) const;
 	// </advc>
-	int AI_getBirthmark() const { return m_iBirthmark; }
+	inline int AI_getBirthmark() const { return m_iBirthmark; }
 	void AI_setBirthmark(int iNewValue);
-
-	UnitAITypes AI_getUnitAIType() const { return m_eUnitAIType; } 									// Exposed to Python
+	inline UnitAITypes AI_getUnitAIType() const { return m_eUnitAIType; } // advc.inl: inline (now that it's no longer virtual)			// Exposed to Python
 	void AI_setUnitAIType(UnitAITypes eNewValue);
 	CvSelectionGroupAI const* AI_getGroup() const; // advc.003u
 	CvSelectionGroupAI* AI_getGroup(); // advc.003u
@@ -295,7 +294,8 @@ protected:
 	void AI_exploreAirMove();
 	// BETTER_BTS_AI_MOD: END
 
-	bool AI_nuke(); // advc.650: Merged AI_nukeRange into this
+	bool AI_nuke();
+	bool AI_nukeRange(int iRange);
 	//bool AI_trade(int iValueThreshold); // deleted by K-Mod
 	int AI_tradeMissionValue(CvPlot*& pBestPlot, int iThreshold = 0); // K-Mod
 	bool AI_doTradeMission(CvPlot* pTradePlot); // K-Mod
@@ -326,9 +326,7 @@ protected:
 	int AI_pillageValue(CvPlot const& kPlot, int iBonusValueThreshold = 0);
 	//bool AI_canPillage(CvPlot& kPlot) const; // advc.003j
 	//int AI_nukeValue(CvCity* pCity);
-	// <K-Mod>
-	int AI_nukeValue(CvPlot const& kCenterPlot, int iSearchRange,
-			CvPlot const*& pBestTarget, int iCivilianTargetWeight = 50) const; // </K-Mod>
+	int AI_nukeValue(CvPlot* pCenterPlot, int iSearchRange, CvPlot*& pBestTarget, int iCivilianTargetWeight = 50) const; // K-Mod
 	// <advc.121>
 	int AI_connectBonusCost(CvPlot const& p, BuildTypes eBuild,
 			int iMissingWorkersInArea) const;
@@ -337,15 +335,11 @@ protected:
 	int AI_searchRange(int iRange);
 	bool AI_plotValid(CvPlot /* advc: */ const* pPlot) const;
 	// <advc> Allow a reference to be used
-	bool AI_plotValid(CvPlot const& kPlot) const
+	__forceinline bool AI_plotValid(CvPlot const& kPlot) const
 	{
 		return AI_plotValid(&kPlot);
 	} // </advc>
-	// advc.030:
-	bool AI_canEnterByLand(CvArea const& kArea) const
-	{	// Not checked (to save time): unused canMoveAllTerrain
-		return (isArea(kArea) || (canMoveImpassable() && canEnterArea(kArea)));
-	}
+	bool AI_canEnterByLand(CvArea const& kArea) const; // advc.030
 
 	//int AI_finalOddsThreshold(CvPlot* pPlot, int iOddsThreshold); // disabled by K-Mod
 	unsigned AI_unitBirthmarkHash(int iExtra = 0) const; // K-Mod

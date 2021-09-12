@@ -1,5 +1,6 @@
 #include "CvGameCoreDLL.h"
 #include "FFreeListTrashArray.h"
+#include "FDataStreamBase.h"
 #include "CvUnitAI.h"
 #include "CvCityAI.h"
 #include "CvSelectionGroupAI.h"
@@ -17,7 +18,7 @@
 {
 	template<class ConcreteType>
 	// Note: The parameter is only for type inference
-	ConcreteType* createElement(ConcreteType*)
+	inline ConcreteType* createElement(ConcreteType*)
 	{
 		return new ConcreteType();
 	}

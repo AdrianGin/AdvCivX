@@ -53,8 +53,7 @@ public:
 	// expectation of taking foreign land, either by culture or by force
 	bool isAmbitious() const { return m_bAmbitious; }
 	// more value for rivers
-	bool isExtraYieldThreshold() const { return m_bExtraYieldThresh; }
-	bool isExtraYieldNaturalThreshold() const { return m_bExtraYieldNaturalThresh; }
+	bool isExtraCommerceThreshold() const { return m_bFinancial; }
 	// more value for settlings on hills
 	bool isDefensive() const { return m_bDefensive; }
 	// special affection for coast cities due to unique building or unit.
@@ -79,8 +78,7 @@ private:
 	int m_iClaimThreshold;
 	bool m_bEasyCulture;
 	bool m_bAmbitious;
-	bool m_bExtraYieldThresh; // (advc.908a: "bFinancial" in K-Mod)
-	bool m_bExtraYieldNaturalThresh; // advc.908a
+	bool m_bFinancial;
 	bool m_bDefensive;
 	bool m_bSeafaring;
 	bool m_bExpansive;
@@ -138,7 +136,7 @@ private:
 	// </advc.031c>
 	short evaluate();
 	// Subroutines of evaluate ...
-	bool isHome(CvPlot const& p) const { return (&p == &kPlot); }
+	inline bool isHome(CvPlot const& p) const { return (&p == &kPlot); }
 	bool isSiteValid() const;
 	bool computeOverlap();
 	bool isPrioritizeAsFirstColony() const; // advc.040

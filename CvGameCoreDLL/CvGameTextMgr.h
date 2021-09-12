@@ -15,17 +15,13 @@ class CvGameTextMgr
 {
 	friend class CvGlobals;
 public:
-	DllExport static CvGameTextMgr& GetInstance() // singleton accessor
-	{
-		static CvGameTextMgr gs_GameTextMgr;
-		return gs_GameTextMgr;
-	}
+	DllExport static CvGameTextMgr& GetInstance(); // singleton accessor
 
-	CvGameTextMgr() : /* advc.099f: */ m_bAlwaysShowPlotCulture(true) {}
-	virtual ~CvGameTextMgr() {}
+	CvGameTextMgr();
+	virtual ~CvGameTextMgr();
 
-	DllExport void Initialize() {} // allocate memory
-	DllExport void DeInitialize(); // deallocate memory
+	DllExport void Initialize();
+	DllExport void DeInitialize();
 	DllExport void Reset();
 
 	int getCurrentLanguage();
@@ -42,7 +38,7 @@ public:
 
 	void setUnitHelp(CvWStringBuffer &szString, const CvUnit* pUnit,
 			bool bOneLine = false, bool bShort = false,
-			bool bColorAllegiance = false, // advc.048
+			bool bColorHostile = false, // advc.048
 			bool bOmitOwner = false, // advc.061
 			bool bIndicator = false); // advc.007
 	void setPlotListHelp(CvWStringBuffer &szString, CvPlot const& kPlot, bool bOneLine, bool bShort,
@@ -62,13 +58,7 @@ public:
 	void setCannotAttackHelp(CvWStringBuffer& szHelp, CvUnit const& kAttacker,
 			CvUnit const& kDefender); // </advc.089>
 	void setPlotHelp(CvWStringBuffer &szString, CvPlot const& kPlot);
-	// <advc.099f> (only for legacy saves)
-	void setAlwaysShowPlotCulture(bool bAlwaysShowPlotCulture)
-	{
-		m_bAlwaysShowPlotCulture = bAlwaysShowPlotCulture;
-	} // </advc.099f>
-	void setCityBarHelp(CvWStringBuffer &szString, CvCity const& kCity);
-	void setRevoltHelp(CvWStringBuffer &szString, CvCity const& kCity); // advc.101
+	void setCityBarHelp(CvWStringBuffer &szString, CvCity* pCity);
 	void setScoreHelp(CvWStringBuffer &szString, PlayerTypes ePlayer);
 
 	void parseTraits(CvWStringBuffer &szHelpString, TraitTypes eTrait, CivilizationTypes eCivilization = NO_CIVILIZATION, bool bDawnOfMan = false);
@@ -113,46 +103,26 @@ public:
 // BUG - Building Additional Happiness - end
 	void setProjectHelp(CvWStringBuffer &szBuffer, ProjectTypes eProject, bool bCivilopediaText = false, CvCity* pCity = NULL);
 	void setProcessHelp(CvWStringBuffer &szBuffer, ProcessTypes eProcess);
-	// BULL - Production Decay: (advc.094)
-	void setProductionDecayHelp(CvWStringBuffer &szBuffer, int iTurnsLeft, int iThreshold, int iDecay, bool bProducing);
 	void setGoodHealthHelp(CvWStringBuffer &szBuffer, CvCity& city);
 	void setBadHealthHelp(CvWStringBuffer &szBuffer, CvCity& city);
 // BUG - Building Additional Health - start
 	bool setBuildingAdditionalHealthHelp(CvWStringBuffer &szBuffer, const CvCity& city, const CvWString& szStart, bool bStarted = false);
 // BUG - Building Additional Health - end
-	void setAngerHelp(CvWStringBuffer &szBuffer, CvCity const& kCity);
-	void setHappyHelp(CvWStringBuffer &szBuffer, CvCity const& kCity);
+	void setAngerHelp(CvWStringBuffer &szBuffer, CvCity& city);
+	void setHappyHelp(CvWStringBuffer &szBuffer, CvCity& city);
 // BUG - Building Additional Happiness - start
-	bool setBuildingAdditionalHappinessHelp(CvWStringBuffer &szBuffer, const CvCity& kCity, const CvWString& szStart, bool bStarted = false);
+	bool setBuildingAdditionalHappinessHelp(CvWStringBuffer &szBuffer, const CvCity& city, const CvWString& szStart, bool bStarted = false);
 // BUG - Building Additional Happiness - end
-// BUG - Resumable Value Change Help - start  (advc: unnecessary wrappers removed)
-	template<class YieldChanges> // advc.003t
-	bool setYieldChangeHelp(CvWStringBuffer &szBuffer,
-			const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd,
-			YieldChanges piYieldChange,
-			bool bPercent = false, bool bNewLine = true, bool bStarted = false);
-	template<class CommerceChanges> // advc.003t
-	bool setCommerceChangeHelp(CvWStringBuffer &szBuffer,
-			const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd,
-			CommerceChanges piCommerceChange,
-			bool bPercent = false, bool bNewLine = true, bool bStarted = false);
-	template<class CommercePercentChanges> // advc.003t
-	bool setCommerceTimes100ChangeHelp(CvWStringBuffer &szBuffer,
-			const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd,
-			CommercePercentChanges piCommerceChange,
-			bool bNewLine, bool bStarted = false);
-	bool setGoodBadChangeHelp(CvWStringBuffer &szBuffer,
-			const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd,
-			int iGood, int iGoodSymbol, int iBad, int iBadSymbol,
-			bool bPercent = false, bool bNewLine = false, bool bStarted = false);
-	bool setValueChangeHelp(CvWStringBuffer &szBuffer,
-			const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd,
-			int iValue, int iSymbol,
-			bool bPercent = false, bool bNewLine = false, bool bStarted = false);
-	bool setValueTimes100ChangeHelp(CvWStringBuffer &szBuffer,
-			const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd,
-			int iValue, int iSymbol,
-			bool bNewLine = false, bool bStarted = false);
+	void setYieldChangeHelp(CvWStringBuffer &szBuffer, const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd, const int* piYieldChange, bool bPercent = false, bool bNewLine = true);
+	void setCommerceChangeHelp(CvWStringBuffer &szBuffer, const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd, const int* piCommerceChange, bool bPercent = false, bool bNewLine = true);
+// BUG - Resumable Value Change Help - start
+	void setCommerceTimes100ChangeHelp(CvWStringBuffer &szBuffer, const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd, const int* piCommerceChange, bool bNewLine = false, bool bStarted = false);
+	bool setResumableYieldChangeHelp(CvWStringBuffer &szBuffer, const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd, const int* piYieldChange, bool bPercent = false, bool bNewLine = true, bool bStarted = false);
+	bool setResumableCommerceChangeHelp(CvWStringBuffer &szBuffer, const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd, const int* piCommerceChange, bool bPercent = false, bool bNewLine = true, bool bStarted = false);
+	bool setResumableCommerceTimes100ChangeHelp(CvWStringBuffer &szBuffer, const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd, const int* piCommerceChange, bool bNewLine, bool bStarted = false);
+	bool setResumableGoodBadChangeHelp(CvWStringBuffer &szBuffer, const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd, int iGood, int iGoodSymbol, int iBad, int iBadSymbol, bool bPercent = false, bool bNewLine = false, bool bStarted = false);
+	bool setResumableValueChangeHelp(CvWStringBuffer &szBuffer, const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd, int iValue, int iSymbol, bool bPercent = false, bool bNewLine = false, bool bStarted = false);
+	bool setResumableValueTimes100ChangeHelp(CvWStringBuffer &szBuffer, const CvWString& szStart, const CvWString& szSpace, const CvWString& szEnd, int iValue, int iSymbol, bool bNewLine = false, bool bStarted = false);
 // BUG - Resumable Value Change Help - end
 	void setBonusHelp(CvWStringBuffer &szBuffer, BonusTypes eBonus, bool bCivilopediaText = false);
 // BULL - Trade Denial - start
@@ -176,9 +146,9 @@ public:
 	void setTerrainHelp(CvWStringBuffer &szBuffer, TerrainTypes eTerrain, bool bCivilopediaText = false);
 	void setFeatureHelp(CvWStringBuffer &szBuffer, FeatureTypes eFeature, bool bCivilopediaText = false);
 	// BUG - Building Additional info - start
-	bool setBuildingAdditionalYieldHelp(CvWStringBuffer &szBuffer, const CvCity& kCity, YieldTypes eIndex, const CvWString& szStart, bool bStarted = false);
-	bool setBuildingAdditionalCommerceHelp(CvWStringBuffer &szBuffer, const CvCity& kCity, CommerceTypes eIndex, const CvWString& szStart, bool bStarted = false);
-	bool setBuildingSavedMaintenanceHelp(CvWStringBuffer &szBuffer, const CvCity& kCity, const CvWString& szStart, bool bStarted = false);
+	bool setBuildingAdditionalYieldHelp(CvWStringBuffer &szBuffer, const CvCity& city, YieldTypes eIndex, const CvWString& szStart, bool bStarted = false);
+	bool setBuildingAdditionalCommerceHelp(CvWStringBuffer &szBuffer, const CvCity& city, CommerceTypes eIndex, const CvWString& szStart, bool bStarted = false);
+	bool setBuildingSavedMaintenanceHelp(CvWStringBuffer &szBuffer, const CvCity& city, const CvWString& szStart, bool bStarted = false);
 	// BUG - Building Additional info - end
 	void setProductionHelp(CvWStringBuffer &szBuffer, CvCity const& kCity);  // advc: const city in this function and the next 2
 	void setCommerceHelp(CvWStringBuffer &szBuffer, CvCity const& kCity, CommerceTypes eCommerce);
@@ -188,9 +158,7 @@ public:
 	void setVassalRevoltHelp(CvWStringBuffer& szBuffer, TeamTypes eMaster, TeamTypes eVassal);
 	void setEventHelp(CvWStringBuffer& szBuffer, EventTypes eEvent, int iEventTriggeredId, PlayerTypes ePlayer);
 	void setTradeRouteHelp(CvWStringBuffer &szBuffer, int iRoute, CvCity* pCity);
-	void setEspionageCostHelp(CvWStringBuffer &szBuffer,
-			EspionageMissionTypes eMission, PlayerTypes eTargetPlayer,
-			CvPlot const* pPlot, int iExtraData, CvUnit const* pSpyUnit);
+	void setEspionageCostHelp(CvWStringBuffer &szBuffer, EspionageMissionTypes eMission, PlayerTypes eTargetPlayer, const CvPlot* pPlot, int iExtraData, const CvUnit* pSpyUnit);
 	void setEspionageMissionHelp(CvWStringBuffer &szBuffer, const CvUnit* pUnit);
 	// advc.059:
 	void setHealthHappyBuildActionHelp(CvWStringBuffer& szBuffer, CvPlot const& kPlot, BuildTypes eBuild) const;
@@ -260,7 +228,7 @@ public:
 			char const* szTextKey, char const* szTextKeyAlt = NULL); // </advc>
 	void getVassalInfoString(CvWStringBuffer& szBuffer, PlayerTypes ePlayer); // K-Mod
 	void getWarWearinessString(CvWStringBuffer& szBuffer, PlayerTypes ePlayer, PlayerTypes eTargetPlayer) const; // K-Mod
-	//void getEspionageString(CvWStringBuffer& szBuffer, PlayerTypes ePlayer, PlayerTypes eTargetPlayer);
+	void getEspionageString(CvWStringBuffer& szBuffer, PlayerTypes ePlayer, PlayerTypes eTargetPlayer);
 	void getTradeString(CvWStringBuffer& szBuffer, const TradeData& tradeData,
 			PlayerTypes ePlayer1, PlayerTypes ePlayer2,
 			int iTurnsToCancel = -1); // advc.004w
@@ -350,33 +318,20 @@ private:
 	void setHealthChangeBuildActionHelp(CvWStringBuffer& szBuffer, int iChange,
 			int iChangePercent, int iIcon) const; // </advc.059>
 	// <advc>
-	void appendCombatModifiers(CvWStringBuffer& szBuffer, CvPlot const& kPlot,
-			CvUnit const& kAttacker, CvUnit const& kDefender,
-			bool bAttackModifier, bool bACOEnabled,
-			bool bOnlyGeneric = false, bool bOnlyNonGeneric = false);
-	struct CombatModifierOutputParams
-	{
-		bool m_bAttackModifier;
-		bool m_bGenericModifier;
-		bool m_bACOEnabled;
-	};
-	void appendCombatModifier(CvWStringBuffer& szBuffer, int iModifier,
-			CombatModifierOutputParams const& kParams, char const* szTextKey,
-			wchar const* szTextArg = NULL);
-	void appendFirstStrikes(CvWStringBuffer& szBuffer,
-			CvUnit const& kFirstStriker, CvUnit const& kOther, bool bNegativeColor);
+	void appendNegativeModifiers(CvWStringBuffer& szString, CvUnit const* pAttacker,
+			CvUnit const* pDefender, CvPlot const* pPlot);
+	void appendPositiveModifiers(CvWStringBuffer& szString, CvUnit const* pAttacker,
+			CvUnit const* pDefender, CvPlot const* pPlot, bool bNegative);
 	void setPlotListHelpDebug(CvWStringBuffer& szString, CvPlot const& kPlot);
 	// </advc>
 	// <advc.004w>
-	template<OrderTypes eORDER, typename ORDER_DATA1, typename ORDER_DATA2>
-	void setProductionSpeedHelp(CvWStringBuffer& szBuffer,
-			ORDER_DATA1 eData1, ORDER_DATA2 eData2,
-			CvCity const* pCity, bool bCivilopediaText); // </advc.004w>
-	// <advc.001>
+	void setProductionSpeedHelp(CvWStringBuffer& szString, OrderTypes eInfoType,
+			CvInfoBase const* pInfo, CvCity* pCity, bool bCivilopediaText);
+	// </advc.004w>  <advc.001>
 	void setSpecialistLink(CvWString& szBuffer, SpecialistTypes eSpecialist,
 			bool bPlural = false);
-	void setCorporationLink(CvWString& szBuffer, CorporationTypes eCorp); // </advc.001>
-	// <advc.135c>
+	void setCorporationLink(CvWString& szBuffer, CorporationTypes eCorp);
+	// </advc.001>  <advc.135c>
 	void setPlotHelpDebug(CvWStringBuffer& szString, CvPlot const& kPlot);
 	void setPlotHelpDebug_Ctrl(CvWStringBuffer& szString, CvPlot const& kPlot);
 	void setPlotHelpDebug_ShiftOnly(CvWStringBuffer& szString, CvPlot const& kPlot);
@@ -401,7 +356,6 @@ private:
 	  static bool listFirstUnitTypeBeforeSecond(UnitTypes eFirst, UnitTypes eSecond);
 	// </advc.061>
 	std::vector<int*> m_apbPromotion;
-	bool m_bAlwaysShowPlotCulture; // advc.099f
 };
 
 // Singleton Accessor

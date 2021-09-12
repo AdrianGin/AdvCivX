@@ -1119,11 +1119,10 @@
 			</Goodies>
 			<FreeTechs/>
 			<AIFreeTechs>
-				<!-- advc.250e -->
-				<!--FreeTech>
+				<FreeTech>
 					<TechType>TECH_AGRICULTURE</TechType>
 					<bFreeTech>1</bFreeTech>
-				</FreeTech-->
+				</FreeTech>
 				<FreeTech>
 					<TechType>TECH_HUNTING</TechType>
 					<bFreeTech>1</bFreeTech>
@@ -1287,11 +1286,10 @@
 					<TechType>TECH_THE_WHEEL</TechType>
 					<bFreeTech>1</bFreeTech>
 				</FreeTech>
-				<!-- advc.250e -->
-				<!--FreeTech>
+				<FreeTech>
 					<TechType>TECH_AGRICULTURE</TechType>
 					<bFreeTech>1</bFreeTech>
-				</FreeTech-->
+				</FreeTech>
 				<FreeTech>
 					<TechType>TECH_HUNTING</TechType>
 					<bFreeTech>1</bFreeTech>

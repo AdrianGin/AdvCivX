@@ -105,190 +105,116 @@ public:
 	virtual void		WriteExternal(int count, const double values[]) = 0;
 
 	// <advc.repro> (And renamed the original functions to WriteExternal)
-	void Write(char value)
+	inline void Write(char value)
 	{
 		REPRO_TEST_REPORT(sizeof(value), &value);
 		WriteExternal(value);
 	}
-	void Write(byte value)
+	inline void Write(byte value)
 	{
 		REPRO_TEST_REPORT(sizeof(value), &value);
 		WriteExternal(value);
 	}
-	void Write(int iCount, char const values[])
+	inline void Write(int iCount, char const values[])
 	{
 		REPRO_TEST_REPORT(sizeof(char) * iCount, values);
 		WriteExternal(iCount, values);
 	}
-	void Write(int iCount, byte const values[])
+	inline void Write(int iCount, byte const values[])
 	{
 		REPRO_TEST_REPORT(sizeof(byte) * iCount, values);
 		WriteExternal(iCount, values);
 	}
-	void Write(bool value)
+	inline void Write(bool value)
 	{
 		REPRO_TEST_REPORT(sizeof(value), &value);
 		WriteExternal(value);
 	}
-	void Write(int iCount, const bool values[])
+	inline void Write(int iCount, const bool values[])
 	{
 		REPRO_TEST_REPORT(sizeof(bool) * iCount, values);
 		WriteExternal(iCount, values);
 	}
-	void Write(short value)
+	inline void Write(short value)
 	{
 		REPRO_TEST_REPORT(sizeof(value), &value);
 		WriteExternal(value);
 	}
-	void Write(unsigned short value)
+	inline void Write(unsigned short value)
 	{
 		REPRO_TEST_REPORT(sizeof(value), &value);
 		WriteExternal(value);
 	}
-	void Write(int iCount, const short values[])
+	inline void Write(int iCount, const short values[])
 	{
 		REPRO_TEST_REPORT(sizeof(short) * iCount, values);
 		WriteExternal(iCount, values);
 	}
-	void Write(int iCount, const unsigned short values[])
+	inline void Write(int iCount, const unsigned short values[])
 	{
 		REPRO_TEST_REPORT(sizeof(unsigned short) * iCount, values);
 		WriteExternal(iCount, values);
 	}
-	void Write(int value)
+	inline void Write(int value)
 	{
 		REPRO_TEST_REPORT(sizeof(value), &value);
 		WriteExternal(value);
 	}
-	void Write(unsigned int value)
+	inline void Write(unsigned int value)
 	{
 		REPRO_TEST_REPORT(sizeof(value), &value);
 		WriteExternal(value);
 	}
-	void Write(int iCount, int const values[])
+	inline void Write(int iCount, int const values[])
 	{
 		REPRO_TEST_REPORT(sizeof(int) * iCount, values);
 		WriteExternal(iCount, values);
 	}
-	void Write(int iCount, unsigned int const values[])
+	inline void Write(int iCount, unsigned int const values[])
 	{
 		REPRO_TEST_REPORT(sizeof(uint) * iCount, values);
 		WriteExternal(iCount, values);
 	}
-	void Write(long value)
+	inline void Write(long value)
 	{
 		REPRO_TEST_REPORT(sizeof(value), &value);
 		WriteExternal(value);
 	}
-	void Write(unsigned long value)
+	inline void Write(unsigned long value)
 	{
 		REPRO_TEST_REPORT(sizeof(value), &value);
 		WriteExternal(value);
 	}
-	void Write(int iCount, long const values[])
+	inline void Write(int iCount, long const values[])
 	{
 		REPRO_TEST_REPORT(sizeof(long) * iCount, values);
 		WriteExternal(iCount, values);
 	}
-	void Write(int iCount, unsigned long const values[])
+	inline void Write(int iCount, unsigned long const values[])
 	{
 		REPRO_TEST_REPORT(sizeof(unsigned long) * iCount, values);
 		WriteExternal(iCount, values);
 	}
-	// <advc.enum> long long
-	void Write(__int64 lValue)
-	{
-		__int32* iiPair = reinterpret_cast<__int32*>(&lValue);
-		Write(iiPair[0]);
-		Write(iiPair[1]);
-	}
-	void Write(unsigned __int64 lValue)
-	{
-		unsigned __int32* iiPair = reinterpret_cast<unsigned __int32*>(&lValue);
-		Write(iiPair[0]);
-		Write(iiPair[1]);
-	}
-	void Write(int iCount, __int64 const aValues[])
-	{
-		for (int i = 0; i < iCount; i++)
-			Write(aValues[i]);
-	}
-	void Write(int iCount, unsigned __int64 const aValues[])
-	{
-		for (int i = 0; i < iCount; i++)
-			Write(aValues[i]);
-	} // </advc.enum>
-	// <advc.fract>
-	template<int iSCALE, typename IntType, typename EnumType>
-	void Write(ScaledNum<iSCALE,IntType,EnumType> rValue) const
-	{
-		REPRO_TEST_REPORT(sizeof(rValue), &rValue);
-		rValue.write(this);
-	}
-	template<int iSCALE, typename IntType, typename EnumType>
-	void Write(int iCount, ScaledNum<iSCALE,IntType,EnumType> const arValues[])
-	{
-		REPRO_TEST_REPORT(sizeof(ScaledNum<iSCALE,IntType,EnumType>) * iCount, arValues);
-		for (int i = 0; i < iCount; i++)
-			arValues[i].write(this);
-	} // </advc.fract>
 	/*	Floating-point data isn't normally part of the synchronized game state.
 		So these wrappers aren't needed, but, somehow, if I remove them and
 		rename the respective virtual functions back to "Write", I get a crash
 		when calling Write(bool). */
-	void Write(float value)
+	inline void Write(float value)
 	{
 		WriteExternal(value);
 	}
-	void Write(int count, const float values[])
+	inline void Write(int count, const float values[])
 	{
 		WriteExternal(count, values);
 	}
-	void Write(double value)
+	inline void Write(double value)
 	{
 		WriteExternal(value);
 	}
-	void Write(int count, const double values[])
+	inline void Write(int count, const double values[])
 	{
 		WriteExternal(count, values);
 	} // <advc.repro>
-	// <advc.fract>
-	template<int iSCALE, typename IntType, typename EnumType>
-	void Read(ScaledNum<iSCALE,IntType,EnumType>* arValues)
-	{
-		arValues->read(this);
-	}
-	template<int iSCALE, typename IntType, typename EnumType>
-	void Read(int iCount, ScaledNum<iSCALE,IntType,EnumType> arValues[])
-	{
-		for (int i = 0; i < iCount; i++)
-			arValues[i].read(this);
-	} // </advc.fract>
-	// <advc.enum>
-	void Read(__int64* lValue)
-	{
-		__int32 iiPair[2];
-		Read(&iiPair[0]);
-		Read(&iiPair[1]);
-		*lValue = reinterpret_cast<__int64*>(iiPair)[0];
-	}
-	void Read(unsigned __int64* lValue)
-	{
-		unsigned __int32 iiPair[2];
-		Read(&iiPair[0]);
-		Read(&iiPair[1]);
-		*lValue = reinterpret_cast<unsigned __int64*>(iiPair)[0];
-	}
-	void Read(int iCount, __int64 aValues[])
-	{
-		for (int i = 0; i < iCount; i++)
-			Read(&aValues[i]);
-	}
-	void Read(int iCount, unsigned __int64 aValues[])
-	{
-		for (int i = 0; i < iCount; i++)
-			Read(&aValues[i]);
-	} // </advc.enum>
 };
 
 #endif

@@ -3,12 +3,10 @@
 #ifndef CVENUMS_h
 #define CVENUMS_h
 
-/*  advc (note): All enum types in this file are -probably- exposed to Python
-	through CyEnumsInterface.cpp -- unless a comment states otherwise. Also,
-	the EXE might use any of the enum types (no DllExport needed), so
-	enumerators should generally only be added to the end of an enum definition. */
+/*  advc (note): All enums in this file are -probably- exposed to Python through
+	CyEnumsInterface.cpp -- unless a comment states otherwise */
 // <advc.enum>
-#include "CvEnumMacros.h"
+#include "CvInfoEnums.h"
 
 /*	Player limits: Moved from CvDefines into the enum types.
 	(Can always turn MAX_CIV_PLAYERS back into a preprocessor define
@@ -29,7 +27,6 @@ enum PlayerTypes
 	BARBARIAN_PLAYER = MAX_CIV_PLAYERS,
 	MAX_PLAYERS
 };
-DEFINE_INCREMENT_OPERATORS(PlayerTypes);
 
 enum TeamTypes
 {
@@ -38,25 +35,6 @@ enum TeamTypes
 	MAX_CIV_TEAMS = BARBARIAN_TEAM,
 	MAX_TEAMS
 };
-DEFINE_INCREMENT_OPERATORS(TeamTypes);
-
-/*  Smaller numbers may already crash the EXE; the DLL assumes in some places
-	that player ids fit in a single (signed) byte. */
-BOOST_STATIC_ASSERT(MAX_PLAYERS < MAX_CHAR && MAX_TEAMS < MAX_CHAR);
-
-// Excluding the Barbarians (mainly for EnumMap)
-enum CivPlayerTypes
-{
-	NO_CIV_PLAYER = -1,
-	NUM_CIV_PLAYER_TYPES = static_cast<CivPlayerTypes>(MAX_CIV_PLAYERS)
-};
-DEFINE_INCREMENT_OPERATORS(CivPlayerTypes);
-enum CivTeamTypes
-{
-	NO_CIV_TEAM = -1,
-	NUM_CIV_TEAM_TYPES = static_cast<CivTeamTypes>(MAX_CIV_TEAMS)
-};
-DEFINE_INCREMENT_OPERATORS(CivTeamTypes);
 
 // This generates most of the enums with associated XML data
 DO_FOR_EACH_DYN_INFO_TYPE(MAKE_INFO_ENUM)
@@ -95,20 +73,11 @@ enum FlavorTypes
 		means that it was impossible to base AI code on FLAVOR_ESPIONAGE. */
 	FLAVOR_ESPIONAGE,
 };
-DEFINE_INCREMENT_OPERATORS(FlavorTypes);
-// <advc.enum> (cf. CvMap::plotNum)
-/*	2 byte (short) allow for at most 256*128 tiles (or 181*181).
-	Larger maps really aren't playable, but let's allow them
-	if the civ limit has been increased by a lot. */
-typedef choose_type<(MAX_CIV_PLAYERS >= 32),int,short>::type PlotNumInt;
+// advc.enum (cf. CvMap::plotNum)
 enum PlotNumTypes
 {
-	NO_PLOT_NUM = -1,
-	// -1 allows checking bounds through less-than w/o overflow
-	MAX_PLOT_NUM = integer_limits<PlotNumInt>::max - 1
+	NO_PLOT_NUM = -1
 };
-DEFINE_INCREMENT_OPERATORS(PlotNumTypes);
-// </advc.enum>
 
 ENUM_START(GameState, GAMESTATE)
 	GAMESTATE_ON,
@@ -465,16 +434,14 @@ ENUM_START(Widget, WIDGET)
 	WIDGET_LEADERHEAD,
 	WIDGET_LEADER_LINE,
 	WIDGET_COMMERCE_MOD_HELP,
-	/*	advc: See the K-Mod comment below. The EXE apparently relies on this id.
-		But I expect that some other enumerators are also hardcoded in the EXE. */
-	WIDGET_CLOSE_SCREEN = 157,
+	WIDGET_CLOSE_SCREEN,
 	WIDGET_PEDIA_JUMP_TO_RELIGION,
 	WIDGET_PEDIA_JUMP_TO_CORPORATION,
 	WIDGET_GLOBELAYER,
 	WIDGET_GLOBELAYER_OPTION,
 	WIDGET_GLOBELAYER_TOGGLE,
-	/*	K-Mod. Environmental advisor widgets.
-		Note: this apparently breaks WIDGET_CLOSE_SCREEN if it is defined out of order. */
+	// K-Mod. Environmental advisor widgets.
+	// Note: this apparently breaks WIDGET_CLOSE_SCREEN if it is defined out of order.
 	WIDGET_HELP_POLLUTION_OFFSETS,
 	WIDGET_HELP_POLLUTION_SOURCE,
 	WIDGET_HELP_SUSTAINABILITY_THRESHOLD,
@@ -783,7 +750,7 @@ ENUM_START(Denial, DENIAL)
 	DENIAL_TRUE_ATTITUDE, // advc.130v
 	DENIAL_NO_CURRENT_THREAT, // advc.112b
 ENUM_END(Denial, DENIAL)
-// advc.104m:
+// <advc.104m>
 ENUM_START(AIDemand, AI_DEMAND)
 	DEMAND_GOLD,
 	DEMAND_MAP,
@@ -791,7 +758,7 @@ ENUM_START(AIDemand, AI_DEMAND)
 	DEMAND_BONUS,
 	DEMAND_GOLD_PER_TURN,
 	DEMAND_CITY, // advc.ctr
-ENUM_END(AIDemand, AI_DEMAND)
+ENUM_END(AIDemand, AI_DEMAND) // </advc.104m>
 
 ENUM_START(Domain, DOMAIN)
 	DOMAIN_SEA,
@@ -1140,9 +1107,10 @@ enum TradeableItems
 	/*  advc.034: Don't need to include this in iterations over TradeableItems
 		(although I suppose it wouldn't hurt) */
 	TRADE_DISENGAGE,
-}; /* advc.enum: Need a more regular name for this enum, but the enum itself
+}; /* <advc.enum> Need a more regular name for this enum, but the enum itself
 	  can't be renamed b/c it's used in the signatures of DLL-exported functions. */
 typedef TradeableItems TradeItemTypes;
+SET_ENUM_LENGTH_STATIC(TradeItem, TRADE_ITEM)
 
 ENUM_START(DiploEvent, DIPLOEVENT)
 	DIPLOEVENT_CONTACT,
@@ -1724,9 +1692,6 @@ enum FontSymbols
 	CITIZEN_CHAR,
 	GREAT_GENERAL_CHAR,
 	AIRPORT_CHAR, // </advc.002f>
-	/*	advc.187: So that BUG doesn't need to access the attitude symbols
-		through offsets */
-	WORST_ATTITUDE_CHAR,
 #ifdef _USRDLL
 	MAX_NUM_SYMBOLS
 #endif
@@ -1812,12 +1777,9 @@ enum ChatTargetTypes
 	CHATTARGET_TEAM = -3,
 };
 
-/*	advc (note): Nonnegative values are reserved for team votes
-	(i.e. players electing one team to become e.g. Secretary General). */
 enum PlayerVoteTypes
 {
 	NO_PLAYER_VOTE_CHECKED = -6,
-	FIRST_PLAYER_VOTE = NO_PLAYER_VOTE_CHECKED, // advc.enum
 	PLAYER_VOTE_NEVER = -5,
 	PLAYER_VOTE_ABSTAIN = -4,
 	PLAYER_VOTE_NO = -3,

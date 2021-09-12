@@ -11,6 +11,7 @@
 #include "CvGameCoreDLL.h"
 #include "CvInfo_Water.h"
 #include "CvXMLLoadUtility.h"
+#include "CvDLLXMLIFaceBase.h"
 
 CvWaterPlaneInfo::CvWaterPlaneInfo()
 // <kmodx>

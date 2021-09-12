@@ -3,6 +3,7 @@
 #include "CvGameCoreDLL.h"
 #include "CvInfo_Build.h"
 #include "CvXMLLoadUtility.h"
+#include "CvDLLXMLIFaceBase.h"
 
 
 CvBuildInfo::CvBuildInfo() :

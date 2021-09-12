@@ -39,8 +39,7 @@ void CyPlot::nukeExplosion(int iRange, CyUnit* pNukeUnit)
 
 bool CyPlot::isConnectedTo(CyCity* pCity)
 {
-	return (m_pPlot && pCity && pCity->getCity()) ?
-			m_pPlot->isConnectedTo(*pCity->getCity()) : false;
+	return m_pPlot ? m_pPlot->isConnectedTo(pCity->getCity()) : false;
 }
 
 bool CyPlot::isConnectedToCapital(int /*PlayerTypes*/ ePlayer)
@@ -824,7 +823,7 @@ int CyPlot::getRiverID() const
 void CyPlot::setRiverID(int iNewValue)
 {
 	if (m_pPlot)
-		m_pPlot->setRiverID(safeIntCast<short>(iNewValue));
+		m_pPlot->setRiverID(toShort(iNewValue));
 }
 
 int CyPlot::getMinOriginalStartDist()
@@ -866,12 +865,9 @@ int CyPlot::calculateTotalBestNatureYield(TeamTypes eTeam)
 	return m_pPlot ? m_pPlot->calculateTotalBestNatureYield(eTeam) : -1;
 }
 
-int CyPlot::calculateImprovementYieldChange(int /*ImprovementTypes*/ eImprovement,
-	YieldTypes eYield, int /*PlayerTypes*/ ePlayer, bool bOptimal)
+int CyPlot::calculateImprovementYieldChange(int /*ImprovementTypes*/ eImprovement, YieldTypes eYield, int /*PlayerTypes*/ ePlayer, bool bOptimal)
 {
-	return m_pPlot ? m_pPlot->calculateImprovementYieldChange((ImprovementTypes)
-			eImprovement, eYield, (PlayerTypes)ePlayer) // advc: bOptimal is obsolete
-			: -1;
+	return m_pPlot ? m_pPlot->calculateImprovementYieldChange((ImprovementTypes) eImprovement, eYield, (PlayerTypes) ePlayer, bOptimal) : -1;
 }
 
 int CyPlot::calculateYield(YieldTypes eIndex, bool bDisplay)

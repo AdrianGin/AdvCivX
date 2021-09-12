@@ -22,10 +22,8 @@ CitySiteEvaluator::CitySiteEvaluator(CvPlayerAI const& kPlayer, int iMinRivalRan
 	bool bStartingLoc, /* advc.031e: */ bool bNormalize)
 :	m_kPlayer(kPlayer), m_iMinRivalRange(iMinRivalRange), m_bStartingLoc(bStartingLoc),
 	m_bNormalize(bNormalize),
-	m_bScenario(false), m_bAmbitious(false), m_bExtraYieldThresh(false),
-	m_bExtraYieldNaturalThresh(false), // advc.908a
-	m_bDefensive(false), m_bSeafaring(false), m_bExpansive(false),
-	m_bDebug(false), // advc.007
+	m_bScenario(false), m_bAmbitious(false), m_bFinancial(false), m_bDefensive(false),
+	m_bSeafaring(false), m_bExpansive(false), /* advc.007: */ m_bDebug(false),
 	m_bAdvancedStart(false), /* advc.027: */ m_bIgnoreStartingSurroundings(false),
 	m_iBarbDiscouragedRange(iDEFAULT_BARB_DISCOURAGED_RANGE) // advc.303
 {
@@ -51,22 +49,14 @@ CitySiteEvaluator::CitySiteEvaluator(CvPlayerAI const& kPlayer, int iMinRivalRan
 				continue;
 
 			CvTraitInfo const& kLoopTrait = GC.getInfo(eLoopTrait);
-			if (kLoopTrait.getCommerceChange(COMMERCE_CULTURE) > 0 ||
-				// <advc.908b>
-				(GC.getNumCultureLevelInfos() >= 2 &&
-				GC.getGame().freeCityCultureFromTrait(eLoopTrait) >=
-				GC.getGame().getCultureThreshold((CultureLevelTypes)2)))
-				// </advc.908b>
+			if (kLoopTrait.getCommerceChange(COMMERCE_CULTURE) > 0)
 			{
 				m_bEasyCulture = true;
 				if (pPersonality != NULL && pPersonality->getBasePeaceWeight() <= 5)
 					m_bAmbitious = true;
 			}
 			if (kLoopTrait.getExtraYieldThreshold(YIELD_COMMERCE) > 0)
-				m_bExtraYieldThresh = true;
-			// <advc.908a>
-			if (kLoopTrait.getExtraYieldNaturalThreshold(YIELD_COMMERCE) > 0)
-				m_bExtraYieldNaturalThresh = true; // </advc.908a>
+				m_bFinancial = true;
 			if (kLoopTrait.isAnyFreePromotion()) // advc.003t
 			{
 				FOR_EACH_ENUM(Promotion)
@@ -85,8 +75,7 @@ CitySiteEvaluator::CitySiteEvaluator(CvPlayerAI const& kPlayer, int iMinRivalRan
 				{
 					UnitTypes eFoundUnit = kCiv.unitAt(i);
 					if (GC.getInfo(eFoundUnit).isFound() &&
-						// advc.031: was > 0
-						GC.getInfo(eFoundUnit).getProductionTraits(eLoopTrait) > 20 &&
+						GC.getInfo(eFoundUnit).getProductionTraits(eLoopTrait) &&
 						kPlayer.canTrain(eFoundUnit))
 					{
 						m_bAmbitious = true;
@@ -182,7 +171,6 @@ CitySiteEvaluator::CitySiteEvaluator(CvPlayerAI const& kPlayer, int iMinRivalRan
 	m_iClaimThreshold *= 2 * GC.getGame().getCultureThreshold((CultureLevelTypes)
 			std::min(2, GC.getNumCultureLevelInfos() - 1));
 	// note: plot culture is roughly 10x city culture (cf. CvCity::doPlotCultureTimes100)
-	FAssert(m_iClaimThreshold > 0);
 
 	if (m_bAdvancedStart)
 	{
@@ -311,7 +299,7 @@ void CitySiteEvaluator::log(CvPlot const& kPlot)
 		int iBest = 0;
 		for (int i = 0; i < getPlayer().AI_getNumCitySites(); i++)
 		{
-			CvPlot const& kLoopPlot = getPlayer().AI_getCitySite(i);
+			CvPlot const& kLoopPlot = *getPlayer().AI_getCitySite(i);
 			if (&kLoopPlot == &kPlot)
 				continue;
 			int iValue = evaluate(kLoopPlot);
@@ -574,25 +562,12 @@ short AIFoundValue::evaluate()
 			// <advc.031>
 			FOR_EACH_ENUM(Yield)
 			{
-				if (kSet.isStartingLoc()) // Don't factor traits into starting sites
-					continue;
+				if (!kSet.isStartingLoc() && // Don't factor traits into starting sites
+					kPlayer.getExtraYieldThreshold(eLoopYield) > 0 &&
+					aiNatureYield[eLoopYield] >= kPlayer.getExtraYieldThreshold(eLoopYield))
 				{
-					int iThresh = kPlayer.getExtraYieldThreshold(eLoopYield);
-					if (iThresh > 0 &&
-						aiNatureYield[eLoopYield] >= iThresh)
-					{
-						aiNatureYield[eLoopYield] += GC.getDefineINT(CvGlobals::EXTRA_YIELD);
-					}
+					aiNatureYield[eLoopYield] += GC.getDefineINT(CvGlobals::EXTRA_YIELD);
 				}
-				// <advc.908a>
-				{
-					int iThresh = kPlayer.getExtraYieldNaturalThreshold(eLoopYield);
-					if (iThresh > 0 &&
-						aiNatureYield[eLoopYield] + 1 >= iThresh)
-					{
-						aiNatureYield[eLoopYield] += GC.getDefineINT(CvGlobals::EXTRA_YIELD);
-					}
-				} // </advc.908a>
 			} // </advc.031>
 			// K-Mod. add non-home plot production to BaseProduction.
 			if (!bShare)
@@ -787,7 +762,7 @@ short AIFoundValue::evaluate()
 
 	FAssert(iValue >= 0);
 	IFLOG logBBAI("Bottom line (found-city value): %d\n", iValue);
-	return std::max<short>(1, truncIntCast<short>(iValue));
+	return std::max<short>(1, toShort(iValue));
 }
 
 
@@ -886,19 +861,20 @@ bool AIFoundValue::computeOverlap()
 	{
 		for (int iSite = 0; iSite < kPlayer.AI_getNumCitySites(); iSite++)
 		{
-			CvPlot const& kCitySitePlot = kPlayer.AI_getCitySite(iSite);
-			if (&kCitySitePlot == &kPlot)
+			CvPlot const* pCitySitePlot = kPlayer.AI_getCitySite(iSite);
+			if (pCitySitePlot == &kPlot)
 				continue;
-			if (plotDistance(&kPlot, &kCitySitePlot) <=
+			FAssert(pCitySitePlot != NULL);
+			if (plotDistance(&kPlot, pCitySitePlot) <=
 				GC.getDefineINT(CvGlobals::MIN_CITY_RANGE) &&
-				kCitySitePlot.sameArea(kPlot))
+				pCitySitePlot->sameArea(kPlot))
 			{
 				IFLOG logBBAI("Too close to one of the sites we've already chosen");
 				return false;
 			}
 			for (CityPlotIter it(kPlot); it.hasNext(); ++it)
 			{
-				if (plotDistance(&(*it), &kCitySitePlot) <= CITY_PLOTS_RADIUS)
+				if (plotDistance(&(*it), pCitySitePlot) <= CITY_PLOTS_RADIUS)
 				{
 					//Plot is inside the radius of a city site
 					aiCitySiteRadius[it.currID()] = iSite;
@@ -1192,7 +1168,7 @@ bool AIFoundValue::isUsablePlot(CityPlotTypes ePlot, int& iTakenTiles, bool& bCi
 	if (aiCitySiteRadius[ePlot] >= 0)
 	{
 		IFLOG logBBAI("%S reserved for higher-priority site at (%d,%d)", p->debugStr(),
-				kPlayer.AI_getCitySite(aiCitySiteRadius[ePlot]).getX(), kPlayer.AI_getCitySite(aiCitySiteRadius[ePlot]).getY());
+				kPlayer.AI_getCitySite(aiCitySiteRadius[ePlot])->getX(), kPlayer.AI_getCitySite(aiCitySiteRadius[ePlot])->getY());
 		return false;
 	}
 	bool bOtherInnerRing = false;
@@ -1729,45 +1705,39 @@ int AIFoundValue::evaluateYield(int const* aiYield, CvPlot const* p,
 int AIFoundValue::evaluateFreshWater(CvPlot const& p, int const* aiYield, bool bSteal,
 	int& iRiverTiles, int& iGreenTiles) const
 {
-	int iR = 0;
+	int r = 0;
 	// <advc.053>
 	bool bLowYield = (aiYield[YIELD_FOOD] + aiYield[YIELD_PRODUCTION] +
 			aiYield[YIELD_COMMERCE] / 2 < 2); // </advc.053>
 	if (p.isRiver())
 	{
-		//iR += 10; // BtS
+		//r += 10; // BtS
 		// <K-Mod>
-		//iR += (kSet.isExtraYieldThreshold() || kSet.isStartingLoc()) ? 30 : 10;
-		//iR += (pPlot->isRiver() ? 15 : 0); // </K-Mod>
+		//r += (kSet.isExtraCommerceThreshold() || kSet.isStartingLoc()) ? 30 : 10;
+		//r += (pPlot->isRiver() ? 15 : 0); // </K-Mod>
 		// advc: Replaced by the code below
 		// <advc.053>
 		if (bLowYield)
 		{
-			if (kSet.isExtraYieldThreshold())
-				iR += 9;
-			// advc.908a>
-			if (kSet.isExtraYieldNaturalThreshold())
-				iR += 5; // </advc.908a>
+			if (kSet.isExtraCommerceThreshold())
+				r += 5;
 		}
 		else // </advc.053>
 		{
 			// <advc.031>
-			if (kSet.isExtraYieldThreshold())
-				iR += 13;
-			// <advc.908a>
-			if (kSet.isExtraYieldNaturalThreshold())
-				iR += 8; // </advc.908a>
+			if (kSet.isExtraCommerceThreshold())
+				r += 8;
 			if (!bSteal)
 			{
 				iRiverTiles++;
 				if (iCities <= 0) // advc.108
-					iR += 10;
+					r += 10;
 				/*  I'm guessing this K-Mod clause is supposed to
 					steer the AI toward settling at rivers rather
 					than trying to make all river plots workable. */
 				if (kPlot.isRiver())
 				{
-					iR += (/* advc.108: */ iCities <= 0
+					r += (/* advc.108: */ iCities <= 0
 							? 10 : 4);
 				}
 			} // </advc.031>
@@ -1776,10 +1746,10 @@ int AIFoundValue::evaluateFreshWater(CvPlot const& p, int const* aiYield, bool b
 	if (p.canHavePotentialIrrigation() && /* advc.053: */ !bLowYield)
 	{
 		// <advc.031> was 5/5
-		iR += 4;
+		r += 4;
 		if (p.isFreshWater())
 		{
-			iR += 6;
+			r += 6;
 			if (aiYield[YIELD_FOOD] >= GC.getFOOD_CONSUMPTION_PER_POPULATION() &&
 				!bSteal)
 			{
@@ -1787,7 +1757,7 @@ int AIFoundValue::evaluateFreshWater(CvPlot const& p, int const* aiYield, bool b
 			}
 		} // <advc.031>
 	}
-	return iR;
+	return r;
 }
 
 /*	<advc.031> A plot next to a resource will usually have a higher found value
@@ -1818,13 +1788,14 @@ int AIFoundValue::foundOnResourceValue(int const* aiBonusImprovementYield) const
 int AIFoundValue::applyCultureModifier(CvPlot const& p, int iPlotValue, int iCultureModifier,
 	bool bShare) const
 {
-	scaled r = iPlotValue;
-	r *= per100(iCultureModifier);
+	int r = iPlotValue;
+	r *= iCultureModifier;
+	r /= 100;
 	// <advc.031>
 	if (bShare) // bSteal is already factored into iCultureModifier
-		r *= fixp(0.375);
+		r = ::round(r * 0.375);
 	// </advc.031>
-	return r.round();
+	return r;
 }
 
 // Note: aiBonusCount is only a partial count (resources evaluated up to this point)
@@ -1920,9 +1891,9 @@ int AIFoundValue::nonYieldBonusValue(CvPlot const& p, BonusTypes eBonus,
 		if (!bSurplus)
 		{
 			/*  Important for high-value strategic resources that get revealed
-				long before they can be traded, especially Oil. Scanning the whole map
-				through CvPlayerAI::AI_countOwnedBonuses is too expensive I think,
-				but I'm copying the city bonus count from there. */
+				long before they can be traded, especially Oil.
+				CvPlayerAI::AI_countOwnedBonuses is too expensive I think,
+				but I'm copying a bit of code from there. */
 			FOR_EACH_CITYAI(pCity, kPlayer)
 			{
 				if (pCity->AI_countNumBonuses(eBonus, true, true, -1) > 0)
@@ -2014,21 +1985,20 @@ void AIFoundValue::calculateSpecialYields(CvPlot const& p,
 	int const iEffectiveFood = aiNatureYield[YIELD_FOOD] + aiBuildingYield[YIELD_FOOD];
 	if (aiBonusImprovementYield == NULL) // K-Mod: non bonus related special food
 	{
-		int iSurplus = (std::max(0,
-				iEffectiveFood - GC.getFOOD_CONSUMPTION_PER_POPULATION()) *
-				per100(iModifier)).uround(); // advc.031
+		int iSurplus = ::round( // advc.031
+				std::max(0, iEffectiveFood - GC.getFOOD_CONSUMPTION_PER_POPULATION())
+				* (iModifier / 100.0)); // advc.031
 		iSpecialFoodPlus += iSurplus;
 		aiSpecialYield[YIELD_FOOD] += iSurplus; // advc.031: A little extra love for Flood Plains
 		return;
 	}
 	// advc.031: No need to recompute nature yield here
-	int iSpecialFood = 
-			((aiNatureYield[YIELD_FOOD] + aiBonusImprovementYield[YIELD_FOOD]) *
-			per100(iModifier)).round(); // advc.031
+	int iSpecialFood = ::round((aiNatureYield[YIELD_FOOD] +
+			aiBonusImprovementYield[YIELD_FOOD]) * /* advc.031: */ (iModifier / 100.0));
 	aiSpecialYield[YIELD_FOOD] += iSpecialFood;
 	int iFoodTemp = iSpecialFood - GC.getFOOD_CONSUMPTION_PER_POPULATION();
 	// advc.031:
-	iFoodTemp = (iFoodTemp * per100(iModifier)).round();
+	iFoodTemp = ::round(iFoodTemp * iModifier / 100.0);
 	iSpecialFoodPlus += std::max(0, iFoodTemp);
 	iSpecialFoodMinus -= std::min(0, iFoodTemp);
 	// <advc.031>
@@ -2046,10 +2016,10 @@ void AIFoundValue::calculateSpecialYields(CvPlot const& p,
 	/*  To avoid rounding all yields to 0, don't reduce production and commerce
 		to less than 1. */
 	iSpecialProd = std::max(std::min(1, iSpecialProd),
-			(iSpecialProd * per100(iModifier)).round());
+			::round(iSpecialProd * iModifier / 100.0));
 	aiSpecialYield[YIELD_PRODUCTION] += iSpecialProd;
 	iSpecialComm = std::max(std::min(1, iSpecialComm),
-			(iSpecialComm * per100(iModifier)).round());
+			::round(iSpecialComm * iModifier / 100.0));
 	aiSpecialYield[YIELD_COMMERCE] += iSpecialComm;
 	IFLOG if(bSpecial) logBBAI("Special yield: %dF%dP%dC (modifier: %d percent)",
 			iSpecialFood, iSpecialProd, iSpecialComm, iModifier);
@@ -2069,43 +2039,42 @@ void AIFoundValue::calculateBuildingYields(CvPlot const& p, int const* aiNatureY
 	}
 }
 
-/*	advc.031: Weighted sum. (Using floating-point math until such a time that a
-	logarithm function gets added to ScaledNum.) */
+// advc.031: Weighted sum
 int AIFoundValue::sumUpPlotValues(std::vector<int>& aiPlotValues) const
 {
 	std::sort(aiPlotValues.begin(), aiPlotValues.end(), std::greater<int>());
 	// CITY_HOME_PLOT should have 0 value here, others could have negative values.
 	FAssert(aiPlotValues[NUM_CITY_PLOTS - 1] <= 0);
-	double dMaxMultPercent = 153;
-	double dMinMultPercent = 47;
+	double maxMultPercent = 153;
+	double minMultPercent = 47;
 	if (iCities <= 0) // Capital will grow large
 	{
-		dMaxMultPercent -= 8;
-		dMinMultPercent += 8;
+		maxMultPercent -= 8;
+		minMultPercent += 8;
 	}
-	double const dNormalizMult = 1;
-	double const dSubtr = 29;
-	double const dExp = std::log(dMaxMultPercent - dMinMultPercent) /
+	double const normalizMult = 1;
+	double const subtr = 29;
+	double const exp = std::log(maxMultPercent - minMultPercent) /
 			std::log(NUM_CITY_PLOTS - 1.0);
-	int iR = 0;
+	int r = 0;
 	FOR_EACH_ENUM(CityPlot)
 	{
 		int iPlotValue = aiPlotValues[eLoopCityPlot];
 		if (iPlotValue > 0)
 		{
 			iPlotValue = std::max(iPlotValue / 3,
-					fmath::round(std::max(0.0, iPlotValue - dSubtr) * 0.01 *
+					::round(std::max(0.0, iPlotValue - subtr) * 0.01 *
 					// Linearly decreasing multiplier:
 					/*(maxMultPercent - i * ((maxMultPercent -
 					minMultPercent) / (NUM_CITY_PLOTS - 1))));*/
 					// Try power law instead:
-					dNormalizMult * (dMinMultPercent + std::pow((double)
-					std::abs(NUM_CITY_PLOTS - 1 - eLoopCityPlot), dExp))));
+					normalizMult * (minMultPercent + std::pow((double)
+					std::abs(NUM_CITY_PLOTS - 1 - eLoopCityPlot), exp))));
 		}
-		iR += iPlotValue;
+		r += iPlotValue;
 	}
-	IFLOG logBBAI("Weighted sum of plot values:\n+%d", iR);
-	return iR;
+	IFLOG logBBAI("Weighted sum of plot values:\n+%d", r);
+	return r;
 }
 
 /*	Note: aiSpecialYield includes aiNatureYield. Thus, nature yield is counted twice:
@@ -2344,17 +2313,15 @@ int AIFoundValue::evaluateSeaAccess(bool bGoodFirstColony, scaled rProductionMod
 	Could then also add a chokepoint evaluation. */
 int AIFoundValue::evaluateDefense() const
 {
-	if (bBarbarian) // advc.031: Don't make Barbarian cities too difficult to assail
-		return 0;
-	int iR = 0;
+	int r = 0;
 	if (kPlot.isHills())
 	{
 		/*  advc.031: Was 100+100 in K-Mod, 200 flat in BtS. Reduced b/c
 			counted again for diploFactor below. */
-		iR += 75 + (kSet.isDefensive() ? 75 : 0);
-		IFLOG logBBAI("+%d from hill defense", iR);
+		r += 75 + (kSet.isDefensive() ? 75 : 0);
+		IFLOG logBBAI("+%d from hill defense", r);
 	}
-	return iR;
+	return r;
 }
 
 
@@ -3079,11 +3046,8 @@ void CitySiteEvaluator::logSettings() const
 		logBBAI("Easy culture");
 	if (isAmbitious())
 		logBBAI("Ambitious");
-	// <advc.908a>
-	if (isExtraYieldNaturalThreshold())
-		logBBAI("Financial (AdvCiv effect)"); // </advc.908a>
-	if (isExtraYieldThreshold())
-		logBBAI("Financial (BtS effect)");
+	if (isExtraCommerceThreshold())
+		logBBAI("Financial");
 	if (isDefensive())
 		logBBAI("Defensive");
 	if (isSeafaring())
@@ -3211,7 +3175,7 @@ scaled AIFoundValue::evaluateWorkablePlot(CvPlot const& p) const
 		int iRemovableFeatureYieldVal = removableFeatureYieldVal(
 				eFeature, bRemovableFeature, eBonus != NO_BONUS);
 		int iNonPersistentFeatureYieldVal = removableFeatureYieldVal(
-				eFeature, true, eBonus != NO_BONUS);
+				eFeature, !bPersistentFeature, eBonus != NO_BONUS);
 		/*	Weighted average to account for chopping becoming available later.
 			Mostly treat chopping as available b/c Jungle seems to get valued
 			too lowly; I guess b/c bonus improvement yields aren't counted. */

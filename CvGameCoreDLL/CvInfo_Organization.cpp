@@ -2,6 +2,7 @@
 
 #include "CvGameCoreDLL.h"
 #include "CvXMLLoadUtility.h"
+#include "CvDLLXMLIFaceBase.h"
 
 
 CvOrganizationInfo::CvOrganizationInfo() :
@@ -70,7 +71,7 @@ bool CvOrganizationInfo::read(CvXMLLoadUtility* pXML)
 }
 
 CvReligionInfo::CvReligionInfo() :
-m_cHolyCityChar(0),
+m_iHolyCityChar(0),
 m_iNumFreeUnits(0),
 m_paiGlobalReligionCommerce(NULL),
 m_paiHolyCityCommerce(NULL),
@@ -84,14 +85,14 @@ CvReligionInfo::~CvReligionInfo()
 	SAFE_DELETE_ARRAY(m_paiStateReligionCommerce);
 }
 
-wchar CvReligionInfo::getHolyCityChar() const
+int CvReligionInfo::getHolyCityChar() const
 {
-	return m_cHolyCityChar;
+	return m_iHolyCityChar;
 }
 
-void CvReligionInfo::setHolyCityChar(wchar c)
+void CvReligionInfo::setHolyCityChar(int i)
 {
-	m_cHolyCityChar = c;
+	m_iHolyCityChar = i;
 }
 
 int CvReligionInfo::getNumFreeUnits() const
@@ -170,24 +171,24 @@ bool CvReligionInfo::read(CvXMLLoadUtility* pXML)
 
 	pXML->GetChildXmlValByName(&m_iNumFreeUnits, "iFreeUnits");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"GlobalReligionCommerces"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"GlobalReligionCommerces"))
 	{
-		pXML->SetCommerceArray(&m_paiGlobalReligionCommerce);
+		pXML->SetCommerce(&m_paiGlobalReligionCommerce);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiGlobalReligionCommerce, NUM_COMMERCE_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"HolyCityCommerces"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"HolyCityCommerces"))
 	{
-		pXML->SetCommerceArray(&m_paiHolyCityCommerce);
+		pXML->SetCommerce(&m_paiHolyCityCommerce);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiHolyCityCommerce, NUM_COMMERCE_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"StateReligionCommerces"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"StateReligionCommerces"))
 	{
-		pXML->SetCommerceArray(&m_paiStateReligionCommerce);
+		pXML->SetCommerce(&m_paiStateReligionCommerce);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiStateReligionCommerce, NUM_COMMERCE_TYPES);
 
@@ -209,7 +210,7 @@ bool CvReligionInfo::isReligionTech(TechTypes eTech)
 }
 
 CvCorporationInfo::CvCorporationInfo() :
-m_cHeadquarterChar(0),
+m_iHeadquarterChar(0),
 m_iSpreadCost(0),
 m_iMaintenance(0),
 m_eBonusProduced(NO_BONUS),
@@ -225,14 +226,14 @@ CvCorporationInfo::~CvCorporationInfo()
 	SAFE_DELETE_ARRAY(m_paiYieldProduced);
 }
 
-wchar CvCorporationInfo::getHeadquarterChar() const
+int CvCorporationInfo::getHeadquarterChar() const
 {
-	return m_cHeadquarterChar;
+	return m_iHeadquarterChar;
 }
 
-void CvCorporationInfo::setHeadquarterChar(wchar c)
+void CvCorporationInfo::setHeadquarterChar(int i)
 {
-	m_cHeadquarterChar = c;
+	m_iHeadquarterChar = i;
 }
 // advc.003t: Calls from Python aren't going to respect the bounds
 int CvCorporationInfo::py_getPrereqBonus(int i) const
@@ -283,24 +284,24 @@ bool CvCorporationInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_iSpreadCost, "iSpreadCost");
 	pXML->GetChildXmlValByName(&m_iMaintenance, "iMaintenance");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"HeadquarterCommerces"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"HeadquarterCommerces"))
 	{
-		pXML->SetCommerceArray(&m_paiHeadquarterCommerce);
+		pXML->SetCommerce(&m_paiHeadquarterCommerce);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiHeadquarterCommerce, NUM_COMMERCE_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"CommercesProduced"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "CommercesProduced"))
 	{
-		pXML->SetCommerceArray(&m_paiCommerceProduced);
+		pXML->SetCommerce(&m_paiCommerceProduced);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiCommerceProduced, NUM_COMMERCE_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"YieldsProduced"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "YieldsProduced"))
 	{
-		pXML->SetYieldArray(&m_paiYieldProduced);
+		pXML->SetYields(&m_paiYieldProduced);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_paiYieldProduced, NUM_YIELD_TYPES);
 

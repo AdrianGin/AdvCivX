@@ -20,7 +20,7 @@ class CvTeamAI : public CvTeam
 {
 public:
 	// advc.003u: Renamed from getTeam
-	static CvTeamAI& AI_getTeam(TeamTypes eTeam)
+	static inline CvTeamAI& AI_getTeam(TeamTypes eTeam) // advc.inl
 	{
 		FAssertBounds(0, MAX_TEAMS, eTeam);
 		return *m_aTeams[eTeam];
@@ -53,14 +53,12 @@ public:
 
 	int AI_countFinancialTrouble() const; // addvc.003j (comment): unused
 	int AI_countMilitaryWeight(CvArea const* pArea = NULL) const;
-	// <advc.104>, advc.038, advc.132:
-	scaled AI_estimateYieldRate(PlayerTypes ePlayer, YieldTypes eYield, // (exposed to Python)
-			 int iSamples = 5) const; // </advc.104>
+
 	int AI_estimateTotalYieldRate(YieldTypes eYield) const; // K-Mod
 	bool AI_deduceCitySite(CvCity const& kCity) const; // K-Mod
 	// <advc.erai>
 	scaled AI_getCurrEraFactor() const;
-	int AI_getCurrEra() const { return AI_getCurrEraFactor().round(); }
+	inline int AI_getCurrEra() const { return AI_getCurrEraFactor().round(); }
 	// </advc.erai>
 
 	bool AI_isAnyCapitalAreaAlone() const;
@@ -68,7 +66,7 @@ public:
 	bool AI_hasCitiesInPrimaryArea(TeamTypes eTeam) const;
 	bool AI_hasSharedPrimaryArea(TeamTypes eTeam) const; // K-Mod
 	AreaAITypes AI_calculateAreaAIType(CvArea const& kArea, bool bPreparingTotal = false) const;
-	bool AI_isLonely() const { return m_bLonely; } // advc.109
+	inline bool AI_isLonely() const { return m_bLonely; } // advc.109
 
 	int AI_calculateAdjacentLandPlots(TeamTypes eTeam) const;
 	int AI_calculateCapitalProximity(TeamTypes eTeam) const;
@@ -147,11 +145,12 @@ public:
 	void AI_getWarThresholds(int &iMaxWarThreshold, int &iLimitedWarThreshold, int &iDogpileWarThreshold) const;
 	int AI_getTotalWarOddsTimes100() const;
 	// bbai end
-	// <advc.115b> <advc.104>
+	/*  <advc.115b>
+		advc.104: NO_VOTESOURCE if none built yet, AP if AP built but not UN;
+		otherwise UN */
 	VoteSourceTypes AI_getLatestVictoryVoteSource() const;
-	int AI_countVSNonMembers(VoteSourceTypes eVS) const; // </advc.104>
 	bool AI_isAnyCloseToReligiousVictory() const;
-	int AI_votesToGoForVictory(int* piVoteTarget = NULL, bool bForceSecular = false) const;
+	int AI_votesToGoForVictory(int* piVoteTarget = NULL, bool bForceUN = false) const;
 	// </advc.115b>
 
 	int AI_makePeaceTradeVal(TeamTypes ePeaceTeam, TeamTypes eTeam) const;
@@ -174,7 +173,7 @@ public:
 	void AI_forgiveEnemy(TeamTypes eEnemyTeam, bool bCapitulated, bool bFreed);
 	void AI_thankLiberator(TeamTypes eLiberator);
 	// </advc.130y>
-	TeamTypes AI_getWorstEnemy() const { return m_eWorstEnemy; } 
+	TeamTypes AI_getWorstEnemy() const { return m_eWorstEnemy; } // advc.inl
 	void AI_updateWorstEnemy(/* advc.130p: */ bool bUpdateTradeMemory = true);
 	// <advc.130p>
 	scaled AI_enemyTradeResentmentFactor(TeamTypes eTo, TeamTypes eFrom,
@@ -187,93 +186,62 @@ public:
 	// </advc.130p>
 	// advc.130k: Public b/c CvPlayerAI needs it too
 	int AI_randomCounterChange(int iUpperCap = -1, scaled rProb = scaled(1, 2)) const;
-	int AI_getWarPlanStateCounter(TeamTypes eIndex) const
-	{
-		return m_aiWarPlanStateCounter.get(eIndex);
-	}
+	int AI_getWarPlanStateCounter(TeamTypes eIndex) const { return m_aiWarPlanStateCounter.get(eIndex); }
 	void AI_setWarPlanStateCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeWarPlanStateCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getAtWarCounter(TeamTypes eIndex) const											// Exposed to Python
-	{
-		return m_aiAtWarCounter.get(eIndex);
-	}
+	int AI_getAtWarCounter(TeamTypes eIndex) const { return m_aiAtWarCounter.get(eIndex); }									// Exposed to Python
 	void AI_setAtWarCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeAtWarCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getAtPeaceCounter(TeamTypes eIndex) const
-	{
-		return m_aiAtPeaceCounter.get(eIndex);
-	}
+	int AI_getAtPeaceCounter(TeamTypes eIndex) const { return m_aiAtPeaceCounter.get(eIndex); }
 	void AI_setAtPeaceCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeAtPeaceCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getHasMetCounter(TeamTypes eIndex) const
-	{
-		return m_aiHasMetCounter.get(eIndex);
-	}
+	int AI_getHasMetCounter(TeamTypes eIndex) const { return m_aiHasMetCounter.get(eIndex); }
 	void AI_setHasMetCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeHasMetCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getOpenBordersCounter(TeamTypes eIndex) const
-	{
-		return m_aiOpenBordersCounter.get(eIndex);
-	}
+	int AI_getOpenBordersCounter(TeamTypes eIndex) const { return m_aiOpenBordersCounter.get(eIndex); }
 	void AI_setOpenBordersCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeOpenBordersCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getDefensivePactCounter(TeamTypes eIndex) const
-	{
-		return m_aiDefensivePactCounter.get(eIndex);
-	}
+	int AI_getDefensivePactCounter(TeamTypes eIndex) const { return m_aiDefensivePactCounter.get(eIndex); }
 	void AI_setDefensivePactCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeDefensivePactCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getShareWarCounter(TeamTypes eIndex) const
-	{
-		return m_aiShareWarCounter.get(eIndex);
-	}
+	int AI_getShareWarCounter(TeamTypes eIndex) const { return m_aiShareWarCounter.get(eIndex); }
 	void AI_setShareWarCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeShareWarCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getWarSuccess(TeamTypes eIndex) const										 // Exposed to Python
-	{
-		return m_aiWarSuccess.get(eIndex);
-	}
+	int AI_getWarSuccess(TeamTypes eIndex) const { return m_aiWarSuccess.get(eIndex); }							 // Exposed to Python
 	void AI_setWarSuccess(TeamTypes eIndex, int iNewValue);
 	void AI_changeWarSuccess(TeamTypes eIndex, int iChange);
-	int AI_countEnemyWarSuccess() const; // advc
 	// <advc.130m>
 	void AI_reportSharedWarSuccess(int iIntensity, TeamTypes eWarAlly,
 			TeamTypes eEnemy, bool bIgnoreDistress = false);
 	/*  The war success of our war ally against a shared enemy, plus the war success
 		of shared enemies against our war ally. This is quite different from AI_getWarSuccess,
 		which counts our success against team eIndex. Also on a different scale. */
-	int AI_getSharedWarSuccess(TeamTypes eWarAlly) const
-	{
-		return m_aiSharedWarSuccess.get(eWarAlly);
-	}
+	int AI_getSharedWarSuccess(TeamTypes eWarAlly) const { return m_aiSharedWarSuccess.get(eWarAlly); }
 	void AI_setSharedWarSuccess(TeamTypes eWarAlly, int iWS); // </advc.130m>
-	int AI_getEnemyPeacetimeTradeValue(TeamTypes eIndex) const
-	{
-		return m_aiEnemyPeacetimeTradeValue.get(eIndex);
-	}
+	// <advc.130n>
+	int AI_getReligionKnownSince(ReligionTypes eReligion) const;
+	void AI_reportNewReligion(ReligionTypes eReligion);
+	// </advc.130n>
+	int AI_getEnemyPeacetimeTradeValue(TeamTypes eIndex) const { return m_aiEnemyPeacetimeTradeValue.get(eIndex); }
 	void AI_setEnemyPeacetimeTradeValue(TeamTypes eIndex, int iNewValue);
 	void AI_changeEnemyPeacetimeTradeValue(TeamTypes eIndex, int iChange);
 
-	int AI_getEnemyPeacetimeGrantValue(TeamTypes eIndex) const
-	{
-		return m_aiEnemyPeacetimeGrantValue.get(eIndex);
-	}
+	int AI_getEnemyPeacetimeGrantValue(TeamTypes eIndex) const { return m_aiEnemyPeacetimeGrantValue.get(eIndex); }
 	void AI_setEnemyPeacetimeGrantValue(TeamTypes eIndex, int iNewValue);
 	void AI_changeEnemyPeacetimeGrantValue(TeamTypes eIndex, int iChange);
 
-	// advc: countEnemy... functions moved from CvTeam
-	int AI_countEnemyPowerByArea(CvArea const& kArea) const;												// Exposed to Python
+	// <advc.003u> Moved from CvTeam b/c these functions count wars in preparation
+	int AI_countEnemyPowerByArea(CvArea const& kArea) const;																			// Exposed to Python
 	int AI_countEnemyCitiesByArea(CvArea const& kArea) const; // K-Mod
-	int AI_countEnemyDangerByArea(CvArea const& kArea, TeamTypes eEnemyTeam = NO_TEAM) const; // bbai		// Exposed to Python
 	int AI_countEnemyPopulationByArea(CvArea const& kArea) const; // bbai (advc: unused)
-	WarPlanTypes AI_getWarPlan(TeamTypes eIndex) const
+	inline WarPlanTypes AI_getWarPlan(TeamTypes eIndex) const // advc.inl
 	{
 		return m_aeWarPlan.get(eIndex);
 	}
@@ -284,11 +252,11 @@ public:
 	int AI_countWarPlans(WarPlanTypes eWarPlanType = NUM_WARPLAN_TYPES, bool bIgnoreMinors = true,			// Exposed to Python (through getWarPlanCount, getAnyWarPlanCount)
 			unsigned int iMaxCount = MAX_PLAYERS) const; // </advc>
 	// <advc.opt> Less flexible (ignores minors, vassals) but much faster
-	int AI_getNumWarPlans(WarPlanTypes eWarPlanType) const
+	inline int AI_getNumWarPlans(WarPlanTypes eWarPlanType) const
 	{
 		return m_aiWarPlanCounts.get(eWarPlanType);
 	}
-	bool AI_isAnyWarPlan() const { return m_bAnyWarPlan; } // </advc.opt>
+	inline bool AI_isAnyWarPlan() const { return m_bAnyWarPlan; } // </advc.opt>
 	bool AI_isSneakAttackReady(TeamTypes eIndex /* K-Mod (any team): */ = NO_TEAM) const;
 	bool AI_isSneakAttackPreparing(TeamTypes eIndex /* advc: */= NO_TEAM) const;
 	void AI_setWarPlan(TeamTypes eTarget, WarPlanTypes eNewValue, bool bWar = true);
@@ -299,21 +267,17 @@ public:
 	bool AI_isMasterPlanningLandWar(CvArea const& kArea) const;
 	bool AI_isMasterPlanningSeaWar(CvArea const& kArea) const;
 	// BETTER_BTS_AI_MOD: END
-	void AI_setWarPlanNoUpdate(TeamTypes eIndex, WarPlanTypes eNewValue);
-	// <advc.650>
-	void AI_rememberNukeExplosion(CvPlot const& kPlot);
-	bool AI_wasRecentlyNuked(CvPlot const& kPlot) const; // </advc.650>
 	// advc.158:
-	AIStrengthMemoryMap& AI_strengthMemory() const { return m_strengthMemory; }
+	inline AIStrengthMemoryMap& AI_strengthMemory() const { return m_strengthMemory; }
 	// advc.104:
+	void AI_setWarPlanNoUpdate(TeamTypes eIndex, WarPlanTypes eNewValue);
 	int AI_teamCloseness(TeamTypes eIndex, int iMaxDistance = -1,
 			bool bConsiderLandTarget = false, // advc.104o
 			bool bConstCache = false) const; // advc.001n
 
 	// <advc.104>
-	UWAI::Team& uwai() { return *m_pUWAI; }
-	UWAI::Team const& uwai() const { return *m_pUWAI; }
-	int AI_refuseToTalkWarThreshold() const;
+	inline UWAI::Team& uwai() { return *m_pUWAI; }
+	inline UWAI::Team const& uwai() const { return *m_pUWAI; }
 	// These 9 were protected </advc.104>
 	int AI_maxWarRand() const;
 	int AI_maxWarNearbyPowerRatio() const;
@@ -332,8 +296,6 @@ public:
 	// advc.012:
 	int AI_plotDefense(CvPlot const& kPlot, bool bIgnoreBuilding = false,
 			bool bGarrisonStrength = false) const; // advc.500b
-	// advc.104, advc.651:
-	bool AI_isExpectingToTrain(PlayerTypes eTrainPlayer, UnitTypes eUnit) const;
 
 	int AI_getAttitudeWeight(TeamTypes eTeam) const;
 	int AI_getTechMonopolyValue(TechTypes eTech, TeamTypes eTeam) const;
@@ -345,27 +307,26 @@ public:
 
 protected:
 	TeamTypes m_eWorstEnemy;
-	/*	<advc.enum> (See comment in CvPlayer header about lazy allocation.)
-		(Could exclude Barbarians from diplo counters and
-		use CivTeamMaps, but I don't think it's worth the effort.) */
-	ArrayEnumMap<TeamTypes,int,short> m_aiWarPlanStateCounter;
-	ArrayEnumMap<TeamTypes,int,short> m_aiAtWarCounter;
-	ArrayEnumMap<TeamTypes,int,short> m_aiAtPeaceCounter;
-	ArrayEnumMap<TeamTypes,int,short> m_aiHasMetCounter;
-	ArrayEnumMap<TeamTypes,int,short> m_aiOpenBordersCounter;
-	ArrayEnumMap<TeamTypes,int,short> m_aiDefensivePactCounter;
-	ArrayEnumMap<TeamTypes,int,short> m_aiShareWarCounter;
-	ArrayEnumMap<TeamTypes,int> m_aiWarSuccess;
-	ArrayEnumMap<TeamTypes,int> m_aiSharedWarSuccess; // advc.130m
-	ArrayEnumMap<TeamTypes,int> m_aiEnemyPeacetimeTradeValue;
-	ArrayEnumMap<TeamTypes,int> m_aiEnemyPeacetimeGrantValue;
-	ArrayEnumMap<WarPlanTypes,int,char> m_aiWarPlanCounts; // advc.opt
-	ArrayEnumMap<TeamTypes,WarPlanTypes> m_aeWarPlan;
+	std::map<ReligionTypes,int> m_religionKnownSince; // advc.130n
+	/*  <advc.enum> (Tbd.: Should be CivTeamMap so that Barbarians are excluded;
+		the counters should be CivTeamMap<short>.) */
+	EnumMap<TeamTypes,int> m_aiWarPlanStateCounter;
+	EnumMap<TeamTypes,int> m_aiAtWarCounter;
+	EnumMap<TeamTypes,int> m_aiAtPeaceCounter;
+	EnumMap<TeamTypes,int> m_aiHasMetCounter;
+	EnumMap<TeamTypes,int> m_aiOpenBordersCounter;
+	EnumMap<TeamTypes,int> m_aiDefensivePactCounter;
+	EnumMap<TeamTypes,int> m_aiShareWarCounter;
+	EnumMap<TeamTypes,int> m_aiWarSuccess;
+	EnumMap<TeamTypes,int> m_aiSharedWarSuccess; // advc.130m
+	EnumMap<TeamTypes,int> m_aiEnemyPeacetimeTradeValue;
+	EnumMap<TeamTypes,int> m_aiEnemyPeacetimeGrantValue;
+	EnumMap<WarPlanTypes,int> m_aiWarPlanCounts; // advc.opt
+	EnumMap<TeamTypes,WarPlanTypes> m_aeWarPlan;
 	// </advc.enum>
 	bool m_bAnyWarPlan; // advc.opt
 	bool m_bLonely; // advc.109
 
-	std::vector<PlotNumTypes> m_aeNukeExplosions; // advc.650
 	mutable AIStrengthMemoryMap m_strengthMemory; // advc.158
 	UWAI::Team* m_pUWAI; // advc.104
 

@@ -1183,8 +1183,7 @@
 			<bCanMoveImpassable>0</bCanMoveImpassable>
 			<bCanMoveAllTerrain>0</bCanMoveAllTerrain>
 			<bFlatMovementCost>0</bFlatMovementCost>
-			<!-- advc.907c: was 0 -->
-			<bIgnoreTerrainCost>1</bIgnoreTerrainCost>
+			<bIgnoreTerrainCost>0</bIgnoreTerrainCost>
 			<bNukeImmune>0</bNukeImmune>
 			<bPrereqBonuses>0</bPrereqBonuses>
 			<bPrereqReligion>0</bPrereqReligion>
@@ -1314,8 +1313,7 @@
 			<iAdvancedStartCost>100</iAdvancedStartCost>
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
 			<iMinAreaSize>-1</iMinAreaSize>
-			<!-- advc.907c: was 3 -->
-			<iMoves>2</iMoves>
+			<iMoves>3</iMoves>
 			<bNoRevealMap>0</bNoRevealMap>
 			<iAirRange>0</iAirRange>
 			<iAirUnitCap>0</iAirUnitCap>
@@ -3156,7 +3154,6 @@
 			<ReligionSpreads>
 				<ReligionSpread>
 					<ReligionType>RELIGION_JUDAISM</ReligionType>
-					<!-- K-Mod: was 40 -->
 					<iReligionSpread>20</iReligionSpread>
 				</ReligionSpread>
 			</ReligionSpreads>
@@ -3323,7 +3320,6 @@
 			<ReligionSpreads>
 				<ReligionSpread>
 					<ReligionType>RELIGION_CHRISTIANITY</ReligionType>
-					<!-- K-Mod: was 40 -->
 					<iReligionSpread>20</iReligionSpread>
 				</ReligionSpread>
 			</ReligionSpreads>
@@ -3490,7 +3486,6 @@
 			<ReligionSpreads>
 				<ReligionSpread>
 					<ReligionType>RELIGION_ISLAM</ReligionType>
-					<!-- K-Mod: was 40 -->
 					<iReligionSpread>20</iReligionSpread>
 				</ReligionSpread>
 			</ReligionSpreads>
@@ -3657,7 +3652,6 @@
 			<ReligionSpreads>
 				<ReligionSpread>
 					<ReligionType>RELIGION_HINDUISM</ReligionType>
-					<!-- K-Mod: was 40 -->
 					<iReligionSpread>20</iReligionSpread>
 				</ReligionSpread>
 			</ReligionSpreads>
@@ -3824,7 +3818,6 @@
 			<ReligionSpreads>
 				<ReligionSpread>
 					<ReligionType>RELIGION_BUDDHISM</ReligionType>
-					<!-- K-Mod: was 40 -->
 					<iReligionSpread>20</iReligionSpread>
 				</ReligionSpread>
 			</ReligionSpreads>
@@ -3991,7 +3984,6 @@
 			<ReligionSpreads>
 				<ReligionSpread>
 					<ReligionType>RELIGION_CONFUCIANISM</ReligionType>
-					<!-- K-Mod: was 40 -->
 					<iReligionSpread>20</iReligionSpread>
 				</ReligionSpread>
 			</ReligionSpreads>
@@ -4158,7 +4150,6 @@
 			<ReligionSpreads>
 				<ReligionSpread>
 					<ReligionType>RELIGION_TAOISM</ReligionType>
-					<!-- K-Mod: was 40 -->
 					<iReligionSpread>20</iReligionSpread>
 				</ReligionSpread>
 			</ReligionSpreads>
@@ -4702,7 +4693,6 @@
 			<UnitClassDefenders/>
 			<UnitCombatDefenders/>
 			<FlankingStrikes/>
-			<!-- K-Mod: UNITAI_CITY_DEFENSE removed -->
 			<UnitAIs>
 				<UnitAI>
 					<UnitAIType>UNITAI_ATTACK</UnitAIType>
@@ -5071,7 +5061,6 @@
 			<UnitClassDefenders/>
 			<UnitCombatDefenders/>
 			<FlankingStrikes/>
-			<!-- K-Mod: UNITAI_CITY_DEFENSE removed -->
 			<UnitAIs>
 				<UnitAI>
 					<UnitAIType>UNITAI_ATTACK</UnitAIType>
@@ -5412,7 +5401,6 @@
 			<Capture>NONE</Capture>
 			<Combat>UNITCOMBAT_MELEE</Combat>
 			<Domain>DOMAIN_LAND</Domain>
-			<!-- K-Mod: was UNITAI_COUNTER -->
 			<DefaultUnitAI>UNITAI_ATTACK</DefaultUnitAI>
 			<Invisible>NONE</Invisible>
 			<SeeInvisible>NONE</SeeInvisible>
@@ -5614,7 +5602,6 @@
 			<Capture>NONE</Capture>
 			<Combat>UNITCOMBAT_MELEE</Combat>
 			<Domain>DOMAIN_LAND</Domain>
-			<!-- K-Mod: was UNITAI_COUNTER -->
 			<DefaultUnitAI>UNITAI_ATTACK</DefaultUnitAI>
 			<Invisible>NONE</Invisible>
 			<SeeInvisible>NONE</SeeInvisible>
@@ -5813,7 +5800,6 @@
 			<Capture>NONE</Capture>
 			<Combat>UNITCOMBAT_MELEE</Combat>
 			<Domain>DOMAIN_LAND</Domain>
-			<!-- K-Mod: was UNITAI_COUNTER -->
 			<DefaultUnitAI>UNITAI_ATTACK</DefaultUnitAI>
 			<Invisible>NONE</Invisible>
 			<SeeInvisible>NONE</SeeInvisible>
@@ -6007,7 +5993,6 @@
 			<Capture>NONE</Capture>
 			<Combat>UNITCOMBAT_MELEE</Combat>
 			<Domain>DOMAIN_LAND</Domain>
-			<!-- K-Mod: was UNITAI_COUNTER -->
 			<DefaultUnitAI>UNITAI_ATTACK</DefaultUnitAI>
 			<Invisible>NONE</Invisible>
 			<SeeInvisible>NONE</SeeInvisible>
@@ -6197,7 +6182,6 @@
 			<Capture>NONE</Capture>
 			<Combat>UNITCOMBAT_MELEE</Combat>
 			<Domain>DOMAIN_LAND</Domain>
-			<!-- K-Mod: was UNITAI_COUNTER -->
 			<DefaultUnitAI>UNITAI_ATTACK_CITY</DefaultUnitAI>
 			<Invisible>NONE</Invisible>
 			<SeeInvisible>NONE</SeeInvisible>
@@ -6259,7 +6243,6 @@
 					<UnitAIType>UNITAI_ATTACK</UnitAIType>
 					<bUnitAI>1</bUnitAI>
 				</UnitAI>
-				<!-- K-Mod -->
 				<UnitAI>
 					<UnitAIType>UNITAI_ATTACK_CITY</UnitAIType>
 					<bUnitAI>1</bUnitAI>
@@ -6405,7 +6388,6 @@
 			<Capture>NONE</Capture>
 			<Combat>UNITCOMBAT_MELEE</Combat>
 			<Domain>DOMAIN_LAND</Domain>
-			<!-- K-Mod: was UNITAI_COUNTER -->
 			<DefaultUnitAI>UNITAI_ATTACK_CITY</DefaultUnitAI>
 			<Invisible>NONE</Invisible>
 			<SeeInvisible>NONE</SeeInvisible>
@@ -6467,7 +6449,6 @@
 					<UnitAIType>UNITAI_ATTACK</UnitAIType>
 					<bUnitAI>1</bUnitAI>
 				</UnitAI>
-				<!-- K-Mod -->
 				<UnitAI>
 					<UnitAIType>UNITAI_ATTACK_CITY</UnitAIType>
 					<bUnitAI>1</bUnitAI>
@@ -6612,7 +6593,6 @@
 			<Capture>NONE</Capture>
 			<Combat>UNITCOMBAT_MELEE</Combat>
 			<Domain>DOMAIN_LAND</Domain>
-			<!-- K-Mod: was UNITAI_COUNTER -->
 			<DefaultUnitAI>UNITAI_ATTACK_CITY</DefaultUnitAI>
 			<Invisible>NONE</Invisible>
 			<SeeInvisible>NONE</SeeInvisible>
@@ -7644,7 +7624,6 @@
 			<UnitCombatDefenders/>
 			<FlankingStrikes/>
 			<UnitAIs>
-				<!-- K-Mod -->
 				<UnitAI>
 					<UnitAIType>UNITAI_ATTACK</UnitAIType>
 					<bUnitAI>1</bUnitAI>
@@ -8600,12 +8579,10 @@
 					<UnitAIType>UNITAI_CITY_DEFENSE</UnitAIType>
 					<bUnitAI>1</bUnitAI>
 				</UnitAI>
-				<!-- K-Mod -->
 				<UnitAI>
 					<UnitAIType>UNITAI_ATTACK_CITY</UnitAIType>
 					<bUnitAI>1</bUnitAI>
 				</UnitAI>
-				<!-- K-Mod -->
 				<UnitAI>
 					<UnitAIType>UNITAI_COUNTER</UnitAIType>
 					<bUnitAI>1</bUnitAI>
@@ -8794,12 +8771,10 @@
 					<UnitAIType>UNITAI_CITY_DEFENSE</UnitAIType>
 					<bUnitAI>1</bUnitAI>
 				</UnitAI>
-				<!-- K-Mod -->
 				<UnitAI>
 					<UnitAIType>UNITAI_ATTACK_CITY</UnitAIType>
 					<bUnitAI>1</bUnitAI>
 				</UnitAI>
-				<!-- K-Mod -->
 				<UnitAI>
 					<UnitAIType>UNITAI_COUNTER</UnitAIType>
 					<bUnitAI>1</bUnitAI>
@@ -9058,7 +9033,6 @@
 			<iCollateralDamage>0</iCollateralDamage>
 			<iCollateralDamageLimit>0</iCollateralDamageLimit>
 			<iCollateralDamageMaxUnits>0</iCollateralDamageMaxUnits>
-			<!-- K-Mod: was 0 -->
 			<iCityAttack>10</iCityAttack>
 			<iCityDefense>0</iCityDefense>
 			<iAnimalCombat>0</iAnimalCombat>
@@ -9378,7 +9352,6 @@
 					<UnitAIType>UNITAI_CITY_DEFENSE</UnitAIType>
 					<bUnitAI>1</bUnitAI>
 				</UnitAI>
-				<!-- K-Mod -->
 				<UnitAI>
 					<UnitAIType>UNITAI_ATTACK_CITY</UnitAIType>
 					<bUnitAI>1</bUnitAI>
@@ -10922,8 +10895,7 @@
 			<iAirCombatLimit>0</iAirCombatLimit>
 			<iXPValueAttack>4</iXPValueAttack>
 			<iXPValueDefense>2</iXPValueDefense>
-			<!-- advc.907d: was 1 -->
-			<iFirstStrikes>0</iFirstStrikes>
+			<iFirstStrikes>1</iFirstStrikes>
 			<iChanceFirstStrikes>1</iChanceFirstStrikes>
 			<iInterceptionProbability>0</iInterceptionProbability>
 			<iEvasionProbability>0</iEvasionProbability>
@@ -11953,8 +11925,7 @@
 			<bFound>0</bFound>
 			<bGoldenAge>0</bGoldenAge>
 			<bInvisible>0</bInvisible>
-			<!-- advc.907e: was 1 -->
-			<bFirstStrikeImmune>0</bFirstStrikeImmune>
+			<bFirstStrikeImmune>1</bFirstStrikeImmune>
 			<bNoDefensiveBonus>1</bNoDefensiveBonus>
 			<bIgnoreBuildingDefense>0</bIgnoreBuildingDefense>
 			<bCanMoveImpassable>0</bCanMoveImpassable>
@@ -12138,8 +12109,7 @@
 			<bFound>0</bFound>
 			<bGoldenAge>0</bGoldenAge>
 			<bInvisible>0</bInvisible>
-			<!-- advc.907e: was 0 -->
-			<bFirstStrikeImmune>1</bFirstStrikeImmune>
+			<bFirstStrikeImmune>0</bFirstStrikeImmune>
 			<bNoDefensiveBonus>0</bNoDefensiveBonus>
 			<bIgnoreBuildingDefense>0</bIgnoreBuildingDefense>
 			<bCanMoveImpassable>0</bCanMoveImpassable>
@@ -12261,8 +12231,7 @@
 			<UnitCombatMods>
 				<UnitCombatMod>
 					<UnitCombatType>UNITCOMBAT_ARCHER</UnitCombatType>
-					<!-- advc.907e: was 50 -->
-					<iUnitCombatMod>25</iUnitCombatMod>
+					<iUnitCombatMod>50</iUnitCombatMod>
 				</UnitCombatMod>
 			</UnitCombatMods>
 			<UnitCombatCollateralImmunes/>
@@ -14370,7 +14339,6 @@
 			<ProductionTraits/>
 			<Flavors/>
 			<iAIWeight>0</iAIWeight>
-			<!-- K-Mod: was 60 -->
 			<iCost>70</iCost>
 			<iHurryCostModifier>0</iHurryCostModifier>
 			<iAdvancedStartCost>100</iAdvancedStartCost>
@@ -14560,7 +14528,6 @@
 			<ProductionTraits/>
 			<Flavors/>
 			<iAIWeight>0</iAIWeight>
-			<!-- K-Mod: was 60 -->
 			<iCost>70</iCost>
 			<iHurryCostModifier>0</iHurryCostModifier>
 			<iAdvancedStartCost>100</iAdvancedStartCost>
@@ -14591,7 +14558,6 @@
 			<iAirCombatLimit>0</iAirCombatLimit>
 			<iXPValueAttack>4</iXPValueAttack>
 			<iXPValueDefense>2</iXPValueDefense>
-			<!-- K-Mod: was 0 -->
 			<iFirstStrikes>1</iFirstStrikes>
 			<iChanceFirstStrikes>0</iChanceFirstStrikes>
 			<iInterceptionProbability>0</iInterceptionProbability>
@@ -14968,10 +14934,8 @@
 			<iAirCombatLimit>0</iAirCombatLimit>
 			<iXPValueAttack>4</iXPValueAttack>
 			<iXPValueDefense>2</iXPValueDefense>
-			<!-- advc.907f: was 0 in BtS, 1 in K-Mod -->
-			<iFirstStrikes>2</iFirstStrikes>
-			<!-- advc.907f: was 0 in BtS, 1 in K-Mod -->
-			<iChanceFirstStrikes>0</iChanceFirstStrikes>
+			<iFirstStrikes>1</iFirstStrikes>
+			<iChanceFirstStrikes>1</iChanceFirstStrikes>
 			<iInterceptionProbability>0</iInterceptionProbability>
 			<iEvasionProbability>0</iEvasionProbability>
 			<iWithdrawalProb>0</iWithdrawalProb>
@@ -15032,11 +14996,10 @@
 					<PromotionType>PROMOTION_BLITZ</PromotionType>
 					<bFreePromotion>1</bFreePromotion>
 				</FreePromotion>
-				<!-- advc.907f -->
-				<!--FreePromotion>
+				<FreePromotion>
 					<PromotionType>PROMOTION_FLANKING1</PromotionType>
 					<bFreePromotion>1</bFreePromotion>
-				</FreePromotion-->
+				</FreePromotion>
 			</FreePromotions>
 			<LeaderPromotion>NONE</LeaderPromotion>
 			<iLeaderExperience>0</iLeaderExperience>
@@ -15306,7 +15269,6 @@
 					<UnitAIType>UNITAI_PILLAGE</UnitAIType>
 					<bUnitAI>1</bUnitAI>
 				</UnitAI>
-				<!-- K-Mod -->
 				<UnitAI>
 					<UnitAIType>UNITAI_COUNTER</UnitAIType>
 					<bUnitAI>1</bUnitAI>
@@ -15418,7 +15380,6 @@
 			<bShiftDown>0</bShiftDown>
 			<bCtrlDown>0</bCtrlDown>
 			<iHotKeyPriority>0</iHotKeyPriority>
-			<!-- K-Mod -->
 			<FreePromotions>
 				<FreePromotion>
 					<PromotionType>PROMOTION_AMPHIBIOUS</PromotionType>
@@ -16112,7 +16073,6 @@
 			<iWithdrawalProb>0</iWithdrawalProb>
 			<iCollateralDamage>100</iCollateralDamage>
 			<iCollateralDamageLimit>60</iCollateralDamageLimit>
-			<!-- K-Mod: was 7 -->
 			<iCollateralDamageMaxUnits>6</iCollateralDamageMaxUnits>
 			<iCityAttack>0</iCityAttack>
 			<iCityDefense>0</iCityDefense>
@@ -16237,7 +16197,6 @@
 					<UnitAIType>UNITAI_CITY_SPECIAL</UnitAIType>
 					<bUnitAI>1</bUnitAI>
 				</UnitAI>
-				<!-- K-Mod -->
 				<UnitAI>
 					<UnitAIType>UNITAI_CITY_DEFENSE</UnitAIType>
 					<bUnitAI>1</bUnitAI>
@@ -16489,7 +16448,6 @@
 			<iWithdrawalProb>0</iWithdrawalProb>
 			<iCollateralDamage>100</iCollateralDamage>
 			<iCollateralDamageLimit>70</iCollateralDamageLimit>
-			<!-- K-Mod: was 8 -->
 			<iCollateralDamageMaxUnits>7</iCollateralDamageMaxUnits>
 			<iCityAttack>0</iCityAttack>
 			<iCityDefense>0</iCityDefense>
@@ -16675,7 +16633,6 @@
 			<iWithdrawalProb>0</iWithdrawalProb>
 			<iCollateralDamage>100</iCollateralDamage>
 			<iCollateralDamageLimit>70</iCollateralDamageLimit>
-			<!-- K-Mod: was 8 -->
 			<iCollateralDamageMaxUnits>7</iCollateralDamageMaxUnits>
 			<iCityAttack>0</iCityAttack>
 			<iCityDefense>0</iCityDefense>
@@ -16759,9 +16716,7 @@
 			<bQuickCombat>0</bQuickCombat>
 			<bRivalTerritory>0</bRivalTerritory>
 			<bMilitaryHappiness>0</bMilitaryHappiness>
-			<!-- K-Mod: was 1 -->
 			<bMilitarySupport>0</bMilitarySupport>
-			<!-- K-Mod: was 1 -->
 			<bMilitaryProduction>0</bMilitaryProduction>
 			<bPillage>0</bPillage>
 			<bSpy>0</bSpy>
@@ -17090,7 +17045,6 @@
 			<iBombardRate>0</iBombardRate>
 			<SpecialCargo>NONE</SpecialCargo>
 			<DomainCargo>DOMAIN_LAND</DomainCargo>
-			<!-- K-Mod: was 2 -->
 			<iCargo>3</iCargo>
 			<iConscription>0</iConscription>
 			<iCultureGarrison>0</iCultureGarrison>
@@ -17695,7 +17649,7 @@
 			<iBombardRate>0</iBombardRate>
 			<SpecialCargo>NONE</SpecialCargo>
 			<DomainCargo>DOMAIN_LAND</DomainCargo>
-			<!-- advc.905a: K-Mod had increased this to 3 -->
+			<!-- advc.905a: 3 in K-Mod, 2 in BtS -->
 			<iCargo>2</iCargo>
 			<iConscription>0</iConscription>
 			<iCultureGarrison>0</iCultureGarrison>
@@ -17876,7 +17830,6 @@
 			<iBombardRate>0</iBombardRate>
 			<SpecialCargo>NONE</SpecialCargo>
 			<DomainCargo>DOMAIN_LAND</DomainCargo>
-			<!-- K-Mod: was 3 -->
 			<iCargo>4</iCargo>
 			<iConscription>0</iConscription>
 			<iCultureGarrison>0</iCultureGarrison>
@@ -19064,7 +19017,6 @@
 			<iBombardRate>0</iBombardRate>
 			<SpecialCargo>NONE</SpecialCargo>
 			<DomainCargo>DOMAIN_LAND</DomainCargo>
-			<!-- K-Mod: was 4 -->
 			<iCargo>5</iCargo>
 			<iConscription>0</iConscription>
 			<iCultureGarrison>0</iCultureGarrison>
@@ -19622,7 +19574,6 @@
 			<iCultureGarrison>0</iCultureGarrison>
 			<iExtraCost>0</iExtraCost>
 			<iAsset>6</iAsset>
-			<!-- BBAI: was 14 -->
 			<iPower>42</iPower>
 			<UnitMeshGroups>
 				<iGroupSize>1</iGroupSize>
@@ -19703,7 +19654,6 @@
 			<UnitClassDefenders/>
 			<UnitCombatDefenders/>
 			<FlankingStrikes/>
-			<!-- BBAI: UNIT_ESCORT_SEA removed -->
 			<UnitAIs>
 				<UnitAI>
 					<UnitAIType>UNITAI_ATTACK_SEA</UnitAIType>
@@ -19777,7 +19727,7 @@
 			<FeatureImpassables/>
 			<TerrainPassableTechs/>
 			<FeaturePassableTechs/>
-			<!-- advc.200, advc.906: K-Mod had increased this to 36-->
+			<!-- advc.200,advc.906: As in BtS, was 36 in K-Mod. -->
 			<iCombat>30</iCombat>
 			<iCombatLimit>100</iCombatLimit>
 			<iAirCombat>0</iAirCombat>
@@ -21410,7 +21360,6 @@
 			<iMinAreaSize>-1</iMinAreaSize>
 			<iMoves>1</iMoves>
 			<bNoRevealMap>0</bNoRevealMap>
-			<!-- K-Mod: was 4 -->
 			<iAirRange>5</iAirRange>
 			<iAirUnitCap>0</iAirUnitCap>
 			<iDropRange>0</iDropRange>
@@ -22213,7 +22162,6 @@
 			<iHurryMultiplier>0</iHurryMultiplier>
 			<iBaseTrade>0</iBaseTrade>
 			<iTradeMultiplier>0</iTradeMultiplier>
-			<!-- K-Mod: Was 4000; now counts per era. -->
 			<iGreatWorkCulture>800</iGreatWorkCulture>
 			<iEspionagePoints>0</iEspionagePoints>
 			<TerrainImpassables/>
@@ -23234,7 +23182,6 @@
 			<Capture>NONE</Capture>
 			<Combat>NONE</Combat>
 			<Domain>DOMAIN_LAND</Domain>
-			<!-- K-Mod: was UNITAI_GREAT_MERCHANT -->
 			<DefaultUnitAI>UNITAI_GREAT_SPY</DefaultUnitAI>
 			<Invisible>NONE</Invisible>
 			<SeeInvisible>NONE</SeeInvisible>
@@ -23258,7 +23205,6 @@
 			<bDestroy>0</bDestroy>
 			<bStealPlans>0</bStealPlans>
 			<bInvestigate>0</bInvestigate>
-			<!-- K-Mod: was 0 -->
 			<bCounterSpy>1</bCounterSpy>
 			<bFound>0</bFound>
 			<bGoldenAge>1</bGoldenAge>
@@ -23284,7 +23230,6 @@
 			<UnitCombatDefenders/>
 			<FlankingStrikes/>
 			<UnitAIs>
-				<!-- K-Mod: was UNITAI_GREAT_MERCHANT -->
 				<UnitAI>
 					<UnitAIType>UNITAI_GREAT_SPY</UnitAIType>
 					<bUnitAI>1</bUnitAI>
@@ -23407,7 +23352,6 @@
 			<bShiftDown>0</bShiftDown>
 			<bCtrlDown>0</bCtrlDown>
 			<iHotKeyPriority>0</iHotKeyPriority>
-			<!-- K-Mod -->
 			<FreePromotions>
 				<FreePromotion>
 					<PromotionType>PROMOTION_COMMANDO</PromotionType>

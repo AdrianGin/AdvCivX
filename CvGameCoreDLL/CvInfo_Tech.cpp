@@ -3,6 +3,7 @@
 #include "CvGameCoreDLL.h"
 #include "CvInfo_Tech.h"
 #include "CvXMLLoadUtility.h"
+#include "CvDLLXMLIFaceBase.h"
 
 
 CvTechInfo::CvTechInfo() :
@@ -175,23 +176,29 @@ void CvTechInfo::read(FDataStreamBase* stream)
 	stream->Read(GC.getNumFlavorTypes(), m_piFlavorValue);
 	// <advc.003t>
 	int iOrTechPrereqs;
-	stream->Read(&iOrTechPrereqs);
+	if (uiFlag >= 2)
+		stream->Read(&iOrTechPrereqs);
+	else iOrTechPrereqs = GC.getDefineINT(CvGlobals::NUM_OR_TECH_PREREQS);
 	if (iOrTechPrereqs > 0)
 	{
 		m_aePrereqOrTechs.resize(iOrTechPrereqs);
 		stream->Read(iOrTechPrereqs, (int*)&m_aePrereqOrTechs[0]);
 	}
 	int iAndTechPrereqs;
-	stream->Read(&iAndTechPrereqs);
+	if (uiFlag >= 2)
+		stream->Read(&iAndTechPrereqs);
+	else iAndTechPrereqs = GC.getDefineINT(CvGlobals::NUM_AND_TECH_PREREQS);
 	if (iAndTechPrereqs > 0)
 	{
 		m_aePrereqAndTechs.resize(iAndTechPrereqs);
 		stream->Read(iAndTechPrereqs, (int*)&m_aePrereqAndTechs[0]);
 	} // </advc.003t>
 	// K-Mod
-	SAFE_DELETE_ARRAY(m_piSpecialistExtraCommerce)
-	m_piSpecialistExtraCommerce = new int[NUM_COMMERCE_TYPES];
-	stream->Read(NUM_COMMERCE_TYPES, m_piSpecialistExtraCommerce);
+	if (uiFlag >= 1)
+	{
+		SAFE_DELETE_ARRAY(m_piSpecialistExtraCommerce)
+		m_piSpecialistExtraCommerce = new int[NUM_COMMERCE_TYPES];
+		stream->Read(NUM_COMMERCE_TYPES, m_piSpecialistExtraCommerce);	}
 	// K-Mod end
 	SAFE_DELETE_ARRAY(m_pbCommerceFlexible);
 	m_pbCommerceFlexible = new bool[NUM_COMMERCE_TYPES];
@@ -207,7 +214,10 @@ void CvTechInfo::read(FDataStreamBase* stream)
 void CvTechInfo::write(FDataStreamBase* stream)
 {
 	CvInfoBase::write(stream);
-	uint uiFlag = 0;
+	uint uiFlag;
+	//uiFlag = 0;
+	//uiFlag = 1; // K-Mod
+	uiFlag = 2; // advc.003t
 	stream->Write(uiFlag);
 
 	stream->Write(m_iAdvisorType);
@@ -254,13 +264,13 @@ void CvTechInfo::write(FDataStreamBase* stream)
 		int iOrTechPrereqs = getNumOrTechPrereqs();
 		stream->Write(iOrTechPrereqs);
 		if (iOrTechPrereqs > 0)
-			stream->Write(iOrTechPrereqs, (int*)&m_aePrereqOrTechs[0]);
+			stream->Write(iOrTechPrereqs, &m_aePrereqOrTechs[0]);
 	}
 	{
 		int iAndTechPrereqs = getNumAndTechPrereqs();
 		stream->Write(iAndTechPrereqs);
 		if (iAndTechPrereqs > 0)
-			stream->Write(iAndTechPrereqs, (int*)&m_aePrereqAndTechs[0]);
+			stream->Write(iAndTechPrereqs, &m_aePrereqAndTechs[0]);
 	} // </advc.003t>
 	stream->Write(NUM_COMMERCE_TYPES, m_piSpecialistExtraCommerce); // K-Mod
 	stream->Write(NUM_COMMERCE_TYPES, m_pbCommerceFlexible);
@@ -317,18 +327,18 @@ bool CvTechInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_iGridY, "iGridY");
 
 	// K-Mod
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"SpecialistExtraCommerces"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"SpecialistExtraCommerces"))
 	{
-		pXML->SetCommerceArray(&m_piSpecialistExtraCommerce);
+		pXML->SetCommerce(&m_piSpecialistExtraCommerce);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_piSpecialistExtraCommerce, NUM_COMMERCE_TYPES);
 	// K-Mod end
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"CommerceFlexible"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"CommerceFlexible"))
 	{
-		pXML->SetCommerceArray(&m_pbCommerceFlexible);
+		pXML->SetCommerce(&m_pbCommerceFlexible);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_pbCommerceFlexible, NUM_COMMERCE_TYPES);
 

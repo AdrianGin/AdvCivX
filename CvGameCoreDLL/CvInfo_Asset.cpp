@@ -2,6 +2,7 @@
 
 #include "CvGameCoreDLL.h"
 #include "CvXMLLoadUtility.h"
+#include "CvDLLXMLIFaceBase.h"
 
 
 const TCHAR* CvAssetInfoBase::getTag() const

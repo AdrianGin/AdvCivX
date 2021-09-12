@@ -5,6 +5,8 @@
 #include "CvCity.h"
 #include "CvUnit.h"
 #include "CvSelectionGroup.h"
+#include "FDataStreamBase.h"
+#include "CvDLLUtilityIFaceBase.h"
 
 
 CvMessageData* CvMessageData::createMessage(GameMessageTypes eType)
@@ -195,7 +197,9 @@ void CvNetPushOrder::Execute()
 		}
 
 		if (GC.getGame().getActivePlayer() == m_ePlayer)
+		{
 			gDLL->UI().updatePythonScreens();
+		}
 	}
 }
 
@@ -375,13 +379,13 @@ void CvNetUpdateCivics::Execute()
 void CvNetUpdateCivics::PutInBuffer(FDataStreamBase* pStream)
 {
 	pStream->Write(m_ePlayer);
-	m_aeCivics.write(pStream);
+	m_aeCivics.Write(pStream);
 }
 
 void CvNetUpdateCivics::SetFromBuffer(FDataStreamBase* pStream)
 {
 	pStream->Read((int*)&m_ePlayer);
-	m_aeCivics.read(pStream);
+	m_aeCivics.Read(pStream);
 }
 
 CvNetResearch::CvNetResearch() :
@@ -416,16 +420,21 @@ void CvNetResearch::Execute()
 		if (m_iDiscover > 0)
 		{
 			GET_TEAM(kPlayer.getTeam()).setHasTech(m_eTech, true, m_ePlayer, true, true);
+
 			if (m_iDiscover > 1)
 			{
 				if (m_ePlayer == GC.getGame().getActivePlayer())
+				{
 					kPlayer.chooseTech(m_iDiscover - 1);
+				}
 			}
 		}
 		else
 		{
 			if (m_eTech == NO_TECH)
+			{
 				kPlayer.clearResearchQueue();
+			}
 			else if (kPlayer.canEverResearch(m_eTech))
 			{
 				if ((GET_TEAM(kPlayer.getTeam()).isHasTech(m_eTech) ||
@@ -436,8 +445,11 @@ void CvNetResearch::Execute()
 				kPlayer.pushResearch(m_eTech, !m_bShift);
 			}
 		}
+
 		if (GC.getGame().getActivePlayer() == m_ePlayer)
+		{
 			gDLL->UI().updatePythonScreens();
+		}
 	}
 }
 
@@ -1233,12 +1245,11 @@ void CvNetPing::SetFromBuffer(FDataStreamBase* pStream)
 
 void CvNetPing::Execute()
 {
-	TeamTypes const eActiveTeam = GC.getGame().getActiveTeam();
-	if (eActiveTeam != NO_TEAM)
+	if (GC.getGame().getActiveTeam() != NO_TEAM)
 	{
-		if (TEAMID(m_ePlayer) == eActiveTeam ||
-			GET_TEAM(eActiveTeam).isVassal(TEAMID(m_ePlayer)) ||
-			GET_TEAM(m_ePlayer).isVassal(eActiveTeam))
+		if (TEAMID(m_ePlayer) == GC.getGame().getActiveTeam() ||
+			GET_TEAM(GC.getGame().getActiveTeam()).isVassal(TEAMID(m_ePlayer)) ||
+			GET_TEAM(m_ePlayer).isVassal(GC.getGame().getActiveTeam()))
 		{
 			gDLL->UI().doPing(m_iX, m_iY, m_ePlayer);
 		}

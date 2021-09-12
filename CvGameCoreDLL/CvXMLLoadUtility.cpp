@@ -4,7 +4,9 @@
 //  PURPOSE: Group of functions to load in the xml files for Civilization 4
 //  Copyright (c) 2003 Firaxis Games, Inc. All rights reserved.
 #include "CvGameCoreDLL.h"
+#include "CvDLLXMLIFaceBase.h"
 #include "CvXMLLoadUtility.h"
+#include "CvDLLUtilityIFaceBase.h"
 #include "CvInfo_Misc.h"
 
 static const int kBufSize = 2048;

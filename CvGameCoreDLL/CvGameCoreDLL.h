@@ -17,11 +17,8 @@
 #ifndef NOMINMAX
 	#define NOMINMAX
 #endif // </advc.fract>
-/*	<advc.make> That's Windows 2000, which is what Civ 4 requires anyway
-	(according to the publisher's website). Enables some more macros;
-	who knows, maybe also more optimized code. */
-#define _WIN32_WINNT 0x0500
 #include <windows.h>
+
 // advc.fract: Commented out, originally in CvGameCoreUtils.h.
 //#undef max
 //#undef min
@@ -52,52 +49,74 @@
 
 #define DllExport   __declspec( dllexport )
 
+typedef unsigned char		byte;
+// advc (note): A little strange to me, but consistent with WORD in winnt.h.
+typedef unsigned short		word;
+typedef unsigned int		uint;
+typedef unsigned long		dword;
+typedef unsigned __int64	qword;
+typedef wchar_t				wchar;
+
+/*	advc.001q: Put minus operators into the negative constants, otherwise,
+	if there's only a literal, it can get treated as an unsigned value. */
+#define MAX_CHAR							(0x7f)
+//#define MIN_CHAR							(0x80)
+#define MIN_CHAR							(-MAX_CHAR - 1)
+#define MAX_SHORT							(0x7fff)
+//#define MIN_SHORT							(0x8000)
+#define MIN_SHORT							(-MAX_SHORT - 1)
+#define MAX_INT								(0x7fffffff)
+//#define MIN_INT							(0x80000000)
+#define MIN_INT								(-MAX_INT - 1)
+#define MAX_UNSIGNED_CHAR					(0xff)
+#define MIN_UNSIGNED_CHAR					(0x00)
+#define MAX_UNSIGNED_SHORT					(0xffff)
+#define MIN_UNSIGNED_SHORT					(0x0000)
+#define MAX_UNSIGNED_INT					(0xffffffff)
+#define MIN_UNSIGNED_INT					(0x00000000)
+/*	advc: These are unused. FLT_MAX and FLT_MIN are used in a few places,
+	so let's keep using those exclusively. */
+/*__forceinline DWORD FtoDW( float f ) { return *(DWORD*)&f; }
+__forceinline float DWtoF( dword n ) { return *(float*)&n; }
+__forceinline float MaxFloat() { return DWtoF(0x7f7fffff); }*/
+
 // (advc.make: Some macros moved into new header Trigonometry.h)
 
 // <advc.003s> For generating variable names. (The layer of indirection is necessary.)
-#define CONCATVARNAME_IMPL(prefix, suffix) prefix##suffix
+#define CONCATVARNAME_IMPL(prefix, lineNum) prefix##lineNum
 #define CONCATVARNAME(prefix, suffix) CONCATVARNAME_IMPL(prefix, suffix) // </advc.003s>
-// <advc.007c> For debug output
-#define STRINGIFY_HELPER2(x) #x
-#define STRINGIFY_HELPER1(x) STRINGIFY_HELPER2(x)
-// (__FILE__ prints some path info; that gets too verbose.)
-#define CALL_LOC_STR __FUNCTION__ /*"(" __FILE__ ")"*/ "@L" STRINGIFY_HELPER1(__LINE__)
-// </advc.007c>
 
-/*	advc.enum (note): The order of these inclusions is tricky b/c the type trait
-	headers sometimes require other types to be defined, not just declared. */
 // <advc> Stuff moved into separate headers
 #include "GameBryo.h"
 #include "CvMemoryManager.h"
-#include "BoostPythonPCH.h"
+#include "BoostPythonPCH.h" // </advc>
 #pragma warning(pop) // advc.make: Restore project warning level
-#include "TypeChoice.h"
-#include "IntegerTraits.h" // </advc>
-#include "ScaledNumFwd.h" // advc.fract
 #include "FAssert.h"
-#include "ArithmeticUtils.h" // advc
 #include "CvGameCoreDLLDefNew.h"
 #include "FDataStreamBase.h"
-#include "FFreeListTrashArray.h" // (advc.003s: includes FreeListTraversal.h)
+#include "FFreeListTrashArray.h" // advc.003s: includes FreeListTraversal.h
 #include "LinkedList.h"
 #include "CvString.h"
 #include "BitUtil.h" // advc.enum
 #include "CvDefines.h"
-#include "CvRandom.h"
-#include "CvEnums.h" // (advc.enum: includes CvEnumMacros.h)
-#include "CvGlobals.h"
-#include "EnumTraits.h"
-#include "IntegerConversion.h" // advc
+#include "CvEnums.h" // includes CvInfoEnum.h
+/*  advc: Smaller numbers may already crash the EXE; the DLL assumes in some places
+	that player ids fit in a single byte. */
+BOOST_STATIC_ASSERT(MAX_PLAYERS < MAX_CHAR && MAX_TEAMS < MAX_CHAR);
 #include "CvStructs.h"
-#include "FProfiler.h" // (includes CvDLLUtilityIFaceBase.h)
+#include "CvDLLUtilityIFaceBase.h"
+
+//jason tests (advc.make: removed most of these)
+#include "CvRandom.h"
 #include "CvGameCoreUtils.h"
 #include "ScaledNum.h"
-#include "ArithmeticTraits.h"
-#include "EnumMap.h"
+#include "CvGlobals.h"
+#include "EnumMap2D.h" // advc.enum: Includes EnumMap.h
 #include "CvPythonCaller.h" // advc.003y
 #include "CvDLLLogger.h" // advc.003t
+#include "FProfiler.h"
 // <advc.003x> Include only parts of the old CvInfos.h (caveat: the order of these matters)
-#include "CvInfo_Base.h" // (advc.enum: includes CvInfo_EnumMap.h)
+#include "CvInfo_Base.h"
 #include "CvInfo_Asset.h"
 #include "CvInfo_Tech.h"
 #include "CvInfo_Civilization.h"
@@ -133,4 +152,4 @@
 	#define printToConsole(szMsg)
 #endif // </advc.wine>
 
-#endif
+#endif	// CvGameCoreDLL_h

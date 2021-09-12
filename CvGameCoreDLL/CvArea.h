@@ -24,11 +24,11 @@ public:
 	int countHasReligion(ReligionTypes eReligion, PlayerTypes eOwner = NO_PLAYER) const;				// Exposed to Python
 	int countHasCorporation(CorporationTypes eCorporation, PlayerTypes eOwner = NO_PLAYER) const;		// Exposed to Python																					// Exposed to Python
 
-	int getID() const { return m_iID; }																	// Exposed to Python
+	__forceinline int getID() const { return m_iID; }													// Exposed to Python
 	void setID(int iID);
 	
-	bool isWater() const { return m_bWater; }															// Exposed to Python
-	bool isLake() const																					// Exposed to Python
+	__forceinline bool isWater() const { return m_bWater; }												// Exposed to Python
+	inline bool isLake() const																			// Exposed to Python
 	{	// <advc.030>
 		//return (isWater() && (getNumTiles() <= GC.getLAKE_MAX_AREA_SIZE()));
 		return m_bLake;		
@@ -40,17 +40,13 @@ public:
 	bool canBeEntered(CvArea const& kFrom, CvUnit const* u = NULL) const;
 	// </advc.030>
 
-	PlotNumTypes getNumTiles() const																	// Exposed to Python
-	{
-		return (PlotNumTypes)m_iNumTiles; // advc.enum: Return type was int
-	}
+	inline PlotNumTypes getNumTiles() const																// Exposed to Python
+	{ return (PlotNumTypes)m_iNumTiles; } // advc.enum: Return type was int
 	void changeNumTiles(int iChange);
 	void changeNumOwnedTiles(int iChange);
-	PlotNumTypes getNumOwnedTiles() const																// Exposed to Python
-	{
-		return (PlotNumTypes)m_iNumOwnedTiles; // advc.enum
-	}
-	PlotNumTypes getNumUnownedTiles() const																// Exposed to Python
+	inline PlotNumTypes getNumOwnedTiles() const														// Exposed to Python
+	{ return (PlotNumTypes)m_iNumOwnedTiles; } // advc.enum
+	inline PlotNumTypes getNumUnownedTiles() const														// Exposed to Python
 	{
 		return (PlotNumTypes)(getNumTiles() - getNumOwnedTiles()); // advc.enum
 	}
@@ -61,20 +57,21 @@ public:
 	{
 		return getNumCities() - getCitiesPerPlayer(BARBARIAN_PLAYER);
 	}
+	int countCivs(bool bSubtractOCC = false) const; // with at least 1 city
 	bool hasAnyAreaPlayerBonus(BonusTypes eBonus) const;
 	int getBarbarianCitiesEverCreated() const;
 	void reportBarbarianCityCreated();
 	// </advc.300>
 
 	void changeNumRiverEdges(int iChange);																// Exposed to Python
-	int getNumRiverEdges() const { return m_iNumRiverEdges; }											// Exposed to Python
+	inline int getNumRiverEdges() const { return m_iNumRiverEdges; }									// Exposed to Python
 
 	void changeNumStartingPlots(int iChange);
 	// advc.enum: return type was int
-	PlotNumTypes getNumStartingPlots() const { return (PlotNumTypes)m_iNumStartingPlots; }				// Exposed to Python
+	inline PlotNumTypes getNumStartingPlots() const { return (PlotNumTypes)m_iNumStartingPlots; }		// Exposed to Python
 	
-	int getNumUnits() const { return m_iNumUnits; }														// Exposed to Python
-	int getNumCities() const { return m_iNumCities; }													// Exposed to Python
+	inline int getNumUnits() const { return m_iNumUnits; }												// Exposed to Python
+	inline int getNumCities() const { return m_iNumCities; }											// Exposed to Python
 	int getUnitsPerPlayer(PlayerTypes eIndex) const { return m_aiUnitsPerPlayer.get(eIndex); }			// Exposed to Python
 	void changeUnitsPerPlayer(PlayerTypes eIndex, int iChange);
 	// advc: Unused; removed.
@@ -130,7 +127,7 @@ public:
 	}
 	void setBestFoundValue(PlayerTypes eIndex, int iNewValue);
 
-	int getNumUnrevealedTiles(TeamTypes eIndex) const													// Exposed to Python
+	inline int getNumUnrevealedTiles(TeamTypes eIndex) const											// Exposed to Python
 	{
 		return getNumTiles() - getNumRevealedTiles(eIndex);
 	}
@@ -189,8 +186,11 @@ public:
 	{
 		return m_aiBonuses.get(eBonus);
 	}
-	int getNumTotalBonuses() const;																		// Exposed to Python
-	bool isAnyBonus() const { return m_aiBonuses.isAnyNonDefault(); } // advc.opt
+	int getNumTotalBonuses() const																		// Exposed to Python
+	{
+		return m_aiBonuses.getTotal();
+	}
+	bool isAnyBonus() const { return m_aiBonuses.hasContent(); } // advc.opt
 	void changeNumBonuses(BonusTypes eBonus, int iChange);
 	// advc.opt: No longer used
 	/*int getNumImprovements(ImprovementTypes eImprovement) const;										// Exposed to Python
@@ -211,31 +211,27 @@ protected:
 	bool m_bWater;
 	// <advc.030>
 	bool m_bLake;
-	int m_iRepresentativeAreaId; // </advc.030>
-	/*	<advc.enum> (advc.030 - note: Most of these will remain unused
-		for water areas, and water areas can be quite numerous due to sea ice.
-		Array-based maps with lazy allocation should work best here.) */
-	ArrayEnumMap<PlayerTypes,int,short> m_aiUnitsPerPlayer;
-	ArrayEnumMap<PlayerTypes,int,short> m_aiCitiesPerPlayer;
-	ArrayEnumMap<PlayerTypes,int,short> m_aiPopulationPerPlayer;
-	ArrayEnumMap<PlayerTypes,int,char> m_aiBuildingGoodHealth;
-	ArrayEnumMap<PlayerTypes,int,char> m_aiBuildingBadHealth;
-	ArrayEnumMap<PlayerTypes,int,char> m_aiBuildingHappiness;
-	ArrayEnumMap<PlayerTypes,int,char> m_aiTradeRoutes; // advc.310
-	ArrayEnumMap<PlayerTypes,int,char> m_aiFreeSpecialist;
-	ArrayEnumMap<PlayerTypes,int> m_aiPower;
-	ArrayEnumMap<PlayerTypes,int,short> m_aiBestFoundValue;
-	ArrayEnumMap<TeamTypes,int,PlotNumInt> m_aiNumRevealedTiles;
-	ArrayEnumMap<TeamTypes,int,char> m_aiCleanPowerCount;
-	ArrayEnumMap<TeamTypes,int,char> m_aiBorderObstacleCount;
-	ArrayEnumMap<TeamTypes,AreaAITypes> m_aeAreaAIType;
-	ArrayEnumMap<BonusTypes,int,short> m_aiBonuses;
-	// advc.opt: was only used for CvMapGenerator::addGoodies
-	//ArrayEnumMap<ImprovementTypes,int> m_aiImprovements;
-	Enum2IntEncMap<ArrayEnumMap<PlayerTypes,YieldChangeMap::enc_t>,
-			YieldChangeMap> m_aaiYieldRateModifier;
-	ArrayEnumMap2D<PlayerTypes,UnitAITypes,int,short> m_aaiNumTrainAIUnits;
-	ArrayEnumMap2D<PlayerTypes,UnitAITypes,int,short> m_aaiNumAIUnits; // </advc.enum>
+	int m_iRepresentativeAreaId;
+	// </advc.030>  // <advc.enum> Tbd.: Use <...,short> for all of these?
+	EnumMap<PlayerTypes,int> m_aiUnitsPerPlayer;
+	EnumMap<PlayerTypes,int> m_aiCitiesPerPlayer;
+	EnumMap<PlayerTypes,int> m_aiPopulationPerPlayer;
+	EnumMap<PlayerTypes,int> m_aiBuildingGoodHealth;
+	EnumMap<PlayerTypes,int> m_aiBuildingBadHealth;
+	EnumMap<PlayerTypes,int> m_aiBuildingHappiness;
+	EnumMap<PlayerTypes,int> m_aiTradeRoutes; // advc.310
+	EnumMap<PlayerTypes,int> m_aiFreeSpecialist;
+	EnumMap<PlayerTypes,int> m_aiPower;
+	EnumMap<PlayerTypes,int> m_aiBestFoundValue;
+	EnumMap<TeamTypes,int> m_aiNumRevealedTiles;
+	EnumMap<TeamTypes,int> m_aiCleanPowerCount;
+	EnumMap<TeamTypes,int> m_aiBorderObstacleCount;
+	EnumMap<TeamTypes,AreaAITypes> m_aeAreaAIType;
+	EnumMap<BonusTypes,int> m_aiBonuses;
+	//EnumMap<ImprovementTypes,int> m_aiImprovements; // advc.opt: was only used for CvMapGenerator::addGoodies
+	EnumMap2D<PlayerTypes,YieldTypes,short> m_aaiYieldRateModifier;
+	EnumMap2D<PlayerTypes,UnitAITypes,int> m_aaiNumTrainAIUnits;
+	EnumMap2D<PlayerTypes,UnitAITypes,int> m_aaiNumAIUnits; // </advc.enum>
 
 	IDInfo* m_aTargetCities;
 

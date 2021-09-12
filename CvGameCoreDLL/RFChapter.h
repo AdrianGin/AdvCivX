@@ -5,7 +5,7 @@
 
 #include "RFChapterScore.h"
 
-/*  advc.700: New class. Encapsulates data about a chapter of a
+/*  <advc.700>: New class. Encapsulates data about a chapter of a
 	Rise & Fall game. */
 class RFChapter {
 
@@ -71,5 +71,7 @@ private:
 	bool retireRecommended;
 	bool repeat;
 };
+
+// </advc.700>
 
 #endif

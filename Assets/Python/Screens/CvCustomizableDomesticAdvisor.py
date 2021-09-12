@@ -208,19 +208,6 @@ class CvCustomizableDomesticAdvisor:
 		self.currentPage = None
 		self.visiblePage = None
 
-		# advc.004: Cut from the list initializer below (sat between "GOLD" and "GREATPOEPLE").
-		# These columns leak info about rival cities.
-		'''
-				("GRANK_BASE_COMMERCE",		42,		"int",	None,					None,					0,									self.findGlobalBaseYieldRateRank, YieldTypes.YIELD_COMMERCE,		"u\"B\" + self.commerceIcon + u\"g\""),
-				("GRANK_BASE_FOOD",			42,		"int",	None,					None,					0,									self.findGlobalBaseYieldRateRank, YieldTypes.YIELD_FOOD,			"u\"B\" + self.foodIcon + u\"g\""),
-				("GRANK_BASE_PRODUCTION",	42,		"int",	None,					None,					0,									self.findGlobalBaseYieldRateRank, YieldTypes.YIELD_PRODUCTION,		"u\"B\" + self.hammerIcon + u\"g\""),
-				("GRANK_COMMERCE",			38,		"int",	None,					None,					0,									self.findGlobalYieldRateRank, YieldTypes.YIELD_COMMERCE,			"self.commerceIcon + u\"g\""),
-				("GRANK_FOOD",				38,		"int",	None,					None,					0,									self.findGlobalYieldRateRank, YieldTypes.YIELD_FOOD,				"self.foodIcon + u\"g\""),
-				("GRANK_PRODUCTION",		38,		"int",	None,					None,					0,									self.findGlobalYieldRateRank, YieldTypes.YIELD_PRODUCTION,			"self.hammerIcon + u\"g\""),
-				("GRANK_CULTURE",			38,		"int",	None,					None,					0,									self.findGlobalCommerceRateRank, CommerceTypes.COMMERCE_CULTURE,	"self.cultureIcon + u\"g\""),
-				("GRANK_GOLD",				38,		"int",	None,					None,					0,									self.findGlobalCommerceRateRank, CommerceTypes.COMMERCE_GOLD,		"self.goldIcon + u\"g\""),
-				("GRANK_RESEARCH",			38,		"int",	None,					None,					0,									self.findGlobalCommerceRateRank, CommerceTypes.COMMERCE_RESEARCH,	"self.researchIcon + u\"g\""),
-		'''
 		self.COLUMNS_LIST = [
 				# Name                      Width    Type   CyCityFunction0			CyCityFunction1			Arg									selfFunction							Arg							Title
 
@@ -253,6 +240,15 @@ class CvCustomizableDomesticAdvisor:
 				("FREE_EXPERIENCE_AIR",		30,		"int",	None,					None,					0,									self.calculateFreeExperience,			"A",						"self.airIcon"),
 				("GARRISON",				30,		"int",	CyCity.getMilitaryHappinessUnits,	None,		0,									None,									None,						"self.militaryIcon"),
 				("GOLD",					38,		"int",	None,					CyCity.getCommerceRate, CommerceTypes.COMMERCE_GOLD,		None,									None,						"self.goldIcon"),
+				("GRANK_BASE_COMMERCE",		42,		"int",	None,					None,					0,									self.findGlobalBaseYieldRateRank, YieldTypes.YIELD_COMMERCE,		"u\"B\" + self.commerceIcon + u\"g\""),
+				("GRANK_BASE_FOOD",			42,		"int",	None,					None,					0,									self.findGlobalBaseYieldRateRank, YieldTypes.YIELD_FOOD,			"u\"B\" + self.foodIcon + u\"g\""),
+				("GRANK_BASE_PRODUCTION",	42,		"int",	None,					None,					0,									self.findGlobalBaseYieldRateRank, YieldTypes.YIELD_PRODUCTION,		"u\"B\" + self.hammerIcon + u\"g\""),
+				("GRANK_COMMERCE",			38,		"int",	None,					None,					0,									self.findGlobalYieldRateRank, YieldTypes.YIELD_COMMERCE,			"self.commerceIcon + u\"g\""),
+				("GRANK_FOOD",				38,		"int",	None,					None,					0,									self.findGlobalYieldRateRank, YieldTypes.YIELD_FOOD,				"self.foodIcon + u\"g\""),
+				("GRANK_PRODUCTION",		38,		"int",	None,					None,					0,									self.findGlobalYieldRateRank, YieldTypes.YIELD_PRODUCTION,			"self.hammerIcon + u\"g\""),
+				("GRANK_CULTURE",			38,		"int",	None,					None,					0,									self.findGlobalCommerceRateRank, CommerceTypes.COMMERCE_CULTURE,	"self.cultureIcon + u\"g\""),
+				("GRANK_GOLD",				38,		"int",	None,					None,					0,									self.findGlobalCommerceRateRank, CommerceTypes.COMMERCE_GOLD,		"self.goldIcon + u\"g\""),
+				("GRANK_RESEARCH",			38,		"int",	None,					None,					0,									self.findGlobalCommerceRateRank, CommerceTypes.COMMERCE_RESEARCH,	"self.researchIcon + u\"g\""),
 				("GREATPEOPLE",				45,		"int",	CyCity.getGreatPeopleProgress,	None,			0,									None,									None,						"self.figureheadIcon"),
 				("GREATPEOPLE_RATE",		38,		"int",	CyCity.getGreatPeopleRate,		None,			0,									None,									None,						"self.figureheadIcon + u\"R\""),
 				("GREATPEOPLE_TURNS",		38,		"int",	None,					None,					None,								self.calculateGreatPeopleTurns,			None,						"self.figureheadIcon + u\"T\""),
@@ -265,9 +261,8 @@ class CvCustomizableDomesticAdvisor:
 				("HURRY_POP_GOLD",			38,		"int",	None,					None,					0,									self.calculateWhipOverflowGold,			None,						"u\"H\" + self.goldIcon"),
 				("HURRY_POP_ANGER",			38,		"int",	None,					None,					0,									self.calculateWhipAnger,				None,						"u\"H\" + self.unhappyIcon"),
 				("LIBERATE",				35,		"int",	None,					None,					0,									self.canLiberate,						None,						"self.fistIcon"),
-				# advc.004: Wrap CyCity.getX/Y into self.getX/Y
-				("LOCATION_X",				50,		"int",	None,					None,					0,									self.getX,								None,						"u\"X\""),
-				("LOCATION_Y",				50,		"int",	None,					None,					0,									self.getY,								None,						"u\"Y\""),
+				("LOCATION_X",				50,		"int",	CyCity.getX,			None,					0,									None,									None,						"u\"X\""),
+				("LOCATION_Y",				50,		"int",	CyCity.getY,			None,					0,									None,									None,						"u\"Y\""),
 				("MAINTENANCE",				30,		"int",	CyCity.getMaintenance,	None,					0,									None,									None,						"self.redGoldIcon"),
 				("NRANK_BASE_COMMERCE",		42,		"int",	None,					CyCity.findBaseYieldRateRank, YieldTypes.YIELD_COMMERCE,	None,									None,						"u\"B\" + self.commerceIcon + u\"n\""),
 				("NRANK_BASE_FOOD",			42,		"int",	None,					CyCity.findBaseYieldRateRank, YieldTypes.YIELD_FOOD,		None,									None,						"u\"B\" + self.foodIcon + u\"n\""),
@@ -1123,7 +1118,7 @@ class CvCustomizableDomesticAdvisor:
 		if self.isFlavorful:
 
 			screen.show(self.RENAME_PAGE_NAME)
-			#screen.show(self.RENAME_PAGE_NAME) advc.001 (from MNAI): duplicate
+			screen.show(self.RENAME_PAGE_NAME)
 			screen.show(self.ADD_PAGE_NAME)
 			screen.show(self.DEL_PAGE_NAME)
 			screen.show(self.PAGE_UP_NAME)
@@ -1262,8 +1257,7 @@ class CvCustomizableDomesticAdvisor:
  		nFood = city.foodDifference (True)
 
 		# If this is a food production (i.e., worker or settler)
-		# advc.189: 0 food also means no growth
-		if self.isFoodProduction(city.getProductionName()) or nFood == 0:
+		if (self.isFoodProduction(city.getProductionName())):
 			# We need to indicate there's no growth manually
 			szReturn = u"-"
 		else:
@@ -1272,11 +1266,10 @@ class CvCustomizableDomesticAdvisor:
 
 		# Not enough food, so calculate how many turns until we starve.
 		# We put this here because we still starve if building a food production
-		# advc.189: Not needed anymore; getFoodTurnsLeft returns starvation turns (as a negative number).
-		#if nFood < 0:
+		if nFood < 0:
 			# Use floor divide (//) because we want the number it'll drop below 0
 			# (that's also the reason for the additional 1)
-		#	szReturn = unicode ((city.getFood()+1) // nFood)
+			szReturn = unicode ((city.getFood()+1) // nFood)
 
 		return szReturn
 
@@ -1642,18 +1635,6 @@ class CvCustomizableDomesticAdvisor:
 			return self.objectHave
 		else:
 			return self.objectNotPossible
-
-	# <advc.004> Reveal coordinates only once the map has been centered
-	def getX (self, city, szKey, arg):
-		if PyPlayer(CyGame().getActivePlayer()).getTeam().isMapCentering():
-			return city.getY()
-		return "?"
-
-	def getY (self, city, szKey, arg):
-		if PyPlayer(CyGame().getActivePlayer()).getTeam().isMapCentering():
-			return city.getY()
-		return "?"
-	# <advc.004>
 
 	def calculateValue (self, city, szKey, arg):
 

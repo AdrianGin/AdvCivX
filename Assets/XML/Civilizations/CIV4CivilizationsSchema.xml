@@ -321,18 +321,10 @@
 	<ElementType name="iMaxGlobalBuildingProductionModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iMaxTeamBuildingProductionModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iMaxPlayerBuildingProductionModifier" content="textOnly" dt:type="int"/>
-	<!-- advc.908b -->
-	<ElementType name="iFreeCityCulture" content="textOnly" dt:type="int"/>
 	<ElementType name="iExtraYieldThreshold" content="textOnly" dt:type="int"/>
 	<ElementType name="ExtraYieldThresholds" content="eltOnly">
 		<element type="iExtraYieldThreshold" minOccurs="0" maxOccurs="*"/>
 	</ElementType>
-	<!-- advc.908a: start -->
-	<ElementType name="iExtraYieldNaturalThreshold" content="textOnly" dt:type="int"/>
-	<ElementType name="ExtraYieldNaturalThresholds" content="eltOnly">
-		<element type="iExtraYieldNaturalThreshold" minOccurs="0" maxOccurs="*"/>
-	</ElementType>
-	<!-- advc.908a: end -->
 	<ElementType name="iYield" content="textOnly" dt:type="int"/>
 	<ElementType name="TradeYieldModifiers" content="eltOnly">
 		<element type="iYield" minOccurs="0" maxOccurs="*"/>
@@ -366,8 +358,6 @@
 		<element type="Type"/>
 		<element type="Description"/>
 		<element type="ShortDescription"/>
-		<!-- advc.004y: -->
-		<element type="Civilopedia" minOccurs="0"/>
 		<element type="Help" minOccurs="0"/>
 		<element type="iHealth"/>
 		<element type="iHappiness"/>
@@ -380,14 +370,7 @@
 		<element type="iMaxGlobalBuildingProductionModifier"/>
 		<element type="iMaxTeamBuildingProductionModifier"/>
 		<element type="iMaxPlayerBuildingProductionModifier"/>
-		<!-- advc.908b: NB - gets adjusted to game speed -->
-		<element type="iFreeCityCulture" minOccurs="0"/>
 		<element type="ExtraYieldThresholds"/>
-		<!-- advc.908a: Like ExtraYieldThresholds, but the extra yield
-			 is also granted if a the _natural_ tile yield plus one
-			 reaches the threshold. Not intended to be used together with
-			 ExtraYieldThresholds; well, they would be cumulative I guess. -->
-		<element type="ExtraYieldNaturalThresholds" minOccurs="0"/>
 		<element type="TradeYieldModifiers"/>
 		<element type="CommerceChanges"/>
 		<element type="CommerceModifiers"/>

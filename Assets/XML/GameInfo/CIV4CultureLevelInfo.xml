@@ -71,8 +71,7 @@
 				</SpeedThreshold>
 				<SpeedThreshold>
 					<GameSpeedType>GAMESPEED_QUICK</GameSpeedType>
-					<!-- advc.251: was 5 -->
-					<iThreshold>6</iThreshold>
+					<iThreshold>5</iThreshold>
 				</SpeedThreshold>
 			</SpeedThresholds>
 		</CultureLevelInfo>
@@ -95,8 +94,7 @@
 				</SpeedThreshold>
 				<SpeedThreshold>
 					<GameSpeedType>GAMESPEED_QUICK</GameSpeedType>
-					<!-- advc.251: was 50 -->
-					<iThreshold>60</iThreshold>
+					<iThreshold>50</iThreshold>
 				</SpeedThreshold>
 			</SpeedThresholds>
 		</CultureLevelInfo>
@@ -119,8 +117,7 @@
 				</SpeedThreshold>
 				<SpeedThreshold>
 					<GameSpeedType>GAMESPEED_QUICK</GameSpeedType>
-					<!-- advc.251: was 250 -->
-					<iThreshold>300</iThreshold>
+					<iThreshold>250</iThreshold>
 				</SpeedThreshold>
 			</SpeedThresholds>
 		</CultureLevelInfo>
@@ -143,8 +140,7 @@
 				</SpeedThreshold>
 				<SpeedThreshold>
 					<GameSpeedType>GAMESPEED_QUICK</GameSpeedType>
-					<!-- advc.251: was 2500 -->
-					<iThreshold>3000</iThreshold>
+					<iThreshold>2500</iThreshold>
 				</SpeedThreshold>
 			</SpeedThresholds>
 		</CultureLevelInfo>

@@ -71,32 +71,32 @@ public:
 	typedef std::vector<CvPlayerAI*> PlayerVector;
 	typedef std::vector<CvTeamAI*> TeamVector;
 	template<>
-	PlayerVector const* getAgentSeqCache<CvPlayerAI>(AgentSeqCache eCacheID) const
+	__forceinline PlayerVector const* getAgentSeqCache<CvPlayerAI>(AgentSeqCache eCacheID) const
 	{
 		return &playerSeqCache(eCacheID);
 	}
 	template<>
-	PlayerVector const* getPerTeamSeqCache<CvPlayerAI>(AgentSeqCache eCacheID, TeamTypes eTeam) const
+	__forceinline PlayerVector const* getPerTeamSeqCache<CvPlayerAI>(AgentSeqCache eCacheID, TeamTypes eTeam) const
 	{
 		return &memberSeqCache(eCacheID, eTeam);
 	}
 	template<>
-	PlayerVector const* getNoAgents<CvPlayerAI>() const
+	__forceinline PlayerVector const* getNoAgents<CvPlayerAI>() const
 	{
 		return &m_noPlayers;
 	}
 	template<>
-	TeamVector const* getAgentSeqCache<CvTeamAI>(AgentSeqCache eCacheID) const
+	__forceinline TeamVector const* getAgentSeqCache<CvTeamAI>(AgentSeqCache eCacheID) const
 	{
 		return &teamSeqCache(eCacheID);
 	}
 	template<>
-	TeamVector const* getPerTeamSeqCache<CvTeamAI>(AgentSeqCache eCacheID, TeamTypes eTeam) const
+	__forceinline TeamVector const* getPerTeamSeqCache<CvTeamAI>(AgentSeqCache eCacheID, TeamTypes eTeam) const
 	{
 		return &teamPerTeamSeqCache(eCacheID, eTeam);
 	}
 	template<>
-	TeamVector const* getNoAgents<CvTeamAI>() const
+	__forceinline TeamVector const* getNoAgents<CvTeamAI>() const
 	{
 		return &m_noTeams;
 	}
@@ -154,40 +154,40 @@ public:
 private:
 	/*  Could avoid this mapping by using separate enums for agent status and agent relation caches.
 		This would be awkward for AgentIterator though. */
-	int perTeamCacheIndex(AgentSeqCache eCacheID) const
+	__forceinline int perTeamCacheIndex(AgentSeqCache eCacheID) const
 	{
 		return eCacheID - NUM_STATUS_CACHES;
 	}
-	PlayerVector& playerSeqCache(AgentSeqCache eCacheID)
+	__forceinline PlayerVector& playerSeqCache(AgentSeqCache eCacheID)
 	{
 		return m_playerSeqCache[eCacheID];
 	}
-	TeamVector& teamSeqCache(AgentSeqCache eCacheID)
+	__forceinline TeamVector& teamSeqCache(AgentSeqCache eCacheID)
 	{
 		return m_teamSeqCache[eCacheID];
 	}
-	PlayerVector& memberSeqCache(AgentSeqCache eCacheID, TeamTypes eTeam)
+	__forceinline PlayerVector& memberSeqCache(AgentSeqCache eCacheID, TeamTypes eTeam)
 	{
 		return m_memberSeqCache[perTeamCacheIndex(eCacheID)][eTeam];
 	}
-	TeamVector& teamPerTeamSeqCache(AgentSeqCache eCacheID, TeamTypes eTeam)
+	__forceinline TeamVector& teamPerTeamSeqCache(AgentSeqCache eCacheID, TeamTypes eTeam)
 	{
 		return m_teamPerTeamSeqCache[perTeamCacheIndex(eCacheID)][eTeam];
 	}
 	// The same with const
-	PlayerVector const& playerSeqCache(AgentSeqCache eCacheID) const
+	__forceinline PlayerVector const& playerSeqCache(AgentSeqCache eCacheID) const
 	{
 		return m_playerSeqCache[eCacheID];
 	}
-	TeamVector const& teamSeqCache(AgentSeqCache eCacheID) const
+	__forceinline TeamVector const& teamSeqCache(AgentSeqCache eCacheID) const
 	{
 		return m_teamSeqCache[eCacheID];
 	}
-	PlayerVector const& memberSeqCache(AgentSeqCache eCacheID, TeamTypes eTeam) const
+	__forceinline PlayerVector const& memberSeqCache(AgentSeqCache eCacheID, TeamTypes eTeam) const
 	{
 		return m_memberSeqCache[perTeamCacheIndex(eCacheID)][eTeam];
 	}
-	TeamVector const& teamPerTeamSeqCache(AgentSeqCache eCacheID, TeamTypes eTeam) const
+	__forceinline TeamVector const& teamPerTeamSeqCache(AgentSeqCache eCacheID, TeamTypes eTeam) const
 	{
 		return m_teamPerTeamSeqCache[perTeamCacheIndex(eCacheID)][eTeam];
 	}

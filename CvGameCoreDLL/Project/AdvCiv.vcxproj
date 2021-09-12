@@ -21,8 +21,8 @@
       <Configuration>Debug-fast</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="_Release-fast|Win32">
-      <Configuration>_Release-fast</Configuration>
+    <ProjectConfiguration Include="Release-fast|Win32">
+      <Configuration>Release-fast</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
@@ -41,7 +41,6 @@
     <ClCompile Include="..\AgentIteratorTest.cpp" />
     <ClCompile Include="..\AIStrengthMemoryMap.cpp" />
     <ClCompile Include="..\ArmamentForecast.cpp" />
-    <ClCompile Include="..\BarbarianWeightMap.cpp" />
     <ClCompile Include="..\BBAILog.cpp" />
     <ClCompile Include="..\CitySiteEvaluator.cpp" />
     <ClCompile Include="..\CombatOdds.cpp" />
@@ -56,7 +55,7 @@
     <ClCompile Include="..\CvDiploParameters.cpp" />
     <ClCompile Include="..\CvDLLButtonPopup.cpp" />
     <ClCompile Include="..\CvDLLEntity.cpp" />
-    <ClCompile Include="..\CvDLLInterfaceIFaceBase.cpp" />
+    <ClCompile Include="..\CvDLLInterfaceIBase.cpp" />
     <ClCompile Include="..\CvDLLLogger.cpp" />
     <ClCompile Include="..\CvDLLPython.cpp" />
     <ClCompile Include="..\CvDllPythonEvents.cpp" />
@@ -166,12 +165,12 @@
     <ClCompile Include="..\CyTeamInterface.cpp" />
     <ClCompile Include="..\CyUnit.cpp" />
     <ClCompile Include="..\CyUnitInterface1.cpp" />
-    <ClCompile Include="..\EnumMapTest.cpp" />
     <ClCompile Include="..\FAStarFunc.cpp" />
     <ClCompile Include="..\GroupPathFinder.cpp" />
     <ClCompile Include="..\KmodPathFinderLegacy.cpp" />
     <ClCompile Include="..\PlayerHistory.cpp" />
     <ClCompile Include="..\ReproTest.cpp" />
+    <ClCompile Include="..\EnumMapTest.cpp" />
     <ClCompile Include="..\FDialogTemplate.cpp" />
     <ClCompile Include="..\FFreeListTrashArray.cpp" />
     <ClCompile Include="..\FProfiler.cpp" />
@@ -205,10 +204,7 @@
     <ClInclude Include="..\AgentPredicates.h" />
     <ClInclude Include="..\AIStrategies.h" />
     <ClInclude Include="..\AIStrengthMemoryMap.h" />
-    <ClInclude Include="..\ArithmeticTraits.h" />
-    <ClInclude Include="..\ArithmeticUtils.h" />
     <ClInclude Include="..\ArmamentForecast.h" />
-    <ClInclude Include="..\BarbarianWeightMap.h" />
     <ClInclude Include="..\BBAILog.h" />
     <ClInclude Include="..\BitUtil.h" />
     <ClInclude Include="..\BoostPythonPCH.h" />
@@ -243,7 +239,6 @@
     <ClInclude Include="..\CvDLLUtilityIFaceBase.h" />
     <ClInclude Include="..\CvDLLWidgetData.h" />
     <ClInclude Include="..\CvDLLXMLIFaceBase.h" />
-    <ClInclude Include="..\CvEnumMacros.h" />
     <ClInclude Include="..\CvEnums.h" />
     <ClInclude Include="..\CvEventReporter.h" />
     <ClInclude Include="..\CvFractal.h" />
@@ -266,7 +261,6 @@
     <ClInclude Include="..\CvInfo_Civics.h" />
     <ClInclude Include="..\CvInfo_Civilization.h" />
     <ClInclude Include="..\CvInfo_Command.h" />
-    <ClInclude Include="..\CvInfo_EnumMap.h" />
     <ClInclude Include="..\CvInfo_GameOption.h" />
     <ClInclude Include="..\CvInfo_Misc.h" />
     <ClInclude Include="..\CvInfo_Organization.h" />
@@ -276,6 +270,7 @@
     <ClInclude Include="..\CvInfo_Terrain.h" />
     <ClInclude Include="..\CvInfo_Unit.h" />
     <ClInclude Include="..\CvInfo_Water.h" />
+    <ClInclude Include="..\CvInfoEnums.h" />
     <ClInclude Include="..\CvInitCore.h" />
     <ClInclude Include="..\CvMap.h" />
     <ClInclude Include="..\CvMapGenerator.h" />
@@ -323,14 +318,10 @@
     <ClInclude Include="..\CySelectionGroup.h" />
     <ClInclude Include="..\CyTeam.h" />
     <ClInclude Include="..\CyUnit.h" />
-    <ClInclude Include="..\EnumMap.h" />
-    <ClInclude Include="..\EnumTraits.h" />
     <ClInclude Include="..\FAStarFunc.h" />
     <ClInclude Include="..\FAStarNode.h" />
     <ClInclude Include="..\GameBryo.h" />
     <ClInclude Include="..\GroupPathFinder.h" />
-    <ClInclude Include="..\IntegerConversion.h" />
-    <ClInclude Include="..\IntegerTraits.h" />
     <ClInclude Include="..\KmodPathFinder.h" />
     <ClInclude Include="..\KmodPathFinderLegacy.h" />
     <ClInclude Include="..\LinkedListTraversal.h" />
@@ -338,6 +329,8 @@
     <ClInclude Include="..\PlotAdjListTraversal.h" />
     <ClInclude Include="..\PragmaWarnings.h" />
     <ClInclude Include="..\ReproTest.h" />
+    <ClInclude Include="..\EnumMap.h" />
+    <ClInclude Include="..\EnumMap2D.h" />
     <ClInclude Include="..\FAssert.h" />
     <ClInclude Include="..\FDataStreamBase.h" />
     <ClInclude Include="..\FDialogTemplate.h" />
@@ -354,7 +347,6 @@
     <ClInclude Include="..\PlotRadiusIterator.h" />
     <ClInclude Include="..\PlotRange.h" />
     <ClInclude Include="..\ScaledNum.h" />
-    <ClInclude Include="..\ScaledNumFwd.h" />
     <ClInclude Include="..\StartingPositionIteration.h" />
     <ClInclude Include="..\TeamPathFinder.h" />
     <ClInclude Include="..\Trigonometry.h" />
@@ -414,7 +406,7 @@
     <ConfigurationType>Makefile</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='_Release-fast|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-fast|Win32'" Label="Configuration">
     <ConfigurationType>Makefile</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CLRSupport>true</CLRSupport>
@@ -450,7 +442,7 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug-fast|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='_Release-fast|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-fast|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Final_Release-fast|Win32'" Label="PropertySheets">
@@ -536,7 +528,7 @@ nmake precompile /NOLOGO
 bin\jom build /NOLOGO</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>set TARGET=Profile
 nmake clean /NOLOGO</NMakeCleanCommandLine>
-    <AdditionalOptions>/DWIN32 /D_WINDOWS /D_USRDLL /DNDEBUG /DFINAL_RELEASE /DUSE_DATA_DIR /D_CODE_EDITOR /DUSE_TSC_PROFILER /DUSE_INTERNAL_PROFILER /DPROFILE_AI_AUTO_PLAY</AdditionalOptions>
+    <AdditionalOptions>/DWIN32 /D_WINDOWS /D_USRDLL /DNDEBUG /DFINAL_RELEASE /DUSE_DATA_DIR /D_CODE_EDITOR /DUSE_TSC_PROFILER /DUSE_INTERNAL_PROFILER</AdditionalOptions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-fast|Win32'">
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
@@ -555,7 +547,7 @@ bin\jom build /NOLOGO</NMakeReBuildCommandLine>
 nmake clean /NOLOGO</NMakeCleanCommandLine>
     <AdditionalOptions>/DWIN32 /D_WINDOWS /D_USRDLL /D_DEBUG /DUSE_DATA_DIR /D_CODE_EDITOR</AdditionalOptions>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='_Release-fast|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-fast|Win32'">
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeBuildCommandLine>set TARGET=Release
 nmake source_list /NOLOGO

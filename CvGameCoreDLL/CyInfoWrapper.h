@@ -21,15 +21,12 @@
 			function name. Return type is 'int'.
 	bPY_WRAP: Prepends "is", return type is 'bool'. */
 
-#define FRIEND_CY_INFO_PYTHON_INTERFACE \
-	friend void CyInfoPythonInterface1(); \
-	friend void CyInfoPythonInterface2(); \
-	friend void CyInfoPythonInterface3(); \
-	friend void CyInfoPythonInterface4()
-
 #define PY_WRAP(ReturnType, fnName, enumName) \
 	private: \
-		FRIEND_CY_INFO_PYTHON_INTERFACE; \
+		friend void CyInfoPythonInterface1(); \
+		friend void CyInfoPythonInterface2(); \
+		friend void CyInfoPythonInterface3(); \
+		friend void CyInfoPythonInterface4(); \
 		ReturnType py_##fnName(int i) const \
 		{ \
 			return fnName((enumName##Types)i); \
@@ -38,16 +35,5 @@
 
 #define iPY_WRAP(tagName, enumName) PY_WRAP(int, get##tagName, enumName)
 #define bPY_WRAP(tagName, enumName) PY_WRAP(bool, is##tagName, enumName)
-
-#define PY_WRAP_2D(ReturnType, fnName, firstEnumName, secondEnumName) \
-	private: \
-		FRIEND_CY_INFO_PYTHON_INTERFACE; \
-		ReturnType py_##fnName(int iFirst, int iSecond) const \
-		{ \
-			return fnName( \
-					(firstEnumName##Types)iFirst, \
-					(secondEnumName##Types)iSecond); \
-		} \
-	public:
 
 #endif

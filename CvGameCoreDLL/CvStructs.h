@@ -30,11 +30,11 @@ struct IDInfo
 {
 	/*	advc.opt: Default owner changed from NO_PLAYER to Barbarians so that
 		the owner doesn't need to be checked before calling FFreeListTrashArray::getAt. */
-	IDInfo(PlayerTypes eOwner = BARBARIAN_PLAYER, int iID = FFreeList::INVALID_INDEX) :
+	// advc.inl: inline keyword just to make sure
+	inline IDInfo(PlayerTypes eOwner = BARBARIAN_PLAYER, int iID = FFreeList::INVALID_INDEX) :
 		eOwner(eOwner), iID(iID)
-	{	/*	advc: Not worth slowing down assert builds I think. I've had it enabled
-			for quite some time. It's fine currently and not likely to break I think. */
-		//FAssert(iID != FFreeList::INVALID_INDEX || eOwner == BARBARIAN_PLAYER);
+	{
+		FAssert(iID != FFreeList::INVALID_INDEX || eOwner == BARBARIAN_PLAYER); // advc.test
 	}
 	void validateOwner(); // advc.opt
 
@@ -195,22 +195,27 @@ struct PlotExtraCost
 	void write(FDataStreamBase* pStream);
 };
 
-// advc.enum: Replaced with list enum map
-/*typedef std::vector< std::pair<BuildingClassTypes, int> > BuildingChangeArray;
-struct BuildingYieldChange {
+typedef std::vector< std::pair<BuildingClassTypes, int> > BuildingChangeArray;
+
+struct BuildingYieldChange
+{
 	BuildingClassTypes eBuildingClass;
 	YieldTypes eYield;
 	int iChange;
+
 	void read(FDataStreamBase* pStream);
 	void write(FDataStreamBase* pStream);
 };
-struct BuildingCommerceChange {
+
+struct BuildingCommerceChange
+{
 	BuildingClassTypes eBuildingClass;
 	CommerceTypes eCommerce;
 	int iChange;
+
 	void read(FDataStreamBase* pStream);
 	void write(FDataStreamBase* pStream);
-};*/
+};
 
 
 struct FOWVis

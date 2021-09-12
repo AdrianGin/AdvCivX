@@ -658,10 +658,7 @@
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_32</Description>
 		</HintInfo>
-		<!-- Skip 33; shouldn't be as frequent. -->
-		<HintInfo>
-			<Description>TXT_KEY_ADVC_HINT_34</Description>
-		</HintInfo>
+		<!-- Skip 33-34; shouldn't be as frequent. -->
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_35</Description>
 		</HintInfo>
@@ -685,12 +682,6 @@
 		<!-- Skip 46, 47, 49 -->
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_48</Description>
-		</HintInfo>
-		<HintInfo>
-			<Description>TXT_KEY_ADVC_HINT_50</Description>
-		</HintInfo>
-		<HintInfo>
-			<Description>TXT_KEY_ADVC_HINT_51</Description>
 		</HintInfo>
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_1</Description>
@@ -830,12 +821,6 @@
 		</HintInfo>
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_49</Description>
-		</HintInfo>
-		<HintInfo>
-			<Description>TXT_KEY_ADVC_HINT_50</Description>
-		</HintInfo>
-		<HintInfo>
-			<Description>TXT_KEY_ADVC_HINT_51</Description>
 		</HintInfo>
 	</HintInfos>
 </Civ4Hints>

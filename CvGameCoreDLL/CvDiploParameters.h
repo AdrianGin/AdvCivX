@@ -28,7 +28,7 @@ public:
 
 	DllExport DiploCommentTypes getDiploComment() const
 	{
-		return m_eCommentType;
+		return m_eCommentType; // advc.inl
 	}
 	DllExport void setOurOfferList(CLinkList<TradeData> const& kOurOffer);
 	DllExport const CLinkList<TradeData>& getOurOfferList() const;

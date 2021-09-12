@@ -50,7 +50,7 @@ public:
 	void init(int iNumSlots = 8);
 	void uninit();
 	T* getAt(int iID) const;
-	AIType* AI_getAt(int iID) const
+	__forceinline AIType* AI_getAt(int iID) const
 	{
 		return AI(getAt(iID));
 	}
@@ -63,35 +63,35 @@ public:
 
 	void load(T* pData);
 
-	int getNumSlots() const
+	inline int getNumSlots() const
 	{
 		return m_iNumSlots;
 	}
-	int getLastIndex() const
+	inline int getLastIndex() const
 	{
 		return m_iLastIndex;
 	}
-	void setLastIndex(int iNewValue)
+	inline void setLastIndex(int iNewValue)
 	{
 		m_iLastIndex = iNewValue;
 	}
-	int getFreeListHead() const
+	inline int getFreeListHead() const
 	{
 		return m_iFreeListHead;
 	}
-	void setFreeListHead(int iNewValue)
+	inline void setFreeListHead(int iNewValue)
 	{
 		m_iFreeListHead = iNewValue;
 	}
-	int getFreeListCount() const
+	inline int getFreeListCount() const
 	{
 		return m_iFreeListCount;
 	}
-	void setFreeListCount(int iNewValue)
+	inline void setFreeListCount(int iNewValue)
 	{
 		m_iFreeListCount = iNewValue;
 	}
-	int getCurrentID()
+	inline int getCurrentID()
 	{
 		return m_iCurrentID;
 	}
@@ -125,18 +125,18 @@ public:
 
 	// advc: The rest of the public functions are from FFreeListArrayBase ...
 
-	T* operator[](int iIndex) const
+	inline T* operator[](int iIndex) const
 	{
 		return getAt(iIndex);
 	}
 
 	// start at the beginning of the list and return the first item or NULL when done
-	T* beginIter(int* pIterIdx) const
+	inline T* beginIter(int* pIterIdx) const
 	{
 		*pIterIdx = 0;
 		return nextIter(pIterIdx);
 	}
-	AIType* AI_beginIter(int* pIterIdx) const
+	__forceinline AIType* AI_beginIter(int* pIterIdx) const
 	{
 		return AI(beginIter(pIterIdx));
 	}
@@ -155,18 +155,18 @@ public:
 		}
 		return NULL;
 	}
-	AIType* AI_nextIter(int* pIterIdx) const
+	__forceinline AIType* AI_nextIter(int* pIterIdx) const
 	{
 		return AI(nextIter(pIterIdx));
 	}
 
 	// start at the end of the list and return the last item or NULL when done
-	T* endIter(int* pIterIdx) const
+	inline T* endIter(int* pIterIdx) const
 	{
 		*pIterIdx = getIndexAfterLast()-1;
 		return prevIter(pIterIdx);
 	}
-	AIType* AI_endIter(int* pIterIdx) const
+	__forceinline AIType* AI_endIter(int* pIterIdx) const
 	{
 		return AI(endIter(pIterIdx));
 	}
@@ -185,17 +185,17 @@ public:
 		}
 		return NULL;
 	}
-	AIType* AI_prevIter(int* pIterIdx) const
+	__forceinline AIType* AI_prevIter(int* pIterIdx) const
 	{
 		return AI(prevIter(pIterIdx));
 	}
 
 	// Returns the iIndex after the last iIndex in the array containing an element
-	int getIndexAfterLast() const { return m_iLastIndex + 1; }
+	inline int getIndexAfterLast() const { return m_iLastIndex + 1; }
 
 	/*	Returns the number of elements in the array (NOTE: this is a non-packed array, so
 		this value is NOT the last iIndex in the array...) */
-	int getCount() const { return m_iLastIndex - m_iFreeListCount + 1; }
+	inline int getCount() const { return m_iLastIndex - m_iFreeListCount + 1; }
 
 protected:
 	// <advc> (from FFreeListArrayBase)
@@ -215,7 +215,7 @@ protected:
 	void growArray();
 	/*	advc.003u: This cast is safe b/c the add function only creates AIType objects.
 		Cf. other cast wrapper functions, e.g. CvPlayer::AI. */
-	AIType* AI(T* pData) const
+	__forceinline AIType* AI(T* pData) const
 	{
 		return reinterpret_cast<AIType*>(pData);
 	}

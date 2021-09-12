@@ -2,6 +2,7 @@
 
 #include "CvGameCoreDLL.h"
 #include "CvXMLLoadUtility.h"
+#include "CvDLLXMLIFaceBase.h"
 
 
 CvYieldInfo::CvYieldInfo() :
@@ -203,9 +204,9 @@ bool CvPlayerColorInfo::read(CvXMLLoadUtility* pXML)
 	if (!CvInfoBase::read(pXML))
 		return false;
 
-	pXML->SetInfoIDFromChildXmlVal(m_eColorTypePrimary, "ColorTypePrimary");
-	pXML->SetInfoIDFromChildXmlVal(m_eColorTypeSecondary, "ColorTypeSecondary");
-	pXML->SetInfoIDFromChildXmlVal(m_eTextColorType, "TextColorType");
+	pXML->SetInfoIDFromChildXmlVal((int&)m_eColorTypePrimary, "ColorTypePrimary");
+	pXML->SetInfoIDFromChildXmlVal((int&)m_eColorTypeSecondary, "ColorTypeSecondary");
+	pXML->SetInfoIDFromChildXmlVal((int&)m_eTextColorType, "TextColorType");
 
 	return true;
 }

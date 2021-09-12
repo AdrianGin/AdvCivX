@@ -26,7 +26,7 @@
 
 #define FOR_EACH_ADJ_PLOT_RAND_HELPER(kCenterPlot, pLoopPlot, CvPlotType, kRand) \
 	std::vector<int> aiANON_ADJ_LIST_INDICES((kCenterPlot).numAdjacentPlots()); \
-	(kRand).shuffle(aiANON_ADJ_LIST_INDICES); \
+	::shuffleVector(aiANON_ADJ_LIST_INDICES, (kRand)); \
 	int iANON_ADJ_LIST_POS = 0; \
 	for (CvPlotType* pLoopPlot; \
 		iANON_ADJ_LIST_POS < (kCenterPlot).numAdjacentPlots() && \

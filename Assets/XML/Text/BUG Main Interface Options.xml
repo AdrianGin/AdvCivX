@@ -74,8 +74,8 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__ENDTURNMESSAGE_HOVER</Tag>
-		<English>When checked, a flashing message "Press ENTER to end turn" is shown once all units and cities have been given orders (as in BtS). Otherwise, the "End Turn" button still pulses as it does in BtS, but no message is shown.</English>
-		<German>Blinkanzeige "Runde beenden mit EINGABETASTE" (wie in BtS), sobald alle Einheiten und Städte Befehle erhalten haben. Die rote Rundenende-Schaltfläche pulsiert auch wenn diese Option nicht angekreuzt ist.</German>
+		<English>When checked, a flashing message "Press ENTER to end turn" is shown once all units and cities have been given orders (as in BtS). Otherwise, the "End Turn" button still blinks as it does in BtS, but no message is shown.</English>
+		<German>Blinkanzeige "Runde beenden mit EINGABETASTE" (wie in BtS), sobald alle Einheiten und Städte Befehle erhalten haben. Die rote Rundenende-Schaltfläche blinkt auch wenn diese Option nicht angekreuzt ist.</German>
 	</TEXT>
 	
 	<!--TEXT>
@@ -650,9 +650,9 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__SEAPATROL_HOVER</Tag>
-		<English>Enables the "Sea Patrol" mission (except in network games). When disabled, the mission button is removed and the AI won't use the mission either.</English>
+		<English>Enables the "Sea Patrol" mission. When unchecked, the mission button is removed and the AI won't use the mission either.</English>
 		<French>Enables the "Patrouille des mers" mission. When unchecked, the mission button is removed and the AI won't use the mission either.</French>
-		<German>Erlaubt den Einheiten-Befehl "Seepatrouille" (außer in Netzwerk-Spielen)</German>
+		<German>Erlaubt den Einheiten-Befehl "Seepatrouille"</German>
 		<Italian>Enables the "Pattuglia marina" mission. When unchecked, the mission button is removed and the AI won't use the mission either.</Italian>
 		<Spanish>Enables the "Patrulla mar&#237;tima" mission. When unchecked, the mission button is removed and the AI won't use the mission either.</Spanish>
 	</TEXT>
@@ -675,8 +675,8 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__RESOURCEICONOPTIONS_HOVER</Tag>
-		<English>Shows filter options "Food", "Luxuries" and "General" when the Resource Display is enabled in Globe View. When unchecked, the Resource Display always highlights all resources and no options are shown (leaving space for the scoreboard).</English>
-		<German>Zeigt Filter-Optionen "Nahrung", "Luxusgüter" und "Allgemein" an, wenn die Ressourcenanzeige und die Globalansicht aktiviert sind. Ansonsten werden die Ressourcen stets ungefiltert angezeigt (und an Stelle der Filter-Optionen bleibt Platz für die Punkteanzeige).</German>
+		<English>Shows filter options "Food", "Luxuries" and "General" when the Resource Display is enabled in Globe View. When unchecked, the Resource Display always highlights all resources and no options are shown, leaving space for the scoreboard.</English>
+		<German>Zeigt Filter-Optionen "Nahrung", "Luxusgüter" und "Allgemein" an, wenn die Ressourcenanzeige und die Globalansicht aktiviert sind. Ansonsten werden die Ressourcen stets ungefiltert angezeigt, und an Stelle der Filter-Optionen ist Platz für die Punkteanzeige.</German>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__TRIBALVILLAGEICONS_TEXT</Tag>
@@ -869,40 +869,7 @@
 		<German>Zeigt das [ICON_HEALTHY]-Symbol über den Namen von Städten an, deren Bevölkerung keine [ICON_UNHEALTHY]-Punkte generiert.</German>
 	</TEXT-->
 
-	<!-- advc.101 -->
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__REVOLTCHANCEICON_TEXT</Tag>
-		<English>Revolt Icon</English>
-		<German>Revolte droht</German>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__REVOLTCHANCEICON_HOVER</Tag>
-		<English>When checked, the [ICON_OCCUPATION] icon is shown above the billboards of cities with a positive probability of revolt. (Regardless of this option, [ICON_OCCUPATION] is shown - along with a countdown - for cities under occupation.)</English>
-		<German>Zeigt das [ICON_OCCUPATION]-Symbol über den Namen von Städten an, in denen eine Revolte ausbrechen kann. Das [ICON_OCCUPATION]-Symbol wird in jedem Fall - zusammen mit einem Countdown - über besetzten Städten angezeigt.</German>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__REVOLTHELP_TEXT</Tag>
-		<English>Revolt Help on Tile</English>
-		<German>Revolten-Hilfe</German>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__REVOLTHELP_HOVER</Tag>
-		<English>If checked, help text about revolts is shown when hovering over city tiles; otherwise, it's shown when hovering over city bars.</English>
-		<German>Zeigt Hilfetext zu Revolten an, wenn der Mauszeiger auf ein Stadtfeld bewegt wird. Ist diese Option deaktiviert, informiert stattdessen der Hilfetext zum Stadt-Balken über Revolten.</German>
-	</TEXT>
-	<!-- advc.187 -->
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__AIRCAPACITY_TEXT</Tag>
-		<English>Air Unit Capacity on Tile</English>
-		<German>Kapazität für Lufteinheiten</German>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__AIRCAPACITY_HOVER</Tag>
-		<English>If checked, the air unit capacity is shown when hovering over a (city or fort) tile with a friendly air unit; otherwise, the air unit capacity is shown (only for proper cities) when hovering over a city bar.</English>
-		<German>Zeigt die Kapazität für Lufteinheiten an, wenn der Mauszeiger auf ein (Stadt- oder Festungs-) Feld bewegt wird, auf dem sich freundliche Lufteinheiten befinden. Ist diese Option deaktiviert, wird die Kapazität stattdessen im Hilfetext zum Stadt-Balken (also nur für Stadtfelder) angegeben.</German>
-	</TEXT>
-
-	<!-- advc.095 -->
+	<!-- advc.095: -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__WIDECITYBARS_TEXT</Tag>
 		<English>Wide City Bars</English>

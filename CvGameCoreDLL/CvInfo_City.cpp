@@ -3,6 +3,7 @@
 #include "CvGameCoreDLL.h"
 #include "CvInfo_City.h"
 #include "CvXMLLoadUtility.h"
+#include "CvDLLXMLIFaceBase.h"
 
 
 CvProcessInfo::CvProcessInfo() :
@@ -27,12 +28,12 @@ bool CvProcessInfo::read(CvXMLLoadUtility* pXML)
 	if (!CvInfoBase::read(pXML))
 		return false;
 
-	pXML->SetInfoIDFromChildXmlVal(m_eTechPrereq, "TechPrereq");
+	pXML->SetInfoIDFromChildXmlVal((int&)m_eTechPrereq, "TechPrereq");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"ProductionToCommerceModifiers"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"ProductionToCommerceModifiers"))
 	{
-		pXML->SetCommerceArray(&m_aiProductionToCommerceModifier);
+		pXML->SetCommerce(&m_aiProductionToCommerceModifier);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_aiProductionToCommerceModifier, NUM_COMMERCE_TYPES);
 
@@ -121,21 +122,34 @@ bool CvSpecialistInfo::read(CvXMLLoadUtility* pXML)
 		return false;
 
 	pXML->GetChildXmlValByName(m_szTexture, "Texture");
+
+	CvString szTextVal;
+
 	pXML->GetChildXmlValByName(&m_bVisible, "bVisible");
-	{
-		CvString szTextVal;
-		pXML->GetChildXmlValByName(szTextVal, "GreatPeopleUnitClass");
-		m_iGreatPeopleUnitClass = pXML->FindInInfoClass(szTextVal);
-	}
+
+	pXML->GetChildXmlValByName(szTextVal, "GreatPeopleUnitClass");
+	m_iGreatPeopleUnitClass = pXML->FindInInfoClass(szTextVal);
+
 	pXML->GetChildXmlValByName(&m_iGreatPeopleRateChange, "iGreatPeopleRateChange");
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "Yields"))
-		pXML->SetYieldArray(&m_piYieldChange);
+
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"Yields"))
+	{
+		pXML->SetYields(&m_piYieldChange);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+	}
 	else pXML->InitList(&m_piYieldChange, NUM_YIELD_TYPES);
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "Commerces"))
-		pXML->SetCommerceArray(&m_piCommerceChange);
+
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"Commerces"))
+	{
+		pXML->SetCommerce(&m_piCommerceChange);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+	}
 	else pXML->InitList(&m_piCommerceChange, NUM_COMMERCE_TYPES);
+
 	pXML->GetChildXmlValByName(&m_iExperience, "iExperience");
+
 	pXML->SetVariableListTagPair(&m_piFlavorValue, "Flavors", GC.getNumFlavorTypes());
+
 	return true;
 }
 
@@ -214,17 +228,17 @@ bool CvEmphasizeInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_bAvoidGrowth, "bAvoidGrowth");
 	pXML->GetChildXmlValByName(&m_bGreatPeople, "bGreatPeople");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"YieldModifiers"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"YieldModifiers"))
 	{
-		pXML->SetYieldArray(&m_piYieldModifiers);
+		pXML->SetYields(&m_piYieldModifiers);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_piYieldModifiers, NUM_YIELD_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
-		"CommerceModifiers"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"CommerceModifiers"))
 	{
-		pXML->SetCommerceArray(&m_piCommerceModifiers);
+		pXML->SetCommerce(&m_piCommerceModifiers);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
 	else pXML->InitList(&m_piCommerceModifiers, NUM_COMMERCE_TYPES);
 

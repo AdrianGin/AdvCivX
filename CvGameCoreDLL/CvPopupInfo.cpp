@@ -1,19 +1,8 @@
 #include "CvGameCoreDLL.h"
-//#include ".\cvpopupinfo.h"
-#include "CvPopupInfo.h" // advc
+#include ".\cvpopupinfo.h"
 
-/*	advc (note): There's a convention of checking for a NULL pointer
-	after allocating a CvPopupInfo. This might make it possible to
-	disable all popups by overloading operator new. That said, it looks
-	like one could also disable all popups in CvPlayer::addPopup.
-	So I'm not sure if that was really the idea and whether those NULL checks
-	serve any reasonable purpose. */
-
-CvPopupInfo::CvPopupInfo(
-	ButtonPopupTypes eButtonPopupType,
-	int iData1, int iData2, int iData3, int iFlags,
-	bool bOption1, bool bOption2)
-:	m_iData1(iData1),
+CvPopupInfo::CvPopupInfo(ButtonPopupTypes eButtonPopupType, int iData1, int iData2, int iData3, int iFlags, bool bOption1, bool bOption2) :
+	m_iData1(iData1),
 	m_iData2(iData2),
 	m_iData3(iData3),
 	m_iFlags(iFlags),
@@ -21,8 +10,12 @@ CvPopupInfo::CvPopupInfo(
 	m_bOption2(bOption2),
 	m_eButtonPopupType(eButtonPopupType),
 	m_bPendingDelete(false)
-{}
+{
+}
 
+CvPopupInfo::~CvPopupInfo()
+{
+}
 
 const CvPopupInfo& CvPopupInfo::operator=(const CvPopupInfo& other)
 {

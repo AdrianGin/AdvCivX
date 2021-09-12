@@ -6,9 +6,9 @@
 #include "CvInfo_GameOption.h"
 #include "CvInfo_Building.h" // advc.erai
 
-// <advc.007c>
+// <advc.007b>
 #undef CVGAME_INSTANCE_FOR_RNG
-#define CVGAME_INSTANCE_FOR_RNG (*this) // </advc.007c>
+#define CVGAME_INSTANCE_FOR_RNG (*this) // </advc.007b>
 
 
 
@@ -38,7 +38,7 @@ void CvGameAI::AI_init()
 void CvGameAI::AI_initScenario()
 {
 	// Citizens not properly assigned
-	for (PlayerAIIter<ALIVE> it; it.hasNext(); ++it)
+	for (PlayerIter<ALIVE> it; it.hasNext(); ++it)
 	{
 		FOR_EACH_CITYAI_VAR(c, *it)
 		{
@@ -52,14 +52,11 @@ void CvGameAI::AI_initScenario()
 			c->AI_assignWorkingPlots();
 		}
 	}
-	if (getUWAI().isEnabled() || getUWAI().isEnabled(true))
-	{
-		for (TeamAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
-			it->uwai().turnPre();
-	}
+	for (TeamIter<MAJOR_CIV> it; it.hasNext(); ++it)
+		it->uwai().turnPre();
 } // </advc.104u>
 
-/*  advc.104: I'm repurposing the Aggressive AI option so that it disables UWAI
+/*  <advc.104> I'm repurposing the Aggressive AI option so that it disables UWAI
 	in addition to the option's normal effect. A bit of a hack, but less invasive
 	than changing all the isOption(AGGRESSIVE_AI) checks. Don't want two separate
 	options because UWAI implies Aggressive AI. */
@@ -67,13 +64,13 @@ void CvGameAI::AI_sortOutUWAIOptions(bool bFromSaveGame)
 {
 	if(GC.getDefineINT("USE_KMOD_AI_NONAGGRESSIVE"))
 	{
-		m_uwai.setUseLegacyAI(true);
+		m_uwai.setUseKModAI(true);
 		setOption(GAMEOPTION_AGGRESSIVE_AI, false);
 		return;
 	}
 	if(GC.getDefineINT("DISABLE_UWAI"))
 	{
-		m_uwai.setUseLegacyAI(true);
+		m_uwai.setUseKModAI(true);
 		setOption(GAMEOPTION_AGGRESSIVE_AI, true);
 		return;
 	}
@@ -86,10 +83,10 @@ void CvGameAI::AI_sortOutUWAIOptions(bool bFromSaveGame)
 	}
 	// If still not returned: settings according to Custom Game screen
 	bool bUseKModAI = isOption(GAMEOPTION_AGGRESSIVE_AI);
-	m_uwai.setUseLegacyAI(bUseKModAI);
+	m_uwai.setUseKModAI(bUseKModAI);
 	if(!bUseKModAI)
 		setOption(GAMEOPTION_AGGRESSIVE_AI, true);
-}
+} // </advc.104>
 
 
 void CvGameAI::AI_uninit() {}
@@ -109,18 +106,21 @@ void CvGameAI::AI_reset(/* advc (as in CvGame): */ bool bConstructor)
 
 void CvGameAI::AI_makeAssignWorkDirty()
 {
-	for (PlayerIter<ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	for (int iI = 0; iI < MAX_PLAYERS; iI++)
 	{
-		itPlayer->AI_makeAssignWorkDirty();
+		if (GET_PLAYER((PlayerTypes)iI).isAlive())
+			GET_PLAYER((PlayerTypes)iI).AI_makeAssignWorkDirty();
 	}
 }
 
 
 void CvGameAI::AI_updateAssignWork()
 {
-	for (PlayerAIIter<HUMAN> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	for (int iI = 0; iI < MAX_PLAYERS; iI++)
 	{
-		itPlayer->AI_updateAssignWork();
+		CvPlayerAI& kLoopPlayer = GET_PLAYER((PlayerTypes)iI);
+		if (GET_TEAM(kLoopPlayer.getTeam()).isHuman() && kLoopPlayer.isAlive())
+			kLoopPlayer.AI_updateAssignWork();
 	}
 }
 
@@ -143,7 +143,7 @@ int CvGameAI::AI_combatValue(UnitTypes eUnit) /* K-Mod: */ const
 }
 
 
-int CvGameAI::AI_turnsPercent(int iTurns, int iPercent) const
+int CvGameAI::AI_turnsPercent(int iTurns, int iPercent)
 {
 	FAssert(iPercent > 0);
 	if (iTurns != MAX_INT)
@@ -158,7 +158,7 @@ int CvGameAI::AI_turnsPercent(int iTurns, int iPercent) const
 scaled CvGameAI::AI_getCurrEraFactor() const
 {
 	scaled r;
-	PlayerAIIter<CIV_ALIVE> it;
+	PlayerIter<CIV_ALIVE> it;
 	for (; it.hasNext(); ++it)
 		r += it->AI_getCurrEraFactor();
 	int const iCount = it.nextIndex();

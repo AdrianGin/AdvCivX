@@ -1,7 +1,9 @@
 //	FILE:	 CvMap.cpp
 //	AUTHOR:  Soren Johnson
 //	PURPOSE: Game map class
+//-----------------------------------------------------------------------------
 //	Copyright (c) 2004 Firaxis Games, Inc. All rights reserved.
+//-----------------------------------------------------------------------------
 
 
 #include "CvGameCoreDLL.h"
@@ -22,7 +24,6 @@
 #include "CvInfo_Terrain.h" // advc.pf (for pathfinder initialization)
 #include "CvInfo_GameOption.h"
 #include "CvReplayInfo.h" // advc.106n
-#include "BarbarianWeightMap.h" // advc.304
 #include "CvDLLIniParserIFaceBase.h"
 
 
@@ -55,7 +56,7 @@ void CvMap::init(CvMapInitData* pInitInfo)
 	m_areas.init(); // Init containers
 	setup();
 	gDLL->logMemState("CvMap before init plots");
-	FAssert(numPlots() <= integer_limits<PlotNumInt>::max); // advc.enum
+	FAssert(numPlots() <= (EnumMap<PlotNumTypes,scaled>::MAX_LENGTH)); // advc.enum
 	m_pMapPlots = new CvPlot[numPlots()];
 	for (int iX = 0; iX < getGridWidth(); iX++)
 	{
@@ -116,7 +117,7 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 			m_iGridHeight *= GC.getLandscapePlotsPerCellY();
 		}
 	}
-	updateNumPlots(); // advc.opt
+	updatePlotNum(); // advc.opt
 
 	m_iLandPlots = 0;
 	m_iOwnedPlots = 0;
@@ -227,10 +228,10 @@ void CvMap::setupGraphical() // graphical only setup
 	CvPlot::setMaxVisibilityRangeCache(); // advc.003h
 	if (m_pMapPlots != NULL)
 	{
-		for (int i = 0; i < numPlots(); i++)
+		for (int iI = 0; iI < numPlots(); iI++)
 		{
 			gDLL->callUpdater(); // allow windows msgs to update
-			getPlotByIndex(i).setupGraphical();
+			getPlotByIndex(iI).setupGraphical();
 		}
 	}
 	// <advc.106n> For games starting in a later era
@@ -245,8 +246,8 @@ void CvMap::setupGraphical() // graphical only setup
 
 void CvMap::erasePlots()
 {
-	for (int i = 0; i < numPlots(); i++)
-		plotByIndex(i)->erase();
+	for (int iI = 0; iI < numPlots(); iI++)
+		plotByIndex(iI)->erase();
 	m_replayTexture.clear(); // advc.106n
 }
 
@@ -255,9 +256,9 @@ void CvMap::setRevealedPlots(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly)
 {
 	PROFILE_FUNC();
 
-	for (int i = 0; i < numPlots(); i++)
+	for (int iI = 0; iI < numPlots(); iI++)
 	{
-		getPlotByIndex(i).setRevealed(eTeam, bNewValue, bTerrainOnly, NO_TEAM, false);
+		getPlotByIndex(iI).setRevealed(eTeam, bNewValue, bTerrainOnly, NO_TEAM, false);
 	}
 
 	GC.getGame().updatePlotGroups();
@@ -290,8 +291,8 @@ void CvMap::setAllPlotTypes(PlotTypes ePlotType)
 void CvMap::doTurn()
 {
 	//PROFILE("CvMap::doTurn()"); // advc.003o
-	for(int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).doTurn();
+	for(int iI = 0; iI < numPlots(); iI++)
+		getPlotByIndex(iI).doTurn();
 }
 
 
@@ -299,9 +300,9 @@ void CvMap::updateFlagSymbols()
 {
 	PROFILE_FUNC();
 
-	for (int i = 0; i < numPlots(); i++)
+	for (int iI = 0; iI < numPlots(); iI++)
 	{
-		CvPlot& kPlot = getPlotByIndex(i);
+		CvPlot& kPlot = getPlotByIndex(iI);
 		if (kPlot.isFlagDirty())
 		{
 			kPlot.updateFlagSymbol();
@@ -320,43 +321,43 @@ void CvMap::setFlagsDirty()
 
 void CvMap::updateFog()
 {
-	for(int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).updateFog();
+	for(int iI = 0; iI < numPlots(); iI++)
+		getPlotByIndex(iI).updateFog();
 }
 
 
 void CvMap::updateVisibility()
 {
-	for (int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).updateVisibility();
+	for (int iI = 0; iI < numPlots(); iI++)
+		getPlotByIndex(iI).updateVisibility();
 }
 
 
 void CvMap::updateSymbolVisibility()
 {
-	for(int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).updateSymbolVisibility();
+	for(int iI = 0; iI < numPlots(); iI++)
+		getPlotByIndex(iI).updateSymbolVisibility();
 }
 
 
 void CvMap::updateSymbols()
 {
-	for(int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).updateSymbols();
+	for(int iI = 0; iI < numPlots(); iI++)
+		getPlotByIndex(iI).updateSymbols();
 }
 
 
 void CvMap::updateMinimapColor()
 {
-	for(int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).updateMinimapColor();
+	for(int iI = 0; iI < numPlots(); iI++)
+		getPlotByIndex(iI).updateMinimapColor();
 }
 
 
 void CvMap::updateSight(bool bIncrement)
 {
-	for (int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).updateSight(bIncrement, false);
+	for (int iI = 0; iI < numPlots(); iI++)
+		getPlotByIndex(iI).updateSight(bIncrement, false);
 
 	GC.getGame().updatePlotGroups();
 }
@@ -378,8 +379,8 @@ void CvMap::updateIrrigated()
 	with a very generous approximation for what might be in range. */
 void CvMap::updateCenterUnit()
 {
-	/*for (int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).updateCenterUnit();*/ // BtS
+	/*for (int iI = 0; iI < numPlots(); iI++)
+		getPlotByIndex(iI).updateCenterUnit();*/ // BtS
 	PROFILE_FUNC();
 	int iRange = -1;
 
@@ -425,8 +426,8 @@ void CvMap::updateCenterUnit()
 
 void CvMap::updateWorkingCity()
 {
-	for (int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).updateWorkingCity();
+	for (int iI = 0; iI < numPlots(); iI++)
+		getPlotByIndex(iI).updateWorkingCity();
 }
 
 
@@ -434,9 +435,9 @@ void CvMap::updateMinOriginalStartDist(CvArea const& kArea)
 {
 	PROFILE_FUNC();
 
-	for (int i = 0; i < numPlots(); i++)
+	for (int iI = 0; iI < numPlots(); iI++)
 	{
-		CvPlot& kPlot = getPlotByIndex(i);
+		CvPlot& kPlot = getPlotByIndex(iI);
 		if (kPlot.isArea(kArea))
 			kPlot.setMinOriginalStartDist(-1);
 	}
@@ -471,15 +472,15 @@ void CvMap::updateMinOriginalStartDist(CvArea const& kArea)
 
 void CvMap::updateYield()
 {
-	for (int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).updateYield();
+	for (int iI = 0; iI < numPlots(); iI++)
+		getPlotByIndex(iI).updateYield();
 }
 
 
 void CvMap::verifyUnitValidPlot()
 {
-	for (int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).verifyUnitValidPlot();
+	for (int iI = 0; iI < numPlots(); iI++)
+		getPlotByIndex(iI).verifyUnitValidPlot();
 }
 
 
@@ -519,11 +520,9 @@ void CvMap::combinePlotGroups(PlayerTypes ePlayer, CvPlotGroup* pPlotGroup1, CvP
 CvPlot* CvMap::syncRandPlot(RandPlotFlags eFlags, CvArea const* pArea,
 	int iMinCivUnitDistance, // advc.300: Renamed from iMinUnitDistance
 	int iTimeout,
-	/* <advc.304> */ int* piValidCount, // Number of valid tiles
-	RandPlotWeightMap const* pWeights)
+	int* piValidCount) // advc.304: Number of valid tiles
 {
-	LOCAL_REF(int, iValid, piValidCount, 0);
-	/*  Look exhaustively for a valid plot by default. Rationale:
+	/*  <advc.304> Look exhaustively for a valid plot by default. Rationale:
 		The biggest maps have about 10000 plots. If there is only one valid plot,
 		then the BtS default of considering 100 plots drawn at random has only a
 		(ca.) 1% chance of success. 10000 trials - slower than exhaustive search! -
@@ -533,37 +532,38 @@ CvPlot* CvMap::syncRandPlot(RandPlotFlags eFlags, CvArea const* pArea,
 	if (iTimeout < 0)
 	{
 		std::vector<CvPlot*> apValidPlots;
-		std::vector<int> aiWeights;
-		for (int i = 0; i < numPlots(); i++)
+		for(int i = 0; i < numPlots(); i++)
 		{
 			CvPlot& kPlot = getPlotByIndex(i);
 			if (isValidRandPlot(kPlot, eFlags, pArea, iMinCivUnitDistance))
-			{
 				apValidPlots.push_back(&kPlot);
-				if (pWeights != NULL)
-					aiWeights.push_back(pWeights->getProbWeight(kPlot));
-			}
 		}
-		iValid = (int)apValidPlots.size();
-		return syncRand().weightedChoice(apValidPlots,
-				pWeights == NULL ? NULL : &aiWeights);
+		int iValid = (int)apValidPlots.size();
+		if(piValidCount != NULL)
+			*piValidCount = iValid;
+		if(iValid == 0)
+			return NULL;
+		return apValidPlots[GC.getGame().getSorenRandNum(iValid, "advc.304")];
 	}
 	FAssert(iTimeout != 0);
-	FAssert(pWeights == NULL); // Not compatible with limited trials
 	/*  BtS code (refactored): Limited number of trials
 		(can be faster or slower than the above; that's not really the point) */
 	// </advc.304>
 	for (int i = 0; i < iTimeout; i++)
 	{
 		CvPlot& kTestPlot = getPlot(
-				SyncRandNum(getGridWidth()), SyncRandNum(getGridHeight()));
+				GC.getGame().getSorenRandNum(getGridWidth(), "Rand Plot Width"),
+				GC.getGame().getSorenRandNum(getGridHeight(), "Rand Plot Height"));
 		if (isValidRandPlot(kTestPlot, eFlags, pArea, iMinCivUnitDistance))
-		{	/*  <advc.304> Not going to be useful ...
-				Use 1 to indicate that we found one valid plot. */
-			iValid = 1; // </advc.304>
+		{	/*  <advc.304> Not useful, but want to make sure it doesn't stay
+				uninitialized. 1 since we found only 1 valid plot. */
+			if(piValidCount != NULL)
+				*piValidCount = 1; // </advc.304>
 			return &kTestPlot;
 		}
-	}
+	} // <advc.304>
+	if(piValidCount != NULL)
+		*piValidCount = 0; // </advc.304>
 	return NULL;
 }
 
@@ -756,9 +756,27 @@ bool CvMap::findWater(CvPlot const* pPlot, int iRange, bool bFreshWater) // advc
 }
 
 
+bool CvMap::isPlotExternal(int iX, int iY) const // advc.inl
+{
+	return isPlot(iX, iY);
+}
+
+
 int CvMap::numPlotsExternal() const // advc.inl
 {
 	return numPlots();
+}
+
+
+int CvMap::plotX(int iIndex) const
+{
+	return iIndex % getGridWidth();
+}
+
+
+int CvMap::plotY(int iIndex) const
+{
+	return iIndex / getGridWidth();
 }
 
 
@@ -821,23 +839,42 @@ int CvMap::maxStepDistance() const
 			isWrapY() ? getGridHeight() / 2 : getGridHeight() - 1));
 }
 
+// advc.140:
+int CvMap::maxMaintenanceDistance() const
+{
+	return ::round(1 + maxTypicalDistance() * (10.0 /
+			GC.getDefineINT(CvGlobals::MAX_DISTANCE_CITY_MAINTENANCE)));
+}
+
 /*	advc.140: Not sure what distance this measures exactly; I'm using it as a
-	replacement (everywhere) for maxPlotDistance, with reduced impact of world wraps. */
+	replacement (everyhwere) for maxPlotDistance with reduced impact of world wraps. */
 int CvMap::maxTypicalDistance() const
 {
 	CvGame const& kGame = GC.getGame();
-	scaled rCivRatio(kGame.getRecommendedPlayers(), kGame.getCivPlayersEverAlive());
+	double civRatio = kGame.getRecommendedPlayers() / (double)kGame.getCivPlayersEverAlive();
 	// Already factored into getRecommendedPlayers, but I want to give it a little extra weight.
-	scaled rSeaLvlModifier = (100 - fixp(2.5) * kGame.getSeaLevelChange()) / 100;
+	double seaLvlModifier = (100 - 2.5 * kGame.getSeaLevelChange()) / 100.0;
 	int iWraps = -1; // 0 if cylindrical (1 wrap), -1 flat, +1 toroidical
 	if(isWrapX())
 		iWraps++;
 	if(isWrapY())
 		iWraps++;
 	CvWorldInfo const& kWorld = GC.getInfo(getWorldSize());
-	scaled r = (kWorld.getGridWidth() * kWorld.getGridHeight() * rCivRatio *
-			rSeaLvlModifier).sqrt() * fixp(3.5) - 5 * iWraps;
-	return std::max(1, r.round());
+	double r = std::sqrt(kWorld.getGridWidth() * kWorld.getGridHeight() * civRatio *
+			seaLvlModifier) * 3.5 - 5 * iWraps;
+	return std::max(1, ::round(r));
+}
+
+
+int CvMap::getGridWidthExternal() const // advc.inl
+{
+	return getGridWidth();
+}
+
+
+int CvMap::getGridHeightExternal() const // advc.inl
+{
+	return getGridHeight();
 }
 
 
@@ -920,25 +957,6 @@ CvWString CvMap::getNonDefaultCustomMapOptionDesc(int iOption) const
 	return py.customMapOptionDescription(szMapScriptNameNarrow.c_str(), iOption, eOptionValue);
 }
 
-/*	advc.108b: Does any custom map option have (exactly) the value szOptionsValue?
-	So that the DLL can implement special treatment for particular custom map options
-	(that may or may not be present in only one particular map script). */
-bool CvMap::isCustomMapOption(char const* szOptionsValue) const
-{
-	CvWString wsOptionsValue(szOptionsValue);
-	CvString szMapScriptNameNarrow(GC.getInitCore().getMapScriptName());
-	for (int iOption = 0; iOption < getNumCustomMapOptions(); iOption++)
-	{
-		if (GC.getPythonCaller()->customMapOptionDescription(
-			szMapScriptNameNarrow.c_str(), iOption, getCustomMapOption(iOption)) ==
-			wsOptionsValue)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 
 int CvMap::getNumBonuses(BonusTypes eIndex) const
 {
@@ -969,6 +987,12 @@ void CvMap::changeNumBonusesOnLand(BonusTypes eIndex, int iChange)
 CvPlot* CvMap::plotByIndexExternal(int iIndex) const // advc.inl
 {
 	return plotByIndex(iIndex);
+}
+
+
+CvPlot* CvMap::plotExternal(int iX, int iY) const // advc.inl
+{
+	return plot(iX, iY);
 }
 
 
@@ -1105,8 +1129,8 @@ void CvMap::invalidateActivePlayerSafeRangeCache()
 {
 	PROFILE_FUNC();
 
-	for (int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).setActivePlayerSafeRangeCache(-1);
+	for (int iI = 0; iI < numPlots(); iI++)
+		getPlotByIndex(iI).setActivePlayerSafeRangeCache(-1);
 }
 
 
@@ -1114,8 +1138,8 @@ void CvMap::invalidateBorderDangerCache(TeamTypes eTeam)
 {
 	PROFILE_FUNC();
 
-	for(int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).setBorderDangerCache(eTeam, false);
+	for(int iI = 0; iI < numPlots(); iI++)
+		getPlotByIndex(iI).setBorderDangerCache(eTeam, false);
 } // BETTER_BTS_AI_MOD: END
 
 // read object from a stream. used during load
@@ -1133,7 +1157,7 @@ void CvMap::read(FDataStreamBase* pStream)
 	// <advc.opt>
 	if (uiFlag >= 3)
 		pStream->Read((int*)&m_ePlots);
-	else updateNumPlots(); // </advc.opt>
+	else updatePlotNum(); // </advc.opt>
 	pStream->Read(&m_iLandPlots);
 	pStream->Read(&m_iOwnedPlots);
 	pStream->Read(&m_iTopLatitude);
@@ -1147,20 +1171,10 @@ void CvMap::read(FDataStreamBase* pStream)
 	// </advc.opt>
 	pStream->Read(&m_bWrapX);
 	pStream->Read(&m_bWrapY);
-	if (uiFlag >= 4)
-	{
-		m_aiNumBonus.read(pStream);
-		m_aiNumBonusOnLand.read(pStream);
-	}
-	else
-	{
-		m_aiNumBonus.readArray<int>(pStream);
-		m_aiNumBonusOnLand.readArray<int>(pStream);
-	}
-	// <advc.304>
-	if (uiFlag >= 5)
-		GC.getGame().getBarbarianWeightMap().getActivityMap().read(pStream);
-	// </advc.304>
+
+	m_aiNumBonus.Read(pStream);
+	m_aiNumBonusOnLand.Read(pStream);
+
 	if (numPlots() > 0)
 	{
 		m_pMapPlots = new CvPlot[numPlots()];
@@ -1210,9 +1224,7 @@ void CvMap::write(FDataStreamBase* pStream)
 	uint uiFlag;
 	//uiFlag = 1; // advc.106n
 	//uiFlag = 2; // advc.opt: CvPlot::m_bAnyIsthmus
-	//uiFlag = 3; // advc.opt: m_ePlots
-	//uiFlag = 4; // advc.enum: new enum map save behavior
-	uiFlag = 5; // advc.304: Barbarian weight map
+	uiFlag = 3; // advc.opt: m_ePlots
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iGridWidth);
@@ -1228,14 +1240,11 @@ void CvMap::write(FDataStreamBase* pStream)
 	pStream->Write(m_bWrapY);
 
 	FAssertMsg((0 < GC.getNumBonusInfos()), "GC.getNumBonusInfos() is not greater than zero but an array is being allocated");
-	m_aiNumBonus.write(pStream);
-	m_aiNumBonusOnLand.write(pStream);
-	/*	advc.304: Serialize this for CvGame b/c the map size isn't known
-		when CvGame gets deserialized. (kludge) */
-	GC.getGame().getBarbarianWeightMap().getActivityMap().write(pStream);
+	m_aiNumBonus.Write(pStream);
+	m_aiNumBonusOnLand.Write(pStream);
 	REPRO_TEST_END_WRITE();
-	for (int i = 0; i < numPlots(); i++)
-		m_pMapPlots[i].write(pStream);
+	for (int iI = 0; iI < numPlots(); iI++)
+		m_pMapPlots[iI].write(pStream);
 
 	WriteStreamableFFreeListTrashArray(m_areas, pStream);
 	// <advc.106n>
@@ -1260,7 +1269,7 @@ void CvMap::rebuild(int iGridW, int iGridH, int iTopLatitude, int iBottomLatitud
 }
 
 // advc.opt:
-void CvMap::updateNumPlots()
+void CvMap::updatePlotNum()
 {
 	m_ePlots = (PlotNumTypes)(getGridWidth() * getGridHeight());
 }
@@ -1446,44 +1455,44 @@ void CvMap::calculateAreas_DFS(CvPlot const& kStart)
 
 // <advc.300>
 // All shelves adjacent to a continent
-void CvMap::getShelves(CvArea const& kArea, std::vector<Shelf*>& kShelves) const
+void CvMap::getShelves(CvArea const& kArea, std::vector<Shelf*>& r) const
 {
-	int const iArea = kArea.getID();
+	int iArea = kArea.getID();
 	for(std::map<Shelf::Id,Shelf*>::const_iterator it = m_shelves.begin();
 		it != m_shelves.end(); ++it)
 	{
 		if(it->first.first == iArea)
-			kShelves.push_back(it->second);
+			r.push_back(it->second);
 	}
 }
 
 
 void CvMap::computeShelves()
 {
-	for (std::map<Shelf::Id,Shelf*>::iterator it = m_shelves.begin();
+	for(std::map<Shelf::Id,Shelf*>::iterator it = m_shelves.begin();
 		it != m_shelves.end(); ++it)
 	{
 		SAFE_DELETE(it->second);
 	}
 	m_shelves.clear();
-	for (int i = 0; i < numPlots(); i++)
+	for(int i = 0; i < numPlots(); i++)
 	{
 		CvPlot& p = getPlotByIndex(i);
-		if (!p.isWater() || p.isLake() || p.isImpassable() || !p.isHabitable())
+		if(!p.isWater() || p.isLake() || p.isImpassable() || !p.isHabitable())
 			continue;
 		// Add plot to shelves of all adjacent land areas
 		std::set<int> adjLands;
 		FOR_EACH_ADJ_PLOT(p)
 		{
-			if (!pAdj->isWater())
+			if(!pAdj->isWater())
 				adjLands.insert(pAdj->getArea().getID());
 		}
-		for (std::set<int>::iterator it = adjLands.begin(); it != adjLands.end(); ++it)
+		for(std::set<int>::iterator it = adjLands.begin(); it != adjLands.end(); ++it)
 		{
 			Shelf::Id shelfID(*it, p.getArea().getID());
 			std::map<Shelf::Id,Shelf*>::iterator shelfPos = m_shelves.find(shelfID);
 			Shelf* pShelf;
-			if (shelfPos == m_shelves.end())
+			if(shelfPos == m_shelves.end())
 			{
 				pShelf = new Shelf();
 				m_shelves.insert(std::make_pair(shelfID, pShelf));

@@ -15,7 +15,6 @@ class CvDeal;
 class CvCivilization; // advc.003w
 class NormalizationTarget; // advc.027
 class Shelf; // advc.300
-class BarbarianWeightMap; // advc.304
 class StartPointsAsHandicap; // advc.250b
 class RiseFall; // advc.700
 
@@ -143,7 +142,6 @@ public:
 	int getSymbolID(int iSymbol);																	// Exposed to Python
 
 	int getProductionPerPopulation(HurryTypes eHurry) const; // Exposed to Python
-	int getHurryAngerLength() const; // advc
 
 	int getAdjustedPopulationPercent(VictoryTypes eVictory) const;								// Exposed to Python
 	int getAdjustedLandPercent(VictoryTypes eVictory) const;											// Exposed to Python
@@ -160,50 +158,47 @@ public:
 	void clearSecretaryGeneral(VoteSourceTypes eVoteSource);
 	void updateSecretaryGeneral();
 
-	int countCivPlayersAlive() const;																// Exposed to Python
-	int countCivPlayersEverAlive() const;															// Exposed to Python
-	int countCivTeamsAlive() const;																	// Exposed to Python
-	int countCivTeamsEverAlive() const;																// Exposed to Python
-	int countHumanPlayersAlive() const;																// Exposed to Python
+	int countCivPlayersAlive() const;																		// Exposed to Python
+	int countCivPlayersEverAlive() const;																// Exposed to Python
+	int countCivTeamsAlive() const;																			// Exposed to Python
+	int countCivTeamsEverAlive() const;																	// Exposed to Python
+	int countHumanPlayersAlive() const;																	// Exposed to Python
 	int countFreeTeamsAlive() const; // K-Mod
 	// advc.137: Replaces getDefaultPlayers for most purposes
 	int getRecommendedPlayers() const;
 	int getSeaLevelChange() const; // advc.137, advc.140
 
-	int countTotalCivPower() const;																	// Exposed to Python
-	int countTotalNukeUnits() const;																// Exposed to Python
-	int countKnownTechNumTeams(TechTypes eTech) const;												// Exposed to Python
-	int getNumFreeBonuses(BuildingTypes eBuilding) const;											// Exposed to Python
+	int countTotalCivPower();																								// Exposed to Python
+	int countTotalNukeUnits();																							// Exposed to Python
+	int countKnownTechNumTeams(TechTypes eTech);														// Exposed to Python
+	int getNumFreeBonuses(BuildingTypes eBuilding) const;	// advc: const										// Exposed to Python
 
-	int countReligionLevels(ReligionTypes eReligion) const;											// Exposed to Python
-	int calculateReligionPercent(ReligionTypes eReligion,											// Exposed to Python
+	int countReligionLevels(ReligionTypes eReligion) /* advc: */ const;							// Exposed to Python
+	int calculateReligionPercent(ReligionTypes eReligion,								// Exposed to Python
 			bool bIgnoreOtherReligions = false) const; // advc.115b
-	int countCorporationLevels(CorporationTypes eCorporation) const;								// Exposed to Python
+	int countCorporationLevels(CorporationTypes eCorporation) /* advc: */ const;							// Exposed to Python
 	void replaceCorporation(CorporationTypes eCorporation1, CorporationTypes eCorporation2);
 
-	int goldenAgeLength() const;																	// Exposed to Python
-	int victoryDelay(VictoryTypes eVictory) const;													// Exposed to Python
-	int getImprovementUpgradeTime(ImprovementTypes eImprovement) const;								// Exposed to Python
+	int goldenAgeLength() const;																					// Exposed to Python
+	int victoryDelay(VictoryTypes eVictory) const;										// Exposed to Python
+	int getImprovementUpgradeTime(ImprovementTypes eImprovement) const;					// Exposed to Python
 	scaled gameSpeedMultiplier() const; // advc
 
 	bool canTrainNukes() const;																		// Exposed to Python
-	EraTypes getCurrentEra() const;																	// Exposed to Python
+	EraTypes getCurrentEra() const;														// Exposed to Python
 	EraTypes getHighestEra() const; // advc
 	scaled groundbreakingNormalizationModifier(TechTypes eTech) const; // advc.groundbr
 
-	DllExport TeamTypes getActiveTeam() const														// Exposed to Python
-	{
-		return GC.getInitCore().getActiveTeam(); // advc.opt (cached)
-	}
-	CivilizationTypes getActiveCivilizationType() const;											// Exposed to Python
+	DllExport TeamTypes getActiveTeam() const;																		// Exposed to Python
+	CivilizationTypes getActiveCivilizationType() const;								// Exposed to Python
 	CvCivilization const* getActiveCivilization() const; // advc.003w
 
-	DllExport bool isNetworkMultiPlayer() const														// Exposed to Python
+	DllExport bool isNetworkMultiPlayer() const															// Exposed to Python
 	{
-		return GC.getInitCore().getMultiplayer();
+		return GC.getInitCore().getMultiplayer(); // advc.inl
 	}
-	DllExport bool isGameMultiPlayer() const;														// Exposed to Python
-	DllExport bool isTeamGame() const;																// Exposed to Python
+	DllExport bool isGameMultiPlayer() const;																			// Exposed to Python
+	DllExport bool isTeamGame() const;																						// Exposed to Python
 
 	bool isModem() const; // advc: const
 	void setModem(bool bModem);
@@ -211,16 +206,16 @@ public:
 	DllExport void reviveActivePlayer();																		// Exposed to Python
 	DllExport int getNumHumanPlayers()													// Exposed to Python
 	{
-		return GC.getInitCore().getNumHumans();
+		return GC.getInitCore().getNumHumans(); // advc.inl
 	}
-	DllExport int getGameTurn()																	// Exposed to Python
+	DllExport inline int getGameTurn()																	// Exposed to Python
 	// <advc> Need a const version
 	{	CvGame const& kThis = *this;
 		return kThis.getGameTurn();
 	}
-	int getGameTurn() const
+	inline int getGameTurn() const
 	{
-		return GC.getInitCore().getGameTurn();
+		return GC.getInitCore().getGameTurn(); // advc.inl
 	} // </advc>
 	void setGameTurn(int iNewValue);															// Exposed to Python
 	void incrementGameTurn();
@@ -229,33 +224,33 @@ public:
 	int getGameTurnYear() const; // </advc>																	// Exposed to Python
 	int getElapsedGameTurns() const																		// Exposed to Python
 	{
-		return m_iElapsedGameTurns;
+		return m_iElapsedGameTurns; // advc.inl
 	}
 	void incrementElapsedGameTurns();
 	int AIHandicapAdjustment() const; // advc.251
 
 	int getMaxTurns() const																			// Exposed to Python
 	{
-		return GC.getInitCore().getMaxTurns();
+		return GC.getInitCore().getMaxTurns(); // advc.inl
 	}
 	void setMaxTurns(int iNewValue);															// Exposed to Python
 	void changeMaxTurns(int iChange);															// Exposed to Python
 
 	int getMaxCityElimination() const														// Exposed to Python
 	{
-		return GC.getInitCore().getMaxCityElimination();
+		return GC.getInitCore().getMaxCityElimination(); // advc.inl
 	}
 	void setMaxCityElimination(int iNewValue);										// Exposed to Python
 
 	int getNumAdvancedStartPoints() const														// Exposed to Python
 	{
-		return GC.getInitCore().getNumAdvancedStartPoints();
+		return GC.getInitCore().getNumAdvancedStartPoints(); // advc.inl
 	}
 	void setNumAdvancedStartPoints(int iNewValue);										// Exposed to Python
 
 	int getStartTurn() const																			// Exposed to Python
 	{
-		return m_iStartTurn;
+		return m_iStartTurn; // advc.inl
 	}
 	void setStartTurn(int iNewValue);
 
@@ -264,9 +259,9 @@ public:
 
 	int getEstimateEndTurn() const;																// Exposed to Python
 	void setEstimateEndTurn(int iNewValue);												// Exposed to Python
-	scaled gameTurnProgress(int iDelay = 0) const; // advc
+	double gameTurnProgress(int iDelay = 0) const; // advc
 
-	DllExport int getTurnSlice() const { return m_iTurnSlice; }								// Exposed to Python
+	DllExport int getTurnSlice() const { return m_iTurnSlice; } // advc.inl							// Exposed to Python
 	int getMinutesPlayed() const;																	// Exposed to Python
 	void setTurnSlice(int iNewValue);
 	void changeTurnSlice(int iChange);
@@ -278,8 +273,7 @@ public:
 	// <advc> Need a const version
 	{	CvGame const& kThis = *this;
 		return kThis.getTurnSlicesRemaining();
-	}
-	int getTurnSlicesRemaining() const { return getCutoffSlice() - getTurnSlice(); };
+	} inline int getTurnSlicesRemaining() const { return getCutoffSlice() - getTurnSlice(); };
 	// </advc>
 	void resetTurnTimer();
 	void incrementTurnTimer(int iNumTurnSlices);
@@ -287,7 +281,7 @@ public:
 
 	int getTargetScore() const																	// Exposed to Python
 	{
-		return GC.getInitCore().getTargetScore();
+		return GC.getInitCore().getTargetScore(); // advc.inl
 	}
 	void setTargetScore(int iNewValue);														// Exposed to Python
 
@@ -297,41 +291,26 @@ public:
 
 	int getNumCities() const																						// Exposed to Python
 	{
-		return m_iNumCities;
+		return m_iNumCities; // advc.inl
 	}
 	int getNumCivCities() const;																				// Exposed to Python
 	void changeNumCities(int iChange);
 
 	int getTotalPopulation() const																// Exposed to Python
 	{
-		return m_iTotalPopulation;
+		return m_iTotalPopulation; // advc.inl
 	}
 	void changeTotalPopulation(int iChange);
 
-	int getTradeRoutes() const																		// Exposed to Python
-	{
-		return m_iTradeRoutes;
-	}
+	int getTradeRoutes() const;																		// Exposed to Python
 	void changeTradeRoutes(int iChange);													// Exposed to Python
 
-	int getFreeTradeCount() const																// Exposed to Python
-	{
-		return m_iFreeTradeCount;
-	}
-	bool isFreeTrade() const																			// Exposed to Python
-	{
-		return (getFreeTradeCount() > 0);
-	}
+	int getFreeTradeCount() const;																// Exposed to Python
+	bool isFreeTrade() const;																			// Exposed to Python
 	void changeFreeTradeCount(int iChange);												// Exposed to Python
 
-	int getNoNukesCount() const																	// Exposed to Python
-	{
-		return m_iNoNukesCount;
-	}
-	bool isNoNukes() const																				// Exposed to Python
-	{
-		return (getNoNukesCount() > 0);
-	}
+	int getNoNukesCount() const;																	// Exposed to Python
+	bool isNoNukes() const;																				// Exposed to Python
 	void changeNoNukesCount(int iChange);													// Exposed to Python
 
 	int getSecretaryGeneralTimer(VoteSourceTypes eVoteSource) const;													// Exposed to Python
@@ -384,7 +363,7 @@ public:
 
 	int getAIAutoPlay() const // advc: const											// Exposed to Python
 	{
-		return m_iAIAutoPlay;
+		return m_iAIAutoPlay; // advc.inl
 	}
 	DllExport void setAIAutoPlay(int iNewValue)										// Exposed to Python
 	{	// <advc.127>
@@ -447,7 +426,7 @@ public:
 
 	DllExport bool isDebugMode() const																			// Exposed to Python
 	{
-		return m_bDebugModeCache;
+		return m_bDebugModeCache; // advc.inl
 	}
 	DllExport void toggleDebugMode();																				// Exposed to Python
 	DllExport void updateDebugModeCache();
@@ -458,21 +437,21 @@ public:
 
 	DllExport bool isHotSeat() const																				// Exposed to Python
 	{
-		return GC.getInitCore().getHotseat();
+		return GC.getInitCore().getHotseat(); // advc.inl
 	}
 	DllExport bool isPbem() const																					// Exposed to Python
 	{
-		return GC.getInitCore().getPbem();
+		return GC.getInitCore().getPbem(); // advc.inl
 	}
 	DllExport bool isPitboss() const																				// Exposed to Python
 	{
-		return GC.getInitCore().getPitboss();
+		return GC.getInitCore().getPitboss(); // advc.inl
 	}
 	bool isSimultaneousTeamTurns() const; // Exposed to Python
 
 	DllExport bool isFinalInitialized() const																		// Exposed to Python
 	{
-		return m_bFinalInitialized;
+		return m_bFinalInitialized; // advc.inl
 	}
 	DllExport void setFinalInitialized(bool bNewValue);
 	// <advc.004x>
@@ -492,9 +471,9 @@ public:
 	bool isPlayerOptionsSent() const;
 	void sendPlayerOptions(bool bForce = false);
 
-	DllExport PlayerTypes getActivePlayer() const												// Exposed to Python
+	DllExport inline PlayerTypes getActivePlayer() const															// Exposed to Python
 	{
-		return GC.getInitCore().getActivePlayer();
+		return GC.getInitCore().getActivePlayer(); // advc.inl
 	}
 	DllExport void setActivePlayer(PlayerTypes eNewValue, bool bForceHotSeat = false);		// Exposed to Python
 	void updateActiveVisibility(); // advc.706
@@ -506,7 +485,7 @@ public:
 	bool isInBetweenTurns() const;
 	void setInBetweenTurns(bool b); // </advc.106b>
 
-	HandicapTypes getHandicapType() const { return m_eHandicap; }
+	inline HandicapTypes getHandicapType() const { return m_eHandicap; } // advc.inl
 	void setHandicapType(HandicapTypes eHandicap);
 	HandicapTypes getAIHandicap() const { return m_eAIHandicap; } // advc.127
 
@@ -520,17 +499,17 @@ public:
 
 	TeamTypes getWinner() const																			// Exposed to Python
 	{
-		return m_eWinner;
+		return m_eWinner; // advc.inl
 	}
 	VictoryTypes getVictory() const																		// Exposed to Python
 	{
-		return m_eVictory;
+		return m_eVictory; // advc.inl
 	}
 	void setWinner(TeamTypes eNewWinner, VictoryTypes eNewVictory);		// Exposed to Python
 
 	DllExport GameStateTypes getGameState() const																		// Exposed to Python
 	{
-		return m_eGameState;
+		return m_eGameState; // advc.inl
 	}
 	DllExport void setGameState(GameStateTypes eNewValue);
 
@@ -541,15 +520,15 @@ public:
 	}
 	EraTypes getStartEra() const															// Exposed to Python
 	{
-		return GC.getInitCore().getEra();
+		return GC.getInitCore().getEra(); // advc.inl
 	}
 	CalendarTypes getCalendar() const														// Exposed to Python
 	{
-		return GC.getInitCore().getCalendar();
+		return GC.getInitCore().getCalendar(); // advc.inl
 	}
 	GameSpeedTypes getGameSpeedType() const													// Exposed to Python
 	{
-		return GC.getInitCore().getGameSpeed();
+		return GC.getInitCore().getGameSpeed(); // advc.inl
 	}
 
 	PlayerTypes getRankPlayer(int iRank) const;															// Exposed to Python
@@ -570,21 +549,21 @@ public:
 	DllExport int getTeamScore(TeamTypes eTeam) const;																// Exposed to Python
 	void setTeamScore(TeamTypes eTeam, int iScore);
 
-	DllExport bool isOption(GameOptionTypes eIndex) const													// Exposed to Python
+	DllExport inline bool isOption(GameOptionTypes eIndex) const													// Exposed to Python
 	{
-		return GC.getInitCore().getOption(eIndex);
+		return GC.getInitCore().getOption(eIndex); // advc.inl
 	}
 	void setOption(GameOptionTypes eIndex, bool bEnabled);
 
 	DllExport bool isMPOption(MultiplayerOptionTypes eIndex) const										// Exposed to Python
 	{
-		return GC.getInitCore().getMPOption(eIndex);
+		return GC.getInitCore().getMPOption(eIndex); // advc.inl
 	}
 	void setMPOption(MultiplayerOptionTypes eIndex, bool bEnabled);
 
 	bool isForcedControl(ForceControlTypes eIndex) const												// Exposed to Python
 	{
-		return GC.getInitCore().getForceControl(eIndex);
+		return GC.getInitCore().getForceControl(eIndex); // advc.inl
 	}
 	void setForceControl(ForceControlTypes eIndex, bool bEnabled);
 	// <advc>
@@ -618,7 +597,7 @@ public:
 
 	bool isVictoryValid(VictoryTypes eIndex) const															// Exposed to Python
 	{
-		return GC.getInitCore().getVictory(eIndex);
+		return GC.getInitCore().getVictory(eIndex); // advc.inl
 	}
 	void setVictoryValid(VictoryTypes eVict, bool bValid);
 												// advc: const
@@ -652,9 +631,9 @@ public:
 	CvCity* getHeadquarters(CorporationTypes eIndex) const; // Exposed to Python
 	void setHeadquarters(CorporationTypes eIndex, CvCity* pNewValue, bool bAnnounce);	// Exposed to Python
 
-	PlayerVoteTypes getPlayerVote(PlayerTypes eVoter, int iVote) const;			// Exposed to Python
-	void setPlayerVote(PlayerTypes eVoter, int iVote, PlayerVoteTypes eNewValue);
-	void castVote(PlayerTypes eVoter, int iVote, PlayerVoteTypes ePlayerVote);
+	PlayerVoteTypes getPlayerVote(PlayerTypes eOwnerIndex, int iVoteId) const;			// Exposed to Python
+	void setPlayerVote(PlayerTypes eOwnerIndex, int iVoteId, PlayerVoteTypes eNewValue);
+	void castVote(PlayerTypes eOwnerIndex, int iVoteId, PlayerVoteTypes ePlayerVote);
 
 	DllExport CvWString const& getName();
 	void setName(TCHAR const* szName);
@@ -673,11 +652,11 @@ public:
 	int getNumDeals();																													// Exposed to Python
 
 	// advc.inl: const version, inline
-	DllExport CvDeal* getDeal(int iID)																	// Exposed to Python
+	DllExport inline CvDeal* getDeal(int iID)																	// Exposed to Python
 	{
 		return m_deals.getAt(iID);
 	}
-	CvDeal const* getDeal(int iID) const
+	inline CvDeal const* getDeal(int iID) const
 	{
 		return m_deals.getAt(iID);
 	}
@@ -707,6 +686,7 @@ public:
 	VoteTriggeredData* addVoteTriggered(VoteSourceTypes eVoteSource, const VoteSelectionSubData& kOptionData);
 	void deleteVoteTriggered(int iID);
 
+	// advc.inl: PRNG functions inlined
 	CvRandom& getMapRand()																											// Exposed to Python
 	{
 		return m_mapRand;
@@ -715,12 +695,21 @@ public:
 	{
 		return m_mapRand.get(iNum, pszLog);
 	}
-	CvRandom& getSorenRand()																								// Exposed to Python
+	inline CvRandom& getSorenRand()																								// Exposed to Python
 	{
 		return m_sorenRand;
+	}  // <advc> Shorter. "S" could also stand for "synchronized" (or "Soren"). (Tbd.: Move to CvGlobals.)
+	inline CvRandom& getSRand()																										// Exposed to Python
+	{
+		return getSorenRand();
 	}
+	inline int getSRandNum(int iNum, const char* pszLog,
+		int iData1 = MIN_INT, int iData2 = MIN_INT)
+	{
+		return getSorenRandNum(iNum, pszLog, iData1, iData2);
+	} // </advc>
 	//  Returns a value from the half-closed interval [0,iNum)
-	int getSorenRandNum(int iNum, const char* pszLog,
+	inline int getSorenRandNum(int iNum, const char* pszLog,
 		int iData1 = MIN_INT, int iData2 = MIN_INT) // advc.007
 	{
 		return m_sorenRand.getInt(iNum, pszLog, /* advc.007: */ iData1, iData2);
@@ -770,8 +759,8 @@ public:
 	bool culturalVictoryValid() const;
 	int culturalVictoryNumCultureCities() const;
 	CultureLevelTypes culturalVictoryCultureLevel() const;
+
 	int getCultureThreshold(CultureLevelTypes eLevel) const;
-	int freeCityCultureFromTrait(TraitTypes eTrait) const; // advc.908b
 
 	int getPlotExtraYield(int iX, int iY, YieldTypes eYield) const;   // exposed to Python (K-Mod)
 	void setPlotExtraYield(int iX, int iY, YieldTypes eYield, int iCost);   // exposed to Python
@@ -781,10 +770,7 @@ public:
 	void changePlotExtraCost(int iX, int iY, int iCost);   // exposed to Python
 	void removePlotExtraCost(int iX, int iY);
 
-	ReligionTypes getVoteSourceReligion(VoteSourceTypes eVoteSource) const	 	// Exposed to Python
-	{
-		return m_aeVoteSourceReligion.get(eVoteSource); // advc
-	}
+	ReligionTypes getVoteSourceReligion(VoteSourceTypes eVoteSource) const;	 	// Exposed to Python
 	void setVoteSourceReligion(VoteSourceTypes eVoteSource, ReligionTypes eReligion, bool bAnnounce = false);		// Exposed to Python
 
 	bool isEventActive(EventTriggerTypes eTrigger) const;		// exposed to Python
@@ -861,23 +847,20 @@ public:
 	StartPointsAsHandicap const& startPointsAsHandicap() const;
 	int getBarbarianStartTurn() const; // advc.300		(exposed to Python)
 	bool isBarbarianCreationEra() const; // advc.307
-	// <advc.304>
-	BarbarianWeightMap& getBarbarianWeightMap() { return *m_pBarbarianWeightMap; }
-	BarbarianWeightMap const& getBarbarianWeightMap() const { return *m_pBarbarianWeightMap; }
-	// </advc.304>  <advc.703>
+	// <advc.703>
 	RiseFall const& getRiseFall() const { return *m_pRiseFall; }
 	RiseFall& getRiseFall() { return *m_pRiseFall; }
 	// </advc.703>
 	void setHallOfFame(CvHallOfFameInfo* pHallOfFame); // advc.106i
 	std::set<int>& getActivePlayerCycledGroups(); // advc
 	// <advc.003u>
-	CvGameAI& AI()
+	__forceinline CvGameAI& AI()
 	{	//return *static_cast<CvGameAI*>(const_cast<CvGame*>(this));
 		/*  The above won't work in an inline function b/c the compiler doesn't know
 			that CvGameAI is derived from CvGame */
 		return *reinterpret_cast<CvGameAI*>(this);
 	}
-	CvGameAI const& AI() const
+	__forceinline CvGameAI const& AI() const
 	{	//return *static_cast<CvGameAI const*>(this);
 		return *reinterpret_cast<CvGameAI const*>(this);
 	} // </advc.003u>
@@ -947,9 +930,6 @@ protected:
 	PlayerTypes m_eEventPlayer;
 	StartingPlotNormalizationLevel m_eNormalizationLevel; // advc.108
 
-	CvRandom m_mapRand;
-	CvRandom m_sorenRand;
-
 	CvString m_szScriptData;
 
 	int m_aiUpdateTimers[NUM_UPDATE_TIMER_TYPES]; // advc.003r
@@ -966,10 +946,8 @@ protected:
 	int* m_paiBuildingClassCreatedCount;
 	int* m_paiProjectCreatedCount;
 	int* m_paiForceCivicCount;
-	/*	advc.enum:  (Tbd.: The other arrays should also be turned into EnumMaps.
-		Mustn't use eager allocation for dynamic enum types however b/c
-		XML isn't loaded yet.) */
-	ArrayEnumMap<VoteTypes,PlayerVoteTypes> m_aiVoteOutcome;
+	// advc.enum:  (Tbd.: The other arrays should also be turned into EnumMaps)
+	EnumMap<VoteTypes,PlayerVoteTypes> m_aiVoteOutcome;
 	int* m_paiReligionGameTurnFounded;
 	int* m_paiCorporationGameTurnFounded;
 	int* m_aiSecretaryGeneralTimer;
@@ -998,6 +976,8 @@ protected:
 	mutable bool m_bShowingCurrentDeals;
 	// </advc.072>
 
+	CvRandom m_mapRand;
+	CvRandom m_sorenRand;
 	// <advc.027b>
 	struct InitialRandSeed
 	{
@@ -1010,11 +990,9 @@ protected:
 	int m_iNumSessions;
 	CvHallOfFameInfo* m_pHallOfFame; // advc.106i
 
-	BarbarianWeightMap* m_pBarbarianWeightMap; // advc.304 (serialized by CvMap)
 	std::vector<PlotExtraYield> m_aPlotExtraYields;
 	std::vector<PlotExtraCost> m_aPlotExtraCosts;
-	// advc: Replacing a hash_map
-	ArrayEnumMap<VoteSourceTypes,ReligionTypes> m_aeVoteSourceReligion;
+	stdext::hash_map<VoteSourceTypes, ReligionTypes> m_mapVoteSourceReligions;
 	std::vector<EventTriggerTypes> m_aeInactiveTriggers;
 
 	/*  K-Mod. This is used to track which groups have been cycled through in the current turn.
@@ -1064,14 +1042,12 @@ protected:
 	// <advc.300>
 	void createBarbarianCity(bool bNoCivCities, int iProbModifierPercent = 100);
 	int numBarbariansToCreate(int iTilesPerUnit, int iTiles, int iUnowned,
-			int iUnitsPresent);
-	int createBarbarianUnits(int iUnitsToCreate, int iUnitsPresent, CvArea& kArea,
-			Shelf* pShelf = NULL, bool bCargoAllowed = false, bool bOnlyCargo = false);
-	CvPlot* randomBarbarianPlot(int& iValid, CvArea const& kArea,
-			Shelf const* pShelf = NULL);
-	bool killBarbarian(int iUnitsPresent, int iTiles, int iPop,
-			CvArea& kArea, Shelf* pShelf = NULL);
-	UnitTypes randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea);
+			int iUnitsPresent, int iBarbarianCities = 0);
+	int createBarbarianUnits(int n, CvArea& a, Shelf* shelf, bool bCargoAllowed = false,
+			bool bOnlyCargo = false);
+	CvPlot* randomBarbarianPlot(CvArea const& a, Shelf const* pShelf);
+	bool killBarbarian(int iUnitsPresent, int iTiles, int iPop, CvArea& a, Shelf* pShelf);
+	UnitTypes randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& a);
 	scaled barbarianPeakLandRatio() const;
 	// </advc.300>
 
@@ -1101,7 +1077,7 @@ protected:
 			std::vector<std::pair<Agent*,int> > const& kStartingLocPercentPerAgent,
 			std::vector<Agent*>& kResult); // </advc.108b>
 	int getTeamClosenessScore( // <advc>
-			ArrayEnumMap2D<PlayerTypes,PlayerTypes,int> const& kDistances,
+			EnumMap2D<PlayerTypes,PlayerTypes,int> const& kDistances,
 			std::vector<PlayerTypes> const& kStartingLocs); // </advc>
 	void normalizeAddRiver();
 	void normalizeRemovePeaks();
@@ -1136,59 +1112,5 @@ private: // advc.003u: (See comments in the private section of CvPlayer.h)
 	virtual void AI_updateAssignWorkExternal();
 	virtual int AI_combatValueExternal(UnitTypes eUnit);
 };
-
-/*	<advc.007c> Some macros to make the RNG functions of the singleton
-	CvGame instance less tedious to use */
-
-// Implementation files can re-define this to use a different CvGame instance
-#define CVGAME_INSTANCE_FOR_RNG GC.getGame()
-
-inline CvRandom& syncRand()
-{
-	return CVGAME_INSTANCE_FOR_RNG.getSorenRand();
-}
-inline CvRandom& mapRand()
-{
-	return CVGAME_INSTANCE_FOR_RNG.getMapRand();
-}
-// These have to be macros to let CALL_LOC_STR expand to the proper code location
-#define SyncRandNum(iNumOutcomes) \
-	CVGAME_INSTANCE_FOR_RNG.getSorenRandNum((iNumOutcomes), CALL_LOC_STR)
-#define SyncRandFract(ScaledNumType) \
-	ScaledNumType::rand(syncRand(), CALL_LOC_STR)
-#define SyncRandSuccess(rSuccessProb) \
-	(rSuccessProb).randSuccess(syncRand(), CALL_LOC_STR)
-/*	(Implementing this through conversion to ScaledNum would lead to
-	precision problems or unnecessary arithmetic operations.) */
-#define SyncRandSuccessRatio(iNumerator, iDenominator) \
-	((iNumerator) > 0 && ((iNumerator) >= (iDenominator) || (iNumerator) > SyncRandNum(iDenominator)))
-#define SyncRandSuccess100(iSuccessPercent) \
-	SyncRandSuccessRatio(iSuccessPercent, 100)
-#define SyncRandSuccess1000(iSuccessPermille) \
-	SyncRandSuccessRatio(iSuccessPermille, 1000)
-#define SyncRandSuccess10000(iSuccessPermyriad) \
-	SyncRandSuccessRatio(iSuccessPermyriad, 10000)
-// Not sure what to name this one. Success has 1 chance in iNumLots.
-#define SyncRandOneChanceIn(iNumLots) \
-	(SyncRandNum(iNumLots) == 0)
-
-// Same as above, replacing "Sync" with "Map".
-#define MapRandNum(iNumOutcomes) \
-	CVGAME_INSTANCE_FOR_RNG.getMapRandNum((iNumOutcomes), CALL_LOC_STR)
-#define MapRandFract(ScaledNumType) \
-	ScaledNumType::rand(mapRand(), CALL_LOC_STR)
-#define MapRandSuccess(rSuccessProb) \
-	(rSuccessProb).randSuccess(mapRand(), CALL_LOC_STR)
-#define MapRandSuccessRatio(iNumerator, iDenominator) \
-	((iNumerator) > 0 && ((iNumerator) >= (iDenominator) || (iNumerator) > MapRandNum(iDenominator)))
-#define MapRandSuccess100(iSuccessPercent) \
-	MapRandSuccessRatio(iSuccessPercent, 100)
-#define MapRandSuccess1000(iSuccessPermille) \
-	MapRandSuccessRatio(iSuccessPermille, 1000)
-#define MapRandSuccess10000(iSuccessPermyriad) \
-	MapRandSuccessRatio(iSuccessPermyriad, 10000)
-#define MapRandOneChanceIn(iNumLots) \
-	(MapRandNum(iNumLots) == 0)
-// </advc.007c>
 
 #endif

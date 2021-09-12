@@ -1,3 +1,5 @@
+// <advc.700> New class; see header file for description.
+
 #include "CvGameCoreDLL.h"
 #include "RFChapter.h"
 #include "CoreAI.h"
@@ -22,7 +24,7 @@ RFChapter::RFChapter(int pos, int maxChapters, int playLength) {
 	chapters = maxChapters;
 	double meanChapterLength = playLength / (double)maxChapters;
 	double lengthShift = GC.getDefineINT("RF_CHAPTER_LENGTH_SHIFT_PERCENT") / 100.0;
-	length = fmath::roundToMultiple(meanChapterLength * ::dRange(
+	length = ::roundToMultiple(meanChapterLength * ::dRange(
 			1 - lengthShift + 2 * pos * (lengthShift / (maxChapters - 1)),
 			0.25, 1.75), 5);
 }
@@ -50,7 +52,7 @@ void RFChapter::write(FDataStreamBase* pStream) {
 	pStream->Write(scoreAtEnd);
 	pStream->Write(retireTurn);
 	pStream->Write(repeat);
-	pStream->Write(civ);
+	pStream->Write((int)civ);
 	pStream->Write(chapters);
 	breakdown.write(pStream);
 }
@@ -255,7 +257,7 @@ int RFChapter::getRemainingTimePercent() const {
 		t = GC.getGame().getGameTurn();
 	return (length <= 0 ? 100 :
 			// Minus 1 b/c the current turn is already spent
-			fmath::round((length - t + getStartTurn() - 1.0) / (0.01 * length)));
+			::round((length - t + getStartTurn() - 1.0) / (0.01 * length)));
 }
 
 bool RFChapter::isRepeat() const {

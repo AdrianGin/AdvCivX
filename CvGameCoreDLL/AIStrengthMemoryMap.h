@@ -15,8 +15,7 @@ class AIStrengthMemoryMap
 	//std::vector<int> m_aiMap;
 	/*	It's a pretty sparse map, often entirely empty.
 		K-Mod had used a std::vector, which was faster than std::map in my tests,
-		but not quite as fast as hash_map. I'm keeping the vector code in comments.
-		(Haven't tried ListEnumMap b/c that class didn't exist yet.) */
+		but not quite as fast as hash_map. I'm keeping the vector code in comments. */
 	typedef stdext::hash_map<PlotNumTypes,int> PlotStrengthMap;
 	PlotStrengthMap m_map;
 	TeamTypes m_eTeam;
@@ -27,7 +26,7 @@ public:
 	void decay();
 	void read(FDataStreamBase* pStream, uint uiFlag, TeamTypes eTeam);
 	void write(FDataStreamBase* pStream) const;
-	int get(PlotNumTypes ePlot) const
+	inline int get(PlotNumTypes ePlot) const
 	{
 		/*FAssertBounds(0, m_aiMap.size(), ePlot);
 		return m_aiMap[ePlot];*/

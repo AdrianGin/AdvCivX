@@ -135,8 +135,7 @@ def getAttitudeCount (nPlayer, nTarget):
 	"""Returns the total attitude modifiers nPlayer has toward nTarget."""
 	sAttStr = getAttitudeString(nPlayer, nTarget)
 	if sAttStr == None:
-		#return
-		return 0 # advc.001 (from Inthegrave's mod, fixed by Toffer)
+		return
 	nAtt = 0
 	# TODO: Replace with simple line-by-line handling
 	#	    so it doesn't get tricked by leader names (": " fixes issue)

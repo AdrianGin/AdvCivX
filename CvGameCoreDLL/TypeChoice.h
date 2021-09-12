@@ -3,7 +3,7 @@
 #ifndef TYPE_CHOICE_H
 #define TYPE_CHOICE_H
 
-/*	advc: Metaprogramming code to replace C++11 std::conditional, std::common_type.
+/*	advc.fract: Metaprogramming code to replace C++11 std::conditional, std::common_type.
 	If more such functionality is needed, boost/mpl could help. */
 
 // Replacement for std::is_same (and boost::is_same)
@@ -18,26 +18,14 @@ struct is_same_type<T,T>
 	static const bool value = true;
 };
 
-// Replacement for std::is_pointer (and boost::is_pointer)
-template<class T>
-struct is_pointer_type
-{
-	static bool const value = false;
-};
-template<class T>
-struct is_pointer_type<T*>
-{
-	static bool const value = true;
-};
-
 // Replacement for std::conditional
 template<bool bCondition, typename T1, typename T2>
 struct choose_type { typedef T1 type; };
 template<typename T1, typename T2>
 struct choose_type<false,T1,T2> { typedef T2 type; };
 
-/*	Replacement for std::common_type. I need it only for integer types with 4 bytes or fewer
-	(specifically for advc.fract). Chooses signed over unsigned.
+/*	Replacement for std::common_type. I need it only for integer types with 4 bytes or fewer.
+	Chooses signed over unsigned.
 	If both are signed or both unsigned, the larger type is chosen.
 	Usage example: typename choose_int_type<short,uint>::type
 	(will resolve to short) */

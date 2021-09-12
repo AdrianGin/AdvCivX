@@ -44,7 +44,7 @@ public:
 	bool isVassalTributeDeal() const;
 	bool isDisengage() const; // advc.034
 
-	DllExport int getID() const { return m_iID; }
+	DllExport inline int getID() const { return m_iID; } // advc.inl
 	void setID(int iID);
 
 	int getInitialGameTurn() const;
@@ -59,26 +59,26 @@ public:
 		use FOR_EACH_TRADE_ITEM(getSecondList()) instead, or just getSecondList. */
 	CLLNode<TradeData>* headSecondTradesNodeExternal() const;
 	CLLNode<TradeData>* nextSecondTradesNodeExternal(CLLNode<TradeData>* pNode) const;
-	// </advc.003s> 
-	DllExport PlayerTypes getFirstPlayer() const
+	// </advc.003s>  <advc.inl>
+	DllExport inline PlayerTypes getFirstPlayer() const
 	{
 		return m_eFirstPlayer;
 	}
 	// advc: Renamed from "getFirstTrades"
-	CLinkList<TradeData> const& getFirstList() const
+	inline CLinkList<TradeData> const& getFirstList() const
 	{
 		return m_firstList;
 	}
-	DllExport PlayerTypes CvDeal::getSecondPlayer() const
+	DllExport inline PlayerTypes CvDeal::getSecondPlayer() const
 	{
 		return m_eSecondPlayer;
 	}
 	// advc: Renamed from "getSecondTrades"
-	CLinkList<TradeData> const& getSecondList() const
+	inline CLinkList<TradeData> const& getSecondList() const
 	{
 		return m_secondList;
 	}
-
+	// </advc.inl>
 	// <advc> More convenient interface for iteration
 	/*  Want to make all the CLLNodes const - should generally not modify deal lists
 		while traversing them. (Though this means that CLLNode::m_data also can't be
@@ -98,6 +98,7 @@ public:
 	// <advc.003j> Unused, let's keep it that way.
 	//void clearFirstTrades();
 	//void clearSecondTrades(); // </advc.003j>
+	// <advc.inl>
 	int getLengthFirst() const { return m_firstList.getLength(); }
 	int getLengthSecond() const { return m_secondList.getLength(); }
 	void insertAtEndFirst(TradeData item) // (currently only used internally)
@@ -107,7 +108,7 @@ public:
 	void insertAtEndSecond(TradeData item) // (currently only used internally)
 	{
 		m_secondList.insertAtEnd(item);
-	}
+	} // </advc.inl>
 
 	DllExport bool isCancelable(PlayerTypes eByPlayer = NO_PLAYER, CvWString* pszReason = NULL)
 	// <advc> Need a const version
@@ -124,6 +125,7 @@ public:
 	DllExport static bool isDual(TradeableItems eItem, bool bExcludePeace = false);
 	DllExport static bool hasData(TradeableItems eItem);
 	DllExport static bool isEndWar(TradeableItems eItem);
+	// advc.inl: Inlined x5
 	DllExport static bool isGold(TradeableItems eItem)
 	{
 		return (eItem == getGoldItem() || eItem == getGoldPerTurnItem());
@@ -132,9 +134,9 @@ public:
 	{
 		return (eItem == TRADE_VASSAL || eItem == TRADE_SURRENDER);
 	}
-	DllExport static TradeableItems getPeaceItem() { return TRADE_PEACE_TREATY; }
-	DllExport static TradeableItems getGoldItem() { return TRADE_GOLD; }
-	DllExport static TradeableItems getGoldPerTurnItem() { return TRADE_GOLD_PER_TURN; }
+	DllExport static inline TradeableItems getPeaceItem() { return TRADE_PEACE_TREATY; }
+	DllExport static inline TradeableItems getGoldItem() { return TRADE_GOLD; }
+	DllExport static inline TradeableItems getGoldPerTurnItem() { return TRADE_GOLD_PER_TURN; }
 
 	void read(FDataStreamBase* pStream);
 	void write(FDataStreamBase* pStream);

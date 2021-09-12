@@ -11,194 +11,173 @@ class WarEvalParameters;
 class UWAIReport;
 class InvasionGraph;
 
+
 /*  advc.104: New class. Handles the military assessment of a war between
-	two teams (agent, target) from the pov of a particular member of the agent team.
-	The analysis considers the present situation, but, more so, the
-	medium-term prospects (~25 turns).
-	The computations happen in the constructor, meaning that all other
-	public functions are for accessing the results. */
-class MilitaryAnalyst
-{
+	two teams, from the pov of a particular member of one of those teams.
+	The pov civ is 'we', its team is the 'agent' team, and the enemy team is
+	'they'.
+	Considers the present situation, but, more so, the medium-term prospects
+	(~25 turns). The computations happen in the constructor. The various results
+	can then be accessed through (fairly) quick functions.
+	Depending on the peaceScenario parameter, simulates a "war" scenario in which
+	war against 'they' is assumed to be declared immediately, after some
+	preparation time or continued (if already at war), - or - a "peace" scenario
+	in which no war is declared or the war against 'they' is ended immediately
+	if ongoing. */
+class MilitaryAnalyst {
+
 public:
-	/*	bPeaceScenario=false - "war" scenario:
-		War against the target is assumed to be declared immediately or,
-		depending on the war eval parameters, after some preparation time,
-		or war is continued (if already at war).
-		bPeaceScenario=true - "peace" scenario:
-		No war is declared or, if agent and target are at war, the war
-		is ended immediately. */
-	MilitaryAnalyst(PlayerTypes eAgentPlayer, WarEvalParameters& kWarEvalParams,
-			bool bPeaceScenario);
+
+	MilitaryAnalyst(PlayerTypes weId, WarEvalParameters& warEvalParams,
+			bool peaceScenario);
 	~MilitaryAnalyst();
-	WarEvalParameters& evaluationParams() { return m_kWarEvalParams; }
-	WarEvalParameters const& evaluationParams() const { return m_kWarEvalParams; }
-	PlayerTypes getAgentPlayer() const { return m_eWe; }
-	bool isPeaceScenario() const { return m_bPeaceScenario; }
-
-	bool isOnOurSide(TeamTypes eTeam) const;
-	/*  The parameter only refers to proper defensive pacts;
-		vassal-master is always checked. */
-	bool isOnTheirSide(TeamTypes eTeam, bool bDefensivePacts = false) const;
-	bool isEliminated(PlayerTypes ePlayer) const;
-	bool hasCapitulated(TeamTypes ePlayer) const;
+	WarEvalParameters& evaluationParameters() { return warEvalParams; }
+	WarEvalParameters const& evaluationParameters() const { return warEvalParams; }
+	PlayerTypes ourId() const { return weId; }
+	bool isPeaceScenario() const { return peaceScenario; }
+	// For debugging
+	void logResults(PlayerTypes civId);
+	bool isOnOurSide(TeamTypes tId) const;
+	/*  The parameter only refers to proper defensive pacts; vassal-master is always
+		checked. */
+	bool isOnTheirSide(TeamTypes tId, bool defensivePacts = false) const;
+	bool isEliminated(PlayerTypes civId) const;
+	bool hasCapitulated(TeamTypes civId) const;
 	// From units lost at war
-	scaled lostPower(PlayerTypes ePlayer, MilitaryBranchTypes eBranch) const;
-	// Net gain, i.e. build-up minus losses; can be negative.
-	scaled gainedPower(PlayerTypes ePlayer, MilitaryBranchTypes eBranch) const;
+	double lostPower(PlayerTypes civId, MilitaryBranchTypes mb) const;
+	// Net gain, i.e. build-up minus losses; can be negative
+	double gainedPower(PlayerTypes civId, MilitaryBranchTypes mb) const;
 	// Production invested in military build-up
-	scaled militaryProduction(PlayerTypes ePlayer) const;
-	TeamSet const& getCapitulationsAccepted(TeamTypes eMaster) const
-	{
-		FAssertBounds(0, MAX_CIV_TEAMS, eMaster);
-		return m_capitulationsAcceptedPerTeam[eMaster];
+	double militaryProduction(PlayerTypes civId) const;
+	TeamSet const& getCapitulationsAccepted(TeamTypes masterId) const {
+		FAssertBounds(0, MAX_CIV_TEAMS, masterId);
+		return capitulationsAcceptedPerTeam[masterId];
 	}
-	scaled getNukedCities(PlayerTypes eNukeOwner, PlayerTypes eCityOwner) const
-	{
-		FAssertBounds(0, MAX_CIV_PLAYERS, eNukeOwner);
-		FAssertBounds(0, MAX_CIV_PLAYERS, eCityOwner);
-		return m_nukedCities[eNukeOwner][eCityOwner];
+	double getNukedCities(PlayerTypes byId, PlayerTypes ownerId) const {
+		FAssertBounds(0, MAX_CIV_PLAYERS, byId);
+		FAssertBounds(0, MAX_CIV_PLAYERS, ownerId);
+		return nukedCities[byId][ownerId];
 	}
-	bool isWar(PlayerTypes eFirst, PlayerTypes eSecond) const // After simulated DoWs
-	{
-		FAssertBounds(0, MAX_CIV_PLAYERS, eFirst);
-		FAssertBounds(0, MAX_CIV_PLAYERS, eSecond);
-		return m_warTable[eFirst][eSecond];
+	bool isWar(PlayerTypes p1, PlayerTypes p2) const { // By the end of the simulation
+		FAssertBounds(0, MAX_CIV_PLAYERS, p1);
+		FAssertBounds(0, MAX_CIV_PLAYERS, p2);
+		return warTable[p1][p2];
 	}
-	bool isWar(TeamTypes eFirst, TeamTypes eSecond) const;
-	// Prep. time, if any, plus time horizon
-	int turnsSimulated() const { return m_iTurnsSimulated; }
-	// Does ePlayer have a node in the InvasionGraph?
-	bool isPartOfAnalysis(PlayerTypes ePlayer) const
-	{
-		return (m_partOfAnalysis.count(ePlayer) > 0);
-	}
-	void logResults(PlayerTypes ePlayer); // for debugging
-	// (There's another public and private section below)
+	// (there's another public section below)
 private:
-	PlayerTypes m_eWe;
-	WarEvalParameters& m_kWarEvalParams;
-	TeamTypes m_eTarget;
-	UWAIReport& m_kReport;
-	bool m_bPeaceScenario;
-
-	InvasionGraph* m_pInvGraph;
-	int m_iTurnsSimulated;
-
-	std::vector<TeamSet> m_capitulationsAcceptedPerTeam;
-	PlyrSet m_partOfAnalysis;
-	std::vector<std::vector<bool> > m_warTable;
-	std::vector<std::vector<scaled> > m_nukedCities;
-
-	class PlayerResult // Per-player results of analysis
-	{
-	public:
-		PlayerResult() : m_rGameScore(-1) {}
-		void setGameScore(scaled rScore) { m_rGameScore = rScore; }
-		scaled getGameScore() const { return m_rGameScore; }
-		void addNukesSuffered(scaled rNukes) { m_rNukesSuffered += rNukes; }
-		scaled getNukesSuffered() const { return m_rNukesSuffered; }
-		void addNukesFired(scaled rNukes) { m_rNukesFired += rNukes; }
-		scaled getNukesFired() const { return m_rNukesFired; }
-		void setDoWOn(PlayerTypes eAggressor) { m_DoWOn.insert(eAggressor); }
-		void setDoWOn(PlyrSetIter const& itFirst, PlyrSetIter const& itLast)
-		{
-			m_DoWOn.insert(itFirst, itLast);
-		}
-		PlyrSet const& getDoWOn() const { return m_DoWOn; }
-		void setDoWBy(PlayerTypes eTarget) { m_DoWBy.insert(eTarget); }
-		void setDoWBy(PlyrSetIter const& itFirst, PlyrSetIter const& itLast)
-		{
-			m_DoWBy.insert(itFirst, itLast);
-		}
-		PlyrSet const& getDoWBy() const { return m_DoWBy; }
-		void setWarContinued(PlayerTypes eEnemy) { m_warsCont.insert(eEnemy); }
-		PlyrSet const& getWarsContinued() const { return m_warsCont; }
-		void setCityLost(PlotNumTypes eCityPlot) { m_lostCities.insert(eCityPlot); }
-		CitySet const& getLostCities() const { return m_lostCities; }
-		CitySet& getLostCities() { return m_lostCities; }
-		void setCityConquered(PlotNumTypes eCityPlot) { m_conqueredCities.insert(eCityPlot); }
-		CitySet const& getConqueredCities() const { return m_conqueredCities; }
-		CitySet& getConqueredCities() { return m_conqueredCities; }
-	private:
-		scaled m_rGameScore;
-		scaled m_rNukesSuffered;
-		scaled m_rNukesFired;
-		PlyrSet m_DoWOn;
-		PlyrSet m_DoWBy;
-		PlyrSet m_warsCont;
-		CitySet m_lostCities;
-		CitySet m_conqueredCities;
-	};
-	std::vector<PlayerResult*> m_playerResults;
-	static CitySet m_emptyCitySet;
-	static PlyrSet m_emptyPlayerSet;
-	PlayerResult& playerResult(PlayerTypes ePlayer);
-// (There's another private section below)
-public:
-	CitySet const& lostCities(PlayerTypes eOldOwner) const
-	{
-		FAssertBounds(0, MAX_CIV_PLAYERS, eOldOwner);
-		PlayerResult* pR = m_playerResults[eOldOwner];
-		return (pR == NULL ? m_emptyCitySet : pR->getLostCities());
-	}
-	CitySet const& conqueredCities(PlayerTypes eNewOwner) const
-	{
-		FAssertBounds(0, MAX_CIV_PLAYERS, eNewOwner);
-		PlayerResult* pR = m_playerResults[eNewOwner];
-		return (pR == NULL ? m_emptyCitySet : pR->getConqueredCities());
-	}
-	/*  Only for the war scenario. No DoW are anticipated in the peace scenario;
-		will return false then. */
-	PlyrSet const& getWarsDeclaredBy(PlayerTypes eAggressor) const
-	{
-		 FAssertBounds(0, MAX_CIV_PLAYERS, eAggressor);
-		 PlayerResult* pR = m_playerResults[eAggressor];
-		 return (pR == NULL ? m_emptyPlayerSet : pR->getDoWBy());
-	}
-	PlyrSet const& getWarsDeclaredOn(PlayerTypes eTarget) const
-	{
-		 FAssertBounds(0, MAX_CIV_PLAYERS, eTarget);
-		 PlayerResult* pR = m_playerResults[eTarget];
-		 return (pR == NULL ? m_emptyPlayerSet : pR->getDoWOn());
-	}
-	// Empty unless considering peace
-	PlyrSet const& getWarsContinued(PlayerTypes ePlayer) const
-	{
-		FAssertBounds(0, MAX_CIV_PLAYERS, ePlayer);
-		PlayerResult* pR = m_playerResults[ePlayer];
-		return (pR == NULL ? m_emptyPlayerSet : pR->getWarsContinued());
-	}
-	/*	Only those that aren't expected to be intercepted.
-		Fired by someone (shouldn't matter who). */
-	scaled getNukesSufferedBy(PlayerTypes ePlayer) const
-	{
-		FAssertBounds(0, MAX_CIV_PLAYERS, ePlayer);
-		PlayerResult* pR = m_playerResults[ePlayer];
-		return (pR == NULL ? 0 : pR->getNukesSuffered());
-	}
-	scaled getNukesFiredBy(PlayerTypes ePlayer) const
-	{
-		FAssertBounds(0, MAX_CIV_PLAYERS, ePlayer);
-		PlayerResult* pR = m_playerResults[ePlayer];
-		return (pR == NULL ? 0 : pR->getNukesFired());
-	}
-	// Based on conquered and lost cities
-	scaled predictedGameScore(PlayerTypes ePlayer) const;
-private:
-	// True if we are preparing war against ePlayer or considering a war plan
-	bool doWePlanToDeclWar(PlayerTypes ePlayer) const;
+	// True if we are preparing war against civId or considering a war plan
+	bool doWePlanToDeclWar(PlayerTypes civId) const;
 	void prepareResults();
 	void simulateNuclearWar();
-	/*  Also checks vassal agreements, including other vassals of
-		the same master. */
-	bool isDefactoDefensivePact(TeamTypes eFirst, TeamTypes eSecond) const;
+	double interceptionMultiplier(TeamTypes tId);
 	// Logs either conquests or losses
-	void logCities(PlayerTypes ePlayer, bool bConquests);
+	void logCities(PlayerTypes civId, bool conquests);
 	// Logs either gained or lost power
-	void logPower(PlayerTypes ePlayer, bool bGains);
-	void logCapitulations(PlayerTypes ePlayer);
-	// Wars declared on and by (the team of) ePlayer
-	void logDoW(PlayerTypes ePlayer);
+	void logPower(PlayerTypes civId, bool gained);
+	void logCapitulations(PlayerTypes civId);
+	// Wars declared on and by (the team of) civId
+	void logDoW(PlayerTypes civId);
+
+	PlayerTypes weId;
+	WarEvalParameters& warEvalParams;
+	TeamTypes theyId;
+	UWAIReport& report;
+	bool peaceScenario;
+
+	InvasionGraph* ig;
+	int turnsSim;
+
+	std::vector<TeamSet> capitulationsAcceptedPerTeam;
+	PlyrSet partOfAnalysis;
+	std::vector<std::vector<bool> > warTable;
+	std::vector<std::vector<double> > nukedCities;
+
+	class PlayerResult { // Per-player results of analysis
+	public:
+		PlayerResult() : gameScore(-1), nukesSuffered(0), nukesFired(0) {}
+		void setGameScore(double score) { gameScore = score; }
+		inline double getGameScore() const { return gameScore; }
+		void addNukesSuffered(double nukes) { nukesSuffered += nukes; }
+		inline double getNukesSuffered() const { return nukesSuffered; }
+		void addNukesFired(double nukes) { nukesFired += nukes; }
+		inline double getNukesFired() const { return nukesFired; }
+		void setDoWOn(PlayerTypes aggressorId) { DoWOn.insert(aggressorId); }
+		void setDoWOn(PlyrSetIter const& first, PlyrSetIter const& last) { DoWOn.insert(first, last); }
+		inline PlyrSet const& getDoWOn() const { return DoWOn; }
+		void setDoWBy(PlayerTypes targetId) { DoWBy.insert(targetId); }
+		void setDoWBy(PlyrSetIter const& first, PlyrSetIter const& last) { DoWBy.insert(first, last); }
+		inline PlyrSet const& getDoWBy() const { return DoWBy; }
+		void setWarContinued(PlayerTypes enemyId) { warsCont.insert(enemyId); }
+		inline PlyrSet const& getWarsContinued() const { return warsCont; }
+		void setCityLost(int cityPlotNum) { lostCities.insert(cityPlotNum); }
+		inline CitySet const& getLostCities() const { return lostCities; }
+		inline CitySet& getLostCities() { return lostCities; }
+		void setCityConquered(int cityPlotNum) { conqueredCities.insert(cityPlotNum); }
+		inline CitySet const& getConqueredCities() const { return conqueredCities; }
+		inline CitySet& getConqueredCities() { return conqueredCities; }
+	private:
+		double gameScore;
+		double nukesSuffered;
+		double nukesFired;
+		PlyrSet DoWOn;
+		PlyrSet DoWBy;
+		PlyrSet warsCont;
+		CitySet lostCities;
+		CitySet conqueredCities;
+	};
+	std::vector<PlayerResult*> playerResults;
+	static CitySet emptyCitySet;
+	static PlyrSet emptyPlayerSet;
+	PlayerResult& playerResult(PlayerTypes civId);
+
+public:
+	CitySet const& lostCities(PlayerTypes oldOwnerId) const {
+		FAssertBounds(0, MAX_CIV_PLAYERS, oldOwnerId);
+		PlayerResult* r = playerResults[oldOwnerId];
+		return (r == NULL ? emptyCitySet : r->getLostCities());
+	}
+	CitySet const& conqueredCities(PlayerTypes newOwnerId) const {
+		FAssertBounds(0, MAX_CIV_PLAYERS, newOwnerId);
+		PlayerResult* r = playerResults[newOwnerId];
+		return (r == NULL ? emptyCitySet : r->getConqueredCities());
+	}
+	double predictedGameScore(PlayerTypes civId) const; // Based on conquered and lost cities
+	/*  Only for the war scenario. No DoW are anticipated in the peace scenario;
+		will return false then. */
+	PlyrSet const& getWarsDeclaredBy(PlayerTypes aggressorId) const {
+		 FAssertBounds(0, MAX_CIV_PLAYERS, aggressorId);
+		 PlayerResult* r = playerResults[aggressorId];
+		 return (r == NULL ? emptyPlayerSet : r->getDoWBy());
+	}
+	PlyrSet const& getWarsDeclaredOn(PlayerTypes targetId) const {
+		 FAssertBounds(0, MAX_CIV_PLAYERS, targetId);
+		 PlayerResult* r = playerResults[targetId];
+		 return (r == NULL ? emptyPlayerSet : r->getDoWOn());
+	}
+	// Empty unless considering peace
+	PlyrSet const& getWarsContinued(PlayerTypes civId) const {
+		FAssertBounds(0, MAX_CIV_PLAYERS, civId);
+		PlayerResult* r = playerResults[civId];
+		return (r == NULL ? emptyPlayerSet : r->getWarsContinued());
+	}
+	bool isWar(TeamTypes t1, TeamTypes t2) const;
+	// Prep. time, if any, plus time horizon
+	int turnsSimulated() const { return turnsSim; }
+	// Does civId have a node in the InvasionGraph?
+	bool isPartOfAnalysis(PlayerTypes civId) const {
+		return (partOfAnalysis.count(civId) > 0);
+	}
+	// Only those that aren't expected to be intercepted. Fired by someone (shouldn't matter who).
+	double getNukesSufferedBy(PlayerTypes civId) const {
+		FAssertBounds(0, MAX_CIV_PLAYERS, civId);
+		PlayerResult* r = playerResults[civId];
+		return (r == NULL ? 0.0 : r->getNukesSuffered());
+	}
+	double getNukesFiredBy(PlayerTypes civId) const {
+		FAssertBounds(0, MAX_CIV_PLAYERS, civId);
+		PlayerResult* r = playerResults[civId];
+		return (r == NULL ? 0.0 : r->getNukesFired());
+	}
 };
 
 #endif

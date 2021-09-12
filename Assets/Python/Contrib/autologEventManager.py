@@ -336,7 +336,7 @@ class AutoLogEvent(AbstractAutoLogEvent):
 			self.storeStuff()
 
 			#zcurrturn = gc.getGame().getElapsedGameTurns() + 1 + AutologOpt.get4000BCTurn()
-			# advc.004: (Not sure why +1)
+			# advc.004: Not sure why +1
 			zcurrturn = gc.getGame().getGameTurn() + 1
 			zmaxturn = gc.getGame().getMaxTurns()
 			zturn = gc.getGame().getGameTurn() + 1
@@ -678,15 +678,11 @@ class AutoLogEvent(AbstractAutoLogEvent):
 		if (AutologOpt.isLogTechnology()):
 			iTechType, iPlayer = argsList
 			if iPlayer == CyGame().getActivePlayer():
-				'''
 				researchProgress = gc.getTeam(gc.getPlayer(iPlayer).getTeam()).getResearchProgress(gc.getPlayer(iPlayer).getCurrentResearch())
 				overflowResearch = (gc.getPlayer(iPlayer).getOverflowResearch() * gc.getPlayer(iPlayer).calculateResearchModifier(gc.getPlayer(iPlayer).getCurrentResearch()))/100
 				researchCost = gc.getTeam(gc.getPlayer(iPlayer).getTeam()).getResearchCost(gc.getPlayer(iPlayer).getCurrentResearch())
 				researchRate = gc.getPlayer(iPlayer).calculateResearchRate(-1)
 				zTurns = (researchCost - researchProgress - overflowResearch) / researchRate + 1
-				'''
-				# advc.001 (inspired by MNAI): The above seems to be reinventing the wheel, badly. Might divide by 0.
-				zTurns = gc.getPlayer(iPlayer).getResearchTurnsLeft(gc.getPlayer(iPlayer).getCurrentResearch(), True)
 				message = BugUtil.getText("TXT_KEY_AUTOLOG_RESEARCH_BEGUN", (PyInfo.TechnologyInfo(iTechType).getDescription(), zTurns))
 				Logger.writeLog(message, vColor="Green")
 
@@ -780,18 +776,14 @@ class AutoLogEvent(AbstractAutoLogEvent):
 
 	def onChangeWar(self, argsList):
 		bIsWar = argsList[0]
-		iTeam = argsList[1] # advc.001: was iPlayer
+		iPlayer = argsList[1]
 		iRivalTeam = argsList[2]
-		# <advc.001> Relevant when a colonial vassal is created
-		if iTeam == gc.getBARBARIAN_TEAM():
-			return # </advc.001>
 
 		if (gc.getGame().isFinalInitialized()
 		and AutologOpt.isLogWar()):
 
 #			Civ1 declares war on Civ2
-			#iCiv1 = iPlayer
-			iCiv1 = gc.getTeam(iTeam).getLeaderID() # advc.001
+			iCiv1 = iPlayer
 			iCiv2 = gc.getTeam(iRivalTeam).getLeaderID()
 			zsCiv1 = gc.getPlayer(iCiv1).getName() + " (" + gc.getPlayer(iCiv1).getCivilizationShortDescription(0) + ")"
 			zsCiv2 = gc.getPlayer(iCiv2).getName() + " (" + gc.getPlayer(iCiv2).getCivilizationShortDescription(0) + ")"

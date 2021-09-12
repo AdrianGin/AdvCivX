@@ -85,12 +85,14 @@ public: // All the const functions returning primitive types are exposed to Pyth
 	const CvWString& getWorldNews(int i) const;
 	int getNumWorldNews() const;
 
-	// <advc.003t> Replacing vectors of tuples
-	DEF_INFO_ENUM2SHORT_MAP(BuildingYieldChange, BuildingClass, Yield, YieldChangeMap, ListEnumMap);
-	DEF_INFO_ENUM2SHORT_MAP(BuildingCommerceChange, BuildingClass, Commerce, CommerceChangeMap, ListEnumMap);
-	DEF_INFO_ENUM_MAP(BuildingHappyChange, BuildingClass, int, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(BuildingHealthChange, BuildingClass, int, char, ListEnumMap);
-	// </advc.003t>
+	int getBuildingYieldChange(int iBuildingClass, int iYield) const;
+	int getNumBuildingYieldChanges() const;
+	int getBuildingCommerceChange(int iBuildingClass, int iCommerce) const;
+	int getNumBuildingCommerceChanges() const;
+	int getBuildingHappyChange(int iBuildingClass) const;
+	int getNumBuildingHappyChanges() const;
+	int getBuildingHealthChange(int iBuildingClass) const;
+	int getNumBuildingHealthChanges() const;
 
 	const char* getPythonCallback() const;
 	const char* getPythonExpireCheck() const;
@@ -173,6 +175,11 @@ private:
 	int* m_piClearEventChance;
 	int* m_piUnitCombatPromotions;
 	int* m_piUnitClassPromotions;
+
+	std::vector<BuildingYieldChange> m_aBuildingYieldChanges;
+	std::vector<BuildingCommerceChange> m_aBuildingCommerceChanges;
+	BuildingChangeArray m_aBuildingHappyChanges;
+	BuildingChangeArray m_aBuildingHealthChanges;
 
 	CvString m_szPythonCallback;
 	CvString m_szPythonExpireCheck;

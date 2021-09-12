@@ -1,3 +1,5 @@
+// advc.104 New class; see UWAI.h for description.
+
 #include "CvGameCoreDLL.h"
 #include "UWAI.h"
 #include "UWAIAgent.h"
@@ -5,117 +7,112 @@
 #include "CoreAI.h"
 #include "CvMap.h"
 
-UWAI::UWAI() : m_bEnabled(false), m_bInBackground(false) {}
+using std::vector;
 
+UWAI::UWAI() : enabled(false), inBackgr(false) {}
 
-void UWAI::invalidateUICache()
-{
+void UWAI::invalidateUICache() {
+
 	WarEvaluator::clearCache();
 }
 
+void UWAI::setUseKModAI(bool b) {
 
-void UWAI::setUseLegacyAI(bool b)
-{
-	m_bEnabled = !b;
+	enabled = !b;
 }
 
+void UWAI::setInBackground(bool b) {
 
-void UWAI::setInBackground(bool b)
-{
-	m_bInBackground = b;
+	inBackgr = b;
 }
 
+void UWAI::initNewCivInGame(PlayerTypes newCivId) {
 
-void UWAI::initNewPlayerInGame(PlayerTypes eNewPlayer)
-{
 	WarEvaluator::clearCache();
-	GET_TEAM(eNewPlayer).uwai().init(TEAMID(eNewPlayer));
-	GET_PLAYER(eNewPlayer).uwai().init(eNewPlayer);
+	GET_TEAM(newCivId).uwai().init(TEAMID(newCivId));
+	GET_PLAYER(newCivId).uwai().init(newCivId);
 }
 
+void UWAI::processNewCivInGame(PlayerTypes newCivId) {
 
-void UWAI::processNewPlayerInGame(PlayerTypes eNewPlayer)
-{
-	GET_PLAYER(eNewPlayer).uwai().getCache().update(true);
-	for (TeamAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
+	GET_PLAYER(newCivId).uwai().getCache().updateTypicalUnits();
+	for (TeamIter<MAJOR_CIV> it; it.hasNext(); ++it)
 		it->uwai().turnPre();
 }
 
+bool UWAI::isEnabled(bool inBackground) const{
 
-bool UWAI::isEnabled(bool bInBackground) const
-{
-	if (!m_bEnabled)
+	if(!enabled)
 		return false;
-	return (bInBackground == m_bInBackground);
+	return (inBackground == inBackgr);
 }
 
+void UWAI::read(FDataStreamBase* stream) {
 
-void UWAI::read(FDataStreamBase* pStream)
-{
-	pStream->Read(&m_bEnabled);
+	stream->Read(&enabled);
 }
 
+void UWAI::write(FDataStreamBase* stream) {
 
-void UWAI::write(FDataStreamBase* pStream) const
-{
-	pStream->Write(m_bEnabled);
+	stream->Write(enabled);
 }
 
+int UWAI::maxLandDist() const {
 
-int UWAI::maxSeaDist() const
-{
-	CvMap const& kMap = GC.getMap();
-	int iR = 15;
+	return maxSeaDist() - 1;
+}
+
+int UWAI::maxSeaDist() const {
+
+	CvMap const& m = GC.getMap();
+	int r = 15;
 	// That's true for Large and Huge maps
-	if (kMap.getGridWidth() > 100 || kMap.getGridHeight() > 100)
-		iR += 3;
-	if (!kMap.isWrapX() && !kMap.isWrapY())
-		iR = (iR * 6) / 5;
-	return iR;
+	if(m.getGridWidth() > 100 || m.getGridHeight() > 100)
+		r += 3;
+	if(!m.isWrapX() && !m.isWrapY())
+		r = (r * 6) / 5;
+	return r;
 }
 
+bool UWAI::isUpdated() const {
 
-bool UWAI::isReady() const
-{
 	/*  In scenarios, CvTeamAI functions aren't properly called during the first
 		turn. Should skip war planning in the first two turns to make sure that
 		all AI data is properly initialized and updated. */
-	return (!GC.getGame().isScenario() || GC.getGame().getElapsedGameTurns() > 1);
+	CvGame const& g = GC.getGame();
+	return (!g.isScenario() || g.getElapsedGameTurns() > 1);
 }
-
 
 #define MAKE_TAG_NAME(VAR) "UWAI_WEIGHT_"#VAR,
 #define MAKE_REPORT_NAME(VAR) #VAR,
 
-void UWAI::doXML()
-{
+void UWAI::doXML() {
+
 	char const* const aszAspectTagNames[] = {
 		DO_FOR_EACH_WAR_UTILITY_ASPECT(MAKE_TAG_NAME)
 	};
-	FAssert(ARRAYSIZE(aszAspectTagNames) == NUM_ASPECTS);
+	FAssert(ARRAY_LENGTH(aszAspectTagNames) == NUM_ASPECTS);
 	for (int i = 0; i < NUM_ASPECTS; i++)
-		m_aiXmlWeights.push_back(GC.getDefineINT(aszAspectTagNames[i]));
+		xmlWeights.push_back(GC.getDefineINT(aszAspectTagNames[i]));
 
 	char const* const aszAspectReportNames[] = {
 		DO_FOR_EACH_WAR_UTILITY_ASPECT(MAKE_REPORT_NAME)
 	};
-	FAssert(ARRAYSIZE(aszAspectReportNames) == NUM_ASPECTS);
+	FAssert(ARRAY_LENGTH(aszAspectReportNames) == NUM_ASPECTS);
 	for (int i = 0; i < NUM_ASPECTS; i++)
-		m_aszAspectNames.push_back(aszAspectReportNames[i]);
+		aszAspectNames.push_back(aszAspectReportNames[i]);
 
 	applyPersonalityWeight();
 }
 
+void UWAI::applyPersonalityWeight() {
 
-void UWAI::applyPersonalityWeight()
-{
 	int const iWeight = GC.getDefineINT("UWAI_PERSONALITY_PERCENT");
-	if (iWeight == 100)
+	if(iWeight == 100)
 		return;
 	std::vector<std::vector<int*>*> personalityMatrix;
 	int iMembers = -1;
-	FOR_EACH_ENUM(LeaderHead)
-	{
+	FOR_EACH_ENUM(LeaderHead) {
 		if(eLoopLeaderHead == GET_PLAYER(BARBARIAN_PLAYER).getLeaderType())
 			continue;
 		CvLeaderHeadInfo& kLeader = GC.getInfo(eLoopLeaderHead);
@@ -165,7 +162,7 @@ void UWAI::applyPersonalityWeight()
 			&kLeader.m_iPermanentAllianceRefuseAttitudeThreshold, &kLeader.m_iVassalRefuseAttitudeThreshold,
 			&kLeader.m_iVassalPowerModifier, &kLeader.m_iFreedomAppreciation,
 		};
-		int const iPrimitiveMembers = ARRAYSIZE(aiPrimitiveMembers);
+		int const iPrimitiveMembers = ARRAY_LENGTH(aiPrimitiveMembers);
 		std::vector<int*>* paiPersonalityVector = new std::vector<int*>(
 				aiPrimitiveMembers, aiPrimitiveMembers + iPrimitiveMembers);
 		FOR_EACH_ENUM(Flavor)
@@ -187,24 +184,21 @@ void UWAI::applyPersonalityWeight()
 		personalityMatrix.push_back(paiPersonalityVector);
 		FAssert(iMembers == -1 || iMembers == paiPersonalityVector->size());
 		iMembers = (int)paiPersonalityVector->size();
-		if (iWeight == 0) // Clear fav. civic and religion
-		{
+		if(iWeight == 0) { // Clear fav. civic and religion
 			kLeader.m_eFavoriteCivic = NO_CIVIC;
 			kLeader.m_eFavoriteReligion = NO_RELIGION;
 		}
 	}
-	for (int j = 0; j < iMembers; j++)
-	{
-		std::vector<scaled> arDistrib;
+	for(int j = 0; j < iMembers; j++) {
+		std::vector<double> distrib;
 		for(size_t i = 0; i < personalityMatrix.size(); i++)
-			arDistrib.push_back(*personalityMatrix[i]->at(j));
-		scaled rMedianValue = stats::median(arDistrib);
-		for (size_t i = 0; i < personalityMatrix.size(); i++)
-		{
-			*personalityMatrix[i]->at(j) = ((rMedianValue * (100 - iWeight) +
-					(*personalityMatrix[i]->at(j)) * iWeight) / 100).round();
+			distrib.push_back(*personalityMatrix[i]->at(j));
+		double medianValue = ::dMedian(distrib);
+		for(size_t i = 0; i < personalityMatrix.size(); i++) {
+			*personalityMatrix[i]->at(j) = ::round((medianValue * (100 - iWeight) +
+					(*personalityMatrix[i]->at(j)) * iWeight) / 100);
 		}
 	}
-	for (size_t i = 0; i < personalityMatrix.size(); i++)
+	for(size_t i = 0; i < personalityMatrix.size(); i++)
 		delete personalityMatrix[i];
 }

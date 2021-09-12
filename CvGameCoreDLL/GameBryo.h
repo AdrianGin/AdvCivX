@@ -35,31 +35,31 @@ public:
 	bool NiPoint3::operator== (const NiPoint3& pt) const
 	{	return (x == pt.x && y == pt.y && z == pt.z);	}
 
-	NiPoint3 NiPoint3::operator+ (const NiPoint3& pt) const
+	inline NiPoint3 NiPoint3::operator+ (const NiPoint3& pt) const
 	{	return NiPoint3(x+pt.x,y+pt.y,z+pt.z);	}
 
-	NiPoint3 NiPoint3::operator- (const NiPoint3& pt) const
+	inline NiPoint3 NiPoint3::operator- (const NiPoint3& pt) const
 	{	return NiPoint3(x-pt.x,y-pt.y,z-pt.z);	}
 
-	float NiPoint3::operator* (const NiPoint3& pt) const
+	inline float NiPoint3::operator* (const NiPoint3& pt) const
 	{	return x*pt.x+y*pt.y+z*pt.z;	}
 
-	NiPoint3 NiPoint3::operator* (float fScalar) const
+	inline NiPoint3 NiPoint3::operator* (float fScalar) const
 	{	return NiPoint3(fScalar*x,fScalar*y,fScalar*z);	}
 
-	NiPoint3 NiPoint3::operator/ (float fScalar) const
+	inline NiPoint3 NiPoint3::operator/ (float fScalar) const
 	{
 		float fInvScalar = 1.0f/fScalar;
 		return NiPoint3(fInvScalar*x,fInvScalar*y,fInvScalar*z);
 	}
 
-	NiPoint3 NiPoint3::operator- () const
+	inline NiPoint3 NiPoint3::operator- () const
 	{	return NiPoint3(-x,-y,-z);	}
 
-	float Length() const
+	inline float Length() const
 	{ return sqrt(x * x + y * y + z * z); }
 
-	float Unitize()
+	inline float Unitize()
 	{
 		float length = Length();
 		if(length != 0)
@@ -71,7 +71,7 @@ public:
 		return length;
 	}
 
-//	NiPoint3 operator* (float fScalar, const NiPoint3& pt)
+//	inline NiPoint3 operator* (float fScalar, const NiPoint3& pt)
 //	{	return NiPoint3(fScalar*pt.x,fScalar*pt.y,fScalar*pt.z);	}
 	float x, y, z;
 };

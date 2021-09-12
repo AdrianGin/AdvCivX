@@ -51,32 +51,24 @@ public:
 		m_pTeam(pTeam), m_pWarTarget(pWarTarget),
 		m_iHeuristicWeight(iHeuristicWeight)
 	{}
-	int heuristicCost(CvPlot const& kFrom, CvPlot const& kTo) const
+	inline int heuristicCost(CvPlot const& kFrom, CvPlot const& kTo) const
 	{
 		return stepDistance(kFrom.getX(), kFrom.getY(), kTo.getX(), kTo.getY()) *
 				m_iHeuristicWeight;
 	}
-	int initialPathLength() const { return 0; }
-	void initializePathData(PathNode& kNode) const
+	inline int initialPathLength() const { return 0; }
+	inline void initializePathData(PathNode& kNode) const
 	{	// (Same as base class, but calling TeamStepMetric::initialPathLength)
 		kNode.setPathLength(initialPathLength());
 	}
-	bool isValidStep(CvPlot const& kFrom, CvPlot const& kTo) const
-	{
-		if (eMODE != TeamPath::LAND)
-		{
-			if (GC.getMap().isSeparatedByIsthmus(kFrom, kTo))
-				return false;
-		}
-		return true;
-	}
-	bool canStepThrough(CvPlot const& kPlot, PathNode const& kNode) const
+	bool isValidStep(CvPlot const& kFrom, CvPlot const& kTo) const;
+	inline bool canStepThrough(CvPlot const& kPlot, PathNode const& kNode) const
 	{
 		return canStepThrough(kPlot); // disregard kNode
 	}
 	bool canStepThrough(CvPlot const& kPlot) const;
 	bool isValidDest(CvPlot const& kStart, CvPlot const& kDest) const;
-	int cost(CvPlot const& kFrom, CvPlot const& kTo,
+	inline int cost(CvPlot const& kFrom, CvPlot const& kTo,
 		PathNode const& kParentNode) const
 	{
 		return cost(kFrom, kTo); // disregard kParentNode
@@ -113,7 +105,7 @@ public:
 		}
 		reset(pWarTarget, iMaxPath);
 	}
-	int getPathCost() const
+	inline int getPathCost() const
 	{
 		return m_pEndNode->m_iTotalCost;
 	}
@@ -133,15 +125,15 @@ public:
 		m_kAnyWaterFinder(kAnyWaterFinder),
 		m_kShallowWaterFinder(kShallowWaterFinder)
 	{}
-	TeamPathFinder<TeamPath::LAND>& landFinder() const
+	inline TeamPathFinder<TeamPath::LAND>& landFinder() const
 	{
 		return m_kLandFinder;
 	}
-	TeamPathFinder<TeamPath::ANY_WATER>& anyWaterFinder() const
+	inline TeamPathFinder<TeamPath::ANY_WATER>& anyWaterFinder() const
 	{
 		return m_kAnyWaterFinder;
 	}
-	TeamPathFinder<TeamPath::SHALLOW_WATER>& shallowWaterFinder() const
+	inline TeamPathFinder<TeamPath::SHALLOW_WATER>& shallowWaterFinder() const
 	{
 		return m_kShallowWaterFinder;
 	}
@@ -169,11 +161,11 @@ public:
 		delete m_pAnyWaterFinder;
 		delete m_pShallowWaterFinder;
 	}
-	TeamPathFinder<TeamPath::ANY_WATER>& anyWaterFinder()
+	inline TeamPathFinder<TeamPath::ANY_WATER>& anyWaterFinder()
 	{
 		return *m_pAnyWaterFinder;
 	}
-	TeamPathFinder<TeamPath::SHALLOW_WATER>& shallowWaterFinder()
+	inline TeamPathFinder<TeamPath::SHALLOW_WATER>& shallowWaterFinder()
 	{
 		return *m_pShallowWaterFinder;
 	}

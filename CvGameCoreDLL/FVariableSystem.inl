@@ -54,7 +54,7 @@ inline void FVariable::Read(FDataStreamBase* pStream)
 
 inline void FVariable::Write(FDataStreamBase *pStream) const
 {
-	pStream->Write((int)m_eType);
+	pStream->Write(m_eType);
 	if (m_eType == FVARTYPE_STRING)
 		pStream->WriteString(m_szValue);
 	else if (m_eType == FVARTYPE_WSTRING)
