@@ -8189,7 +8189,7 @@ int CvPlot::get3DAudioScriptFootstepIndex(int iFootstepTag) const
 
 float CvPlot::getAqueductSourceWeight() const
 {
-	PROFILE_FUNC(); // advc.test: Let's see how often the EXE calls this
+	PROFILE_FUNC(); // (advc: Fine - EXE seems to call this only a few times per turn)
 	// <advc.002p> Imperfect workaround for a missing same-area check in the EXE
 	for (CityPlotIter itPlot(*this, false); itPlot.hasNext(); ++itPlot)
 	{	/*	Sources adjacent to a city are OK (and need to be skipped here

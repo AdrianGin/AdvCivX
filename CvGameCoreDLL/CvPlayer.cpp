@@ -9674,11 +9674,10 @@ bool CvPlayer::setCommercePercent(CommerceTypes eCommerce, int iNewValue, bool b
 	why all all commerce rates are updated at once. */
 void CvPlayer::updateCommerceRates()
 {
-	/*	advc.test: In CvPlayer::updateCommerce, it should suffice to call
-		updateCommerceRates only once in the end and to suppress the calls
-		currently coming from CvCity. Well, let's first see if there's any
-		performance problem. */
-	PROFILE_FUNC();
+	/*	In CvPlayer::updateCommerce, it should suffice to call updateCommerceRates
+		only once in the end and to suppress the calls currently coming from CvCity.
+		But there really isn't any problem with performance. */
+	//PROFILE_FUNC();
 
 	EagerEnumMap<CommerceTypes,int,short> aiError;
 	int iTotalError = 0;
@@ -19332,7 +19331,7 @@ bool CvPlayer::showGoodyOnResourceLayer() const
 void CvPlayer::getResourceLayerColors(GlobeLayerResourceOptionTypes eOption,
 	std::vector<NiColorA>& aColors, std::vector<CvPlotIndicatorData>& aIndicators) const
 {
-	PROFILE_FUNC(); // advc.test: To be profiled
+	PROFILE_FUNC(); // (advc: Fine - not frequently called)
 	aColors.clear();
 	aIndicators.clear();
 

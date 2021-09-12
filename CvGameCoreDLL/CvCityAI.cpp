@@ -6798,8 +6798,9 @@ int CvCityAI::AI_neededDefenders(/* advc.139: */ bool bIgnoreEvac,
 
 int CvCityAI::AI_minDefenders() const
 {
-	/*	advc.test: Can we afford to check CvPlayerAI::AI_feelsSafe here?
-		Should then at least not add the 3rd defender in coastal cities. */
+	/*	advc: Could afford to check CvPlayerAI::AI_feelsSafe here and
+		then not add the 3rd defender in coastal cities. But this function
+		does get called somewhat frequently, so, maybe not worth it. */
 	PROFILE_FUNC();
 	CvPlayerAI const& kOwner = GET_PLAYER(getOwner());
 	int iDefenders = 1;
