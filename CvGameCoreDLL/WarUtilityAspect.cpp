@@ -4365,10 +4365,10 @@ void TacticalSituation::evalOperational()
 	// Need larger stacks when not all our army units can destroy defenders
 	bool const bCanBombard = ourCache().getPowerValues()[ARMY]->canBombard();
 	if (bCanBombard)
-		rTargetAttackers *= fixp(1.3);
+		rTargetAttackers *= fixp(1.25);
 	/*	To account for the AI's inability to put all available attackers in one spot,
 		and misc. distractions like barbarians */
-	rTargetAttackers += std::max(0, kWe.getNumCities() - 2);
+	rTargetAttackers += scaled::max(0, fixp(0.75) * kWe.getNumCities() - fixp(1.5));
 	scaled rTargetCargo;
 	scaled rCargo;
 	scaled rTargetEscort;
