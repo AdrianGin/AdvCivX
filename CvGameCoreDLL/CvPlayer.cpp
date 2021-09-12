@@ -2686,7 +2686,10 @@ void CvPlayer::doTurn()  // advc: style changes
 			GC.getGame().isSimultaneousTeamTurns(), "End of turn with busy units in a sequential-turn game");
 	CvGame& kGame = GC.getGame();
 	// <advc.106b>
-	if (!kGame.isMPOption(MPOPTION_SIMULTANEOUS_TURNS))
+	/*	With simultaneous turns, the whole notion of being between turns is
+		problematic, but I'm also having trouble with the turn sequence in
+		non-simultaneous network games. Well, it's not crucial. */
+	if (!kGame.isNetworkMultiPlayer())
 		kGame.setInBetweenTurns(true);
 	if (isHuman() && //getStartOfTurnMessageLimit() >= 0 && // The message should be helpful even if the log doesn't auto-open
 		kGame.getElapsedGameTurns() > 0 && !m_listGameMessages.empty())
