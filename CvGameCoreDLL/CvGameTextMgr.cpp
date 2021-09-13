@@ -5466,11 +5466,12 @@ void CvGameTextMgr::setCityBarHelp(CvWStringBuffer &szString, CvCity const& kCit
 		}
 	} // BULL - Hurry Assist - end
 	// BULL - Commerce - start
-	/*	advc.186: Show raw commerce in the trade-routes line;
-		not enough room in the commerce line (due to advc.002b),
-		and also a bit confusing there. */
+	/*	advc.186: Show raw commerce in the trade-routes line; not enough room
+		in the commerce line (due to advc.002b), and also a bit confusing there. */
 	//if (BUGOption::isEnabled("CityBar__Commerce", true)) {
-	int const iCommerceRate = kCity.getYieldRate(YIELD_COMMERCE);
+	// (It looks like raw commerce is not treated as being 0 during disorder.)
+	int const iCommerceRate = (kCity.isDisorder() ? 0 :
+			kCity.getYieldRate(YIELD_COMMERCE));
 	if (iCommerceRate != 0)
 	{
 		szString.append(NEWLINE);
