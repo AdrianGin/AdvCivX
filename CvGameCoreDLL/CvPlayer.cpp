@@ -1680,7 +1680,7 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 		kNewCity.setCultureTimes100(it->getID(),
 				aiCulture.get(it->getID()), false, false);
 	} // <kekm.23>
-	if(bTrade) // Further repercussions of cession: city culture
+	if (bTrade) // Further repercussions of cession: city culture
 	{
 		int iOldOwnerCulture = kNewCity.getCultureTimes100(eOldOwner);
 		int iNewOwnerCulture = kNewCity.getCultureTimes100(getID());
@@ -1771,6 +1771,7 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 		if (abHeadquarters.get(eCorp))
 			GC.getGame().setHeadquarters(eCorp, &kNewCity, false);
 	}
+
 	if (bTrade)
 	{
 		//if (isHuman() || getTeam() == TEAMID(eOldOwner))
@@ -1879,14 +1880,15 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 		else bRazeImpossible = true;
 		if (bRazeImpossible) // </advc.003y>
 		{
-			// K-Mod. properly handle the case where python says we can't raze the city
-			CvEventReporter::getInstance().cityAcquiredAndKept(getID(), &kNewCity);
-			if (isHuman())
-				kNewCity.chooseProduction();
-			// K-Mod end
+			// K-Mod: properly handle the case where python says we can't raze the city
+			keepCity(kNewCity);
 		}
 	}
-	else if (!bTrade)
+	/*	<advc> I think a trade should trigger an acquired-and-kept Python event.
+		At the least we want humans to chooseProduction for change advc.004x. */
+	else if (bTrade)
+		keepCity(kNewCity); // </advc>
+	else
 	{
 		if (isHuman())
 		{
@@ -1894,11 +1896,8 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 			pInfo->setData1(kNewCity.getID());
 			gDLL->UI().addPopup(pInfo, getID());
 		}
-		else CvEventReporter::getInstance().cityAcquiredAndKept(getID(), &kNewCity);
-	} // <advc.004x>
-	if(bTrade && isHuman())
-		kNewCity.chooseProduction(); // </advc.004x>
-
+		else keepCity(kNewCity);
+	}
 	// Forcing events that deal with the old city not to expire just because we conquered that city [BtS comment]
 	for (CvEventMap::iterator it = m_mapEventsOccured.begin();
 		it != m_mapEventsOccured.end(); ++it)
@@ -1923,6 +1922,17 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 	// <advc.130w>
 	AI().AI_updateCityAttitude(kCityPlot);
 	GET_PLAYER(eOldOwner).AI_updateCityAttitude(kCityPlot); // </advc.130w>
+}
+
+/*	advc: I've redirected calls that went directly to CvEventReporter here.
+	For any code that should run once it's decided that an acquired city
+	isn't going to be razed or liberated. */
+void CvPlayer::keepCity(CvCity& kCity)
+{
+	kCity.initTraitCulture(); // advc.908b
+	CvEventReporter::getInstance().cityAcquiredAndKept(getID(), &kCity);
+	if (isHuman())
+		kCity.chooseProduction();
 }
 
 // advc.ctr:

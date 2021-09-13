@@ -1663,7 +1663,7 @@ void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity
 {
 	if (!canRaze(kCity))
 	{
-		CvEventReporter::getInstance().cityAcquiredAndKept(getID(), &kCity);
+		keepCity(kCity);
 		return;
 	}
 
@@ -1729,7 +1729,7 @@ void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity
 				// Do not raze, going for domination
 				if (gPlayerLogLevel >= 1) logBBAI("    Player %d (%S) decides not to raze %S because they're going for domination", getID(), getCivilizationDescription(0), kCity.getName().GetCString());
 			}  // <advc>
-			CvEventReporter::getInstance().cityAcquiredAndKept(getID(), &kCity);
+			keepCity(kCity);
 			return;
 		}
 		//else // </advc>
@@ -2051,17 +2051,13 @@ void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity
 			bRaze = true;
 	}
 
-	if(bRaze)
+	if (bRaze)
 	{	// K-Mod moved the log message up - otherwise it will crash due to pCity being deleted!
 		logBBAI("    Player %d (%S) decides to raze city %S!!!", getID(), getCivilizationDescription(0), kCity.getName().GetCString());
 		kCity.doTask(TASK_RAZE);
 	}
-	else
-	{
-		CvEventReporter::getInstance().cityAcquiredAndKept(
-			//kGame.getActivePlayer(), &kCity);
-			getID(), &kCity); // UNOFFICIAL_PATCH, 06/14/09, Maniac & jdog5000
-	}
+	// advc (replacing a bugfix from UNOFFICIAL_PATCH (06/14/09, Maniac & jdog5000)
+	else keepCity(kCity);
 }
 
 // advc.130q: About 7 or 8 is high (important city), below 1 is low

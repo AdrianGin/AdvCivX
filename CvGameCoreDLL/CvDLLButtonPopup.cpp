@@ -313,8 +313,7 @@ void CvDLLButtonPopup::OnOkClicked(CvPopup* pPopup, PopupReturn *pPopupReturn, C
 		switch(pPopupReturn->getButtonClicked())
 		{
 		case 0:
-			pCity->chooseProduction();
-			CvEventReporter::getInstance().cityAcquiredAndKept(getActivePlayer(), pCity);
+			GET_PLAYER(getActivePlayer()).keepCity(*pCity);
 			break;
 		case 1:
 			CvMessageControl::getInstance().sendDoTask(info.getData1(), TASK_RAZE,
@@ -349,10 +348,7 @@ void CvDLLButtonPopup::OnOkClicked(CvPopup* pPopup, PopupReturn *pPopupReturn, C
 		{
 			CvCity* pCity = GET_PLAYER(getActivePlayer()).getCity(info.getData1());
 			if (pCity != NULL)
-			{
-				pCity->chooseProduction();
-				CvEventReporter::getInstance().cityAcquiredAndKept(getActivePlayer(), pCity);
-			}
+				GET_PLAYER(getActivePlayer()).keepCity(*pCity);
 		}
 		break;
 

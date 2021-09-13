@@ -695,6 +695,7 @@ public:
 	CultureLevelTypes calculateCultureLevel(PlayerTypes ePlayer) const; // advc
 	int getNumPartisanUnits(PlayerTypes ePartisanPlayer) const; // advc.003y
 	int getCultureTurnsLeft() const; // advc.042
+	void initTraitCulture(); // advc.908b
 
 	int getSeaPlotYield(YieldTypes eYield) const { return m_aiSeaPlotYield.get(eYield); }						// Exposed to Python
 	void changeSeaPlotYield(YieldTypes eYield, int iChange);

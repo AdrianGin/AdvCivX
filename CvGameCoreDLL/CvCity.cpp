@@ -165,19 +165,13 @@ void CvCity::init(int iID, PlayerTypes eOwner, int iX, int iY, bool bBumpUnits,
 	setName(kOwner.getNewCityName(), /* advc.106k: */ false, true);
 
 	setEverOwned(getOwner(), true);
-	// <advc.908b>
-	FOR_EACH_ENUM(Trait)
-	{
-		if (!kOwner.hasTrait(eLoopTrait))
-			continue;
-		int iFreeCityCulture = GC.getGame().freeCityCultureFromTrait(eLoopTrait);
-		if (iFreeCityCulture > 0)
-			setCulture(getOwner(), iFreeCityCulture, true, false);
-	} // </advc.908b>
 	/*  advc.ctr: To prevent updateCultureLevel from bumping units in
 		surrounding tiles after trading a city under occupation. Don't call
 		setOccupationTimer though -- don't need all those updates. */
 	m_iOccupationTimer = iOccupationTimer;
+	// <advc.908b>
+	if (bUpdatePlotGroups) // new city (not acquired from someone else)
+		initTraitCulture(); // </advc.908b>
 	updateCultureLevel(false);
 
 	CvPlot& kPlot = GC.getMap().getPlot(iX, iY);
@@ -6602,11 +6596,10 @@ void CvCity::updateCultureLevel(bool bUpdatePlotGroups)
 		return;
 
 	CultureLevelTypes eCultureLevel = (CultureLevelTypes)0;
-	if (!isOccupation())
-	{
-		// advc: Moved into subroutine
-		eCultureLevel = calculateCultureLevel(getOwner());
-	}
+	/*	advc.908b: Confusing when the new owner gets free culture;
+		I also see no need to take away the culture level during occupation. */
+	//if (!isOccupation())
+	eCultureLevel = calculateCultureLevel(getOwner()); // advc: Moved into subroutine
 	setCultureLevel(eCultureLevel, bUpdatePlotGroups);
 }
 
@@ -6645,6 +6638,20 @@ int CvCity::getCultureTurnsLeft() const
 	int iR = (iCultureLeftTimes100 + iCultureRateTimes100 - 1) / iCultureRateTimes100;
 	FAssert(iR != 0);
 	return iR;
+}
+
+// advc.908b:
+void CvCity::initTraitCulture()
+{
+	FOR_EACH_ENUM(Trait)
+	{
+		if (!GET_PLAYER(getOwner()).hasTrait(eLoopTrait))
+			continue;
+		int iFreeCityCulture = GC.getGame().freeCityCultureFromTrait(eLoopTrait)
+				- getCulture(getOwner());
+		if (iFreeCityCulture > 0)
+			setCulture(getOwner(), iFreeCityCulture, true, false);
+	}
 }
 
 
@@ -10295,7 +10302,7 @@ void CvCity::doCulture()
 	if (GC.getPythonCaller()->doCulture(*this))
 		return;
 	// <advc.099b>
-	if(isOccupation())
+	if (isOccupation())
 		return; // </advc.099b>
 	// <advc.125>
 	static int const iUseKModTradeCulture = GC.getDefineINT("USE_KMOD_TRADE_CULTURE");
@@ -10367,6 +10374,7 @@ void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
 	}
 
 	if (eCultureLevel == NO_CULTURELEVEL ||
+		isDisorder() || // advc.908b: No longer sets NO_CULTURELEVEL
 		//getCultureTimes100(ePlayer) <= 0
 		abs(iCultureRateTimes100 * iScale) < 100)
 	{
