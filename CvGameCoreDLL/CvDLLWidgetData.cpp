@@ -184,10 +184,12 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 		break;
 
 	case WIDGET_ZOOM_CITY:
+	case WIDGET_EXAMINE_CITY: // advc.186b
 		szBuffer.append(gDLL->getText("TXT_KEY_ZOOM_CITY_HELP"));
 		// BUG - Zoom City Details - start (advc.186b)
-		// Only if the active player owns the city
-		if (getActivePlayer() == widgetDataStruct.m_iData1)
+		if (widgetDataStruct.m_eWidgetType == WIDGET_EXAMINE_CITY &&
+			// Only if the active player owns the city
+			eActivePlayer == widgetDataStruct.m_iData1)
 		{
 			szBuffer.append(NEWLINE);
 			GAMETEXT.setCityBarHelp(szBuffer,

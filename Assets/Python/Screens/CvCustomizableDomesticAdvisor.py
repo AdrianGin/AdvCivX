@@ -2298,20 +2298,28 @@ class CvCustomizableDomesticAdvisor:
 						return;
 
 					colorFunc = self.ColorCityValues
+					# <advc.186b> Attach examine text to the city name column (if present) - rather than to the zoom button.
+					# (I'm calling this inner function in three places below)
+					def widgetDataForCity(city):
+						if (columnDef[0] == "NAME"):
+							return (WidgetTypes.WIDGET_EXAMINE_CITY, city.getOwner(), city.getID())
+						return (WidgetTypes.WIDGET_GENERAL, -1, -1) # </advc.186b>
 
 					if(columnDef[3]):
 						calcFunc = columnDef[3]
 						# Loop through the cities
 						for i in cityRange:
 							szValue = colorFunc(unicode(calcFunc(cityList[i].city)), key)
-							funcTableWrite (page, value + 1, i, szValue, "", WidgetTypes.WIDGET_GENERAL, -1, -1, justify)
+							wd1,wd2,wd3 = widgetDataForCity(cityList[i].city)
+							funcTableWrite (page, value + 1, i, szValue, "", wd1, wd2, wd3, justify)
 						
 					elif(columnDef[4]):
 						calcFunc = columnDef[4]
 						# Loop through the cities
 						for i in cityRange:
 							szValue = colorFunc(unicode(calcFunc(cityList[i].city, columnDef[5])), key)
-							funcTableWrite (page, value + 1, i, szValue, "", WidgetTypes.WIDGET_GENERAL, -1, -1, justify)
+							wd1,wd2,wd3 = widgetDataForCity(cityList[i].city)
+							funcTableWrite (page, value + 1, i, szValue, "", wd1, wd2, wd3, justify)
 
 					else:
 						calcFunc = columnDef[6]
@@ -2319,7 +2327,8 @@ class CvCustomizableDomesticAdvisor:
 						# Loop through the cities
 						for i in cityRange:
 							szValue = colorFunc(unicode(calcFunc(cityList[i].city, key, columnDef[7])), key)
-							funcTableWrite (page, value + 1, i, szValue, "", WidgetTypes.WIDGET_GENERAL, -1, -1, justify)
+							wd1,wd2,wd3 = widgetDataForCity(cityList[i].city)
+							funcTableWrite (page, value + 1, i, szValue, "", wd1, wd2, wd3, justify)
 
 				except KeyError:
 					continue

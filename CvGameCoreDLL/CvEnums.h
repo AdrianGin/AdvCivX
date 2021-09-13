@@ -506,6 +506,7 @@ ENUM_START(Widget, WIDGET)
 	WIDGET_ANARCHY, // </advc.085>
 	WIDGET_CITY_TRADE, // advc.ctr
 	WIDGET_CYCLE_UNIT, // advc.154
+	WIDGET_EXAMINE_CITY, // advc.186b (for BULL - Zoom City Details)
 ENUM_END(Widget, WIDGET)
 
 ENUM_START(ButtonPopup, BUTTONPOPUP)

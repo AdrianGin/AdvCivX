@@ -1074,8 +1074,8 @@ bool CvDLLButtonPopup::launchProductionPopup(CvPopup* pPopup, CvPopupInfo &info)
 				ARTFILEMGR.getInterfaceArtPath("INTERFACE_BUTTONS_CITYSELECTION"),
 				iExamineCityID,
 				//WIDGET_GENERAL, -1, -1,
-				// BULL - Zoom City Details (advc.186b):
-				WIDGET_ZOOM_CITY, getActivePlayer(), info.getData1(),
+				// advc.186b (for BULL - Zoom City Details):
+				WIDGET_EXAMINE_CITY, getActivePlayer(), info.getData1(),
 				true, POPUP_LAYOUT_STRETCH, DLL_FONT_LEFT_JUSTIFY);
 	}
 	// Were never read before being reassigned
