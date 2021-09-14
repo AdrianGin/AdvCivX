@@ -6264,7 +6264,10 @@ void CvCity::setOccupationTimer(int iNewValue)
 		updateMaintenance();
 		updateTradeRoutes();
 		updateCommerce(); // K-Mod
-
+		/*	<advc.908b> (Intended for conquered cities; will have no effect
+			in other situations.) */
+		if (!isOccupation())
+			initTraitCulture(); // </advc.908b>
 		updateCultureLevel(true);
 
 		AI_setAssignWorkDirty(true);
@@ -6596,10 +6599,10 @@ void CvCity::updateCultureLevel(bool bUpdatePlotGroups)
 		return;
 
 	CultureLevelTypes eCultureLevel = (CultureLevelTypes)0;
-	/*	advc.908b: Confusing when the new owner gets free culture;
-		I also see no need to take away the culture level during occupation. */
-	//if (!isOccupation())
-	eCultureLevel = calculateCultureLevel(getOwner()); // advc: Moved into subroutine
+	if (!isOccupation())
+	{	// advc: Moved into subroutine
+		eCultureLevel = calculateCultureLevel(getOwner());
+	}
 	setCultureLevel(eCultureLevel, bUpdatePlotGroups);
 }
 
@@ -10308,7 +10311,7 @@ void CvCity::doCulture()
 	static int const iUseKModTradeCulture = GC.getDefineINT("USE_KMOD_TRADE_CULTURE");
 	if (iUseKModTradeCulture != 0 && // </advc.125>
 		// K-Mod, 26/sep/10, 31/oct/10 - Trade culture: START
-		getCultureLevel() > 0)
+		getCultureLevel() > 0 /* advc.098: */ && !isDisorder())
 	{
 		/*	add up the culture contribution for each player before applying it
 			so that we avoid excessive calls to change culture and reduce rounding errors */
@@ -10374,7 +10377,7 @@ void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
 	}
 
 	if (eCultureLevel == NO_CULTURELEVEL ||
-		isDisorder() || // advc.908b: No longer sets NO_CULTURELEVEL
+		(bCityCulture && isDisorder()) || // advc.098
 		//getCultureTimes100(ePlayer) <= 0
 		abs(iCultureRateTimes100 * iScale) < 100)
 	{

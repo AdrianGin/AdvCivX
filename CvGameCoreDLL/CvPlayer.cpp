@@ -1928,8 +1928,9 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 	For any code that should run once it's decided that an acquired city
 	isn't going to be razed or liberated. */
 void CvPlayer::keepCity(CvCity& kCity)
-{
-	kCity.initTraitCulture(); // advc.908b
+{	// <advc.908b> Not until occupation ends
+	if (!kCity.isOccupation())
+		kCity.initTraitCulture(); // <advc.908b>
 	CvEventReporter::getInstance().cityAcquiredAndKept(getID(), &kCity);
 	if (isHuman())
 		kCity.chooseProduction();
