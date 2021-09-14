@@ -7072,12 +7072,12 @@ int CvCityAI::AI_culturePressureFactor() const
 			// scale it by how it compares to our culture
 			iForeignCulture = (100 * iForeignCulture) /
 					std::max(1, iForeignCulture + kPlot.getCulture(getOwner()));
-			// lower the value if the foreign culture is not allowed take control of the plot
-			// lower the value if the foreign culture is not allowed to flip the city
 			iForeignCulture *= 2;
 			iForeignCulture /= 2 +
+					// lower the value if the foreign culture is not allowed take control of the plot
 					((!kPlot.isWithinCultureRange(kPlayer.getID()) ||
 					GET_TEAM(kPlayer.getTeam()).isVassal(getTeam())) ? 2 : 0) +
+					// lower the value if the foreign culture is not allowed to flip the city
 					(!canCultureFlip(kPlayer.getID()) ? 1 : 0);
 			iAnswer += iForeignCulture * iForeignCulture;
 		}

@@ -176,14 +176,14 @@ void CvCity::init(int iID, PlayerTypes eOwner, int iX, int iY, bool bBumpUnits,
 
 	CvPlot& kPlot = GC.getMap().getPlot(iX, iY);
 	{
-		int const iFreeCityPlotCulture = GC.getDefineINT("FREE_CITY_CULTURE"); // advc.opt
+		int const iFreeCityPlotCulture = GC.getDefineINT("FREE_CITY_CULTURE");
 		if (kPlot.getCulture(getOwner()) < iFreeCityPlotCulture)
 			kPlot.setCulture(getOwner(), iFreeCityPlotCulture, bBumpUnits, false);
 	}
 	kPlot.setOwner(getOwner(), bBumpUnits, false);
 	kPlot.setPlotCity(this);
 
-	int const iFreeCityAdjacentCulture = GC.getDefineINT("FREE_CITY_ADJACENT_CULTURE"); // advc.opt
+	int const iFreeCityAdjacentCulture = GC.getDefineINT("FREE_CITY_ADJACENT_CULTURE");
 	FOR_EACH_ADJ_PLOT_VAR(getPlot())
 	{
 		if (pAdj->getCulture(getOwner()) < iFreeCityAdjacentCulture)
@@ -496,7 +496,7 @@ void CvCity::doTurn()
 			if (it->isBeingWorked())
 				it->doImprovement();
 		}
-	} // <advc.004x>
+	}  // <advc.004x>
 	else
 	{
 		if(isHuman() && !isProduction() && !isProductionAutomated() &&
@@ -633,7 +633,7 @@ void CvCity::doRevolt()
 	PlayerTypes eOwnerIgnRange = eCulturalOwner;
 	if (GC.getDefineBOOL(CvGlobals::REVOLTS_IGNORE_CULTURE_RANGE))
 		eOwnerIgnRange = getPlot().calculateCulturalOwner(true);
-	// If not within culture range, can revolt but not flip
+	// If not within culture range, can revolt but not flip.
 	bool bCanFlip = (eOwnerIgnRange == eCulturalOwner);
 	eCulturalOwner = eOwnerIgnRange;
 	// </advc.099c>
@@ -6273,9 +6273,10 @@ void CvCity::setOccupationTimer(int iNewValue)
 		AI_setAssignWorkDirty(true);
 		// K-Mod
 		if (isHuman() && !isDisorder() && isChooseProductionDirty() &&
-				!isProduction() && !isProductionAutomated())
+			!isProduction() && !isProductionAutomated())
+		{
 			chooseProduction();
-		// K-Mod end
+		} // K-Mod end
 	}
 
 	setInfoDirty(true);
