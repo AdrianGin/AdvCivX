@@ -4440,39 +4440,23 @@ void CvDLLWidgetData::parseRevolutionHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 void CvDLLWidgetData::parseAutomateCitizensHelp(CvWidgetDataStruct &widgetDataStruct, CvWStringBuffer &szBuffer)
 {
-	CvCity* pHeadSelectedCity;
-
-	pHeadSelectedCity = gDLL->UI().getHeadSelectedCity();
-
+	CvCity* pHeadSelectedCity = gDLL->UI().getHeadSelectedCity();
 	if (pHeadSelectedCity != NULL)
 	{
 		if (pHeadSelectedCity->isCitizensAutomated())
-		{
 			szBuffer.assign(gDLL->getText("TXT_KEY_MISC_OFF_CITIZEN_AUTO"));
-		}
-		else
-		{
-			szBuffer.assign(gDLL->getText("TXT_KEY_MISC_ON_CITIZEN_AUTO"));
-		}
+		else szBuffer.assign(gDLL->getText("TXT_KEY_MISC_ON_CITIZEN_AUTO"));
 	}
 }
 
 void CvDLLWidgetData::parseAutomateProductionHelp(CvWidgetDataStruct &widgetDataStruct, CvWStringBuffer &szBuffer)
 {
-	CvCity* pHeadSelectedCity;
-
-	pHeadSelectedCity = gDLL->UI().getHeadSelectedCity();
-
+	CvCity* pHeadSelectedCity = gDLL->UI().getHeadSelectedCity();
 	if (pHeadSelectedCity != NULL)
 	{
 		if (pHeadSelectedCity->isProductionAutomated())
-		{
 			szBuffer.assign(gDLL->getText("TXT_KEY_MISC_OFF_PROD_AUTO"));
-		}
-		else
-		{
-			szBuffer.assign(gDLL->getText("TXT_KEY_MISC_ON_PROD_AUTO"));
-		}
+		else szBuffer.assign(gDLL->getText("TXT_KEY_MISC_ON_PROD_AUTO"));
 	}
 }
 
@@ -4483,14 +4467,12 @@ void CvDLLWidgetData::parseEmphasizeHelp(CvWidgetDataStruct &widgetDataStruct, C
 	CvCity* pHeadSelectedCity = gDLL->UI().getHeadSelectedCity();
 	if (pHeadSelectedCity != NULL)
 	{
-		if (pHeadSelectedCity->AI().AI_isEmphasize((EmphasizeTypes)widgetDataStruct.m_iData1))
+		if (pHeadSelectedCity->AI().AI_isEmphasize((EmphasizeTypes)
+			widgetDataStruct.m_iData1))
 		{
 			szBuffer.append(gDLL->getText("TXT_KEY_MISC_TURN_OFF"));
 		}
-		else
-		{
-			szBuffer.append(gDLL->getText("TXT_KEY_MISC_TURN_ON"));
-		}
+		else szBuffer.append(gDLL->getText("TXT_KEY_MISC_TURN_ON"));
 	}
 
 	szBuffer.append(GC.getInfo((EmphasizeTypes)widgetDataStruct.m_iData1).getDescription());

@@ -5153,7 +5153,7 @@ int CvCity::getAdditionalStarvation(int iSpoiledFood) const
 	return 0;
 } // BUG - Actual Effects - end
 
-/*  <advc.001c> These two function bodies are mostly cut and pasted from
+/*  <advc.001c> These two functions are based on code cut from
 	CvGameTextMgr::parseGreatPeopleHelp */
 int CvCity::GPTurnsLeft() const
 {

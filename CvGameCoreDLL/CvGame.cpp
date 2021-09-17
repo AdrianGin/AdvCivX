@@ -8650,9 +8650,9 @@ CvDeal* CvGame::addDeal()
 /*  advc.072: All the FAssert(false) in this function mean that we're somehow
 	out of step with the iteration that happens in the EXE. */
 CvDeal* CvGame::nextCurrentDeal(PlayerTypes eGivePlayer, PlayerTypes eReceivePlayer,
-		TradeableItems eItemType, int iData, bool bWidget)
+	TradeableItems eItemType, int iData, bool bWidget)
 {
-	if(!m_bShowingCurrentDeals)
+	if (!m_bShowingCurrentDeals)
 	{
 		m_currentDeals.clear(); // Probably not needed, but can't hurt to clear them.
 		m_currentDealsWidget.clear();
@@ -8660,30 +8660,30 @@ CvDeal* CvGame::nextCurrentDeal(PlayerTypes eGivePlayer, PlayerTypes eReceivePla
 	}
 	// Probably not needed:
 	PlayerTypes eDiploPlayer = (PlayerTypes)gDLL->getDiplomacyPlayer();
-	if(!((getActivePlayer() == eGivePlayer && eDiploPlayer == eReceivePlayer) ||
+	if (!((getActivePlayer() == eGivePlayer && eDiploPlayer == eReceivePlayer) ||
 		(getActivePlayer() == eReceivePlayer && eDiploPlayer == eGivePlayer)))
 	{
 		return NULL;
 	}
 	CLinkList<DealItemData>& kCurrentDeals = (bWidget ? m_currentDealsWidget :
 			m_currentDeals);
-	if(kCurrentDeals.getLength() <= 0)
+	if (kCurrentDeals.getLength() <= 0)
 	{
 		bool bFirstFound = false;
 		FOR_EACH_DEAL(d)
 		{
-			if(!d->isBetween(eGivePlayer, eReceivePlayer))
+			if (!d->isBetween(eGivePlayer, eReceivePlayer))
 				continue;
 			CLinkList<TradeData> const& kGiveList = (d->getFirstPlayer() == eGivePlayer ?
 					d->getFirstList() : d->getSecondList());
 			FOR_EACH_TRADE_ITEM(kGiveList)
 			{
-				if(!CvDeal::isAnnual(pItem->m_eItemType) &&
+				if (!CvDeal::isAnnual(pItem->m_eItemType) &&
 					pItem->m_eItemType != TRADE_PEACE_TREATY)
 				{
 					break;
 				}
-				if(!bFirstFound)
+				if (!bFirstFound)
 				{
 					if(pItem->m_eItemType != eItemType ||
 						pItem->m_iData != iData)
@@ -8699,24 +8699,24 @@ CvDeal* CvGame::nextCurrentDeal(PlayerTypes eGivePlayer, PlayerTypes eReceivePla
 			}
 		}
 	}
-	if(kCurrentDeals.getLength() <= 0)
+	if (kCurrentDeals.getLength() <= 0)
 	{
 		FAssert(false);
 		return NULL;
 	}
 	CLLNode<DealItemData>* pNode = kCurrentDeals.head();
 	DealItemData data = pNode->m_data;
-	if(data.eGivePlayer != eGivePlayer || data.eReceivePlayer != eReceivePlayer ||
+	if (data.eGivePlayer != eGivePlayer || data.eReceivePlayer != eReceivePlayer ||
 		data.iData != iData || data.eItemType != eItemType)
 	{
 		kCurrentDeals.clear();
 		FAssert(false);
 		return NULL;
 	}
-	CvDeal* r = getDeal(pNode->m_data.iDeal);
+	CvDeal* pNext = getDeal(pNode->m_data.iDeal);
 	kCurrentDeals.deleteNode(pNode);
-	FAssert(r != NULL);
-	return r;
+	FAssert(pNext != NULL);
+	return pNext;
 }
 
 // advc.027b:

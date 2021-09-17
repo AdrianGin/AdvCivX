@@ -672,12 +672,11 @@ public:
 	DllExport int getIndexAfterLastDeal();																								// Exposed to Python
 	int getNumDeals();																													// Exposed to Python
 
-	// advc.inl: const version, inline
 	DllExport CvDeal* getDeal(int iID)																	// Exposed to Python
 	{
 		return m_deals.getAt(iID);
 	}
-	CvDeal const* getDeal(int iID) const
+	CvDeal const* getDeal(int iID) const // advc: const version
 	{
 		return m_deals.getAt(iID);
 	}
