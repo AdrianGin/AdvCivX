@@ -5061,8 +5061,8 @@ int CvCity::cultureGarrison(PlayerTypes ePlayer) const
 	{
 		pLoopUnit = ::getUnit(pUnitNode->m_data);
 		pUnitNode = plot()->nextUnitNode(pUnitNode);
-
-		iGarrison += pLoopUnit->getUnitInfo().getCultureGarrisonValue();
+		if (pLoopUnit->getTeam() == getTeam()) // f1rpo
+			iGarrison += pLoopUnit->getUnitInfo().getCultureGarrisonValue();
 	}
 
 	if (atWar(GET_PLAYER(ePlayer).getTeam(), getTeam()))

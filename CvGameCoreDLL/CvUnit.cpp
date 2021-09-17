@@ -7949,7 +7949,10 @@ bool CvUnit::isRivalTerritory() const
 
 bool CvUnit::isMilitaryHappiness() const
 {
-	return m_pUnitInfo->isMilitaryHappiness();
+	return (m_pUnitInfo->isMilitaryHappiness()
+			/*	f1rpo: Rival units shouldn't count. Easiest to fix this here
+				(although it's not the most intuitive place). */
+			&& plot()->isCity() && plot()->getTeam() == getTeam());
 }
 
 
