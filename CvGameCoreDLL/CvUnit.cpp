@@ -5658,17 +5658,18 @@ bool CvUnit::trade()
 }
 
 
-int CvUnit::getGreatWorkCulture(const CvPlot* pPlot) const
+int CvUnit::getGreatWorkCulture(const CvPlot* pPlot,
+	// <advc.251> For help text
+	int* piPerEra) const
 {
-	//iCulture = m_pUnitInfo->getGreatWorkCulture(); // BtS
-	/*  K-Mod, 7/dec/10:
+	LOCAL_REF(int, iPerEra, piPerEra, m_pUnitInfo->getGreatWorkCulture());
+	int iCulture = iPerEra; // </advc.251>
+	/*  <K-Mod> (7/dec/10)
 		culture from great works now scales linearly with the era of the player.
 		(the base number has been reduced in the xml accordingly) */
-	int iCulture = m_pUnitInfo->getGreatWorkCulture() * (GET_PLAYER(getOwner()).getCurrentEra());
-
+	iCulture *= (GET_PLAYER(getOwner()).getCurrentEra() /* advc.251: */ + 1);
 	iCulture *= GC.getInfo(GC.getGame().getGameSpeedType()).getUnitGreatWorkPercent();
-	iCulture /= 100;
-
+	iCulture /= 100; // </K-Mod>
 	return std::max(0, iCulture);
 }
 

@@ -2588,10 +2588,15 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 			CvUnit const& kSelectedUnit = *::getUnit(pNode->m_data);
 			if (!kSelectedUnit.canGreatWork(&kMissionPlot))
 				continue;
-			szTempBuffer.Format(L"%s+%d%c", NEWLINE,
-					kSelectedUnit.getGreatWorkCulture(&kMissionPlot),
+			szBuffer.append(NEWLINE);
+			/*szTempBuffer.Format(L"+%d%c", kSelectedUnit.getGreatWorkCulture(&kMissionPlot),
 					GC.getInfo(COMMERCE_CULTURE).getChar());
-			szBuffer.append(szTempBuffer);
+			szBuffer.append(szTempBuffer);*/
+			// <advc.251>
+			int iPerEra=0;
+			int iCulture = kSelectedUnit.getGreatWorkCulture(&kMissionPlot, &iPerEra);
+			szBuffer.append(gDLL->getText("TXT_KEY_MISSION_GREAT_WORK_WIDGET_HELP",
+					iCulture, iPerEra)); // </advc.251>
 			break;
 		}
 		break;

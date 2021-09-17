@@ -224,7 +224,8 @@ public:
 	bool canTrade(const CvPlot* pPlot, bool bTestVisible = false) const;									// Exposed to Python
 	bool trade();
 
-	int getGreatWorkCulture(const CvPlot* pPlot) const;														// Exposed to Python
+	int getGreatWorkCulture(const CvPlot* pPlot,															// Exposed to Python
+			int* piPerEra = NULL) const; // advc.251
 	bool canGreatWork(const CvPlot* pPlot) const;															// Exposed to Python
 	bool greatWork();
 

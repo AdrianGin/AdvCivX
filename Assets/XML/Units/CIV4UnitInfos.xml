@@ -22213,8 +22213,9 @@
 			<iHurryMultiplier>0</iHurryMultiplier>
 			<iBaseTrade>0</iBaseTrade>
 			<iTradeMultiplier>0</iTradeMultiplier>
-			<!-- K-Mod: Was 4000; now counts per era. -->
-			<iGreatWorkCulture>800</iGreatWorkCulture>
+			<!-- advc.251: Was 4000 in BtS, 800 in K-Mod and counted per era,
+				 starting at 0. Starting at 1 in AdvCiv. -->
+			<iGreatWorkCulture>700</iGreatWorkCulture>
 			<iEspionagePoints>0</iEspionagePoints>
 			<TerrainImpassables/>
 			<FeatureImpassables/>

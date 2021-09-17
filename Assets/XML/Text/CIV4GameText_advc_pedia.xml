@@ -1349,4 +1349,14 @@
 		<German>[BOLD]K-Mod[\BOLD] entkoppelt den zusätzlichen Militärunterhalt von der Schwierigkeitsstufe und AdvCiv verwendet 1[ICON_GOLD]/Einheit, was in BtS der höchsten Schwierigkeitsstufe entsprach. Das heißt, der Unterhalt auf allen niedrigeren Schwierigkeitsstufen hat sich erhöht. Pazifistische KI-Spieler zahlen nur die Hälfte - das war auf höchster Schwierigkeit auch in BtS so, weil KI-Spieler stets auf mittlerer Schwierigkeit (Adliger) spielen.</German>
 	</TEXT>
 
+	<!-- advc: Point out K-Mod change -->
+	<TEXT>
+		<Tag>TXT_KEY_UNIT_GREAT_ARTIST_STRATEGY</Tag>
+		<English>[COLOR_UNIT_TEXT]Great Artists[COLOR_REVERT] can create a [COLOR_HIGHLIGHT_TEXT]Great Work[COLOR_REVERT] which provides enormous culture to the host city. In [BOLD]K-Mod[\BOLD], the amount of [ICON_CULTURE] increases with each era that the civ owning the Great Artist has reached. That is, especially for a culture victory, delaying the creation of a Great Work can make sense.</English>
+		<French>Les [COLOR_UNIT_TEXT]artistes illustres[COLOR_REVERT] peuvent cr&#233;er un [COLOR_HIGHLIGHT_TEXT]chef d'oeuvre[COLOR_REVERT] qui am&#233;liore nettement la culture de la ville qui l'abrite.</French>
+		<German>[COLOR_UNIT_TEXT]Gro&#223;e K&#252;nstler[COLOR_REVERT] schaffen [COLOR_HIGHLIGHT_TEXT]Meisterwerke[COLOR_REVERT], die den kulturellen Wert der jeweiligen Stadt deutlich erh&#246;hen. [BOLD]K-Mod[\BOLD] berechnet die [ICON_CULTURE]Punkte basierend auf dem Zeitalter, in dem sich der Besitzer des Großen Künstlers befindet; das heißt, besonders für einen Kultursieg kann es sich lohnen, mit einem Meisterwerk zu warten.</German>
+		<Italian>I [COLOR_UNIT_TEXT]Grandi Artisti[COLOR_REVERT] possono creare una [COLOR_HIGHLIGHT_TEXT]Grande opera[COLOR_REVERT], che fornisce una grande cultura alla citt&#224; che la ospita.</Italian>
+		<Spanish>Los [COLOR_UNIT_TEXT]Grandes artistas[COLOR_REVERT] pueden crear una [COLOR_HIGHLIGHT_TEXT]gran obra[COLOR_REVERT], potenciando enormemente la cultura de la ciudad que la acoja.</Spanish>
+	</TEXT>
+
 </Civ4GameText>
