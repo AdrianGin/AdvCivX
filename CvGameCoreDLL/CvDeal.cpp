@@ -176,7 +176,7 @@ void CvDeal::addTradeItems(
 			// </advc.130p>  <advc.104m> (cf. CvPlayer::buildTradeTable)
 			if (pItem->m_eItemType == TRADE_PEACE_TREATY)
 			{
-				pItem->m_bHidden = false;
+				pItem->m_bHidden = pItem->m_bOffering = false;
 				bPeaceTreaty = true;
 				if (pItem->m_iData > 0) // Set in CvPlayer::updateTradeList
 					bPeaceTreatyFromTrade = true;
@@ -272,6 +272,7 @@ void CvDeal::addTradeItems(
 		}
 	}*/ // K-Mod end
 	bool const bReportUWAI = getUWAI().isEnabled();
+	bool bPeaceTreatyImplied = false; // advc.ctr
 	// advc (fixme): This whole loop is mostly duplicated below
 	for (int iPass = 0; iPass < 2; iPass++) // advc: Replacing the K-Mod loop above
 	{
@@ -287,7 +288,7 @@ void CvDeal::addTradeItems(
 						(TeamTypes)pItem->m_iData);
 			} // </advc.104>
 			bool bSave = startTrade(*pItem, getFirstPlayer(), getSecondPlayer(),
-					bMakingPeace); // advc.ctr
+					bMakingPeace, bPeaceTreatyImplied); // advc.ctr
 			bBumpUnits = (bBumpUnits || pItem->m_eItemType == TRADE_PEACE); // K-Mod
 			if (bSave)
 				insertAtEndFirst(*pItem);
@@ -311,7 +312,7 @@ void CvDeal::addTradeItems(
 						(TeamTypes)pItem->m_iData);
 			} // </advc.104>
 			bool bSave = startTrade(*pItem, getSecondPlayer(), getFirstPlayer(),
-					bMakingPeace); // advc.ctr
+					bMakingPeace, bPeaceTreatyImplied); // advc.ctr
 			bBumpUnits = (bBumpUnits || pItem->m_eItemType == TRADE_PEACE); // K-Mod
 
 			if (bSave)
@@ -328,7 +329,13 @@ void CvDeal::addTradeItems(
 		else if (eSecondTeam < eFirstTeam)
 			GET_TEAM(eSecondTeam).addTeam(eFirstTeam);
 	}
-
+	/*	<advc.ctr> Can't do this directly in startTrade b/c the trade may
+		(explicitly) include a peace treaty and then we may end up implementing
+		only one half of that treaty before signing a 2nd treaty and end up with
+		two unilateral treaties. */
+	else if (bPeaceTreatyImplied)
+		GET_TEAM(getFirstPlayer()).signPeaceTreaty(TEAMID(getSecondPlayer()));
+	// </advc.ctr>
 	// K-Mod
 	if (bBumpUnits)
 		GC.getMap().verifyUnitValidPlot();
@@ -711,7 +718,7 @@ void CvDeal::read(FDataStreamBase* pStream)
 
 // Returns true if the trade should be saved...
 bool CvDeal::startTrade(TradeData trade, PlayerTypes eFromPlayer, PlayerTypes eToPlayer,
-	bool bPeace) // advc.ctr
+	bool bPeace, bool& bPeaceTreatyImplied) // advc.ctr
 {
 	PROFILE_FUNC();
 	CvPlayerAI& kFromPlayer = GET_PLAYER(eFromPlayer);
@@ -767,7 +774,7 @@ bool CvDeal::startTrade(TradeData trade, PlayerTypes eFromPlayer, PlayerTypes eT
 			if (!bPeace && !bLib)
 			{
 				FAssert(!GET_TEAM(eFromPlayer).isAtWar(kToPlayer.getTeam()));
-				GET_TEAM(eFromPlayer).signPeaceTreaty(kToPlayer.getTeam());
+				bPeaceTreatyImplied = true;
 			} // </advc.ctr>
 		}
 		break;
@@ -850,8 +857,7 @@ bool CvDeal::startTrade(TradeData trade, PlayerTypes eFromPlayer, PlayerTypes eT
 		TeamTypes const eAttackedTeam = (TeamTypes)trade.m_iData;
 		GET_TEAM(eFromPlayer).declareWar(eAttackedTeam, true, NO_WARPLAN,
 				true, eToPlayer); // advc.100
-		// advc.146:
-		GET_TEAM(eFromPlayer).signPeaceTreaty(kToPlayer.getTeam());
+		bPeaceTreatyImplied = true; // advc.146
 		for (MemberAIIter itAttackedMember(eAttackedTeam);
 			itAttackedMember.hasNext(); ++itAttackedMember)
 		{

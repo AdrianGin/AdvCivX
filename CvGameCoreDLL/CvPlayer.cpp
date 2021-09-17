@@ -18613,8 +18613,9 @@ bool CvPlayer::getItemTradeString(PlayerTypes eRecipient, bool bOffer,
 		{
 			szString = gDLL->getText("TXT_KEY_TRADE_PEACE_TREATY_STRING",
 					GC.getDefineINT(CvGlobals::PEACE_TREATY_LENGTH));
-		}  // <advc.104m> AI offering a peace treaty at peacetime
-		else if (bOffer)
+		}
+		// <advc.104m> AI offering a peace treaty at peacetime
+		else if (bOffer && !bShowingCurrent)
 		{
 			szString = gDLL->getText("TXT_KEY_TRADE_SIGN_PEACE_TREATY",
 					GC.getDefineINT(CvGlobals::PEACE_TREATY_LENGTH));
@@ -18727,6 +18728,45 @@ bool CvPlayer::getItemTradeString(PlayerTypes eRecipient, bool bOffer,
 void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& kOurInventory,
 	CLinkList<TradeData> const& kOurOffer, CLinkList<TradeData> const& kTheirOffer) const
 {
+	/*	<advc.ctr> None of the adjustments below (incl. the ones already present
+		in BtS) should be made when reviewing current deals. How to tell?
+		The inventory being the same as our side of the table is, apparently,
+		a necessary condition. */
+	if (kOurOffer.getLength() == kOurInventory.getLength())
+	{
+		bool bCurrentDeals = true;
+		/*	We're probably listing current deals. To make sure, check if
+			everything on our side is part of an active deal. */
+		FOR_EACH_TRADE_ITEM_VAR2(pSearchItem, kOurOffer)
+		{
+			bool bFound = false;
+			FOR_EACH_DEAL(pDeal)
+			{
+				if (!pDeal->isBetween(getID(), eOtherPlayer))
+					continue;
+				CLinkList<TradeData> const& kWeGive = (pDeal->getFirstPlayer() == getID() ?
+						pDeal->getFirstList() : pDeal->getSecondList());
+				FOR_EACH_TRADE_ITEM_VAR2(pFoundItem, kWeGive)
+				{
+					if (pFoundItem->m_eItemType == pSearchItem->m_eItemType &&
+						pFoundItem->m_iData == pSearchItem->m_iData)
+					{
+						bFound = true;
+						break;
+					}
+				}
+				if (bFound)
+					break;
+			}
+			if (!bFound)
+			{
+				bCurrentDeals = false;
+				break;
+			}
+		}
+		if (bCurrentDeals)
+			return;
+	} // </advc.ctr>
 	FOR_EACH_TRADE_ITEM_VAR(kOurInventory)
 	{
 		pItem->m_bHidden = false;
