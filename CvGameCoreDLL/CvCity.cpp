@@ -5190,7 +5190,10 @@ void CvCity::GPProjection(std::vector<std::pair<UnitTypes,int> >& aeiProjection)
 				getTotalGreatPeopleRateModifier())) / iProjectedTotal;
 		if (rShare > 0)
 		{
-			int iPercent = rShare.getPercent();
+			/*	I've seen 103 here with the Parthenon (150% modifier).
+				Haven't investigated in detail, but I'm guessing that the calculation
+				in the loop has fewer rounding errors than the one before the loop. */
+			int iPercent = std::min(100, rShare.getPercent());
 			iRoundedPercentages += iPercent;
 			aeiProjection.push_back(std::make_pair(eLoopUnit, iPercent));
 		}
