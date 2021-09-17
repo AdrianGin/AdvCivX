@@ -22,6 +22,10 @@ class UWAICity; // advc.104d
 class CvPlayerAI : public CvPlayer
 {
 public:
+
+#ifdef _DEBUG
+	__forceinline // Annoying to step into by accident
+#endif
 	// advc.003u: Renamed from getPlayer
 	static CvPlayerAI& AI_getPlayer(PlayerTypes ePlayer)
 	{

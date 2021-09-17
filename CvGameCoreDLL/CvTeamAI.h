@@ -19,6 +19,10 @@
 class CvTeamAI : public CvTeam
 {
 public:
+
+#ifdef _DEBUG
+	__forceinline // Annoying to step into by accident
+#endif
 	// advc.003u: Renamed from getTeam
 	static CvTeamAI& AI_getTeam(TeamTypes eTeam)
 	{

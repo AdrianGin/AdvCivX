@@ -444,7 +444,7 @@ public: // advc: made several functions const
 		FAssert(isPlot(iX, iY)); // advc: Assertion added
 		return &(m_pMapPlots[plotNum(iX, iY)]);
 	} // <advc.inl> Even faster and less confusingly named; replacing the above in most places.
-	__forceinline CvPlot& getPlot(int x, int y) const
+	__inline CvPlot& getPlot(int x, int y) const
 	{
 		FAssert(isPlot(x, y));
 		return m_pMapPlots[plotNum(x, y)];
