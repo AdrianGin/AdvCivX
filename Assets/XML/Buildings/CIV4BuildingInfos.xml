@@ -14201,8 +14201,8 @@
 			<bPrereqReligion>0</bPrereqReligion>
 			<bCenterInCity>0</bCenterInCity>
 			<iAIWeight>0</iAIWeight>
-			<!-- K-Mod: was 300 -->
-			<iCost>240</iCost>
+			<!-- advc.201: K-Mod had reduced this to 240 -->
+			<iCost>300</iCost>
 			<iHurryCostModifier>0</iHurryCostModifier>
 			<iAdvancedStartCost>-1</iAdvancedStartCost>
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
@@ -14271,8 +14271,8 @@
 			<CommerceModifiers>
 				<iCommerce>0</iCommerce>
 				<iCommerce>0</iCommerce>
-				<!-- K-Mod: was 50 -->
-				<iCommerce>40</iCommerce>
+				<!-- advc.201: K-Mod had reduced this to 40 -->
+				<iCommerce>50</iCommerce>
 			</CommerceModifiers>
 			<GlobalCommerceModifiers/>
 			<SpecialistExtraCommerces/>
@@ -14937,8 +14937,8 @@
 			<bPrereqReligion>0</bPrereqReligion>
 			<bCenterInCity>0</bCenterInCity>
 			<iAIWeight>0</iAIWeight>
-			<!-- K-Mod: was 300 -->
-			<iCost>240</iCost>
+			<!-- advc.201: K-Mod had reduced this to 240 -->
+			<iCost>300</iCost>
 			<iHurryCostModifier>0</iHurryCostModifier>
 			<iAdvancedStartCost>-1</iAdvancedStartCost>
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
@@ -15007,8 +15007,8 @@
 			<CommerceModifiers>
 				<iCommerce>0</iCommerce>
 				<iCommerce>0</iCommerce>
-				<!-- K-Mod: was 50 -->
-				<iCommerce>40</iCommerce>
+				<!-- advc.201: K-Mod had reduced this to 40 -->
+				<iCommerce>50</iCommerce>
 			</CommerceModifiers>
 			<GlobalCommerceModifiers/>
 			<SpecialistExtraCommerces/>
@@ -15673,8 +15673,8 @@
 			<bPrereqReligion>0</bPrereqReligion>
 			<bCenterInCity>0</bCenterInCity>
 			<iAIWeight>0</iAIWeight>
-			<!-- K-Mod: was 300 -->
-			<iCost>240</iCost>
+			<!-- advc.201: K-Mod had reduced this to 240 -->
+			<iCost>300</iCost>
 			<iHurryCostModifier>0</iHurryCostModifier>
 			<iAdvancedStartCost>-1</iAdvancedStartCost>
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
@@ -15743,8 +15743,8 @@
 			<CommerceModifiers>
 				<iCommerce>0</iCommerce>
 				<iCommerce>0</iCommerce>
-				<!-- K-Mod: was 50 -->
-				<iCommerce>40</iCommerce>
+				<!-- advc.201: K-Mod had reduced this to 40 -->
+				<iCommerce>50</iCommerce>
 			</CommerceModifiers>
 			<GlobalCommerceModifiers/>
 			<SpecialistExtraCommerces/>
@@ -16409,8 +16409,8 @@
 			<bPrereqReligion>0</bPrereqReligion>
 			<bCenterInCity>0</bCenterInCity>
 			<iAIWeight>0</iAIWeight>
-			<!-- K-Mod: was 300 -->
-			<iCost>240</iCost>
+			<!-- advc.201: K-Mod had reduced this to 240 -->
+			<iCost>300</iCost>
 			<iHurryCostModifier>0</iHurryCostModifier>
 			<iAdvancedStartCost>-1</iAdvancedStartCost>
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
@@ -16479,8 +16479,8 @@
 			<CommerceModifiers>
 				<iCommerce>0</iCommerce>
 				<iCommerce>0</iCommerce>
-				<!-- K-Mod: was 50 -->
-				<iCommerce>40</iCommerce>
+				<!-- advc.201: K-Mod had reduced this to 40 -->
+				<iCommerce>50</iCommerce>
 			</CommerceModifiers>
 			<GlobalCommerceModifiers/>
 			<SpecialistExtraCommerces/>
@@ -17145,8 +17145,8 @@
 			<bPrereqReligion>0</bPrereqReligion>
 			<bCenterInCity>0</bCenterInCity>
 			<iAIWeight>0</iAIWeight>
-			<!-- K-Mod: was 300 -->
-			<iCost>240</iCost>
+			<!-- advc.201: K-Mod had reduced this to 240 -->
+			<iCost>300</iCost>
 			<iHurryCostModifier>0</iHurryCostModifier>
 			<iAdvancedStartCost>-1</iAdvancedStartCost>
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
@@ -17215,8 +17215,8 @@
 			<CommerceModifiers>
 				<iCommerce>0</iCommerce>
 				<iCommerce>0</iCommerce>
-				<!-- K-Mod: was 50 -->
-				<iCommerce>40</iCommerce>
+				<!-- advc.201: K-Mod had reduced this to 40 -->
+				<iCommerce>50</iCommerce>
 			</CommerceModifiers>
 			<GlobalCommerceModifiers/>
 			<SpecialistExtraCommerces/>
@@ -17881,8 +17881,8 @@
 			<bPrereqReligion>0</bPrereqReligion>
 			<bCenterInCity>0</bCenterInCity>
 			<iAIWeight>0</iAIWeight>
-			<!-- K-Mod: was 300 -->
-			<iCost>240</iCost>
+			<!-- advc.201: K-Mod had reduced this to 240 -->
+			<iCost>300</iCost>
 			<iHurryCostModifier>0</iHurryCostModifier>
 			<iAdvancedStartCost>-1</iAdvancedStartCost>
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
@@ -17951,8 +17951,8 @@
 			<CommerceModifiers>
 				<iCommerce>0</iCommerce>
 				<iCommerce>0</iCommerce>
-				<!-- K-Mod: was 50 -->
-				<iCommerce>40</iCommerce>
+				<!-- advc.201: K-Mod had reduced this to 40 -->
+				<iCommerce>50</iCommerce>
 			</CommerceModifiers>
 			<GlobalCommerceModifiers/>
 			<SpecialistExtraCommerces/>
@@ -18617,8 +18617,8 @@
 			<bPrereqReligion>0</bPrereqReligion>
 			<bCenterInCity>0</bCenterInCity>
 			<iAIWeight>0</iAIWeight>
-			<!-- K-Mod: was 300 -->
-			<iCost>240</iCost>
+			<!-- advc.201: K-Mod had reduced this to 240 -->
+			<iCost>300</iCost>
 			<iHurryCostModifier>0</iHurryCostModifier>
 			<iAdvancedStartCost>-1</iAdvancedStartCost>
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
@@ -18687,8 +18687,8 @@
 			<CommerceModifiers>
 				<iCommerce>0</iCommerce>
 				<iCommerce>0</iCommerce>
-				<!-- K-Mod: was 50 -->
-				<iCommerce>40</iCommerce>
+				<!-- advc.201: K-Mod had reduced this to 40 -->
+				<iCommerce>50</iCommerce>
 			</CommerceModifiers>
 			<GlobalCommerceModifiers/>
 			<SpecialistExtraCommerces/>

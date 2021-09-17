@@ -11493,13 +11493,16 @@ void CvCity::read(FDataStreamBase* pStream)
 		} 
 	} // </advc.160>
 	// <advc.201>, advc.200, advc.098
-	if (uiFlag < 11)
+	if (uiFlag < 13)
 	{
 		updateBuildingCommerce(COMMERCE_CULTURE);
-		CorporationTypes eCreativeConstr = (CorporationTypes)
-					GC.getInfoTypeForString("CORPORATION_4", true);
-		if (eCreativeConstr != NO_CORPORATION && isHasCorporation(eCreativeConstr))
-			updateCorporationCommerce(COMMERCE_CULTURE);
+		if (uiFlag < 11)
+		{
+			CorporationTypes eCreativeConstr = (CorporationTypes)
+						GC.getInfoTypeForString("CORPORATION_4", true);
+			if (eCreativeConstr != NO_CORPORATION && isHasCorporation(eCreativeConstr))
+				updateCorporationCommerce(COMMERCE_CULTURE);
+		}
 	} // </advc.201>
 }
 
@@ -11519,7 +11522,8 @@ void CvCity::write(FDataStreamBase* pStream)
 	//uiFlag = 9; // advc.912d (adjust food kept)
 	//uiFlag = 10; // advc.911a, advc.908b
 	//uiFlag = 11; // advc.201, advc.098
-	uiFlag = 12; // advc.enum: new enum map save behavior
+	//uiFlag = 12; // advc.enum: new enum map save behavior
+	uiFlag = 13; // advc.201: Cathedrals restored to BtS stats
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);
