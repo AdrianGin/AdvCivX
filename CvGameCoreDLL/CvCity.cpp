@@ -4202,24 +4202,22 @@ int CvCity::cultureStrength(PlayerTypes ePlayer,
 	return rStrength.round();
 }
 
-
+// advc.101: Changed entirely. The parameter is no longer used.
 int CvCity::cultureGarrison(PlayerTypes ePlayer) const
 {
-	/*  <advc.101> BtS makes Barbarian units ineligible as culture garrison
+	/*  BtS makes Barbarian units ineligible as culture garrison
 		through CvPlot::doCulture (now renamed to CvPlot::doRevolts).
 		Easier to do it here -- but I do want them to be eligible. */
 	/*if(isBarbarian())
 		return 0;*/
-	int iGarrison = 0; // was 1  </advc.101>
-	for(CLLNode<IDInfo> const* pUnitNode = getPlot().headUnitNode(); pUnitNode != NULL;
-		pUnitNode = getPlot().nextUnitNode(pUnitNode))
+	int iGarrison = 0; // was 1
+	FOR_EACH_UNIT_IN(pUnit, getPlot())
 	{
-		// advc.101: Handled by new function
-		iGarrison += ::getUnit(pUnitNode->m_data)->garrisonStrength();
+		if (pUnit->getTeam() == getTeam()) // advc.184: Had been counting all units
+			iGarrison += pUnit->garrisonStrength();
 	}
-	/*if (atWar(GET_PLAYER(ePlayer).getTeam(), getTeam()))
+	/*if (atWar(TEAMID(ePlayer), getTeam()))
 		iGarrison *= 2;*/ // advc.023: commented out
-	// advc.101: iGarrison now has times-100 precision
 	return intdiv::uround(iGarrison, 100);
 }
 
