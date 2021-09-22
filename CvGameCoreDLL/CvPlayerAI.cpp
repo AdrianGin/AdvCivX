@@ -18132,6 +18132,7 @@ void CvPlayerAI::AI_processPeacetimeValue(PlayerTypes eFromPlayer, int iChange,
 		rVal /= per100(GC.getInfo(kMap.getWorldSize()).getResearchPercent());
 		rVal /= per100(GC.getInfo(kMap.getSeaLevel()).getResearchPercent());
 		rVal /= per100(GC.getInfo(kGame.getStartEra()).getResearchPercent());
+		rVal /= per100(GC.getInfo(GET_PLAYER(eFromPlayer).getHandicapType()).getResearchPercent());
 		rVal /= per100(GC.getInfo(kGame.getHandicapType()).getAIResearchPercent());
 	}
 	/*  Times 2 b/c "fair trade" is twice as sensitive as "enemy trade".
