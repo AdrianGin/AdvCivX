@@ -8104,15 +8104,21 @@ void CvCity::setRevealed(TeamTypes eTeam, bool bNewValue)
 	{
 		GET_TEAM(eTeam).makeHasSeen(getTeam());
 		// <advc.130n>
-		FOR_EACH_ENUM(Religion)
+		if (GET_TEAM(getTeam()).isMajorCiv() && GET_TEAM(eTeam).isMajorCiv())
 		{
-			if (!isHasReligion(eLoopReligion))
-				continue;
-			for (MemberAIIter itMember(eTeam); itMember.hasNext(); ++itMember)
+			FOR_EACH_ENUM(Religion)
 			{
-				itMember->AI_updateDifferentReligionThreat(eLoopReligion);
-			}
-		} // </advc.130n>
+				if (!isHasReligion(eLoopReligion))
+					continue;
+				for (MemberAIIter itMember(eTeam); itMember.hasNext(); ++itMember)
+				{
+					itMember->AI_updateDifferentReligionThreat(eLoopReligion);
+				}
+			} // </advc.130n>
+			// <advc.130w>
+			if (getPlot().findHighestCultureTeam() != getTeam())
+				GET_TEAM(eTeam).AI_updateAttitude(getTeam());
+		} // </advc.130w>
 	} // K-Mod end
 
 	updateVisibility();
