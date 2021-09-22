@@ -2258,9 +2258,10 @@ bool CvUnit::willRevealAnyPlotFrom(CvPlot const& kFrom) const
 	return false;
 }
 
-/*  K-Mod. I've rearranged a few things to make the function slightly faster,
-	and added "bAssumeVisible" which signals that we should check for units on
-	the plot regardless of whether we can actually see. */
+/*  K-Mod. I've rearranged a few things to make the function slightly faster
+	(advc.opt: reverted a little of that), and added "bAssumeVisible" which
+	signals that we should check for units on the plot regardless of whether we
+	can actually see. */
 bool CvUnit::canMoveInto(CvPlot const& kPlot, bool bAttack, bool bDeclareWar,
 	bool bIgnoreLoad, bool bAssumeVisible,
 	bool bDangerCheck) const // advc.001k
@@ -2269,14 +2270,12 @@ bool CvUnit::canMoveInto(CvPlot const& kPlot, bool bAttack, bool bDeclareWar,
 
 	if (atPlot(&kPlot))
 		return false;
-
-	if (!canMoveImpassable() && kPlot.isImpassable())
+	if (kPlot.isImpassable() && !canMoveImpassable())
 		return false;
-
 	if (m_pUnitInfo->isNoRevealMap() && willRevealAnyPlotFrom(kPlot))
 		return false;
 
-	if (m_pUnitInfo->isSpy() && GC.getDefineBOOL(CvGlobals::USE_SPIES_NO_ENTER_BORDERS))
+	if (isSpy() && GC.getDefineBOOL(CvGlobals::USE_SPIES_NO_ENTER_BORDERS))
 	{
 		if (kPlot.getOwner() != NO_PLAYER &&
 			!GET_PLAYER(getOwner()).canSpiesEnterBorders(kPlot.getOwner()))
