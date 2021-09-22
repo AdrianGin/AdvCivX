@@ -1134,12 +1134,11 @@
 		 are reached. -->
 
 	<!-- Relations need to be at least this good to make an AI civ Friendly.
-		 Recommended: 10 - as in BtS - however, effectively it's one lower due
-		 to changes in Civ4HandicapInfos.xml. Maybe 9 would play better,
-		 but that's an odd number. -->
+		 Recommended: 9 - that's, effectively, two lower than in BtS due
+		 to changes in Civ4HandicapInfos.xml. -->
 	<Define>
 		<DefineName>RELATIONS_THRESH_FRIENDLY</DefineName>
-		<iDefineIntVal>10</iDefineIntVal>
+		<iDefineIntVal>9</iDefineIntVal>
 	</Define>
 	<!-- Relations need to be at least this good to make an AI civ Pleased
 		 (and mustn't be good enough for Friendly).
@@ -1148,20 +1147,21 @@
 		<DefineName>RELATIONS_THRESH_PLEASED</DefineName>
 		<iDefineIntVal>4</iDefineIntVal>
 	</Define>
-	<!-- Relations need to be this bad or worse to make the AI Furious.
-		 Recommended: -8 to give Pleased and Annoyed the same interval lengths.
-		 This means that the AI, effectively, gets Furious more quickly than in
-		 BtS (by 1). Apart from symmetry, -9 or -10 might play better. -->
-	<Define>
-		<DefineName>RELATIONS_THRESH_FURIOUS</DefineName>
-		<iDefineIntVal>-8</iDefineIntVal>
-	</Define>
 	<!-- Relations need to be this bad or worse to make the AI Annoyed
 		 (and mustn't be bad enough for Furious).
 		 Recommended: -2, i.e. effectively the same as in BtS (-3). -->
 	<Define>
 		<DefineName>RELATIONS_THRESH_ANNOYED</DefineName>
 		<iDefineIntVal>-2</iDefineIntVal>
+	</Define>
+	<!-- Relations need to be this bad or worse to make the AI Furious.
+		 Recommended: -9, equivalent to BtS. This makes the interval for Annoyed
+		 longer (by 2) than the interval for Pleased - reflecting that
+		 it's easier to stack up bad relations (mainly through war)
+		 than good relations. -->
+	<Define>
+		<DefineName>RELATIONS_THRESH_FURIOUS</DefineName>
+		<iDefineIntVal>-9</iDefineIntVal>
 	</Define>
 
 	<!-- advc.001b: 1 means that the production of air units is interrupted
