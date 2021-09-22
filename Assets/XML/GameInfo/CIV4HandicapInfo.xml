@@ -12,7 +12,8 @@
 			<Type>HANDICAP_SETTLER</Type>
 			<Description>TXT_KEY_HANDICAP_SETTLER</Description>
 			<Help>TXT_KEY_HANDICAP_SETTLER_HELP</Help>
-			<iFreeWinsVsBarbs>5</iFreeWinsVsBarbs>
+			<!-- advc.251: was 5 -->
+			<iFreeWinsVsBarbs>4</iFreeWinsVsBarbs>
 			<iAnimalAttackProb>25</iAnimalAttackProb>
 			<iStartingLocPercent>10</iStartingLocPercent>
 			<!-- advc.250c: was 150 -->
@@ -190,7 +191,8 @@
 			<Type>HANDICAP_CHIEFTAIN</Type>
 			<Description>TXT_KEY_HANDICAP_CHIEFTAIN</Description>
 			<Help>TXT_KEY_HANDICAP_CHIEFTAIN_HELP</Help>
-			<iFreeWinsVsBarbs>4</iFreeWinsVsBarbs>
+			<!-- advc.251: was 4 -->
+			<iFreeWinsVsBarbs>3</iFreeWinsVsBarbs>
 			<iAnimalAttackProb>50</iAnimalAttackProb>
 			<iStartingLocPercent>20</iStartingLocPercent>
 			<!-- advc.250c: was 130 -->
@@ -341,7 +343,8 @@
 			<Type>HANDICAP_WARLORD</Type>
 			<Description>TXT_KEY_HANDICAP_WARLORD</Description>
 			<Help>TXT_KEY_HANDICAP_WARLORD_HELP</Help>
-			<iFreeWinsVsBarbs>3</iFreeWinsVsBarbs>
+			<!-- advc.251: was 3 -->
+			<iFreeWinsVsBarbs>2</iFreeWinsVsBarbs>
 			<iAnimalAttackProb>75</iAnimalAttackProb>
 			<!-- advc.108b: was 30 -->
 			<iStartingLocPercent>35</iStartingLocPercent>
@@ -466,7 +469,8 @@
 			<Type>HANDICAP_NOBLE</Type>
 			<Description>TXT_KEY_HANDICAP_NOBLE</Description>
 			<Help>TXT_KEY_HANDICAP_NOBLE_HELP</Help>
-			<iFreeWinsVsBarbs>2</iFreeWinsVsBarbs>
+			<!-- advc.251: was 2 -->
+			<iFreeWinsVsBarbs>1</iFreeWinsVsBarbs>
 			<iAnimalAttackProb>85</iAnimalAttackProb>
 			<!-- advc.108b: was 40 -->
 			<iStartingLocPercent>49</iStartingLocPercent>
@@ -587,7 +591,8 @@
 			<Type>HANDICAP_PRINCE</Type>
 			<Description>TXT_KEY_HANDICAP_PRINCE</Description>
 			<Help>TXT_KEY_HANDICAP_PRINCE_HELP</Help>
-			<iFreeWinsVsBarbs>1</iFreeWinsVsBarbs>
+			<!-- advc.251: was 1 -->
+			<iFreeWinsVsBarbs>0</iFreeWinsVsBarbs>
 			<iAnimalAttackProb>90</iAnimalAttackProb>
 			<!-- advc.108b: was 50 -->
 			<iStartingLocPercent>55</iStartingLocPercent>
