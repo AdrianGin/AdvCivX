@@ -94,8 +94,9 @@ void CvReplayInfo::createInfo(PlayerTypes ePlayer)
 	if (ePlayer != NO_PLAYER)
 	{
 		CvPlayer const& kPlayer = GET_PLAYER(ePlayer);
-
-		m_eDifficulty = kPlayer.getHandicapType();
+		// advc.708: Game handicap is the one to display in R&F games
+		m_eDifficulty = (kGame.isOption(GAMEOPTION_RISE_FALL) ? kGame.getHandicapType() :
+				kPlayer.getHandicapType());
 		m_szLeaderName = kPlayer.getName();
 		m_szCivDescription = kPlayer.getCivilizationDescription();
 		m_szShortCivDescription = kPlayer.getCivilizationShortDescription();

@@ -177,6 +177,7 @@ public:
 	void setWinner(int /*TeamTypes*/ eNewWinner, int /*VictoryTypes*/ eNewVictory);
 	int /*GameStateTypes*/ getGameState();
 	int /*HandicapTypes*/ getHandicapType();
+	int /*HandicapTypes*/ getAIHandicap(); // advc.708
 	CalendarTypes getCalendar() const;
 	int /*EraTypes*/ getStartEra();
 	int /*GameSpeedTypes*/ getGameSpeedType();

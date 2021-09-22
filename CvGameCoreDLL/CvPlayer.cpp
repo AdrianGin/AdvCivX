@@ -20,6 +20,7 @@
 #include "CvBugOptions.h"
 #include "CvDLLFlagEntityIFaceBase.h" // BBAI
 #include "BBAILog.h"
+#include "RiseFall.h" // advc.708: Needed only for savegame compatibility
 
 // advc.003u: Statics moved from CvPlayerAI
 CvPlayerAI** CvPlayer::m_aPlayers = NULL;
@@ -14417,6 +14418,19 @@ void CvPlayer::read(FDataStreamBase* pStream)
 			changeLuxuryModifier(kCivic.getLuxuryModifier() - iPreviousLux);
 		}
 	} // </advc.912c>
+	if (uiFlag < 18)
+		updateMaintenance();
+	// <advc.708>
+	if (uiFlag < 19 && GC.getGame().isOption(GAMEOPTION_RISE_FALL) && isAlive())
+	{
+		if (!isMajorCiv())
+		{
+			// Don't update until all civ player handicaps have been set
+			if (isBarbarian())
+				GC.getGame().updateAIHandicap();
+		}
+		else GC.getGame().getRiseFall().setPlayerHandicap(getID(), isHuman(), true);
+	} // </advc.708>
 }
 
 // save object to a stream
@@ -14439,7 +14453,9 @@ void CvPlayer::write(FDataStreamBase* pStream)
 	//uiFlag = 14; // advc.027 (m_bRandomWBStart)
 	//uiFlag = 15; // advc.908a (separate tag for nerfed trait effect), advc.908c
 	//uiFlag = 16; // advc.enum: new enum map save behavior
-	uiFlag = 17; // advc.157
+	//uiFlag = 17; // advc.157
+	//uiFlag = 18; // advc.251 (city maintenance changed in handicap XML)
+	uiFlag = 19; // advc.708
 	pStream->Write(uiFlag);
 
 	// <advc.027>

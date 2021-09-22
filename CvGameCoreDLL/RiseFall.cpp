@@ -163,6 +163,23 @@ void RiseFall::init() {
 	g.showDawnOfMan();
 }
 
+// Needs to happen earlier than init, hence a separate public function.
+void RiseFall::setPlayerHandicap(PlayerTypes civId, bool bHuman, bool bIncrease) {
+
+	HandicapTypes const eGameHandicap = GC.getGame().getHandicapType();
+	int iAdjust = (!bIncrease ? 0 :
+			range(GC.getDefineINT(CvGlobals::RF_PLAYER_HANDICAP_ADJUSTMENT),
+			-eGameHandicap, GC.getNumHandicapInfos() - eGameHandicap - 1));
+	GC.getInitCore().setHandicap(civId, (HandicapTypes)(bHuman ?
+			eGameHandicap + iAdjust : GC.getGame().getAIHandicap() + iAdjust));
+	/*	(Caller will have to call CvGame::updateAIHandicap if several AI player
+		handicaps are changed, i.e. if the avg. handicap may have changed.) */
+	CvPlayerAI& kCiv = GET_PLAYER(civId);
+	kCiv.updateMaintenance();
+	kCiv.AI_makeAssignWorkDirty();
+	// (Further updates might be warranted)
+}
+
 void RiseFall::write(FDataStreamBase* pStream) {
 
 	int savegameVersion = 1; // For later changes that may break compatibility
@@ -465,12 +482,10 @@ void RiseFall::setPlayerControl(PlayerTypes civId, bool b) {
 	CvPlayer& civ = GET_PLAYER(civId);
 	if(!b || !civ.isHuman()) // Unless human control continues
 		gDLL->UI().clearQueuedPopups();
-	if(b) {
+	setPlayerHandicap(civId, b, /* increase only human handicap here */ b);
+	if(b)
 		g.changeHumanPlayer(civId);
-		GC.getInitCore().setHandicap(civId, g.getHandicapType());
-	}
 	else {
-		GC.getInitCore().setHandicap(civId, g.getAIHandicap());
 		civ.setIsHuman(false, true);
 		GC.getInitCore().setLeaderName(civId,
 				GC.getInfo(civ.getLeaderType()).getDescription());

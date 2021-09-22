@@ -882,15 +882,27 @@ void CvGame::initGameHandicap()
 		}
 		FAssertMsg(iDiv > 0, "All-AI game. Not necessarily wrong, but unexpected.");
 	} // K-Mod end
+	updateAIHandicap();
+	// <advc.708>
+	if (isOption(GAMEOPTION_RISE_FALL))
+	{
+		for (PlayerIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+			m_pRiseFall->setPlayerHandicap(itPlayer->getID(), itPlayer->isHuman(), true);
+	}
+	updateAIHandicap(); // (again)  </advc.708>
+}
 
-	// Set m_eAIHandicap to the average of AI handicaps
+// advc.127: Set m_eAIHandicap to the average of AI handicaps
+void CvGame::updateAIHandicap()
+{
 	int iHandicapSum = 0;
 	int iDiv = 0;
-	for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
+	FOR_EACH_ENUM(Player) // Cache for PlayerIter not yet available here
 	{
-		if (!it->isHuman())
+		CvPlayer const& kPlayer = GET_PLAYER(eLoopPlayer);
+		if (kPlayer.isAlive() && !kPlayer.isHuman() && kPlayer.isMajorCiv())
 		{
-			iHandicapSum += it->getHandicapType();
+			iHandicapSum += kPlayer.getHandicapType();
 			iDiv++;
 		}
 	}
@@ -4735,7 +4747,7 @@ void CvGame::changeAIAutoPlay(int iChange, /* advc.127: */ bool changePlayerStat
 int CvGame::getCivPlayersEverAlive() const
 {
 	// Could pose a savegame compatibility problem (uiFlag<4)
-	FAssert(m_bAllGameDataRead); // But it's OK if uiFlag < 9 in CvPlayerAI
+	FAssert(m_bAllGameDataRead || m_iCivPlayersEverAlive > 0);
 	if(!m_bAllGameDataRead)
 		return countCivPlayersEverAlive();
 	return m_iCivPlayersEverAlive;
@@ -4754,7 +4766,7 @@ void CvGame::changeCivPlayersEverAlive(int iChange)
 int CvGame::getCivTeamsEverAlive() const
 {
 	// Could pose a savegame compatibility problem (uiFlag<4)
-	FAssert(m_bAllGameDataRead); // But it's OK if uiFlag < 9 in CvPlayerAI
+	FAssert(m_bAllGameDataRead || m_iCivTeamsEverAlive > 0);
 	if(!m_bAllGameDataRead)
 		return countCivTeamsEverAlive();
 	return m_iCivTeamsEverAlive;

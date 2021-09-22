@@ -983,6 +983,23 @@
 		<DefineName>RF_ENABLE_FINAL_TURN_POPUP</DefineName>
 		<iDefineIntVal>1</iDefineIntVal>
 	</Define>
+	<!-- advc.708: Gets added to the difficulty level of every player.
+		 A value of e.g. 1 makes the AI civs play on Prince difficulty instead
+		 of Noble and the human player also one level higher than configured
+		 on the Custom Game screen. Meaning that all civs e.g. will have to pay
+		 higher city maintenance. AI-specific effects ("iAI... in Civ4HandicapInfos.xml)
+		 are, however, not affected as those come from the game difficulty level.
+		 Insofar, the handicap adjustment should not make the game easier or harder.
+		 That said, since the difficulty levels aren't evenly spaced apart
+		 in terms of challenge, the adjustment will affect the overall challenge
+		 (in a way that is difficult to predict on paper).
+		 Barbarian creation also won't be affected by the adjustment.
+		 Changes to this parameter won't properly take effect in an ongoing game,
+		 will have to start a new one. -->
+	<Define>
+		<DefineName>RF_PLAYER_HANDICAP_ADJUSTMENT</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
 
 	<!-- advc.550d: This modifier is applied to tech costs when playing
 		 with the "No Tech Trading" option. The effect of the modifier is

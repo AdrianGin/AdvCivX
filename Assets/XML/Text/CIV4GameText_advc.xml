@@ -4226,6 +4226,13 @@
 		<German>Beginn der Zwischenzeit</German>
 	</TEXT>
 
+	<!-- advc.708 -->
+	<TEXT>
+		<Tag>TXT_KEY_RF_HANDICAP_SETTINGS</Tag>
+		<English>Game Difficulty (AI discounts):[NEWLINE][TAB]%s1_GameHandicap[NEWLINE]Human Player Difficulty: %s2_HumanPlayerHandicap[NEWLINE]Difficulty for AI Players: %s3_AIPlayerHandicap</English>
+		<German>Schwierigkeitsstufe:[NEWLINE][TAB]KI-Boni, Barbaren: %s1_GameHandicap[NEWLINE][TAB]Kosten für Spieler: %s2_HumanPlayerHandicap[NEWLINE][TAB]Kosten für KI-Gegner: %s3_AIPlayerHandicap</German>
+	</TEXT>
+
 	<!-- advc.004w: Based on keys in CIV4GameTextInfos.xml. -->
 	<TEXT>
 		<Tag>TXT_KEY_BUILDING_WORLD_WONDER1</Tag>

@@ -18,9 +18,11 @@
 			<!-- advc.250c: was 150 -->
 			<iAdvancedStartPointsMod>100</iAdvancedStartPointsMod>
 			<iGold>0</iGold>
-			<iFreeUnits>24</iFreeUnits>
-			<iUnitCostPercent>20</iUnitCostPercent>
 			<!-- advc.251 (start) -->
+			<!-- was 24 -->
+			<iFreeUnits>20</iFreeUnits>
+			<!-- was 20 -->
+			<iUnitCostPercent>36</iUnitCostPercent>
 			<iBuildTimePercent>100</iBuildTimePercent>
 			<iBaseGrowthThresholdPercent>80</iBaseGrowthThresholdPercent>
 			<iGPThresholdPercent>80</iGPThresholdPercent>
@@ -31,9 +33,11 @@
 			<!-- was 80 (let's steer beginners away a bit from just playing SimCity) -->
 			<iConstructPercent>85</iConstructPercent>
 			<iCreatePercent>70</iCreatePercent>
+			<!-- was 45 -->
+			<iDistanceMaintenancePercent>50</iDistanceMaintenancePercent>
+			<!-- was 40 -->
+			<iNumCitiesMaintenancePercent>45</iNumCitiesMaintenancePercent>
 			<!-- advc.251 (end) -->
-			<iDistanceMaintenancePercent>45</iDistanceMaintenancePercent>
-			<iNumCitiesMaintenancePercent>40</iNumCitiesMaintenancePercent>
 			<!-- advc.exp.1: Essentially disabled this upper bound. Can re-enable
 				 it by setting it back to the original value of 4. -->
 			<iMaxNumCitiesMaintenance>4000</iMaxNumCitiesMaintenance>
@@ -192,9 +196,11 @@
 			<!-- advc.250c: was 130 -->
 			<iAdvancedStartPointsMod>100</iAdvancedStartPointsMod>
 			<iGold>0</iGold>
-			<iFreeUnits>18</iFreeUnits>
-			<iUnitCostPercent>30</iUnitCostPercent>
 			<!-- advc.251 (start) -->
+			<!-- was 18 -->
+			<iFreeUnits>15</iFreeUnits>
+			<!-- was 30 -->
+			<iUnitCostPercent>44</iUnitCostPercent>
 			<iBuildTimePercent>100</iBuildTimePercent>
 			<iBaseGrowthThresholdPercent>95</iBaseGrowthThresholdPercent>
 			<iGPThresholdPercent>95</iGPThresholdPercent>
@@ -204,9 +210,11 @@
 			<iTrainPercent>95</iTrainPercent>
 			<iConstructPercent>95</iConstructPercent>
 			<iCreatePercent>80</iCreatePercent>
+			<!-- was 55 -->
+			<iDistanceMaintenancePercent>60</iDistanceMaintenancePercent>
+			<!-- was 50 -->
+			<iNumCitiesMaintenancePercent>55</iNumCitiesMaintenancePercent>
 			<!-- advc.251 (end) -->
-			<iDistanceMaintenancePercent>55</iDistanceMaintenancePercent>
-			<iNumCitiesMaintenancePercent>50</iNumCitiesMaintenancePercent>
 			<!-- advc.exp.1: was 4 -->
 			<iMaxNumCitiesMaintenance>4000</iMaxNumCitiesMaintenance>
 			<iColonyMaintenancePercent>80</iColonyMaintenancePercent>
@@ -219,7 +227,8 @@
 			<iHappyBonus>5</iHappyBonus>
 			<!-- advc.148: was 1 -->
 			<iAttitudeChange>2</iAttitudeChange>
-			<iNoTechTradeModifier>90</iNoTechTradeModifier>
+			<!-- advc.251: was 90 -->
+			<iNoTechTradeModifier>85</iNoTechTradeModifier>
 			<iTechTradeKnownModifier>-50</iTechTradeKnownModifier>
 			<iUnownedTilesPerGameAnimal>80</iUnownedTilesPerGameAnimal>
 			<iUnownedTilesPerBarbarianUnit>100</iUnownedTilesPerBarbarianUnit>
@@ -339,9 +348,11 @@
 			<!-- advc.250c: was 110 -->
 			<iAdvancedStartPointsMod>100</iAdvancedStartPointsMod>
 			<iGold>0</iGold>
-			<iFreeUnits>12</iFreeUnits>
-			<iUnitCostPercent>40</iUnitCostPercent>
 			<!-- advc.251 (start) -->
+			<!-- was 12 -->
+			<iFreeUnits>10</iFreeUnits>
+			<!-- was 40 -->
+			<iUnitCostPercent>52</iUnitCostPercent>
 			<iBuildTimePercent>100</iBuildTimePercent>
 			<iBaseGrowthThresholdPercent>100</iBaseGrowthThresholdPercent>
 			<iGPThresholdPercent>100</iGPThresholdPercent>
@@ -350,9 +361,11 @@
 			<iTrainPercent>100</iTrainPercent>
 			<iConstructPercent>100</iConstructPercent>
 			<iCreatePercent>90</iCreatePercent>
+			<!-- was 65 -->
+			<iDistanceMaintenancePercent>70</iDistanceMaintenancePercent>
+			<!-- was 60 -->
+			<iNumCitiesMaintenancePercent>65</iNumCitiesMaintenancePercent>
 			<!-- advc.251 (end) -->
-			<iDistanceMaintenancePercent>65</iDistanceMaintenancePercent>
-			<iNumCitiesMaintenancePercent>60</iNumCitiesMaintenancePercent>
 			<!-- advc.exp.1: was 5 -->
 			<iMaxNumCitiesMaintenance>5000</iMaxNumCitiesMaintenance>
 			<iColonyMaintenancePercent>90</iColonyMaintenancePercent>
@@ -365,7 +378,8 @@
 			<iHappyBonus>4</iHappyBonus>
 			<!-- advc.148: was 0 -->
 			<iAttitudeChange>1</iAttitudeChange>
-			<iNoTechTradeModifier>80</iNoTechTradeModifier>
+			<!-- advc.251: was 80 -->
+			<iNoTechTradeModifier>75</iNoTechTradeModifier>
 			<iTechTradeKnownModifier>-25</iTechTradeKnownModifier>
 			<iUnownedTilesPerGameAnimal>60</iUnownedTilesPerGameAnimal>
 			<iUnownedTilesPerBarbarianUnit>80</iUnownedTilesPerBarbarianUnit>
@@ -458,9 +472,11 @@
 			<iStartingLocPercent>49</iStartingLocPercent>
 			<iAdvancedStartPointsMod>100</iAdvancedStartPointsMod>
 			<iGold>0</iGold>
-			<iFreeUnits>8</iFreeUnits>
-			<iUnitCostPercent>50</iUnitCostPercent>
 			<!-- advc.251 (start) -->
+			<!-- was 8 -->
+			<iFreeUnits>7</iFreeUnits>
+			<!-- was 50 -->
+			<iUnitCostPercent>60</iUnitCostPercent>
 			<iBuildTimePercent>100</iBuildTimePercent>
 			<iBaseGrowthThresholdPercent>100</iBaseGrowthThresholdPercent>
 			<iGPThresholdPercent>100</iGPThresholdPercent>
@@ -468,13 +484,15 @@
 			<!-- advc.251: Was 100. Note that this doesn't mean that humans
 				 have an advantage over the AI; ResearchPercent applies to
 				 all civs. -->
-			<iResearchPercent>95</iResearchPercent>
+			<iResearchPercent>94</iResearchPercent>
 			<iTrainPercent>100</iTrainPercent>
 			<iConstructPercent>100</iConstructPercent>
 			<iCreatePercent>100</iCreatePercent>
+			<!-- was 75 -->
+			<iDistanceMaintenancePercent>80</iDistanceMaintenancePercent>
+			<!-- was 70 -->
+			<iNumCitiesMaintenancePercent>75</iNumCitiesMaintenancePercent>
 			<!-- advc.251 (end) -->
-			<iDistanceMaintenancePercent>75</iDistanceMaintenancePercent>
-			<iNumCitiesMaintenancePercent>70</iNumCitiesMaintenancePercent>
 			<!-- advc.exp.1: was 5 -->
 			<iMaxNumCitiesMaintenance>5000</iMaxNumCitiesMaintenance>
 			<iColonyMaintenancePercent>100</iColonyMaintenancePercent>
@@ -487,7 +505,8 @@
 			<iHappyBonus>4</iHappyBonus>
 			<!-- advc.148: was -1 -->
 			<iAttitudeChange>0</iAttitudeChange>
-			<iNoTechTradeModifier>70</iNoTechTradeModifier>
+			<!-- advc.251: was 70 -->
+			<iNoTechTradeModifier>64</iNoTechTradeModifier>
 			<iTechTradeKnownModifier>0</iTechTradeKnownModifier>
 			<iUnownedTilesPerGameAnimal>50</iUnownedTilesPerGameAnimal>
 			<iUnownedTilesPerBarbarianUnit>60</iUnownedTilesPerBarbarianUnit>
@@ -575,9 +594,11 @@
 			<!-- advc.250c: was 95 -->
 			<iAdvancedStartPointsMod>100</iAdvancedStartPointsMod>
 			<iGold>0</iGold>
-			<iFreeUnits>6</iFreeUnits>
-			<iUnitCostPercent>60</iUnitCostPercent>
 			<!-- advc.251 (start) -->
+			<!-- was 6 -->
+			<iFreeUnits>5</iFreeUnits>
+			<!-- was 60 -->
+			<iUnitCostPercent>68</iUnitCostPercent>
 			<iBuildTimePercent>100</iBuildTimePercent>
 			<iBaseGrowthThresholdPercent>100</iBaseGrowthThresholdPercent>
 			<iGPThresholdPercent>100</iGPThresholdPercent>
@@ -604,7 +625,8 @@
 			<iHappyBonus>4</iHappyBonus>
 			<!-- advc.148: was -1 -->
 			<iAttitudeChange>0</iAttitudeChange>
-			<iNoTechTradeModifier>60</iNoTechTradeModifier>
+			<!-- advc.251: was 60 -->
+			<iNoTechTradeModifier>56</iNoTechTradeModifier>
 			<iTechTradeKnownModifier>0</iTechTradeKnownModifier>
 			<!-- advc.300: was 40 -->
 			<iUnownedTilesPerGameAnimal>45</iUnownedTilesPerGameAnimal>
@@ -698,8 +720,9 @@
 			<iAdvancedStartPointsMod>100</iAdvancedStartPointsMod>
 			<iGold>0</iGold>
 			<iFreeUnits>4</iFreeUnits>
-			<iUnitCostPercent>70</iUnitCostPercent>
 			<!-- advc.251 (start) -->
+			<!-- was 70 -->
+			<iUnitCostPercent>76</iUnitCostPercent>
 			<iBuildTimePercent>100</iBuildTimePercent>
 			<iBaseGrowthThresholdPercent>100</iBaseGrowthThresholdPercent>
 			<iGPThresholdPercent>100</iGPThresholdPercent>
@@ -727,7 +750,8 @@
 			<iHappyBonus>4</iHappyBonus>
 			<!-- advc.148: was -1 -->
 			<iAttitudeChange>0</iAttitudeChange>
-			<iNoTechTradeModifier>50</iNoTechTradeModifier>
+			<!-- advc.251: was 50 -->
+			<iNoTechTradeModifier>48</iNoTechTradeModifier>
 			<iTechTradeKnownModifier>0</iTechTradeKnownModifier>
 			<!-- advc.300: was 35 -->
 			<iUnownedTilesPerGameAnimal>40</iUnownedTilesPerGameAnimal>
@@ -851,8 +875,9 @@
 			<iAdvancedStartPointsMod>100</iAdvancedStartPointsMod>
 			<iGold>0</iGold>
 			<iFreeUnits>3</iFreeUnits>
-			<iUnitCostPercent>80</iUnitCostPercent>
 			<!-- advc.251 (start) -->
+			<!-- was 80 -->
+			<iUnitCostPercent>84</iUnitCostPercent>
 			<iBuildTimePercent>110</iBuildTimePercent>
 			<iBaseGrowthThresholdPercent>110</iBaseGrowthThresholdPercent>
 			<iGPThresholdPercent>110</iGPThresholdPercent>
@@ -1006,8 +1031,9 @@
 			<iAdvancedStartPointsMod>100</iAdvancedStartPointsMod>
 			<iGold>0</iGold>
 			<iFreeUnits>2</iFreeUnits>
-			<iUnitCostPercent>90</iUnitCostPercent>
 			<!-- advc.251 (start) -->
+			<!-- was 90 -->
+			<iUnitCostPercent>92</iUnitCostPercent>
 			<iBuildTimePercent>115</iBuildTimePercent>
 			<iBaseGrowthThresholdPercent>120</iBaseGrowthThresholdPercent>
 			<iGPThresholdPercent>120</iGPThresholdPercent>
@@ -1033,7 +1059,8 @@
 			<iHappyBonus>4</iHappyBonus>
 			<!-- advc.148: was -1 -->
 			<iAttitudeChange>0</iAttitudeChange>
-			<iNoTechTradeModifier>30</iNoTechTradeModifier>
+			<!-- advc.251: was 30 -->
+			<iNoTechTradeModifier>32</iNoTechTradeModifier>
 			<iTechTradeKnownModifier>0</iTechTradeKnownModifier>
 			<!-- advc.300: was 25 -->
 			<iUnownedTilesPerGameAnimal>30</iUnownedTilesPerGameAnimal>
@@ -1195,7 +1222,8 @@
 			<iHappyBonus>4</iHappyBonus>
 			<!-- advc.148: was -1 -->
 			<iAttitudeChange>0</iAttitudeChange>
-			<iNoTechTradeModifier>20</iNoTechTradeModifier>
+			<!-- advc.251: was 20 -->
+			<iNoTechTradeModifier>24</iNoTechTradeModifier>
 			<iTechTradeKnownModifier>0</iTechTradeKnownModifier>
 			<!-- advc.300: was 20 -->
 			<iUnownedTilesPerGameAnimal>25</iUnownedTilesPerGameAnimal>

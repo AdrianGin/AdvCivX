@@ -64,6 +64,7 @@ public:
 	int getScoreComponent(int iRawScore, int iInitial, int iMax, int iMultiplier,
 			bool bExponential, bool bFinal, bool bVictory) const; // </advc.003y>
 	int getDifficultyForEndScore() const; // advc.250 (exposed to Python; hence public)
+	void updateAIHandicap(); // advc.127
 
 	DllExport void updateColoredPlots();
 	DllExport void updateBlockadedPlots();
@@ -508,7 +509,7 @@ public:
 
 	HandicapTypes getHandicapType() const { return m_eHandicap; }
 	void setHandicapType(HandicapTypes eHandicap);
-	HandicapTypes getAIHandicap() const { return m_eAIHandicap; } // advc.127
+	HandicapTypes getAIHandicap() const { return m_eAIHandicap; } // advc.127 (advc.708: exposed to Python)
 
 	DllExport PlayerTypes getPausePlayer() const;																			// Exposed to Python
 	DllExport bool isPaused() const;																									// Exposed to Python

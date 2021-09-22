@@ -21,6 +21,7 @@ public:
 	~RiseFall();
 	void reset();
 	void init();
+	void setPlayerHandicap(PlayerTypes civId, bool bHuman, bool bIncrease);
 	void write(FDataStreamBase* pStream);
 	void read(FDataStreamBase* pStream);
 	void atGameTurnStart();

@@ -2107,6 +2107,13 @@ int CvTeam::getResearchCost(TechTypes eTech,
 			rNoTradeAdjustment.decreaseTo(0); // No Tech Trading can only lower tech costs
 			rModifier += rNoTradeAdjustment;
 		} // </advc.550d>
+		/*	<advc.708> Tech costs shouldn't (fully) be affected by the
+			player handicap adjustment */
+		if (kGame.isOption(GAMEOPTION_RISE_FALL))
+		{
+			rCost *= 1 - per100(GC.getDefineINT(
+					CvGlobals::RF_PLAYER_HANDICAP_ADJUSTMENT) * 3);
+		} // </advc.708>
 	}
 
 	if (bTeamSizeModifiers) // K-Mod

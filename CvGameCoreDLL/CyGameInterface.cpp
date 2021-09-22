@@ -171,6 +171,7 @@ void CyGamePythonInterface()
 		.def("setWinner", &CyGame::setWinner)
 		.def("getGameState", &CyGame::getGameState)
 		.def("getHandicapType", &CyGame::getHandicapType, "HandicapType () - difficulty level settings")
+		.def("getAIHandicap", &CyGame::getAIHandicap, "HandicapTypes ()") // advc.708
 		.def("getCalendar", &CyGame::getCalendar, "CalendarType ()")
 		.def("getStartEra", &CyGame::getStartEra)
 		.def("getGameSpeedType", &CyGame::getGameSpeedType)

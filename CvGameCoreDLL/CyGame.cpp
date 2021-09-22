@@ -666,7 +666,13 @@ int /*GameStateTypes*/ CyGame::getGameState()
 
 int /* HandicapTypes */ CyGame::getHandicapType()
 {
-	return (int) m_kGame.getHandicapType();
+	return m_kGame.getHandicapType();
+}
+
+// advc.708:
+int CyGame::getAIHandicap()
+{
+	return m_kGame.getAIHandicap();
 }
 
 CalendarTypes CyGame::getCalendar() const
