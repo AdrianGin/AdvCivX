@@ -12058,20 +12058,24 @@ DenialTypes CvPlayerAI::AI_bonusTrade(BonusTypes eBonus, PlayerTypes eToPlayer,
 				return DENIAL_ATTITUDE;
 			}
 		}
-	} // <advc.036>
+	}  // <advc.036>
 	int iAvailUs = getNumAvailableBonuses(eBonus);
-	/*  Perhaps better to handle this through iValueForUs checks.
-		By returning DENIAL_JOKING, crucial strategic resources
-		could be excluded from the trade table (see changes in buildTradeTable),
-		but it's perhaps confusing to show some non-surplus resources on the
-		trade table and not others. */
-	/*if(!isHuman() && bCrucialStrategic && iAvailUs - iChange <= 1 &&
-		(!bVassal || iAvailThem + iChange > 1))
+	// Perhaps better to combine this with iValueForUs checks
+	bool const bResistGivingOnlyCopy = (!isHuman() && iAvailUs - iChange <= 1 &&
+			(!bVassal || iAvailThem + iChange > 1));
+	#if 0
+	if (bResistGivingOnlyCopy && bCrucialStrategic)
 	{
-		return DENIAL_JOKING;
-	}*/ // </advc.036>
+		/*	By returning DENIAL_JOKING, crucial strategic resources could be
+			excluded from the trade table (see changes in buildTradeTable),
+			but it's confusing to show some non-surplus resources on the
+			trade table and not others. */
+		return DENIAL_NO_GAIN;
+	}
+	#endif
+	// </advc.036>
 	// <advc.133> See the previous 133-comment
-	if(iChange < 0)
+	if (iChange < 0)
 		return NO_DENIAL; // </advc.133>
 	// <advc.036>
 	if(!kPlayer.isHuman())
@@ -12100,7 +12104,7 @@ DenialTypes CvPlayerAI::AI_bonusTrade(BonusTypes eBonus, PlayerTypes eToPlayer,
 			return DENIAL_NO_GAIN;
 		return NO_DENIAL;
 	} // </advc.037>
-	// Replacing the JOKING clause further up
+	// Replacing the if-0'd clause further up
 	if (kPlayer.isHuman())
 	{
 		if (iAvailThem + iChange <= 1 ? /*  Don't presume value
@@ -12116,11 +12120,19 @@ DenialTypes CvPlayerAI::AI_bonusTrade(BonusTypes eBonus, PlayerTypes eToPlayer,
 			return DENIAL_NO_GAIN;
 		}
 	}
-	/*	See the comment about bCrucialStrategic above. Don't want strange-looking
-		AI-AI trades that. */
-	else if (3 * iValueForUs > 5 * iValueForThem)
+	/*	AI-AI trades: Giving away resources that benefit us more than them
+		normally doesn't make sense. However, if gold trading isn't allowed,
+		then this resource might be the only thing we could give them in exchange
+		for a resource that we really want and that they can easily part with. */
+	else if (4 * iValueForUs >= 5 * iValueForThem ||
+		(iValueForUs >= iValueForThem &&
+		(GET_TEAM(getTeam()).isGoldTrading() || GET_TEAM(eToPlayer).isGoldTrading())) ||
+		(bCrucialStrategic &&
+		bResistGivingOnlyCopy && 5 * iValueForUs > 3 * iValueForThem) ||
+		(bStrategic && bResistGivingOnlyCopy && 3 * iValueForUs > 2 * iValueForThem))
+	{
 		return DENIAL_NO_GAIN;
-	// </advc.036>
+	} // </advc.036>
 	return NO_DENIAL;
 }
 
