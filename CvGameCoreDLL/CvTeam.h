@@ -15,6 +15,9 @@ class CvTeam /* advc.003e: */ : private boost::noncopyable
 {
 public:
 	// <advc.003u>
+#ifdef _DEBUG
+	__forceinline // Annoying to step into by accident
+#endif
 	static CvTeam& getTeam(TeamTypes eTeam)
 	{
 		FAssertBounds(0, MAX_TEAMS, eTeam);

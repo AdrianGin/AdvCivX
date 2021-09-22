@@ -40,6 +40,9 @@ class CvPlayer /* advc.003e: */ : private boost::noncopyable
 {
 public:
 	// <advc.003u>
+#ifdef _DEBUG
+	__forceinline // Annoying to step into by accident
+#endif
 	static CvPlayer& getPlayer(PlayerTypes ePlayer)
 	{
 		FAssertBounds(0, MAX_PLAYERS, ePlayer);
