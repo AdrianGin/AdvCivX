@@ -88,6 +88,7 @@ private:
 	PlayerTypes nextCivAlive(PlayerTypes startExcluded) const;
 	void setPlayerControl(PlayerTypes civId, bool b);
 	void welcomeToNextChapter(int pos);
+	void resetProductionDecay(PlayerTypes civId);
 	void centerCamera(PlayerTypes civId);
 	void showDoW();
 	void showQuests();

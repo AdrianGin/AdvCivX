@@ -551,6 +551,7 @@ void RiseFall::welcomeToNextChapter(int pos) {
 	setPlayerName();
 	CvPlayer& p = GET_PLAYER(ch.getCiv());
 	p.verifyCivics();
+	resetProductionDecay(p.getID());
 	// Doing this in setUIHidden has no effect
 	if(gDLL->getEngineIFace()->isGlobeviewUp())
 		gDLL->getEngineIFace()->toggleGlobeview();
@@ -561,6 +562,35 @@ void RiseFall::welcomeToNextChapter(int pos) {
 	showQuests();
 	offLimits.clear();
 	updateOffLimits();
+}
+
+void RiseFall::resetProductionDecay(PlayerTypes civId) {
+
+	/*	Production decay affects only humans, so the AI ignores it.
+		Don't want human to suffer for that after assuming control.
+		Well, mainly, I don't want humans to be distracted by (BULL) decay warnings.
+		I'm setting the accumulated production to 0 iff decay has already started.
+		Either way, the decay timer gets reset to 0. */
+	int iBuildingThresh = GC.getDefineINT(CvGlobals::BUILDING_PRODUCTION_DECAY_TIME) *
+			GC.getInfo(GC.getGame().getGameSpeedType()).getConstructPercent();
+	int iUnitThresh = GC.getDefineINT(CvGlobals::UNIT_PRODUCTION_DECAY_TIME) *
+			GC.getInfo(GC.getGame().getGameSpeedType()).getTrainPercent();
+	FOR_EACH_CITY_VAR(pCity, GET_PLAYER(civId)) {
+		FOR_EACH_ENUM(Building) {
+			if (pCity->getBuildingProduction(eLoopBuilding) <= 0)
+				continue;
+			if (pCity->getBuildingProductionTime(eLoopBuilding) * 100 > iBuildingThresh)
+				pCity->setBuildingProduction(eLoopBuilding, 0);
+			pCity->setBuildingProductionTime(eLoopBuilding, 0);
+		}
+		FOR_EACH_ENUM(Unit) {
+			if (pCity->getUnitProduction(eLoopUnit) <= 0)
+				continue;
+			if (pCity->getUnitProductionTime(eLoopUnit) * 100 > iUnitThresh)
+				pCity->setUnitProduction(eLoopUnit, 0);
+			pCity->setUnitProductionTime(eLoopUnit, 0);
+		}
+	}
 }
 
 void RiseFall::centerCamera(PlayerTypes civId) {
