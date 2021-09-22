@@ -9879,15 +9879,30 @@ void CvGame::changeHumanPlayer(PlayerTypes eNewHuman)
 	GET_PLAYER(eNewHuman).setIsHuman(true);
 	GET_PLAYER(eCurHuman).updateHuman();
 	GET_PLAYER(eNewHuman).updateHuman();
-	for (int iI = 0; iI < NUM_PLAYEROPTION_TYPES; iI++)
+	/*	<advc> Probably not necessary, but seems cleaner to swap the
+		player options of the old and new human rather than just copying
+		from old to new. */
+	EagerEnumMap<PlayerOptionTypes,bool> aeNewHumanOldOptions;
+	FOR_EACH_ENUM(PlayerOption)
 	{
-		GET_PLAYER(eNewHuman).setOption((PlayerOptionTypes)iI,
-				GET_PLAYER(eCurHuman).isOption((PlayerOptionTypes)iI));
+		aeNewHumanOldOptions.set(eLoopPlayerOption,
+				GET_PLAYER(eNewHuman).isOption(eLoopPlayerOption));
+	} // </advc>
+	FOR_EACH_ENUM(PlayerOption)
+	{
+		GET_PLAYER(eNewHuman).setOption(eLoopPlayerOption,
+				GET_PLAYER(eCurHuman).isOption(eLoopPlayerOption));
 	}
-	for (int iI = 0; iI < NUM_PLAYEROPTION_TYPES; iI++)
+	// <advc>
+	FOR_EACH_ENUM(PlayerOption)
 	{
-		gDLL->sendPlayerOption(((PlayerOptionTypes)iI),
-				GET_PLAYER(eNewHuman).isOption((PlayerOptionTypes)iI));
+		GET_PLAYER(eCurHuman).setOption(eLoopPlayerOption,
+				aeNewHumanOldOptions.get(eLoopPlayerOption));
+	} // </advc>
+	FOR_EACH_ENUM(PlayerOption)
+	{
+		gDLL->sendPlayerOption(eLoopPlayerOption,
+				GET_PLAYER(eNewHuman).isOption(eLoopPlayerOption));
 	} // </advc.127>
 	// <advc.001> Otherwise, the selected unit will affect CvPlot::updateCenterUnit.
 	gDLL->getInterfaceIFace()->clearSelectionList();

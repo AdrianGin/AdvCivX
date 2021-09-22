@@ -2374,6 +2374,8 @@ CvSelectionGroup* CvPlayer::cycleSelectionGroups(CvUnit* pUnit, bool bForward,
 void CvPlayer::setHumanDisabled(bool bNewVal)
 {
 	// <advc.127>
+	if (bNewVal == m_bDisableHuman)
+		return;
 	m_bAutoPlayJustEnded = true;
 	CvGame& kGame = GC.getGame();
 	CvWString szReplayText;
