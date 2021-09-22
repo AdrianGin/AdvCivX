@@ -7,10 +7,11 @@
 
 #include "CvMap.h"
 
-/*  Iterators over the CvPlot instances within a radius around a central plot or unit.
-	If bINCIRCLE is false, then the radius is measured according to the
-	stepDistance metric, which results in a square of plots. The center plot
-	doesn't count toward the radius, so e.g. iRadius=3 yields a 7x7 square.
+/*	SpiralPlotIterator: Iterator over the CvPlot instances within a radius around
+	a central plot or unit. If bINCIRCLE is false, then the radius is measured
+	according to the stepDistance metric, which results in a square of plots.
+	The center plot doesn't count toward the radius, so e.g. iRadius=3 yields
+	a 7x7 square.
 
 	If bINCIRCLE is true, then the plotDistance metric is used, which corresponds
 	to a range of plots that approximates the incircle of a square of the same radius.
@@ -28,44 +29,18 @@
 	checked when considering to move into a tile, and even then there can be faster
 	alternatives (see comments at the definition of AI_plotValid). */
 
-template<bool bINCIRCLE = false>
-class SquareIterator
+// Abstract base class for some behavior shared with ScanLinePlotIterator
+class SquareOfPlotsIterator
 {
+protected:
+	SquareOfPlotsIterator(CvPlot const& kCenter, int iRadius)
+	:	m_pCenter(&kCenter), m_iRadius(iRadius), m_pNext(NULL)
+	{}
+
 public:
-	SquareIterator(CvPlot const& kCenter, int iRadius, bool bIncludeCenter = true)
-	{
-		/*	I had written a const and non-const version (as derived classes that
-			set a "PlotType" template parameter), but CityPlotIterator and
-			AgentIterator don't have const versions either, and const-correctness
-			would make it harder to add more iterator classes in the future.
-			So I've removed those derived classes.
-			Const-casting CvPlot should generally be safe. */
-		m_pNext = const_cast<CvPlot*>(&kCenter);
-		init(iRadius, bIncludeCenter);
-	}
-
-	SquareIterator(CvUnit const& kUnit, int iRadius, bool bIncludeCenter = true)
-	{
-		// Don't want to include CvUnit.h
-		m_pNext = getUnitPlot(kUnit);
-		init(iRadius, bIncludeCenter);
-	}
-
-	SquareIterator(int x, int y, int iRadius, bool bIncludeCenter = true)
-	{
-		m_pNext = GC.getMap().plot(x, y);
-		init(iRadius, bIncludeCenter);
-	}
-
 	bool hasNext() const
 	{
 		return (m_pNext != NULL);
-	}
-
-	SquareIterator& operator++()
-	{
-		computeNext();
-		return *this;
 	}
 
 	CvPlot& operator*() const
@@ -88,6 +63,45 @@ public:
 		return ::plotDistance(m_pCenter, m_pNext);
 	}
 
+	int radius() const
+	{
+		return m_iRadius;
+	}
+
+protected:
+	CvPlot* m_pNext;
+	CvPlot const* m_pCenter;
+	int m_iRadius;
+};
+
+template<bool bINCIRCLE = false>
+class SpiralPlotIterator : public SquareOfPlotsIterator
+{
+public:
+	SpiralPlotIterator(CvPlot const& kCenter, int iRadius, bool bIncludeCenter = true)
+	:	SquareOfPlotsIterator(kCenter, iRadius)
+	{
+		init(bIncludeCenter);
+	}
+
+	SpiralPlotIterator(CvUnit const& kUnit, int iRadius, bool bIncludeCenter = true)
+	:	SquareOfPlotsIterator(getUnitPlot(kUnit), iRadius)
+	{
+		init(bIncludeCenter);
+	}
+
+	SpiralPlotIterator(int x, int y, int iRadius, bool bIncludeCenter = true)
+	:	SquareOfPlotsIterator(*GC.getMap().plot(x, y), iRadius)
+	{
+		init(bIncludeCenter);
+	}
+
+	SpiralPlotIterator& operator++()
+	{
+		computeNext();
+		return *this;
+	}
+
 	int currXDist() const
 	{
 		/*	World-wrap isn't applied to m_iCurrX (i.e. it can be off the map),
@@ -98,11 +112,6 @@ public:
 	int currYDist() const
 	{
 		return abs(m_pCenter->getY() - m_iCurrY);
-	}
-
-	int radius() const
-	{
-		return m_iRadius;
 	}
 
 protected:
@@ -143,22 +152,24 @@ protected:
 	}
 
 private:
-	CvPlot const* m_pCenter; // Only for curr...Dist functions
-	int m_iRadius;
 	int m_iPos;
 	int m_iMaxPos;
-	CvPlot* m_pNext;
 	int m_iCurrX, m_iCurrY;
 	CardinalDirectionTypes m_eDir;
 	int m_iConsecMoves;
 
-	void init(int iRadius, bool bIncludeCenter)
+	void init(bool bIncludeCenter)
 	{
-		m_pCenter = m_pNext;
+		/*	I had written a const and non-const version (as derived classes that
+			set a "PlotType" template parameter), but CityPlotIterator and
+			AgentIterator don't have const versions either, and const-correctness
+			would make it harder to add more iterator classes in the future.
+			So I've removed those derived classes. Const-casting CvPlot should
+			generally be safe. */
+		m_pNext = const_cast<CvPlot*>(m_pCenter);
 		m_iCurrX = m_pNext->getX();
 		m_iCurrY = m_pNext->getY();
-		m_iMaxPos = SQR(2 * iRadius + 1) - 1;
-		m_iRadius = iRadius;
+		m_iMaxPos = SQR(2 * m_iRadius + 1) - 1;
 		m_iPos = -1;
 		// (We'll immediately turn NORTH after kCenter)
 		m_eDir = CARDINALDIRECTION_WEST;
@@ -169,23 +180,81 @@ private:
 			computeNext();
 		}
 	}
-
-	CvPlot* getUnitPlot(CvUnit const& kUnit) const;
+	// To avoid including CvUnit.h
+	CvPlot& getUnitPlot(CvUnit const& kUnit) const;
 };
 
-// These two derived classes really only hide the template parameter ...
+/*	Traverses the square of plots in reading direction.
+	The implementation is pretty bare-bones b/c I need it only in one specific
+	context so far. */
+class ScanLinePlotIterator : public SquareOfPlotsIterator
+{
+	int m_iDeltaX, m_iDeltaY;
+	int m_iCurrXDist, m_iCurrYDist;
+public:
+	ScanLinePlotIterator(CvPlot const& kCenter, int iRadius)
+	:	SquareOfPlotsIterator(kCenter, iRadius),
+		m_iDeltaX(-iRadius), m_iDeltaY(iRadius),
+		m_iCurrXDist(iRadius), m_iCurrYDist(iRadius)
+	{
+		computeNext();
+	}
 
-class SquareIter : public SquareIterator<false>
+	ScanLinePlotIterator& operator++()
+	{
+		computeNext();
+		return *this;
+	}
+
+	int currXDist() const
+	{
+		return m_iCurrXDist;
+	}
+
+	int currYDist() const
+	{
+		return m_iCurrYDist;
+	}
+
+protected:
+	void computeNext()
+	{
+		m_pNext = GC.getMap().plotXY(m_pCenter, m_iDeltaX, m_iDeltaY);
+		// Need to set these before updating the delta values
+		m_iCurrXDist = abs(m_iDeltaX);
+		m_iCurrYDist = abs(m_iDeltaY);
+		if (m_iDeltaX == m_iRadius)
+		{
+			if (m_iDeltaY <= -m_iRadius)
+			{
+				if (m_iDeltaY < -m_iRadius)
+					m_pNext = NULL;
+				// Next plot has been set to the lower right corner
+				m_iDeltaY--; // Signal that scan is complete
+				return;
+			}
+			m_iDeltaX = -m_iRadius; // carriage return
+			m_iDeltaY--; // go down one row
+		}
+		else m_iDeltaX++; // go right one column
+		if (m_pNext == NULL) // Past the edges of the map
+			computeNext();
+	}
+};
+
+// The standard square and circle iterators use spiral traversal ...
+
+class SquareIter : public SpiralPlotIterator<false>
 {
 public:
 	SquareIter(CvPlot const& kCenter, int iRadius, bool bIncludeCenter = true) :
-			SquareIterator<false>(kCenter, iRadius, bIncludeCenter) {}
+			SpiralPlotIterator<false>(kCenter, iRadius, bIncludeCenter) {}
 
 	SquareIter(CvUnit const& kUnit, int iRadius, bool bIncludeCenter = true) :
-			SquareIterator<false>(kUnit, iRadius, bIncludeCenter) {}
+			SpiralPlotIterator<false>(kUnit, iRadius, bIncludeCenter) {}
 
 	SquareIter(int x, int y, int iRadius, bool bIncludeCenter = true) :
-			SquareIterator<false>(x, y, iRadius, bIncludeCenter) {}
+			SpiralPlotIterator<false>(x, y, iRadius, bIncludeCenter) {}
 
 	SquareIter& operator++()
 	{
@@ -194,17 +263,17 @@ public:
 	}
 };
 
-class PlotCircleIter : public SquareIterator<true>
+class PlotCircleIter : public SpiralPlotIterator<true>
 {
 public:
 	PlotCircleIter(CvPlot const& kCenter, int iRadius, bool bIncludeCenter = true) :
-			SquareIterator<true>(kCenter, iRadius, bIncludeCenter) {}
+			SpiralPlotIterator<true>(kCenter, iRadius, bIncludeCenter) {}
 
 	PlotCircleIter(CvUnit const& kUnit, int iRadius, bool bIncludeCenter = true) :
-			SquareIterator<true>(kUnit, iRadius, bIncludeCenter) {}
+			SpiralPlotIterator<true>(kUnit, iRadius, bIncludeCenter) {}
 
 	PlotCircleIter(int x, int y, int iRadius, bool bIncludeCenter = true) :
-			SquareIterator<true>(x, y, iRadius, bIncludeCenter) {}
+			SpiralPlotIterator<true>(x, y, iRadius, bIncludeCenter) {}
 
 	PlotCircleIter& operator++()
 	{

@@ -431,7 +431,10 @@ void CvPlot::doImprovement()
 	}
 }
 
-
+/*	advc (caveat): When this function is called in a loop for a range of plots,
+	the order of traversal can be important b/c calculateCulturalOwner will grant
+	ownership of a plot to a player that owns all surrounding plots.
+	So far, this has only been a problem in CvCity::setCultureLevel. */
 void CvPlot::updateCulture(bool bBumpUnits, bool bUpdatePlotGroups)
 {
 	PROFILE_FUNC(); // advc (There's a plot group update when the owner changes)

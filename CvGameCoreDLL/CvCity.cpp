@@ -406,11 +406,12 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 	GET_PLAYER(getOwner()).deleteCity(getID());
 
 	kPlot.updateCulture(/*true*/ bBumpUnits, false); // advc.001
+	/*	advc (note): setCultureLevel already updates culture in surrounding plots.
+		I think this loop is only needed for rare cases where kPlot is part of a
+		circle of plots granting ownership over a plot that is otherwise
+		out of ownership range (see the end of CvPlot::calculateCulturalOwner). */
 	FOR_EACH_ADJ_PLOT_VAR(kPlot)
 		pAdj->updateCulture(true, false);
-	/*	advc: Surrounding plots can affect plot ownership. Important to update again
-		when regenerating the map. (Don't know why this wasn't an issue in BtS/K-Mod.) */
-	kPlot.updateCulture(bBumpUnits, false);
 
 	if (GET_TEAM(eOwner).isAVassal()) // advc: Replacing a loop over "all" masters
 	{
@@ -6512,7 +6513,12 @@ void CvCity::setCultureLevel(CultureLevelTypes eNewValue, bool bUpdatePlotGroups
 	m_eCultureLevel = eNewValue;
 	if (eOldValue != NO_CULTURELEVEL)
 	{
-		for (SquareIter itPlot(getPlot(), eOldValue); itPlot.hasNext(); ++itPlot)
+		/*	advc (note): The order of processing is important here b/c
+			plot ownership won't be cleared so long as a tile is surrounded by
+			owned tiles (even when a plot is no longer in range of any city);
+			see CvPlot::calculateCulturalOwner. */
+		for (ScanLinePlotIterator itPlot(getPlot(), eOldValue);
+			itPlot.hasNext(); ++itPlot)
 		{
 			int iCultureRange = cultureDistance(itPlot.currXDist(), itPlot.currYDist());
 			if (iCultureRange > getCultureLevel() && iCultureRange <= eOldValue)
@@ -6525,7 +6531,8 @@ void CvCity::setCultureLevel(CultureLevelTypes eNewValue, bool bUpdatePlotGroups
 	}
 	if (getCultureLevel() != NO_CULTURELEVEL)
 	{
-		for (SquareIter itPlot(getPlot(), getCultureLevel()); itPlot.hasNext(); ++itPlot)
+		for (ScanLinePlotIterator itPlot(getPlot(), getCultureLevel());
+			itPlot.hasNext(); ++itPlot)
 		{
 			int iCultureRange = cultureDistance(itPlot.currXDist(), itPlot.currYDist());
 			if (iCultureRange > eOldValue && iCultureRange <= getCultureLevel())
