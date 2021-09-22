@@ -126,12 +126,13 @@ class CvVictoryScreen:
 		self.DX_LINK = 220
 		self.Y_LINK = 726
 		self.MARGIN = 20
-		
-		self.SETTINGS_PANEL_X1 = 50
+		# <advc.004> Panel width increased; especially for change advc.708 (display of player handicap on one line).
+		self.SETTINGS_PANEL_X1 = 30 # was 50
 		self.SETTINGS_PANEL_X2 = 355
-		self.SETTINGS_PANEL_X3 = 660
+		self.SETTINGS_PANEL_X3 = 680 # was 660
+		self.SETTINGS_PANEL_WIDTH = 320 # was 300
+		# </advc.004>
 		self.SETTINGS_PANEL_Y = 150
-		self.SETTINGS_PANEL_WIDTH = 300
 		self.SETTINGS_PANEL_HEIGHT = 500
 
 		self.nWidgetCount = 0
