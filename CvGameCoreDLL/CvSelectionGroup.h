@@ -162,15 +162,17 @@ public:
 
 	RouteTypes getBestBuildRoute(CvPlot const& kPlot, BuildTypes* peBestBuild = NULL) const;	// Exposed to Python
 
+	//bool groupDeclareWar(CvPlot* pPlot, bool bForce = false); // deleted by K-Mod
 	bool groupAttack(int iX, int iY, MovementFlags eFlags, bool& bFailedAlreadyFighting,
 			bool bMaxSurvival = false); // advc.048
 	void groupMove(CvPlot* pPlot, bool bCombat, CvUnit* pCombatUnit = NULL, bool bEndMove = false);
 	bool groupPathTo(int iX, int iY, MovementFlags eFlags);
 	bool groupRoadTo(int iX, int iY, MovementFlags eFlags);
-	bool groupBuild(BuildTypes eBuild,
-			bool bFinish = true); // advc.011b
+	bool groupBuild(BuildTypes eBuild, /* advc.011b: */ bool bFinish = true);
 
-	void setTransportUnit(CvUnit* pTransportUnit, CvSelectionGroup** pOtherGroup = NULL); // bbai added pOtherGroup
+	void setTransportUnit(CvUnit* pTransportUnit,
+			CvSelectionGroup** pOtherGroup = NULL); // BBAI
+	//void setRemoteTransportUnit(CvUnit* pTransportUnit); // BBAI; deleted by K-Mod.
 
 	bool isAmphibPlot(CvPlot const* pPlot) const;																																		// Exposed to Python
 	bool groupAmphibMove(CvPlot const& kPlot, MovementFlags eFlags);

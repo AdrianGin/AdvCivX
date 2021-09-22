@@ -507,7 +507,7 @@ public:
 	bool isInBetweenTurns() const;
 	void setInBetweenTurns(bool b); // </advc.106b>
 
-	HandicapTypes getHandicapType() const { return m_eHandicap; }
+	HandicapTypes getHandicapType() const { return m_eHandicap; }									// Exposed to Python
 	void setHandicapType(HandicapTypes eHandicap);
 	HandicapTypes getAIHandicap() const { return m_eAIHandicap; } // advc.127 (advc.708: exposed to Python)
 

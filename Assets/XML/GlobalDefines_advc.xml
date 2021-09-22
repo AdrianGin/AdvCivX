@@ -936,7 +936,7 @@
 	</Define>
 
 	<!-- [advc.700] Rise & Fall parameters. The first four are applied at game
-		 start; changing them in a running game has no effect.  -->
+		 start; changing them in an ongoing game has no effect.  -->
 	<!-- Base value for the number of chapters; recommended: 7. Has to be
 		 positive. The game adjusts the value based on game speed and start
 		 date. -->

@@ -10653,7 +10653,6 @@ void CvCity::doDecay()
 	{
 		if (getProductionBuilding() == eLoopBuilding)
 			continue;
-
 		if (getBuildingProduction(eLoopBuilding) > 0)
 		{
 			changeBuildingProductionTime(eLoopBuilding, 1);
@@ -10678,27 +10677,25 @@ void CvCity::doDecay()
 	{
 		if (getProductionUnit() == eLoopUnit)
 			continue;
+		if (getUnitProduction(eLoopUnit) > 0)
 		{
-			if (getUnitProduction(eLoopUnit) > 0)
+			changeUnitProductionTime(eLoopUnit, 1);
+			if (isHuman())
 			{
-				changeUnitProductionTime(eLoopUnit, 1);
-				if (isHuman())
+				int const iGameSpeedPercent = GC.getInfo(GC.getGame().
+						getGameSpeedType()).getTrainPercent();
+				if (100 * getUnitProductionTime(eLoopUnit) >
+					GC.getDefineINT(CvGlobals::UNIT_PRODUCTION_DECAY_TIME) * iGameSpeedPercent)
 				{
-					int const iGameSpeedPercent = GC.getInfo(GC.getGame().
-							getGameSpeedType()).getTrainPercent();
-					if (100 * getUnitProductionTime(eLoopUnit) >
-						GC.getDefineINT(CvGlobals::UNIT_PRODUCTION_DECAY_TIME) * iGameSpeedPercent)
-					{
-						int iProduction = getUnitProduction(eLoopUnit);
-						int const iDecayPercent = GC.getDefineINT(CvGlobals::UNIT_PRODUCTION_DECAY_PERCENT);
-						setUnitProduction(eLoopUnit, iProduction -
-								(iProduction * (100 - iDecayPercent) + iGameSpeedPercent - 1) /
-								iGameSpeedPercent);
-					}
+					int iProduction = getUnitProduction(eLoopUnit);
+					int const iDecayPercent = GC.getDefineINT(CvGlobals::UNIT_PRODUCTION_DECAY_PERCENT);
+					setUnitProduction(eLoopUnit, iProduction -
+							(iProduction * (100 - iDecayPercent) + iGameSpeedPercent - 1) /
+							iGameSpeedPercent);
 				}
 			}
-			else setUnitProductionTime(eLoopUnit, 0);
 		}
+		else setUnitProductionTime(eLoopUnit, 0);
 	}
 }
 

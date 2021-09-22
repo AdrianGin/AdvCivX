@@ -5478,15 +5478,14 @@ void CvGame::setActivePlayer(PlayerTypes eNewValue, bool bForceHotSeat)
 	{
 		int iActiveNetId = ((NO_PLAYER != eOldActivePlayer) ? GET_PLAYER(eOldActivePlayer).getNetID() : -1);
 		GC.getInitCore().setActivePlayer(eNewValue);
-
-		//if (GET_PLAYER(eNewValue).isHuman() && (isHotSeat() || isPbem() || bForceHotSeat))
-		if (eNewValue != NO_PLAYER && GET_PLAYER(eNewValue).isHuman() && (isHotSeat() || isPbem() || bForceHotSeat)) // K-Mod
+		if (eNewValue != NO_PLAYER && // K-Mod
+			GET_PLAYER(eNewValue).isHuman() && (isHotSeat() || isPbem() || bForceHotSeat))
 		{
 			gDLL->getPassword(eNewValue);
 			setHotPbemBetweenTurns(false);
 			gDLL->getInterfaceIFace()->dirtyTurnLog(eNewValue);
 
-			if (NO_PLAYER != eOldActivePlayer)
+			if (eOldActivePlayer != NO_PLAYER)
 			{
 				int iInactiveNetId = GET_PLAYER(eNewValue).getNetID();
 				GET_PLAYER(eNewValue).setNetID(iActiveNetId);
@@ -9911,7 +9910,7 @@ void CvGame::changeHumanPlayer(PlayerTypes eNewHuman)
 
 	GET_PLAYER(eCurHuman).setIsHuman(false, /* advc.127c: */ true);
 	GET_PLAYER(eCurHuman).updateHuman(); // advc.127
-} // BETTER_BTS_AI_MOD: END
+}
 
 
 bool CvGame::isCompetingCorporation(

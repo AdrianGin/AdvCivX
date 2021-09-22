@@ -728,7 +728,6 @@ void CvPlayer::changeLeader(LeaderHeadTypes eNewLeader)
 	//AI().AI_init();
 }
 
-// (advc: Moved up so that all the CHANGE_PLAYER code dated 08/17/08 is in one place)
 // for changing whether this player is human or not
 void CvPlayer::setIsHuman(bool bNewValue, /* advc.127c: */ bool bUpdateAI)
 {
@@ -4915,7 +4914,8 @@ void CvPlayer::found(int iX, int iY)
 
 		if (eDefenderUnit != NO_UNIT)
 		{
-			for (int i = 0; i < GC.getInfo(kGame.getHandicapType()).getBarbarianInitialDefenders(); i++)
+			for (int i = 0; i < GC.getInfo(kGame.getHandicapType()).
+				getBarbarianInitialDefenders(); i++)
 			{
 				initUnit(eDefenderUnit, iX, iY, UNITAI_CITY_DEFENSE);
 			}
@@ -18989,7 +18989,7 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 }
 
 /*	K-Mod: Find each item from the offer list in the inventory list -
-	mark it as m_bOffering == true.
+	mark it as m_bOffering=true.
 	(This is usually done somewhere in the game engine,
 	or when the offer list is being generated or something.) */
 void CvPlayer::markTradeOffers(CLinkList<TradeData>& kOurInventory,
@@ -18998,18 +18998,22 @@ void CvPlayer::markTradeOffers(CLinkList<TradeData>& kOurInventory,
 {
 	FOR_EACH_TRADE_ITEM_VAR2(pOfferItem, kOurOffer)
 	{
-		CLLNode<TradeData>* pInvNode; // (defined here just for the assertion at the end)
-		for (pInvNode = kOurInventory.head(); pInvNode != NULL;
-			pInvNode = kOurInventory.next(pInvNode))
+	#ifdef FASSERT_ENABLE
+		bool bFound = false;
+	#endif
+		FOR_EACH_TRADE_ITEM_VAR2(pInvItem, kOurInventory)
 		{
-			if (pInvNode->m_data.m_eItemType == pOfferItem->m_eItemType &&
-				pInvNode->m_data.m_iData == pOfferItem->m_iData)
+			if (pInvItem->m_eItemType == pOfferItem->m_eItemType &&
+				pInvItem->m_iData == pOfferItem->m_iData)
 			{
-				pInvNode->m_data.m_bOffering = pOfferItem->m_bOffering = true;
+				pInvItem->m_bOffering = pOfferItem->m_bOffering = true;
+			#ifdef FASSERT_ENABLE
+				bFound = true;
+			#endif
 				break;
 			}
 		}
-		FAssertMsg(pInvNode != NULL ||
+		FAssertMsg(bFound ||
 				// <advc.134a> I guess it's OK that these aren't part of the inventory
 				pOfferItem->m_eItemType == TRADE_SURRENDER ||
 				pOfferItem->m_eItemType == TRADE_PEACE_TREATY, // </advc.134a>

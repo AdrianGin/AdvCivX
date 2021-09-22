@@ -1405,6 +1405,9 @@ bool CvSelectionGroup::continueMission_bulk(int iSteps)
 				bDone = true;
 				break;
 			}
+			/*	(BETTER_BTS_AI_MOD 12/07/08, 08/08/09, Maniac & jdog5000, General AI
+				pickup of stranded units - deleted by K-Mod.) */
+
 			MissionAITypes eMissionAI = AI().AI_getMissionAIType(); // advc.003u
 			if (eMissionAI != MISSIONAI_SHADOW && eMissionAI != MISSIONAI_GROUP)
 			{

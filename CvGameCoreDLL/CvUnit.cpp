@@ -2285,7 +2285,7 @@ bool CvUnit::canMoveInto(CvPlot const& kPlot, bool bAttack, bool bDeclareWar,
 	}
 
 	TeamTypes ePlotTeam = kPlot.getTeam();
-	CvTeamAI const& kOurTeam = GET_TEAM(getTeam()); // advc
+	CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
 	bool bCanEnterTerritory = canEnterTerritory(ePlotTeam, false, kPlot.area());
 	if (bCanEnterTerritory)
 	{

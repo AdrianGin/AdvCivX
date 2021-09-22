@@ -9803,8 +9803,8 @@ void CvCityAI::AI_juggleCitizens()
 #endif
 }
 
-// K-Mod. Estimate the cost of recovery after losing iQuantity number of citizens in this city.
-// (units of 4x commerce.)
+/*	K-Mod. Estimate the cost of recovery after losing iQuantity number of citizens
+	in this city. (units of 4x commerce.) Replacing AI_citizenLossCost in BtS. */
 int CvCityAI::AI_citizenSacrificeCost(int iCitLoss, int iHappyLevel, int iNewAnger, int iAngerTimer)
 {
 	PROFILE_FUNC();
@@ -12620,7 +12620,8 @@ int CvCityAI::AI_countNumBonuses(BonusTypes eBonus,
 	return iCount;
 }
 
-// BBAI (K-Mod - I've rearranged some stuff and fixed some bugs):
+// BBAI (11/14/09, jdog5000): City AI
+// K-Mod - rearranged some stuff and fixed some bugs
 // advc (tbd.): Some overlap with CvPlayerAI::AI_isUnimprovedBonus -- merge?
 int CvCityAI::AI_countNumImprovableBonuses(bool bIncludeNeutral, TechTypes eExtraTech, bool bLand,
 	bool bWater) /* advc: */ const

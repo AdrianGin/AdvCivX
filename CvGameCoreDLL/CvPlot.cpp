@@ -6637,10 +6637,10 @@ void CvPlot::changeCultureRangeCities(PlayerTypes eOwnerIndex, CultureLevelTypes
 	if(iChange == 0)
 		return;
 
-	bool bOldCultureRangeCities = isCultureRangeCity(eOwnerIndex, eRangeIndex);
+	bool bOldCultureRangeCity = isCultureRangeCity(eOwnerIndex, eRangeIndex);
 	m_aaiCultureRangeCities.add(eOwnerIndex, eRangeIndex, iChange);
 	FAssert(m_aaiCultureRangeCities.get(eOwnerIndex, eRangeIndex) >= 0); // advc
-	if (bOldCultureRangeCities != isCultureRangeCity(eOwnerIndex, eRangeIndex))
+	if (bOldCultureRangeCity != isCultureRangeCity(eOwnerIndex, eRangeIndex))
 		updateCulture(true, bUpdatePlotGroups);
 }
 

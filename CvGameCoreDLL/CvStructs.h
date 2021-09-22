@@ -106,6 +106,9 @@ struct TradeData					// Exposed to Python
 	bool m_bOffering;			//	Is this item up for grabs?
 	bool m_bHidden;				//	Are we hidden?
 };
+/*	advc.003k: Memory layout probably mustn't change b/c CLinkList<TradeData>
+	occurs in the parameter lists of some exported functions */
+BOOST_STATIC_ASSERT(sizeof(TradeData) == 12);
 
 struct EventTriggeredData
 {

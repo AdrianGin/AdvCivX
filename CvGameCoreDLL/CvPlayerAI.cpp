@@ -663,7 +663,7 @@ void CvPlayerAI::AI_doTurnUnitsPost()
 }
 
 // advc (note): UWAI bypasses this function
-void CvPlayerAI::AI_doPeace()  // advc: refactored
+void CvPlayerAI::AI_doPeace()
 {
 	PROFILE_FUNC();
 
@@ -7424,7 +7424,7 @@ int CvPlayerAI::AI_getAttitudeVal(PlayerTypes ePlayer, bool bForced) const
 	// <advc.003n> Moved out of the bForced branch and assert added
 	if (isBarbarian() || ePlayer == BARBARIAN_PLAYER)
 	{
-		FAssert(false);
+		FErrorMsg("Barbarian attitude shouldn't matter");
 		return -100;
 	} // </advc.003n>
 	if (bForced)
@@ -20152,7 +20152,7 @@ void CvPlayerAI::AI_doDiplo()
 			if ((kPlayer.getTeam() == getTeam() || GET_TEAM(ePlayer).isVassal(getTeam())) &&
 				canPossiblyTradeItem(ePlayer, TRADE_RESOURCES)) // advc.opt
 			{
-				// XXX will it cancel this deal if it loses its first resource???
+				// XXX will it cancel this deal if it loses its first resource??? (advc.133 addresses this)
 				int iBestValue = 0;
 				BonusTypes eBestGiveBonus = NO_BONUS;
 				FOR_EACH_ENUM(Bonus)
@@ -20165,7 +20165,7 @@ void CvPlayerAI::AI_doDiplo()
 						bool bHasBonus = kPlayer.getNumAvailableBonuses(eLoopBonus) > 0;
 						if (kPlayer.AI_bonusTradeVal(eLoopBonus, getID(), 1) > 0 &&
 							2 * kPlayer.AI_bonusVal(eLoopBonus, 1) >
-							(bHasBonus? 3 : 2) * AI_bonusVal(eLoopBonus, -1)) // K-mod end
+							(bHasBonus? 3 : 2) * AI_bonusVal(eLoopBonus, -1)) // K-Mod end
 						{
 							if (canTradeItem(ePlayer, TradeData(TRADE_RESOURCES, eLoopBonus), true))
 							{
@@ -21393,7 +21393,7 @@ bool CvPlayerAI::AI_proposeResourceTrade(PlayerTypes eTo)
 			/*  <advc.036> For AI-AI trades the conditions below are better handled
 				by AI_getTradeDenial. */
 			if (kTo.isHuman() && (kTo.getNumTradeableBonuses(eLoopBonus) <= 1 ||
-				// || AI_bonusTradeVal(eLoopBonus, eOther, 1) <= 0)
+				//AI_bonusTradeVal(eLoopBonus, eOther, 1) <= 0)
 				kTo.AI_corporationBonusVal(eLoopBonus, true) > 0))
 			{
 				continue;
@@ -28792,8 +28792,7 @@ void CvPlayerAI::AI_setHuman(bool b)
 	for (size_t i = 0; i < apSplitGroups.size(); i++)
 	{
 		apSplitGroups[i]->splitGroup(1);
-	}
-	// </advc.057>
+	} // </advc.057>
 }
 
 // advc.031c:

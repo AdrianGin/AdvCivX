@@ -12354,8 +12354,7 @@ bool CvUnitAI::AI_paradrop(int iRange)
 }
 
 #if 0
-/*  advc.003j: This function was apparently replaced by K-Mod's
-	AI_defendTerritory.
+/*  advc.003j: This function was replaced by K-Mod's AI_defendTerritory.
 	The eFlags and iMaxPathTurns parameters of AI_protect were switched in
 	this file; I've corrected this although the function is unused; also in
 	the commented-out code at the call locations. */

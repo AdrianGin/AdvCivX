@@ -104,22 +104,22 @@ int CyGame::countPossibleVote(int /*VoteTypes*/ eVote, int /*VoteSourceTypes*/ e
 
 int CyGame::getVoteRequired(int /*VoteTypes*/ eVote, int /*VoteSourceTypes*/ eVoteSource) const
 {
-	return (int)m_kGame.getVoteRequired((VoteTypes)eVote, (VoteSourceTypes) eVoteSource);
+	return m_kGame.getVoteRequired((VoteTypes)eVote, (VoteSourceTypes) eVoteSource);
 }
 
 int CyGame::getSecretaryGeneral(int /*VoteSourceTypes*/ eVoteSource) const
 {
-	return (int)m_kGame.getSecretaryGeneral((VoteSourceTypes) eVoteSource);
+	return m_kGame.getSecretaryGeneral((VoteSourceTypes) eVoteSource);
 }
 
 bool CyGame::canHaveSecretaryGeneral(int /*VoteSourceTypes*/ eVoteSource) const
 {
-	return (int)m_kGame.canHaveSecretaryGeneral((VoteSourceTypes) eVoteSource);
+	return m_kGame.canHaveSecretaryGeneral((VoteSourceTypes) eVoteSource);
 }
 
 int CyGame::getVoteSourceReligion(int /*VoteSourceTypes*/ eVoteSource) const
 {
-	return (int)m_kGame.getVoteSourceReligion((VoteSourceTypes) eVoteSource);
+	return m_kGame.getVoteSourceReligion((VoteSourceTypes) eVoteSource);
 }
 
 void CyGame::setVoteSourceReligion(int /*VoteSourceTypes*/ eVoteSource, int /*ReligionTypes*/ eReligion, bool bAnnounce)
@@ -209,17 +209,17 @@ bool CyGame::canTrainNukes()
 
 int CyGame::getCurrentEra()
 {
-	return (int)m_kGame.getCurrentEra();
+	return m_kGame.getCurrentEra();
 }
 
 int CyGame::getActiveTeam()
 {
-	return (int)m_kGame.getActiveTeam();
+	return m_kGame.getActiveTeam();
 }
 
 int /* CivilizationTypes */ CyGame::getActiveCivilizationType()
 {
-	return (int)m_kGame.getActiveCivilizationType();
+	return m_kGame.getActiveCivilizationType();
 }
 
 bool CyGame::isNetworkMultiPlayer()
@@ -616,7 +616,7 @@ void CyGame::setScreenDimensions(int x, int y)
 
 int /*PlayerTypes*/ CyGame::getActivePlayer()
 {
-	return (int)m_kGame.getActivePlayer();
+	return m_kGame.getActivePlayer();
 }
 
 void CyGame::setActivePlayer(int /*PlayerTypes*/ eNewValue, bool bForceHotSeat)
@@ -636,7 +636,7 @@ bool CyGame::isPaused()
 
 int /*PlayerTypes*/ CyGame::getBestLandUnit()
 {
-	return (int)m_kGame.getBestLandUnit();
+	return m_kGame.getBestLandUnit();
 }
 
 int CyGame::getBestLandUnitCombat()
@@ -646,12 +646,12 @@ int CyGame::getBestLandUnitCombat()
 
 int /*TeamTypes*/ CyGame::getWinner()
 {
-	return (int)m_kGame.getWinner();
+	return m_kGame.getWinner();
 }
 
 int /*VictoryTypes*/ CyGame::getVictory()
 {
-	return (int)m_kGame.getVictory();
+	return m_kGame.getVictory();
 }
 
 void CyGame::setWinner(int /*TeamTypes*/ eNewWinner, int /*VictoryTypes*/ eNewVictory)
@@ -661,7 +661,7 @@ void CyGame::setWinner(int /*TeamTypes*/ eNewWinner, int /*VictoryTypes*/ eNewVi
 
 int /*GameStateTypes*/ CyGame::getGameState()
 {
-	return (int)m_kGame.getGameState();
+	return m_kGame.getGameState();
 }
 
 int /* HandicapTypes */ CyGame::getHandicapType()

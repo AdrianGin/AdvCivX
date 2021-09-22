@@ -2963,7 +2963,9 @@ bool CvTeamAI::AI_anyMemberAtVictoryStage3() const
 	-99 means we losing and have very little hope of surviving.
 	99 means we are soundly defeating our enemies.
 	Zero is neutral (eg. no wars being fought).
-	(Based on K-Mod code for Force Peace diplomacy voting.) */
+	(Based on K-Mod code for Force Peace diplomacy voting.)
+	Replacing AI_getWarSuccessCapitulationRatio
+	(BETTER_BTS_AI_MOD, 03/20/10, jdog5000: War Strategy AI). */
 int CvTeamAI::AI_getWarSuccessRating() const
 {
 	PROFILE_FUNC();
