@@ -2123,7 +2123,7 @@ int CvTeam::getResearchCost(TechTypes eTech,
 				(getNumMembers() - 1)), 0);
 	}
 	// <advc.251>
-	rCost *= scaled::max(rModifier, 1);
+	rCost *= scaled::max(rModifier, 0);
 	int iCost = rCost.roundToMultiple(isHuman() ? 5 : 1);
 	// </advc.251>
 	return std::max(1, iCost);

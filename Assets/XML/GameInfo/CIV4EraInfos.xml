@@ -99,8 +99,7 @@
 			<iConstructPercent>100</iConstructPercent>
 			<iCreatePercent>100</iCreatePercent>
 			<iResearchPercent>90</iResearchPercent>
-			<!-- advc.910: was 0 in K-Mod and BBAI -->
-			<iTechCostModifier>-11</iTechCostModifier>
+			<iTechCostModifier>0</iTechCostModifier>
 			<!-- advc.groundbr: start -->
 			<iAIMaxGroundbreakingPenalty>0</iAIMaxGroundbreakingPenalty>
 			<iHumanMaxGroundbreakingPenalty>0</iHumanMaxGroundbreakingPenalty>
@@ -178,7 +177,7 @@
 			<iCreatePercent>100</iCreatePercent>
 			<iResearchPercent>80</iResearchPercent>
 			<!-- advc.910: Was 6 in K-Mod, 4 in BBAI. -->
-			<iTechCostModifier>-5</iTechCostModifier>
+			<iTechCostModifier>0</iTechCostModifier>
 			<!-- advc.groundbr: start -->
 			<iAIMaxGroundbreakingPenalty>15</iAIMaxGroundbreakingPenalty>
 			<!-- 20 in DoC -->
