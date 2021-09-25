@@ -579,17 +579,17 @@
 		 is decreased by this permillage. 0 to disable decay.
 		 (Will also have to set CITY_RADIUS_DECAY=0 to disable decay in
 		 foreign city radii.)
-		 Recommended: 15 (1.5% decay). -->
+		 Recommended: 13 (1.3% decay). -->
 	<Define>
 		<DefineName>TILE_CULTURE_DECAY_PER_MILL</DefineName>
-		<iDefineIntVal>15</iDefineIntVal>
+		<iDefineIntVal>13</iDefineIntVal>
 	</Define>
 	<!-- Per-mill decay rate of foreign culture on tiles within a city radius.
 		 The value gets doubled for tiles in the inner radius. Set to 0 to have
 		 foreign culture decay normally. Recommended: 25 -->
 	<Define>
 		<DefineName>CITY_RADIUS_DECAY</DefineName>
-		<iDefineIntVal>25</iDefineIntVal>
+		<iDefineIntVal>23</iDefineIntVal>
 	</Define>
 
 	<!-- advc.098: Was 20 in BtS and was unused in K-Mod. The K-Mod formula
