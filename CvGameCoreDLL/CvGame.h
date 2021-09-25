@@ -622,10 +622,10 @@ public:
 		return GC.getInitCore().getVictory(eIndex);
 	}
 	void setVictoryValid(VictoryTypes eVict, bool bValid);
-												// advc: const
+
 	bool isSpecialUnitValid(SpecialUnitTypes eIndex) const;														// Exposed to Python
 	void makeSpecialUnitValid(SpecialUnitTypes eIndex);													// Exposed to Python
-												// advc: const
+
 	bool isSpecialBuildingValid(SpecialBuildingTypes eIndex) const;										// Exposed to Python
 	void makeSpecialBuildingValid(SpecialBuildingTypes eIndex, bool bAnnounce = false);									// Exposed to Python
 
@@ -944,7 +944,7 @@ protected:
 	GameStateTypes m_eGameState;
 	PlayerTypes m_eInitialActivePlayer; // advc.106h
 	GlobeLayerTypes m_eCurrentLayer; // advc.004m
-	PlayerTypes m_eEventPlayer;
+	//PlayerTypes m_eEventPlayer; // (advc: unused)
 	StartingPlotNormalizationLevel m_eNormalizationLevel; // advc.108
 
 	CvRandom m_mapRand;

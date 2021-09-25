@@ -10635,7 +10635,7 @@ int CvPlayerAI::AI_tradeValToGold(int iTradeVal, bool bOverpay, int iMaxGold,
 	in kTheyGive and/or kWeGive - these have to be included -, and this function
 	tries to sweeten the deal for whichever side needs it (can leave that up to
 	this function by setting both MayGiveMore variables).
-	Based on K-Mod code in AI_doDiplo; karadoc's comment cut and pasted from there:
+	Based on K-Mod code in AI_doDiplo; karadoc's comment cut from there:
 	"unfortunately, the API is pretty clumsy for setting up this counter proposal.
 	 please just bear with me. */
 bool CvPlayerAI::AI_counterPropose(PlayerTypes ePlayer,
@@ -10656,13 +10656,12 @@ bool CvPlayerAI::AI_counterPropose(PlayerTypes ePlayer,
 	if(bTheyMayGiveMore)
 	{
 		CvPlayer const& kPlayer = GET_PLAYER(ePlayer);
-		/*	"(Note: this would be faster if we just built the lists
-			directly, but by using the existing API, we are kind of future-proofing)" */
-		// "all tradeable items"
-		kPlayer.buildTradeTable(getID(), theirInventory);
-		// "K-Mod function - set m_bOffering on each item offered"
+		/*	K-Mod (Note: this would be faster if we just built the lists
+			directly, but by using the existing API, we are kind of future-proofing) */
+		kPlayer.buildTradeTable(getID(), theirInventory); // all tradeable items
+		// K-Mod function - set m_bOffering on each item offered
 		kPlayer.markTradeOffers(theirInventory, kTheyGive);
-		// "hide what should be excluded"
+		// hide what should be excluded
 		kPlayer.updateTradeList(getID(), theirInventory, kTheyGive, kWeGive);
 		rLeniency.flipFraction(); // advc.705
 	}

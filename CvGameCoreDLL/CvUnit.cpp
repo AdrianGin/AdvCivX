@@ -5797,18 +5797,18 @@ bool CvUnit::espionage(EspionageMissionTypes eMission, int iData)
 
 	PlayerTypes eTargetPlayer = getPlot().getOwner();
 
-	if (NO_ESPIONAGEMISSION == eMission)
+	if (eMission == NO_ESPIONAGEMISSION)
 	{
 		FAssert(GET_PLAYER(getOwner()).isHuman());
 		CvPopupInfo* pInfo = new CvPopupInfo(BUTTONPOPUP_DOESPIONAGE);
-		if (NULL != pInfo)
+		if (pInfo != NULL)
 			gDLL->UI().addPopup(pInfo, getOwner(), true);
 	}
 	else if (GC.getInfo(eMission).isTwoPhases() && -1 == iData)
 	{
 		FAssert(GET_PLAYER(getOwner()).isHuman());
 		CvPopupInfo* pInfo = new CvPopupInfo(BUTTONPOPUP_DOESPIONAGE_TARGET);
-		if (NULL != pInfo)
+		if (pInfo != NULL)
 		{
 			pInfo->setData1(eMission);
 			gDLL->UI().addPopup(pInfo, getOwner(), true);
