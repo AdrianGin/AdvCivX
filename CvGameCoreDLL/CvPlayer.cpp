@@ -12168,6 +12168,9 @@ bool CvPlayer::doEspionageMission(EspionageMissionTypes eMission, PlayerTypes eT
 {
 	if (!canDoEspionageMission(eMission, eTargetPlayer, pPlot, iExtraData, pSpyUnit))
 		return false;
+	// advc (caveat): Important to get the cost before executing the mission
+	int const iMissionCost = getEspionageMissionCost(eMission,
+			eTargetPlayer, pPlot, iExtraData, pSpyUnit);
 
 	bool bSomethingHappened = false;
 	bool bAggressiveMission = true; // advc.120
@@ -12275,7 +12278,6 @@ bool CvPlayer::doEspionageMission(EspionageMissionTypes eMission, PlayerTypes eT
 		acquireCity(pCity, false, true, true);
 		bSomethingHappened = true;
 	}
-
 
 	if (kMission.getCityInsertCultureCostFactor() > 0 && pCity != NULL)
 	{
@@ -12409,9 +12411,6 @@ bool CvPlayer::doEspionageMission(EspionageMissionTypes eMission, PlayerTypes eT
 		gDLL->UI().selectCity(pCity);
 		bSomethingHappened = true;
 	} // </advc.103>
-
-	int const iMissionCost = getEspionageMissionCost(eMission,
-			eTargetPlayer, pPlot, iExtraData, pSpyUnit);
 
 	int iHave = 0;
 	if (eTargetTeam != NO_TEAM)
