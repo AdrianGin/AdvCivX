@@ -252,7 +252,7 @@ void RiseFall::reportElimination(PlayerTypes civId) {
 		if(pos < (int)(chapters.size() - 1)) {
 			GC.getGame().setActivePlayer(nextAlive.getID());
 			nextAlive.setIsHuman(true);
-			nextAlive.updateHuman();
+			nextAlive.setNetID(0);
 			CvPopupInfo* popup = new CvPopupInfo(BUTTONPOPUP_RF_DEFEAT);
 			// So that launchDefeatPopup knows which chapter we've just scored (ended)
 			popup->setData1(pos);
@@ -486,6 +486,7 @@ void RiseFall::setPlayerControl(PlayerTypes civId, bool b) {
 	if(b)
 		g.changeHumanPlayer(civId);
 	else {
+		civ.setNetID(-1);
 		civ.setIsHuman(false, true);
 		GC.getInitCore().setLeaderName(civId,
 				GC.getInfo(civ.getLeaderType()).getDescription());
@@ -507,12 +508,12 @@ void RiseFall::setPlayerControl(PlayerTypes civId, bool b) {
 		CvEventReporter::getInstance().genericEvent(
 				"SwitchHotSeatPlayer", pyArgs.makeFunctionArgs());
 	}
-	for(int i = 0; i < MAX_CIV_PLAYERS; i++) {
-		CvPlayerAI& other = GET_PLAYER((PlayerTypes)i);
-		if(!other.isAlive() || other.isMinorCiv())
-			continue;
-		if (b) // (Otherwise CvPlayer::setIsHuman has already updated the full attitude cache)
-		{
+	if (b) // (Otherwise CvPlayer::setIsHuman has already updated the full attitude cache)
+	{
+		for(int i = 0; i < MAX_CIV_PLAYERS; i++) {
+			CvPlayerAI& other = GET_PLAYER((PlayerTypes)i);
+			if(!other.isAlive() || other.isMinorCiv())
+				continue;
 			if(other.getID() != civId && GET_TEAM(civId).isHasMet(other.getTeam()))
 				other.AI_updateAttitude(civId);
 			if(formerHumanCiv != NO_PLAYER && civId != formerHumanCiv &&
@@ -565,6 +566,15 @@ void RiseFall::welcomeToNextChapter(int pos) {
 	RFChapter& ch = *chapters[pos];
 	setPlayerName();
 	CvPlayer& p = GET_PLAYER(ch.getCiv());
+	/*	Wrong net ids can, apparently, mess with the diplo screen, making it
+		impossible to add certain items to the table. It's probably sufficient
+		to set the proper ids here, but I try to keep them up to date at all
+		times. Would be nice to let CvPlayer::setIsHuman handle that, but that
+		may not work in multiplayer modes and would break the net id update in
+		CvGame::setActivePlayer. */
+	FOR_EACH_ENUM(Player)
+		GET_PLAYER(eLoopPlayer).setNetID(-1);
+	p.setNetID(0);
 	p.verifyCivics();
 	resetProductionDecay(p.getID());
 	// Doing this in setUIHidden has no effect
@@ -889,9 +899,12 @@ void RiseFall::haltForCivSelection(PlayerTypes haltCiv) {
 	/*  Set to active human for a moment, just to get the civ selection
 		popup through. Reset to AI-control in handleCivSelection. */
 	CvPlayer& h = GET_PLAYER(haltCiv);
+	GET_PLAYER(getActivePlayer()).setNetID(-1);
+	/*	(bForceHotSeat would take care of the net id, but would also show a
+		"you now control such-and-such" popup.) */
 	g.setActivePlayer(haltCiv);
+	GET_PLAYER(haltCiv).setNetID(0);
 	h.setIsHuman(true);
-	h.updateHuman();
 	CvPopupInfo* popup = new CvPopupInfo(BUTTONPOPUP_RF_CHOOSECIV);
 	h.addPopup(popup, true);
 	selectingCiv = true;
@@ -1017,8 +1030,8 @@ void RiseFall::handleDefeatPopup(int buttonClicked, int pos) {
 	interludeCountdown = chapters[pos + 1]->getStartTurn() - GC.getGame().getGameTurn() - 1;
 	FAssert(interludeCountdown >= 0);
 	CvPlayer& h = GET_PLAYER(getActivePlayer());
+	h.setNetID(-1);
 	h.setIsHuman(false);
-	h.updateHuman();
 }
 
 bool RiseFall::launchCivSelectionPopup(CvPopup* popup, CvPopupInfo& info) {
@@ -1328,6 +1341,7 @@ void RiseFall::afterCivSelection(int buttonClicked) {
 	selectingCiv = false;
 	if(pos > 0) { // Relevant when loading a savegame
 		CvPlayer& prev = GET_PLAYER(chapters[pos - 1]->getCiv());
+		prev.setNetID(-1);
 		prev.setIsHuman(false);
 	}
 	if(pos >= 0 && chapters[pos]->getCiv() == h.getID()) {
@@ -1340,8 +1354,8 @@ void RiseFall::afterCivSelection(int buttonClicked) {
 		welcomeToNextChapter(pos);
 		return;
 	}
+	h.setNetID(-1);
 	h.setIsHuman(false);
-	h.updateHuman();
 }
 
 void RiseFall::handleCivSelection(PlayerTypes selectedCiv) {
