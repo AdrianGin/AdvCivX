@@ -2353,6 +2353,7 @@ VictoryTypes CvGame::getSpaceVictory() const
 	return eVictory;
 }
 
+// advc (note): Alt+Z causes the EXE to call this function
 void CvGame::nextActivePlayer(bool bForward)
 {
 	int iNewPlayer = getActivePlayer();
@@ -2366,16 +2367,8 @@ void CvGame::nextActivePlayer(bool bForward)
 		PlayerTypes eNewPlayer = (PlayerTypes)iNewPlayer;
 		if (GET_PLAYER(eNewPlayer).isAlive() && !GET_PLAYER(eNewPlayer).isBarbarian())
 		{
-			/*GC.getInitCore().setSlotStatus(getActivePlayer(), SS_COMPUTER);
-			GC.getInitCore().setSlotStatus(eNewPlayer, SS_TAKEN);*/
-			/*  <advc.210> The CHANGE_PLAYER component added a wrapper for that
-				(which now also initializes alerts) */
-			GET_PLAYER(getActivePlayer()).setIsHuman(false, true);
-			GET_PLAYER(eNewPlayer).setIsHuman(true, true);
-			// </advc.210>
-			GET_PLAYER(getActivePlayer()).setTurnActive(false, false);
-			GET_PLAYER(eNewPlayer).setTurnActive(true, false);
-			setActivePlayer(eNewPlayer, true);
+			// advc.210: Merged into BBAI function, which also takes care of alerts.
+			changeHumanPlayer(eNewPlayer);
 			break;
 		}
 	}

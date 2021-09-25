@@ -732,7 +732,7 @@ void CvPlayer::changeLeader(LeaderHeadTypes eNewLeader)
 void CvPlayer::setIsHuman(bool bNewValue, /* advc.127c: */ bool bUpdateAI)
 {
 	// <advc.706> Make sure that these are consistent
-	if(!bNewValue)
+	if (!bNewValue)
 		m_bDisableHuman = false; // </advc.706>
 	if (bNewValue == isHuman())
 		return;
@@ -8496,7 +8496,8 @@ bool CvPlayer::isConnected() const
 	return gDLL->isConnected(getNetID());
 }
 
-
+/*	advc (note): The diplo screen seems to check these IDs also in single-player
+	mode. Should be -1 for all civs that aren't actively controlled by a human. */
 int CvPlayer::getNetID() const
 {
 	return GC.getInitCore().getNetID(getID());

@@ -5473,38 +5473,40 @@ void CvGame::sendPlayerOptions(bool bForce)
 
 void CvGame::setActivePlayer(PlayerTypes eNewValue, bool bForceHotSeat)
 {
-	PlayerTypes eOldActivePlayer = getActivePlayer();
-	if (eOldActivePlayer != eNewValue)
+	PlayerTypes const eOldActivePlayer = getActivePlayer();
+	if (eOldActivePlayer == eNewValue)
+		return;
+
+	int const iActiveNetId = (eOldActivePlayer != NO_PLAYER ?
+			GET_PLAYER(eOldActivePlayer).getNetID() : -1);
+	GC.getInitCore().setActivePlayer(eNewValue);
+	if (eNewValue != NO_PLAYER && // K-Mod
+		GET_PLAYER(eNewValue).isHuman() &&
+		(isHotSeat() || isPbem() || bForceHotSeat))
 	{
-		int iActiveNetId = ((NO_PLAYER != eOldActivePlayer) ? GET_PLAYER(eOldActivePlayer).getNetID() : -1);
-		GC.getInitCore().setActivePlayer(eNewValue);
-		if (eNewValue != NO_PLAYER && // K-Mod
-			GET_PLAYER(eNewValue).isHuman() && (isHotSeat() || isPbem() || bForceHotSeat))
+		gDLL->getPassword(eNewValue);
+		setHotPbemBetweenTurns(false);
+		gDLL->getInterfaceIFace()->dirtyTurnLog(eNewValue);
+
+		if (eOldActivePlayer != NO_PLAYER)
 		{
-			gDLL->getPassword(eNewValue);
-			setHotPbemBetweenTurns(false);
-			gDLL->getInterfaceIFace()->dirtyTurnLog(eNewValue);
-
-			if (eOldActivePlayer != NO_PLAYER)
-			{
-				int iInactiveNetId = GET_PLAYER(eNewValue).getNetID();
-				GET_PLAYER(eNewValue).setNetID(iActiveNetId);
-				GET_PLAYER(eOldActivePlayer).setNetID(iInactiveNetId);
-			}
-
-			GET_PLAYER(eNewValue).showMissedMessages();
-
-			if (countHumanPlayersAlive() == 1 && isPbem())
-			{
-				// Nobody else left alive
-				GC.getInitCore().setType(GAME_HOTSEAT_NEW);
-			}
-
-			if (isHotSeat() || bForceHotSeat)
-				sendPlayerOptions(true);
+			int iInactiveNetId = GET_PLAYER(eNewValue).getNetID();
+			GET_PLAYER(eNewValue).setNetID(iActiveNetId);
+			GET_PLAYER(eOldActivePlayer).setNetID(iInactiveNetId);
 		}
-		updateActiveVisibility(); // advc.706: Moved into subroutine
+
+		GET_PLAYER(eNewValue).showMissedMessages();
+
+		if (countHumanPlayersAlive() == 1 && isPbem())
+		{
+			// Nobody else left alive
+			GC.getInitCore().setType(GAME_HOTSEAT_NEW);
+		}
+
+		if (isHotSeat() || bForceHotSeat)
+			sendPlayerOptions(true);
 	}
+	updateActiveVisibility(); // advc.706: Moved into subroutine
 }
 
 // advc.706: Cut and pasted from CvGame::setActivePlayer
@@ -9860,24 +9862,12 @@ void CvGame::addPlayer(PlayerTypes eNewPlayer, LeaderHeadTypes eLeader, Civiliza
 	// BETTER_BTS_AI_MOD: END
 }
 
-//	BETTER_BTS_AI_MOD, Debug, 8/1/08, jdog5000: START
-void CvGame::changeHumanPlayer(PlayerTypes eNewHuman)
+/*	BETTER_BTS_AI_MOD, Debug, 8/1/08, jdog5000: START
+	(advc: Merged with code from nextActivePlayer) */
+void CvGame::changeHumanPlayer(PlayerTypes eNewHuman,
+	bool bSetTurnActive) // advc
 {
-	PlayerTypes eCurHuman = getActivePlayer();
-	/*  <advc.127> Rearranged code b/c of a change in CvPlayer::isOption.
-		Important for advc.706. */
-	if(eNewHuman == eCurHuman)
-	{
-		if(getActivePlayer() != eNewHuman)
-			setActivePlayer(eNewHuman, false);
-		GET_PLAYER(eNewHuman).setIsHuman(true);
-		GET_PLAYER(eNewHuman).updateHuman();
-		return;
-	}
-	GET_PLAYER(eCurHuman).setIsHuman(true);
-	GET_PLAYER(eNewHuman).setIsHuman(true);
-	GET_PLAYER(eCurHuman).updateHuman();
-	GET_PLAYER(eNewHuman).updateHuman();
+	PlayerTypes const eCurHuman = getActivePlayer();
 	/*	<advc> Probably not necessary, but seems cleaner to swap the
 		player options of the old and new human rather than just copying
 		from old to new. */
@@ -9898,18 +9888,24 @@ void CvGame::changeHumanPlayer(PlayerTypes eNewHuman)
 		GET_PLAYER(eCurHuman).setOption(eLoopPlayerOption,
 				aeNewHumanOldOptions.get(eLoopPlayerOption));
 	} // </advc>
-	FOR_EACH_ENUM(PlayerOption)
-	{
-		gDLL->sendPlayerOption(eLoopPlayerOption,
-				GET_PLAYER(eNewHuman).isOption(eLoopPlayerOption));
-	} // </advc.127>
-	// <advc.001> Otherwise, the selected unit will affect CvPlot::updateCenterUnit.
-	gDLL->getInterfaceIFace()->clearSelectionList();
-	gDLL->getInterfaceIFace()->clearSelectedCities(); // </advc.001>
-	setActivePlayer(eNewHuman, false);
-
 	GET_PLAYER(eCurHuman).setIsHuman(false, /* advc.127c: */ true);
-	GET_PLAYER(eCurHuman).updateHuman(); // advc.127
+	GET_PLAYER(eNewHuman).setIsHuman(true, /* advc.127c: */ true);
+	// <advc> Moved from nextActivePlayer
+	if (bSetTurnActive)
+	{
+		GET_PLAYER(eCurHuman).setTurnActive(false, false);
+		GET_PLAYER(eNewHuman).setTurnActive(true, false);
+	} // </advc>
+	// <advc.127c> Otherwise, the selected unit will affect CvPlot::updateCenterUnit.
+	gDLL->getInterfaceIFace()->clearSelectionList();
+	gDLL->getInterfaceIFace()->clearSelectedCities(); 
+	setActivePlayer(eNewHuman, //false
+			/*	This makes sure that net ids are updated. Apparently, inconsistent
+				net ids can cause the diplo screen to refuse putting certain items
+				on the table. */
+			true);
+	// (advc: Send options loop deleted; bForceHotSeat above takes care of that)
+	// </advc.127c>
 }
 
 
