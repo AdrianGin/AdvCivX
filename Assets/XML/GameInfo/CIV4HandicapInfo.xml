@@ -48,6 +48,8 @@
 			<!-- advc.251: was 50 -->
 			<iCivicUpkeepPercent>60</iCivicUpkeepPercent>
 			<iInflationPercent>60</iInflationPercent>
+			<!-- advc.101 -->
+			<iForeignCultureStrength>10</iForeignCultureStrength>
 			<!-- advc.251: was 4 -->
 			<iHealthBonus>3</iHealthBonus>
 			<!-- advc.251: was 6 -->
@@ -225,6 +227,8 @@
 			<!-- advc.251: was 60 -->
 			<iCivicUpkeepPercent>70</iCivicUpkeepPercent>
 			<iInflationPercent>70</iInflationPercent>
+			<!-- advc.101 -->
+			<iForeignCultureStrength>15</iForeignCultureStrength>
 			<iHealthBonus>3</iHealthBonus>
 			<iHappyBonus>5</iHappyBonus>
 			<!-- advc.148: was 1 -->
@@ -377,6 +381,8 @@
 			<!-- advc.251: was 70 -->
 			<iCivicUpkeepPercent>80</iCivicUpkeepPercent>
 			<iInflationPercent>80</iInflationPercent>
+			<!-- advc.101 -->
+			<iForeignCultureStrength>20</iForeignCultureStrength>
 			<iHealthBonus>2</iHealthBonus>
 			<iHappyBonus>4</iHappyBonus>
 			<!-- advc.148: was 0 -->
@@ -505,6 +511,8 @@
 			<!-- advc.251: was 80 -->
 			<iCivicUpkeepPercent>90</iCivicUpkeepPercent>
 			<iInflationPercent>90</iInflationPercent>
+			<!-- advc.101 -->
+			<iForeignCultureStrength>25</iForeignCultureStrength>
 			<iHealthBonus>2</iHealthBonus>
 			<iHappyBonus>4</iHappyBonus>
 			<!-- advc.148: was -1 -->
@@ -626,6 +634,8 @@
 			<!-- advc.251: was 90 -->
 			<iCivicUpkeepPercent>95</iCivicUpkeepPercent>
 			<iInflationPercent>95</iInflationPercent>
+			<!-- advc.101 -->
+			<iForeignCultureStrength>29</iForeignCultureStrength>
 			<iHealthBonus>2</iHealthBonus>
 			<iHappyBonus>4</iHappyBonus>
 			<!-- advc.148: was -1 -->
@@ -751,6 +761,8 @@
 			<!-- advc.251: was 95 -->
 			<iCivicUpkeepPercent>100</iCivicUpkeepPercent>
 			<iInflationPercent>100</iInflationPercent>
+			<!-- advc.101 -->
+			<iForeignCultureStrength>32</iForeignCultureStrength>
 			<iHealthBonus>2</iHealthBonus>
 			<iHappyBonus>4</iHappyBonus>
 			<!-- advc.148: was -1 -->
@@ -903,6 +915,8 @@
 			<iCorporationMaintenancePercent>115</iCorporationMaintenancePercent>
 			<iCivicUpkeepPercent>100</iCivicUpkeepPercent>
 			<iInflationPercent>100</iInflationPercent>
+			<!-- advc.101 -->
+			<iForeignCultureStrength>35</iForeignCultureStrength>
 			<iHealthBonus>2</iHealthBonus>
 			<iHappyBonus>4</iHappyBonus>
 			<!-- advc.148: was -1 -->
@@ -1060,6 +1074,8 @@
 			<iCorporationMaintenancePercent>120</iCorporationMaintenancePercent>
 			<iCivicUpkeepPercent>100</iCivicUpkeepPercent>
 			<iInflationPercent>100</iInflationPercent>
+			<!-- advc.101 -->
+			<iForeignCultureStrength>38</iForeignCultureStrength>
 			<iHealthBonus>2</iHealthBonus>
 			<iHappyBonus>4</iHappyBonus>
 			<!-- advc.148: was -1 -->
@@ -1223,6 +1239,8 @@
 			<iCorporationMaintenancePercent>130</iCorporationMaintenancePercent>
 			<iCivicUpkeepPercent>100</iCivicUpkeepPercent>
 			<iInflationPercent>100</iInflationPercent>
+			<!-- advc.101 -->
+			<iForeignCultureStrength>40</iForeignCultureStrength>
 			<iHealthBonus>2</iHealthBonus>
 			<iHappyBonus>4</iHappyBonus>
 			<!-- advc.148: was -1 -->

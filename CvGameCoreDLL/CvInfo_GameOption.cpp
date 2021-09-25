@@ -1037,7 +1037,7 @@ bool CvHandicapInfo::isAIFreeTechs(int i) const // advc.003t: Return type was in
 #if ENABLE_XML_FILE_CACHE
 void CvHandicapInfo::read(FDataStreamBase* stream)
 {
-	CvInfoBase::read(stream);
+	base_t::read(stream); // advc.tag
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -1131,7 +1131,7 @@ void CvHandicapInfo::read(FDataStreamBase* stream)
 
 void CvHandicapInfo::write(FDataStreamBase* stream)
 {
-	CvInfoBase::write(stream);
+	base_t::write(stream); // advc.tag
 	uint uiFlag = 0;
 	stream->Write(uiFlag);
 	stream->Write(m_iFreeWinsVsBarbs);
@@ -1218,7 +1218,7 @@ void CvHandicapInfo::write(FDataStreamBase* stream)
 #endif
 bool CvHandicapInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML)) // advc.tag
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iFreeWinsVsBarbs, "iFreeWinsVsBarbs");

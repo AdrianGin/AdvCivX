@@ -4122,10 +4122,9 @@ int CvCity::cultureStrength(PlayerTypes ePlayer,
 		that the UI communicates to the player). */
 	static scaled const rFOREIGN_CULTURE_STRENGTH_EXPONENT = per100(
 			GC.getDefineINT("FOREIGN_CULTURE_STRENGTH_EXPONENT"));
-	static scaled const rFOREIGN_CULTURE_STRENGTH_FACTOR = per100(
-			GC.getDefineINT("FOREIGN_CULTURE_STRENGTH_FACTOR"));
 	rStrength.exponentiate(rFOREIGN_CULTURE_STRENGTH_EXPONENT);
-	rStrength *= rFOREIGN_CULTURE_STRENGTH_FACTOR;
+	rStrength *= per100(GC.getInfo(kOwner.getHandicapType()).get(
+			CvHandicapInfo::ForeignCultureStrength));
 
 	static scaled const rREVOLT_OFFENSE_STATE_RELIGION_MODIFIER = per100(
 			GC.getDefineINT("REVOLT_OFFENSE_STATE_RELIGION_MODIFIER"));

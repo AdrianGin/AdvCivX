@@ -345,6 +345,8 @@
 	<ElementType name="iHurryPercent" content="textOnly" dt:type="int"/>
 	<ElementType name="iHurryConscriptAngerPercent" content="textOnly" dt:type="int"/>
 	<ElementType name="iInflationPercent" content="textOnly" dt:type="int"/>
+	<!-- advc.101 -->
+	<ElementType name="iForeignCultureStrength" content="textOnly" dt:type="int"/>
 	<ElementType name="iHealthBonus" content="textOnly" dt:type="int"/>
 	<ElementType name="iHappyBonus" content="textOnly" dt:type="int"/>
 	<ElementType name="iAttitudeChange" content="textOnly" dt:type="int"/>
@@ -442,6 +444,8 @@
 		<element type="iCorporationMaintenancePercent"/>
 		<element type="iCivicUpkeepPercent"/>
 		<element type="iInflationPercent"/>
+		<!-- advc.101 -->
+		<element type="iForeignCultureStrength"/>
 		<element type="iHealthBonus"/>
 		<element type="iHappyBonus"/>
 		<element type="iAttitudeChange"/>

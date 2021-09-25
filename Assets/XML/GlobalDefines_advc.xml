@@ -152,10 +152,12 @@
 		<DefineName>FOREIGN_CULTURE_STRENGTH_EXPONENT</DefineName>
 		<iDefineIntVal>135</iDefineIntVal>
     </Define>
-	<Define>
+	<!-- Moved this to Civ4HandicapInfos.xml in AdvCiv 1.0.
+		 35 is used there for Emperor difficulty. -->
+	<!--Define>
 		<DefineName>FOREIGN_CULTURE_STRENGTH_FACTOR</DefineName>
 		<iDefineIntVal>35</iDefineIntVal>
-    </Define>
+    </Define-->
 
 	<!-- These two are from the original GlobalDefines. -->
 	<!-- advc.101: Was 100, meaning that foreign culture strength is doubled
