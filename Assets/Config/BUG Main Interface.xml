@@ -32,7 +32,7 @@
 					
 			<!-- advc.106b -->
 			<option id="AutoOpenEventLog" key="Auto Open Event Log" 
-					type="boolean" default="True" 
+					type="boolean" default="False" 
 					get="isAutoOpenEventLog"/>
 			<list   id="MessageLimit" key="Message Limit"
 					type="int" default="3" listType="int"
