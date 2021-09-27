@@ -2879,7 +2879,8 @@ void CvUnit::move(CvPlot& kPlot, bool bShow, /* advc.163: */ bool bJump, bool bG
 }
 
 // returns false if unit is killed
-bool CvUnit::jumpToNearestValidPlot(/* K-Mod: */ bool bGroup, bool bForceMove)
+bool CvUnit::jumpToNearestValidPlot(/* K-Mod: */ bool bGroup, bool bForceMove,
+	bool bFreeMove) // advc.163
 {
 	FAssert(!isAttacking());
 	FAssert(!isFighting());
@@ -2961,8 +2962,9 @@ bool CvUnit::jumpToNearestValidPlot(/* K-Mod: */ bool bGroup, bool bForceMove)
 			pGroup->setAutomateType(NO_AUTOMATE);
 			pGroup->setActivityType(ACTIVITY_AWAKE); // </advc.163>
 		}
-		//setXY(pBestPlot->getX(), pBestPlot->getY(), bGroup);
-		move(*pBestPlot, true, true, bGroup); // advc.163
+		if (bFreeMove) // advc.163
+			setXY(pBestPlot->getX(), pBestPlot->getY(), bGroup);
+		else move(*pBestPlot, true, true, bGroup); // advc.163
 	}
 	else
 	{

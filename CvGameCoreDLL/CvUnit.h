@@ -94,7 +94,8 @@ public:
 	void move(CvPlot& kPlot, bool bShow, // advc: 1st param was CvPlot* (not const b/c of possible feature change)
 			bool bJump = false, bool bGroup = true); // advc.163
 	// K-Mod added bForceMove and bGroup
-	bool jumpToNearestValidPlot(bool bGroup = false, bool bForceMove = false);								// Exposed to Python
+	bool jumpToNearestValidPlot(bool bGroup = false, bool bForceMove = false,								// Exposed to Python
+			bool bFreeMove = false); // advc.163
 
 	bool canAutomate(AutomateTypes eAutomate) const;														// Exposed to Python
 	void automate(AutomateTypes eAutomate);

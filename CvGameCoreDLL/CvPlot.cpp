@@ -729,8 +729,14 @@ void CvPlot::verifyUnitValidPlot()
 					if (isVisibleEnemyUnit(&kUnit) &&
 						!kUnit.isInvisible(getTeam(), false))
 					{
-						if (!kUnit.jumpToNearestValidPlot(true))
+						if (!kUnit.jumpToNearestValidPlot(true, false,
+							/*	advc.163: Normally, the jump shouldn't be free,
+								but I don't want humans to troll AI stacks with e.g.
+								a worker placed on the path of an invading stack. */
+							!kUnit.isHuman()))
+						{
 							bErased = true;
+						}
 						// <K-Mod>
 						else
 						{
