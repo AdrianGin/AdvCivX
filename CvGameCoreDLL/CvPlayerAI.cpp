@@ -8315,8 +8315,12 @@ int CvPlayerAI::AI_getTeamSizeAttitude(PlayerTypes ePlayer) const
 int CvPlayerAI::AI_getRankDifferenceAttitude(PlayerTypes ePlayer) const
 {
 	// Cached separately to avoid updating the whole cache w/e scores change
-	if(m_abTheyFarAhead[ePlayer])
-		return 0; // No hate if they're way ahead
+	if (m_abTheyFarAhead[ePlayer] || // No hate if they're way ahead
+		GET_TEAM(getTeam()).isCapitulated() || GET_TEAM(ePlayer).isCapitulated() ||
+		getTeam() == TEAMID(ePlayer))
+	{
+		return 0;
+	}
 	/*	Portion of known major civs that rank better than both us and ePlayer.
 		E.g. 3/5 when us and ePlayer are last among 5 known major civs. */
 	scaled rOutrankBothRatio;
