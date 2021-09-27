@@ -18741,6 +18741,11 @@ bool CvPlayer::getItemTradeString(PlayerTypes eRecipient, bool bOffer,
 void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& kOurInventory,
 	CLinkList<TradeData> const& kOurOffer, CLinkList<TradeData> const& kTheirOffer) const
 {
+	/*	<advc> The diplo screen may apparently refuse to add items when the
+		net IDs aren't properly set (even in single-player mode). */
+	FAssert(!isHuman() || getNetID() >= 0);
+	FAssert(!GET_PLAYER(eOtherPlayer).isHuman() || GET_PLAYER(eOtherPlayer).getNetID() >= 0);
+	// </advc>
 	/*	<advc.ctr> None of the adjustments below (incl. the ones already present
 		in BtS) should be made when reviewing current deals. How to tell?
 		The inventory being the same as our side of the table is, apparently,
