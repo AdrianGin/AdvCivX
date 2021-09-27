@@ -9141,7 +9141,9 @@ void CvGame::read(FDataStreamBase* pStream)
 	pStream->Read(&m_iInitTech);
 	pStream->Read(&m_iInitWonders);
 	pStream->Read(&m_iAIAutoPlay);
-	m_iAIAutoPlay = -1; // advc.127: allGameDataRead will handle it properly
+	// <advc.127> allGameDataRead will handle it properly
+	if (m_iAIAutoPlay != 0)
+		m_iAIAutoPlay = -1; // </advc.127>
 	pStream->Read(&m_iGlobalWarmingIndex); // K-Mod
 	pStream->Read(&m_iGwEventTally); // K-Mod
 	// <advc.opt>
