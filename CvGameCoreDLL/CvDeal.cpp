@@ -387,12 +387,12 @@ void CvDeal::doTurn()
 			if (getLengthSecond() > 0)
 			{
 				GET_PLAYER(getSecondPlayer()).AI_processPeacetimeTradeValue(
-						getFirstPlayer(), iValue);
+						getFirstPlayer(), iValue, /* advc.130p: */ false);
 			}
 			else
 			{
 				GET_PLAYER(getSecondPlayer()).AI_processPeacetimeGrantValue(
-						getFirstPlayer(), iValue);
+						getFirstPlayer(), iValue, /* advc.130p: */ false);
 			}
 		}
 		/*	K-Mod note: for balance reasons this function should probably
@@ -400,7 +400,8 @@ void CvDeal::doTurn()
 			rather than at the turn boundary of the game itself.
 			-- Unfortunately, the game currently doesn't work like this.
 			Also, note that we do not update attitudes of particular players here,
-			but instead update all of them at the game turn boundary. */
+			but instead update all of them at the game turn boundary
+			[advc: i.e. in CvGame::doDeals]. */
 	}
 }
 

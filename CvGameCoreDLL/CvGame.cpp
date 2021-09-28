@@ -6665,23 +6665,16 @@ void CvGame::doDeals()
 {
 	verifyDeals();
 
-	std::set<PlayerTypes> trade_players; // K-Mod. List of players involved in trades.
 	FOR_EACH_DEAL_VAR(pLoopDeal)
 	{
-		// K-Mod
-		trade_players.insert(pLoopDeal->getFirstPlayer());
-		trade_players.insert(pLoopDeal->getSecondPlayer());
-		// K-Mod end
 		pLoopDeal->doTurn();
 	}
-
-	// K-Mod. Update the attitude cache for all trade players
-	for (std::set<PlayerTypes>::iterator it = trade_players.begin(); it != trade_players.end(); ++it)
-	{
-		FAssert(*it != NO_PLAYER);
-		GET_PLAYER(*it).AI_updateAttitude();
-	}
-	// K-Mod end
+	/*	<advc.130p> K-Mod had only done this update for players involved in any deals
+		(through an std::set), but third parties might disapprove of the deal.
+		(I think this was a minor oversight in K-Mod - but matters more in AdvCiv
+		b/c of changes to trade values of annual deals.) */
+	for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		itPlayer->AI_updateAttitude(); // </advc.130p>
 }
 
 // advc.055: For doGlobalWarming (needs to have external linkage)

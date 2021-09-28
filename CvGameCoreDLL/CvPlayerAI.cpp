@@ -420,7 +420,7 @@ void CvPlayerAI::AI_doTurnPost()
 {
 	PROFILE_FUNC();
 
-	if (isHuman() || isMinorCiv())
+	if (isMinorCiv())
 		return;
 
 	if (isBarbarian())
@@ -428,6 +428,18 @@ void CvPlayerAI::AI_doTurnPost()
 		AI_foldDeals(); // advc.036
 		return;
 	}
+	/*	<advc.001> The K-Mod update in CvTeamAI::AI_doTurnPost is not sufficient
+		b/c player turns happen after the team turn. The update of diplo counters
+		can also affect the attitude toward this player. */
+	for (PlayerAIIter<MAJOR_CIV> itOther; itOther.hasNext(); ++itOther)
+	{
+		if (itOther->getID() != getID())
+			itOther->AI_updateAttitude(getID());
+	}
+	if (isHuman())
+		return;
+	AI_updateAttitude();
+	// </advc.001>
 
 	AI_doDiplo();
 	/*  UNOFFICIAL_PATCH, Bugfix, 06/16/09, jdog5000:
@@ -8126,7 +8138,7 @@ int CvPlayerAI::AI_getTradeAttitude(PlayerTypes ePlayer) const
 	r += scaled::max(0, rTradeValDiff);
 	if (r > 0)
 		r = fixp(11.5) * r.pow(fixp(2/3.)); // Diminishing returns
-	r *= GET_TEAM(ePlayer).AI_recentlyMetMultiplier(getTeam());
+	r *= GET_TEAM(getTeam()).AI_recentlyMetMultiplier(TEAMID(ePlayer));
 	r /= AI_peacetimeTradeValDivisor(false);
 	r.clamp(0, PEACETIME_TRADE_RELATIONS_LIMIT);
 	return r.round();
@@ -8217,7 +8229,7 @@ int CvPlayerAI::AI_getRivalTradeAttitude(PlayerTypes ePlayer) const
 		rDualDealCounter += scaled::min(rVassalDealCounter, 10);
 		// </advc.130v>
 	}
-	r *= GET_TEAM(ePlayer).AI_recentlyMetMultiplier(getTeam());
+	r *= GET_TEAM(getTeam()).AI_recentlyMetMultiplier(TEAMID(ePlayer));
 	r += 75 * rDualDealCounter;
 	r /= AI_peacetimeTradeValDivisor(true);
 	r.clamp(0, PEACETIME_TRADE_RELATIONS_LIMIT);
@@ -18107,20 +18119,25 @@ int CvPlayerAI::AI_getPeacetimeGrantValue(PlayerTypes eIndex) const
 
 // <advc.130p>
 // Merged (and renamed) AI_changePeacetimeTradeValue and AI_changePeacetimeGrantValue
-void CvPlayerAI::AI_processPeacetimeTradeValue(PlayerTypes eIndex, int iChange)
+void CvPlayerAI::AI_processPeacetimeTradeValue(PlayerTypes eIndex, int iChange,
+	bool bUpdateAttitude)
 {
-	AI_processPeacetimeValue(eIndex, iChange, false);
+	AI_processPeacetimeValue(eIndex, iChange, false,
+			false, NO_TEAM, NO_TEAM, bUpdateAttitude);
 }
 
 
-void CvPlayerAI::AI_processPeacetimeGrantValue(PlayerTypes eIndex, int iChange)
+void CvPlayerAI::AI_processPeacetimeGrantValue(PlayerTypes eIndex, int iChange,
+	bool bUpdateAttitude)
 {
-	AI_processPeacetimeValue(eIndex, iChange, true);
+	AI_processPeacetimeValue(eIndex, iChange, true,
+			false, NO_TEAM, NO_TEAM, bUpdateAttitude);
 }
 
 // Based on the old AI_changePeacetimeGrantValue
 void CvPlayerAI::AI_processPeacetimeValue(PlayerTypes eFromPlayer, int iChange,
-	bool bGrant, bool bPeace, TeamTypes ePeaceTradeTarget, TeamTypes eWarTradeTarget)
+	bool bGrant, bool bPeace, TeamTypes ePeaceTradeTarget, TeamTypes eWarTradeTarget,
+	bool bUpdateAttitude)
 {
 	PROFILE_FUNC();
 	FAssertBounds(0, MAX_CIV_PLAYERS, eFromPlayer); // advc.003n
@@ -18195,17 +18212,17 @@ void CvPlayerAI::AI_processPeacetimeValue(PlayerTypes eFromPlayer, int iChange,
 		{
 			rEnemyIncrease /= 2;
 			kThirdParty.AI_changeEnemyPeacetimeTradeValue(TEAMID(eFromMaster),
-					rEnemyIncrease.round());
+					rEnemyIncrease.round(), bUpdateAttitude);
 		} // </advc.130v>
 		if(bGrant)
 		{
 			kThirdParty.AI_changeEnemyPeacetimeGrantValue(TEAMID(eFromPlayer),
-					rEnemyIncrease.round());
+					rEnemyIncrease.round(), bUpdateAttitude);
 		}
 		else
 		{
 			kThirdParty.AI_changeEnemyPeacetimeTradeValue(TEAMID(eFromPlayer),
-					rEnemyIncrease.round());
+					rEnemyIncrease.round(), bUpdateAttitude);
 		}
 	}
 }

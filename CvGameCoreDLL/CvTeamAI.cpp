@@ -4465,18 +4465,21 @@ void CvTeamAI::AI_setSharedWarSuccess(TeamTypes eWarAlly, int iWS)
 } // </advc.130m>
 
 
-void CvTeamAI::AI_setEnemyPeacetimeTradeValue(TeamTypes eIndex, int iNewValue)
+void CvTeamAI::AI_setEnemyPeacetimeTradeValue(TeamTypes eIndex, int iNewValue,
+	bool bUpdateAttitude) // advc.130p
 {
 	m_aiEnemyPeacetimeTradeValue.set(eIndex, iNewValue);
 	FAssert(AI_getEnemyPeacetimeTradeValue(eIndex) >= 0);
-	// K-Mod: update attitude (advc: call helper function)
-	AI_updateAttitude(eIndex, /* advc.130e: */ false);
+	if (bUpdateAttitude) // advc.130p
+		AI_updateAttitude(eIndex, /* advc.130e: */ false); // K-Mod
 }
 
 
-void CvTeamAI::AI_changeEnemyPeacetimeTradeValue(TeamTypes eIndex, int iChange)
+void CvTeamAI::AI_changeEnemyPeacetimeTradeValue(TeamTypes eIndex, int iChange,
+	bool bUpdateAttitude) // advc.130p
 {
-	AI_setEnemyPeacetimeTradeValue(eIndex, (AI_getEnemyPeacetimeTradeValue(eIndex) + iChange));
+	AI_setEnemyPeacetimeTradeValue(eIndex, AI_getEnemyPeacetimeTradeValue(eIndex) + iChange,
+			bUpdateAttitude); // advc.130p
 }
 
 // <advc.130p>, advc.130m To keep the rate consistent between TeamAI and PlayerAI
@@ -4499,18 +4502,21 @@ scaled CvTeamAI::AI_recentlyMetMultiplier(TeamTypes eOther) const
 } // </advc.130p>
 
 
-void CvTeamAI::AI_setEnemyPeacetimeGrantValue(TeamTypes eIndex, int iNewValue)
+void CvTeamAI::AI_setEnemyPeacetimeGrantValue(TeamTypes eIndex, int iNewValue,
+	bool bUpdateAttitude) // advc.130p
 {
 	m_aiEnemyPeacetimeGrantValue.set(eIndex, iNewValue);
 	FAssert(AI_getEnemyPeacetimeGrantValue(eIndex) >= 0);
-	// K-Mod: update attitude (advc: call helper function)
-	AI_updateAttitude(eIndex, /* advc.130e: */ false);
+	if (bUpdateAttitude) // advc.130p
+		AI_updateAttitude(eIndex, /* advc.130e: */ false); // K-Mod
 }
 
 
-void CvTeamAI::AI_changeEnemyPeacetimeGrantValue(TeamTypes eIndex, int iChange)
+void CvTeamAI::AI_changeEnemyPeacetimeGrantValue(TeamTypes eIndex, int iChange,
+	bool bUpdateAttitude) // advc.130p
 {
-	AI_setEnemyPeacetimeGrantValue(eIndex, AI_getEnemyPeacetimeGrantValue(eIndex) + iChange);
+	AI_setEnemyPeacetimeGrantValue(eIndex, AI_getEnemyPeacetimeGrantValue(eIndex) + iChange,
+			bUpdateAttitude); // advc.130p
 }
 
 // advc.003u: Moved from CvTeam
@@ -5635,6 +5641,7 @@ int CvTeamAI::AI_randomCounterChange(int iUpperCap, scaled rProb) const
 
 void CvTeamAI::AI_doCounter()
 {
+	// advc (note): Attitude isn't updated here. Should be soon enough in AI_doTurnPost.
 	for (TeamIter<ALIVE> it(getID()); it.hasNext(); ++it)
 	{
 		// <advc.130k>
@@ -5690,9 +5697,11 @@ void CvTeamAI::AI_doCounter()
 				(AI_getSharedWarSuccess(eOther) * rDecayFactor).floor());
 		// </advc.130m>  <advc.130p>
 		AI_setEnemyPeacetimeGrantValue(eOther,
-				(AI_getEnemyPeacetimeGrantValue(eOther) * rDecayFactor).floor());
+				(AI_getEnemyPeacetimeGrantValue(eOther) * rDecayFactor).floor(),
+				false);
 		AI_setEnemyPeacetimeTradeValue(eOther,
-				(AI_getEnemyPeacetimeTradeValue(eOther) * rDecayFactor).floor());
+				(AI_getEnemyPeacetimeTradeValue(eOther) * rDecayFactor).floor(),
+				false);
 		// </advc.130p>
 		// <advc.130r>
 		{	// Double decay rate for war success

@@ -504,13 +504,16 @@ public:
 		should be changed. */
 	void AI_processPeacetimeValue(PlayerTypes eFromPlayer, int iChange,
 			bool bGrant, bool bPeace = false, TeamTypes ePeaceTradeTarget = NO_TEAM,
-			TeamTypes eWarTradeTarget = NO_TEAM); // </advc.130p>
+			TeamTypes eWarTradeTarget = NO_TEAM, bool bUpdateAttitude = true);
+	// </advc.130p>
 	int AI_getPeacetimeTradeValue(PlayerTypes eIndex) const;
 	// advc.130p: Renamed from changePeacetimeTradeValue
-	void AI_processPeacetimeTradeValue(PlayerTypes eIndex, int iChange);
+	void AI_processPeacetimeTradeValue(PlayerTypes eIndex, int iChange,
+			bool bUpdateAttitude = true); // advc.130p
 	int AI_getPeacetimeGrantValue(PlayerTypes eIndex) const;
 	// advc.130p: Renamed from changePeacetimeTradeValue
-	void AI_processPeacetimeGrantValue(PlayerTypes eIndex, int iChange);
+	void AI_processPeacetimeGrantValue(PlayerTypes eIndex, int iChange,
+			bool bUpdateAttitude = true); // advc.130p
 	// <advc.130k> To make exponential decay more convenient
 	void AI_setSameReligionCounter(PlayerTypes eIndex, int iValue);
 	void AI_setDifferentReligionCounter(PlayerTypes eIndex, int iValue);

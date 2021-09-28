@@ -262,15 +262,18 @@ public:
 	{
 		return m_aiEnemyPeacetimeTradeValue.get(eIndex);
 	}
-	void AI_setEnemyPeacetimeTradeValue(TeamTypes eIndex, int iNewValue);
-	void AI_changeEnemyPeacetimeTradeValue(TeamTypes eIndex, int iChange);
-
+	void AI_setEnemyPeacetimeTradeValue(TeamTypes eIndex, int iNewValue,
+			bool bUpdateAttitude = true); // advc.130p
+	void AI_changeEnemyPeacetimeTradeValue(TeamTypes eIndex, int iChange,
+			bool bUpdateAttitude = true); // advc.130p
 	int AI_getEnemyPeacetimeGrantValue(TeamTypes eIndex) const
 	{
 		return m_aiEnemyPeacetimeGrantValue.get(eIndex);
 	}
-	void AI_setEnemyPeacetimeGrantValue(TeamTypes eIndex, int iNewValue);
-	void AI_changeEnemyPeacetimeGrantValue(TeamTypes eIndex, int iChange);
+	void AI_setEnemyPeacetimeGrantValue(TeamTypes eIndex, int iNewValue,
+			bool bUpdateAttitude = true); // advc.130p
+	void AI_changeEnemyPeacetimeGrantValue(TeamTypes eIndex, int iChange,
+			bool bUpdateAttitude = true); // advc.130p
 
 	// advc: countEnemy... functions moved from CvTeam
 	int AI_countEnemyPowerByArea(CvArea const& kArea) const;												// Exposed to Python
