@@ -7918,7 +7918,6 @@ bool CvCity::canCultureFlip(PlayerTypes eToPlayer, /* advc.101: */ bool bCheckPr
 	// <advc.099c>
 	if (eToPlayer == NO_PLAYER)
 		eToPlayer = getPlot().calculateCulturalOwner();
-	// ('else' b/c calculateCulturalOwner already checks culture range)
 	else if (!getPlot().isWithinCultureRange(eToPlayer))
 		return false;
 	if(eToPlayer == NO_PLAYER || eToPlayer == getOwner() ||
