@@ -215,7 +215,11 @@ class CvDomesticAdvisor:
 				szName += (u"%c" % gc.getCorporationInfo(iCorporation).getChar())
 					
 		# City name...
-		screen.setTableText( "CityListBackground", 1, i, szName, "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY )
+		screen.setTableText( "CityListBackground", 1, i, szName, "",
+				#WidgetTypes.WIDGET_GENERAL, -1, -1,
+				# advc.186b: BULL attaches this to the zoom button. I like it better on the city name b/c, that way, it doesn't obscure the button that the player may want to click.
+				WidgetTypes.WIDGET_EXAMINE_CITY, pLoopCity.getOwner(), pLoopCity.getID(),
+				CvUtil.FONT_LEFT_JUSTIFY )
 		
 		# Population
 		screen.setTableInt( "CityListBackground", 2, i, unicode(pLoopCity.getPopulation()), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY )

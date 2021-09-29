@@ -103,8 +103,8 @@
 		<Spanish>When checked, unfinished Worker builds are always shown in a tile's help text. Otherwise, they're only shown when the [COLOR_HIGHLIGHT_TEXT]Ctrl[COLOR_REVERT] key is held down. (Either way, Ctrl can be held down while issuing a build command in order to have the Worker suspend the build one turn before completion.)</Spanish>
 	</TEXT>
 
-	<!-- advc.099f -->
-	<TEXT>
+	<!-- advc.099f (always enabled as of AdvCiv v1.0) -->
+	<!--TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MISCHOVER__CULTUREINUNOWNEDTILES_TEXT</Tag>
 		<English>Always Show Tile Culture</English>
 		<German>Kulturanteile stets anzeigen</German>
@@ -117,7 +117,7 @@
 		<German>Zeigt Kulturanteile im Hilfetext aller einsehbaren Felder an. Wenn diese Option nicht angekreuzt ist, werden Kulturanteile neutraler Felder nur bei gedrückter [COLOR_HIGHLIGHT_TEXT]Umschalt[COLOR_REVERT]taste angezeigt.</German>
 		<Italian>When checked, culture percentages are shown in the help text of any actively visible tile. Otherwise, culture percentages in unowned tiles are only shown when the [COLOR_HIGHLIGHT_TEXT]Shift[COLOR_REVERT] key is held down. (Culture on unowned tiles is a common occurrence because K-Mod lets cities spread culture beyond their owner's borders.)</Italian>
 		<Spanish>When checked, culture percentages are shown in the help text of any actively visible tile. Otherwise, culture percentages in unowned tiles are only shown when the [COLOR_HIGHLIGHT_TEXT]Shift[COLOR_REVERT] key is held down. (Culture on unowned tiles is a common occurrence because K-Mod lets cities spread culture beyond their owner's borders.)</Spanish>
-	</TEXT>
+	</TEXT-->
 
 <!-- Unit -->
 	<!-- advc (tbd.): Move this to 'Unit Naming Options.xml' -->
@@ -270,7 +270,8 @@
 		<Italian>Quando è selezionato, nel testo a comparsa di ogni tipo di Commercio viene mostrato (quando necessario) il relativo subtotale (il totale prima dei modificatori).</Italian>
 		<Spanish>Muestra el subtotal para cada tipo de comercio en su texto flotante.</Spanish>
 	</TEXT>
-	<TEXT>
+	<!-- advc.078: Not optional -->
+	<!--TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MISCHOVER__GREATPEOPLERATEBREAKDOWN_TEXT</Tag>
 		<English>Rate Breakdown</English>
 		<German>Aufschlüsselung der Rate</German>
@@ -283,7 +284,7 @@
 		<German>Zeigt im Tooltip die [ICON_GREATPEOPLE]/Runde für jede einzelne Art Große Persönlichkeit an</German>
 		<Italian>Quando è selezionato, nel testo a comparsa di ogni tipo di Grande Personaggio viene mostrato il tasso individuale di [ICON_GREATPEOPLE] per turno.</Italian>
 		<Spanish>Permite consultar información individual de cada tipo de [ICON_GREATPEOPLE] en el texto flotante.</Spanish>
-	</TEXT>
+	</TEXT-->
 	
 	<!-- advc.004: German shortened -->
 	<TEXT>
@@ -509,13 +510,12 @@
 		<Spanish>Barra de Producción</Spanish>
 	</TEXT>
 	
-	<!-- advc.064: Moved from 'BUG City Screen Options.xml'
-		 and made some changes. [ICON_CITIZEN] apparently can't be used in
-		 help text. -->
+	<!-- advc.064: Moved from 'BUG City Screen Options.xml' and made some changes.
+		 advc.186: Also affects city bars now. -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__WHIPASSIST_HOVER</Tag>
-		<English>When checked, the production bar shows the population loss, [ICON_GOLD] cost and [ICON_PRODUCTION]/[ICON_GOLD] overflow caused by hurrying the city's current production order.</English>
-		<German>Zeigt im Produktionsbalken den Bevölkerungsverlust, die [ICON_GOLD]-Kosten und den [ICON_PRODUCTION]/[ICON_GOLD]-Überschuss, die eine Beschleunigung des derzeitigen Produktionsauftrags verursachen würde.</German>
+		<English>When checked, the production bar shows the [ICON_CITIZEN] or [ICON_GOLD] cost and [ICON_PRODUCTION]/[ICON_GOLD] overflow caused by hurrying the city's current production order. Additionally, this information gets shown when hovering over the city bar on the main screen.</English>
+		<German>Zeigt im Produktionsbalken die [ICON_CITIZEN]- oder [ICON_GOLD]-Kosten und den [ICON_PRODUCTION]/[ICON_GOLD]-Überschuss, die eine Beschleunigung des derzeitigen Produktionsauftrags verursachen würde. Zeigt dieselben Informationen außerdem im Hilfetext des Stadtbalkens auf dem Hauptbilschirm an.</German>
 		<Italian>Quando è selezionato, la Barra della Pruduzione della Schermata Cittadina mostra il costo in popolazione ed il surplus di produzione per l'accelerazione di produzione mediante sacrifici e il costo in oro per l'accelerazione di produzione mediante pagamenti relativi all'oggetto attualmente costruito.</Italian>
 		<Spanish>Si se activa, muestra el coste en población y el excedente de [ICON_PRODUCTION]/[ICON_GOLD] por usar sacrificios y/o el coste en [ICON_GOLD] por comprar la producción mostrada en la barra de producción.</Spanish>
 	</TEXT>

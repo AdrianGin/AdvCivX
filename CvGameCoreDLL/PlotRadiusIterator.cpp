@@ -5,12 +5,12 @@
 #include "CvUnit.h"
 
 // Not in the header b/c CvUnit.h isn't included there
-template<bool bIN_CIRCLE>
-CvPlot* SquareIterator<bIN_CIRCLE>::getUnitPlot(CvUnit const& kUnit) const
+template<bool bINCIRCLE>
+CvPlot& SpiralPlotIterator<bINCIRCLE>::getUnitPlot(CvUnit const& kUnit) const
 {
-	return kUnit.plot();
+	return kUnit.getPlot();
 }
 
 // Explicit instantiations (for linker)
-template class SquareIterator<true>;
-template class SquareIterator<false>;
+template class SpiralPlotIterator<true>;
+template class SpiralPlotIterator<false>;

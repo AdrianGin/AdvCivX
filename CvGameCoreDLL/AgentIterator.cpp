@@ -16,11 +16,11 @@ void AgentIteratorBase::setAgentsCache(CvAgents const* pAgents)
 
 namespace
 {
-	inline TeamTypes getTeam(CvPlayerAI const& kPlayer)
+	__inline TeamTypes getTeam(CvPlayerAI const& kPlayer)
 	{
 		return kPlayer.getTeam();
 	}
-	inline TeamTypes getTeam(CvTeamAI const& kTeam)
+	__inline TeamTypes getTeam(CvTeamAI const& kTeam)
 	{
 		return kTeam.getID();
 	}
@@ -29,48 +29,48 @@ namespace
 
 	template<class AgentType,AgentStatusPredicate eSTATUS,AgentRelationPredicate eRELATION,
 	CvAgents::AgentSeqCache eCACHE>
-	inline bool isBarbarian(AgentType const& kAgent)
+	__inline bool isBarbarian(AgentType const& kAgent)
 	{
 		return (eCACHE == CvAgents::ALL && kAgent.isBarbarian());
 	}
 	template<class AgentType,AgentStatusPredicate eSTATUS,AgentRelationPredicate eRELATION,
 	CvAgents::AgentSeqCache eCACHE>
-	inline bool isEverAlive(AgentType const& kAgent)
+	__inline bool isEverAlive(AgentType const& kAgent)
 	{
 		return (eCACHE != CvAgents::ALL || kAgent.isEverAlive());
 	}
 	template<class AgentType,AgentStatusPredicate eSTATUS,AgentRelationPredicate eRELATION,
 	CvAgents::AgentSeqCache eCACHE>
-	inline bool isAlive(AgentType const& kAgent)
+	__inline bool isAlive(AgentType const& kAgent)
 	{
 		return ((eCACHE != CvAgents::ALL && eCACHE != CvAgents::CIV_EVER_ALIVE) ||
 				kAgent.isAlive());
 	}
 	template<class AgentType,AgentStatusPredicate eSTATUS,AgentRelationPredicate eRELATION,
 	CvAgents::AgentSeqCache eCACHE>
-	inline bool isMinorCiv(AgentType const& kAgent)
+	__inline bool isMinorCiv(AgentType const& kAgent)
 	{
 		return (eCACHE != CvAgents::MAJOR_ALIVE && kAgent.isMinorCiv());
 	}
 	template<class AgentType,AgentStatusPredicate eSTATUS,AgentRelationPredicate eRELATION,
 	CvAgents::AgentSeqCache eCACHE>
-	inline bool isAVassal(AgentType const& kAgent)
+	__inline bool isAVassal(AgentType const& kAgent)
 	{
 		return GET_TEAM(getTeam(kAgent)).isAVassal();
 	}
 	template<class AgentType,AgentStatusPredicate eSTATUS,AgentRelationPredicate eRELATION,
 	CvAgents::AgentSeqCache eCACHE>
-	inline bool isSameMaster(AgentType const& kAgent, TeamTypes eTeam)
+	__inline bool isSameMaster(AgentType const& kAgent, TeamTypes eTeam)
 	{
 		return (GET_TEAM(getTeam(kAgent)).getMasterTeam() == GET_TEAM(eTeam).getMasterTeam());
 	}
 }
 
 
-template<class AgentType, AgentStatusPredicate eSTATUS, AgentRelationPredicate eRELATION>
-bool ExplicitAgentIterator<AgentType,eSTATUS,eRELATION>::passFilters(AgentType const& kAgent) const
+template<class AgentType, AgentStatusPredicate eSTATUS, AgentRelationPredicate eRELATION, class AgentAIType>
+bool ExplicitAgentIterator<AgentType,eSTATUS,eRELATION,AgentAIType>::passFilters(AgentAIType const& kAgent) const
 {
-	#define args AgentType,eSTATUS,eRELATION,eCACHE_SUPER
+	#define args AgentAIType,eSTATUS,eRELATION,eCACHE_SUPER
 	switch(eSTATUS)
 	{
 	case ANY_AGENT_STATUS:
@@ -151,8 +151,10 @@ bool ExplicitAgentIterator<AgentType,eSTATUS,eRELATION>::passFilters(AgentType c
 	addressed through static assertions in the AgentIterator constructor. */
 
 #define INSTANTIATE_AGENT_ITERATOR(S, R) \
-	template class ExplicitAgentIterator<CvPlayerAI,S,R>; \
-	template class ExplicitAgentIterator<CvTeamAI,S,R>;
+	template class ExplicitAgentIterator<CvPlayer,S,R,CvPlayerAI>; \
+	template class ExplicitAgentIterator<CvTeam,S,R,CvTeamAI>; \
+	template class ExplicitAgentIterator<CvPlayerAI,S,R,CvPlayerAI>; \
+	template class ExplicitAgentIterator<CvTeamAI,S,R,CvTeamAI>;
 
 /*	(To avoid listing the predicates in two places, one could move these
 	definitions to AgentPredicates.h and generate the enums through a macro.) */

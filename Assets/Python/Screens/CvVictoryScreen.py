@@ -126,12 +126,13 @@ class CvVictoryScreen:
 		self.DX_LINK = 220
 		self.Y_LINK = 726
 		self.MARGIN = 20
-		
-		self.SETTINGS_PANEL_X1 = 50
+		# <advc.004> Panel width increased; especially for change advc.708 (display of player handicap on one line).
+		self.SETTINGS_PANEL_X1 = 30 # was 50
 		self.SETTINGS_PANEL_X2 = 355
-		self.SETTINGS_PANEL_X3 = 660
+		self.SETTINGS_PANEL_X3 = 680 # was 660
+		self.SETTINGS_PANEL_WIDTH = 320 # was 300
+		# </advc.004>
 		self.SETTINGS_PANEL_Y = 150
-		self.SETTINGS_PANEL_WIDTH = 300
 		self.SETTINGS_PANEL_HEIGHT = 500
 
 		self.nWidgetCount = 0
@@ -975,16 +976,24 @@ class CvVictoryScreen:
 			screen.appendListBoxStringNoUpdate(szSettingsTable, szActivePlayerChoice, WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 		# </advc.190c>
 		screen.appendListBoxStringNoUpdate(szSettingsTable, " ", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY )
-		
+
 		#screen.appendListBoxStringNoUpdate(szSettingsTable, localText.getText("TXT_KEY_SETTINGS_DIFFICULTY", (gc.getHandicapInfo(activePlayer.getHandicapType()).getTextKey(), )), WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY )
 		# K-Mod. In multiplayer games, show both the game difficulty and the player difficulty
 		if activePlayer.getHandicapType() == g.getHandicapType():
 			screen.appendListBoxStringNoUpdate(szSettingsTable, localText.getText("TXT_KEY_SETTINGS_DIFFICULTY", (gc.getHandicapInfo(activePlayer.getHandicapType()).getTextKey(), )), WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY )
+		# <advc.708>
+		elif g.isOption(GameOptionTypes.GAMEOPTION_RISE_FALL):
+			szBuffer = localText.getText("TXT_KEY_RF_HANDICAP_SETTINGS",
+					(gc.getHandicapInfo(g.getHandicapType()).getTextKey(),
+					gc.getHandicapInfo(activePlayer.getHandicapType()).getTextKey(),
+					gc.getHandicapInfo(g.getAIHandicap()).getTextKey(), ))
+			screen.appendListBoxStringNoUpdate(szSettingsTable, szBuffer,
+					WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+		# </advc.708>
 		else:
 			szBuffer = "%s :\n  %s (%s) / %s (%s)" % (localText.getText("TXT_KEY_PITBOSS_DIFFICULTY", ()), gc.getHandicapInfo(activePlayer.getHandicapType()).getText(), localText.getText("TXT_KEY_MAIN_MENU_PLAYER", ()), gc.getHandicapInfo(g.getHandicapType()).getText(), localText.getText("TXT_KEY_OPTIONS_GAME", ()))
 			screen.appendListBoxStringNoUpdate(szSettingsTable, szBuffer, WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY )
 		# K-Mod end
-
 		screen.appendListBoxStringNoUpdate(szSettingsTable, " ", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY )
 		screen.appendListBoxStringNoUpdate(szSettingsTable, m.getMapScriptName(), WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY )
 

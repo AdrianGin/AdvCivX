@@ -428,6 +428,8 @@ void CyEnumsPythonInterface()
 		.value("WIDGET_ANARCHY", WIDGET_ANARCHY) // </advc.085>
 		.value("WIDGET_CITY_TRADE", WIDGET_CITY_TRADE) // advc.ctr
 		.value("WIDGET_CYCLE_UNIT", WIDGET_CYCLE_UNIT) // advc.154
+		// advc.186b: (for BULL - Zoom City Details)
+		.value("WIDGET_EXAMINE_CITY", WIDGET_EXAMINE_CITY)
 		.value("NUM_WIDGET_TYPES", NUM_WIDGET_TYPES)
 		;
 
@@ -714,6 +716,7 @@ void CyEnumsPythonInterface()
 		.value("GREAT_GENERAL_CHAR", GREAT_GENERAL_CHAR)
 		.value("AIRPORT_CHAR", AIRPORT_CHAR)
 		// </advc.002f>
+		.value("WORST_ATTITUDE_CHAR", WORST_ATTITUDE_CHAR) // advc.187
 		.value("MAX_NUM_SYMBOLS", MAX_NUM_SYMBOLS)
 		;
 

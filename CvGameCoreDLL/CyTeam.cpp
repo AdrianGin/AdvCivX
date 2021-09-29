@@ -213,7 +213,7 @@ int CyTeam::countNumAIUnitsByArea(CyArea* pArea, int /*UnitAITypes*/ eUnitAI)
 
 int CyTeam::countEnemyDangerByArea(CyArea* pArea)
 {
-	return m_pTeam ? m_pTeam->countEnemyDangerByArea(pArea->getArea()) : -1;
+	return m_pTeam ? m_pTeam->AI_countEnemyDangerByArea(pArea->getArea()) : -1;
 }
 
 int CyTeam::getResearchCost(int /*TechTypes*/ eTech)
@@ -606,20 +606,20 @@ void CyTeam::changeWarWeariness(int /*TeamTypes*/ eIndex, int iChange)
 		m_pTeam->changeWarWeariness((TeamTypes)eIndex, iChange);
 }
 
-int CyTeam::getTechShareCount(int /*TeamTypes*/eIndex)
+int CyTeam::getTechShareCount(int iIndex)
 {
-	return m_pTeam ? m_pTeam->getTechShareCount((TeamTypes)eIndex) : -1;
+	return m_pTeam ? m_pTeam->getTechShareCount((PlayerTypes)iIndex) : -1;
 }
 
-bool CyTeam::isTechShare(int /*TeamTypes*/eIndex)
+bool CyTeam::isTechShare(int iIndex)
 {
-	return m_pTeam ? m_pTeam->isTechShare((TeamTypes)eIndex) : false;
+	return m_pTeam ? m_pTeam->isTechShare((PlayerTypes)iIndex) : false;
 }
 
-void CyTeam::changeTechShareCount(int /*TeamTypes*/eIndex, int iChange)
+void CyTeam::changeTechShareCount(int iIndex, int iChange)
 {
 	if (m_pTeam)
-		m_pTeam->changeTechShareCount((TeamTypes)eIndex, iChange);
+		m_pTeam->changeTechShareCount((PlayerTypes)iIndex, iChange);
 }
 
 int CyTeam::getCommerceFlexibleCount(int /*CommerceTypes*/ eIndex)
@@ -1025,11 +1025,20 @@ int CyTeam::AI_getWarSuccess(int /*TeamTypes*/ eIndex) const
 	return m_pTeam ? m_pTeam->AI_getWarSuccess((TeamTypes)eIndex) : -1;
 }
 
-// <advc.152>
+// advc.152:
 int /*DenialTypes*/ CyTeam::AI_declareWarTrade(int /*TeamTypes*/ eWarTeam,
 		int /*TeamTypes*/ eTeam) const {
 
 	// Can't add AI_declareWarTrade to CvTeam
 	return m_pTeam ? GET_TEAM(m_pTeam->getID()).AI_declareWarTrade(
 			(TeamTypes)eWarTeam, (TeamTypes)eTeam) : -1;
-} // </advc.152>
+}
+
+// advc.038:
+int CyTeam::AI_estimateYieldRate(int iPlayer, int iYield) const
+{
+	if (m_pTeam == NULL)
+		return -1;
+	return m_pTeam->AI_estimateYieldRate((PlayerTypes)iPlayer,
+			(YieldTypes)iYield).round();
+}

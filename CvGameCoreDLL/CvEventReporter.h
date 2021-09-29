@@ -11,9 +11,9 @@
 // It will report events to python and the stats collector.
 //
 
+/*class CyDiplomacyTrade;
+struct TradeData;*/ // advc: not used
 struct CvStatBase;
-struct TradeData;
-class CyDiplomacyTrade;
 class CvUnit;
 class CvCity;
 class CvPlot;

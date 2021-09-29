@@ -8,32 +8,33 @@
 #ifdef FASSERT_ENABLE
 	#define VERIFY_PATHF 0
 #else
+	// (No point in setting this to 1 - we need assertions.)
 	#define VERIFY_PATHF 0
 #endif
 
-#ifdef VERIFY_PATHF // </advc.test>
+#if VERIFY_PATHF // </advc.test>
 
 #include "FAStarNode.h"
 
 class FAStarNodeMap
 {
 public:
-	inline FAStarNodeMap(int iWidth, int iHeight)
+	FAStarNodeMap(int iWidth, int iHeight)
 	{
 		m_data = new byte[iWidth * iHeight * sizeof(FAStarNode)];
 		m_iWidth = iWidth;
 		m_iHeight = iHeight;
 		reset();
 	}
-	inline ~FAStarNodeMap()
+	~FAStarNodeMap()
 	{
 		SAFE_DELETE_ARRAY(m_data);
 	}
-	inline FAStarNode& get(int iX, int iY)
+	FAStarNode& get(int iX, int iY)
 	{
 		return reinterpret_cast<FAStarNode*>(m_data)[iY * m_iWidth + iX];
 	}
-	inline void reset()
+	void reset()
 	{
 		memset(m_data, 0, sizeof(FAStarNode) * m_iWidth * m_iHeight);
 	}
@@ -67,7 +68,7 @@ public:
 	KmodPathFinderLegacy();
 	~KmodPathFinderLegacy();
 	void Reset();
-	inline void SetSettings(CvSelectionGroup const* pGroup,
+	void SetSettings(CvSelectionGroup const* pGroup,
 		MovementFlags eFlags = NO_MOVEMENT_FLAGS,
 		int iMaxPath = -1, int iHeuristicWeight = -1)
 	{

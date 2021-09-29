@@ -474,8 +474,8 @@ class CvInfoScreen:
 		self.TEXT_CITIES_RAZED = localText.getText("TXT_KEY_INFO_SCREEN_CITIES_RAZED", ())
 		self.TEXT_NUM_GOLDEN_AGES = localText.getText("TXT_KEY_INFO_SCREEN_NUM_GOLDEN_AGES", ())
 		self.TEXT_NUM_RELIGIONS_FOUNDED = localText.getText("TXT_KEY_INFO_SCREEN_RELIGIONS_FOUNDED", ())
-
-		self.TEXT_CURRENT = localText.getText("TXT_KEY_CURRENT", ())
+		# advc.002b: Text key was TXT_KEY_CURRENT; abbreviate.
+		self.TEXT_CURRENT = localText.getText("TXT_KEY_CURRENT_ABBR", ())
 		self.TEXT_UNITS = localText.getText("TXT_KEY_CONCEPT_UNITS", ())
 		self.TEXT_BUILDINGS = localText.getText("TXT_KEY_CONCEPT_BUILDINGS", ())
 		self.TEXT_KILLED = localText.getText("TXT_KEY_INFO_SCREEN_KILLED", ())
@@ -2917,8 +2917,8 @@ class CvInfoScreen:
 			# Check to see if active player can see this city
 			# advc.001d: Replaced gc.getGame().getActiveTeam with self.iActiveTeam. Check bRevealAll.
 			# advc.007: bDebug=True unless perspective switched. 
-			bRevealed = pCity.GetCy().isRevealed(self.iActiveTeam, self.iActiveTeam == gc.getGame().getActiveTeam()) or self.bRevealAll
-			if pCity and bRevealed:
+			bRevealed = pCity and (pCity.GetCy().isRevealed(self.iActiveTeam, self.iActiveTeam == gc.getGame().getActiveTeam()) or self.bRevealAll)
+			if bRevealed:
 				szCityName = pCity.getName()
 			else:
 				szCityName = u""
@@ -2928,7 +2928,7 @@ class CvInfoScreen:
 				szCityName = localText.changeTextColor(szCityName, color)
 
 			screen.appendTableRow(self.szWondersTable)
-			if bKnown and pCity and bRevealed:
+			if bKnown and bRevealed:
 				screen.setTableText(self.szWondersTable, 0, iWonderLoop+iWBB, "", zoomArt, WidgetTypes.WIDGET_ZOOM_CITY, pCity.getOwner(), pCity.getID(), CvUtil.FONT_LEFT_JUSTIFY)
 			screen.setTableText(self.szWondersTable, 1, iWonderLoop+iWBB, szWonderName   , "", iWidget, iWonderType, -1, CvUtil.FONT_LEFT_JUSTIFY)
 			screen.setTableInt (self.szWondersTable, 2, iWonderLoop+iWBB, szTurnYearBuilt, "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_RIGHT_JUSTIFY)
@@ -2944,7 +2944,8 @@ class CvInfoScreen:
 
 		# Bottom Chart
 #BUG: improvements - start
-		if AdvisorOpt.isShowImprovements():
+		#if AdvisorOpt.isShowImprovements():
+		if True: # advc.004
 			self.X_STATS_BOTTOM_CHART = 45
 			self.Y_STATS_BOTTOM_CHART = 280
 			self.W_STATS_BOTTOM_CHART_UNITS = 455
@@ -3141,7 +3142,8 @@ class CvInfoScreen:
 		screen.enableSort(szBuildingsTable)
 
 #BUG: improvements - start
-		if AdvisorOpt.isShowImprovements():
+		#if AdvisorOpt.isShowImprovements():
+		if True: # advc.004
 			szImprovementsTable = self.getNextWidgetName()
 			screen.addTableControlGFC(szImprovementsTable, self.iNumImprovementStatsChartCols, self.X_STATS_BOTTOM_CHART + self.W_STATS_BOTTOM_CHART_UNITS + self.W_STATS_BOTTOM_CHART_BUILDINGS, self.Y_STATS_BOTTOM_CHART, self.W_STATS_BOTTOM_CHART_IMPROVEMENTS, self.H_STATS_BOTTOM_CHART,
 						  True, True, 32,32, TableStyles.TABLE_STYLE_STANDARD)
@@ -3150,7 +3152,8 @@ class CvInfoScreen:
 
 		# Reducing the width a bit to leave room for the vertical scrollbar, preventing a horizontal scrollbar from also being created
 #BUG: improvements - start
-		if AdvisorOpt.isShowImprovements():
+		#if AdvisorOpt.isShowImprovements():
+		if True: # advc.004
 			iChartWidth = self.W_STATS_BOTTOM_CHART_UNITS + self.W_STATS_BOTTOM_CHART_BUILDINGS + self.W_STATS_BOTTOM_CHART_IMPROVEMENTS - 24
 
 			# Add Columns
@@ -3204,6 +3207,7 @@ class CvInfoScreen:
 
 # #BUG: improvements - start
 		# if AdvisorOpt.isShowImprovements():
+		# if True: # advc.004
 			# for i in range(self.iNumImprovementStatsChartRows):
 				# if (aiImprovementsCurrent[i] > 0):
 					# screen.appendTableRow(szImprovementsTable)
@@ -3212,18 +3216,21 @@ class CvInfoScreen:
 
 		# Add Units to table
 		iRow = 0 # K-Mod
+		# <advc.004> Sort by name. (Can't tell the table to sort itself.)
+		unitIDsByName = []
 		for iUnitLoop in range(iNumUnits):
-			# K-Mod. Hide zero rows option.
-			if ((True or AdvisorOpt.isNonZeroStatsOnly()) # advc.004
+			# K-Mod. Hide-rows option.
+			if ((True or AdvisorOpt.isNonZeroStatsOnly()) # advc: no longer optional
 					and aiUnitsCurrent[iUnitLoop] == 0 and aiUnitsBuilt[iUnitLoop] == 0
 					and aiUnitsKilled[iUnitLoop] == 0 and aiUnitsLost[iUnitLoop] == 0):
-				continue
+				continue # K-Mod end
+			unitIDsByName.append((gc.getUnitInfo(iUnitLoop).getDescription(), iUnitLoop))
+		unitIDsByName.sort()
+		for i in range(len(unitIDsByName)):
+			(szUnitName, iUnitLoop) = unitIDsByName[i] # </advc.004>
 			screen.appendTableRow(szUnitsTable)
-			# K-Mod end
 			#iRow = iUnitLoop
-
 			iCol = 0
-			szUnitName = gc.getUnitInfo(iUnitLoop).getDescription()
 			screen.setTableText(szUnitsTable, iCol, iRow, szUnitName, "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 
 			iCol = 1
@@ -3245,15 +3252,18 @@ class CvInfoScreen:
 
 		# Add Buildings to table
 		iRow = 0 # K-Mod
+		# <advc.004> Sort by name
+		buildingIDsByName = []
 		for iBuildingLoop in range(iNumBuildings):
-			# K-Mod. Hide zero rows option.
-			# advc.004:
-			if aiBuildingsBuilt[iBuildingLoop] == 0: #and AdvisorOpt.isNonZeroStatsOnly():
-				continue
+			# K-Mod. Hide-rows option.
+			if aiBuildingsBuilt[iBuildingLoop] == 0: #and AdvisorOpt.isNonZeroStatsOnly(): # advc: No longer optional
+				continue # K-Mod end
+			buildingIDsByName.append((gc.getBuildingInfo(iBuildingLoop).getDescription(), iBuildingLoop))
+		buildingIDsByName.sort()
+		for i in range(len(buildingIDsByName)):
+			(szBuildingName, iBuildingLoop) = buildingIDsByName[i] # </advc.004>
 			screen.appendTableRow(szBuildingsTable)
-			# K-Mod end
 			#iRow = iBuildingLoop
-
 			iCol = 0
 			szBuildingName = gc.getBuildingInfo(iBuildingLoop).getDescription()
 			screen.setTableText(szBuildingsTable, iCol, iRow, szBuildingName, "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
@@ -3263,20 +3273,24 @@ class CvInfoScreen:
 			iRow += 1 # K-Mod
 
 #BUG: improvements - start
-		if AdvisorOpt.isShowImprovements():
+		#if AdvisorOpt.isShowImprovements():
+		if True: # advc.004
 			# Add Improvements to table	
 			iRow = 0
-
+			# <advc.004> Sort by name
+			improvIDsByName = []
 			for iImprovementLoop in range(iNumImprovements):
-				iNumImprovementsCurrent = aiImprovementsCurrent[iImprovementLoop]
-				if (iNumImprovementsCurrent > 0):
-					screen.appendTableRow(szImprovementsTable) # K-Mod
-					iCol = 0
-					szImprovementName = gc.getImprovementInfo(iImprovementLoop).getDescription()
-					screen.setTableText(szImprovementsTable, iCol, iRow, szImprovementName, "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
-					iCol = 1
-					screen.setTableInt(szImprovementsTable, iCol, iRow, str(iNumImprovementsCurrent), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
-					iRow += 1
+				if aiImprovementsCurrent[iImprovementLoop] > 0:
+					improvIDsByName.append((gc.getImprovementInfo(iImprovementLoop).getDescription(), iImprovementLoop))
+			improvIDsByName.sort()
+			for i in range(len(improvIDsByName)):
+				(szImprovementName, iImprovementLoop) = improvIDsByName[i] # </advc.004>
+				screen.appendTableRow(szImprovementsTable) # K-Mod
+				iCol = 0
+				screen.setTableText(szImprovementsTable, iCol, iRow, szImprovementName, "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+				iCol = 1
+				screen.setTableInt(szImprovementsTable, iCol, iRow, str(aiImprovementsCurrent[iImprovementLoop]), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+				iRow += 1
 #BUG: improvements - end
 
 #############################################################################################################

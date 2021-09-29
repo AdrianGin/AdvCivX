@@ -1,5 +1,3 @@
-// <advc.700> New class; see header file for description.
-
 #include "CvGameCoreDLL.h"
 #include "RiseFall.h"
 #include "CvInfo_GameOption.h"
@@ -17,6 +15,16 @@ using std::wstringstream;
 using std::vector;
 using std::wstring;
 using std::pair; using std::make_pair;
+using namespace fmath; // Single-player only, so this is fine.
+
+// advc:
+namespace
+{
+	__inline PlayerTypes getActivePlayer()
+	{
+		return GC.getGame().getActivePlayer();
+	}
+}
 
 
 RiseFall::RiseFall() {
@@ -141,7 +149,7 @@ void RiseFall::init() {
 		chapterStart += chapters[i]->getLength() + interludeLength;
 	}
 	FAssert(chapterStart - interludeLength == endTurn || !timeLimit);
-	chapters[0]->setCiv(g.getActivePlayer());
+	chapters[0]->setCiv(getActivePlayer());
 	chapters[0]->start();
 	originalName = new CvWString(GC.getInitCore().getLeaderName(chapters[0]->getCiv()));
 	setPlayerName();
@@ -153,6 +161,23 @@ void RiseFall::init() {
 		RiseFall isn't yet initialized then. */
 	g.autoSave(true);
 	g.showDawnOfMan();
+}
+
+// Needs to happen earlier than init, hence a separate public function.
+void RiseFall::setPlayerHandicap(PlayerTypes civId, bool bHuman, bool bIncrease) {
+
+	HandicapTypes const eGameHandicap = GC.getGame().getHandicapType();
+	int iAdjust = (!bIncrease ? 0 :
+			range(GC.getDefineINT(CvGlobals::RF_PLAYER_HANDICAP_ADJUSTMENT),
+			-eGameHandicap, GC.getNumHandicapInfos() - eGameHandicap - 1));
+	GC.getInitCore().setHandicap(civId, (HandicapTypes)(bHuman ?
+			eGameHandicap + iAdjust : GC.getGame().getAIHandicap() + iAdjust));
+	/*	(Caller will have to call CvGame::updateAIHandicap if several AI player
+		handicaps are changed, i.e. if the avg. handicap may have changed.) */
+	CvPlayerAI& kCiv = GET_PLAYER(civId);
+	kCiv.updateMaintenance();
+	kCiv.AI_makeAssignWorkDirty();
+	// (Further updates might be warranted)
 }
 
 void RiseFall::write(FDataStreamBase* pStream) {
@@ -227,7 +252,7 @@ void RiseFall::reportElimination(PlayerTypes civId) {
 		if(pos < (int)(chapters.size() - 1)) {
 			GC.getGame().setActivePlayer(nextAlive.getID());
 			nextAlive.setIsHuman(true);
-			nextAlive.updateHuman();
+			nextAlive.setNetID(0);
 			CvPopupInfo* popup = new CvPopupInfo(BUTTONPOPUP_RF_DEFEAT);
 			// So that launchDefeatPopup knows which chapter we've just scored (ended)
 			popup->setData1(pos);
@@ -283,7 +308,7 @@ int RiseFall::getAutoPlayCountdown() const {
 	if(isSelectingCiv()) /* Not sure if needed; be sure we're not showing
 							a countdown while the popup is open. */
 		return 0;
-	PlayerTypes activePl = GC.getGame().getActivePlayer();
+	PlayerTypes activePl = getActivePlayer();
 	if(activePl == NO_PLAYER) {
 		FAssert(activePl != NO_PLAYER);
 		return -1;
@@ -329,7 +354,7 @@ void RiseFall::atTurnEnd(PlayerTypes civId) {
 	RFChapter& currentCh = *chapters[currentChPos];
 	PlayerTypes nextCivId = nextCivAlive(civId);
 	if(nextCivId == currentCh.getCiv()) {
-		if(nextCivId != g.getActivePlayer()) {
+		if(nextCivId != getActivePlayer()) {
 			if(GET_PLAYER(nextCivId).isAlive()) {
 				setPlayerControl(nextCivId, true);
 				interludeCountdown = -1;
@@ -354,7 +379,7 @@ void RiseFall::atTurnEnd(PlayerTypes civId) {
 		setPlayerControl(currentCh.getCiv(), false);
 		abandonPlans(currentCh.getCiv());
 		CvWString replayText = gDLL->getText("TXT_KEY_RF_INTERLUDE_STARTED");
-		g.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, g.getActivePlayer(),
+		g.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getActivePlayer(),
 				replayText, -1, -1, GC.getColorType("HIGHLIGHT_TEXT"));
 	}
 }
@@ -367,7 +392,7 @@ void RiseFall::atGameTurnStart() {
 		interludeCountdown--;
 		/*  I'd like to keep the camera in one place during interlude, but this
 			only turns into a tug of war when the player moves the camera. */
-		//centerCamera(g.getActivePlayer());
+		//centerCamera(getActivePlayer());
 		return;
 	}
 	int gameTurn = g.getGameTurn();
@@ -386,7 +411,7 @@ void RiseFall::atActiveTurnStart() {
 		return; // Happens on turn 0 b/c not yet initialized
 	CvGame& g = GC.getGame();
 	int gameTurn = g.getGameTurn();
-	PlayerTypes activeId = g.getActivePlayer();
+	PlayerTypes activeId = getActivePlayer();
 	if(activeId == NO_PLAYER)
 		return;
 	CvPlayerAI& active = GET_PLAYER(activeId);
@@ -451,18 +476,17 @@ void RiseFall::atActiveTurnStart() {
 void RiseFall::setPlayerControl(PlayerTypes civId, bool b) {
 
 	CvGame& g = GC.getGame();
-	PlayerTypes formerHumanCiv = g.getActivePlayer();
+	PlayerTypes formerHumanCiv = getActivePlayer();
 	if(formerHumanCiv != NO_PLAYER && !GET_PLAYER(formerHumanCiv).isHuman())
 		formerHumanCiv = NO_PLAYER;
 	CvPlayer& civ = GET_PLAYER(civId);
 	if(!b || !civ.isHuman()) // Unless human control continues
 		gDLL->UI().clearQueuedPopups();
-	if(b) {
+	setPlayerHandicap(civId, b, /* increase only human handicap here */ b);
+	if(b)
 		g.changeHumanPlayer(civId);
-		GC.getInitCore().setHandicap(civId, g.getHandicapType());
-	}
 	else {
-		GC.getInitCore().setHandicap(civId, g.getAIHandicap());
+		civ.setNetID(-1);
 		civ.setIsHuman(false, true);
 		GC.getInitCore().setLeaderName(civId,
 				GC.getInfo(civ.getLeaderType()).getDescription());
@@ -484,12 +508,12 @@ void RiseFall::setPlayerControl(PlayerTypes civId, bool b) {
 		CvEventReporter::getInstance().genericEvent(
 				"SwitchHotSeatPlayer", pyArgs.makeFunctionArgs());
 	}
-	for(int i = 0; i < MAX_CIV_PLAYERS; i++) {
-		CvPlayerAI& other = GET_PLAYER((PlayerTypes)i);
-		if(!other.isAlive() || other.isMinorCiv())
-			continue;
-		if (b) // (Otherwise CvPlayer::setIsHuman has already updated the full attitude cache)
-		{
+	if (b) // (Otherwise CvPlayer::setIsHuman has already updated the full attitude cache)
+	{
+		for(int i = 0; i < MAX_CIV_PLAYERS; i++) {
+			CvPlayerAI& other = GET_PLAYER((PlayerTypes)i);
+			if(!other.isAlive() || other.isMinorCiv())
+				continue;
 			if(other.getID() != civId && GET_TEAM(civId).isHasMet(other.getTeam()))
 				other.AI_updateAttitude(civId);
 			if(formerHumanCiv != NO_PLAYER && civId != formerHumanCiv &&
@@ -517,7 +541,7 @@ void RiseFall::setUIHidden(bool b) {
 
 void RiseFall::setPlayerName() {
 
-	PlayerTypes activeCiv = GC.getGame().getActivePlayer();
+	PlayerTypes activeCiv = getActivePlayer();
 	CvWString newName = GC.getInfo(GET_PLAYER(activeCiv).getLeaderType()).getDescription();
 	/*  Must only use characters that are allowed in file names; otherwise,
 		no replay file gets created for the HoF. */
@@ -542,6 +566,17 @@ void RiseFall::welcomeToNextChapter(int pos) {
 	RFChapter& ch = *chapters[pos];
 	setPlayerName();
 	CvPlayer& p = GET_PLAYER(ch.getCiv());
+	/*	Wrong net ids can, apparently, mess with the diplo screen, making it
+		impossible to add certain items to the table. It's probably sufficient
+		to set the proper ids here, but I try to keep them up to date at all
+		times. Would be nice to let CvPlayer::setIsHuman handle that, but that
+		may not work in multiplayer modes and would break the net id update in
+		CvGame::setActivePlayer. */
+	FOR_EACH_ENUM(Player)
+		GET_PLAYER(eLoopPlayer).setNetID(-1);
+	p.setNetID(0);
+	p.verifyCivics();
+	resetProductionDecay(p.getID());
 	// Doing this in setUIHidden has no effect
 	if(gDLL->getEngineIFace()->isGlobeviewUp())
 		gDLL->getEngineIFace()->toggleGlobeview();
@@ -552,6 +587,35 @@ void RiseFall::welcomeToNextChapter(int pos) {
 	showQuests();
 	offLimits.clear();
 	updateOffLimits();
+}
+
+void RiseFall::resetProductionDecay(PlayerTypes civId) {
+
+	/*	Production decay affects only humans, so the AI ignores it.
+		Don't want human to suffer for that after assuming control.
+		Well, mainly, I don't want humans to be distracted by (BULL) decay warnings.
+		I'm setting the accumulated production to 0 iff decay has already started.
+		Either way, the decay timer gets reset to 0. */
+	int iBuildingThresh = GC.getDefineINT(CvGlobals::BUILDING_PRODUCTION_DECAY_TIME) *
+			GC.getInfo(GC.getGame().getGameSpeedType()).getConstructPercent();
+	int iUnitThresh = GC.getDefineINT(CvGlobals::UNIT_PRODUCTION_DECAY_TIME) *
+			GC.getInfo(GC.getGame().getGameSpeedType()).getTrainPercent();
+	FOR_EACH_CITY_VAR(pCity, GET_PLAYER(civId)) {
+		FOR_EACH_ENUM(Building) {
+			if (pCity->getBuildingProduction(eLoopBuilding) <= 0)
+				continue;
+			if (pCity->getBuildingProductionTime(eLoopBuilding) * 100 > iBuildingThresh)
+				pCity->setBuildingProduction(eLoopBuilding, 0);
+			pCity->setBuildingProductionTime(eLoopBuilding, 0);
+		}
+		FOR_EACH_ENUM(Unit) {
+			if (pCity->getUnitProduction(eLoopUnit) <= 0)
+				continue;
+			if (pCity->getUnitProductionTime(eLoopUnit) * 100 > iUnitThresh)
+				pCity->setUnitProduction(eLoopUnit, 0);
+			pCity->setUnitProductionTime(eLoopUnit, 0);
+		}
+	}
 }
 
 void RiseFall::centerCamera(PlayerTypes civId) {
@@ -570,8 +634,7 @@ void RiseFall::centerCamera(PlayerTypes civId) {
 
 void RiseFall::showDoW() {
 
-	CvGame& g = GC.getGame();
-	CvTeamAI& activeTeam = GET_TEAM(g.getActiveTeam());
+	CvTeamAI& activeTeam = GET_TEAM(GC.getGame().getActiveTeam());
 	/*  Would be nicer to show e.g. "Alexander has declared war on you in 1923",
 		but would have to track additional info for this, or piece it together
 		from past messages. Both too much work. */
@@ -579,16 +642,16 @@ void RiseFall::showDoW() {
 		CvPlayer& enemy = GET_PLAYER((PlayerTypes)i);
 		if(!enemy.isAlive() || enemy.isMinorCiv() || !activeTeam.isAtWar(enemy.getTeam()))
 			continue;
-		gDLL->UI().addMessage(g.getActivePlayer(), true, -1, gDLL->getText("TXT_KEY_YOU_AT_WAR",
+		gDLL->UI().addMessage(getActivePlayer(), true, -1, gDLL->getText("TXT_KEY_YOU_AT_WAR",
 				enemy.getName()), NULL, MESSAGE_TYPE_INFO, NULL, GC.getColorType("WARNING_TEXT"),
 				// advc.127b:
-				enemy.getCapitalX(g.getActiveTeam(), true), enemy.getCapitalY(g.getActiveTeam(), true));
+				enemy.getCapitalX(activeTeam.getID(), true), enemy.getCapitalY(activeTeam.getID(), true));
 	}
 }
 
 void RiseFall::showQuests() {
 
-	CvPlayer& p = GET_PLAYER(GC.getGame().getActivePlayer());
+	CvPlayer& p = GET_PLAYER(getActivePlayer());
 	CvMessageQueue const& archive = p.getGameMessages();
 	for(std::list<CvTalkingHeadMessage>::const_iterator it = archive.begin();
 			it != archive.end(); ++it) {
@@ -604,7 +667,7 @@ void RiseFall::showQuests() {
 void RiseFall::abandonPlans(PlayerTypes civId) {
 
 	CvPlayerAI& civ = GET_PLAYER(civId);
-	bool active = (civId == GC.getGame().getActivePlayer() && civ.isHuman());
+	bool active = (civId == getActivePlayer() && civ.isHuman());
 	FOR_EACH_GROUP_VAR(gr, civ)
 		gr->splitGroup(1);
 	CvCity* capital = civ.getCapital();
@@ -752,7 +815,7 @@ bool RiseFall::isCooperationRestricted(PlayerTypes aiCiv) const {
 	PlayerTypes masterId = GET_TEAM(GET_PLAYER(aiCiv).getMasterTeam()).getLeaderID();
 	if(masterId != aiCiv)
 		return isCooperationRestricted(masterId);
-	PlayerTypes human = GC.getGame().getActivePlayer();
+	PlayerTypes human = getActivePlayer();
 	if(aiCiv == human)
 		return false;
 	int currentChPos = getCurrentChapter();
@@ -823,10 +886,9 @@ bool RiseFall::isEligible(PlayerTypes civId, bool allowRepeat) const {
 
 void RiseFall::updateOffLimits() {
 
-	CvGame& g = GC.getGame();
 	for(int i = 0; i < MAX_CIV_TEAMS; i++) {
 		CvTeam& t = GET_TEAM((TeamTypes)i);
-		if(t.isAlive() && t.isVassal(g.getActiveTeam()))
+		if(t.isAlive() && t.isVassal(GC.getGame().getActiveTeam()))
 			offLimits.insert(t.getID());
 	}
 }
@@ -837,9 +899,12 @@ void RiseFall::haltForCivSelection(PlayerTypes haltCiv) {
 	/*  Set to active human for a moment, just to get the civ selection
 		popup through. Reset to AI-control in handleCivSelection. */
 	CvPlayer& h = GET_PLAYER(haltCiv);
+	GET_PLAYER(getActivePlayer()).setNetID(-1);
+	/*	(bForceHotSeat would take care of the net id, but would also show a
+		"you now control such-and-such" popup.) */
 	g.setActivePlayer(haltCiv);
+	GET_PLAYER(haltCiv).setNetID(0);
 	h.setIsHuman(true);
-	h.updateHuman();
 	CvPopupInfo* popup = new CvPopupInfo(BUTTONPOPUP_RF_CHOOSECIV);
 	h.addPopup(popup, true);
 	selectingCiv = true;
@@ -917,8 +982,8 @@ void RiseFall::prepareForExtendedGame() {
 	}
 	// Player needs to be in control for the game end sequence
 	FAssert(interludeCountdown < 0);
-	FAssert(GET_PLAYER(g.getActivePlayer()).isHuman());
-	FAssert(!GET_PLAYER(g.getActivePlayer()).isHumanDisabled());
+	FAssert(GET_PLAYER(getActivePlayer()).isHuman());
+	FAssert(!GET_PLAYER(getActivePlayer()).isHumanDisabled());
 }
 
 int RiseFall::getFinalRiseScore() const {
@@ -961,13 +1026,12 @@ void RiseFall::handleDefeatPopup(int buttonClicked, int pos) {
 		FAssert(false);
 		pos = -1;
 	}
-	CvGame const& g = GC.getGame();
 	// -1: Current turn already passed
-	interludeCountdown = chapters[pos + 1]->getStartTurn() - g.getGameTurn() - 1;
+	interludeCountdown = chapters[pos + 1]->getStartTurn() - GC.getGame().getGameTurn() - 1;
 	FAssert(interludeCountdown >= 0);
-	CvPlayer& h = GET_PLAYER(g.getActivePlayer());
+	CvPlayer& h = GET_PLAYER(getActivePlayer());
+	h.setNetID(-1);
 	h.setIsHuman(false);
-	h.updateHuman();
 }
 
 bool RiseFall::launchCivSelectionPopup(CvPopup* popup, CvPopupInfo& info) {
@@ -1247,7 +1311,7 @@ bool RiseFall::isSelectingCiv() const {
 void RiseFall::afterCivSelection(int buttonClicked) {
 
 	CvGame& g = GC.getGame();
-	CvPlayer& h = GET_PLAYER(g.getActivePlayer());
+	CvPlayer& h = GET_PLAYER(getActivePlayer());
 	int pos = getCurrentChapter();
 	if(buttonClicked == 1) {
 		FAssert(false);
@@ -1277,6 +1341,7 @@ void RiseFall::afterCivSelection(int buttonClicked) {
 	selectingCiv = false;
 	if(pos > 0) { // Relevant when loading a savegame
 		CvPlayer& prev = GET_PLAYER(chapters[pos - 1]->getCiv());
+		prev.setNetID(-1);
 		prev.setIsHuman(false);
 	}
 	if(pos >= 0 && chapters[pos]->getCiv() == h.getID()) {
@@ -1289,8 +1354,8 @@ void RiseFall::afterCivSelection(int buttonClicked) {
 		welcomeToNextChapter(pos);
 		return;
 	}
+	h.setNetID(-1);
 	h.setIsHuman(false);
-	h.updateHuman();
 }
 
 void RiseFall::handleCivSelection(PlayerTypes selectedCiv) {
@@ -1308,7 +1373,7 @@ void RiseFall::handleCivSelection(PlayerTypes selectedCiv) {
 bool RiseFall::isSquareDeal(CLinkList<TradeData> const& humanReceives,
 			CLinkList<TradeData> const& aiReceives, PlayerTypes aiCiv) const {
 
-	PlayerTypes human = GC.getGame().getActivePlayer();
+	PlayerTypes human = getActivePlayer();
 		/*  Actually no problem if the human receives sth. non-dual, e.g. gold
 			for peace. */
 	if(//allSquare(humanReceives, aiCiv, human) &&
@@ -1319,7 +1384,7 @@ bool RiseFall::isSquareDeal(CLinkList<TradeData> const& humanReceives,
 
 bool RiseFall::isNeededWarTrade(CLinkList<TradeData> const& humanReceives) const {
 
-	CvPlayerAI const& human = GET_PLAYER(GC.getGame().getActivePlayer());
+	CvPlayerAI const& human = GET_PLAYER(getActivePlayer());
 	FOR_EACH_TRADE_ITEM(humanReceives) {
 		if(pItem->m_eItemType == TRADE_WAR) {
 			TeamTypes targetId = (TeamTypes)pItem->m_iData;
@@ -1362,8 +1427,8 @@ int RiseFall::pessimisticDealVal(PlayerTypes aiCivId, int dealVal,
 		CLinkList<TradeData> const& humanReceives) const {
 
 	int r = dealVal;
-	TeamTypes humanTeamId = GC.getGame().getActiveTeam();
-	PlayerTypes humanCivId = GC.getGame().getActivePlayer();
+	PlayerTypes humanCivId = getActivePlayer();
+	TeamTypes humanTeamId = TEAMID(humanCivId);
 	if(humanTeamId == NO_TEAM || humanCivId == NO_PLAYER) {
 		FAssert(false);
 		return r;
@@ -1386,7 +1451,7 @@ int RiseFall::pessimisticDealVal(PlayerTypes aiCivId, int dealVal,
 			break;
 		case TRADE_WAR:
 			itemVal = humanTeam.AI_declareWarTradeVal((TeamTypes)data, aiTeamId);
-			if(getUWAI.isEnabled()) // advc.104
+			if(getUWAI().isEnabled()) // advc.104
 				replVal = GET_TEAM(humanTeamId).uwai().tradeValJointWar(
 						(TeamTypes)data, aiTeam.getID());
 			break;
@@ -1496,8 +1561,6 @@ void RiseFall::shutOff(CvWString errorMsg) {
 
 void RiseFall::showError(CvWString errorMsg) {
 
-	gDLL->UI().addMessage(GC.getGame().getActivePlayer(), true, 1, errorMsg,
+	gDLL->UI().addMessage(getActivePlayer(), true, 1, errorMsg,
 			NULL, MESSAGE_TYPE_MAJOR_EVENT, NULL, GC.getColorType("RED"));
 }
-
-// </advc.700>

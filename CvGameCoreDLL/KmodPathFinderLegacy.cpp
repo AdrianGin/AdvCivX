@@ -2,7 +2,7 @@
 #include "KmodPathFinderLegacy.h"
 
 // advc.test: See comment in header
-#ifdef VERIFY_PATHF
+#if VERIFY_PATHF
 
 #include "GroupPathFinder.h" // for the step metric
 #include "CvSelectionGroupAI.h"

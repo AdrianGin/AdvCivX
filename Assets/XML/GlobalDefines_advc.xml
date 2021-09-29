@@ -152,10 +152,12 @@
 		<DefineName>FOREIGN_CULTURE_STRENGTH_EXPONENT</DefineName>
 		<iDefineIntVal>135</iDefineIntVal>
     </Define>
-	<Define>
+	<!-- Moved this to Civ4HandicapInfos.xml in AdvCiv 1.0.
+		 35 is used there for Emperor difficulty. -->
+	<!--Define>
 		<DefineName>FOREIGN_CULTURE_STRENGTH_FACTOR</DefineName>
 		<iDefineIntVal>35</iDefineIntVal>
-    </Define>
+    </Define-->
 
 	<!-- These two are from the original GlobalDefines. -->
 	<!-- advc.101: Was 100, meaning that foreign culture strength is doubled
@@ -574,22 +576,40 @@
 		<iDefineIntVal>1</iDefineIntVal>
 	</Define>
 
-	<!-- [advc.099b]
+	<!-- advc.099b:
 	     Each round, the tile culture value of each player (civ and barbarian)
 		 is decreased by this permillage. 0 to disable decay.
 		 (Will also have to set CITY_RADIUS_DECAY=0 to disable decay in
 		 foreign city radii.)
-		 Recommended: 10 (1% decay). -->
+		 Recommended: 13 (1.3% decay). -->
 	<Define>
 		<DefineName>TILE_CULTURE_DECAY_PER_MILL</DefineName>
-		<iDefineIntVal>10</iDefineIntVal>
+		<iDefineIntVal>13</iDefineIntVal>
 	</Define>
 	<!-- Per-mill decay rate of foreign culture on tiles within a city radius.
 		 The value gets doubled for tiles in the inner radius. Set to 0 to have
-		 foreign culture decay normally. Recommended: 20 -->
+		 foreign culture decay normally. Recommended: 25 -->
 	<Define>
 		<DefineName>CITY_RADIUS_DECAY</DefineName>
-		<iDefineIntVal>20</iDefineIntVal>
+		<iDefineIntVal>23</iDefineIntVal>
+	</Define>
+
+	<!-- advc.098: Was 20 in BtS and was unused in K-Mod. The K-Mod formula
+		 works differently - free culture isn't multiplied by the culture level -,
+		 but there's still such a thing as free culture, so I'm putting this
+		 parameter back in use. Recommended: 5; use 4 for K-Mod behavior. -->
+	<Define> <!-- redefine -->
+		<DefineName>CITY_FREE_CULTURE_GROWTH_FACTOR</DefineName>
+		<iDefineIntVal>5</iDefineIntVal>
+	</Define>
+
+	<!-- advc.098: If set to 1, then buildings with a positive
+		 CommerceChangeDoubleTimes value double their ObsoleteSafeCommerceChanges
+		 (immediately) upon becoming obsolete, not after a particular
+		 number of years. Set to 0 for BtS behavior. -->
+	<Define>
+		<DefineName>DOUBLE_OBSOLETE_BUILDING_COMMERCE</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
 	<!-- advc.300: The percentage of owned tiles per landmass at which
@@ -851,7 +871,7 @@
 
 	<!-- [advc.023] The per-turn probability of decrementing the occupation
 		 timer is computed as 1 minus the revolt probability raised to the
-		 power of UNREST_COUNTDOWN_EXPONENT.
+		 power of OCCUPATION_COUNTDOWN_EXPONENT.
 		 Recommended: 10, which results in a countdown probability of e.g.
 		 0.35 when revolt probability is 0.1.
 		 A value of 0 will decrement the timer with certainty.
@@ -918,7 +938,7 @@
 	</Define>
 
 	<!-- [advc.700] Rise & Fall parameters. The first four are applied at game
-		 start; changing them in a running game has no effect.  -->
+		 start; changing them in an ongoing game has no effect.  -->
 	<!-- Base value for the number of chapters; recommended: 7. Has to be
 		 positive. The game adjusts the value based on game speed and start
 		 date. -->
@@ -963,6 +983,23 @@
 		 -->
 	<Define>
 		<DefineName>RF_ENABLE_FINAL_TURN_POPUP</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+	<!-- advc.708: Gets added to the difficulty level of every player.
+		 A value of e.g. 1 makes the AI civs play on Prince difficulty instead
+		 of Noble and the human player also one level higher than configured
+		 on the Custom Game screen. Meaning that all civs e.g. will have to pay
+		 higher city maintenance. AI-specific effects ("iAI... in Civ4HandicapInfos.xml)
+		 are, however, not affected as those come from the game difficulty level.
+		 Insofar, the handicap adjustment should not make the game easier or harder.
+		 That said, since the difficulty levels aren't evenly spaced apart
+		 in terms of challenge, the adjustment will affect the overall challenge
+		 (in a way that is difficult to predict on paper).
+		 Barbarian creation also won't be affected by the adjustment.
+		 Changes to this parameter won't properly take effect in an ongoing game,
+		 will have to start a new one. -->
+	<Define>
+		<DefineName>RF_PLAYER_HANDICAP_ADJUSTMENT</DefineName>
 		<iDefineIntVal>1</iDefineIntVal>
 	</Define>
 
@@ -1062,10 +1099,11 @@
 		<iDefineIntVal>1</iDefineIntVal>
 	</Define>
 
-	<!-- advc.162: 1 enables change 162 (see manual), 0 disables it (BtS
-		 behavior). -->
+	<!-- advc.162: 1 causes units to lose all remaining moves when they enter
+		 an enemy's territory on the same as declaring war on that enemy.
+		 See manual for details. 0 disables that change (BtS behavior). -->
 	<Define>
-		<DefineName>ENABLE_162</DefineName>
+		<DefineName>SPEND_ALL_MOVES_ON_INVASION</DefineName>
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
@@ -1098,12 +1136,11 @@
 		 are reached. -->
 
 	<!-- Relations need to be at least this good to make an AI civ Friendly.
-		 Recommended: 10 - as in BtS - however, effectively it's one lower due
-		 to changes in Civ4HandicapInfos.xml. Maybe 9 would play better,
-		 but that's an odd number. -->
+		 Recommended: 9 - that's, effectively, two lower than in BtS due
+		 to changes in Civ4HandicapInfos.xml. -->
 	<Define>
 		<DefineName>RELATIONS_THRESH_FRIENDLY</DefineName>
-		<iDefineIntVal>10</iDefineIntVal>
+		<iDefineIntVal>9</iDefineIntVal>
 	</Define>
 	<!-- Relations need to be at least this good to make an AI civ Pleased
 		 (and mustn't be good enough for Friendly).
@@ -1112,20 +1149,21 @@
 		<DefineName>RELATIONS_THRESH_PLEASED</DefineName>
 		<iDefineIntVal>4</iDefineIntVal>
 	</Define>
-	<!-- Relations need to be this bad or worse to make the AI Furious.
-		 Recommended: -8 to give Pleased and Annoyed the same interval lengths.
-		 This means that the AI, effectively, gets Furious more quickly than in
-		 BtS (by 1). Apart from symmetry, -9 or -10 might play better. -->
-	<Define>
-		<DefineName>RELATIONS_THRESH_FURIOUS</DefineName>
-		<iDefineIntVal>-8</iDefineIntVal>
-	</Define>
 	<!-- Relations need to be this bad or worse to make the AI Annoyed
 		 (and mustn't be bad enough for Furious).
 		 Recommended: -2, i.e. effectively the same as in BtS (-3). -->
 	<Define>
 		<DefineName>RELATIONS_THRESH_ANNOYED</DefineName>
 		<iDefineIntVal>-2</iDefineIntVal>
+	</Define>
+	<!-- Relations need to be this bad or worse to make the AI Furious.
+		 Recommended: -9, equivalent to BtS. This makes the interval for Annoyed
+		 longer (by 2) than the interval for Pleased - reflecting that
+		 it's easier to stack up bad relations (mainly through war)
+		 than good relations. -->
+	<Define>
+		<DefineName>RELATIONS_THRESH_FURIOUS</DefineName>
+		<iDefineIntVal>-9</iDefineIntVal>
 	</Define>
 
 	<!-- advc.001b: 1 means that the production of air units is interrupted
@@ -1179,6 +1217,37 @@
 	<Define>
 		<DefineName>PER_EXTRA_LEADER_CIV_SELECTION_WEIGHT</DefineName>
 		<iDefineIntVal>20</iDefineIntVal>
+	</Define>
+
+	<!-- advc.045: A value of 1 means that 3D models of all buildings in
+		 revealed rival cities are shown on the main map (as in BtS) and that
+		 the UI in general treats such buildings as open information.
+		 A value of 0 (recommended) treats rival buildings as secret unless
+		 the active (human) player has a unit in the city tile or the building
+		 can be inferred from tile yields (e.g. Lighthouse) or city
+		 defense modifier (e.g. Walls). -->
+	<Define>
+		<DefineName>TREAT_REVEALED_BUILDINGS_AS_VISIBLE</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+
+	<!-- advc.650: 30/50/50 in BtS. Recommended: 10/140/0,
+		 meaning that nuke damage is distributed uniformly in
+		 the half-open interval [10, 150) and thus
+		 less predictable than in BtS.
+		 Caveat: Not sure if a negative base damage value would work correctly.
+		 Negative values for the rands aren't going to work. -->
+	<Define> <!-- redefine -->
+		<DefineName>NUKE_UNIT_DAMAGE_BASE</DefineName>
+		<iDefineIntVal>10</iDefineIntVal>
+	</Define>
+	<Define> <!-- redefine -->
+		<DefineName>NUKE_UNIT_DAMAGE_RAND_1</DefineName>
+		<iDefineIntVal>140</iDefineIntVal>
+	</Define>
+	<Define> <!-- redefine -->
+		<DefineName>NUKE_UNIT_DAMAGE_RAND_2</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
 </Civ4Defines>

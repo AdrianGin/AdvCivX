@@ -15,7 +15,6 @@
 class CvCivicInfo : public CvInfoBase
 {
 public: // The const functions are exposed to Python except those (to be) added by AdvCiv
-		// advc.inl: Inlined all non-array getters
 	CvCivicInfo();
 	~CvCivicInfo();
 
@@ -49,7 +48,7 @@ public: // The const functions are exposed to Python except those (to be) added 
 	int getWarWearinessModifier() const { return m_iWarWearinessModifier; }
 	int getFreeSpecialist() const { return m_iFreeSpecialist; }
 	int getTradeRoutes() const { return m_iTradeRoutes; }
-	TechTypes getTechPrereq() const { return m_eTechPrereq; } // advc.inl (return type was int)
+	TechTypes getTechPrereq() const { return m_eTechPrereq; }
 	int getCivicPercentAnger() const { return m_iCivicPercentAnger; }
 	int getMaxConscript() const { return m_iMaxConscript; }
 	int getStateReligionHappiness() const { return m_iStateReligionHappiness; }
@@ -87,9 +86,9 @@ public: // The const functions are exposed to Python except those (to be) added 
 	int getSpecialistExtraCommerce(int i) const;
 	int* getSpecialistExtraCommerceArray() const;
 	int getBuildingHappinessChanges(int i) const;
-	inline bool isAnyBuildingHappinessChanges() const { return (m_paiBuildingHappinessChanges != NULL); } // advc.003t
+	bool isAnyBuildingHappinessChanges() const { return (m_paiBuildingHappinessChanges != NULL); } // advc.003t
 	int getBuildingHealthChanges(int i) const;
-	inline bool isAnyBuildingHealthChanges() const { return (m_paiBuildingHealthChanges != NULL); } // advc.003t
+	bool isAnyBuildingHealthChanges() const { return (m_paiBuildingHealthChanges != NULL); } // advc.003t
 	int getFeatureHappinessChanges(int i) const;
 
 	bool isHurry(int i) const;
@@ -199,11 +198,11 @@ public:
 
 	int getPopulationPercent() const //	Exposed to Python
 	{
-		return m_iPopulationPercent; // advc.inl
+		return m_iPopulationPercent;
 	}
 	int getCityPercent() const	//	Exposed to Python
 	{
-		return m_iCityPercent; // advc.inl
+		return m_iCityPercent;
 	}
 	bool read(CvXMLLoadUtility* pXML);
 

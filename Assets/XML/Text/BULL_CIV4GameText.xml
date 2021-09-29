@@ -7,17 +7,10 @@
 <Civ4GameText xmlns="http://www.firaxis.com">
 
 <!-- City Bar Hover -->
-
-	<TEXT>
-		<Tag>TXT_KEY_CITY_BAR_CTRL_BASE_VALUES</Tag>
-		<English>[NEWLINE]Hold &lt;CTRL&gt; to see base values.</English>
-		<German>[NEWLINE][BOLD]&lt;STRG&gt;[\BOLD] drücken, um die Basiswerte zu sehen</German>
-		<Italian>[NEWLINE]Tieni premuto &lt;CTRL&gt; per visualizzare i valori base.</Italian>
-		<Spanish>[NEWLINE]Pulsa &lt;CTRL&gt; para ver los valores base.</Spanish>
-	</TEXT>
 	
 	<!-- Food Assist -->
-	<TEXT>
+	<!-- advc.189: Handled through (less verbose) text in Civ4GameText_advc.xml -->
+	<!--TEXT>
 		<Tag>TXT_KEY_CITY_BAR_FOOD_GROW</Tag>
 		<English>[NEWLINE]%d1 [ICON_FOOD]/Turn[NEWLINE]Growing: %d2/%d3 [ICON_FOOD] (%d4 [NUM4:Turn:Turns])</English>
 		<French>[NEWLINE]%d1 [ICON_FOOD]/tour[NEWLINE]Croissance : %d2/%d3 [ICON_FOOD] (%d4 [NUM4:tour:tours])</French>
@@ -48,9 +41,16 @@
 		<German>[NEWLINE]%d1 [ICON_BAD_FOOD]/Runde[NEWLINE][COLOR_WARNING_TEXT]HUNGERSNOT: %d2/%d3 [ICON_FOOD][COLOR_REVERT]</German>
 		<Italian>[NEWLINE]%d1 [ICON_BAD_FOOD]/Turno[NEWLINE][COLOR_WARNING_TEXT]CARESTIA: %d2/%d3 [ICON_FOOD][COLOR_REVERT]</Italian>
 		<Spanish>[NEWLINE]%d1 [ICON_BAD_FOOD]/turno[NEWLINE][COLOR_WARNING_TEXT]&#161;HAMBRUNA: %d2/%d3 [ICON_FOOD][COLOR_REVERT]</Spanish>
-	</TEXT>
+	</TEXT-->
 	
 	<!-- Base Production -->
+	<TEXT>
+		<Tag>TXT_KEY_CITY_BAR_CTRL_BASE_VALUES</Tag>
+		<English>[NEWLINE]Hold &lt;CTRL&gt; to see base values.</English>
+		<German>[NEWLINE][BOLD]&lt;STRG&gt;[\BOLD] drücken, um die Basiswerte zu sehen</German>
+		<Italian>[NEWLINE]Tieni premuto &lt;CTRL&gt; per visualizzare i valori base.</Italian>
+		<Spanish>[NEWLINE]Pulsa &lt;CTRL&gt; para ver los valores base.</Spanish>
+	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_CITY_BAR_HAMMER_PRODUCTION_WITH_BASE</Tag>
 		<English>[NEWLINE]%d1 [ICON_PRODUCTION]/Turn (%d6 [ICON_PRODUCTION]/Turn)[NEWLINE]%s2: %d3/%d4 [ICON_PRODUCTION] (%d5 [NUM5:Turn:Turns])</English>
@@ -84,14 +84,14 @@
 		<Spanish>[NEWLINE]%d1 [ICON_PRODUCTION] (%d2 [ICON_PRODUCTION]/turno)</Spanish>
 	</TEXT>
 	
-	<!-- Culture Turns -->
+	<!-- Culture Turns --> <!-- advc.186: NEWLINE removed -->
 	<TEXT>
 		<Tag>TXT_KEY_CITY_BAR_CULTURE_NO_LEVEL</Tag>
-		<English>[NEWLINE][ICON_CULTURE]: %d1/%d2</English>
-		<French>[NEWLINE][ICON_CULTURE] : %d1/%d2</French>
-		<German>[NEWLINE][ICON_CULTURE]: %d1/%d2</German>
-		<Italian>[NEWLINE][ICON_CULTURE]: %d1/%d2</Italian>
-		<Spanish>[NEWLINE][ICON_CULTURE]: %d1/%d2</Spanish>
+		<English>[ICON_CULTURE]: %d1/%d2</English>
+		<French>[ICON_CULTURE] : %d1/%d2</French>
+		<German>[ICON_CULTURE]: %d1/%d2</German>
+		<Italian>[ICON_CULTURE]: %d1/%d2</Italian>
+		<Spanish>[ICON_CULTURE]: %d1/%d2</Spanish>
 	</TEXT>
 	
 <!-- Finance Advisor -->
@@ -157,6 +157,10 @@
 	</TEXT>
 
 <!-- Production Decay -->
+	<!-- advc.094: Would be nice to use colors matching the exclamation marks;
+		 and the all-red text is kind of difficult to read. But I won't experiment
+		 with that now. Only changed it so that the darker shade of red gets used
+		 (consistently) for imminent decay. -->
 	<TEXT>
 		<Tag>TXT_KEY_PRODUCTION_DECAY</Tag>
 		<English>[COLOR_NEGATIVE_TEXT]Will lose %d1[ICON_PRODUCTION] this turn[COLOR_REVERT]</English>
@@ -166,23 +170,23 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_PRODUCTION_DECAY_PRODUCING</Tag>
-		<English>[COLOR_WARNING_TEXT]Will lose %d1[ICON_PRODUCTION] if not produced this turn[COLOR_REVERT]</English>
-		<German>[COLOR_WARNING_TEXT]%d1[ICON_PRODUCTION] gehen verloren, falls nicht in dieser Runde produziert wird[COLOR_REVERT]</German>
-		<Italian>[COLOR_WARNING_TEXT]Perderà %d1[ICON_PRODUCTION] se non viene prodotto questo turno [COLOR_REVERT]</Italian>
-		<Spanish>[COLOR_WARNING_TEXT]Perderá %d1[ICON_PRODUCTION] si no se activa este turno[COLOR_REVERT]</Spanish>
+		<English>[COLOR_NEGATIVE_TEXT]Will lose %d1[ICON_PRODUCTION] if not produced this turn[COLOR_REVERT]</English>
+		<German>[COLOR_NEGATIVE_TEXT]%d1[ICON_PRODUCTION] gehen verloren, falls nicht in dieser Runde produziert wird[COLOR_REVERT]</German>
+		<Italian>[COLOR_NEGATIVE_TEXT]Perderà %d1[ICON_PRODUCTION] se non viene prodotto questo turno [COLOR_REVERT]</Italian>
+		<Spanish>[COLOR_NEGATIVE_TEXT]Perderá %d1[ICON_PRODUCTION] si no se activa este turno[COLOR_REVERT]</Spanish>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_PRODUCTION_DECAY_TURNS</Tag>
-		<English>[COLOR_NEGATIVE_TEXT]Will lose %d1[ICON_PRODUCTION] in %d2 [NUM2:turn:turns][COLOR_REVERT]</English>
-		<German>[COLOR_NEGATIVE_TEXT]%d1[ICON_PRODUCTION] gehen in %d2 [NUM2:Runde:Runden] verloren[COLOR_REVERT]</German>
-		<Italian>[COLOR_NEGATIVE_TEXT]Perderà %d1[ICON_PRODUCTION] in %d2 [NUM2:turno:turni][COLOR_REVERT]</Italian>
-		<Spanish>[COLOR_NEGATIVE_TEXT]Perderá %d1[ICON_PRODUCTION] en %d2 [NUM2:turno:turnos][COLOR_REVERT]</Spanish>
+		<English>[COLOR_WARNING_TEXT]Will lose %d1[ICON_PRODUCTION] in %d2 [NUM2:turn:turns][COLOR_REVERT]</English>
+		<German>[COLOR_WARNING_TEXT]%d1[ICON_PRODUCTION] gehen in %d2 [NUM2:Runde:Runden] verloren[COLOR_REVERT]</German>
+		<Italian>[COLOR_WARNING_TEXT]Perderà %d1[ICON_PRODUCTION] in %d2 [NUM2:turno:turni][COLOR_REVERT]</Italian>
+		<Spanish>[COLOR_WARNING_TEXT]Perderá %d1[ICON_PRODUCTION] en %d2 [NUM2:turno:turnos][COLOR_REVERT]</Spanish>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_PRODUCTION_DECAY_TURNS_PRODUCING</Tag>
 		<English>[COLOR_WARNING_TEXT]Will lose %d1[ICON_PRODUCTION] if not produced for %d2 [NUM2:turn:turns][COLOR_REVERT]</English>
 		<German>[COLOR_WARNING_TEXT]%d1[ICON_PRODUCTION] gehen verloren, falls für %d2 [NUM2:Runde:Runden] nicht produziert wird[COLOR_REVERT]</German>
-		<Italian>[COLOR_WARNING_TEXT]Perderà  %d1[ICON_PRODUCTION] se non viene prodotto per %d2 [NUM2:turno:turni][COLOR_REVERT]</Italian>
+		<Italian>[COLOR_WARNING_TEXT]Perderà %d1[ICON_PRODUCTION] se non viene prodotto per %d2 [NUM2:turno:turni][COLOR_REVERT]</Italian>
 		<Spanish>[COLOR_WARNING_TEXT]Perderá %d1[ICON_PRODUCTION] si no se activa durante %d2 [NUM2:turn:turns][COLOR_REVERT]</Spanish>
 	</TEXT>
 
@@ -712,14 +716,15 @@
 	</TEXT>
 
 <!-- Feature Health -->
-	<TEXT>
+	<!-- advc.059 handles this -->
+	<!--TEXT>
 		<Tag>TXT_KEY_ACTION_CHANGE_IN_CITY</Tag>
 		<English>[ICON_BULLET]%s1 in %s2_CityName</English>
 		<French>[ICON_BULLET]%s1 &#224; %s2_CityName</French>
 		<German>[ICON_BULLET]%s1 in %s2_CityName</German>
 		<Italian>[ICON_BULLET]%s1 a %s2_CityName</Italian>
 		<Spanish>[ICON_BULLET]%s1 en %s2_CityName</Spanish>
-	</TEXT>
+	</TEXT-->
 
 <!-- Delete/Fortify/Sleep All Units Actions -->
 	<TEXT>
@@ -730,6 +735,14 @@
 		<Spanish>[SPACE](&lt;ALT&gt; para todas las unidades del mismo tipo que la unidad activa)</Spanish>
 	</TEXT>
 
+<!-- Free Tech Popup Fix -->
+	<TEXT>
+		<Tag>TXT_KEY_CHEATERS_NEVER_PROSPER</Tag>
+		<English>[COLOR_NEGATIVE_TEXT]You have already chosen your free tech(s)[COLOR_REVERT]</English>
+		<German>[COLOR_NEGATIVE_TEXT]Freie Technologie(n) schon gewählt[COLOR_REVERT]</German>
+		<Italian>[COLOR_NEGATIVE_TEXT]You have already chosen your free tech(s)[COLOR_REVERT]</Italian>
+		<Spanish>[COLOR_NEGATIVE_TEXT]Ya has escogido tu(s) tecnología(s) gratuita(s)[COLOR_REVERT]</Spanish>
+	</TEXT>
 
 <!-- Fractional Trade -->
 	<TEXT>
@@ -739,15 +752,6 @@
 		<German>%s1 [ICON_COMMERCE]: Gesamteinkommen</German>
 		<Italian>%s1 [ICON_COMMERCE]: totale</Italian>
 		<Spanish>%s1 [ICON_COMMERCE]: Total</Spanish>
-	</TEXT>
-
-<!-- Free Tech Popup Fix -->
-	<TEXT>
-		<Tag>TXT_KEY_CHEATERS_NEVER_PROSPER</Tag>
-		<English>[COLOR_NEGATIVE_TEXT]You have already chosen your free tech(s)[COLOR_REVERT]</English>
-		<German>[COLOR_NEGATIVE_TEXT]Freie Technologie(n) schon gewählt[COLOR_REVERT]</German>
-		<Italian>[COLOR_NEGATIVE_TEXT]You have already chosen your free tech(s)[COLOR_REVERT]</Italian>
-		<Spanish>[COLOR_NEGATIVE_TEXT]Ya has escogido tu(s) tecnología(s) gratuita(s)[COLOR_REVERT]</Spanish>
 	</TEXT>
 
 <!-- Optional Compile-Time Components -->
@@ -766,13 +770,14 @@
 		<Italian>New Sentry Actions</Italian>
 		<Spanish>Nuevas Acciones de Vigilancia</Spanish>
 	</TEXT-->
-	<TEXT>
+	<!-- advc: Won't want this as a compile-time option -->
+	<!--TEXT>
 		<Tag>TXT_KEY_MOD_GOVWORKERS</Tag>
 		<English>City Governors Build Workers</English>
 		<German>Stadtverwalter: Bautrupp aufstellen</German>
 		<Italian>City Governors Build Workers</Italian>
 		<Spanish>Gobernadores de Ciudad Construyen trabajadores</Spanish>
-	</TEXT>
+	</TEXT-->
 	<!-- advc.127: Won't need an option for this -->
 	<!--TEXT>
 		<Tag>TXT_KEY_MOD_AIAUTOPLAY</Tag>
@@ -782,13 +787,14 @@
 		<Italian>AI AutoPlay</Italian>
 		<Spanish>AI AutoPlay</Spanish>
 	</TEXT-->
-	<TEXT>
+	<!-- advc: K-Mod handles GW -->
+	<!--TEXT>
 		<Tag>TXT_KEY_MOD_GWARM</Tag>
 		<English>Global Warming</English>
 		<German>Globale Erwärmung</German>
 		<Italian>Global Warming</Italian>
 		<Spanish>Calentamiento Global</Spanish>
-	</TEXT>
+	</TEXT-->
 	<!-- advc.sha: Won't need this -->
 	<!--TEXT>
 		<Tag>TXT_KEY_MOD_SHAM_SPOILER</Tag>

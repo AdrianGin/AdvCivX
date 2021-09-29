@@ -4,8 +4,6 @@
 #define CvDLLPlotBuilderIFaceBase_h
 
 #include "CvDLLEntityIFaceBase.h"
-#include "CvDLLUtilityIFaceBase.h"
-#include "CvGlobals.h"	// for gDLL
 
 class CvPlotBuilder;
 
