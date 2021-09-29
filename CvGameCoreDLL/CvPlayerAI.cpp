@@ -18983,8 +18983,15 @@ scaled CvPlayerAI::AI_bonusImportValue(PlayerTypes eFrom) const
 				r += rBonusVal;
 			}
 		}
-	} // The divisor should be the typical gpt value of a somewhat useful bonus
-	return r / ::range(getNumCities(), 3, 10);
+	}
+	if (r == 0)
+		return 0;
+	// The divisor should be the typical gpt value of a somewhat useful bonus
+	scaled rDiv = getNumCities();
+	rDiv.clamp(3, 12);
+	rDiv.exponentiate(fixp(0.75));
+	rDiv *= fixp(1.2);
+	return r / rDiv;
 }
 
 
