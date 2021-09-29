@@ -1,7 +1,6 @@
 #include "CvGameCoreDLL.h"
 #include "CvInfo_Misc.h"
 #include "CvXMLLoadUtility.h"
-#include "CvDLLXMLIFaceBase.h"
 #include "CvGameTextMgr.h" // for CvGameText::read
 
 // advc: Better leave these alone b/c they're DLLExports
@@ -230,7 +229,7 @@ bool CvRouteModelInfo::read(CvXMLLoadUtility* pXML)
 
 	pXML->GetChildXmlValByName(&m_bAnimated, "Animated");
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eRouteType, "RouteType");
+	pXML->SetInfoIDFromChildXmlVal(m_eRouteType, "RouteType");
 
 	pXML->GetChildXmlValByName(m_szConnectString, "Connections");
 	pXML->GetChildXmlValByName(m_szModelConnectString, "ModelConnections");

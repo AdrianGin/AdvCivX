@@ -92,13 +92,13 @@ void AIStrengthMemoryMap::write(FDataStreamBase* pStream) const
 
 int AIStrengthMemoryMap::get(CvPlot const& kPlot) const
 {
-	return get(GC.getMap().plotNum(kPlot));
+	return get(kPlot.plotNum());
 }
 
 
 void AIStrengthMemoryMap::set(CvPlot const& kPlot, int iNewValue)
 {
-	PlotNumTypes ePlot = GC.getMap().plotNum(kPlot);
+	PlotNumTypes ePlot = kPlot.plotNum();
 	/*FAssertBounds(0, m_aiMap.size(), ePlot);
 	m_aiMap[ePlot] = iNewValue;*/
 	m_map[ePlot] = iNewValue;
@@ -111,10 +111,8 @@ void AIStrengthMemoryMap::decay()
 	/*if (m_aiMap.size() != GC.getMap().numPlots())
 		return;*/
 	CvTeam const& kTeam = CvTeam::getTeam(m_eTeam);
-	/*	Barbarian strength memory disabled for now. (The set calls are disabled
-		at the call location.) */
-	if (kTeam.isBarbarian())
-		return;
+	// K-Mod: reduce by 4% (arbitrary number), rounding down.
+	int const iDecayPercent = 4;
 	/*for (int i = 0; i < GC.getMap().numPlots(); i++)
 	{
 		if (m_aiMap[i] == 0)
@@ -131,11 +129,10 @@ void AIStrengthMemoryMap::decay()
 			it = m_map.erase(it);
 			//m_aiMap[i] = 0;
 		}
-		// K-Mod: reduce by 4% (arbitrary number), rounding down.
-		//else m_aiMap[i] = (96 * m_aiMap[i]) / 100;
+		//else m_aiMap[i] = ((100 - iDecayPercent) * m_aiMap[i]) / 100;
 		else
 		{
-			it->second = (96 * it->second) / 100;
+			it->second = ((100 - iDecayPercent) * it->second) / 100;
 			++it;
 		}
 	}

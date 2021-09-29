@@ -10,7 +10,10 @@ class CvPopup;
 class CvDiplomacyResponse;
 class CvWString;
 
-// <advc.700>: Main class for the Rise & Fall mod component
+/*	advc.700: Main class for the Rise & Fall mod component.
+	(The coding style of the R&F classes is inconsistent with the rest
+	of the codebase. The R&F code isn't really subject to change, so I'm
+	not going to overhault it.) */
 class RiseFall {
 
 public:
@@ -18,6 +21,7 @@ public:
 	~RiseFall();
 	void reset();
 	void init();
+	void setPlayerHandicap(PlayerTypes civId, bool bHuman, bool bIncrease);
 	void write(FDataStreamBase* pStream);
 	void read(FDataStreamBase* pStream);
 	void atGameTurnStart();
@@ -85,6 +89,7 @@ private:
 	PlayerTypes nextCivAlive(PlayerTypes startExcluded) const;
 	void setPlayerControl(PlayerTypes civId, bool b);
 	void welcomeToNextChapter(int pos);
+	void resetProductionDecay(PlayerTypes civId);
 	void centerCamera(PlayerTypes civId);
 	void showDoW();
 	void showQuests();
@@ -108,7 +113,5 @@ private:
 	bool retryingCivSelection;
 	CvWString* originalName;
 };
-
-// </advc.700>
 
 #endif

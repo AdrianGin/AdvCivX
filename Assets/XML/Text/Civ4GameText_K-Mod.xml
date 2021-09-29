@@ -37,11 +37,22 @@
 	<TEXT>
 		<Tag>TXT_KEY_UNIT_GREAT_WORK</Tag>
 		<English>[ICON_BULLET]Can Create a Great Work (%D1_Change[ICON_CULTURE] per era)</English>
-		<French>[ICON_BULLET]Peut cr&#233;er un chef d'oeuvre (%D1_Change[ICON_CULTURE] par epoque)</French>
+		<French>[ICON_BULLET]Peut cr&#233;er un chef d'oeuvre (%D1_Change[ICON_CULTURE] par ère)</French>
 		<German>[ICON_BULLET]Kann ein Gro&#223;es Bauwerk errichten (%D1_Change[ICON_CULTURE] pro Zeitalter)</German>
 		<Italian>[ICON_BULLET]Pu&#242; creare una Grande Opera (%D1_Change[ICON_CULTURE] per era)</Italian>
 		<Spanish>[ICON_BULLET]Puede crear una gran obra (%D1_Change [ICON_CULTURE] por &#233;poca)</Spanish>
 	</TEXT>
+	<!-- advc.251: For the action button
+		(and changed French term above; was "epoque"). -->
+	<TEXT>
+		<Tag>TXT_KEY_MISSION_GREAT_WORK_WIDGET_HELP</Tag>
+		<English>+%d1[ICON_CULTURE] (%d2 per Era)</English>
+		<French>+%d1[ICON_CULTURE] (%d2 par ère)</French>
+		<German>+%d1[ICON_CULTURE] (%d2 pro Zeitalter)</German>
+		<Italian>+%d1[ICON_CULTURE] (%d2 per era)</Italian>
+		<Spanish>+%d1[ICON_CULTURE] (%d2 por &#233;poca)</Spanish>
+	</TEXT>
+	
 	<!-- advc.002c: German was garbled/ ungrammatical -->
 	<TEXT>
 		<Tag>TXT_KEY_MISC_RELIGION_REMOVE</Tag>
@@ -496,13 +507,13 @@
 	<!-- replacement volcano text (unfinished)-->
 	<TEXT>
 		<Tag>TXT_KEY_EVENT_VOLCANO_1_HELP</Tag>
-		<English>[ICON_BULLET]Suffer loss of plot improvements near the eruption[NEWLINE][ICON_BULLET]Chance of +1[ICON_FOOD] on plots near the eruption</English>
+		<English>[ICON_BULLET]Suffer loss of tile improvements near the eruption[NEWLINE][ICON_BULLET]Chance of +1[ICON_FOOD] on plots near the eruption</English>
 		<French>[ICON_BULLET]Subir des pertes d'am&#233;nagements sur les cases proches de l'&#233;ruption</French>
 		<German>[ICON_BULLET]Verlust der Gel&#228;ndefeld-Modernisierungen in der N&#228;he der Eruption</German>
 		<Italian>[ICON_BULLET]Perdita dei miglioramenti delle caselle vicino all'eruzione</Italian>
 		<Spanish>[ICON_BULLET]P&#233;rdida de mejoras de casillas cerca de la erupci&#243;n.[NEWLINE][ICON_BULLET]Probabilidad de +1[ICON_FOOD] en casillas cercanas a la erupción</Spanish>
 	</TEXT>
-		<English>[ICON_BULLET]+1[ICON_COMMERCE] in %d1 additional [NUM1:plot:plots]</English>
+		<English>[ICON_BULLET]+1[ICON_COMMERCE] in %d1 additional [NUM1:tile:tiles]</English>
 		<French>[ICON_BULLET]+1[ICON_COMMERCE] sur %d1 [NUM1:case suppl&#233;mentaire:cases suppl&#233;mentaires]</French>
 		<German>[ICON_BULLET]+1[ICON_COMMERCE] auf %d1 [NUM1:zus&#228;tzlichem Gel&#228;ndefeld:zus&#228;tzlichen Gel&#228;ndefeldern]</German>
 		<Italian>[ICON_BULLET]+1[ICON_COMMERCE] in %d1 [NUM1:casella aggiuntiva:caselle aggiuntive]</Italian>

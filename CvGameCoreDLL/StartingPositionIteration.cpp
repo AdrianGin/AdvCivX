@@ -52,9 +52,13 @@ StartingPositionIteration::StartingPositionIteration() :
 		Map scripts might depend on this order. If a map script sets the
 		starting sites, then we have to bail anyway, but we don't know that yet. */
 	vector<CvPlayer*> apCivPlayers;
-	for (PlayerIter<HUMAN,ANY_AGENT_RELATION,true> it; it.hasNext(); ++it)
+	for (PlayerRandIter<HUMAN,ANY_AGENT_RELATION> it(mapRand());
+		it.hasNext(); ++it)
+	{
 		apCivPlayers.push_back(&(*it));
-	for (PlayerIter<CIV_ALIVE,ANY_AGENT_RELATION,true> it; it.hasNext(); ++it)
+	}
+	for (PlayerRandIter<CIV_ALIVE,ANY_AGENT_RELATION> it(mapRand());
+		it.hasNext(); ++it)
 	{
 		if (!it->isHuman())
 			apCivPlayers.push_back(&*it);
@@ -115,7 +119,7 @@ StartingPositionIteration::StartingPositionIteration() :
 			{22, 36}, {19, 13}, {29, 12}, {29, 23},
 			{19, 29}, {32, 39}, {51, 11}, {55, 19},
 		};
-		for (int j = 0; j < ARRAY_LENGTH(aiiForcedInitialPosition); j++)
+		for (int j = 0; j < ARRAYSIZE(aiiForcedInitialPosition); j++)
 		{
 			GET_PLAYER((PlayerTypes)j).setStartingPlot(&kMap.getPlot(
 					aiiForcedInitialPosition[j][0], aiiForcedInitialPosition[j][1]), false);
@@ -143,7 +147,7 @@ StartingPositionIteration::StartingPositionIteration() :
 	/*for (size_t i = 0; i < apPotentialSites.size(); i++) // (debug) Mark alt. sites with a ruin
 		GC.getMap().getPlotByIndex(GC.getMap().plotNum(*apPotentialSites[i])).setImprovementType(GC.getRUINS_IMPROVEMENT());*/
 
-	EnumMap<PlotNumTypes,scaled> yieldValues;
+	EagerEnumMap<PlotNumTypes,scaled> yieldValues;
 	map<CvArea const*,scaled> yieldsPerArea;
 	{
 		vector<scaled> arLandYields;
@@ -176,7 +180,7 @@ StartingPositionIteration::StartingPositionIteration() :
 		std::set<PlotNumTypes> sitePlotNums;
 		for (size_t i = 0; i < apPotentialSites.size(); i++)
 		{
-			sitePlotNums.insert(kMap.plotNum(*apPotentialSites[i]));
+			sitePlotNums.insert(apPotentialSites[i]->plotNum());
 		}
 		std::vector<CvPlot const*> relevantPlots;
 		FOR_EACH_ENUM(PlotNum)
@@ -244,7 +248,7 @@ CitySiteEvaluator* StartingPositionIteration::createSiteEvaluator(bool bNormaliz
 	bool const bOCC = GC.getGame().isOption(GAMEOPTION_ONE_CITY_CHALLENGE);
 	CvPlayerAI const* pPlayer = NULL;
 	int iBestPlayerVal = MAX_INT;
-	for (PlayerIter<CIV_ALIVE> it; it.hasNext(); ++it)
+	for (PlayerAIIter<CIV_ALIVE> it; it.hasNext(); ++it)
 	{
 		int iVal = 10 * it->getTechScore();
 		if (it->isHuman())
@@ -295,10 +299,10 @@ StartingPositionIteration::PotentialSites::PotentialSites(
 		if (iFoundValue >= rMinFoundVal)
 		{
 			// Randomize a little - mainly so that settling in place isn't a no-brainer
-			iFoundValue = toShort(
+			iFoundValue = safeIntCast<short>(
 					(iFoundValue + iFoundValue *
 					((iFoundValue / rMinFoundVal - 1) * fixp(0.05) *
-					(scaled::rand(GC.getGame().getMapRand(), NULL) - fixp(0.5)))).
+					(scaled::rand(mapRand(), NULL) - fixp(0.5)))).
 					round());
 			m_foundValuesPerSite.insert(make_pair(eLoopPlotNum, iFoundValue));
 		}
@@ -309,7 +313,7 @@ StartingPositionIteration::PotentialSites::PotentialSites(
 
 	// "Clearing the neighborhood"
 
-	EnumMap<PlotNumTypes,scaled> arVicinityPenaltiesPerPlot;
+	EagerEnumMap<PlotNumTypes,scaled> arVicinityPenaltiesPerPlot;
 	for (map<PlotNumTypes,short>::const_iterator itSite = m_foundValuesPerSite.begin();
 		itSite != m_foundValuesPerSite.end(); ++itSite)
 	{
@@ -323,7 +327,7 @@ StartingPositionIteration::PotentialSites::PotentialSites(
 		if (fewestPotentialSites() < 2 && numSites() < iPlayers * 15u)
 			break;
 		map<PlotNumTypes,short>::iterator minPos;
-		scaled rMinVal = scaled::MAX();
+		scaled rMinVal = scaled::MAX;
 		for (map<PlotNumTypes,short>::iterator it = m_foundValuesPerSite.begin();
 			it != m_foundValuesPerSite.end(); ++it)
 		{
@@ -372,15 +376,13 @@ scaled StartingPositionIteration::PotentialSites::computeMinFoundValue()
 	happen to have it at hand.) */
 void StartingPositionIteration::PotentialSites::recordSite(
 	CvPlot const& kPlot, short iFoundValue, bool bAdd,
-	EnumMap<PlotNumTypes,scaled>& kVicinityPenaltiesPerPlot)
+	EagerEnumMap<PlotNumTypes,scaled>& kVicinityPenaltiesPerPlot)
 {
-	CvMap const& kMap = GC.getMap();
-
 	// Update vicinity penalties
 	int const iSign = (bAdd ? 1 : -1);
 	for (PlotCircleIter it(kPlot, 8, false); it.hasNext(); ++it)
 	{
-		PlotNumTypes const eLoopPlot = kMap.plotNum(*it);
+		PlotNumTypes const eLoopPlot = it->plotNum();
 		map<PlotNumTypes,short>::const_iterator pos = m_foundValuesPerSite.find(eLoopPlot);
 		if (pos != m_foundValuesPerSite.end() && pos->second < iFoundValue)
 		{
@@ -398,7 +400,7 @@ void StartingPositionIteration::PotentialSites::recordSite(
 	for (size_t i = 0; i < aClosestPlayers.size(); i++)
 	{
 		VoronoiCell& kCell = *m_sitesClosestToCurrSite.find(aClosestPlayers[i])->second;
-		PlotNumTypes ePlotNum = kMap.plotNum(kPlot);
+		PlotNumTypes ePlotNum = kPlot.plotNum();
 		if (bAdd)
 			kCell.insert(ePlotNum);
 		else
@@ -463,7 +465,7 @@ void StartingPositionIteration::PotentialSites::updateCurrSites(bool bUpdateCell
 	for (PlayerIter<CIV_ALIVE> it; it.hasNext(); ++it)
 	{
 		map<PlotNumTypes,short>::iterator pos = m_foundValuesPerSite.find(
-				kMap.plotNum(*it->getStartingPlot()));
+				it->getStartingPlot()->plotNum());
 		if (pos != m_foundValuesPerSite.end())
 		{
 			m_foundValuesPerCurrSite.set(it->getID(), pos->second);
@@ -538,13 +540,12 @@ PlotNumTypes StartingPositionIteration::PotentialSites::getRemoteSite(
 
 
 void StartingPositionIteration::PotentialSites::getCurrFoundValues(
-	EnumMap<PlayerTypes,short>& kFoundValuesPerPlayer) const
+	EagerEnumMap<PlayerTypes,short>& kFoundValuesPerPlayer) const
 {
-	CvMap const& kMap = GC.getMap();
 	for (PlayerIter<CIV_ALIVE> it; it.hasNext(); ++it)
 	{
 		map<PlotNumTypes,short>::const_iterator pos = m_foundValuesPerSite.
-				find(kMap.plotNum(*it->getStartingPlot()));
+				find(it->getStartingPlot()->plotNum());
 		if (pos != m_foundValuesPerSite.end())
 			kFoundValuesPerPlayer.set(it->getID(), pos->second);
 		else
@@ -573,7 +574,7 @@ StartingPositionIteration::DistanceTable::DistanceTable(
 	m_sourceIDs.resize(kMap.numPlots(), NOT_A_SOURCE);
 	for (size_t i = 0; i < kSources.size(); i++)
 	{
-		m_sourceIDs[kMap.plotNum(*kSources[i])] = (SourceID)i;
+		m_sourceIDs[kSources[i]->plotNum()] = (SourceID)i;
 	}
 	// Need (fast) 2-way conversion for destination ids and plot numbers
 	m_destinationIDs.resize(kMap.numPlots(), NOT_A_DESTINATION);
@@ -581,7 +582,7 @@ StartingPositionIteration::DistanceTable::DistanceTable(
 	for (size_t i = 0; i < kDestinations.size(); i++)
 	{
 		DestinationID eDst = (DestinationID)i;
-		PlotNumTypes ePlotNum = kMap.plotNum(*kDestinations[i]);
+		PlotNumTypes ePlotNum = kDestinations[i]->plotNum();
 		m_destinationIDs[ePlotNum] = eDst;
 		m_destinationIDToPlotNum[eDst] = ePlotNum;
 	}
@@ -616,7 +617,7 @@ StartingPositionIteration::DistanceTable::DistanceTable(
 				if (!it->canFound())
 					continue;
 				bool bInnerRingLoop = (it.currID() < NUM_INNER_PLOTS);
-				if (m_destinationIDs[kMap.plotNum(*it)] != NOT_A_DESTINATION)
+				if (m_destinationIDs[it->plotNum()] != NOT_A_DESTINATION)
 				{
 					short iDist = d(kSource, *it);
 					if (!bDest || iDist < iShortestDist)
@@ -659,9 +660,8 @@ short StartingPositionIteration::DistanceTable::d(
 	CvPlot const& kSource, CvPlot const& kDestination) const
 {
 	FAssertMsg(!kSource.isWater(), "kSource should be a (potential) city site");
-	CvMap const& kMap = GC.getMap();
-	SourceID eSource = m_sourceIDs[kMap.plotNum(kSource)];
-	DestinationID eDestination = m_destinationIDs[kMap.plotNum(kDestination)];
+	SourceID eSource = m_sourceIDs[kSource.plotNum()];
+	DestinationID eDestination = m_destinationIDs[kDestination.plotNum()];
 	FAssertBounds(0, m_distances.size(), eSource);
 	FAssertBounds(0, m_distances[eSource].size(), eDestination);
 	return m_distances[eSource][eDestination];
@@ -671,9 +671,8 @@ short StartingPositionIteration::DistanceTable::d(
 void StartingPositionIteration::DistanceTable::setDistance(
 	CvPlot const& kSource, CvPlot const& kDestination, short iDistance)
 {
-	CvMap const& kMap = GC.getMap();
-	SourceID eSource = m_sourceIDs[kMap.plotNum(kSource)];
-	DestinationID eDestination = m_destinationIDs[kMap.plotNum(kDestination)];
+	SourceID eSource = m_sourceIDs[kSource.plotNum()];
+	DestinationID eDestination = m_destinationIDs[kDestination.plotNum()];
 	if (eDestination != NOT_A_DESTINATION)
 	{
 		FAssertBounds(0, m_distances.size(), eSource);
@@ -702,14 +701,13 @@ namespace
 
 void StartingPositionIteration::DistanceTable::computeDistances(CvPlot const& kSource)
 {
-	CvMap const& kMap = GC.getMap();
 	bool const bSourceCoastal = kSource.isCoastalLand(-1);
 	// Plain old Dijkstra's algorithm
 	std::priority_queue<Node> q;
 	q.push(Node(kSource, 0));
 	/*	Keep track of visited nodes in order to save time. Can't use m_distances
 		for this b/c it only contains destinations; may have to visit all plots. */
-	vector<bool> abReached(kMap.numPlots(), false);
+	EagerEnumMap<PlotNumTypes,bool> abReached;
 	while (!q.empty())
 	{
 		Node v = q.top();
@@ -717,16 +715,16 @@ void StartingPositionIteration::DistanceTable::computeDistances(CvPlot const& kS
 		CvPlot const& kAt = v.get();
 		setDistance(kSource, kAt, v.getDistance());
 		{
-			int iAt = kMap.plotNum(kAt);
-			if (abReached[iAt])
+			PlotNumTypes eAt = kAt.plotNum();
+			if (abReached.get(eAt))
 				continue;
-			abReached[iAt] = true;
+			abReached.set(eAt, true);
 		}
 		FOR_EACH_ADJ_PLOT(kAt)
 		{
 			/*	Note: even if not yet reached, it may already be in q;
 				that's what the abReached[iAt] check above is for. */
-			if (abReached[kMap.plotNum(*pAdj)])
+			if (abReached.get(pAdj->plotNum()))
 				continue;
 			short iDistance = stepDist(kAt, *pAdj, bSourceCoastal);
 			if (iDistance < MAX_SHORT)
@@ -849,7 +847,7 @@ std::string StartingPositionIteration::Step::debugStr() const
 void StartingPositionIteration::evaluateCurrPosition(
 	SolutionAttributes& kResult, bool bLog) const
 {
-	EnumMap<PlayerTypes,short> foundValues;
+	EagerEnumMap<PlayerTypes,short> foundValues;
 	m_pPotentialSites->getCurrFoundValues(foundValues);
 	computeStartValues(foundValues, kResult, bLog);
 	kResult.m_rStartPosVal = startingPositionValue(kResult);
@@ -857,8 +855,9 @@ void StartingPositionIteration::evaluateCurrPosition(
 
 
 StartingPositionIteration::SpaceEvaluator::SpaceEvaluator(
-	DistanceTable const& kDists, EnumMap<PlotNumTypes,scaled> const& kYieldValues,
-	bool bLog) : m_kDists(kDists), m_kYieldValues(kYieldValues), m_bLog(bLog)
+	DistanceTable const& kDists,
+	EagerEnumMap<PlotNumTypes,scaled> const& kYieldValues, bool bLog)
+:	m_kDists(kDists), m_kYieldValues(kYieldValues), m_bLog(bLog)
 {
 	CvMap const& kMap = GC.getMap();
 	// Treat distances beyond this threshold as infinite in order to save time
@@ -912,7 +911,6 @@ void StartingPositionIteration::SpaceEvaluator::computeSpaceValue(PlayerTypes eP
 	#ifdef DEBUG_SPACE_BREAKDOWN
 		vector<pair<scaled,BreakDownData> > aSpaceBreakDown;
 	#endif
-	CvMap const& kMap = GC.getMap();
 	CvPlot const& kStartPlot = *GET_PLAYER(ePlayer).getStartingPlot();
 	scaled rSpaceVal;
 	word const iDistThresh = m_iDistThresh;
@@ -926,7 +924,7 @@ void StartingPositionIteration::SpaceEvaluator::computeSpaceValue(PlayerTypes eP
 		int const iCivsAlive = PlayerIter<CIV_ALIVE>::count();
 	#endif
 	// Use friend status to avoid FOR_EACH_ENUM(PlotNum)
-	DistanceTable::SourceID const eSrc = m_kDists.m_sourceIDs[kMap.plotNum(kStartPlot)];
+	DistanceTable::SourceID const eSrc = m_kDists.m_sourceIDs[kStartPlot.plotNum()];
 	for (size_t i = 0; i < m_kDists.m_distances[eSrc].size(); i++)
 	{
 		DistanceTable::DestinationID const eDst = (DistanceTable::DestinationID)i;
@@ -1042,8 +1040,8 @@ StartingPositionIteration::SpaceEvaluator::cacheDelayFactors(word iMaxDist)
 
 // The results are on the scale of AIFoundValue
 void StartingPositionIteration::computeStartValues(
-	EnumMap<PlayerTypes,short> const& kFoundValues, SolutionAttributes& kResult,
-	bool bLog) const
+	EagerEnumMap<PlayerTypes,short> const& kFoundValues,
+	SolutionAttributes& kResult, bool bLog) const
 {
 	#ifdef SPI_LOG
 		std::ostringstream out;
@@ -1056,16 +1054,16 @@ void StartingPositionIteration::computeStartValues(
 
 	/*	Compute these upfront b/c it depends on the typical distance between
 		starting sites whether a given distance is "too close" */
-	EnumMap<PlayerTypes,scaled> rivalDistFactors;
+	EagerEnumMap<PlayerTypes,scaled> rivalDistFactors;
 	scaled const rTypicalDistFactor = computeRivalDistFactors(rivalDistFactors, false);
 	// Need this once for all rivals and once just for those in the same area
-	EnumMap<PlayerTypes,scaled> sameAreaRivalDistFactors;
+	EagerEnumMap<PlayerTypes,scaled> sameAreaRivalDistFactors;
 	scaled rSameAreaTargetDistFactor = computeRivalDistFactors(
 			sameAreaRivalDistFactors, true) * fixp(4/3.);
 	// Need to know the distribution before computing the actual per-player values
 	vector<scaled> arAreaYieldsPerPlayer;
-	EnumMap<PlayerTypes,scaled> areaYieldsPerPlayer;
-	EnumMap<PlayerTypes,scaled> spaceValues;
+	EagerEnumMap<PlayerTypes,scaled> areaYieldsPerPlayer;
+	EagerEnumMap<PlayerTypes,scaled> spaceValues;
 	int const iCivEverAlive = PlayerIter<CIV_ALIVE>::count();
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 	{
@@ -1345,7 +1343,7 @@ void StartingPositionIteration::computeStartValues(
 	on the same team. (Sites will probably get swapped around later, so same-team
 	relationships aren't reliable at this point.) */
 scaled StartingPositionIteration::computeRivalDistFactors(
-	EnumMap<PlayerTypes,scaled>& kResult, bool bSameArea) const
+	EagerEnumMap<PlayerTypes,scaled>& kResult, bool bSameArea) const
 {
 	vector<scaled> arRivalDistFactors;
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
@@ -1399,7 +1397,8 @@ scaled StartingPositionIteration::weightedDistance(vector<short>& kDistances)
 
 
 scaled StartingPositionIteration::outlierValue(
-	EnumMap<PlayerTypes,scaled> const& kStartValues, PlayerTypes eIndex,
+	EagerEnumMap<PlayerTypes,scaled> const& kStartValues,
+	PlayerTypes eIndex,
 	scaled& rPercentage, scaled rNegativeOutlierExtraWeight,
 	scaled const* pMedian, // To save time if caller happens to have it
 	bool* pbNegativeOutlier) const // Out-param
@@ -1720,22 +1719,8 @@ bool StartingPositionIteration::considerStep(Step& kStep,
 			logStep(kStep, kCurrSolutionAttribs, newSolutionAttribs, true);
 			/*	Commit to this step (w/o considering further alternatives).
 				Tbd.: Could probably get better results by considering all alternatives. */
-			/*	Copy newSolutionAttribs into kCurrSolutionAttribs.
-				(EnumMap has no copy-ctor, and I don't want to write one right now.) */
-			kCurrSolutionAttribs.m_eWorstOutlier = newSolutionAttribs.m_eWorstOutlier;
-			kCurrSolutionAttribs.m_rAvgError = newSolutionAttribs.m_rAvgError;
-			kCurrSolutionAttribs.m_rStartPosVal = newSolutionAttribs.m_rStartPosVal;
-			for (PlayerIter<CIV_ALIVE> it; it.hasNext(); ++it)
-			{
-				kCurrSolutionAttribs.m_startValues.set(it->getID(),
-						newSolutionAttribs.m_startValues.get(it->getID()));
-				kCurrSolutionAttribs.m_foundValues.set(it->getID(),
-						newSolutionAttribs.m_foundValues.get(it->getID()));
-				kCurrSolutionAttribs.m_foundWeights.set(it->getID(),
-						newSolutionAttribs.m_foundWeights.get(it->getID()));
-				kCurrSolutionAttribs.m_rivalMultipliers.set(it->getID(),
-						newSolutionAttribs.m_rivalMultipliers.get(it->getID()));
-			}
+			// Copy newSolutionAttribs into kCurrSolutionAttribs
+			kCurrSolutionAttribs = newSolutionAttribs;
 			return true;
 		}
 	}
@@ -1812,8 +1797,7 @@ void StartingPositionIteration::doIterations(PotentialSites& kPotentialSites)
 			// Focus on negative outliers while the avg. error is high
 			scaled rNegativeOutlierExtraWeight = fixp(1.15) * 
 					(m_currSolutionAttribs.m_rAvgError - fixp(0.1));
-			// A little bit of randomness
-			if (iStepsConsidered % 2 == 0)
+			if (iStepsConsidered % 2 == 0) // A little bit of variation
 				rNegativeOutlierExtraWeight += fixp(0.25);
 			scaled rDummy;
 			scaled rOutlierVal = outlierValue(m_currSolutionAttribs.m_startValues,
@@ -2014,7 +1998,7 @@ int StartingPositionIteration::teamValue(PlayerTypes eSitePlayer, TeamTypes eFor
 {
 	CvPlot const& kSite = *GET_PLAYER(eSitePlayer).getStartingPlot();
 	int const iAreaSites = kSite.getArea().getNumStartingPlots();
-	EnumMap<TeamTypes,int> aiAreaSitesPerTeam;
+	EagerEnumMap<TeamTypes,int> aiAreaSitesPerTeam;
 	int iTeamsInArea = 0;
 	vector<scaled> arFriendlyCloseness;
 	vector<scaled> arRivalCloseness;
@@ -2149,12 +2133,11 @@ NormalizationTarget::NormalizationTarget(CitySiteEvaluator& kEval,
 	StartingPositionIteration::SolutionAttributes const& kSolution)
 {
 	m_pEval = &kEval;
-	CvMap const& kMap = GC.getMap();
 	for (PlayerIter<CIV_ALIVE> it; it.hasNext(); ++it)
 	{
 		PlayerTypes ePlayer = it->getID();
 		m_startValData.insert(make_pair(
-				kMap.plotNum(*it->getStartingPlot()),
+				it->getStartingPlot()->plotNum(),
 				StartValBreakdown(
 				kSolution.m_startValues.get(ePlayer),
 				kSolution.m_volatilityValues.get(ePlayer),
@@ -2274,7 +2257,7 @@ scaled NormalizationTarget::getVolatilityValue(CvPlot const& kStartSite) const
 NormalizationTarget::StartValBreakdown const* NormalizationTarget::getBreakdown(
 	CvPlot const& kSite) const
 {
-	PlotNumTypes const ePlot = GC.getMap().plotNum(kSite);
+	PlotNumTypes const ePlot = kSite.plotNum();
 	map<PlotNumTypes,StartValBreakdown>::const_iterator pos = m_startValData.find(ePlot);
 	if (pos == m_startValData.end())
 	{

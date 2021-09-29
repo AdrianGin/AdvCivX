@@ -9,7 +9,6 @@
 #define CvDLLFlagEntityIFaceBase_H
 
 #include "CvDLLEntityIFaceBase.h"
-#include "CvDLLUtilityIFaceBase.h"
 
 class CvPlot;
 class CvFlagEntity;

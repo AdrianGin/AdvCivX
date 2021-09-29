@@ -15,9 +15,9 @@ public: // All the const functions are exposed to Python
 
 	wchar getChar() const; // advc: return wchar (not int)
 	void setChar(/* advc: */ wchar wc);
-	inline int getTechPrereq() const { return m_iTechPrereq; } // advc.130f: inline
+	int getTechPrereq() const { return m_iTechPrereq; }
 	int getFreeUnitClass() const;
-	inline int getSpreadFactor() const { return m_iSpreadFactor; } // advc.130f: inline
+	int getSpreadFactor() const { return m_iSpreadFactor; }
 	int getMissionType() const;
 	void setMissionType(int iNewType);
 
@@ -48,8 +48,8 @@ public: // All the const functions are exposed to Python
 	CvReligionInfo();
 	~CvReligionInfo();
 
-	int getHolyCityChar() const;
-	void setHolyCityChar(int i);
+	wchar getHolyCityChar() const;
+	void setHolyCityChar(wchar c);
 	int getNumFreeUnits() const;
 
 	const TCHAR* getTechButton() const;
@@ -73,7 +73,7 @@ public: // All the const functions are exposed to Python
 	static bool isReligionTech(TechTypes eTech); // advc.003w: Moved from CvGameCoreUtils
 
 protected:
-	int m_iHolyCityChar;
+	wchar m_cHolyCityChar; // advc: was int
 	int m_iNumFreeUnits;
 
 	CvString m_szTechButton;
@@ -90,18 +90,18 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvCorporationInfo : public CvOrganizationInfo
 {
-public: // All the const functions are exposed to Python; advc.inl: inlined some getters.
+public: // All the const functions are exposed to Python
 	CvCorporationInfo();
 	virtual ~CvCorporationInfo();
 
-	int getHeadquarterChar() const;
-	void setHeadquarterChar(int i);
+	wchar getHeadquarterChar() const;
+	void setHeadquarterChar(wchar c);
 	int getSpreadCost() const { return m_iSpreadCost; }
 	int getMaintenance() const { return m_iMaintenance; }
 	BonusTypes getBonusProduced() const { return m_eBonusProduced; }
 
 	// Array access:
-	inline int getNumPrereqBonuses() const { return m_aePrereqBonuses.size(); }
+	int getNumPrereqBonuses() const { return m_aePrereqBonuses.size(); }
 	BonusTypes getPrereqBonus(int i) const
 	{
 		FAssertBounds(0, getNumPrereqBonuses(), i);
@@ -121,7 +121,7 @@ public: // All the const functions are exposed to Python; advc.inl: inlined some
 	static bool isCorporationTech(TechTypes eTech); // advc.003w: Moved from CvGameCoreUtils; unused.
 
 protected:
-	int m_iHeadquarterChar;
+	wchar m_cHeadquarterChar; // advc: was int
 	int m_iSpreadCost;
 	int m_iMaintenance;
 	BonusTypes m_eBonusProduced;

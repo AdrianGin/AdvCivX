@@ -2,7 +2,6 @@
 
 #include "CvGameCoreDLL.h"
 #include "CvXMLLoadUtility.h"
-#include "CvDLLXMLIFaceBase.h"
 
 
 CvCivilizationInfo::CvCivilizationInfo() :
@@ -280,6 +279,7 @@ void CvCivilizationInfo::write(FDataStreamBase* stream)
 	stream->WriteString(m_iNumCityNames, m_paszCityNames);
 }
 #endif
+
 bool CvCivilizationInfo::read(CvXMLLoadUtility* pXML)
 {
 	if (!CvInfoBase::read(pXML))
@@ -661,6 +661,7 @@ const TCHAR* CvLeaderHeadInfo::getLeaderHead() const
 
 	return NULL;
 }
+
 #if ENABLE_XML_FILE_CACHE
 void CvLeaderHeadInfo::read(FDataStreamBase* stream)
 {
@@ -913,6 +914,7 @@ void CvLeaderHeadInfo::write(FDataStreamBase* stream)
 	stream->Write(GC.getNumEraInfos(), m_piDiploWarMusicScriptIds);
 }
 #endif
+
 const CvArtInfoLeaderhead* CvLeaderHeadInfo::getArtInfo() const
 {
 	return ARTFILEMGR.getLeaderheadArtInfo( getArtDefineTag());
@@ -1036,9 +1038,9 @@ bool CvLeaderHeadInfo::read(CvXMLLoadUtility* pXML)
 			"PermanentAllianceRefuseAttitudeThreshold");
 	pXML->SetInfoIDFromChildXmlVal(m_iVassalRefuseAttitudeThreshold,
 			"VassalRefuseAttitudeThreshold");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eFavoriteCivic,
+	pXML->SetInfoIDFromChildXmlVal(m_eFavoriteCivic,
 			"FavoriteCivic");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eFavoriteReligion,
+	pXML->SetInfoIDFromChildXmlVal(m_eFavoriteReligion,
 			"FavoriteReligion");
 
 	pXML->SetVariableListTagPair(&m_pbTraits, "Traits", GC.getNumTraitInfos());
@@ -1221,7 +1223,7 @@ bool CvTraitInfo::isFreePromotionUnitCombat(int i) const // advc.003t: Return ty
 
 bool CvTraitInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML)) // advc.tag
 		return false;
 	{
 		CvString szTextVal;
@@ -1240,31 +1242,38 @@ bool CvTraitInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_iMaxTeamBuildingProductionModifier, "iMaxTeamBuildingProductionModifier");
 	pXML->GetChildXmlValByName(&m_iMaxPlayerBuildingProductionModifier, "iMaxPlayerBuildingProductionModifier");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "ExtraYieldThresholds"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"ExtraYieldThresholds"))
 	{
-		pXML->SetYields(&m_paiExtraYieldThreshold);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_paiExtraYieldThreshold);
 	}
 	else pXML->InitList(&m_paiExtraYieldThreshold, NUM_YIELD_TYPES);
-
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "TradeYieldModifiers"))
+	// <advc.908a>
+	pXML->SetYieldList(ExtraYieldNaturalThreshold(), "ExtraYieldNaturalThresholds");
+	#ifdef FASSERT_ENABLE
+	FOR_EACH_ENUM(Yield)
 	{
-		pXML->SetYields(&m_paiTradeYieldModifier);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		FAssert(getExtraYieldNaturalThreshold(eLoopYield) >= 0);
+	}
+	#endif // </advc.908a>
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"TradeYieldModifiers"))
+	{
+		pXML->SetYieldArray(&m_paiTradeYieldModifier);
 	}
 	else pXML->InitList(&m_paiTradeYieldModifier, NUM_YIELD_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "CommerceChanges"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"CommerceChanges"))
 	{
-		pXML->SetCommerce(&m_paiCommerceChange);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetCommerceArray(&m_paiCommerceChange);
 	}
 	else pXML->InitList(&m_paiCommerceChange, NUM_COMMERCE_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), "CommerceModifiers"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"CommerceModifiers"))
 	{
-		pXML->SetCommerce(&m_paiCommerceModifier);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetCommerceArray(&m_paiCommerceModifier);
 	}
 	else pXML->InitList(&m_paiCommerceModifier, NUM_COMMERCE_TYPES);
 
@@ -1390,7 +1399,8 @@ void CvDiplomacyResponse::setDiplomacyText(int i, CvString szText)
 	FAssertBounds(0, getNumDiplomacyText(), i);
 	m_paszDiplomacyText[i] = szText;
 }
-/*#if ENABLE_XML_FILE_CACHE
+
+#if ENABLE_XML_FILE_CACHE
 void CvDiplomacyResponse::read(FDataStreamBase* stream)
 {
 	uint uiFlag=0;
@@ -1425,8 +1435,9 @@ void CvDiplomacyResponse::write(FDataStreamBase* stream)
 	stream->Write(NUM_ATTITUDE_TYPES, m_pbAttitudeTypes);
 	stream->Write(NUM_DIPLOMACYPOWER_TYPES, m_pbDiplomacyPowerTypes);
 	stream->WriteString(m_iNumDiplomacyText, m_paszDiplomacyText);
-}*/
-//#endif
+}
+#endif
+
 bool CvDiplomacyResponse::read(CvXMLLoadUtility* pXML)
 {
 	pXML->SetVariableListTagPair(&m_pbCivilizationTypes, "Civilizations", GC.getNumCivilizationInfos());
@@ -1504,8 +1515,9 @@ const TCHAR* CvDiplomacyInfo::getDiplomacyText(int i, int j) const
 	FAssertBounds(0, getNumDiplomacyText(i), j);
 	return m_pResponses[i]->getDiplomacyText(j);
 }
-//#if ENABLE_XML_FILE_CACHE
-/*void CvDiplomacyInfo::read(FDataStreamBase* stream)
+
+#if ENABLE_XML_FILE_CACHE
+void CvDiplomacyInfo::read(FDataStreamBase* stream)
 {
 	CvInfoBase::read(stream);
 	uint uiFlag=0;
@@ -1531,8 +1543,8 @@ void CvDiplomacyInfo::write(FDataStreamBase* stream)
 	stream->Write(iNumResponses);
 	for (int uiIndex = 0; uiIndex < iNumResponses; ++uiIndex)
 		m_pResponses[uiIndex]->write(stream);
-}*/
-//#endif
+}
+#endif
 bool CvDiplomacyInfo::read(CvXMLLoadUtility* pXML)
 {
 	if (!CvInfoBase::read(pXML))

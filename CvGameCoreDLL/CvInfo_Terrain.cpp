@@ -3,7 +3,6 @@
 #include "CvGameCoreDLL.h"
 #include "CvInfo_Terrain.h"
 #include "CvXMLLoadUtility.h"
-#include "CvDLLXMLIFaceBase.h"
 
 
 CvTerrainInfo::CvTerrainInfo() :
@@ -74,24 +73,24 @@ bool CvTerrainInfo::read(CvXMLLoadUtility* pXML)
 
 	pXML->GetChildXmlValByName(m_szArtDefineTag, "ArtDefineTag");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"Yields"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"Yields"))
 	{
-		pXML->SetYields(&m_piYields);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_piYields);
 	}
 	else pXML->InitList(&m_piYields, NUM_YIELD_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"RiverYieldChange"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"RiverYieldChange"))
 	{
-		pXML->SetYields(&m_piRiverYieldChange);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_piRiverYieldChange);
 	}
 	else pXML->InitList(&m_piRiverYieldChange, NUM_YIELD_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"HillsYieldChange"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"HillsYieldChange"))
 	{
-		pXML->SetYields(&m_piHillsYieldChange);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_piHillsYieldChange);
 	}
 	else pXML->InitList(&m_piHillsYieldChange, NUM_YIELD_TYPES);
 
@@ -325,30 +324,30 @@ bool CvFeatureInfo::read(CvXMLLoadUtility* pXML)
 
 	pXML->GetChildXmlValByName(m_szArtDefineTag, "ArtDefineTag");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"YieldChanges"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"YieldChanges"))
 	{
-		pXML->SetYields(&m_piYieldChange);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_piYieldChange);
 	}
 	else
 	{
 		pXML->InitList(&m_piYieldChange, NUM_YIELD_TYPES);
 	}
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"RiverYieldChange"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"RiverYieldChange"))
 	{
-		pXML->SetYields(&m_piRiverYieldChange);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_piRiverYieldChange);
 	}
 	else
 	{
 		pXML->InitList(&m_piRiverYieldChange, NUM_YIELD_TYPES);
 	}
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"HillsYieldChange"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"HillsYieldChange"))
 	{
-		pXML->SetYields(&m_piHillsYieldChange);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_piHillsYieldChange);
 	}
 	else pXML->InitList(&m_piHillsYieldChange, NUM_YIELD_TYPES);
 
@@ -623,7 +622,11 @@ void CvBonusInfo::read(FDataStreamBase* stream)
 	stream->Read(&uiFlag);
 
 	stream->Read((int*)&m_eBonusClassType);
-	stream->Read(&m_iChar);
+	{
+		int iSymbol;
+		stream->Read(&iSymbol);
+		m_wcSymbol = safeIntCast<wchar>(iSymbol);
+	}
 	stream->Read((int*)&m_eTechReveal);
 	stream->Read((int*)&m_eTechCityTrade);
 	stream->Read((int*)&m_eTechObsolete);
@@ -673,7 +676,10 @@ void CvBonusInfo::write(FDataStreamBase* stream)
 	stream->Write(uiFlag);
 
 	stream->Write(m_eBonusClassType);
-	stream->Write(m_iChar);
+	{
+		int iSymbol = m_wcSymbol;
+		stream->Write(iSymbol);
+	}
 	stream->Write(m_eTechReveal);
 	stream->Write(m_eTechCityTrade);
 	stream->Write(m_eTechObsolete);
@@ -713,18 +719,18 @@ bool CvBonusInfo::read(CvXMLLoadUtility* pXML)
 	if (!CvInfoBase::read(pXML))
 		return false;
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eBonusClassType, "BonusClassType");
+	pXML->SetInfoIDFromChildXmlVal(m_eBonusClassType, "BonusClassType");
 
 	pXML->GetChildXmlValByName(m_szArtDefineTag, "ArtDefineTag");
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eTechReveal, "TechReveal");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eTechCityTrade, "TechCityTrade");
-	pXML->SetInfoIDFromChildXmlVal((int&)m_eTechObsolete, "TechObsolete");
+	pXML->SetInfoIDFromChildXmlVal(m_eTechReveal, "TechReveal");
+	pXML->SetInfoIDFromChildXmlVal(m_eTechCityTrade, "TechCityTrade");
+	pXML->SetInfoIDFromChildXmlVal(m_eTechObsolete, "TechObsolete");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"YieldChanges"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"YieldChanges"))
 	{
-		pXML->SetYields(&m_piYieldChange);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_piYieldChange);
 	}
 	else pXML->InitList(&m_piYieldChange, NUM_YIELD_TYPES);
 
@@ -906,12 +912,12 @@ bool CvRouteInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_iMovementCost, "iMovement");
 	pXML->GetChildXmlValByName(&m_iFlatMovementCost, "iFlatMovement");
 
-	pXML->SetInfoIDFromChildXmlVal((int&)m_ePrereqBonus, "BonusType");
+	pXML->SetInfoIDFromChildXmlVal(m_ePrereqBonus, "BonusType");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"Yields"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"Yields"))
 	{
-		pXML->SetYields(&m_piYieldChange);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_piYieldChange);
 	}
 	else pXML->InitList(&m_piYieldChange, NUM_YIELD_TYPES);
 
@@ -1192,7 +1198,7 @@ void CvArtInfoImprovement::setShaderNIF(const TCHAR* szDesc)
 #if ENABLE_XML_FILE_CACHE
 void CvImprovementInfo::read(FDataStreamBase* stream)
 {
-	CvXMLInfo::read(stream); // advc.tag
+	base_t::read(stream); // advc.tag
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -1279,8 +1285,8 @@ void CvImprovementInfo::read(FDataStreamBase* stream)
 
 void CvImprovementInfo::write(FDataStreamBase* stream)
 {
-	CvXMLInfo::write(stream); // advc.tag
-	uint uiFlag=0;
+	base_t::write(stream); // advc.tag
+	uint uiFlag = 0;
 	stream->Write(uiFlag);
 
 	stream->Write(m_iAdvancedStartCost);
@@ -1326,53 +1332,46 @@ void CvImprovementInfo::write(FDataStreamBase* stream)
 		stream->Write(NUM_YIELD_TYPES, m_ppiRouteYieldChanges[i]);
 }
 #endif
-// <advc.tag>
-void CvImprovementInfo::addElements(std::vector<XMLElement*>& r) const
-{
-	CvXMLInfo::addElements(r);
-	r.push_back(new IntElement(HealthPercent, "HealthPercent", 0)); // advc.901
-	r.push_back(new IntElement(GWFeatureProtection, "GWFeatureProtection", 0)); // advc.055
-} // </advc.tag>
 
 bool CvImprovementInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvXMLInfo::read(pXML)) // advc.tag
+	if (!base_t::read(pXML)) // advc.tag
 		return false;
 
 	pXML->GetChildXmlValByName(m_szArtDefineTag, "ArtDefineTag");
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"PrereqNatureYields"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"PrereqNatureYields"))
 	{
-		pXML->SetYields(&m_piPrereqNatureYield);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_piPrereqNatureYield);
 	}
 	else pXML->InitList(&m_piPrereqNatureYield, NUM_YIELD_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"YieldChanges"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"YieldChanges"))
 	{
-		pXML->SetYields(&m_piYieldChange);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_piYieldChange);
 	}
 	else pXML->InitList(&m_piYieldChange, NUM_YIELD_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"RiverSideYieldChange"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"RiverSideYieldChange"))
 	{
-		pXML->SetYields(&m_piRiverSideYieldChange);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_piRiverSideYieldChange);
 	}
 	else pXML->InitList(&m_piRiverSideYieldChange, NUM_YIELD_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"HillsYieldChange"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"HillsYieldChange"))
 	{
-		pXML->SetYields(&m_piHillsYieldChange);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_piHillsYieldChange);
 	}
 	else pXML->InitList(&m_piHillsYieldChange, NUM_YIELD_TYPES);
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"IrrigatedYieldChange"))
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"IrrigatedYieldChange"))
 	{
-		pXML->SetYields(&m_piIrrigatedChange);
-		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+		pXML->SetYieldArray(&m_piIrrigatedChange);
 	}
 	else pXML->InitList(&m_piIrrigatedChange, NUM_YIELD_TYPES);
 
@@ -1440,8 +1439,7 @@ bool CvImprovementInfo::read(CvXMLLoadUtility* pXML)
 								if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(), bTech ?
 									"TechYields": "RouteYields"))
 								{
-									pXML->SetYields(&(*pppiYieldChanges)[iIndex]);
-									gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+									pXML->SetYieldArray(&(*pppiYieldChanges)[iIndex]);
 								}
 								else pXML->InitList(&(*pppiYieldChanges)[iIndex], NUM_YIELD_TYPES);
 							}

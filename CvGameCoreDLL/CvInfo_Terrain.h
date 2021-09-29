@@ -20,21 +20,20 @@
 class CvTerrainInfo : public CvInfoBase
 {
 public: // All the const functions are exposed to Python except for those related to sound
-		// advc.inl: Inlined most of the getters
 	CvTerrainInfo();
 	~CvTerrainInfo();
 
-	inline int getMovementCost() const { return m_iMovementCost; }
-	inline int getSeeFromLevel() const { return m_iSeeFromLevel; }
-	inline int getSeeThroughLevel() const { return m_iSeeThroughLevel; }
-	inline int getBuildModifier() const { return m_iBuildModifier; }
-	inline int getDefenseModifier() const { return m_iDefenseModifier; }
+	int getMovementCost() const { return m_iMovementCost; }
+	int getSeeFromLevel() const { return m_iSeeFromLevel; }
+	int getSeeThroughLevel() const { return m_iSeeThroughLevel; }
+	int getBuildModifier() const { return m_iBuildModifier; }
+	int getDefenseModifier() const { return m_iDefenseModifier; }
 
-	inline bool isWater() const { return m_bWater; }
-	inline bool isImpassable() const { return m_bImpassable; }
-	inline bool isFound() const { return m_bFound; }
-	inline bool isFoundCoast() const { return m_bFoundCoast; }
-	inline bool isFoundFreshWater() const { return m_bFoundFreshWater; }
+	bool isWater() const { return m_bWater; }
+	bool isImpassable() const { return m_bImpassable; }
+	bool isFound() const { return m_bFound; }
+	bool isFoundCoast() const { return m_bFoundCoast; }
+	bool isFoundFreshWater() const { return m_bFoundFreshWater; }
 
 	DllExport const TCHAR* getArtDefineTag() const;
 
@@ -81,19 +80,18 @@ class CvFeatureInfo : public CvInfoBase
 {
 public: /*  All the const functions are exposed to Python except for those dealing with art
 			and those added by mods */
-		// advc.inl: inlined some functions w/o giving it much thought
 	CvFeatureInfo();
 	~CvFeatureInfo();
 
-	inline int getMovementCost() const { return m_iMovementCost; }
-	inline int getSeeThroughChange() const { return m_iSeeThroughChange; }
-	inline int getHealthPercent() const { return m_iHealthPercent; }
+	int getMovementCost() const { return m_iMovementCost; }
+	int getSeeThroughChange() const { return m_iSeeThroughChange; }
+	int getHealthPercent() const { return m_iHealthPercent; }
 	int getAppearanceProbability() const;
 	int getDisappearanceProbability() const;
 	int getGrowthProbability() const;
-	inline int getDefenseModifier() const { return m_iDefenseModifier; }
+	int getDefenseModifier() const { return m_iDefenseModifier; }
 	// advc.012:
-	inline int getRivalDefenseModifier() const { return m_iRivalDefenseModifier; }
+	int getRivalDefenseModifier() const { return m_iRivalDefenseModifier; }
 	int getAdvancedStartRemoveCost() const;
 	int getTurnDamage() const;
 	int getWarmingDefense() const; //GWmod new xml field M.A. // Exposed to Python
@@ -106,9 +104,9 @@ public: /*  All the const functions are exposed to Python except for those deali
 	bool isRequiresRiver() const;
 	bool isRequiresRiverSide() const; // advc.129b
 	bool isAddsFreshWater() const;
-	inline bool isImpassable() const { return m_bImpassable; }
+	bool isImpassable() const { return m_bImpassable; }
 	bool isNoCity() const;
-	inline bool isNoImprovement() const { return m_bNoImprovement; }
+	bool isNoImprovement() const { return m_bNoImprovement; }
 	bool isVisibleAlways() const;
 	bool isNukeImmune() const;
 	const TCHAR* getOnUnitChangeTo() const;
@@ -120,17 +118,17 @@ public: /*  All the const functions are exposed to Python except for those deali
 	const TCHAR* getEffectType() const;
 	int getEffectProbability() const;
 
-	inline int getYieldChange(int i) const
+	int getYieldChange(int i) const
 	{
 		FAssertBounds(0, NUM_YIELD_TYPES, i);
 		return m_piYieldChange[i]; // advc: Don't branch to check for NULL
 	}
-	inline int getRiverYieldChange(int i) const
+	int getRiverYieldChange(int i) const
 	{
 		FAssertBounds(0, NUM_YIELD_TYPES, i);
 		return m_piRiverYieldChange[i]; // advc: see above
 	}
-	inline int getHillsYieldChange(int i) const
+	int getHillsYieldChange(int i) const
 	{
 		FAssertBounds(0, NUM_YIELD_TYPES, i);
 		return m_piHillsYieldChange[i]; // advc: see above
@@ -195,21 +193,20 @@ private:
 class CvBonusInfo : public CvInfoBase
 {
 public: // All the const functions are exposed to Python
-		// advc.inl: inlined a few getters w/o giving it much thought
 	CvBonusInfo();
 	virtual ~CvBonusInfo();
 
 	BonusClassTypes getBonusClassType() const { return m_eBonusClassType; }
 	wchar getChar() const; // advc: return wchar (not int)
 	void setChar(/* advc: */ wchar wc);
-	inline TechTypes getTechReveal() const { return m_eTechReveal; }
-	inline TechTypes getTechCityTrade() const { return m_eTechCityTrade; }
-	inline TechTypes getTechObsolete() const { return m_eTechObsolete; }
+	TechTypes getTechReveal() const { return m_eTechReveal; }
+	TechTypes getTechCityTrade() const { return m_eTechCityTrade; }
+	TechTypes getTechObsolete() const { return m_eTechObsolete; }
 	TechTypes getTechImprove(bool bWater) const; // advc.003w
 	int getAITradeModifier() const;
 	int getAIObjective() const;
-	inline int getHealth() const { return m_iHealth; }
-	inline int getHappiness() const { return m_iHappiness; }
+	int getHealth() const { return m_iHealth; }
+	int getHappiness() const { return m_iHappiness; }
 	int getMinAreaSize() const;
 	int getMinLatitude() const;
 	int getMaxLatitude() const;
@@ -322,15 +319,14 @@ public: // All the const functions are exposed to Python except those added by m
 	int getAdvancedStartCostIncrease() const;
 
 	int getValue() const;
-	// advc.inl: inlined these three
-	inline int getMovementCost() const { return m_iMovementCost; }
-	inline int getFlatMovementCost() const { return m_iFlatMovementCost; }
-	inline BonusTypes getPrereqBonus() const { return m_ePrereqBonus; }
+	int getMovementCost() const { return m_iMovementCost; }
+	int getFlatMovementCost() const { return m_iFlatMovementCost; }
+	BonusTypes getPrereqBonus() const { return m_ePrereqBonus; }
 
 	int getYieldChange(int i) const;
 	int getTechMovementChange(int i) const;
 	// <advc.003t>
-	inline int getNumPrereqOrBonuses() const { return m_aePrereqOrBonuses.size(); }
+	int getNumPrereqOrBonuses() const { return m_aePrereqOrBonuses.size(); }
 	BonusTypes getPrereqOrBonus(int i) const
 	{
 		FAssertBounds(0, getNumPrereqOrBonuses(), i);
@@ -358,32 +354,32 @@ class CvImprovementBonusInfo;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  class : CvImprovementInfo
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-class CvImprovementInfo : /* advc.tag: */ public CvXMLInfo
+class CvImprovementInfo : /* <advc.tag> */ public CvXMLInfo
 {
-public: /*  All the const functions are exposed to Python except those dealing with sound,
-			Advanced Start and those added by mods */ // advc.inl: Inlined many of the getters
-	CvImprovementInfo();
-	~CvImprovementInfo();
-	// <advc.tag>
+	typedef CvXMLInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		kElements.addInt(HealthPercent, "HealthPercent"); // advc.901
+		kElements.addInt(GWFeatureProtection, "GWFeatureProtection"); // advc.055
+	}
+public:
 	enum IntElementTypes
 	{
-		HealthPercent = CvXMLInfo::NUM_INT_ELEMENT_TYPES, // advc.901
+		HealthPercent = base_t::NUM_INT_ELEMENT_TYPES, // advc.901
 		GWFeatureProtection, // advc.055
 		NUM_INT_ELEMENT_TYPES
 	};
-	enum BoolElementTypes // unused so far
+	int get(IntElementTypes e) const
 	{
-		NUM_BOOL_ELEMENT_TYPES = CvXMLInfo::NUM_BOOL_ELEMENT_TYPES
-	};
-	using CvXMLInfo::get; // unhide
-	__forceinline int get(IntElementTypes e) const
-	{
-		return get(static_cast<CvXMLInfo::IntElementTypes>(e));
+		return CvXMLInfo::get(static_cast<base_t::IntElementTypes>(e));
 	}
-	__forceinline int get(BoolElementTypes e) const
-	{
-		return get(static_cast<CvXMLInfo::BoolElementTypes>(e));
-	} // </advc.tag>
+	// </advc.tag>
+	/*  All the const functions are exposed to Python except those dealing with sound,
+		Advanced Start and those added by mods */
+	CvImprovementInfo();
+	~CvImprovementInfo();
 
 	int getAdvancedStartCost() const;
 	int getAdvancedStartCostIncrease() const;
@@ -391,34 +387,34 @@ public: /*  All the const functions are exposed to Python except those dealing w
 	int getTilesPerGoody() const;
 	int getGoodyUniqueRange() const;
 	int getFeatureGrowthProbability() const;
-	inline int getUpgradeTime() const { return m_iUpgradeTime; }
-	inline int getAirBombDefense() const { return m_iAirBombDefense; }
-	inline int getDefenseModifier() const { return m_iDefenseModifier; }
-	inline int getHappiness() const { return m_iHappiness; }
+	int getUpgradeTime() const { return m_iUpgradeTime; }
+	int getAirBombDefense() const { return m_iAirBombDefense; }
+	int getDefenseModifier() const { return m_iDefenseModifier; }
+	int getHappiness() const { return m_iHappiness; }
 	int getPillageGold() const;
 	ImprovementTypes getImprovementPillage() const { return m_eImprovementPillage; }
 	ImprovementTypes getImprovementUpgrade() const { return m_eImprovementUpgrade; }
 
-	inline bool isActsAsCity() const { return m_bActsAsCity; }
-	inline bool isHillsMakesValid() const { return m_bHillsMakesValid; }
-	inline bool isFreshWaterMakesValid() const { return m_bFreshWaterMakesValid; }
-	inline bool isRiverSideMakesValid() const { return m_bRiverSideMakesValid; }
-	inline bool isNoFreshWater() const { return m_bNoFreshWater; }
-	inline bool isRequiresFlatlands() const { return m_bRequiresFlatlands; }
-	DllExport inline bool isRequiresRiverSide() const { return m_bRequiresRiverSide; }
-	inline bool isRequiresIrrigation() const { return m_bRequiresIrrigation; }
-	inline bool isCarriesIrrigation() const { return m_bCarriesIrrigation; }
-	inline bool isRequiresFeature() const { return m_bRequiresFeature; }
-	inline bool isWater() const { return m_bWater; }
-	DllExport inline bool isGoody() const { return m_bGoody; }
-	inline bool isPermanent() const { return m_bPermanent; }
-	inline bool isOutsideBorders() const { return m_bOutsideBorders; }
+	bool isActsAsCity() const { return m_bActsAsCity; }
+	bool isHillsMakesValid() const { return m_bHillsMakesValid; }
+	bool isFreshWaterMakesValid() const { return m_bFreshWaterMakesValid; }
+	bool isRiverSideMakesValid() const { return m_bRiverSideMakesValid; }
+	bool isNoFreshWater() const { return m_bNoFreshWater; }
+	bool isRequiresFlatlands() const { return m_bRequiresFlatlands; }
+	DllExport bool isRequiresRiverSide() const { return m_bRequiresRiverSide; }
+	bool isRequiresIrrigation() const { return m_bRequiresIrrigation; }
+	bool isCarriesIrrigation() const { return m_bCarriesIrrigation; }
+	bool isRequiresFeature() const { return m_bRequiresFeature; }
+	bool isWater() const { return m_bWater; }
+	DllExport bool isGoody() const { return m_bGoody; }
+	bool isPermanent() const { return m_bPermanent; }
+	bool isOutsideBorders() const { return m_bOutsideBorders; }
 
 	const TCHAR* getArtDefineTag() const;
 
 	int getWorldSoundscapeScriptId() const;
 
-	// Array access: (advc.inl: whole-array getters constified, inlined)
+	// Array access:
 
 	int getPrereqNatureYield(int i) const;
 	int const* getPrereqNatureYieldArray() const { return m_piPrereqNatureYield; }
@@ -435,9 +431,9 @@ public: /*  All the const functions are exposed to Python except those dealing w
 	}
 
 	bool getTerrainMakesValid(int i) const;
-	inline bool isAnyTerrainMakesValid() const { return (m_pbTerrainMakesValid != NULL); } // advc.003t
+	bool isAnyTerrainMakesValid() const { return (m_pbTerrainMakesValid != NULL); } // advc.003t
 	bool getFeatureMakesValid(int i) const;
-	inline bool isAnyFeatureMakesValid() const { return (m_pbFeatureMakesValid != NULL); } // advc.003t
+	bool isAnyFeatureMakesValid() const { return (m_pbFeatureMakesValid != NULL); } // advc.003t
 
 	int getTechYieldChanges(int i, int j) const;
 	int const* getTechYieldChangesArray(int i) const;
@@ -511,8 +507,6 @@ protected:
 	int** m_ppiRouteYieldChanges;
 
 	CvImprovementBonusInfo* m_paImprovementBonus;
-
-	void addElements(std::vector<XMLElement*>& r) const; // advc.tag
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

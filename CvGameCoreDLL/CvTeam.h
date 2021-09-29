@@ -15,7 +15,10 @@ class CvTeam /* advc.003e: */ : private boost::noncopyable
 {
 public:
 	// <advc.003u>
-	static inline CvTeam& getTeam(TeamTypes eTeam)
+#ifdef _DEBUG
+	__forceinline // Annoying to step into by accident
+#endif
+	static CvTeam& getTeam(TeamTypes eTeam)
 	{
 		FAssertBounds(0, MAX_TEAMS, eTeam);
 		// Needs to be inline and I don't want to include CvTeamAI.h here
@@ -31,6 +34,16 @@ public:
 	static void triggerWars(/* advc: */ bool bForceUpdateAttitude = false);
 	// </kekm.26>
 
+	/*	advc (comment): Call order during (de-)initialization of CvTeam, CvPlayer:
+		+	When Civ 4 is launched, constructors are called.
+		+	When Civ 4 is exited, destructors are called.
+		+	When starting a new game, init is called.
+		+	When returning to the main menu, reset is called.
+		+	When saving a game, write is called.
+		+	When loading a saved game, read is called.
+		read, init and the constructor use reset to clear the data.
+		(Reusing classes like this is error-prone and seems ill-advised in this case,
+		but there's probably no changing it because the EXE is involved.) */
 	explicit CvTeam(TeamTypes eID);
 	virtual ~CvTeam();
 
@@ -83,38 +96,44 @@ public:
 	/*  advc: Added a default value for bIgnoreMinors to all WarPlan functions.
 		getAtWarCount renamed to getNumWars to avoid confusion with CvTeamAI::AI_getAtWarCounter. */
 	// BETTER_BTS_AI_MOD, 01/10/09, jdog5000: bIgnoreVassals added
-	int getNumWars(bool bIgnoreMinors = true, bool bIgnoreVassals = false) const;																				// Exposed to Python
+	int getNumWars(bool bIgnoreMinors = true, bool bIgnoreVassals = false) const;						// Exposed to Python
 	// advc: Replaced by CvTeamAI::AI_countWarPlans
 	//int getWarPlanCount(WarPlanTypes eWarPlan, bool bIgnoreMinors = true) const;
-	int getHasMetCivCount(bool bIgnoreMinors = true) const;																		// Exposed to Python
+	int getHasMetCivCount(bool bIgnoreMinors = true) const;												// Exposed to Python
 
 	bool allWarsShared(TeamTypes eOther, // kekm.3
 			/*  advc.130f: If false, check only if the war enemies of this team
 				are included in those of otherId (set inclusion). */
 			bool bCheckBothWays = true) const;
-	bool hasMetHuman() const;																														// Exposed to Python
+	bool hasMetHuman() const;																			// Exposed to Python
 	bool isInContactWithBarbarians() const; // advc.302
-	int getDefensivePactCount(TeamTypes eObs = NO_TEAM) const;																									// Exposed to Python
+	int getDefensivePactCount(TeamTypes eObs = NO_TEAM) const;											// Exposed to Python
 	int getVassalCount(TeamTypes eObs = NO_TEAM) const;
-	// advc.opt, advc.inl:
-	inline bool isAVassal() const { return (m_eMaster != NO_TEAM); }																						// Exposed to Python
+	// advc.opt:
+	bool isAVassal() const { return (m_eMaster != NO_TEAM); }											// Exposed to Python
 	bool canVassalRevolt(TeamTypes eMaster) const;
 	bool isLossesAllowRevolt(TeamTypes eMaster) const; // advc.112
-	int getUnitClassMaking(UnitClassTypes eUnitClass) const;														// Exposed to Python
-	int getUnitClassCountPlusMaking(UnitClassTypes eIndex) const;												// Exposed to Python
+	int getUnitClassMaking(UnitClassTypes eUnitClass) const;											// Exposed to Python
+	int getUnitClassCountPlusMaking(UnitClassTypes eIndex) const										// Exposed to Python
+	{
+		return getUnitClassCount(eIndex) + getUnitClassMaking(eIndex);
+	}
 	int getBuildingClassMaking(BuildingClassTypes eBuildingClass) const;								// Exposed to Python
-	int getBuildingClassCountPlusMaking(BuildingClassTypes eIndex) const;								// Exposed to Python
-	int getHasReligionCount(ReligionTypes eReligion) const;															// Exposed to Python
-	int getHasCorporationCount(CorporationTypes eCorporation) const;															// Exposed to Python
+	int getBuildingClassCountPlusMaking(BuildingClassTypes eIndex) const								// Exposed to Python
+	{
+		return getBuildingClassCount(eIndex) + getBuildingClassMaking(eIndex);
+	}
+	int getHasReligionCount(ReligionTypes eReligion) const;												// Exposed to Python
+	int getHasCorporationCount(CorporationTypes eCorporation) const;									// Exposed to Python
 
-	int countTotalCulture() const;																			// Exposed to Python
+	int countTotalCulture() const;																		// Exposed to Python
 
-	int countNumUnitsByArea(CvArea const& kArea) const;																				// Exposed to Python
-	int countNumCitiesByArea(CvArea const& kArea) const;																			// Exposed to Python
-	int countTotalPopulationByArea(CvArea const& kArea) const;																// Exposed to Python
-	int countPowerByArea(CvArea const& kArea) const;																					// Exposed to Python
-	int countNumAIUnitsByArea(CvArea const& kArea, UnitAITypes eUnitAI) const;								// Exposed to Python
-	int countEnemyDangerByArea(CvArea const& kArea, TeamTypes eEnemyTeam = NO_TEAM) const;																		// Exposed to Python
+	int countNumUnitsByArea(CvArea const& kArea) const;													// Exposed to Python
+	int countNumCitiesByArea(CvArea const& kArea) const;												// Exposed to Python
+	int countTotalPopulationByArea(CvArea const& kArea) const;											// Exposed to Python
+	int countPowerByArea(CvArea const& kArea) const;													// Exposed to Python
+	int countNumAIUnitsByArea(CvArea const& kArea, UnitAITypes eUnitAI) const;							// Exposed to Python
+	// (advc: countEnemyDangerByArea moved to CvTeamAI)
 	EraTypes getCurrentEra() const; // advc.112b
 	// K-Mod:
 	int getTypicalUnitValue(UnitAITypes eUnitAI, DomainTypes eDomain = NO_DOMAIN) const;
@@ -127,35 +146,39 @@ public:
 	bool hasBonus(BonusTypes eBonus) const;
 	bool isBonusObsolete(BonusTypes eBonus) const;
 
-	bool isHuman() const;																																// Exposed to Python
+	bool isHuman() const;													// Exposed to Python
+	// advc: see CvPlayer::isActive
+	bool isActive() const { return (GC.getInitCore().getActiveTeam() == getID()); }
 	// advc: (The Barbarians aren't a proper civ)
-	inline bool isMajorCiv() const { return (!isBarbarian() && !isMinorCiv()); }
-	// advc.inl
-	inline bool isBarbarian() const { return (m_eID == BARBARIAN_TEAM); }																				// Exposed to Python
+	bool isMajorCiv() const { return (!isBarbarian() && !isMinorCiv()); }
+	bool isBarbarian() const { return (m_eID == BARBARIAN_TEAM); }								// Exposed to Python
 	// <advc.003m> cached
-	inline bool isMinorCiv() const { return m_bMinorTeam; }																							// Exposed to Python
+	bool isMinorCiv() const { return m_bMinorTeam; }											// Exposed to Python
 	void updateMinorCiv() { m_bMinorTeam = checkMinorCiv(); }
 	// </advc.003m>  <advc.opt> This gets called a lot. Now precomputed.
 	PlayerTypes getLeaderID() const { return m_eLeader; }																					// Exposed to Python
 	void updateLeaderID(); // </advc.opt>
+	bool isAlwaysWar() const; // advc.127
+
 	PlayerTypes getSecretaryID() const;																									// Exposed to Python
 	HandicapTypes getHandicapType() const;																							// Exposed to Python
 	CvWString getName() const;																								// Exposed to Python
 	CvWString getReplayName() const; // K-Mod
 
-	DllExport inline int getNumMembers() const { return m_iNumMembers; } // advc.inl																	// Exposed to Python
+	DllExport int getNumMembers() const { return m_iNumMembers; }										// Exposed to Python
 	void changeNumMembers(int iChange);
 
 	// advc.inl: In-line definitions for most of the get..Count and is... functions below
 	int getAliveCount() const { return m_iAliveCount; } // advc.155: Exposed to Python
-	inline bool isAlive() const { return (m_iAliveCount > 0); }																// Exposed to Python
+	bool isAlive() const { return (m_iAliveCount > 0); }														// Exposed to Python
 	void changeAliveCount(int iChange);
+	PlayerTypes getRandomMemberAlive(bool bHuman) const; // advc.104
 
-	inline int getEverAliveCount() const { return m_iEverAliveCount; }			
-	inline bool isEverAlive() const { return (getEverAliveCount() > 0); } // advc: return type was int												// Exposed to Python
+	int getEverAliveCount() const { return m_iEverAliveCount; }
+	bool isEverAlive() const { return (getEverAliveCount() > 0); } // advc: return type was int					// Exposed to Python
 	void changeEverAliveCount(int iChange);
 
-	inline int getNumCities() const { return m_iNumCities; }																							// Exposed to Python
+	int getNumCities() const { return m_iNumCities; }															// Exposed to Python
 	void changeNumCities(int iChange);
 
 	int getTotalPopulation(bool bCheckVassals = true) const;																											// Exposed to Python
@@ -231,21 +254,30 @@ public:
 	bool isMapCentering() const { return m_bMapCentering; }																	// Exposed to Python
 	void setMapCentering(bool bNewValue);																					// Exposed to Python
 
-	TeamTypes getID() const { return m_eID; } // advc.inl																// Exposed to Python
+	TeamTypes getID() const { return m_eID; }														// Exposed to Python
 
 	int getStolenVisibilityTimer(TeamTypes eIndex) const { return m_aiStolenVisibilityTimer.get(eIndex); }
 	bool isStolenVisibility(TeamTypes eIndex) const { return (getStolenVisibilityTimer(eIndex) > 0); }																		// Exposed to Python
 	void setStolenVisibilityTimer(TeamTypes eIndex, int iNewValue);
 	void changeStolenVisibilityTimer(TeamTypes eIndex, int iChange);
 
-	int getWarWeariness(TeamTypes eIndex, bool bUseEnemyModifer = false) const;			// Exposed to Python. K-Mod added bUseEnemyModifier.
+	int getWarWeariness(TeamTypes eIndex,																// Exposed to Python
+			bool bUseEnemyModifer = false) const; // K-Mod
 	void setWarWeariness(TeamTypes eIndex, int iNewValue);												// Exposed to Python
 	void changeWarWeariness(TeamTypes eIndex, int iChange);												// Exposed to Python
-	// advc.enum: Params changed to TeamTypes (x3)
-	int getTechShareCount(TeamTypes eIndex) const;																						// Exposed to Python
-	bool isTechShare(TeamTypes eIndex) const;																									// Exposed to Python
-	bool isAnyTechShare() const { return m_aiTechShareCount.hasContent(); } // advc.opt
-	void changeTechShareCount(TeamTypes eIndex, int iChange);														// Exposed to Python
+	/*	<advc> (for kekm.38) Params changed to PlayerTypes; were named "eIndex".
+		NB: This function says how many team members have a tech share effect
+		that gets triggered when eSharePlayers other players know a tech. */
+	int getTechShareCount(PlayerTypes eSharePlayers) const												// Exposed to Python
+	{
+		return m_aiTechShareCount.get(eSharePlayers);
+	}
+	bool isTechShare(PlayerTypes eSharePlayers) const													// Exposed to Python
+	{
+		return (getTechShareCount(eSharePlayers) > 0);
+	}
+	bool isAnyTechShare() const { return m_aiTechShareCount.isAnyNonDefault(); } // advc.opt
+	void changeTechShareCount(PlayerTypes eSharePlayers, int iChange); // </advc>						// Exposed to Python
 
 	int getCommerceFlexibleCount(CommerceTypes eIndex) const;														// Exposed to Python
 	bool isCommerceFlexible(CommerceTypes eIndex) const;																// Exposed to Python
@@ -254,7 +286,7 @@ public:
 	int getExtraMoves(DomainTypes eIndex) const;																				// Exposed to Python
 	void changeExtraMoves(DomainTypes eIndex, int iChange);								// Exposed to Python
 
-	inline bool isHasMet(TeamTypes eOther) const // advc.inl													// Exposed to Python
+	bool isHasMet(TeamTypes eOther) const												// Exposed to Python
 	{
 		return (m_aiHasMetTurn.get(eOther) >= 0); // advc.091
 	}
@@ -265,103 +297,108 @@ public:
 	void makeHasSeen(TeamTypes eOther) { m_abHasSeen.set(eOther, true); }; // K-Mod
 	// <advc.134a>
 	bool isAtWarExternal(TeamTypes eIndex) const; // Exported through .def file
-	inline bool isAtWar(TeamTypes eIndex) const																	// Exposed to Python
+	bool isAtWar(TeamTypes eIndex) const																	// Exposed to Python
 	{
 		return m_abAtWar.get(eIndex);
 	} // </advc.134a>
 	void setAtWar(TeamTypes eIndex, bool bNewValue);
-	bool hasJustDeclaredWar(TeamTypes eIndex) const; // advc.162
+	/*  advc.162: "Just" meaning on the current turn. Don't want to rely on
+		AI code (AI_getWarPlanStateCounter) for this. */
+	bool hasJustDeclaredWar(TeamTypes eIndex) const
+	{
+		return m_abJustDeclaredWar.get(eIndex);
+	}
 
-	bool isPermanentWarPeace(TeamTypes eIndex) const { return m_abPermanentWarPeace.get(eIndex); } // advc.inl									// Exposed to Python
+	bool isPermanentWarPeace(TeamTypes eIndex) const												// Exposed to Python
+	{
+		return m_abPermanentWarPeace.get(eIndex);
+	}
 	void setPermanentWarPeace(TeamTypes eIndex, bool bNewValue);									// Exposed to Python
 
 	bool canTradeWith(TeamTypes eWhoTo) const; // advc
 	bool isFreeTrade(TeamTypes eIndex) const;																	// Exposed to Python
-	inline bool isOpenBorders(TeamTypes eIndex) const																// Exposed to Python
+	bool isOpenBorders(TeamTypes eIndex) const																// Exposed to Python
 	{
-		return m_abOpenBorders.get(eIndex); // advc.inl
+		return m_abOpenBorders.get(eIndex);
 	}
 	void setOpenBorders(TeamTypes eIndex, bool bNewValue);
 	// <advc.034>
-	inline bool isDisengage(TeamTypes eIndex) const { return m_abDisengage.get(eIndex);}
+	bool isDisengage(TeamTypes eIndex) const { return m_abDisengage.get(eIndex); }
 	void setDisengage(TeamTypes eIndex, bool bNewValue);
 	void cancelDisengage(TeamTypes otherId);
 	// </advc.034>
-	// advc.inl
-	inline bool isDefensivePact(TeamTypes eIndex) const { return m_abDefensivePact.get(eIndex); }															// Exposed to Python
+	bool isDefensivePact(TeamTypes eIndex) const { return m_abDefensivePact.get(eIndex); }						// Exposed to Python
 	void setDefensivePact(TeamTypes eIndex, bool bNewValue);
 
-	bool isForcePeace(TeamTypes eIndex) const { return m_abForcePeace.get(eIndex); } // advc.inl										// Exposed to Python
+	bool isForcePeace(TeamTypes eIndex) const { return m_abForcePeace.get(eIndex); }							// Exposed to Python
 	void setForcePeace(TeamTypes eIndex, bool bNewValue);
 	int turnsOfForcedPeaceRemaining(TeamTypes eOther) const; // advc.104
 
 	bool isVassal(TeamTypes eMaster) const																// Exposed to Python
 	{
-		return (m_eMaster == eMaster); // advc.opt, advc.inl
+		return (m_eMaster == eMaster); // advc.opt
 	}
 	void setVassal(TeamTypes eMaster, bool bNewValue, bool bCapitulated);
 	TeamTypes getMasterTeam() const // advc.155: Exposed to Python
 	{	// K-Mod. Return the team which is the master of this team. (if this team is free, return getID())
 		return (m_eMaster == NO_TEAM ? getID() : m_eMaster); // advc.opt
 	}
-	void assignVassal(TeamTypes eVassal, bool bSurrender) const;																// Exposed to Python
+	void assignVassal(TeamTypes eVassal, bool bSurrender) const;											// Exposed to Python
 	void freeVassal(TeamTypes eVassal) const;																// Exposed to Python
 
-	inline bool isCapitulated() const // advc.130v: Exposed to Python
-	{	// advc.inl: inline, disable K-Mod assertion
-		//FAssert(!m_bCapitulated || isAVassal()); // K-Mod
+	bool isCapitulated() const // advc.130v: Exposed to Python
+	{
 		return m_bCapitulated;
 	}  // <advc>
 	bool isCapitulated(TeamTypes eMaster)
 	{
 		return (isCapitulated() && isVassal(eMaster));
 	} // </advc>
-	int getRouteChange(RouteTypes eIndex) const																				// Exposed to Python
+	int getRouteChange(RouteTypes eIndex) const																// Exposed to Python
 	{
-		return m_aiRouteChange.get(eIndex); // advc.inl
+		return m_aiRouteChange.get(eIndex);
 	}
 	void changeRouteChange(RouteTypes eIndex, int iChange);												// Exposed to Python
 
 	int getProjectCount(ProjectTypes eIndex) const														// Exposed to Python
 	{
-		return m_aiProjectCount.get(eIndex); // advc.inl
+		return m_aiProjectCount.get(eIndex);
 	}
 	DllExport int getProjectDefaultArtType(ProjectTypes eIndex) const;
 	DllExport void setProjectDefaultArtType(ProjectTypes eIndex, int iValue);
-	DllExport int getProjectArtType(ProjectTypes eIndex, int number) const;
-	DllExport void setProjectArtType(ProjectTypes eIndex, int number, int value);
-	bool isProjectMaxedOut(ProjectTypes eIndex, int iExtra = 0) const;									// Exposed to Python
-	DllExport bool isProjectAndArtMaxedOut(ProjectTypes eIndex) const;
-	void changeProjectCount(ProjectTypes eIndex, int iChange);							// Exposed to Python
+	DllExport int getProjectArtType(ProjectTypes eProject, int iIndex) const;
+	DllExport void setProjectArtType(ProjectTypes eProject, int iIndex, int iValue);
+	bool isProjectMaxedOut(ProjectTypes eProject, int iExtra = 0) const;								// Exposed to Python
+	DllExport bool isProjectAndArtMaxedOut(ProjectTypes eProject) const;
+	void changeProjectCount(ProjectTypes eProject, int iChange);							// Exposed to Python
 	DllExport void finalizeProjectArtTypes();
-
-	int getProjectMaking(ProjectTypes eIndex) const																		// Exposed to Python
+	int getProjectMaking(ProjectTypes eProject) const												// Exposed to Python
 	{
-		return m_aiProjectMaking.get(eIndex); // advc.inl
+		return m_aiProjectMaking.get(eProject);
 	}
-	void changeProjectMaking(ProjectTypes eIndex, int iChange);
+	void changeProjectMaking(ProjectTypes eProject, int iChange);
 
-	int getUnitClassCount(UnitClassTypes eIndex) const																	// Exposed to Python
+	int getUnitClassCount(UnitClassTypes eIndex) const												// Exposed to Python
 	{
-		return m_aiUnitClassCount.get(eIndex); // advc.inl
+		return m_aiUnitClassCount.get(eIndex);
 	}
 	bool isUnitClassMaxedOut(UnitClassTypes eIndex, int iExtra = 0) const;							// Exposed to Python
 	void changeUnitClassCount(UnitClassTypes eIndex, int iChange);
 
 	int getBuildingClassCount(BuildingClassTypes eIndex) const													// Exposed to Python
 	{
-		return m_aiBuildingClassCount.get(eIndex); // advc.inl
+		return m_aiBuildingClassCount.get(eIndex);
 	}
 	bool isBuildingClassMaxedOut(BuildingClassTypes eIndex, int iExtra = 0) const;			// Exposed to Python
 	void changeBuildingClassCount(BuildingClassTypes eIndex, int iChange);
 
 	int getObsoleteBuildingCount(BuildingTypes eIndex) const
 	{
-		return m_aiObsoleteBuildingCount.get(eIndex); // advc.inl
+		return m_aiObsoleteBuildingCount.get(eIndex);
 	}
 	bool isObsoleteBuilding(BuildingTypes eIndex) const																// Exposed to Python
 	{
-		return (getObsoleteBuildingCount(eIndex) > 0); // advc.inl
+		return (getObsoleteBuildingCount(eIndex) > 0);
 	}
 	void changeObsoleteBuildingCount(BuildingTypes eIndex, int iChange);
 
@@ -374,29 +411,34 @@ public:
 	// BETTER_BTS_AI_MOD, General AI, 07/27/09, jdog5000:
 	int getBestKnownTechScorePercent() const;
 
-	// advc.inl: inline (x2)
-	inline int getTerrainTradeCount(TerrainTypes eIndex) const
+	int getTerrainTradeCount(TerrainTypes eIndex) const
 	{
 		return m_aiTerrainTradeCount.get(eIndex);
 	}
-	inline bool isTerrainTrade(TerrainTypes eIndex) const																												// Exposed to Python
+	bool isTerrainTrade(TerrainTypes eIndex) const															// Exposed to Python
 	{
 		return (getTerrainTradeCount(eIndex) > 0);
 	}
 	void changeTerrainTradeCount(TerrainTypes eIndex, int iChange);
 
 	int getRiverTradeCount() const;
-	inline bool isRiverTrade() const																												// Exposed to Python
+	bool isRiverTrade() const																			// Exposed to Python
 	{
 		//return (getRiverTradeCount() > 0);
 		return true; // advc.124
 	}
 	void changeRiverTradeCount(int iChange);
 
-	int getVictoryCountdown(VictoryTypes eIndex) const;																							// Exposed to Python
-	void setVictoryCountdown(VictoryTypes eIndex, int iTurnsLeft);
-	void changeVictoryCountdown(VictoryTypes eIndex, int iChange);
-	bool isAnyVictoryCountdown() const; // advc.opt
+	int getVictoryCountdown(VictoryTypes eVictory) const													// Exposed to Python
+	{
+		return m_aiVictoryCountdown.get(eVictory);
+	}
+	void setVictoryCountdown(VictoryTypes eVictory, int iTurnsLeft);
+	void changeVictoryCountdown(VictoryTypes eVictory, int iChange);
+	bool isAnyVictoryCountdown() const // advc.opt
+	{
+		return m_aiVictoryCountdown.isAnyNonDefault();
+	}
 	int getVictoryDelay(VictoryTypes eVictory) const;
 	bool canLaunch(VictoryTypes eVictory) const;									// Exposed to Python
 	void setCanLaunch(VictoryTypes eVictory, bool bCan);
@@ -411,7 +453,7 @@ public:
 			bool bFirst, bool bAnnounce, /* advc.121: */ bool bEndOfTurn = false);
 	/* advc.004a: A hack that allows other classes to pretend that a team knows
 	   a tech for some computation. Should be toggled back afterwards. */
-	inline void setHasTechTemporarily(TechTypes eTech, bool b) { m_abHasTech.set(eTech, b); }
+	void setHasTechTemporarily(TechTypes eTech, bool b) { m_abHasTech.set(eTech, b); }
 	int getTechCount() const { return m_iTechCount; } // advc.101
 	// <advc.134a>
 	void advancePeaceOfferStage(TeamTypes eAITeam = NO_TEAM);
@@ -422,29 +464,30 @@ public:
 
 	int getImprovementYieldChange(ImprovementTypes eIndex1, YieldTypes eIndex2) const										// Exposed to Python
 	{
-		return m_aaiImprovementYieldChange.get(eIndex1, eIndex2); // advc.inl
+		return m_aaiImprovementYieldChange.get(eIndex1, eIndex2);
 	}
 	void changeImprovementYieldChange(ImprovementTypes eIndex1, YieldTypes eIndex2, int iChange);		// Exposed to Python
 
 	bool doesImprovementConnectBonus(ImprovementTypes eImprovement, BonusTypes eBonus) const; // K-Mod
 	// advc.opt:
-	inline bool canPeacefullyEnter(TeamTypes eTerritoryOwner) const
+	bool canPeacefullyEnter(TeamTypes eTerritoryOwner) const
 	{
 		return (isOpenBorders(eTerritoryOwner) || //isFriendlyTerritory(eTerritoryOwner)
 				// (The above checks too much stuff that we don't need)
 				getID() == eTerritoryOwner || getTeam(eTerritoryOwner).isVassal(getID()));
 	}
 	bool isFriendlyTerritory(TeamTypes eTerritoryOwner) const;
+	bool isAlliedTerritory(TeamTypes eTerritoryOwner, TeamTypes eEnemy) const; // advc.183
 	// <advc> Same as isRevealedBase (but doesn't have to be)
-	inline bool isRevealedAirBase(CvPlot const& kPlot) const { return isRevealedBase(kPlot); }
-	inline bool isRevealedCityHeal(CvPlot const& kPlot) const { return isRevealedBase(kPlot); }
-	inline bool isRevealedCityTrade(CvPlot const& kPlot) const { return isRevealedBase(kPlot); }
+	bool isRevealedAirBase(CvPlot const& kPlot) const { return isRevealedBase(kPlot); }
+	bool isRevealedCityHeal(CvPlot const& kPlot) const { return isRevealedBase(kPlot); }
+	bool isRevealedCityTrade(CvPlot const& kPlot) const { return isRevealedBase(kPlot); }
 	bool isRevealedBase(CvPlot const& kPlot) const; 
 	// Same as isBase (but doesn't have to be)
-	inline bool isAirBase(CvPlot const& kPlot) const { return isBase(kPlot); }
-	inline bool isCityHeal(CvPlot const& kPlot) const { return isBase(kPlot); }
+	bool isAirBase(CvPlot const& kPlot) const { return isBase(kPlot); }
+	bool isCityHeal(CvPlot const& kPlot) const { return isBase(kPlot); }
 	bool isBase(CvPlot const& kPlot) const;
-	bool isCityDefense(CvPlot const& kPlot) const; // </advc>
+	bool isCityDefense(CvPlot const& kPlot, TeamTypes eAttacker = NO_TEAM) const; // </advc>
 	bool canAccessHappyHealth(CvPlot const& kPlot, int iHealthOrHappy) const; // advc.901
 
 	int getEspionageModifier(TeamTypes eTarget) const;								// Exposed to Python (though CyGameCoreUtils)
@@ -470,7 +513,10 @@ public:
 	void verifySpyUnitsValidPlot();
 
 	void setForceRevealedBonus(BonusTypes eBonus, bool bRevealed);
-	bool isForceRevealedBonus(BonusTypes eBonus) const;
+	bool isForceRevealedBonus(BonusTypes eBonus) const
+	{
+		return m_abRevealedBonuses.get(eBonus);
+	}
 	bool isBonusRevealed(BonusTypes eBonus) const; // K-Mod. (the definitive answer)
 
 	void revealSurroundingPlots(CvPlot const& kCenter, int iRange) const; // advc.108
@@ -495,13 +541,13 @@ public:
 	// </advc.127b>
 	void finalizeInit(); // advc.003m
 	// <advc.003u>
-	__forceinline CvTeamAI& AI()
+	CvTeamAI& AI()
 	{	//return *static_cast<CvTeamAI*>(const_cast<CvTeam*>(this));
 		/*  The above won't work in an inline function b/c the compiler doesn't know
 			that CvTeamAI is derived from CvTeam */
 		return *reinterpret_cast<CvTeamAI*>(this);
 	}
-	__forceinline CvTeamAI const& AI() const
+	CvTeamAI const& AI() const
 	{	//return *static_cast<CvTeamAI const*>(this);
 		return *reinterpret_cast<CvTeamAI const*>(this);
 	} // </advc.003u>
@@ -554,52 +600,54 @@ protected:
 	// </advc.003m>
 	bool m_bMapCentering;
 	bool m_bCapitulated;
-	bool m_bAnyVictoryCountdown; // advc.opt
 
-	// <advc.enum>
-	EnumMap<TeamTypes,int> m_aiStolenVisibilityTimer; // Make this <...,char> when breaking saves
-	EnumMap<TeamTypes,int> m_aiWarWeariness;
-	EnumMap<TeamTypes,int> m_aiTechShareCount;
-	EnumMap<TeamTypes,int> m_aiEspionagePointsAgainstTeam;
-	EnumMap<TeamTypes,int> m_aiCounterespionageTurnsLeftAgainstTeam; // <...,short>?
-	EnumMap<TeamTypes,int> m_aiCounterespionageModAgainstTeam; // <...,short>?
+	/*	<advc.enum> (See comment in CvPlayer header about lazy allocation.) */
+	// (This is only used for the obsolete steal-plans spy mission)
+	ArrayEnumMap<TeamTypes,int,char> m_aiStolenVisibilityTimer;
+	ArrayEnumMap<TeamTypes,int> m_aiWarWeariness;
+	ArrayEnumMap<TeamTypes,int> m_aiEspionagePointsAgainstTeam;
+	ListEnumMap<TeamTypes,int,short> m_aiCounterespionageTurnsLeftAgainstTeam;
+	ListEnumMap<TeamTypes,int,short> m_aiCounterespionageModAgainstTeam;
+	ArrayEnumMap<PlayerTypes,int,char> m_aiTechShareCount;
 
-	EnumMap<CommerceTypes,int> m_aiCommerceFlexibleCount;
-	EnumMap<DomainTypes,int> m_aiExtraMoves;
-	EnumMap<VoteSourceTypes,int> m_aiForceTeamVoteEligibilityCount;
-	EnumMap<RouteTypes,int> m_aiRouteChange;
+	CommerceChangeMap m_aiCommerceFlexibleCount;
+	ArrayEnumMap<DomainTypes,int,char> m_aiExtraMoves;
+	ArrayEnumMap<VoteSourceTypes,int,char> m_aiForceTeamVoteEligibilityCount;
+	ArrayEnumMap<RouteTypes,int,char> m_aiRouteChange;
 
-	// (These largish EnumMaps should arguably map to short)
-	EnumMap<ProjectTypes,int> m_aiProjectCount;
-	EnumMap<ProjectTypes,int> m_aiProjectMaking;
-	// Could create an enum ProjectArtTypes { NO_PROJECTART=-1 } for this, but DLLExports make this more trouble than it's worth.
-	EnumMap<ProjectTypes,int> m_aiProjectDefaultArtTypes;
-	EnumMap<UnitClassTypes,int> m_aiUnitClassCount;
-	EnumMap<BuildingClassTypes,int> m_aiBuildingClassCount;
-	EnumMap<BuildingTypes,int> m_aiObsoleteBuildingCount;
-	EnumMap<TechTypes,int> m_aiResearchProgress;
-	EnumMap<TechTypes,int> m_aiTechCount;
-	EnumMap<TerrainTypes,int> m_aiTerrainTradeCount;
-	EnumMapDefault<VictoryTypes,int,-1> m_aiVictoryCountdown;
-	EnumMapDefault<TeamTypes,short,-1> m_aiHasMetTurn; // advc.091
+	ArrayEnumMap<ProjectTypes,int,short> m_aiProjectCount;
+	ArrayEnumMap<ProjectTypes,int,short> m_aiProjectMaking;
+	/*	Could create an enum ProjectArtTypes { NO_PROJECTART=-1 } for this,
+		but DLLExports make that more trouble than it's worth. */
+	ArrayEnumMap<ProjectTypes,int> m_aiProjectDefaultArtTypes;
+	ArrayEnumMap<UnitClassTypes,int,short> m_aiUnitClassCount;
+	ArrayEnumMap<BuildingClassTypes,int,short> m_aiBuildingClassCount;
+	ArrayEnumMap<BuildingTypes,int,char> m_aiObsoleteBuildingCount;
+	ArrayEnumMap<TechTypes,int> m_aiResearchProgress;
+	ArrayEnumMap<TechTypes,int,char> m_aiTechCount;
+	ArrayEnumMap<TerrainTypes,int,char> m_aiTerrainTradeCount;
+	ArrayEnumMap<VictoryTypes,int,short,-1> m_aiVictoryCountdown;
+	ArrayEnumMap<TeamTypes,int,short,-1> m_aiHasMetTurn; // advc.091
 
-	EnumMap2D<ImprovementTypes,YieldTypes,int> m_aaiImprovementYieldChange; // Should make this <...,char>
+	Enum2IntEncMap<ArrayEnumMap<ImprovementTypes,YieldChangeMap::enc_t>,
+			YieldChangeMap> m_aaiImprovementYieldChange;
 
-	EnumMap<TeamTypes,bool> m_abAtWar;
-	EnumMap<TeamTypes,bool> m_abJustDeclaredWar; // advc.162
-	EnumMap<TeamTypes,bool> m_abHasSeen; // K-Mod
-	EnumMap<TeamTypes,bool> m_abPermanentWarPeace;
-	EnumMap<TeamTypes,bool> m_abOpenBorders;
-	EnumMap<TeamTypes,bool> m_abDisengage; // advc.034
-	EnumMap<TeamTypes,bool> m_abDefensivePact;
-	EnumMap<TeamTypes,bool> m_abForcePeace;
+	ArrayEnumMap<TeamTypes,bool> m_abAtWar;
+	ArrayEnumMap<TeamTypes,bool> m_abJustDeclaredWar; // advc.162
+	ArrayEnumMap<TeamTypes,bool> m_abHasSeen; // K-Mod
+	ArrayEnumMap<TeamTypes,bool> m_abPermanentWarPeace;
+	ArrayEnumMap<TeamTypes,bool> m_abOpenBorders;
+	ArrayEnumMap<TeamTypes,bool> m_abDisengage; // advc.034
+	ArrayEnumMap<TeamTypes,bool> m_abDefensivePact;
+	ArrayEnumMap<TeamTypes,bool> m_abForcePeace;
 	//EnumMap<TeamTypes,bool> m_abVassal; // advc.opt: Replaced by m_eMaster
-	EnumMap<VictoryTypes,bool> m_abCanLaunch;
-	EnumMap<TechTypes,bool> m_abHasTech;
-	EnumMap<TechTypes,bool> m_abNoTradeTech;
-
-	std::vector<int>* m_pavProjectArtTypes; // a vector for each type of project
-	std::vector<BonusTypes> m_aeRevealedBonuses;
+	ArrayEnumMap<VictoryTypes,bool> m_abCanLaunch;
+	ArrayEnumMap<TechTypes,bool> m_abHasTech;
+	ArrayEnumMap<TechTypes,bool> m_abNoTradeTech;
+	// a vector for each type of project (advc: was an array of vectors)
+	std::vector<std::vector<int> > m_aaiProjectArtTypes;
+	ArrayEnumMap<BonusTypes,bool> m_abRevealedBonuses; // was vector<BonusTypes>
+	// </advc.enum>
 	// <advc.134a>
 	mutable TeamTypes m_eOfferingPeace;
 	mutable int m_iPeaceOfferStage;
@@ -614,12 +662,11 @@ protected:
 	static bool bTriggeringWars;
 	// </kekm.26>
 
-	void uninit();
-
 	void doWarWeariness();
 	void doBarbarianResearch(); // advc
-	void updateTechShare(TechTypes eTech);
+	void updateTechShare(TechTypes eTech, /* advc.opt: */ int iOtherKnownThreshold = -1);
 	void updateTechShare();
+	int calculateBestTechShare() const; // advc.opt
 	void updatePlotGroupBonus(TechTypes eTech, bool bAdd); // advc
 
 	void processTech(TechTypes eTech, int iChange, /* advc.121: */ bool bEndOfTurn);

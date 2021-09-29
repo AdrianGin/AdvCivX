@@ -7,93 +7,21 @@
 #include "BBAILog.h" // advc.007
 #include "CvInfo_GameOption.h"
 
-using std::vector; // advc
-
-// <advc.003g>
-int roundToMultiple(double d, int iMultiple)
-{
-	int r = (int)(d + 0.5 * iMultiple);
-	return r - r % iMultiple;
-}
-
-bool bernoulliSuccess(double pr, char const* pszLog, bool bAsync, int iData1, int iData2)
-{
-	int iChancePerMyriad = round(pr * 10000.0);
-	// These two checks are just for better performance
-	if(iChancePerMyriad >= 10000)
-		return true;
-	if(iChancePerMyriad <= 0)
-		return false;
-	if(pszLog != NULL && strlen(pszLog) <= 0)
-		pszLog = "bs";
-	if(bAsync)
-		return (GC.getASyncRand().get(10000, pszLog) < iChancePerMyriad);
-	return GC.getGame().
-			getSorenRandNum(10000, pszLog, iData1, iData2) < iChancePerMyriad;
-}
-
-double percentileRank(vector<double>& distribution, double score,
-	bool bSorted, bool bScorePartOfDistribution)
-{
-	if(!bSorted)
-		std::sort(distribution.begin(), distribution.end());
-	int n = (int)distribution.size();
-	int iLEq = 0; // less or equal
-	for(int i = 0; i < n; i++)
-	{
-		if(distribution[i] <= score)
-			iLEq++;
-		else break;
-	}
-	if(bScorePartOfDistribution) 
-	{
-		iLEq++;
-		n++;
-	}
-	else if(n == 0)
-		return 1;
-	return iLEq / (double)n;
-} // </advc.003g>
-/*	advc: Akin to natGetDeterministicRandom (deleted from CvCity.cpp). For reference,
-	the implementation of that function was:
-	srand(7297 * iSeedX + 2909  * iSeedY);
-	return (rand() % (iMax - iMin)) + iMin; */
-int intHash(vector<int> const& x, PlayerTypes ePlayer)
-{
-	int const iPrime = 31;
-	int iHashVal = 0;
-	for (size_t i = 0; i < x.size(); i++)
-	{
-		iHashVal += x[i];
-		iHashVal *= iPrime;
-	}
-	int iCapitalIndex = -1;
-	if (ePlayer != NO_PLAYER)
-	{
-		CvCity* pCapital = GET_PLAYER(ePlayer).getCapital();
-		if (pCapital != NULL)
-			iCapitalIndex = GC.getMap().plotNum(pCapital->getPlot());
-	}
-	if (iCapitalIndex >= 0)
-	{
-		iHashVal += iCapitalIndex;
-		iHashVal *= iPrime;
-	}
-	return iHashVal;
-}
 // advc.035:
-void contestedPlots(vector<CvPlot*>& r, TeamTypes t1, TeamTypes t2)
+void contestedPlots(std::vector<CvPlot*>& r, TeamTypes t1, TeamTypes t2)
 {
 	if(!GC.getDefineBOOL(CvGlobals::OWN_EXCLUSIVE_RADIUS))
 		return;
 	// Sufficient to check plots around the teams' cities
-	vector<CvCity const*> apCities;
-	for(int i = 0; i < MAX_CIV_PLAYERS; i++)
+	std::vector<CvCity const*> apCities;
+	for (MemberIter itMember1(t1); itMember1.hasNext(); ++itMember1)
 	{
-		CvPlayer& kMember = GET_PLAYER((PlayerTypes)i);
-		if(!kMember.isAlive() || (kMember.getTeam() != t1 && kMember.getTeam() != t2))
-			continue;
-		FOR_EACH_CITY(c, kMember)
+		FOR_EACH_CITY(c, *itMember1)
+			apCities.push_back(c);
+	}
+	for (MemberIter itMember2(t2); itMember2.hasNext(); ++itMember2)
+	{
+		FOR_EACH_CITY(c, *itMember2)
 			apCities.push_back(c);
 	}
 	std::set<int> seenPlots; // To avoid duplicates
@@ -382,9 +310,9 @@ bool atWar(TeamTypes eTeamA, TeamTypes eTeamB)
 	return GET_TEAM(eOurTeam).AI_mayAttack(eTheirTeam);
 }*/
 
-// K-Mod: (advc - Where do we move this? Should be a static member, not global.)
+// K-Mod: (advc - Where do we move this? Should not be global.)
 int estimateCollateralWeight(CvPlot const* pPlot, TeamTypes eAttackTeam,
-	TeamTypes eDefenceTeam)
+	TeamTypes eDefenseTeam)
 {
 	int iBaseCollateral = GC.getDefineINT(CvGlobals::COLLATERAL_COMBAT_DAMAGE); // normally 10
 	if (pPlot == NULL)
@@ -395,7 +323,7 @@ int estimateCollateralWeight(CvPlot const* pPlot, TeamTypes eAttackTeam,
 		Therefore, I'm going to inflate the value of collateral damage based
 		on a rough estimate of the defenders bonuses. */
 
-	TeamTypes ePlotBonusTeam = eDefenceTeam;
+	TeamTypes ePlotBonusTeam = eDefenseTeam;
 	if (ePlotBonusTeam == NO_TEAM)
 		ePlotBonusTeam = (pPlot->getTeam() == eAttackTeam ? NO_TEAM : pPlot->getTeam());
 
@@ -411,7 +339,7 @@ int estimateCollateralWeight(CvPlot const* pPlot, TeamTypes eAttackTeam,
 	{
 		if (!pUnit->canDefend(pPlot))
 			continue;
-		if (eDefenceTeam != NO_TEAM && pUnit->getTeam() != eDefenceTeam)
+		if (eDefenseTeam != NO_TEAM && pUnit->getTeam() != eDefenseTeam)
 			continue;
 		if (eAttackTeam != NO_TEAM && pUnit->getTeam() == eAttackTeam)
 			continue;
@@ -843,39 +771,32 @@ int baseYieldToSymbol(int iNumYieldTypes, int iYieldStack)
 	return true;
 }*/
 
-// create an array of shuffled numbers
-int* shuffle(int iNum, CvRandom& rand)
+/*	advc: Akin to natGetDeterministicRandom (deleted from CvCity.cpp). For reference,
+	the implementation of that function was:
+	srand(7297 * iSeedX + 2909  * iSeedY);
+	return (rand() % (iMax - iMin)) + iMin; */
+int intHash(std::vector<int> const& kInputs, PlayerTypes ePlayer)
 {
-	int* piShuffle = new int[iNum];
-	shuffleArray(piShuffle, iNum, rand);
-	return piShuffle;
-}
-
-
-void shuffleArray(int* piShuffle, int iNum, CvRandom& rand)
-{
-	for (int iI = 0; iI < iNum; iI++)
-		piShuffle[iI] = iI;
-
-	for (int iI = 0; iI < iNum; iI++)
+	int const iPrime = 31;
+	int iHashVal = 0;
+	for (size_t i = 0; i < kInputs.size(); i++)
 	{
-		int iJ = (rand.get(iNum - iI, NULL) + iI);
-		if (iI != iJ)
-		{
-			int iTemp = piShuffle[iI];
-			piShuffle[iI] = piShuffle[iJ];
-			piShuffle[iJ] = iTemp;
-		}
+		iHashVal += kInputs[i];
+		iHashVal *= iPrime;
 	}
-}
-
-// advc.enum: Caller needs to set the vector size
-void shuffleVector(vector<int>& aiIndices, CvRandom& rand)
-{
-	std11::iota(aiIndices.begin(), aiIndices.end(), 0);
-	int const iSize = (int)aiIndices.size();
-	for (int i = 0; i < iSize; i++)
-		std::swap(aiIndices[i], aiIndices[rand.get(iSize - i, NULL) + i]);
+	int iCapitalIndex = -1;
+	if (ePlayer != NO_PLAYER)
+	{
+		CvCity const* pCapital = GET_PLAYER(ePlayer).getCapital();
+		if (pCapital != NULL)
+			iCapitalIndex = pCapital->plotNum();
+	}
+	if (iCapitalIndex >= 0)
+	{
+		iHashVal += iCapitalIndex;
+		iHashVal *= iPrime;
+	}
+	return iHashVal;
 }
 
 

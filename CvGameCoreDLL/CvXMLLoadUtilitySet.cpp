@@ -3,7 +3,6 @@
 //
 
 #include "CvGameCoreDLL.h"
-#include "CvDLLXMLIFaceBase.h"
 #include "CvXMLLoadUtility.h"
 #include "CvGameTextMgr.h"
 #include "CvInfo_All.h"
@@ -23,7 +22,7 @@
 #define CHECK_FOR_REDEFINES 0
 
 // read the global defines from a specific file
-bool CvXMLLoadUtility::ReadGlobalDefines(const TCHAR* szXMLFileName, CvCacheObject* cache)
+bool CvXMLLoadUtility::ReadGlobalDefines(TCHAR const* szXMLFileName, CvCacheObject* cache)
 {
 	#if ENABLE_XML_FILE_CACHE
 	// advc: Handle successful read upfront
@@ -747,7 +746,7 @@ bool CvXMLLoadUtility::LoadPreMenuGlobals()
 	// <advc.fract>
 	void TestScaledNum();
 	TestScaledNum(); // </advc.fract>
-	getUWAI.doXML(); // advc.104x
+	getUWAI().doXML(); // advc.104x
 	GC.setXMLLoadUtility(this); // advc.003v
 
 	return true;
@@ -961,7 +960,7 @@ void CvXMLLoadUtility::SetGlobalActionInfo()
 	#define SET_ACTION_DATA(EnumName, ActionSubTypeName) \
 		FOR_EACH_ENUM(EnumName) \
 		{ \
-			int iLength = getEnumLength(eLoop##EnumName); \
+		int iLength = enum_traits<EnumName##Types>::length(); \
 			if (iLength <= 0) \
 			{ \
 				char szMessage[1024]; \
@@ -1292,6 +1291,7 @@ void CvXMLLoadUtility::SetGlobalClassInfo(std::vector<T*>& aInfos, const char* s
 		}
 		else
 		{
+			FAssertMsg(gDLL->isModularXMLLoading(), "CvInfo element loaded repeatedly"); // advc.006k
 			SAFE_DELETE(aInfos[iIndex]);
 			aInfos[iIndex] = pClassInfo;
 		}
@@ -1345,7 +1345,7 @@ template <class T>
 void CvXMLLoadUtility::LoadGlobalClassInfo(std::vector<T*>& aInfos,
 	const char* szFileRoot, const char* szFileDirectory,
 	const char* szXmlPath, bool bTwoPass,
-	CvCacheObject* (CvDLLUtilityIFaceBase::*pArgFunction) (const TCHAR*))
+	CvCacheObject* (CvDLLUtilityIFaceBase::*pArgFunction) (TCHAR const*))
 {
 	//GC.addToInfosVectors(aInfos); // advc.enum (no longer needed)
 	#if ENABLE_XML_FILE_CACHE
@@ -1464,7 +1464,7 @@ void CvXMLLoadUtility::LoadGlobalClassInfo(std::vector<T*>& aInfos,
 
 void CvXMLLoadUtility::LoadDiplomacyInfo(std::vector<CvDiplomacyInfo*>& DiploInfos,
 	const char* szFileRoot, const char* szFileDirectory, const char* szXmlPath,
-	CvCacheObject* (CvDLLUtilityIFaceBase::*pArgFunction) (const TCHAR*))
+	CvCacheObject* (CvDLLUtilityIFaceBase::*pArgFunction) (TCHAR const*))
 {
 	#if ENABLE_XML_FILE_CACHE
 	bool bLoaded = false;
@@ -1533,6 +1533,15 @@ void CvXMLLoadUtility::LoadDiplomacyInfo(std::vector<CvDiplomacyInfo*>& DiploInf
 	if (pArgFunction != NULL)
 		gDLL->destroyCache(pCache);
 	#endif
+}
+
+/*	advc: All call locations call SetToParent after SetYields, so let's do that
+	only once in a single place. */
+int CvXMLLoadUtility::SetYieldArray(int** ppiYield)
+{
+	int iSet = SetYields(ppiYield);
+	gDLL->getXMLIFace()->SetToParent(m_pFXml);
+	return iSet;
 }
 
 /*  Allocate memory for the yield parameter and set it to the values in XML.
@@ -1674,10 +1683,10 @@ void CvXMLLoadUtility::SetImprovementBonuses(CvImprovementBonusInfo** ppImprovem
 							gDLL->getXMLIFace()->SetToParent(m_pFXml);
 
 							SAFE_DELETE_ARRAY(paImprovementBonus[iBonusIndex].m_piYieldChange);	// free memory - MT, since we are about to reallocate
-							if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml,"YieldChanges"))
+							if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml,
+								"YieldChanges"))
 							{
-								SetYields(&paImprovementBonus[iBonusIndex].m_piYieldChange);
-								gDLL->getXMLIFace()->SetToParent(m_pFXml);
+								SetYieldArray(&paImprovementBonus[iBonusIndex].m_piYieldChange);
 							}
 							else InitList(&paImprovementBonus[iBonusIndex].m_piYieldChange, NUM_YIELD_TYPES);
 						}
@@ -1721,81 +1730,176 @@ bool CvXMLLoadUtility::SetAndLoadVar(int** ppiVar, int iDefault)
 	return true;
 }
 
-/*  advc.003t: Will set the array that pptList points to to NULL if
-	tDefaultListVal is 0 and no pairs are found or if all (index,value) pairs
-	have the value 0. */
-template<typename T>
-void CvXMLLoadUtility::SetVariableListTagPair(T** pptList, const TCHAR* szRootTagName,
-	int iInfoBaseLength, T tDefaultListVal) // (advc.003x: Unused param iInfoBaseSize removed)
+// <advc.enum> Iterators based on BtS loop cut from SetVariableListTagPair
+void CvXMLLoadUtility::XMLTagPairIteratorBase::setToParent()
 {
-	if (iInfoBaseLength <= 0)
+	gDLL->getXMLIFace()->SetToParent(m_pParser);
+}
+
+template<typename T>
+CvXMLLoadUtility::XMLTagPairIterator<T>::XMLTagPairIterator(
+	CvXMLLoadUtility& kUtil, TCHAR const* szRootTagName)
+:	XMLTagPairIteratorBase(kUtil), m_iSiblingIndex(0), m_iSiblings(0)
+{
+	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pParser, szRootTagName))
+		m_iParserLevel++;
+	else return;
+	if (m_util.SkipToNextVal()) // skip comments
 	{
-		char szMessage[1024];
-		sprintf(szMessage, "Allocating zero or less memory.\nCurrent XML file is: %s",
-				GC.getCurrentXMLFile().GetCString());
-		errorMessage(szMessage);
-	}
-	bool bListModified = (*pptList != NULL); // advc.003t, advc.xmldefault
-	InitList(pptList, iInfoBaseLength, tDefaultListVal);
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szRootTagName))
-	{
-		if (SkipToNextVal())
+		m_iSiblings = gDLL->getXMLIFace()->GetNumChildren(m_pParser);
+		if (m_iSiblings > 0)
 		{
-			int iNumSibs = gDLL->getXMLIFace()->GetNumChildren(m_pFXml);
-			T* ptList = *pptList;
-			if (iNumSibs > 0)
+			if (gDLL->getXMLIFace()->SetToChild(m_pParser))
+				m_iParserLevel++;
+			else m_iSiblings = 0;
+		}
+	}
+}
+
+template<typename T>
+std::pair<int,T> CvXMLLoadUtility::XMLTagPairIterator<T>::next()
+{
+	std::pair<int,T> nextPair(noPair());
+	for (; m_iSiblingIndex < m_iSiblings && nextPair.first == iNO_KEY; m_iSiblingIndex++)
+	{
+		if (m_util.SkipToNextVal() && // K-Mod: skip comments
+			// Deepens the parser level; will undo that locally through setToParent.
+			m_util.GetChildXmlVal(m_acTextVal))
+		{	// advc: was FindInfoClass
+			int iKey = getGlobalEnumFromString(m_acTextVal);
+			if (iKey >= 0)
 			{
-				if(iNumSibs > iInfoBaseLength)
+				T tVal;
+				m_util.GetNextXmlVal(tVal);
+				nextPair = std::make_pair(iKey, tVal);
+			}
+			setToParent();
+		}
+		if (!gDLL->getXMLIFace()->NextSibling(m_pParser))
+		{
+			m_iSiblingIndex = m_iSiblings;
+			break;
+		}
+	}
+	return nextPair;
+}
+
+// Explicit instantiations
+template CvXMLLoadUtility::XMLTagPairIterator<int>;
+template CvXMLLoadUtility::XMLTagPairIterator<bool>;
+template CvXMLLoadUtility::XMLTagPairIterator<float>;
+template CvXMLLoadUtility::XMLTagPairIterator<short>;
+template CvXMLLoadUtility::XMLTagPairIterator<char>;
+// </advc.003t>
+// <advc.enum>
+template<class EncodableMap>
+CvXMLLoadUtility::XMLTagPairRateIterator<EncodableMap>::XMLTagPairRateIterator(
+	CvXMLLoadUtility& kUtil, TCHAR const* szTagName,
+	TCHAR const* szKeyTagName, TCHAR const* szRateTagName)
+:	XMLTagPairIteratorBase(kUtil), m_iSiblingIndex(0), m_iSiblings(0), m_aiRates(NULL)
+{
+	/*	The flat structure is used by Civ4EventInfos.xml. I'd like to change that to the
+		structure used everywhere else (e.g. SpecialistYieldChanges in Civ4BuildingInfos),
+		but I don't want to make XML mods more difficult to merge with AdvCiv. */
+	m_bFlat = (szKeyTagName == NULL);
+	FAssert(m_bFlat == (szRateTagName == NULL));
+	if (!m_bFlat)
+	{
+		m_szKeyTagName = szKeyTagName;
+		m_szRateTagName = szRateTagName;
+	}
+	CvString szRootTagName(szTagName);
+	szRootTagName.append("s"); // plural
+	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pParser, szRootTagName.c_str()))
+		m_iParserLevel++;
+	else return;
+	if (m_util.SkipToNextVal())
+	{
+		m_iSiblings = gDLL->getXMLIFace()->GetNumChildren(m_pParser);
+		if (m_iSiblings > 0)
+		{
+			if (gDLL->getXMLIFace()->SetToChildByTagName(m_pParser, szTagName))
+			{
+				m_aiRates = new int[iENUM_LEN];
+				m_iParserLevel++;
+			}
+			else m_iSiblings = 0;
+		}
+	}
+}
+
+template<class EncodableMap>
+std::pair<int,typename EncodableMap::enc_t>
+CvXMLLoadUtility::XMLTagPairRateIterator<EncodableMap>::next()
+{
+	std::pair<int,typename EncodableMap::enc_t> nextPair(noPair());
+	for (; m_iSiblingIndex < m_iSiblings && nextPair.first == iNO_KEY; m_iSiblingIndex++)
+	{
+		if (m_util.SkipToNextVal() &&
+			// This increases the parser depth ...
+			(m_bFlat ? m_util.GetChildXmlVal(m_szTextVal) :
+			// ... but this does not. (Yikes.)
+			m_util.GetChildXmlValByName(m_szTextVal, m_szKeyTagName)))
+		{
+			int iKey = getGlobalEnumFromString(m_szTextVal);
+			if (iKey >= 0)
+			{
+				ZeroMemory(m_aiRates, iENUM_LEN * sizeof(int));
+				int iValuesSet = 0;
+				if (m_bFlat)
 				{
-					char szMessage[1024];
-					sprintf(szMessage, "There are more siblings than memory allocated for them.\nCurrent XML file is: %s",
-							GC.getCurrentXMLFile().GetCString());
-					errorMessage(szMessage);
-				}
-				if (gDLL->getXMLIFace()->SetToChild(m_pFXml))
-				{
-					TCHAR szTextVal[256];
-					for (int i = 0; i < iNumSibs; i++)
+					if (m_util.GetNextXmlVal(m_szTextVal))
 					{
-						if (SkipToNextVal() && // K-Mod. (without this, a comment in the xml could break this)
-							GetChildXmlVal(szTextVal))
-						{	// advc: was FindInfoClass
-							int iIndexVal = getGlobalEnumFromString(szTextVal);
-							if (iIndexVal >= 0)
+						int iRateType = FindInInfoClass(m_szTextVal);
+						if (iRateType >= 0)
+						{
+							FAssert(iRateType < iENUM_LEN);
+							int iRateVal = 0;
+							if (m_util.GetNextXmlVal(iRateVal))
 							{
-								/*	advc.006: Can exceed the bounds here if the wrong type
-									is used in XML, e.g. a UNITCLASS_... where a
-									UNITCOMBAT_... is expected. */
-								FAssert(iIndexVal < iInfoBaseLength);
-								GetNextXmlVal(ptList[iIndexVal]);
-								// <advc.003t>
-								if (ptList[iIndexVal] != tDefaultListVal)
-									bListModified = true; // </advc.003t>
+								m_aiRates[iRateType] = iRateVal;
+								if (iRateVal != 0)
+									iValuesSet++;
 							}
-							gDLL->getXMLIFace()->SetToParent(m_pFXml);
 						}
-						if (!gDLL->getXMLIFace()->NextSibling(m_pFXml))
-							break;
 					}
-					gDLL->getXMLIFace()->SetToParent(m_pFXml);
+					setToParent();
+				}
+				// Increases parser depth; the SetYield/CommerceArray call will undo that.
+				else if (gDLL->getXMLIFace()->SetToChildByTagName(m_pParser, m_szRateTagName))
+				{
+					// Not beautiful ...
+					if (is_same_type<typename EncodableMap::EnumType,YieldTypes>::value)
+						iValuesSet = m_util.SetYieldArray(&m_aiRates);
+					else iValuesSet = m_util.SetCommerceArray(&m_aiRates);
+				}
+				if (iValuesSet > 0)
+				{
+					EncodableMap rateMap;
+					for (int i = 0; i < iENUM_LEN; i++)
+						rateMap.insert(i, m_aiRates[i]);
+					nextPair = std::make_pair(iKey, rateMap.encode());
 				}
 			}
 		}
-		gDLL->getXMLIFace()->SetToParent(m_pFXml);
+		if (!gDLL->getXMLIFace()->NextSibling(m_pParser))
+		{
+			m_iSiblingIndex = m_iSiblings;
+			break;
+		}
 	}
-	// <advc.003t>
-	if (!bListModified && tDefaultListVal == 0)
-		SAFE_DELETE_ARRAY(*pptList); // </advc.003t>
+	return nextPair;
 }
-// <advc> Explicit instantiations of member function template
-template void CvXMLLoadUtility::SetVariableListTagPair(int**, const TCHAR*, int, int);
-template void CvXMLLoadUtility::SetVariableListTagPair(bool**, const TCHAR*, int, bool);
-template void CvXMLLoadUtility::SetVariableListTagPair(float**, const TCHAR*, int, float);
-// </advc>
 
-// advc.003t: See SetVariableListTagPair(int**,...) above
-void CvXMLLoadUtility::SetVariableListTagPair(CvString **ppszList, const TCHAR* szRootTagName,
-	int iInfoBaseLength, CvString szDefaultListVal)
+// Explicit instantiations
+template CvXMLLoadUtility::XMLTagPairRateIterator<YieldChangeMap>;
+template CvXMLLoadUtility::XMLTagPairRateIterator<YieldPercentMap>;
+template CvXMLLoadUtility::XMLTagPairRateIterator<CommerceChangeMap>;
+template CvXMLLoadUtility::XMLTagPairRateIterator<CommercePercentMap>;
+// </advc.enum>
+
+void CvXMLLoadUtility::SetVariableListTagPair(CvString **ppszList,
+	TCHAR const* szRootTagName, int iInfoBaseLength, CvString szDefaultListVal)
 {
 	// <advc.xmldefault>
 	if (*ppszList != NULL)
@@ -1866,7 +1970,7 @@ void CvXMLLoadUtility::SetVariableListTagPair(CvString **ppszList, const TCHAR* 
 }
 
 // allocate and initialize a list from a tag pair in the xml for audio scripts
-void CvXMLLoadUtility::SetVariableListTagPairForAudioScripts(int **ppiList, const TCHAR* szRootTagName,
+void CvXMLLoadUtility::SetVariableListTagPairForAudioScripts(int **ppiList, TCHAR const* szRootTagName,
 	int iInfoBaseLength, int iDefaultListVal)
 {
 	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml,szRootTagName))

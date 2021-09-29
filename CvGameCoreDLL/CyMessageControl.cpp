@@ -1,7 +1,6 @@
 #include "CvGameCoreDLL.h"
 #include "CyMessageControl.h"
 #include "CvMessageControl.h"
-#include "CvDLLUtilityIFaceBase.h"
 #include "CvDLLPythonIFaceBase.h"
 
 void CyMessageControl::sendPushOrder(int iCityID, int eOrder, int iData, bool bAlt, bool bShift, bool bCtrl)

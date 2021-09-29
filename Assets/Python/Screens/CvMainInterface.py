@@ -132,14 +132,14 @@ iEndOfTurnButtonSize = 32
 iEndOfTurnPosX = 296 # distance from right
 iEndOfTurnPosY = 147 # distance from bottom
 
-# MINIMAP BUTTON POSITIONS
+# MINIMAP BUTTON POSITIONS (advc: unused constants commented out)
 ######################
-iMinimapButtonsExtent = 228
-iMinimapButtonsX = 227
+#iMinimapButtonsExtent = 228
+#iMinimapButtonsX = 227
 iMinimapButtonsY_Regular = 160
 iMinimapButtonsY_Minimal = 32
-iMinimapButtonWidth = 24
-iMinimapButtonHeight = 24
+#iMinimapButtonWidth = 24
+#iMinimapButtonHeight = 24
 
 # Globe button
 iGlobeButtonX = 48
@@ -821,10 +821,15 @@ class CvMainInterface:
 					screen.hide( szName )
 
 # BUG - city specialist - start
-		screen.addPanel( "SpecialistBackground", u"", u"", True, False, xResolution - 243, yResolution - 423, 230, 30, PanelStyles.PANEL_STYLE_STANDARD )
+		screen.addPanel( "SpecialistBackground", u"", u"", True, False, xResolution - 243,
+				# advc.004: y position was yResolution minus 423. That works well for the stacked specialists, but not for the other options.
+				yResolution - 475, 230, 30, PanelStyles.PANEL_STYLE_STANDARD )
 		screen.setStyle( "SpecialistBackground", "Panel_City_Header_Style" )
 		screen.hide( "SpecialistBackground" )
-		screen.setLabel( "SpecialistLabel", "Background", localText.getText("TXT_KEY_CONCEPT_SPECIALISTS", ()), CvUtil.FONT_CENTER_JUSTIFY, xResolution - 128, yResolution - 415, -0.1, FontTypes.SMALL_FONT, WidgetTypes.WIDGET_GENERAL, -1, -1 )
+		screen.setLabel( "SpecialistLabel", "Background", localText.getText("TXT_KEY_CONCEPT_SPECIALISTS", ()),
+				CvUtil.FONT_CENTER_JUSTIFY, xResolution - 128,
+				# advc.004: y position was yResolution minus 415.
+				yResolution - 467, -0.1, FontTypes.SMALL_FONT, WidgetTypes.WIDGET_GENERAL, -1, -1 )
 		screen.hide( "SpecialistLabel" )
 # BUG - city specialist - end
 
@@ -1320,12 +1325,21 @@ class CvMainInterface:
 
 # BUG - city specialist - start
 			self.updateCitizenButtons_hide()
+			# advc.004: Show the SpecialistLabel regardless of BUG options
+			bShowingCitizenButtons = False
 			if (CityScreenOpt.isCitySpecialist_Stacker()):
-				self.updateCitizenButtons_Stacker()
+				bShowingCitizenButtons = self.updateCitizenButtons_Stacker()
 			elif (CityScreenOpt.isCitySpecialist_Chevron()):
-				self.updateCitizenButtons_Chevron()
+				bShowingCitizenButtons = self.updateCitizenButtons_Chevron()
 			else:
-				self.updateCitizenButtons()
+				bShowingCitizenButtons = self.updateCitizenButtons()
+			# <advc.004>
+			if (bShowingCitizenButtons
+				# Not quite enough room for this label on low res
+				and self.yResolution > 900):
+				# Cut from updateCitizenButtons_Stacker ...
+				screen.show( "SpecialistBackground" )
+				screen.show( "SpecialistLabel" ) # </advc.004>
 # BUG - city specialist - end
 			
 			CyInterface().setDirty(InterfaceDirtyBits.CitizenButtons_DIRTY_BIT, False)
@@ -2615,6 +2629,9 @@ class CvMainInterface:
 		iUnitCycleButtonY = kScreen.getYResolution() - iBottomButtonContainerOffsetY + iUnitCycleButtonMargin
 		pNextUnit = gc.getGame().getNextUnitInCycle(True, False)
 		if pNextUnit:
+			# The button looks weird when the HUD is partly hidden and no unit selected. Can be a nuisance when taking screenshots.
+			if not pHeadSelectedUnit and CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_HIDE:
+				return
 			if pNextUnit.hasMoved():
 				szOverlay = "OVERLAY_HASMOVED"
 			else:
@@ -2638,7 +2655,6 @@ class CvMainInterface:
 			self.showUnitCycleButtonGFC("Unselect", kScreen, pHeadSelectedUnit, iUnitCycleButtonX, iUnitCycleButtonY, iUnitCycleButtonSize, False, True, ArtFileMgr.getInterfaceArtInfo(szOverlay).getPath())
 
 	def showUnitCycleButtonGFC(self, szName, kScreen, kUnit, iX, iY, iSize, bWorkers, bUnselect, szOverlayPath):
-
 		iWidgetData2 = -1
 		if not bUnselect:
 			iWidgetData2 = kUnit.getID()
@@ -2768,10 +2784,10 @@ class CvMainInterface:
 	# Will update the citizen buttons
 	def updateCitizenButtons( self ):
 
-		if not CyInterface().isCityScreenUp(): return 0
+		if not CyInterface().isCityScreenUp(): return False
 
 		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
-		if not (pHeadSelectedCity and CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW): return 0
+		if not (pHeadSelectedCity and CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW): return False
 	
 		global MAX_CITIZEN_BUTTONS
 		
@@ -2866,15 +2882,15 @@ class CvMainInterface:
 				szName = "CitizenDisabledButton" + str(i)
 				screen.show( szName )
 
-		return 0
+		return True # advc.004: Signal success
 
 # BUG - city specialist - start
 	def updateCitizenButtons_Stacker( self ):
 	
-		if not CyInterface().isCityScreenUp(): return 0
+		if not CyInterface().isCityScreenUp(): return False
 
 		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
-		if not (pHeadSelectedCity and CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW): return 0
+		if not (pHeadSelectedCity and CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW): return False
 
 		global g_iSuperSpecialistCount
 		global g_iCitySpecialistCount
@@ -2987,20 +3003,19 @@ class CvMainInterface:
 					szName = "DecresseCitizenButton" + str((i * 100) + k)					
 					screen.addCheckBoxGFC( szName, gc.getSpecialistInfo(i).getTexture(), "", xResolution - (SPECIALIST_AREA_MARGIN + iXShiftVal) - (HorizontalSpacing * k), (yResolution - 282 - (SPECIALIST_ROW_HEIGHT * iYShiftVal)), 30, 30, WidgetTypes.WIDGET_CHANGE_SPECIALIST, i, -1, ButtonStyles.BUTTON_STYLE_LABEL )
 					screen.show( szName )
-					
-		screen.show( "SpecialistBackground" )
-		screen.show( "SpecialistLabel" )
-	
-		return 0
+		#screen.show( "SpecialistBackground" )
+		#screen.show( "SpecialistLabel" )
+		# advc.004: Signal to the caller that the label should be shown
+		return True
 # BUG - city specialist - end
 
 # BUG - city specialist - start
 	def updateCitizenButtons_Chevron( self ):
 	
-		if not CyInterface().isCityScreenUp(): return 0
+		if not CyInterface().isCityScreenUp(): return False
 
 		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
-		if not (pHeadSelectedCity and CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW): return 0
+		if not (pHeadSelectedCity and CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW): return False
 
 		global MAX_CITIZEN_BUTTONS
 		
@@ -3135,7 +3150,7 @@ class CvMainInterface:
 				szName = "CitizenDisabledButton" + str(i)
 				screen.show( szName )
 
-		return 0
+		return True # advc.004: Signal success
 # BUG - city specialist - end
 
 	# Will update the game data strings
@@ -3743,7 +3758,9 @@ class CvMainInterface:
 							szBuffer = localText.getText("INTERFACE_CITY_GROWING", (pHeadSelectedCity.getFoodTurnsLeft(), ))
 					elif (iFoodDifference < 0):
 						if (CityScreenOpt.isShowFoodAssist()):
-							iTurnsToStarve = pHeadSelectedCity.getFood() / -iFoodDifference + 1
+							#iTurnsToStarve = pHeadSelectedCity.getFood() / -iFoodDifference + 1
+							# advc.189: The DLL can compute this now
+							iTurnsToStarve = -pHeadSelectedCity.getFoodTurnsLeft()
 							if iTurnsToStarve > 1:
 								szBuffer = localText.getText("INTERFACE_CITY_SHRINKING", (iTurnsToStarve, ))
 							else:
@@ -3921,6 +3938,8 @@ class CvMainInterface:
 					and (pHeadSelectedCity.getTeam() == gc.getGame().getActiveTeam()
 					or gc.getGame().isDebugMode())): # K-Mod
 						iAngerTimer = max(pHeadSelectedCity.getHurryAngerTimer(), pHeadSelectedCity.getConscriptAngerTimer())
+						# advc.188: Cover all temporary unhappiness (but not getHappinessTimer)
+						iAngerTimer = max(iAngerTimer, pHeadSelectedCity.getDefyResolutionAngerTimer())
 						if iAngerTimer > 0:
 							szBuffer += u" (%i)" % iAngerTimer
 # BUG - Anger Display - end
@@ -4689,8 +4708,8 @@ class CvMainInterface:
 					szNewBuffer = szNewBuffer + "</font>"
 					screen.setLabel( "DefenseText", "Background", szBuffer, CvUtil.FONT_RIGHT_JUSTIFY, xResolution - 270, 40, -0.3, FontTypes.SMALL_FONT, WidgetTypes.WIDGET_HELP_DEFENSE, -1, -1 )
 					screen.show( "DefenseText" )
-
-				if ( pHeadSelectedCity.getCultureLevel != CultureLevelTypes.NO_CULTURELEVEL ):
+				# advc.001: Left side was missing empty parentheses
+				if ( pHeadSelectedCity.getCultureLevel() != CultureLevelTypes.NO_CULTURELEVEL ):
 					iRate = pHeadSelectedCity.getCommerceRateTimes100(CommerceTypes.COMMERCE_CULTURE)
 					if (iRate%100 == 0):
 						szBuffer = localText.getText("INTERFACE_CITY_COMMERCE_RATE", (gc.getCommerceInfo(CommerceTypes.COMMERCE_CULTURE).getChar(), gc.getCultureLevelInfo(pHeadSelectedCity.getCultureLevel()).getTextKey(), iRate/100))
@@ -4841,7 +4860,8 @@ class CvMainInterface:
 # BUG - Production Started - end
 					
 # BUG - Production Decay - start
-					if BugDll.isPresent() and CityScreenOpt.isShowProductionDecayQueue():
+					# advc.094: BugDll.isPresent check removed; active player check added (replacing a is-human check in the DLL).
+					if CityScreenOpt.isShowProductionDecayQueue() and pHeadSelectedCity.getOwner() == gc.getGame().getActivePlayer():
 						eUnit = CyInterface().getOrderNodeData1(i)
 						if pHeadSelectedCity.getUnitProduction(eUnit) > 0:
 							if pHeadSelectedCity.isUnitProductionDecay(eUnit):
@@ -4865,8 +4885,9 @@ class CvMainInterface:
 							szRightBuffer = BugUtil.colorText(szRightBuffer, "COLOR_CYAN")
 # BUG - Production Started - end
 
-# BUG - Production Decay - start
-					if BugDll.isPresent() and CityScreenOpt.isShowProductionDecayQueue():
+# BUG - Production Decay - start 
+					# advc.094: BugDll.isPresent check removed; active player check added.
+					if CityScreenOpt.isShowProductionDecayQueue() and pHeadSelectedCity.getOwner() == gc.getGame().getActivePlayer():
 						eBuilding = CyInterface().getOrderNodeData1(i)
 						if pHeadSelectedCity.getBuildingProduction(eBuilding) > 0:
 							if pHeadSelectedCity.isBuildingProductionDecay(eBuilding):
@@ -5197,7 +5218,7 @@ class CvMainInterface:
 			bGlobeViewOptions = (iCurrentLayerID != -1 and kGLM.getLayer(iCurrentLayerID).getNumOptions() != 0 and (MainOpt.isResourceIconOptions() or kGLM.getLayer(iCurrentLayerID).getName() != "RESOURCES") and (gc.getDefineINT("SHOW_UNIT_LAYER_OPTIONS") > 0 or kGLM.getLayer(iCurrentLayerID).getName() != "UNITS"))
 			# </advc.004z>
 			# advc.004z: Globe view options clause added
-			if CyInterface().isScoresVisible() and not CyInterface().isCityScreenUp() and (not CyEngine().isGlobeviewUp() or (not bGlobeViewOptions and MainOpt.isScoresInGlobeView())):
+			if CyInterface().isScoresVisible() and not CyInterface().isCityScreenUp() and (not CyEngine().isGlobeviewUp() or (not bGlobeViewOptions and MainOpt.isScoresInGlobeView() and CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_HIDE)):
 
 # BUG - Align Icons - start
 				bAlignIcons = ScoreOpt.isAlignIcons()
@@ -5529,7 +5550,9 @@ class CvMainInterface:
 			if ScoreOpt.isShowAttitude():
 				if not pPlayer.isHuman() and eActivePlayer != ePlayer:
 					iAtt = pPlayer.AI_getAttitude(eActivePlayer)
-					cAtt =  unichr(ord(unichr(g.getSymbolID(FontSymbols.POWER_CHAR) + 4)) + iAtt)
+					#cAtt =  unichr(ord(unichr(g.getSymbolID(FontSymbols.POWER_CHAR) + 4)) + iAtt)
+					# advc.187: I've added the airport icon as a GameFont_75 symbol and that breaks the offset used above. No cells are left for further insertions, so, I guess, at this point, the offset from POWER_CHAR can't break again - but let's do it a bit more cleanly anyway by exposing the leftmost attitude char to Python.
+					cAtt =  unichr(ord(unichr(g.getSymbolID(FontSymbols.WORST_ATTITUDE_CHAR) + iAtt)))
 					szBuffer += cAtt
 					if bAlignIcons:
 						scores.setAttitude(cAtt)

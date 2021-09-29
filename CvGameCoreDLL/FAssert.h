@@ -13,9 +13,6 @@
 #endif
 
 #ifdef FASSERT_ENABLE
-/*  advc.make: Inlining functions with assertions could be a bad choice. Let's
-	at least not force-inline. */
-#define __forceinline __inline
 
 #ifdef WIN32
 

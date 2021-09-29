@@ -30,7 +30,10 @@ bool GroupStepMetric::isValidStep(CvPlot const& kFrom, CvPlot const& kTo,
 			kGroup.canMoveAllTerrain());
 }
 
-// "pathValid_source" in K-Mod
+/*	"pathValid_source" in K-Mod
+	advc.pf (note): Checks based on the path data are problematic in this function.
+	In rare circumstances, the plot danger check can cause the pathfinder to fail;
+	see comment in KmodPathFinder::processChild. */
 bool GroupStepMetric::canStepThrough(CvPlot const& kPlot, CvSelectionGroup const& kGroup,
 	MovementFlags eFlags, int iMoves, int iPathTurns)
 {
@@ -48,7 +51,7 @@ bool GroupStepMetric::canStepThrough(CvPlot const& kPlot, CvSelectionGroup const
 			return false;
 	}
 	// <advc.pf> No new AI routes in human territory (but upgrade to railroad OK)
-	if(eFlags & MOVE_ROUTE_TO)
+	if (eFlags & MOVE_ROUTE_TO)
 	{
 		if(kPlot.getRevealedRouteType(kGroup.getHeadTeam()) == NO_ROUTE &&
 			!kGroup.isHuman())
@@ -228,20 +231,21 @@ bool GroupStepMetric::isValidDest(CvPlot const& kPlot, CvSelectionGroup const& k
 
 //#define PATH_MOVEMENT_WEIGHT    (1024) // advc: moved to the header (for inline function)
 // advc.pf: Was 20 in K-Mod, 100 in BtS.
-#define PATH_RIVER_WEIGHT         (32) // river crossing penalty
+#define PATH_RIVER_WEIGHT	(32) // river crossing penalty
 // advc.pf: Was 200 in K-Mod, 100 in BtS.
-#define PATH_CITY_WEIGHT         (225) // K-Mod
+#define PATH_CITY_WEIGHT			(225) // K-Mod
 // advc.pf: Was 4 in K-Mod, 10 in BtS.
-#define PATH_DEFENSE_WEIGHT        (7) // defence bonus
+#define PATH_DEFENSE_WEIGHT			(7) // defence bonus
 // advc.pf: Was 5 in K-Mod, 3 in BtS.
-#define PATH_TERRITORY_WEIGHT      (9)
-#define PATH_DOW_WEIGHT	           (7) // advc.082
+#define PATH_TERRITORY_WEIGHT		(9)
+#define PATH_DOW_WEIGHT				(7) // advc.082
 // advc.pf: Was 4 in K-Mod, 2 in BtS.
-#define PATH_STEP_WEIGHT           (7)
-#define PATH_STRAIGHT_WEIGHT       (2) // K-Mod: was 1
-//#define PATH_ASYMMETRY_WEIGHT    (1) // K-Mod
+#define PATH_STEP_WEIGHT			(7)
+#define PATH_STRAIGHT_WEIGHT		(2) // K-Mod: was 1
+#define PATH_NOROUTE_WEIGHT			(2) // advc.pf
+//#define PATH_ASYMMETRY_WEIGHT		(1) // K-Mod
 
-// #define PATH_DAMAGE_WEIGHT      (500) // K-Mod (disabled because it isn't used)
+// #define PATH_DAMAGE_WEIGHT      (500) // K-Mod (gets loaded from XML)
 // advc.pf: Was 300 in K-Mod
 #define PATH_COMBAT_WEIGHT         (350) // K-Mod. penalty for having to fight along the way.
 // Note: there will also be other combat penalties added, for example from defence weight and city weight.
@@ -379,7 +383,9 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 		who are just trying to move in a straight line.
 		So let the pathfinding for human groups prefer cardinal movement. */
 	bool const bAIControl = kGroup.AI_isControlled();
-	if (bAIControl)
+	/*	advc.pf: AI map visibility is generally unimportant and a relatively
+		high weight makes it harder to give routes the proper weight (see below). */
+	if (/*bAIControl*/ iExploreModifier < 3)
 	{
 		if (kFrom.getX() == kTo.getX() || kFrom.getY() == kTo.getY())
 			iWorstCost += PATH_STRAIGHT_WEIGHT;
@@ -392,7 +398,9 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 					(1 + ((kTo.getX() + kTo.getY()) % 2));
 		}
 		iWorstCost += (kTo.getX() + kTo.getY() + 1) % 3;
-		iWorstCost++; // advc.pf: Essentially 1 extra
+		/*	advc.pf: Essentially 1 extra step weight for humans
+			(and now also for non-exploring AI) */
+		iWorstCost++;
 	}
 	/*	unfortunately, this simple method may have problems at the world-wrap boundaries.
 		It's difficult to tell when to correct for wrap effects and when not to,
@@ -400,6 +408,12 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 		and so it's no longer possible to tell whether or not the unit started
 		on the other side of the boundary. Drat. */
 
+	/*	<advc.pf> A route at kTo may or may not have decreased our movementCost;
+		either way, it'll likely help on subsequent turns. Preferring routes should
+		also help the pathfinder process the nodes in an order that is efficient and
+		safe (see comment about "dead end" nodes in KmodPathFinder::processChild).*/
+	if (kTo.getRevealedRouteType(eTeam) == NO_ROUTE)
+		iWorstCost += PATH_NOROUTE_WEIGHT; // </advc.pf>
 	// end symmetry breaking.
 
 	if (!kTo.isRevealed(eTeam))
@@ -429,10 +443,8 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 			}
 		}
 		else
-		{
-			// plot not visible. use memory
-			iEnemyDefence = GET_TEAM(eTeam).AI_strengthMemory().get(
-					GC.getMap().plotNum(kTo));
+		{	// plot not visible. use memory
+			iEnemyDefence = GET_TEAM(eTeam).AI_strengthMemory().get(kTo.plotNum());
 		}
 
 		if (iEnemyDefence > 0)
@@ -457,7 +469,7 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 	/*  The AVOID_ENEMY code in the no-moves-left branch below doesn't stop the AI
 		from trying to move _through_ enemy territory and thus declaring war
 		earlier than necessary */
-	if(bAIControl && (eFlags & MOVE_DECLARE_WAR) && eToPlotTeam != NO_TEAM &&
+	if (bAIControl && (eFlags & MOVE_DECLARE_WAR) && eToPlotTeam != NO_TEAM &&
 		eToPlotTeam != eTeam && GET_TEAM(eTeam).AI_isSneakAttackReady(eToPlotTeam))
 	{
 		iWorstCost += PATH_DOW_WEIGHT;
@@ -636,7 +648,7 @@ bool GroupStepMetric::updatePathData(Node& kNode, Node const& kParent,
 			iUnitMoves = std::max(iUnitMoves, 0);
 			iMoves = std::min(iMoves, iUnitMoves);
 		}*/ // BtS
-		/*K-Mod. The original code would give incorrect results for groups
+		/*	K-Mod. The original code would give incorrect results for groups
 			where one unit had more moves but also had higher move cost.
 			(the most obvious example is when a group with 1-move units and 2-move units
 			is moving on a railroad. - In this situation, the original code would consistently
@@ -721,12 +733,12 @@ template bool GroupStepMetric::updatePathData<FAStarNode>(FAStarNode&, FAStarNod
 void GroupPathFinder::setGroup(CvSelectionGroup const& kGroup,
 	MovementFlags eFlags, int iMaxPath, int iHeuristicWeight)
 {	// <advc.test>
-	#ifdef VERIFY_PATHF
+	#if VERIFY_PATHF
 	kLegacyPathf.SetSettings(&kGroup, eFlags, iMaxPath, iHeuristicWeight);
 	#endif //</advc.test>
 	CvSelectionGroup const* pOldGroup = m_stepMetric.getGroup();
 	if (pOldGroup != &kGroup)
-		resetNodes();
+		reset();
 	else
 	{
 		/*	some flags are not relevant to pathfinder.
@@ -742,7 +754,7 @@ void GroupPathFinder::setGroup(CvSelectionGroup const& kGroup,
 			if ((m_stepMetric.getFlags() & eRelevantFlags) != (eFlags & eRelevantFlags) ||
 				GET_TEAM(pOldGroup->getHeadTeam()).AI_isSneakAttackReady())
 			{
-				resetNodes();
+				reset();
 			}
 		}
 	}
@@ -773,10 +785,10 @@ void GroupPathFinder::invalidateGroup(CvSelectionGroup const& kGroup)
 	if (m_stepMetric.getGroup() == &kGroup)
 	{
 		PROFILE("GroupPathFinder::invalidateGroup - resetNodes");
-		resetNodes();
+		reset();
 		m_stepMetric = GroupStepMetric();
 		// <advc.test>
-		#ifdef VERIFY_PATHF
+		#if VERIFY_PATHF
 		kLegacyPathf.SetSettings(NULL, NO_MOVEMENT_FLAGS, -1, -1);
 		#endif // </advc.test>
 	}
@@ -799,7 +811,7 @@ CvPlot& GroupPathFinder::getPathEndTurnPlot() const
 		pNode = pNode->m_pParent;
 	}
 	FAssert(pNode != NULL);
-	#ifndef VERIFY_PATHF // advc.test
+	#if VERIFY_PATHF == 0 // advc.test
 	return pNode->getPlot();
 	// <advc.test>
 	#else
@@ -810,7 +822,7 @@ CvPlot& GroupPathFinder::getPathEndTurnPlot() const
 }
 
 // <advc.test>
-#ifdef VERIFY_PATHF
+#if VERIFY_PATHF
 bool GroupPathFinder::generatePath(CvPlot const& kFrom, CvPlot const& kTo)
 {
 	bool bSuccess = KmodPathFinder<GroupStepMetric,GroupPathNode>::generatePath(kFrom, kTo);
