@@ -887,9 +887,11 @@ void CvGame::initGameHandicap()
 	if (isOption(GAMEOPTION_RISE_FALL))
 	{
 		for (PlayerIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		{
 			m_pRiseFall->setPlayerHandicap(itPlayer->getID(), itPlayer->isHuman(), true);
-	}
-	updateAIHandicap(); // (again)  </advc.708>
+		}
+		updateAIHandicap(); // (again)
+	} // </advc.708>
 }
 
 // advc.127: Set m_eAIHandicap to the average of AI handicaps
