@@ -446,8 +446,8 @@ void CvPlayerAI::AI_doTurnPost()
 		Moved per alexman's suggestion */
 	//AI_doSplit();
 
-	for (int i = 0; i < GC.getNumVictoryInfos(); ++i)
-		AI_launch((VictoryTypes)i);
+	FOR_EACH_ENUM(Victory)
+		AI_launch(eLoopVictory);
 }
 
 

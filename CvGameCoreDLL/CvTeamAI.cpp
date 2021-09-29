@@ -116,28 +116,28 @@ void CvTeamAI::AI_doTurnPost()
 	// advc.650: Only remembered over the course of one game turn
 	m_aeNukeExplosions.clear();
 
-	if(isMajorCiv()) // advc.003n
+	if (isMajorCiv()) // advc.003n
 	{
 		/*	K-Mod. Update the attitude cache for all team members.
 			(Note: attitude use to be updated near the start of CvGame::doTurn.
 			I've moved it here for various reasons.) */
-		for (MemberAIIter it(getID()); it.hasNext(); ++it)
+		for (MemberAIIter itMember(getID()); itMember.hasNext(); ++itMember)
 		{
-			it->AI_updateCloseBorderAttitude();
+			itMember->AI_updateCloseBorderAttitude();
 			/*	advc.130n: Once per turn, rather than updating after
 				every change in religious city population. */
-			it->AI_updateDifferentReligionThreat(NO_RELIGION, false);
-			it->AI_updateAttitude();
+			itMember->AI_updateDifferentReligionThreat(NO_RELIGION, false);
+			itMember->AI_updateAttitude();
 		} // K-Mod end
+		// <advc.109>
+		if (getCurrentEra() > GC.getGame().getStartEra())
+		{
+			// Civs who haven't met half their competitors (rounded down) are lonely
+			int iHasMet = getHasMetCivCount(false);
+			int iYetToMeet = GC.getGame().countCivTeamsAlive() - iHasMet;
+			m_bLonely = (iYetToMeet > iHasMet + 1 && iHasMet <= 2);
+		} // </advc.109>
 	}
-	// <advc.109>
-	if(isMajorCiv() && getCurrentEra() > GC.getGame().getStartEra())
-	{
-		// Civs who haven't met half their competitors (rounded down) are lonely
-		int iHasMet = getHasMetCivCount(false);
-		int iYetToMeet = GC.getGame().countCivTeamsAlive() - iHasMet;
-		m_bLonely = (iYetToMeet > iHasMet + 1 && iHasMet <= 2);
-	} // </advc.109>
 
 	//AI_updateWorstEnemy(); // advc.130e: Covered by AI_updateAttitude now
 
@@ -5628,14 +5628,14 @@ int CvTeamAI::AI_randomCounterChange(int iUpperCap, scaled rProb) const
 	else if (rOurEra < fixp(1.5))
 		iSpeedPercent = (kSpeed.getGrowthPercent() + kSpeed.getGoldenAgePercent()) / 2;
 	rProb *= scaled(100, std::max(50, iSpeedPercent));
-	int r = 0;
+	int iR = 0;
 	if (SyncRandSuccess(rProb))
-		r++;
+		iR++;
 	if (SyncRandSuccess(rProb))
-		r++;
+		iR++;
 	if(iUpperCap < 0)
-		return r;
-	return std::min(r, iUpperCap);
+		return iR;
+	return std::min(iR, iUpperCap);
 } // </advc.130k>
 
 
@@ -5645,7 +5645,7 @@ void CvTeamAI::AI_doCounter()
 	for (TeamIter<ALIVE> it(getID()); it.hasNext(); ++it)
 	{
 		// <advc.130k>
-		TeamTypes eOther = it->getID();
+		TeamTypes const eOther = it->getID();
 		if(eOther == getID())
 			continue;
 		/*  advc.001: Guard added. NO_WARPLAN should imply that the state counter
