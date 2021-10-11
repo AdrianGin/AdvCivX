@@ -2915,10 +2915,9 @@ void CvCity::processBonus(BonusTypes eBonus, int iChange)
 
 void CvCity::processBuilding(BuildingTypes eBuilding, int iChange, bool bObsolete)
 {
-	// <advc>
 	CvBuildingInfo const& kBuilding = GC.getInfo(eBuilding);
 	CvGame const& kGame = GC.getGame();
-	CvPlayer& kOwner = GET_PLAYER(getOwner()); // </advc>
+	CvPlayer& kOwner = GET_PLAYER(getOwner());
 	if (!GET_TEAM(getTeam()).isObsoleteBuilding(eBuilding) || bObsolete)
 	{
 		if (iChange > 0)
@@ -4063,14 +4062,14 @@ int CvCity::cultureStrength(PlayerTypes ePlayer,
 	{
 		// <advc.035>
 		PlayerTypes eLoopOwner = pAdj->getOwner();
-		if(GC.getDefineBOOL(CvGlobals::OWN_EXCLUSIVE_RADIUS) && eLoopOwner != NO_PLAYER &&
+		if (GC.getDefineBOOL(CvGlobals::OWN_EXCLUSIVE_RADIUS) && eLoopOwner != NO_PLAYER &&
 			!GET_TEAM(eLoopOwner).isAtWar(kOwner.getTeam()))
 		{
 			PlayerTypes const eSecondOwner = pAdj->getSecondOwner();
 			if(eSecondOwner != eLoopOwner) // Checked only for easier debugging
 				eLoopOwner = eSecondOwner;
 		} // </advc.035>
-		if(bCanFlip && // advc.101
+		if (bCanFlip && // advc.101
 			eLoopOwner == ePlayer) // advc.035
 		{
 			// <advc.101>
@@ -4089,7 +4088,7 @@ int CvCity::cultureStrength(PlayerTypes ePlayer,
 	int const iConscriptAnger = (getConscriptPercentAnger() * getPopulation()) / 3000;
 	int iAngry = iHurryAnger + iConscriptAnger;
 	iAngry = std::min(iAngry, getPopulation());
-	/*  HurryAnger also factors into grievanceModifier below, but for small cities
+	/*  HurryAnger also factors into GrievanceModifier below, but for small cities
 		(where Slavery is most effective), this constant bonus matters more. */
 	rStrength += 3 * iAngry;
 	/*  K-Mod, 7/jan/11, karadoc
@@ -7807,12 +7806,12 @@ void CvCity::changeDomainProductionModifier(DomainTypes eDomain, int iChange)
 
 int CvCity::countTotalCultureTimes100() const
 {
-	int r = 0;
+	int iR = 0;
 	for (PlayerIter<EVER_ALIVE> it; it.hasNext(); ++it) // advc.099: was ALIVE
 	{
-		r += getCultureTimes100(it->getID());
+		iR += getCultureTimes100(it->getID());
 	}
-	return r;
+	return iR;
 }
 
 
@@ -7963,29 +7962,27 @@ void CvCity::setCulture(PlayerTypes ePlayer, int iNewValue, bool bPlots,
 	setCultureTimes100(ePlayer, 100 * iNewValue, bPlots, bUpdatePlotGroups);
 }
 
+// K-Mod, 26/sep/10: fixed so that plots actually get the culture difference
 void CvCity::setCultureTimes100(PlayerTypes ePlayer, int iNewValue, bool bPlots,
 	bool bUpdatePlotGroups)
 {
-	//if (getCultureTimes100(ePlayer) != iNewValue)
-	// K-Mod, 26/sep/10: fixed so that plots actually get the culture difference
 	int const iOldValue = getCultureTimes100(ePlayer);
-	if (iNewValue != iOldValue)
+	if (iNewValue == iOldValue)
+		return;
+	m_aiCulture.set(ePlayer, iNewValue);
+	FAssert(getCultureTimes100(ePlayer) >= 0);
+	updateCultureLevel(bUpdatePlotGroups);
+	if (bPlots)
 	{
-		m_aiCulture.set(ePlayer, iNewValue);
-		FAssert(getCultureTimes100(ePlayer) >= 0);
-		updateCultureLevel(bUpdatePlotGroups);
-		if (bPlots)
-		{
-			//doPlotCulture(true, ePlayer, 0);
-			//doPlotCulture(true, ePlayer, (iNewValue - iOldValue) / 100);
-			doPlotCultureTimes100(true, ePlayer, iNewValue - iOldValue, false);
-			/*	note: this function no longer applies free city culture.
-				also, note that if a city's culture is decreased to zero,
-				there will probably still be some residual plot culture around the city.
-				this is because the culture level on the way up
-				will be higher than it is on the way down. */
-		}
-	} // K-Mod end
+		//doPlotCulture(true, ePlayer, 0);
+		//doPlotCulture(true, ePlayer, (iNewValue - iOldValue) / 100);
+		doPlotCultureTimes100(true, ePlayer, iNewValue - iOldValue, false);
+		/*	note: this function no longer applies free city culture.
+			also, note that if a city's culture is decreased to zero,
+			there will probably still be some residual plot culture around the city.
+			this is because the culture level on the way up
+			will be higher than it is on the way down. */
+	}
 }
 
 
@@ -9109,7 +9106,7 @@ void CvCity::setHasReligion(ReligionTypes eReligion, bool bNewValue, bool bAnnou
 	PlayerTypes eSpreadPlayer) // advc.106e
 {
 	if (isHasReligion(eReligion) == bNewValue)
-		return; // advc
+		return;
 
 	FOR_EACH_ENUM(VoteSource)
 		processVoteSource(eLoopVoteSource, false);
@@ -9296,7 +9293,7 @@ void CvCity::processVoteSource(VoteSourceTypes eVoteSource, bool bActive)
 		return;
 
 	if (!GC.getGame().isDiploVote(eVoteSource))
-		return; // advc
+		return;
 
 	ReligionTypes const eReligion = GC.getGame().getVoteSourceReligion(eVoteSource);
 	{
@@ -9308,7 +9305,7 @@ void CvCity::processVoteSource(VoteSourceTypes eVoteSource, bool bActive)
 		}
 	}
 	if (eReligion == NO_RELIGION || !isHasReligion(eReligion))
-		return; // advc
+		return;
 
 	FOR_EACH_ENUM(Yield)
 	{

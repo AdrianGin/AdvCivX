@@ -130,7 +130,7 @@ private:
 
 	class DistanceTable
 	{
-		/*	Internal ids so that m_aaiDistances can be a good deal smaller than
+		/*	Internal ids so that m_distances can be a good deal smaller than
 			the map dimensions */
 		enum SourceID { NOT_A_SOURCE = -1 };
 		enum DestinationID { NOT_A_DESTINATION = -1 };

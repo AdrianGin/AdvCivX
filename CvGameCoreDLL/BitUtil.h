@@ -11,19 +11,19 @@
 namespace BitUtil
 {
 	template <typename T>
-	bool GetBit(const T x, const int y) // advc: renamed from "HasBit"
+	__inline bool GetBit(const T x, const int y) // advc: renamed from "HasBit"
 	{
 		return (x & ((T)1U << y)) != 0;
 	}
 
 	template <typename T>
-	T SetBit(T &x, const int y)
+	__inline T SetBit(T &x, const int y)
 	{
 		return x = (T)(x | ((T)1U << y));
 	}
 
 	template <typename T>
-	T ClrBit(T &x, const int y)
+	__inline T ClrBit(T &x, const int y)
 	{
 		return x = (T)(x & ~((T)1U << y));
 	}

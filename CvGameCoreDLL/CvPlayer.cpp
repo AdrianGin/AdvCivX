@@ -1407,7 +1407,7 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 			pUnit->kill(false, getID());
 		}
 	}
-	if (bConquest) // Force unowned after conquest
+	if (bConquest) // Force to be unowned after conquest
 	{
 		int const iRange = pOldCity->getCultureLevel();
 		for (SquareIter itPlot(kCityPlot, iRange, false); itPlot.hasNext(); ++itPlot)
@@ -1760,7 +1760,7 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 	FOR_EACH_ENUM2(Religion, eReligion)
 	{
 		if (abHasReligion.get(eReligion))
-			kNewCity.setHasReligion(eReligion, true, false, true);
+			kNewCity.setHasReligion(eReligion, true, false);
 		if (abHolyCity.get(eReligion))
 			GC.getGame().setHolyCity(eReligion, &kNewCity, false);
 	}
@@ -8114,10 +8114,8 @@ void CvPlayer::changeStateReligionCount(int iChange)
 		return;
 	// religion visibility now part of espionage
 	//GC.getGame().updateCitySight(false, true);
-
 	m_iStateReligionCount += iChange;
 	FAssert(getStateReligionCount() >= 0);
-
 	// religion visibility now part of espionage
 	//GC.getGame().updateCitySight(true, true);
 
@@ -9244,7 +9242,7 @@ void CvPlayer::setCurrentEra(EraTypes eNewValue)
 
 void CvPlayer::setLastStateReligion(ReligionTypes eNewReligion)
 {
-	if(getLastStateReligion() == eNewReligion)
+	if (getLastStateReligion() == eNewReligion)
 		return;
 	FAssert(!isBarbarian()); // advc.003n
 	// religion visibility now part of espionage
@@ -10373,13 +10371,13 @@ void CvPlayer::setCivics(CivicOptionTypes eCivicOption, CivicTypes eNewValue)
 		bool const bRenounce = (!GC.getInfo(getCivics(eCivicOption)).isStateReligion() &&
 				GC.getInfo(eOldCivic).isStateReligion() && bWasStateReligion &&
 				getLastStateReligion() != NO_RELIGION);
-		if(bRenounce)
+		if (bRenounce)
 		{
 			szBuffer += L" " +  gDLL->getText("TXT_KEY_MISC_AND_RENOUNCE_RELIGION",
 					GC.getInfo(getLastStateReligion()).getTextKeyWide());
 		}
 		else // </advc.106>
-		if(eOldCivic != getCivilization().getInitialCivic(eCivicOption))
+		if (eOldCivic != getCivilization().getInitialCivic(eCivicOption))
 		{
 			szBuffer += L" " + gDLL->getText("TXT_KEY_MISC_AND_ABOLISH_CIVIC",
 					GC.getInfo(eOldCivic).getTextKeyWide());

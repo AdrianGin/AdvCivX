@@ -4270,10 +4270,10 @@ int CvTeamAI::AI_enmityValue(TeamTypes eEnemy) const
 	{
 		return 0;
 	}
-	int r = 100 - AI_getAttitudeVal(eEnemy);
+	int iR = 100 - AI_getAttitudeVal(eEnemy);
 	if(isAtWar(eEnemy) && AI_getWarPlan(eEnemy) != WARPLAN_DOGPILE)
-		r += 100;
-	return r;
+		iR += 100;
+	return iR;
 } // </advc.130p>
 
 

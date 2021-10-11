@@ -750,7 +750,9 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 
 bool CvDLLWidgetData::executeAction(CvWidgetDataStruct &widgetDataStruct)
 {
-	bool bHandled = false; // Right now general bHandled = false;  We can specific-case this to true later. Game will run with this = false;
+	/*	Right now general bHandled = false;  We can specific-case this to true later.
+		Game will run with this = false; */
+	bool bHandled = false;
 	// <advc.003y>
 	CvPythonCaller const& py = *GC.getPythonCaller();
 	int const iData1 = widgetDataStruct.m_iData1;
