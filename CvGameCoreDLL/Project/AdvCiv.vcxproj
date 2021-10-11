@@ -40,6 +40,7 @@
     <ClCompile Include="..\AgentIterator.cpp" />
     <ClCompile Include="..\AgentIteratorTest.cpp" />
     <ClCompile Include="..\AIStrengthMemoryMap.cpp" />
+    <ClCompile Include="..\ArithmeticTraits.cpp" />
     <ClCompile Include="..\ArmamentForecast.cpp" />
     <ClCompile Include="..\BarbarianWeightMap.cpp" />
     <ClCompile Include="..\BBAILog.cpp" />

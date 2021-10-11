@@ -667,7 +667,9 @@ DEFINE_ENUM_MAP_BASE_VALUE_CONSTANT(V, defaultValue, vDEFAULT);
 template<class Derived, typename E, class V, class CV, int iDEFAULT>
 typename EnumMapBase<Derived,E,V,CV,iDEFAULT>::CompactV const
 EnumMapBase<Derived,E,V,CV,iDEFAULT>::cvDEFAULT =
-(typename EnumMapBase<Derived,E,V,CV,iDEFAULT>::CompactV)vDEFAULT;
+	(EnumMapBase<Derived,E,V,CV,iDEFAULT>::bBIT_BLOCKS && vDEFAULT != 0 ?
+	arithm_traits<CompactV>::max :
+	(typename EnumMapBase<Derived,E,V,CV,iDEFAULT>::CompactV)vDEFAULT);
 
 /*	ListEnumMap: Keeps a list of key-value pairs whose values differ from the
 	default value. This allows for fast iteration over non-default data, wastes
