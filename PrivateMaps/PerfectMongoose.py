@@ -3478,7 +3478,7 @@ class TerrainMap:
 		steppePlainsPercent = mc.PlainsPercent * 0.75
 		junglePlainsPercent = mc.PlainsPercent - steppePlainsPercent
 		junglePlainsThreshold = FindValueFromPercent(warmTiles, warmLength, 1 - junglePlainsPercent, False)
-		self.plainsRainfall = FindValueFromPercent(warmTiles, warmLength, steppePlainsPercent, False) # </advc.021b>
+		self.plainsRainfall = FindValueFromPercent(warmTiles, warmLength, steppePlainsPercent, False) # </advc>
 		self.jungleRainfall = self.plainsRainfall * mc.JungleFactor
 		for y in range(mc.height):
 			for x in range(mc.width):
@@ -4136,7 +4136,7 @@ class RiverMap:
 		#of the rainfall from rm.rainMap
 		worldSz = CyMap().getWorldSize() # advc
 		for y in range(mc.height):
-			# <advc> Kludge for making the extreme latitudes less riverine. Those river exacerbate the problem with (supposed) rainforests being highly productive tiles, and such rivers weren't as important to human habitation than rivers through temperate areas or through deserts. Somehow, it seems that rivers tend to be placed in higher latitudes on larger maps. Hence the worldSz adjustment.
+			# <advc> Kludge for making the extreme latitudes less riverine. Those river exacerbate the problem with (supposed) rainforests being highly productive tiles, and such rivers weren't as important to human habitation as rivers through temperate areas or through deserts. Somehow, it seems that rivers tend to be placed in higher latitudes on larger maps. Hence the worldSz adjustment.
 			latitudeMult = 1.0
 			absLat = abs(em.GetLatitudeForY(y))
 			vicinityToEquator = (mc.tropicsLatitude - absLat) / float(mc.tropicsLatitude)
@@ -4168,7 +4168,7 @@ class RiverMap:
 							total += rfVal
 							count += 1.0
 				self.averageRainfallMap[i] = total / count
-				# <advc> Another kludge pretty much. Spreads rivers out more, it seems.
+				# <advc> Another kludge, pretty much. Spreads rivers out more, it seems.
 				if mc.ClimateSystem == 0:
 					# Note that increasing rainfall values like this (or decreasing them through latitudeMult) requires adjustments to riverThreshold as well.
 					self.averageRainfallMap[i] += 4 * (maxRf - minRf) # </advc>
@@ -6661,7 +6661,7 @@ def addRivers():
 	CyPythonMgr().allowDefaultImpl() # </advc>
 	if mc.RiverGenerator != 0:
 		return
-	# <advc> Cut from addLakes. Let PM
+	# <advc> Cut from addLakes
 	''' # We no longer let the DLL place rivers first; no need to clear them.
 	for y in range(mc.height):
 		for x in range(mc.width):
@@ -6930,7 +6930,7 @@ def findStartingArea(argsList):
 	plot = player.getStartingPlot()
 	if not plot or plot.isNone(): # Don't run starting plot finder more than once(!)
 		sf.SetStartingPlots()
-	# Tell SPI to respect the starting areas chosen by PM. (One area per-player- however, SPI may still move players between starting areas; i.e. only the New-Old World split is handled by PM.)
+	# Tell SPI to respect the starting areas chosen by PM. (One area per-player - however, SPI may still move players between starting areas; i.e. only the New-Old World split is handled by PM.)
 	plot = player.getStartingPlot()
 	if plot and not plot.isNone():
 		return plot.getArea()
