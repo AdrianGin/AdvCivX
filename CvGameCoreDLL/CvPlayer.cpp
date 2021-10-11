@@ -14348,8 +14348,15 @@ void CvPlayer::read(FDataStreamBase* pStream)
 
 	if (!isBarbarian())
 	{
-		// Get the NetID from the initialization structure
-		setNetID(gDLL->getAssignedNetworkID(getID()));
+		if (GC.getGame().isGameMultiPlayer()) // advc.127c
+		{
+			// Get the NetID from the initialization structure
+			setNetID(gDLL->getAssignedNetworkID(getID()));
+		}
+		/*	advc.127c: When loading from within a game and the active player
+			in the loaded game differs from the one in the abandoned game,
+			the EXE doesn't seem to provide the proper net IDs. */
+		else setNetID(isActive() ? 0 : -1);
 	}
 
 	pStream->Read(&m_iPopRushHurryCount);
