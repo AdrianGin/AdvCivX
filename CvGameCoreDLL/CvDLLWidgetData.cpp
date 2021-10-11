@@ -693,6 +693,7 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 		break; // </advc.106i>
 	// BULL - Trade Hover - start
 	case WIDGET_TRADE_ROUTES:
+	case WIDGET_TRADE_ROUTES_SCOREBOARD: // advc.085
 		parseTradeRoutes(widgetDataStruct, szBuffer);
 		break; // BULL - Trade Hover - end
 	// BULL - Food Rate Hover - start
@@ -738,7 +739,7 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 		if((widgetDataStruct.m_eWidgetType == aeExpandTypes[i] &&
 			widgetDataStruct.m_iData2 == 0) ||
 			// Need iData2 for sth. else; must only use these WidgetTypes on the scoreboard.
-			widgetDataStruct.m_eWidgetType == WIDGET_TRADE_ROUTES ||
+			widgetDataStruct.m_eWidgetType == WIDGET_TRADE_ROUTES_SCOREBOARD ||
 			widgetDataStruct.m_eWidgetType == WIDGET_POWER_RATIO)
 		{
 			GET_PLAYER(getActivePlayer()).setScoreboardExpanded(true);
