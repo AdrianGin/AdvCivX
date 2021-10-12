@@ -4184,7 +4184,7 @@ int CvCity::cultureStrength(PlayerTypes ePlayer,
 	} /* No state religion is still better than some oppressive state religion that
 		 the city doesn't share. */
 	else if(eOwnerStateReligion == NO_RELIGION && rGrievanceModifier > 0)
-		rGrievanceModifier += rREVOLT_DEFENSE_STATE_RELIGION_MODIFIER / 2;
+		rGrievanceModifier += rREVOLT_DEFENSE_STATE_RELIGION_MODIFIER * fixp(3/5.);
 	if (paGrievances != NULL && rGrievanceModifier > 0)
 		paGrievances->push_back(GRIEVANCE_RELIGION);
 	rGrievanceModifier += rREVOLT_TOTAL_CULTURE_MODIFIER - 1;
