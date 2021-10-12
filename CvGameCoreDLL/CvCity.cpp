@@ -11501,7 +11501,25 @@ void CvCity::read(FDataStreamBase* pStream)
 	// <advc.201>, advc.200, advc.098
 	if (uiFlag < 13)
 	{
-		updateBuildingCommerce(COMMERCE_CULTURE);
+		bool bUpdate = true;
+		SpecialBuildingTypes eCath = (SpecialBuildingTypes)GC.getInfoTypeForString(
+				"SPECIALBUILDING_CATHEDRAL");
+		if (eCath != NO_SPECIALBUILDING &&
+			getCommerceRateModifier(COMMERCE_CULTURE) >= 40) // to save time
+		{
+			CvCivilization const& kCiv = getCivilization();
+			for (int i = 0; i < kCiv.getNumBuildings(); i++)
+			{
+				if (getNumBuilding(kCiv.buildingAt(i)) <= 0)
+					continue;
+				if (GC.getInfo(kCiv.buildingAt(i)).getSpecialBuildingType() != eCath)
+					continue;
+				changeCommerceRateModifier(COMMERCE_CULTURE, 10);
+				bUpdate = false;
+			}
+		}
+		if (bUpdate)
+			updateBuildingCommerce(COMMERCE_CULTURE);
 		if (uiFlag < 11)
 		{
 			CorporationTypes eCreativeConstr = (CorporationTypes)
