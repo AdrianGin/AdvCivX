@@ -7872,7 +7872,8 @@ int CvPlayerAI::AI_getExpansionistAttitude(PlayerTypes ePlayer) const
 		rCitiesPerCiv.decreaseTo(3 * (1 + rEra));
 	scaled rPersonalFactor = AI_expansionistHate(ePlayer);
 	return -std::min(4,
-			(rPersonalFactor * fixp(2.4) * rForeignCities / rCitiesPerCiv).round());
+			(rPersonalFactor * fixp(8/3.) * rForeignCities / rCitiesPerCiv).
+			round());
 }
 
 // advc.130n:
