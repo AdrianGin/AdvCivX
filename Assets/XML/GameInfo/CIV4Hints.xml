@@ -692,6 +692,10 @@
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_51</Description>
 		</HintInfo>
+		<!-- Skip 52 -->
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_53</Description>
+		</HintInfo>
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_1</Description>
 		</HintInfo>
@@ -836,6 +840,12 @@
 		</HintInfo>
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_51</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_52</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_53</Description>
 		</HintInfo>
 	</HintInfos>
 </Civ4Hints>
