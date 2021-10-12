@@ -5237,10 +5237,17 @@ bool CvUnit::spread(ReligionTypes eReligion)
 		bool bSuccess;
 		iSpreadProb += (((GC.getNumReligionInfos() - pCity->getReligionCount()) * (100 - iSpreadProb)) / GC.getNumReligionInfos());*/ // BtS
 		// K-Mod. A more dynamic formula
-		int iPresentReligions = pCity->getReligionCount();
-		int iMissingReligions = GC.getNumReligionInfos() - iPresentReligions;
-		int iSpreadProb = iPresentReligions * (m_pUnitInfo->getReligionSpreads(eReligion) + pCity->getPopulation())
-			+ iMissingReligions * std::max(100, 100 - 10 * iPresentReligions);
+		int const iPresentReligions = pCity->getReligionCount();
+		int const iMissingReligions = GC.getNumReligionInfos() - iPresentReligions;
+		/*	advc.173: Don't take into account population. Meaning, along with the
+			unfixed bug below, that the formula really works like in BtS again. */
+		int const iPopulation = 10;//pCity->getPopulation();
+		int iSpreadProb = iPresentReligions *
+				(m_pUnitInfo->getReligionSpreads(eReligion) + iPopulation)
+				/*	advc.173: No functional change. The max is apparently a bug,
+					but I'm not going to fix it b/c I think that would make
+					failure too likely. */
+				+ iMissingReligions * 100;//std::max(100, 100 - 10 * iPresentReligions)
 		iSpreadProb /= GC.getNumReligionInfos();
 
 		bool bSuccess;
