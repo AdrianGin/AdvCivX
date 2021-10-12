@@ -11528,6 +11528,54 @@ void CvCity::read(FDataStreamBase* pStream)
 				updateCorporationCommerce(COMMERCE_CULTURE);
 		}
 	} // </advc.201>
+	// <advc.179>
+	if (uiFlag < 14)
+	{
+		VoteSourceTypes eAP = (VoteSourceTypes)GC.getInfoTypeForString("DIPLOVOTE_POPE");
+		if (eAP != NO_VOTESOURCE)
+		{
+			ReligionTypes eAPReligion = GC.getGame().getVoteSourceReligion(eAP);
+			if (eAPReligion != NO_RELIGION && isHasReligion(eAPReligion) &&
+				GET_PLAYER(getOwner()).isLoyalMember(eAP) && GC.getGame().isDiploVote(eAP))
+			{
+				FOR_EACH_ENUM(Building)
+				{
+					if (GC.getInfo(eLoopBuilding).getReligionType() == eAPReligion)
+					{
+						changeBuildingYieldChange(CvCivilization::buildingClass(eLoopBuilding),
+								YIELD_PRODUCTION, -1);
+					}
+				}
+			}
+		}
+		BuildingTypes eAPBuilding = (BuildingTypes)GC.getInfoTypeForString("BUILDING_APOSTOLIC_PALACE");
+		SpecialistTypes ePriest = (SpecialistTypes)GC.getInfoTypeForString("SPECIALIST_PRIEST");
+		if (eAPBuilding != NO_BUILDING && ePriest != NO_SPECIALIST)
+		{
+			char const* aszShrineNames[] = { "BUILDING_JEWISH_SHRINE", "BUILDING_CHRISTIAN_SHRINE",
+					"BUILDING_ISLAMIC_SHRINE", "BUILDING_HINDU_SHRINE", "BUILDING_BUDDHIST_SHRINE",
+					"BUILDING_CONFUCIAN_SHRINE", "BUILDING_TAOIST_SHRINE" };
+			for (int i = 0; i < ARRAYSIZE(aszShrineNames); i++)
+			{
+				BuildingTypes eShrine = (BuildingTypes)GC.getInfoTypeForString(aszShrineNames[i]);
+				if (eShrine == NO_BUILDING)
+					continue;
+				// Shrines lose one priest slot each
+				changeMaxSpecialistCount(ePriest, -1 * getNumBuilding(eShrine));
+			}
+			changeMaxSpecialistCount(ePriest, 2 * getNumBuilding(eAPBuilding));
+		} // </advc.179>
+		// <advc.exp.1>
+		// (Change to MAX_CITY_COUNT_FOR_MAINTENANCE can only affect large civs)
+		if (GET_PLAYER(getOwner()).getNumCities() > 20 ||
+			// <advc.exp.2> (Changes to the unique buildings)
+			getCivilizationType() == GC.getInfoTypeForString("CIVILIZATION_ZULU") ||
+			getCivilizationType() == GC.getInfoTypeForString("CIVILIZATION_HOLY_ROMAN"))
+			// </advc.exp.2>
+		{
+			updateMaintenance();
+		}
+	} // </advc.exp.1>
 }
 
 void CvCity::write(FDataStreamBase* pStream)
@@ -11547,7 +11595,8 @@ void CvCity::write(FDataStreamBase* pStream)
 	//uiFlag = 10; // advc.911a, advc.908b
 	//uiFlag = 11; // advc.201, advc.098
 	//uiFlag = 12; // advc.enum: new enum map save behavior
-	uiFlag = 13; // advc.201: Cathedrals restored to BtS stats
+	//uiFlag = 13; // advc.201: Cathedrals restored to BtS stats
+	uiFlag = 14; // advc.179, advc.exp.1, advc.exp.2
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);
