@@ -124,9 +124,6 @@ void CvTeamAI::AI_doTurnPost()
 		for (MemberAIIter itMember(getID()); itMember.hasNext(); ++itMember)
 		{
 			itMember->AI_updateCloseBorderAttitude();
-			/*	advc.130n: Once per turn, rather than updating after
-				every change in religious city population. */
-			itMember->AI_updateDifferentReligionThreat(NO_RELIGION, false);
 			itMember->AI_updateAttitude();
 		} // K-Mod end
 		// <advc.109>
@@ -5036,7 +5033,7 @@ void CvTeamAI::write(FDataStreamBase* pStream)
 	//uiFlag = 4; // advc.158
 	//uiFlag = 5; // advc.650
 	//uiFlag = 6; // advc.enum: new enum map save behavior
-	uiFlag = 7; // advc.130n (Now handled by CvPlayerAI)
+	uiFlag = 7; // advc.130n (Now handled w/o extra data)
 	pStream->Write(uiFlag);
 
 	m_aiWarPlanStateCounter.write(pStream);

@@ -8100,28 +8100,23 @@ void CvCity::setRevealed(TeamTypes eTeam, bool bNewValue)
 {
 	if(isRevealed(eTeam) == bNewValue)
 		return;
-
+	// <advc.130n>
+	for (MemberAIIter itMember(eTeam); itMember.hasNext(); ++itMember)
+		itMember->AI_updateIdeologyAttitude(-1, *this); // </advc.130n>
 	m_abRevealed.set(eTeam, bNewValue);
-
+	// <advc.130n>
+	for (MemberAIIter itMember(eTeam); itMember.hasNext(); ++itMember)
+		itMember->AI_updateIdeologyAttitude(1, *this); // </advc.130n>
 	// K-Mod
 	if (bNewValue)
 	{
 		GET_TEAM(eTeam).makeHasSeen(getTeam());
-		// <advc.130n>
-		if (GET_TEAM(getTeam()).isMajorCiv() && GET_TEAM(eTeam).isMajorCiv())
+		// <advc.130w>
+		if (GET_TEAM(eTeam).isMajorCiv() &&
+			GET_TEAM(getTeam()).isMajorCiv() &&
+			getPlot().findHighestCultureTeam() != getTeam())
 		{
-			FOR_EACH_ENUM(Religion)
-			{
-				if (!isHasReligion(eLoopReligion))
-					continue;
-				for (MemberAIIter itMember(eTeam); itMember.hasNext(); ++itMember)
-				{
-					itMember->AI_updateDifferentReligionThreat(eLoopReligion);
-				}
-			} // </advc.130n>
-			// <advc.130w>
-			if (getPlot().findHighestCultureTeam() != getTeam())
-				GET_TEAM(eTeam).AI_updateAttitude(getTeam());
+			GET_TEAM(eTeam).AI_updateAttitude(getTeam());
 		} // </advc.130w>
 	} // K-Mod end
 
@@ -9119,9 +9114,19 @@ void CvCity::setHasReligion(ReligionTypes eReligion, bool bNewValue, bool bAnnou
 
 	FOR_EACH_ENUM(VoteSource)
 		processVoteSource(eLoopVoteSource, false);
-
+	// <advc.130n>
+	for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	{
+		if (isRevealed(itPlayer->getTeam()))
+			itPlayer->AI_updateIdeologyAttitude(-1, *this);
+	} // </advc.130n>
 	m_abHasReligion.set(eReligion, bNewValue);
-
+	// <advc.130n>
+	for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	{
+		if (isRevealed(itPlayer->getTeam()))
+			itPlayer->AI_updateIdeologyAttitude(1, *this);
+	} // </advc.130n>
 	FOR_EACH_ENUM(VoteSource)
 		processVoteSource(eLoopVoteSource, true);
 
@@ -9217,15 +9222,7 @@ void CvCity::setHasReligion(ReligionTypes eReligion, bool bNewValue, bool bAnnou
 		}
 	} // K-Mod end
 	if (bNewValue)
-	{
 		CvEventReporter::getInstance().religionSpread(eReligion, kOwner.getID(), this);
-		// <advc.130n>
-		for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
-		{
-			if (isRevealed(itPlayer->getTeam()))
-				itPlayer->AI_updateDifferentReligionThreat(eReligion);
-		} // </advc.130n>
-	}
 	else CvEventReporter::getInstance().religionRemove(eReligion, kOwner.getID(), this);
 }
 
