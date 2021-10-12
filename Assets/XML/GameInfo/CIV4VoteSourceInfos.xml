@@ -27,7 +27,8 @@
 			<Civic>NONE</Civic>
 			<ReligionYields>
 				<iYield>0</iYield>
-				<iYield>2</iYield>
+				<!-- advc.179: was 2 -->
+				<iYield>1</iYield>
 				<iYield>0</iYield>
 			</ReligionYields>
 			<ReligionCommerces/>
