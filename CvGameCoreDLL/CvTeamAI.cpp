@@ -4262,10 +4262,12 @@ int CvTeamAI::AI_enmityValue(TeamTypes eEnemy) const
 		return 0;
 	CvTeam const& kEnemy = GET_TEAM(eEnemy);
 	FAssert(eEnemy != getID() && !kEnemy.isMinorCiv() && kEnemy.isHasMet(getID()));
-	if(!kEnemy.isAlive() ||
+	// advc.148: Rather than RELATIONS_THRESH_ANNOYED
+	int const iAttitudeThresh = GC.getDefineINT(CvGlobals::RELATIONS_THRESH_WORST_ENEMY);
+	if (!kEnemy.isAlive() ||
 		kEnemy.isCapitulated() || // advc.130d
-		((AI_getAttitude(eEnemy) >= ATTITUDE_CAUTIOUS ||
-		AI_getAttitude(eEnemy, false) >= ATTITUDE_CAUTIOUS) && // advc.130d
+		((AI_getAttitudeVal(eEnemy) > iAttitudeThresh ||
+		AI_getAttitudeVal(eEnemy, false) > iAttitudeThresh) && // advc.130d
 		!isAtWar(eEnemy)))
 	{
 		return 0;
