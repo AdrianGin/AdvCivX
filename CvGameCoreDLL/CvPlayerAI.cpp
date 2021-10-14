@@ -18254,8 +18254,6 @@ int CvPlayerAI::AI_ideologyAttitudeChange(PlayerTypes eOther, IdeologicMarker eM
 		}
 	}
 	scaled rRatio = fixp(0.5);
-	/*  Since we're not counting us and them, the total can be 0. Treat this case
-		as if 50% of the other civs were sharing the ideology. */
 	if (iTotal > 0)
 		rRatio = scaled(iMatching, iTotal);
 	scaled const rWeight = (eMarker == SAME_RELIGION ? fixp(0.5) :
@@ -22016,7 +22014,7 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 	bool bLiberateForFree, int* piTradeVal) const
 {
 	//PROFILE_FUNC(); // (Rarely called so far; not a concern at all.)
-	// BtS code cut from AI_doDIplo. Replacement below.
+	// BtS code cut from AI_doDiplo. Replacement below.
 	/*if (kCity.getPreviousOwner() == eToPlayer)
 		return false;
 	int iCount = 0;
