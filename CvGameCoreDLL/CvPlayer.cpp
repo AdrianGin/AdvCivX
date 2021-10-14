@@ -514,6 +514,9 @@ void CvPlayer::reset(PlayerTypes eID, bool bConstructorCall)
 
 	if (!bConstructorCall)
 	{
+		// <advc> Future-proofing
+		if (isBarbarian())
+			m_abLoyalMember.setAll(false); // </advc>
 		// <advc.003p>
 		FAssert(m_aszBonusHelp == NULL);
 		m_aszBonusHelp = new CvWString*[GC.getNumBonusInfos()];
@@ -14135,6 +14138,9 @@ void CvPlayer::read(FDataStreamBase* pStream)
 		m_aeeiSpecialistExtraYield.readArray<int>(pStream);
 		m_aeeiImprovementYieldChange.readArray<int>(pStream);
 	}
+	// <advc> Future-proofing
+	if (isBarbarian())
+		m_abLoyalMember.setAll(false); // </advc>
 	m_groupCycle.Read(pStream);
 	m_researchQueue.Read(pStream);
 

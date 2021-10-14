@@ -12600,6 +12600,8 @@ void CvCity::setBuildingYieldChange(BuildingClassTypes eBuildingClass,
 {
 	BuildingTypes eBuilding = getCivilization().getBuilding(eBuildingClass); // advc.003w
 	// advc: Simplified this function a lot
+	if (eBuilding == NO_BUILDING)
+		return;
 	int const iOldChange = m_aeiiBuildingYieldChange.get(eBuildingClass, eYield);
 	if (iOldChange == iChange)
 		return;
@@ -12624,6 +12626,8 @@ void CvCity::setBuildingCommerceChange(BuildingClassTypes eBuildingClass,
 	CommerceTypes eCommerce, int iChange)
 {	// advc: Simplified this function a lot
 	BuildingTypes eBuilding = getCivilization().getBuilding(eBuildingClass);
+	if (eBuilding == NO_BUILDING)
+		return;
 	int const iOldChange = m_aeiiBuildingCommerceChange.get(eBuildingClass, eCommerce);
 	if (iOldChange == iChange)
 		return;
