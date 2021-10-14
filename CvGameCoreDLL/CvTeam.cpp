@@ -1515,17 +1515,20 @@ void CvTeam::meet(TeamTypes eTeam, bool bNewDiplo,
 		GET_TEAM(getMasterTeam()).meet(eTeam, bNewDiplo, /* advc.071: */ pData);
 	if (kTeam.isAVassal())
 		GET_TEAM(kTeam.getMasterTeam()).meet(getID(), bNewDiplo, /* advc.071: */ pData);
-	// <advc.130c> Not just toward eTeam; anyone's known rank might have changed.
-	for (TeamIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(getID());
-		itOther.hasNext(); ++itOther) // </advc.130c>
+	if (isMajorCiv()) // advc.130c
 	{
-		AI().AI_updateAttitude(itOther->getID());
-	}
-	// <advc.130c> Not just toward eTeam; anyone's known rank might have changed.
-	for (TeamIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(eTeam);
-		itOther.hasNext(); ++itOther) // </advc.130c>
-	{
-		kTeam.AI().AI_updateAttitude(itOther->getID());
+		// <advc.130c> Not just toward eTeam; anyone's known rank might have changed.
+		for (TeamIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(getID());
+			itOther.hasNext(); ++itOther) // </advc.130c>
+		{
+			AI().AI_updateAttitude(itOther->getID());
+		}
+		// <advc.130c> Not just toward eTeam; anyone's known rank might have changed.
+		for (TeamIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(eTeam);
+			itOther.hasNext(); ++itOther) // </advc.130c>
+		{
+			kTeam.AI().AI_updateAttitude(itOther->getID());
+		}
 	} // </advc.001>
 }
 
