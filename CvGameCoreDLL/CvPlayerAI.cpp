@@ -22033,29 +22033,51 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 	bool const bCoop = (getMasterTeam() == kToPlayer.getMasterTeam() &&
 			!GET_TEAM(kToPlayer.getTeam()).isVassal(getTeam()));
 	CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
+	CvTeam const& kToTeam = GET_TEAM(eToPlayer);
+	bool const bNonColonialVassal = (kToTeam.isVassal(getTeam()) &&
+			!kOurTeam.isParent(kToTeam.getID()));
+	if (bNonColonialVassal && kToTeam.isCapitulated() &&
+		/*	Even if they pay for the city, it's probably not worth letting a
+			a capitulated vassal go free. */
+		kToTeam.canVassalRevolt(getTeam(), false, NUM_CITY_PLOTS, kCity.getPopulation()))
+	{
+		return false;
+	}
 	int iAttitudeLevel = AI_getAttitude(eToPlayer, !bCoop);
 	bool bCede = false;
 	if (bLiberateForFree) // Some fast checks upfront
-	{	/*	Vassal who reconquers its master's or sibling vassal's city
+	{
+		if (bNonColonialVassal)
+		{
+			int iToTeamCities = kToTeam.getNumCities() + 1; // incl. kCity
+			// This is a useful check also for voluntary vassals
+			if (kToTeam.canVassalRevolt(getTeam(), false,
+				// (Should perhaps play it less safely when iKeepVal is negative?)
+				(3 * NUM_CITY_PLOTS) / 2 + iToTeamCities * 4,
+				kCity.getPopulation() + iToTeamCities * 4))
+			{
+				return false;
+			}
+		}
+		/*	Vassal who reconquers its master's or sibling vassal's city
 			shouldn't stubbornly hold onto it */
-		if (bCoop)
+		else if (bCoop)
 			bCede = true;
 		else
 		{
 			if (isAVassal()) // Can happen through AI_conquerCity
 				return false;
-			if (kOurTeam.AI_getWarPlan(kToPlayer.getTeam()) != NO_WARPLAN)
+			if (kOurTeam.AI_getWarPlan(kToTeam.getID()) != NO_WARPLAN)
 				return false;
 			if (getUWAI().isEnabled())
 			{
-				if (uwai().getCache().warUtilityIgnoringDistraction(kToPlayer.getTeam()) > 0)
+				if (uwai().getCache().warUtilityIgnoringDistraction(kToTeam.getID()) > 0)
 					return false;
 			}
 			else
 			{
-				if (!kOurTeam.AI_isAvoidWar(kToPlayer.getTeam(), true) &&
-					5 * kOurTeam.getPower(true) >
-					4 * GET_TEAM(eToPlayer).getPower(true))
+				if (!kOurTeam.AI_isAvoidWar(kToTeam.getID(), true) &&
+					5 * kOurTeam.getPower(true) > 4 * kToTeam.getPower(true))
 				{
 					return false;
 				}
@@ -22069,15 +22091,20 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 		int const iAcquireVal = kToPlayer.AI_cityTradeVal(
 				kCity, eToPlayer, LIBERATION_WEIGHT_FULL);
 		bool const bGreatEnmity = (iAttitudeLevel == ATTITUDE_FURIOUS ||
-				kOurTeam.AI_getWorstEnemy() == kToPlayer.getMasterTeam() ||
+				kOurTeam.AI_getWorstEnemy() == kToTeam.getMasterTeam() ||
 				kToPlayer.AI_getAttitude(getID()) == ATTITUDE_FURIOUS);
 				/*	(If we're their worst enemy at annoyed or better,
 					ceding a city might help.) */
 		if (bLiberateForFree)
 		{
-			// Has to be significantly more valuable to them
-			if (4 * iKeepVal > 3 * iAcquireVal)
+			/*	Has to be significantly more valuable to them -
+				especially if they're our vassal b/c then it's mostly
+				about empowering them rather than charming them. */
+			if ((bNonColonialVassal ? 15 : (kOurTeam.isParent(kToTeam.getID()) ? 12 : 8)) *
+				iKeepVal > 6 * iAcquireVal)
+			{
 				return false;
+			}
 			/*	Anticipate diplo penalties. Not a problem
 				when the trade value is very small. */
 			scaled rEnemyTradeFactor = 1;
@@ -22098,7 +22125,7 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 						continue;
 					}
 					rTotalResentment += kThirdParty.AI_enemyTradeResentmentFactor(
-							kToPlayer.getTeam(), getTeam());
+							kToTeam.getID(), getTeam());
 				}
 				rEnemyTradeFactor += (2 * rTotalResentment) /
 						scaled(TeamIter<EVER_ALIVE>::count()).sqrt();
