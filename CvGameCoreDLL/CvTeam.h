@@ -111,7 +111,8 @@ public:
 	int getVassalCount(TeamTypes eObs = NO_TEAM) const;
 	// advc.opt:
 	bool isAVassal() const { return (m_eMaster != NO_TEAM); }											// Exposed to Python
-	bool canVassalRevolt(TeamTypes eMaster) const;
+	bool canVassalRevolt(TeamTypes eMaster,
+			bool bCheckLosses = true, int iExtraLand = 0, int iExtraPop = 0) const; // advc.ctr
 	bool isLossesAllowRevolt(TeamTypes eMaster) const; // advc.112
 	int getUnitClassMaking(UnitClassTypes eUnitClass) const;											// Exposed to Python
 	int getUnitClassCountPlusMaking(UnitClassTypes eIndex) const										// Exposed to Python

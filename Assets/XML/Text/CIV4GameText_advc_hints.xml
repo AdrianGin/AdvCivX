@@ -959,4 +959,22 @@
 	<German>(AdvCiv) Ein Paar von Atomsprengköpfen sollte etwa 4 von 5 betroffenen Einheiten zerstören, ein einzlner weniger als 2 in 5. Doppelt hält immer noch besser, aber mit dem Original-Schadenswurf war der Unterschied noch deutlich größer.</German>
 </TEXT>
 
+<!-- Adding to the (few) espionage hints in CIV4GameText_BTS.xml -->
+<TEXT>
+	<Tag>TXT_KEY_ADVC_HINT_52</Tag>
+	<English>When the defensive modifier of an enemy city looks formidable, consider using spies to support a city revolt just before your attack. Note, however, that such a revolt does not count toward flipping the city peacefully.</English>
+	<German>Anstatt eine stark befestigte Stadt endlos zu bombardieren, kann es sich lohnen, durch Spione eine Revolte anzuzetteln. Dadurch sinkt der Verteidigungsmodifikator kurzzeitig auf 0. Eine solche Revolte kann allerdings nicht zur friedlichen Übernehme einer Stadt beitragen.</German>
+</TEXT>
+<!-- "Usually" - if the player loses a long-held city through conquest,
+	 Spread Culture can help flip it back. Would also be nice to mention that
+	 K-Mod blocks the "espionage victory" (by not adding city culture, just
+	 tile culture based on total city culture), but I hope that espionage victory
+	 not being mentioned at all will at least make players suspect that it might
+	 no longer work. -->
+<TEXT>
+	<Tag>TXT_KEY_ADVC_HINT_53</Tag>
+	<English>Letting spies spread your culture in a foreign city can be a way of alleviating culture pressure on your nearby cities, but it's usually not effective at flipping a foreign city where your culture is already dominant.</English>
+	<German>Lassen Sie Spione Ihre Kultur in gegnerischen Städten verbreiten, um Ihren kulturellen Einfluss dort und im Umland zu stärken. Falls allerdings Ihre Kultur bereits vorherrschend ist, werden Sie damit - in der Regel - nicht erreichen, dass gegnerische Städte zu Ihnen überlaufen.</German>
+</TEXT>
+
 </Civ4GameText>

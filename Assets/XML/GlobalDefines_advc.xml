@@ -159,26 +159,25 @@
 		<iDefineIntVal>35</iDefineIntVal>
     </Define-->
 
-	<!-- These two are from the original GlobalDefines. -->
 	<!-- advc.101: Was 100, meaning that foreign culture strength is doubled
 		 if the foreign state religion is in the city. Now also applies when the
 		 owner of the foreign culture is eliminated and there is a "suppressed"
 		 religion in the city, i.e. a religion that differs from the city owner's
 		 state religion (no suppression if no state religion).
-		 Recommended: 50 because doubling is a bit much. -->
+		 Recommended: 33 (doubling is way too much I think) -->
 	<Define> <!-- redefine -->
 		<DefineName>REVOLT_OFFENSE_STATE_RELIGION_MODIFIER</DefineName>
-		<iDefineIntVal>50</iDefineIntVal>
+		<iDefineIntVal>33</iDefineIntVal>
 	</Define>
 	<!-- Applies when the city owner's state religion is present in the city,
 		 and applies half if the owner has no state religion. Was combined
 		 multiplicatively with the OFFENSE_MODIFIER above in such a way
 		 that the modifiers canceled out when both applied. Now combined
-		 additively, meaning that they still cancel out because I've reduced the
-		 OFFENSE_MODIFIER. The DEFENSE_MODIFIER remains -50. -->
+		 additively, and I'm reducing both so that they still cancel out.
+		 Was -50, recommended: -33 -->
 	<Define> <!-- redefine -->
 		<DefineName>REVOLT_DEFENSE_STATE_RELIGION_MODIFIER</DefineName>
-		<iDefineIntVal>-50</iDefineIntVal>
+		<iDefineIntVal>-33</iDefineIntVal>
 	</Define>
 
 	<!-- [advc.102]
@@ -1165,6 +1164,13 @@
 		<DefineName>RELATIONS_THRESH_FURIOUS</DefineName>
 		<iDefineIntVal>-9</iDefineIntVal>
 	</Define>
+	<!-- Relations need to be this bad or worse (or must be at war) to qualify
+		 as a potential worst enemy.
+		 Recommended: -3, i.e. 1 worse than Annoyed. -->
+	<Define>
+		<DefineName>RELATIONS_THRESH_WORST_ENEMY</DefineName>
+		<iDefineIntVal>-3</iDefineIntVal>
+	</Define>
 
 	<!-- advc.001b: 1 means that the production of air units is interrupted
 		 when the unit would exceed the city's air unit capacity.
@@ -1192,14 +1198,14 @@
 		 the player's city count (including half the number of vassal cities)
 		 gets capped at an upper bound equal to MAX_CITY_COUNT_FOR_MAINTENANCE
 		 divided by (100+iNumCitiesMaintenancePercent); see Civ4WorldInfo
-		 about the divisor. Recommended: 51, which results in a cap of 42 on
-		 Huge maps. Not tested much.
+		 about the divisor. Recommended: 31, which results in a cap of 25 on
+		 Huge maps.
 		 BtS behavior (a cap between 4 and 8) can be restored through
 		 Civ4HandicapInfos.xml and MAX_CITY_COUNT_FOR_MAINTENANCE > 7.
 		 Use a very high value, say, 1000, for K-Mod behavior (no cap). -->
 	<Define>
 		<DefineName>MAX_CITY_COUNT_FOR_MAINTENANCE</DefineName>
-		<iDefineIntVal>51</iDefineIntVal>
+		<iDefineIntVal>31</iDefineIntVal>
 	</Define>
 
 	<!-- advc.190c: This concerns the probability distribution for civs and

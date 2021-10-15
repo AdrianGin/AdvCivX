@@ -2915,10 +2915,9 @@ void CvCity::processBonus(BonusTypes eBonus, int iChange)
 
 void CvCity::processBuilding(BuildingTypes eBuilding, int iChange, bool bObsolete)
 {
-	// <advc>
 	CvBuildingInfo const& kBuilding = GC.getInfo(eBuilding);
 	CvGame const& kGame = GC.getGame();
-	CvPlayer& kOwner = GET_PLAYER(getOwner()); // </advc>
+	CvPlayer& kOwner = GET_PLAYER(getOwner());
 	if (!GET_TEAM(getTeam()).isObsoleteBuilding(eBuilding) || bObsolete)
 	{
 		if (iChange > 0)
@@ -4048,48 +4047,57 @@ int CvCity::cultureStrength(PlayerTypes ePlayer,
 		}
 		rEraFactor++;
 	}
-	// To put a cap on the initial revolt chance in large cities:
-	rPopulation.decreaseTo(rEraFactor * fixp(1.6));
 	CvPlot const& kCityPlot = getPlot();
 	bool bCanFlip = (canCultureFlip(ePlayer, false) &&
 			ePlayer == kCityPlot.calculateCulturalOwner());
-	scaled rStrength = 1 + 2 * rPopulation;
-	scaled rStrengthFromInnerRadius = 0;
+	scaled rStrengthFromInnerRadius;
 	CvPlayer const& kOwner = GET_PLAYER(getOwner());
-	// </advc.101>  <advc.099c>
-	if(ePlayer == BARBARIAN_PLAYER)
+	// <advc.099c>
+	if (ePlayer == BARBARIAN_PLAYER)
 		rEraFactor /= 2; // </advc.099c>
+	int iStolenInner = 0;
 	FOR_EACH_ADJ_PLOT(getPlot())
 	{
 		// <advc.035>
 		PlayerTypes eLoopOwner = pAdj->getOwner();
-		if(GC.getDefineBOOL(CvGlobals::OWN_EXCLUSIVE_RADIUS) && eLoopOwner != NO_PLAYER &&
+		if (GC.getDefineBOOL(CvGlobals::OWN_EXCLUSIVE_RADIUS) && eLoopOwner != NO_PLAYER &&
 			!GET_TEAM(eLoopOwner).isAtWar(kOwner.getTeam()))
 		{
 			PlayerTypes const eSecondOwner = pAdj->getSecondOwner();
 			if(eSecondOwner != eLoopOwner) // Checked only for easier debugging
 				eLoopOwner = eSecondOwner;
 		} // </advc.035>
-		if(bCanFlip && // advc.101
+		if (bCanFlip &&
 			eLoopOwner == ePlayer) // advc.035
 		{
-			// <advc.101>
 			rStrengthFromInnerRadius += rEraFactor * scaled::clamp(
 					rTimeRatio - fixp(2/3.), 0, fixp(3.5));
+			iStolenInner++;
 		}
 		scaled rCap = fixp(0.25) + fixp(0.75) * rTimeFactor;
 		rStrengthFromInnerRadius += rEraFactor * scaled::clamp(per100(
 				pAdj->calculateCulturePercent(ePlayer) -
 				pAdj->calculateCulturePercent(getOwner())), 0, rCap);
 	}
-	rStrengthFromInnerRadius.decreaseTo(rStrength);
+	/*	Don't make cities that stay small for lack of workable tiles
+		too easy to hold onto */
+	rPopulation.increaseTo(scaled(iStolenInner, 2));
+	// To put a cap on the early-game revolt chance in large cities:
+	rPopulation.decreaseTo(rEraFactor * fixp(5/3.));
+	scaled rStrength = 1 + 2 * rPopulation;
+	/*	Era should also affect strength from population
+		(only affects strength from surrounding tiles in BtS). */
+	rStrength *= scaled::max(2, rEraFactor + 1).sqrt() / 2;
+	rStrengthFromInnerRadius /= fixp(1.5); // To even out the change above
+	if (!isBarbarian()) // Put engulfed Barbarian cities out of their misery
+		rStrengthFromInnerRadius.decreaseTo(fixp(5/3.) * rStrength);
 	rStrength += rStrengthFromInnerRadius;
 	int const iHurryAnger = (getHurryPercentAnger() * getPopulation()) / 1000;
 	FAssert((iHurryAnger == 0) == (getHurryAngerTimer() == 0));
 	int const iConscriptAnger = (getConscriptPercentAnger() * getPopulation()) / 3000;
 	int iAngry = iHurryAnger + iConscriptAnger;
 	iAngry = std::min(iAngry, getPopulation());
-	/*  HurryAnger also factors into grievanceModifier below, but for small cities
+	/*  HurryAnger also factors into GrievanceModifier below, but for small cities
 		(where Slavery is most effective), this constant bonus matters more. */
 	rStrength += 3 * iAngry;
 	/*  K-Mod, 7/jan/11, karadoc
@@ -4176,7 +4184,7 @@ int CvCity::cultureStrength(PlayerTypes ePlayer,
 	} /* No state religion is still better than some oppressive state religion that
 		 the city doesn't share. */
 	else if(eOwnerStateReligion == NO_RELIGION && rGrievanceModifier > 0)
-		rGrievanceModifier += rREVOLT_DEFENSE_STATE_RELIGION_MODIFIER / 2;
+		rGrievanceModifier += rREVOLT_DEFENSE_STATE_RELIGION_MODIFIER * fixp(3/5.);
 	if (paGrievances != NULL && rGrievanceModifier > 0)
 		paGrievances->push_back(GRIEVANCE_RELIGION);
 	rGrievanceModifier += rREVOLT_TOTAL_CULTURE_MODIFIER - 1;
@@ -7807,12 +7815,12 @@ void CvCity::changeDomainProductionModifier(DomainTypes eDomain, int iChange)
 
 int CvCity::countTotalCultureTimes100() const
 {
-	int r = 0;
+	int iR = 0;
 	for (PlayerIter<EVER_ALIVE> it; it.hasNext(); ++it) // advc.099: was ALIVE
 	{
-		r += getCultureTimes100(it->getID());
+		iR += getCultureTimes100(it->getID());
 	}
-	return r;
+	return iR;
 }
 
 
@@ -7963,29 +7971,27 @@ void CvCity::setCulture(PlayerTypes ePlayer, int iNewValue, bool bPlots,
 	setCultureTimes100(ePlayer, 100 * iNewValue, bPlots, bUpdatePlotGroups);
 }
 
+// K-Mod, 26/sep/10: fixed so that plots actually get the culture difference
 void CvCity::setCultureTimes100(PlayerTypes ePlayer, int iNewValue, bool bPlots,
 	bool bUpdatePlotGroups)
 {
-	//if (getCultureTimes100(ePlayer) != iNewValue)
-	// K-Mod, 26/sep/10: fixed so that plots actually get the culture difference
 	int const iOldValue = getCultureTimes100(ePlayer);
-	if (iNewValue != iOldValue)
+	if (iNewValue == iOldValue)
+		return;
+	m_aiCulture.set(ePlayer, iNewValue);
+	FAssert(getCultureTimes100(ePlayer) >= 0);
+	updateCultureLevel(bUpdatePlotGroups);
+	if (bPlots)
 	{
-		m_aiCulture.set(ePlayer, iNewValue);
-		FAssert(getCultureTimes100(ePlayer) >= 0);
-		updateCultureLevel(bUpdatePlotGroups);
-		if (bPlots)
-		{
-			//doPlotCulture(true, ePlayer, 0);
-			//doPlotCulture(true, ePlayer, (iNewValue - iOldValue) / 100);
-			doPlotCultureTimes100(true, ePlayer, iNewValue - iOldValue, false);
-			/*	note: this function no longer applies free city culture.
-				also, note that if a city's culture is decreased to zero,
-				there will probably still be some residual plot culture around the city.
-				this is because the culture level on the way up
-				will be higher than it is on the way down. */
-		}
-	} // K-Mod end
+		//doPlotCulture(true, ePlayer, 0);
+		//doPlotCulture(true, ePlayer, (iNewValue - iOldValue) / 100);
+		doPlotCultureTimes100(true, ePlayer, iNewValue - iOldValue, false);
+		/*	note: this function no longer applies free city culture.
+			also, note that if a city's culture is decreased to zero,
+			there will probably still be some residual plot culture around the city.
+			this is because the culture level on the way up
+			will be higher than it is on the way down. */
+	}
 }
 
 
@@ -8094,28 +8100,23 @@ void CvCity::setRevealed(TeamTypes eTeam, bool bNewValue)
 {
 	if(isRevealed(eTeam) == bNewValue)
 		return;
-
+	// <advc.130n>
+	for (MemberAIIter itMember(eTeam); itMember.hasNext(); ++itMember)
+		itMember->AI_updateIdeologyAttitude(-1, *this); // </advc.130n>
 	m_abRevealed.set(eTeam, bNewValue);
-
+	// <advc.130n>
+	for (MemberAIIter itMember(eTeam); itMember.hasNext(); ++itMember)
+		itMember->AI_updateIdeologyAttitude(1, *this); // </advc.130n>
 	// K-Mod
 	if (bNewValue)
 	{
 		GET_TEAM(eTeam).makeHasSeen(getTeam());
-		// <advc.130n>
-		if (GET_TEAM(getTeam()).isMajorCiv() && GET_TEAM(eTeam).isMajorCiv())
+		// <advc.130w>
+		if (GET_TEAM(eTeam).isMajorCiv() &&
+			GET_TEAM(getTeam()).isMajorCiv() &&
+			getPlot().findHighestCultureTeam() != getTeam())
 		{
-			FOR_EACH_ENUM(Religion)
-			{
-				if (!isHasReligion(eLoopReligion))
-					continue;
-				for (MemberAIIter itMember(eTeam); itMember.hasNext(); ++itMember)
-				{
-					itMember->AI_updateDifferentReligionThreat(eLoopReligion);
-				}
-			} // </advc.130n>
-			// <advc.130w>
-			if (getPlot().findHighestCultureTeam() != getTeam())
-				GET_TEAM(eTeam).AI_updateAttitude(getTeam());
+			GET_TEAM(eTeam).AI_updateAttitude(getTeam());
 		} // </advc.130w>
 	} // K-Mod end
 
@@ -9109,13 +9110,23 @@ void CvCity::setHasReligion(ReligionTypes eReligion, bool bNewValue, bool bAnnou
 	PlayerTypes eSpreadPlayer) // advc.106e
 {
 	if (isHasReligion(eReligion) == bNewValue)
-		return; // advc
+		return;
 
 	FOR_EACH_ENUM(VoteSource)
 		processVoteSource(eLoopVoteSource, false);
-
+	// <advc.130n>
+	for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	{
+		if (isRevealed(itPlayer->getTeam()))
+			itPlayer->AI_updateIdeologyAttitude(-1, *this);
+	} // </advc.130n>
 	m_abHasReligion.set(eReligion, bNewValue);
-
+	// <advc.130n>
+	for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	{
+		if (isRevealed(itPlayer->getTeam()))
+			itPlayer->AI_updateIdeologyAttitude(1, *this);
+	} // </advc.130n>
 	FOR_EACH_ENUM(VoteSource)
 		processVoteSource(eLoopVoteSource, true);
 
@@ -9211,15 +9222,7 @@ void CvCity::setHasReligion(ReligionTypes eReligion, bool bNewValue, bool bAnnou
 		}
 	} // K-Mod end
 	if (bNewValue)
-	{
 		CvEventReporter::getInstance().religionSpread(eReligion, kOwner.getID(), this);
-		// <advc.130n>
-		for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
-		{
-			if (isRevealed(itPlayer->getTeam()))
-				itPlayer->AI_updateDifferentReligionThreat(eReligion);
-		} // </advc.130n>
-	}
 	else CvEventReporter::getInstance().religionRemove(eReligion, kOwner.getID(), this);
 }
 
@@ -9296,7 +9299,7 @@ void CvCity::processVoteSource(VoteSourceTypes eVoteSource, bool bActive)
 		return;
 
 	if (!GC.getGame().isDiploVote(eVoteSource))
-		return; // advc
+		return;
 
 	ReligionTypes const eReligion = GC.getGame().getVoteSourceReligion(eVoteSource);
 	{
@@ -9308,7 +9311,7 @@ void CvCity::processVoteSource(VoteSourceTypes eVoteSource, bool bActive)
 		}
 	}
 	if (eReligion == NO_RELIGION || !isHasReligion(eReligion))
-		return; // advc
+		return;
 
 	FOR_EACH_ENUM(Yield)
 	{
@@ -11504,7 +11507,25 @@ void CvCity::read(FDataStreamBase* pStream)
 	// <advc.201>, advc.200, advc.098
 	if (uiFlag < 13)
 	{
-		updateBuildingCommerce(COMMERCE_CULTURE);
+		bool bUpdate = true;
+		SpecialBuildingTypes eCath = (SpecialBuildingTypes)GC.getInfoTypeForString(
+				"SPECIALBUILDING_CATHEDRAL");
+		if (eCath != NO_SPECIALBUILDING &&
+			getCommerceRateModifier(COMMERCE_CULTURE) >= 40) // to save time
+		{
+			CvCivilization const& kCiv = getCivilization();
+			for (int i = 0; i < kCiv.getNumBuildings(); i++)
+			{
+				if (getNumBuilding(kCiv.buildingAt(i)) <= 0)
+					continue;
+				if (GC.getInfo(kCiv.buildingAt(i)).getSpecialBuildingType() != eCath)
+					continue;
+				changeCommerceRateModifier(COMMERCE_CULTURE, 10);
+				bUpdate = false;
+			}
+		}
+		if (bUpdate)
+			updateBuildingCommerce(COMMERCE_CULTURE);
 		if (uiFlag < 11)
 		{
 			CorporationTypes eCreativeConstr = (CorporationTypes)
@@ -11513,6 +11534,54 @@ void CvCity::read(FDataStreamBase* pStream)
 				updateCorporationCommerce(COMMERCE_CULTURE);
 		}
 	} // </advc.201>
+	// <advc.179>
+	if (uiFlag < 14)
+	{
+		VoteSourceTypes eAP = (VoteSourceTypes)GC.getInfoTypeForString("DIPLOVOTE_POPE");
+		if (eAP != NO_VOTESOURCE)
+		{
+			ReligionTypes eAPReligion = GC.getGame().getVoteSourceReligion(eAP);
+			if (eAPReligion != NO_RELIGION && isHasReligion(eAPReligion) &&
+				GET_PLAYER(getOwner()).isLoyalMember(eAP) && GC.getGame().isDiploVote(eAP))
+			{
+				FOR_EACH_ENUM(Building)
+				{
+					if (GC.getInfo(eLoopBuilding).getReligionType() == eAPReligion)
+					{
+						changeBuildingYieldChange(CvCivilization::buildingClass(eLoopBuilding),
+								YIELD_PRODUCTION, -1);
+					}
+				}
+			}
+		}
+		BuildingTypes eAPBuilding = (BuildingTypes)GC.getInfoTypeForString("BUILDING_APOSTOLIC_PALACE");
+		SpecialistTypes ePriest = (SpecialistTypes)GC.getInfoTypeForString("SPECIALIST_PRIEST");
+		if (eAPBuilding != NO_BUILDING && ePriest != NO_SPECIALIST)
+		{
+			char const* aszShrineNames[] = { "BUILDING_JEWISH_SHRINE", "BUILDING_CHRISTIAN_SHRINE",
+					"BUILDING_ISLAMIC_SHRINE", "BUILDING_HINDU_SHRINE", "BUILDING_BUDDHIST_SHRINE",
+					"BUILDING_CONFUCIAN_SHRINE", "BUILDING_TAOIST_SHRINE" };
+			for (int i = 0; i < ARRAYSIZE(aszShrineNames); i++)
+			{
+				BuildingTypes eShrine = (BuildingTypes)GC.getInfoTypeForString(aszShrineNames[i]);
+				if (eShrine == NO_BUILDING)
+					continue;
+				// Shrines lose one priest slot each
+				changeMaxSpecialistCount(ePriest, -1 * getNumBuilding(eShrine));
+			}
+			changeMaxSpecialistCount(ePriest, 2 * getNumBuilding(eAPBuilding));
+		} // </advc.179>
+		// <advc.exp.1>
+		// (Change to MAX_CITY_COUNT_FOR_MAINTENANCE can only affect large civs)
+		if (GET_PLAYER(getOwner()).getNumCities() > 20 ||
+			// <advc.exp.2> (Changes to the unique buildings)
+			getCivilizationType() == GC.getInfoTypeForString("CIVILIZATION_ZULU") ||
+			getCivilizationType() == GC.getInfoTypeForString("CIVILIZATION_HOLY_ROMAN"))
+			// </advc.exp.2>
+		{
+			updateMaintenance();
+		}
+	} // </advc.exp.1>
 }
 
 void CvCity::write(FDataStreamBase* pStream)
@@ -11532,7 +11601,8 @@ void CvCity::write(FDataStreamBase* pStream)
 	//uiFlag = 10; // advc.911a, advc.908b
 	//uiFlag = 11; // advc.201, advc.098
 	//uiFlag = 12; // advc.enum: new enum map save behavior
-	uiFlag = 13; // advc.201: Cathedrals restored to BtS stats
+	//uiFlag = 13; // advc.201: Cathedrals restored to BtS stats
+	uiFlag = 14; // advc.179, advc.exp.1, advc.exp.2
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);
@@ -12530,6 +12600,8 @@ void CvCity::setBuildingYieldChange(BuildingClassTypes eBuildingClass,
 {
 	BuildingTypes eBuilding = getCivilization().getBuilding(eBuildingClass); // advc.003w
 	// advc: Simplified this function a lot
+	if (eBuilding == NO_BUILDING)
+		return;
 	int const iOldChange = m_aeiiBuildingYieldChange.get(eBuildingClass, eYield);
 	if (iOldChange == iChange)
 		return;
@@ -12554,6 +12626,8 @@ void CvCity::setBuildingCommerceChange(BuildingClassTypes eBuildingClass,
 	CommerceTypes eCommerce, int iChange)
 {	// advc: Simplified this function a lot
 	BuildingTypes eBuilding = getCivilization().getBuilding(eBuildingClass);
+	if (eBuilding == NO_BUILDING)
+		return;
 	int const iOldChange = m_aeiiBuildingCommerceChange.get(eBuildingClass, eCommerce);
 	if (iOldChange == iChange)
 		return;

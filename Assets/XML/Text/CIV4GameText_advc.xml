@@ -7092,5 +7092,16 @@
 		<Italian>[NEWLINE][SPACE][SPACE][ICON_BULLET]+1%F1_yield su caselle con %d2%F3_yield</Italian>
 		<Spanish>[NEWLINE][SPACE][SPACE][ICON_BULLET]+1 %F1_yield en las casillas con %d2 %F3_yield</Spanish>
 	</TEXT>
+	<!-- advc.023: Originally in CIV4GameText_BTS_FourthRoundTranslation.xml.
+		 Occupation may last longer than 1 turn now. And don't use the
+		 term revolt b/c it doesn't count toward flipping the city. -->
+	<TEXT>
+		<Tag>TXT_KEY_ESPIONAGE_HELP_REVOLT</Tag>
+		<English>Causes at least %d2 [NUM2:turn:turns] of disorder in %s1_city (setting its defenses to 0)</English>
+		<French>Provoquer la r&#233;volte de la ville : %s1_city pendant %d2 [NUM2:tour:tours]</French>
+		<German>Verursacht %d2 [NUM2:Runde:Runden] Aufruhr in %s1_city (setzt den Verteidigungs-Modifikator auf 0)</German>
+		<Italian>Provoca una rivolta a %s1_city per %d2 [NUM2:turno:turni]</Italian>
+		<Spanish>Provocar en %s1_city una revuelta durante %d2 [NUM2:turno:turnos]</Spanish>
+	</TEXT>
 
 </Civ4GameText>

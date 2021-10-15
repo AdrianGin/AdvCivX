@@ -299,7 +299,6 @@ void CvPlayerAI::AI_reset(bool bConstructor)
 	{
 		m_aiUnitCombatWeights[iI] = 0;
 	}
-	m_arDifferentReligionThreat.reset(); // advc.130n
 
 	/*for (iI = 0; iI < MAX_PLAYERS; iI++) {
 		m_aiCloseBordersAttitude[iI] = 0;
@@ -7698,21 +7697,20 @@ int CvPlayerAI::AI_getPeaceAttitude(PlayerTypes ePlayer) const
 
 int CvPlayerAI::AI_getSameReligionAttitude(PlayerTypes ePlayer) const
 {
-	int iAttitude = 0;
-	if (getStateReligion() != NO_RELIGION && getStateReligion() == GET_PLAYER(ePlayer).getStateReligion())
+	if (getStateReligion() == NO_RELIGION ||
+		getStateReligion() != GET_PLAYER(ePlayer).getStateReligion())
 	{
-		iAttitude += GC.getInfo(getPersonalityType()).getSameReligionAttitudeChange();
-		if (hasHolyCity(getStateReligion()))
-			iAttitude++;
-		if (GC.getInfo(getPersonalityType()).getSameReligionAttitudeDivisor() != 0)
-		{
-			int iAttitudeChange = (AI_getSameReligionCounter(ePlayer) /
-					GC.getInfo(getPersonalityType()).getSameReligionAttitudeDivisor());
-			// <advc.130x>
-			int iLimit = AI_ideologyDiploLimit(ePlayer, SAME_RELIGION);
-			iAttitude += range(iAttitudeChange, -iLimit, iLimit); // </advc.130x>
-		}
+		return 0;
 	}
+	int iAttitude = GC.getInfo(getPersonalityType()).getSameReligionAttitudeChange();
+	if (hasHolyCity(getStateReligion()))
+		iAttitude++;
+	CvLeaderHeadInfo const& kPersonality = GC.getInfo(getPersonalityType());
+	// advc.130n: Moved into new function
+	iAttitude += AI_ideologyAttitudeChange(ePlayer, SAME_RELIGION,
+			AI_getSameReligionCounter(ePlayer),
+			kPersonality.getSameReligionAttitudeDivisor(),
+			kPersonality.getSameReligionAttitudeChangeLimit());
 	return iAttitude;
 }
 
@@ -7727,30 +7725,14 @@ int CvPlayerAI::AI_getDifferentReligionAttitude(PlayerTypes ePlayer) const
 		return 0;
 	}
 	CvLeaderHeadInfo const& kPersonality = GC.getInfo(getPersonalityType());
-	int iDiv = kPersonality.getDifferentReligionAttitudeDivisor();
-	if (iDiv == 0)
-		return 0;
-	int iPersonalModifier = kPersonality.getDifferentReligionAttitudeChange();
-	int iAttitude = iPersonalModifier;
-	int iLimit = AI_ideologyDiploLimit(ePlayer, DIFFERENT_RELIGION); // advc.130x
-	iAttitude += range(AI_getDifferentReligionCounter(ePlayer) / iDiv, -iLimit, iLimit);
-	if (iAttitude < 0)
-	{	// <advc.130n>
-		scaled rThreatFactor = m_arDifferentReligionThreat.get(
-				kPlayer.getStateReligion());
-		rThreatFactor = (rThreatFactor * 3).pow(fixp(2/3.));
-		iAttitude = -((-iAttitude * rThreatFactor).uceil());
-		/*	Allow threat factor to increase the penalty (if the threat
-			is unusually high), but respect the limit. This gets complicated
-			b/c iPersonalModifier isn't supposed to be subject to the limit ... */
-		iAttitude = std::max(iAttitude, -iLimit + (iPersonalModifier < 0 ? iPersonalModifier : 0));
-		// Also don't want 0 threat to eliminate a personal modifier of -2
-		if (iPersonalModifier < -1)
-			iAttitude = std::min(iAttitude, iPersonalModifier / 2);
-		// </advc.130n>
-		if (hasHolyCity(getStateReligion()))
-			iAttitude--;
-	}
+	int iAttitude = kPersonality.getDifferentReligionAttitudeChange();
+	if (hasHolyCity(getStateReligion()))
+		iAttitude--;
+	// advc.130n: Moved into new function
+	iAttitude += AI_ideologyAttitudeChange(ePlayer, DIFFERENT_RELIGION,
+			AI_getDifferentReligionCounter(ePlayer),
+			kPersonality.getDifferentReligionAttitudeDivisor(),
+			kPersonality.getDifferentReligionAttitudeChangeLimit());
 	return iAttitude;
 }
 
@@ -7872,93 +7854,27 @@ int CvPlayerAI::AI_getExpansionistAttitude(PlayerTypes ePlayer) const
 		rCitiesPerCiv.decreaseTo(3 * (1 + rEra));
 	scaled rPersonalFactor = AI_expansionistHate(ePlayer);
 	return -std::min(4,
-			(rPersonalFactor * fixp(2.4) * rForeignCities / rCitiesPerCiv).round());
+			(rPersonalFactor * fixp(8/3.) * rForeignCities / rCitiesPerCiv).
+			round());
 }
 
 // advc.130n:
-void CvPlayerAI::AI_updateDifferentReligionThreat(ReligionTypes eReligion,
-	bool bUpdateAttitude)
+void CvPlayerAI::AI_updateIdeologyAttitude(int iChange, CvCity const& kCity)
 {
-	ReligionTypes const eStateReligion = getStateReligion();
-	if (eStateReligion == NO_RELIGION || getNumCities() <= 0)
-	{	// Just to save time
-		if (!bUpdateAttitude)
-		{
-			m_arDifferentReligionThreat.reset();
-			return;
-		}
-		if (!m_arDifferentReligionThreat.isAnyNonDefault())
-			return;
-		FOR_EACH_ENUM(Religion)
-			AI_setDifferentReligionThreat(eLoopReligion, 0, bUpdateAttitude);
+	if (!isMajorCiv() || GET_PLAYER(kCity.getOwner()).isMajorCiv())
 		return;
-	}
-	if (eReligion == NO_RELIGION)
+	for (PlayerIter<MAJOR_CIV,KNOWN_TO> itOther(getTeam());
+		itOther.hasNext(); ++itOther)
 	{
-		FOR_EACH_ENUM(Religion)
-		{
-			AI_updateDifferentReligionThreat(eLoopReligion); // recursion
-		}
-		return;
+		PlayerTypes const eOther = itOther->getID();
+		if (eOther == getID())
+			continue;
+		AI_changeCachedAttitude(eOther, iChange * AI_getSameReligionAttitude(eOther));
+		AI_changeCachedAttitude(eOther, iChange * AI_getDifferentReligionAttitude(eOther));
+		AI_changeCachedAttitude(eOther, iChange * AI_getFavoriteCivicAttitude(eOther));
 	}
-	if (!GC.getGame().isReligionFounded(eReligion))
-		return;
-	if (eStateReligion == eReligion)
-	{
-		AI_setDifferentReligionThreat(eReligion, 0, bUpdateAttitude);
-		return;
-	}
-	int iDifferentReligionPop = 0;
-	int iSameReligionPop = 0;
-	int iTotalPop = 0;
-	for (PlayerIter<ALIVE,KNOWN_TO> itPlayer(getTeam()); itPlayer.hasNext(); ++itPlayer)
-	{
-		FOR_EACH_CITY(pCity, *itPlayer)
-		{
-			if (!pCity->isRevealed(getTeam()))
-				continue;
-			int const iPop = pCity->getPopulation();
-			iTotalPop += iPop;
-			if (pCity->isHasReligion(eReligion))
-				iDifferentReligionPop += iPop;
-			if (pCity->isHasReligion(eStateReligion))
-				iSameReligionPop += iPop;
-		}
-	}
-	/*	The bigger our religion is and the more widespread theirs,
-		the more threatened/ antagonistic we feel. */
-	scaled rThreat(std::min(iDifferentReligionPop, iSameReligionPop), iTotalPop);
-	AI_setDifferentReligionThreat(eReligion, rThreat, bUpdateAttitude);
 }
 
-// advc.130n:
-void CvPlayerAI::AI_setDifferentReligionThreat(ReligionTypes eReligion,
-	scaled rNewValue, bool bUpdateAttitude)
-{
-	if (rNewValue == m_arDifferentReligionThreat.get(eReligion))
-		return;
-	CivPlayerMap<int> aeiCachedAttitude;
-	if (bUpdateAttitude)
-	{
-		for (PlayerAIIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(getTeam());
-			itOther.hasNext(); ++itOther)
-		{
-			aeiCachedAttitude.set(itOther->getID(),
-					AI_getDifferentReligionAttitude(itOther->getID()));
-		}
-	}
-	m_arDifferentReligionThreat.set(eReligion, rNewValue);
-	if (bUpdateAttitude)
-	{
-		for (PlayerAIIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(getTeam());
-			itOther.hasNext(); ++itOther)
-		{
-			AI_changeCachedAttitude(itOther->getID(),
-					AI_getDifferentReligionAttitude(itOther->getID())
-					- aeiCachedAttitude.get(itOther->getID()));
-		}
-	}
-}
 
 int CvPlayerAI::AI_getRivalVassalAttitude(PlayerTypes ePlayer) const
 {
@@ -8105,26 +8021,18 @@ int CvPlayerAI::AI_getShareWarAttitude(PlayerTypes ePlayer) const
 
 int CvPlayerAI::AI_getFavoriteCivicAttitude(PlayerTypes ePlayer) const
 {
-	int iAttitude = 0;
-	if (GC.getInfo(getPersonalityType()).getFavoriteCivic() != NO_CIVIC)
+	CvLeaderHeadInfo const& kPersonality = GC.getInfo(getPersonalityType());
+	CivicTypes const eFavCivic = kPersonality.getFavoriteCivic();
+	if (eFavCivic != NO_CIVIC &&
+		isCivic(eFavCivic) && GET_PLAYER(ePlayer).isCivic(eFavCivic))
 	{
-		if (isCivic(GC.getInfo(getPersonalityType()).getFavoriteCivic()) &&
-			GET_PLAYER(ePlayer).isCivic(GC.getInfo(getPersonalityType()).getFavoriteCivic()))
-		{
-			iAttitude += GC.getInfo(getPersonalityType()).getFavoriteCivicAttitudeChange();
-
-			if (GC.getInfo(getPersonalityType()).getFavoriteCivicAttitudeDivisor() != 0)
-			{
-				int iAttitudeChange = (AI_getFavoriteCivicCounter(ePlayer) /
-						GC.getInfo(getPersonalityType()).getFavoriteCivicAttitudeDivisor());
-				// <advc.130x>
-				int iLimit = AI_ideologyDiploLimit(ePlayer, SAME_CIVIC);
-				iAttitude += range(iAttitudeChange, -iLimit, iLimit); // </advc.130x>
-			}
-		}
+		// advc.130n: Moved into new function
+		return AI_ideologyAttitudeChange(ePlayer, SAME_CIVIC,
+				AI_getFavoriteCivicCounter(ePlayer),
+				kPersonality.getFavoriteCivicAttitudeDivisor(),
+				kPersonality.getFavoriteCivicAttitudeChangeLimit());
 	}
-
-	return iAttitude;
+	return 0;
 }
 
 // <advc.130p>
@@ -18283,62 +18191,97 @@ void CvPlayerAI::AI_setBonusTradeCounter(PlayerTypes eIndex, int iValue)
 	m_aiBonusTradeCounter[eIndex] = iValue;
 } // </advc.130k>
 
-/*  advc.130x: Returns the absolute value of the limit for the
-	time-based religion/civics relations modifier. */
-int CvPlayerAI::AI_ideologyDiploLimit(PlayerTypes eOther, IdeologyDiploEffect eMode) const
+// advc.130n:
+int CvPlayerAI::AI_ideologyAttitudeChange(PlayerTypes eOther, IdeologicMarker eMarker,
+	int iCounter, int iDivisor, int iLimit) const
 {
-	CvLeaderHeadInfo const& kPers = GC.getInfo(getPersonalityType());
-	int iLHLimit = 0;
-	switch(eMode)
-	{
-	case SAME_RELIGION: iLHLimit = kPers.getSameReligionAttitudeChangeLimit(); break;
-	case DIFFERENT_RELIGION: iLHLimit = kPers.getDifferentReligionAttitudeChangeLimit(); break;
-	case SAME_CIVIC: iLHLimit = kPers.getFavoriteCivicAttitudeChangeLimit(); break;
-	default: FAssert(false);
-	}
-	iLHLimit = abs(iLHLimit);
-	// Don't further reduce a limit of 1
-	if(iLHLimit <= 1)
-		return iLHLimit;
+	if (iDivisor == 0 || iLimit == 0 || iCounter < abs(iDivisor))
+		return 0;
+	FAssert((iLimit < 0) == (iDivisor < 0));
+
 	int iTotal = 0;
-	int iCount = 0;
-	for (PlayerIter<MAJOR_CIV,OTHER_KNOWN_TO> itThird(getTeam());
-		itThird.hasNext(); ++itThird)
+	int iMatching = 0;
+	for (PlayerIter<MAJOR_CIV,KNOWN_TO> itPlayer(getTeam());
+		itPlayer.hasNext(); ++itPlayer)
 	{
-		if (itThird->getID() == eOther ||
-			GET_TEAM(itThird->getTeam()).isCapitulated())
-		{
+		if (GET_TEAM(itPlayer->getTeam()).isCapitulated())
 			continue;
-		}
-		iTotal++;
-		if (eMode == SAME_RELIGION && getStateReligion() != NO_RELIGION &&
-			getStateReligion() == itThird->getStateReligion())
+		int iCities = 0;
+		if (itPlayer->getID() == eOther || itPlayer->getTeam() == getTeam())
 		{
-			iCount++;
+			/*	Vision cheat - could, in principle, give away AI city counts,
+				but I think it'll normally only provide a rough estimate,
+				no better than guessing based on the player score.
+				Don't want to give players an incentive to hide or reveal
+				their cities. */
+			iCities = itPlayer->getNumCities();
 		}
-		else if (eMode == DIFFERENT_RELIGION && getStateReligion() != NO_RELIGION &&
-			itThird->getStateReligion() != NO_RELIGION &&
-			getStateReligion() != itThird->getStateReligion())
+		else
 		{
-			iCount++;
-		}
-		else if (eMode == SAME_CIVIC)
-		{
-			CivicTypes eFavCivic = kPers.getFavoriteCivic();
-			if (eFavCivic != NO_CIVIC && isCivic(eFavCivic) &&
-				itThird->isCivic(eFavCivic))
+			FOR_EACH_CITY(pCity, *itPlayer)
 			{
-				iCount++;
+				if (pCity->isRevealed(getTeam()))
+					iCities++;
 			}
+		}
+		iTotal += iCities;
+		switch (eMarker)
+		{
+		case SAME_RELIGION:
+			if (getStateReligion() != NO_RELIGION &&
+				getStateReligion() == itPlayer->getStateReligion())
+			{
+				iMatching += iCities;
+			}
+			break;
+		case DIFFERENT_RELIGION:
+			if (getStateReligion() != NO_RELIGION &&
+				itPlayer->getStateReligion() != NO_RELIGION &&
+				getStateReligion() != itPlayer->getStateReligion())
+			{
+				iMatching += iCities;
+			}
+			break;
+		case SAME_CIVIC:
+		{
+			CivicTypes eFavCivic = GC.getInfo(getPersonalityType()).getFavoriteCivic();
+			if (eFavCivic != NO_CIVIC && isCivic(eFavCivic) &&
+				itPlayer->isCivic(eFavCivic))
+			{
+				iMatching += iCities;
+			}
+		}
 		}
 	}
 	scaled rRatio = fixp(0.5);
-	/*  Since we're not counting us and them, the total can be 0. Treat this case
-		as if 50% of the other civs were sharing the ideology. */
-	if(iTotal > 0)
-		rRatio = scaled(iCount, iTotal);
-	// 0.51: To make sure we round up if the ratio is 100%
-	return iLHLimit - (fixp(0.51) * rRatio * iLHLimit).round();
+	if (iTotal > 0)
+		rRatio = scaled(iMatching, iTotal);
+	scaled const rWeight = (eMarker == SAME_RELIGION ? fixp(0.5) :
+			(eMarker == SAME_CIVIC ? fixp(0.4) : fixp(1/3.)));
+	if (iLimit > 0)
+		iLimit -= (rWeight * rRatio * iLimit).round();
+	else
+	{
+		/*	Decreased dislike when the ratio is either small (their ideology is
+			not threatening) or large (can't kill the world). */
+		if (rRatio > fixp(0.5))
+			rRatio.flipFraction();
+		rRatio.decreaseTo(rWeight);
+		iLimit = (iLimit * rRatio / rWeight).round();
+	}
+	//return range(iCounter / iDivisor, -iLimit, iLimit)
+	// <advc.130x> Higher attitude changes take slightly more time
+	int iAbsDiv = abs(iDivisor);
+	int iChange = 0;
+	while (iCounter >= iAbsDiv &&
+		iChange < iLimit && iChange > -iLimit)
+	{
+		iChange = iChange + (iDivisor > 0 ? 1 : -1);
+		iCounter -= iAbsDiv;
+		iAbsDiv++;
+	}
+	return iChange;
+	// </advc.130x>
 }
 
 
@@ -22071,7 +22014,7 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 	bool bLiberateForFree, int* piTradeVal) const
 {
 	//PROFILE_FUNC(); // (Rarely called so far; not a concern at all.)
-	// BtS code cut from AI_doDIplo. Replacement below.
+	// BtS code cut from AI_doDiplo. Replacement below.
 	/*if (kCity.getPreviousOwner() == eToPlayer)
 		return false;
 	int iCount = 0;
@@ -22088,29 +22031,51 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 	bool const bCoop = (getMasterTeam() == kToPlayer.getMasterTeam() &&
 			!GET_TEAM(kToPlayer.getTeam()).isVassal(getTeam()));
 	CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
+	CvTeam const& kToTeam = GET_TEAM(eToPlayer);
+	bool const bNonColonialVassal = (kToTeam.isVassal(getTeam()) &&
+			!kOurTeam.isParent(kToTeam.getID()));
+	if (bNonColonialVassal && kToTeam.isCapitulated() &&
+		/*	Even if they pay for the city, it's probably not worth letting a
+			a capitulated vassal go free. */
+		kToTeam.canVassalRevolt(getTeam(), false, NUM_CITY_PLOTS, kCity.getPopulation()))
+	{
+		return false;
+	}
 	int iAttitudeLevel = AI_getAttitude(eToPlayer, !bCoop);
 	bool bCede = false;
 	if (bLiberateForFree) // Some fast checks upfront
-	{	/*	Vassal who reconquers its master's or sibling vassal's city
+	{
+		if (bNonColonialVassal)
+		{
+			int iToTeamCities = kToTeam.getNumCities() + 1; // incl. kCity
+			// This is a useful check also for voluntary vassals
+			if (kToTeam.canVassalRevolt(getTeam(), false,
+				// (Should perhaps play it less safely when iKeepVal is negative?)
+				(3 * NUM_CITY_PLOTS) / 2 + iToTeamCities * 4,
+				kCity.getPopulation() + iToTeamCities * 4))
+			{
+				return false;
+			}
+		}
+		/*	Vassal who reconquers its master's or sibling vassal's city
 			shouldn't stubbornly hold onto it */
-		if (bCoop)
+		else if (bCoop)
 			bCede = true;
 		else
 		{
 			if (isAVassal()) // Can happen through AI_conquerCity
 				return false;
-			if (kOurTeam.AI_getWarPlan(kToPlayer.getTeam()) != NO_WARPLAN)
+			if (kOurTeam.AI_getWarPlan(kToTeam.getID()) != NO_WARPLAN)
 				return false;
 			if (getUWAI().isEnabled())
 			{
-				if (uwai().getCache().warUtilityIgnoringDistraction(kToPlayer.getTeam()) > 0)
+				if (uwai().getCache().warUtilityIgnoringDistraction(kToTeam.getID()) > 0)
 					return false;
 			}
 			else
 			{
-				if (!kOurTeam.AI_isAvoidWar(kToPlayer.getTeam(), true) &&
-					5 * kOurTeam.getPower(true) >
-					4 * GET_TEAM(eToPlayer).getPower(true))
+				if (!kOurTeam.AI_isAvoidWar(kToTeam.getID(), true) &&
+					5 * kOurTeam.getPower(true) > 4 * kToTeam.getPower(true))
 				{
 					return false;
 				}
@@ -22124,15 +22089,20 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 		int const iAcquireVal = kToPlayer.AI_cityTradeVal(
 				kCity, eToPlayer, LIBERATION_WEIGHT_FULL);
 		bool const bGreatEnmity = (iAttitudeLevel == ATTITUDE_FURIOUS ||
-				kOurTeam.AI_getWorstEnemy() == kToPlayer.getMasterTeam() ||
+				kOurTeam.AI_getWorstEnemy() == kToTeam.getMasterTeam() ||
 				kToPlayer.AI_getAttitude(getID()) == ATTITUDE_FURIOUS);
 				/*	(If we're their worst enemy at annoyed or better,
 					ceding a city might help.) */
 		if (bLiberateForFree)
 		{
-			// Has to be significantly more valuable to them
-			if (4 * iKeepVal > 3 * iAcquireVal)
+			/*	Has to be significantly more valuable to them -
+				especially if they're our vassal b/c then it's mostly
+				about empowering them rather than charming them. */
+			if ((bNonColonialVassal ? 15 : (kOurTeam.isParent(kToTeam.getID()) ? 12 : 8)) *
+				iKeepVal > 6 * iAcquireVal)
+			{
 				return false;
+			}
 			/*	Anticipate diplo penalties. Not a problem
 				when the trade value is very small. */
 			scaled rEnemyTradeFactor = 1;
@@ -22153,7 +22123,7 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 						continue;
 					}
 					rTotalResentment += kThirdParty.AI_enemyTradeResentmentFactor(
-							kToPlayer.getTeam(), getTeam());
+							kToTeam.getID(), getTeam());
 				}
 				rEnemyTradeFactor += (2 * rTotalResentment) /
 						scaled(TeamIter<EVER_ALIVE>::count()).sqrt();
@@ -22411,8 +22381,11 @@ void CvPlayerAI::read(FDataStreamBase* pStream)
 	pStream->Read(GC.getNumUnitClassInfos(), m_aiUnitClassWeights);
 	pStream->Read(GC.getNumUnitCombatInfos(), m_aiUnitCombatWeights);
 	// <advc.130n>
-	if (uiFlag >= 18) // (Otherwise update it in CvGame::onAllGameDataRead)
-		m_arDifferentReligionThreat.read(pStream); // </advc.130n>
+	if (uiFlag == 18)
+	{
+		ArrayEnumMap<ReligionTypes,scaled> arDifferentReligionThreat;
+		arDifferentReligionThreat.read(pStream); // discard
+	} // </advc.130n>
 	// K-Mod
 	m_GreatPersonWeights.clear();
 	if (uiFlag >= 5)
@@ -22505,7 +22478,8 @@ void CvPlayerAI::write(FDataStreamBase* pStream)
 	//uiFlag = 15; // advc.104: Don't save UWAI cache of dead civ
 	//uiFlag = 16; // advc.651
 	//uiFlag = 17; // advc.550g
-	uiFlag = 18; // advc.130n
+	//uiFlag = 18; // advc.130n
+	uiFlag = 19; // advc.130n (mostly removed again)
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iPeaceWeight);
@@ -22587,7 +22561,6 @@ void CvPlayerAI::write(FDataStreamBase* pStream)
 
 	pStream->Write(GC.getNumUnitClassInfos(), m_aiUnitClassWeights);
 	pStream->Write(GC.getNumUnitCombatInfos(), m_aiUnitCombatWeights);
-	m_arDifferentReligionThreat.write(pStream); // advc.130n
 	// K-Mod. save great person weights.
 	{
 		int iItems = m_GreatPersonWeights.size();

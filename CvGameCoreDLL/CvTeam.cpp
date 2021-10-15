@@ -1515,17 +1515,20 @@ void CvTeam::meet(TeamTypes eTeam, bool bNewDiplo,
 		GET_TEAM(getMasterTeam()).meet(eTeam, bNewDiplo, /* advc.071: */ pData);
 	if (kTeam.isAVassal())
 		GET_TEAM(kTeam.getMasterTeam()).meet(getID(), bNewDiplo, /* advc.071: */ pData);
-	// <advc.130c> Not just toward eTeam; anyone's known rank might have changed.
-	for (TeamIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(getID());
-		itOther.hasNext(); ++itOther) // </advc.130c>
+	if (isMajorCiv()) // advc.130c
 	{
-		AI().AI_updateAttitude(itOther->getID());
-	}
-	// <advc.130c> Not just toward eTeam; anyone's known rank might have changed.
-	for (TeamIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(eTeam);
-		itOther.hasNext(); ++itOther) // </advc.130c>
-	{
-		kTeam.AI().AI_updateAttitude(itOther->getID());
+		// <advc.130c> Not just toward eTeam; anyone's known rank might have changed.
+		for (TeamIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(getID());
+			itOther.hasNext(); ++itOther) // </advc.130c>
+		{
+			AI().AI_updateAttitude(itOther->getID());
+		}
+		// <advc.130c> Not just toward eTeam; anyone's known rank might have changed.
+		for (TeamIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(eTeam);
+			itOther.hasNext(); ++itOther) // </advc.130c>
+		{
+			kTeam.AI().AI_updateAttitude(itOther->getID());
+		}
 	} // </advc.001>
 }
 
@@ -1833,25 +1836,26 @@ int CvTeam::getVassalCount(TeamTypes eObs) const
 }
 
 
-bool CvTeam::canVassalRevolt(TeamTypes eMaster) const
+bool CvTeam::canVassalRevolt(TeamTypes eMaster,
+	bool bCheckLosses, int iExtraLand, int iExtraPop) const // advc.ctr
 {
 	FAssert(NO_TEAM != eMaster);
 
-	CvTeam& kMaster = GET_TEAM(eMaster);
+	CvTeam const& kMaster = GET_TEAM(eMaster);
 
-	// <advc.112>
-	if(isLossesAllowRevolt(eMaster))
-		return true; // </advc.112>
+	if (bCheckLosses && isLossesAllowRevolt(eMaster))
+		return true;
 
-	int const iFREE_VASSAL_LAND_PERCENT = GC.getDefineINT(CvGlobals::FREE_VASSAL_LAND_PERCENT); // advc
+	int const iFREE_VASSAL_LAND_PERCENT = GC.getDefineINT(CvGlobals::FREE_VASSAL_LAND_PERCENT);
 	if (iFREE_VASSAL_LAND_PERCENT < 0 ||
-		100 * std::max(10, getTotalLand(false)) < // advc.112: Lower bound added
+		100 * std::max(10, getTotalLand(false) + iExtraLand) < // advc.112: Lower bound added
 		kMaster.getTotalLand(false) * iFREE_VASSAL_LAND_PERCENT)
 	{
 		return false;
 	}
-	int const iFREE_VASSAL_POPULATION_PERCENT = GC.getDefineINT(CvGlobals::FREE_VASSAL_POPULATION_PERCENT); // advc
-	if (iFREE_VASSAL_POPULATION_PERCENT < 0 || 100 * getTotalPopulation(false) <
+	int const iFREE_VASSAL_POPULATION_PERCENT = GC.getDefineINT(CvGlobals::FREE_VASSAL_POPULATION_PERCENT);
+	if (iFREE_VASSAL_POPULATION_PERCENT < 0 ||
+		100 * (getTotalPopulation(false) + iExtraPop) <
 		kMaster.getTotalPopulation(false) * iFREE_VASSAL_POPULATION_PERCENT)
 	{
 		return false;

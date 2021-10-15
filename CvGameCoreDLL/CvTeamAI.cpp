@@ -124,9 +124,6 @@ void CvTeamAI::AI_doTurnPost()
 		for (MemberAIIter itMember(getID()); itMember.hasNext(); ++itMember)
 		{
 			itMember->AI_updateCloseBorderAttitude();
-			/*	advc.130n: Once per turn, rather than updating after
-				every change in religious city population. */
-			itMember->AI_updateDifferentReligionThreat(NO_RELIGION, false);
 			itMember->AI_updateAttitude();
 		} // K-Mod end
 		// <advc.109>
@@ -4262,18 +4259,20 @@ int CvTeamAI::AI_enmityValue(TeamTypes eEnemy) const
 		return 0;
 	CvTeam const& kEnemy = GET_TEAM(eEnemy);
 	FAssert(eEnemy != getID() && !kEnemy.isMinorCiv() && kEnemy.isHasMet(getID()));
-	if(!kEnemy.isAlive() ||
+	// advc.148: Rather than RELATIONS_THRESH_ANNOYED
+	int const iAttitudeThresh = GC.getDefineINT(CvGlobals::RELATIONS_THRESH_WORST_ENEMY);
+	if (!kEnemy.isAlive() ||
 		kEnemy.isCapitulated() || // advc.130d
-		((AI_getAttitude(eEnemy) >= ATTITUDE_CAUTIOUS ||
-		AI_getAttitude(eEnemy, false) >= ATTITUDE_CAUTIOUS) && // advc.130d
+		((AI_getAttitudeVal(eEnemy) > iAttitudeThresh ||
+		AI_getAttitudeVal(eEnemy, false) > iAttitudeThresh) && // advc.130d
 		!isAtWar(eEnemy)))
 	{
 		return 0;
 	}
-	int r = 100 - AI_getAttitudeVal(eEnemy);
+	int iR = 100 - AI_getAttitudeVal(eEnemy);
 	if(isAtWar(eEnemy) && AI_getWarPlan(eEnemy) != WARPLAN_DOGPILE)
-		r += 100;
-	return r;
+		iR += 100;
+	return iR;
 } // </advc.130p>
 
 
@@ -5034,7 +5033,7 @@ void CvTeamAI::write(FDataStreamBase* pStream)
 	//uiFlag = 4; // advc.158
 	//uiFlag = 5; // advc.650
 	//uiFlag = 6; // advc.enum: new enum map save behavior
-	uiFlag = 7; // advc.130n (Now handled by CvPlayerAI)
+	uiFlag = 7; // advc.130n (Now handled w/o extra data)
 	pStream->Write(uiFlag);
 
 	m_aiWarPlanStateCounter.write(pStream);

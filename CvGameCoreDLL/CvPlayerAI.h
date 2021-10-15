@@ -246,11 +246,7 @@ public:
 	//int AI_getKnownPlayerRank(PlayerTypes ePlayer) const; // advc.sha
 	// END: Show Hidden Attitude Mod
 	int AI_getExpansionistAttitude(PlayerTypes ePlayer) const; // advc.130w
-	// <advc.130n>
-	void AI_updateDifferentReligionThreat(ReligionTypes eReligion = NO_RELIGION,
-			bool bUpdateAttitude = true);
-	void AI_setDifferentReligionThreat(ReligionTypes eReligion, scaled rNewValue,
-			bool bUpdateAttitude = true); // </advc.130n>
+	void AI_updateIdeologyAttitude(int iChange, CvCity const& kCity); // advc.130n
 
 	PlayerVoteTypes AI_diploVote(const VoteSelectionSubData& kVoteData, VoteSourceTypes eVoteSource, bool bPropose);
 
@@ -792,7 +788,6 @@ protected:
 	int* m_aiBonusValueTrade; // advc.036
 	int* m_aiUnitClassWeights;
 	int* m_aiUnitCombatWeights;
-	ArrayEnumMap<ReligionTypes,scaled> m_arDifferentReligionThreat; // advc.130n
 	// <advc.130c>
 	bool m_abTheyFarAhead[MAX_CIV_PLAYERS];
 	bool m_abTheyBarelyAhead[MAX_CIV_PLAYERS]; // </advc.130c>
@@ -849,15 +844,10 @@ protected:
 	void AI_setPeacetimeTradeValue(PlayerTypes eIndex, int iVal);
 	void AI_setPeacetimeGrantValue(PlayerTypes eIndex, int iVal);
 	// </advc.130p>
-	// <advc.130x>
-	enum IdeologyDiploEffect
-	{
-		SAME_RELIGION,
-		DIFFERENT_RELIGION,
-		SAME_CIVIC
-	};
-	int AI_ideologyDiploLimit(PlayerTypes eOther, IdeologyDiploEffect eMode) const;
-	// </advc.130x>
+	// <advc.130n>
+	enum IdeologicMarker { SAME_RELIGION, DIFFERENT_RELIGION, SAME_CIVIC };
+	int AI_ideologyAttitudeChange(PlayerTypes eOther, IdeologicMarker eMarker,
+			int iCounter, int iDivisor, int iLimit) const; // </advc.130n>
 	// advc.130r: Are they at war with a partner of ours?
 	bool AI_atWarWithPartner(TeamTypes eOtherTeam,
 			/*  advc.130h: If CheckPartnerAttacked==true, then only partners with

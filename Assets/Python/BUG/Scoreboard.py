@@ -287,7 +287,7 @@ class Scoreboard:
 		self._set(ESPIONAGE)
 		
 	def setTrade(self): # advc.004: BULL widget help enabled
-		self._set(TRADE, True, (WidgetTypes.WIDGET_TRADE_ROUTES, self._activePlayer, self._currPlayerScore.getID()))
+		self._set(TRADE, True, (WidgetTypes.WIDGET_TRADE_ROUTES_SCOREBOARD, self._activePlayer, self._currPlayerScore.getID()))
 		
 	def setBorders(self):
 		self._set(BORDERS, True, self._getDealWidget(TradeableItems.TRADE_OPEN_BORDERS))

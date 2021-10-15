@@ -514,6 +514,9 @@ void CvPlayer::reset(PlayerTypes eID, bool bConstructorCall)
 
 	if (!bConstructorCall)
 	{
+		// <advc> Future-proofing
+		if (isBarbarian())
+			m_abLoyalMember.setAll(false); // </advc>
 		// <advc.003p>
 		FAssert(m_aszBonusHelp == NULL);
 		m_aszBonusHelp = new CvWString*[GC.getNumBonusInfos()];
@@ -1407,7 +1410,7 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 			pUnit->kill(false, getID());
 		}
 	}
-	if (bConquest) // Force unowned after conquest
+	if (bConquest) // Force to be unowned after conquest
 	{
 		int const iRange = pOldCity->getCultureLevel();
 		for (SquareIter itPlot(kCityPlot, iRange, false); itPlot.hasNext(); ++itPlot)
@@ -1760,7 +1763,7 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 	FOR_EACH_ENUM2(Religion, eReligion)
 	{
 		if (abHasReligion.get(eReligion))
-			kNewCity.setHasReligion(eReligion, true, false, true);
+			kNewCity.setHasReligion(eReligion, true, false);
 		if (abHolyCity.get(eReligion))
 			GC.getGame().setHolyCity(eReligion, &kNewCity, false);
 	}
@@ -8114,22 +8117,14 @@ void CvPlayer::changeStateReligionCount(int iChange)
 		return;
 	// religion visibility now part of espionage
 	//GC.getGame().updateCitySight(false, true);
-
 	m_iStateReligionCount += iChange;
 	FAssert(getStateReligionCount() >= 0);
-
 	// religion visibility now part of espionage
 	//GC.getGame().updateCitySight(true, true);
 
 	updateMaintenance();
 	updateReligionHappiness();
 	updateReligionCommerce();
-	// <advc.130n>
-	for (PlayerAIIter<MAJOR_CIV,KNOWN_TO> itPlayer(getTeam());
-		itPlayer.hasNext(); ++itPlayer)
-	{
-		itPlayer->AI_updateDifferentReligionThreat();
-	} // </advc.130n>
 	GC.getGame().AI_makeAssignWorkDirty();
 	gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 }
@@ -9244,7 +9239,7 @@ void CvPlayer::setCurrentEra(EraTypes eNewValue)
 
 void CvPlayer::setLastStateReligion(ReligionTypes eNewReligion)
 {
-	if(getLastStateReligion() == eNewReligion)
+	if (getLastStateReligion() == eNewReligion)
 		return;
 	FAssert(!isBarbarian()); // advc.003n
 	// religion visibility now part of espionage
@@ -9309,35 +9304,18 @@ void CvPlayer::setLastStateReligion(ReligionTypes eNewReligion)
 
 	// Python Event
 	CvEventReporter::getInstance().playerChangeStateReligion(getID(), eNewReligion, eOldReligion);
-	// <advc.130n>
-	AI().AI_updateDifferentReligionThreat();
-	for (PlayerAIIter<MAJOR_CIV,OTHER_KNOWN_TO> itPlayer(getTeam());
-		itPlayer.hasNext(); ++itPlayer)
-	{
-		if (eNewReligion != NO_RELIGION &&
-			itPlayer->getStateReligion() == eNewReligion)
-		{
-			/*	Number of (known) adherents of itPlayer's state religion has
-				(or may have) changed -- need to update all threat values. */
-			itPlayer->AI_updateDifferentReligionThreat();
-		}
-		else // Threat value of rival religions may have changed
-		{
-			if (eOldReligion != NO_RELIGION)
-				itPlayer->AI_updateDifferentReligionThreat(eOldReligion);
-			if (eNewReligion != NO_RELIGION)
-				itPlayer->AI_updateDifferentReligionThreat(eNewReligion);
-		}
-	} // </advc.130n>
 	if (isMajorCiv()) // advc.003n
 	{	// <K-Mod>
 		for (PlayerAIIter<MAJOR_CIV> it; it.hasNext(); ++it) // advc.003n
 		{
-			CvPlayerAI& kLoopPlayer = *it;
-			if (kLoopPlayer.getStateReligion() != NO_RELIGION)
+			if (it->getStateReligion() != NO_RELIGION ||
+				/*	advc.001: Update our own cache if we renounce. (Redundant
+					when we renounce by switching to a no-state-religion civic.
+					But perhaps we just chose no religion.) */
+				it->getID() == getID())
 			{
-				AI().AI_updateAttitude(kLoopPlayer.getID());
-				kLoopPlayer.AI_updateAttitude(getID());
+				AI().AI_updateAttitude(it->getID());
+				it->AI_updateAttitude(getID());
 			}
 		} // </K-Mod end>
 	}
@@ -10373,13 +10351,13 @@ void CvPlayer::setCivics(CivicOptionTypes eCivicOption, CivicTypes eNewValue)
 		bool const bRenounce = (!GC.getInfo(getCivics(eCivicOption)).isStateReligion() &&
 				GC.getInfo(eOldCivic).isStateReligion() && bWasStateReligion &&
 				getLastStateReligion() != NO_RELIGION);
-		if(bRenounce)
+		if (bRenounce)
 		{
 			szBuffer += L" " +  gDLL->getText("TXT_KEY_MISC_AND_RENOUNCE_RELIGION",
 					GC.getInfo(getLastStateReligion()).getTextKeyWide());
 		}
 		else // </advc.106>
-		if(eOldCivic != getCivilization().getInitialCivic(eCivicOption))
+		if (eOldCivic != getCivilization().getInitialCivic(eCivicOption))
 		{
 			szBuffer += L" " + gDLL->getText("TXT_KEY_MISC_AND_ABOLISH_CIVIC",
 					GC.getInfo(eOldCivic).getTextKeyWide());
@@ -10407,9 +10385,11 @@ void CvPlayer::setCivics(CivicOptionTypes eCivicOption, CivicTypes eNewValue)
 	GC.getGame().updateGwPercentAnger();
 	if (isMajorCiv()) // advc.003n
 	{	// <K-Mod>
-		for (PlayerAIIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(getTeam()); // advc.003n
+		for (PlayerAIIter<MAJOR_CIV,KNOWN_TO> itOther(getTeam()); // advc.003n
 			itOther.hasNext(); ++itOther)
 		{
+			if (itOther->getID() == getID())
+				continue;
 			AI().AI_updateAttitude(itOther->getID());
 			itOther->AI_updateAttitude(getID());
 		} // </K-Mod>
@@ -14158,6 +14138,9 @@ void CvPlayer::read(FDataStreamBase* pStream)
 		m_aeeiSpecialistExtraYield.readArray<int>(pStream);
 		m_aeeiImprovementYieldChange.readArray<int>(pStream);
 	}
+	// <advc> Future-proofing
+	if (isBarbarian())
+		m_abLoyalMember.setAll(false); // </advc>
 	m_groupCycle.Read(pStream);
 	m_researchQueue.Read(pStream);
 
@@ -14350,8 +14333,15 @@ void CvPlayer::read(FDataStreamBase* pStream)
 
 	if (!isBarbarian())
 	{
-		// Get the NetID from the initialization structure
-		setNetID(gDLL->getAssignedNetworkID(getID()));
+		if (GC.getGame().isGameMultiPlayer()) // advc.127c
+		{
+			// Get the NetID from the initialization structure
+			setNetID(gDLL->getAssignedNetworkID(getID()));
+		}
+		/*	advc.127c: When loading from within a game and the active player
+			in the loaded game differs from the one in the abandoned game,
+			the EXE doesn't seem to provide the proper net IDs. */
+		else setNetID(isActive() ? 0 : -1);
 	}
 
 	pStream->Read(&m_iPopRushHurryCount);

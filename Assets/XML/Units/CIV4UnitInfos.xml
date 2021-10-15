@@ -3156,7 +3156,7 @@
 			<ReligionSpreads>
 				<ReligionSpread>
 					<ReligionType>RELIGION_JUDAISM</ReligionType>
-					<!-- K-Mod: was 40 -->
+					<!-- K-Mod: Was 40 (but is no longer halved for rival cities) -->
 					<iReligionSpread>20</iReligionSpread>
 				</ReligionSpread>
 			</ReligionSpreads>

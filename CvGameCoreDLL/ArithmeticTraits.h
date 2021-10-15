@@ -22,6 +22,15 @@ struct arithm_traits<T, true, false, false>
 	static T const max = integer_limits<T>::max;
 	static bool const is_signed = integer_limits<T>::is_signed;
 };
+// Not covered above (b/c integer_limits doesn't treat bool as is_integer)
+template<>
+struct arithm_traits<bool>
+{
+	static bool const is_arithmetic = false;
+	static bool const min = false;
+	static bool const max = true;
+	static bool const is_signed = false;
+};
 template<class T>
 struct arithm_traits<T, false, true, false>
 {
@@ -44,13 +53,11 @@ template<>
 struct arithm_traits<float>
 {
 	static bool const is_arithmetic = true;
+	// (Defined in implementation file b/c non-integral)
 	static float const min;
 	static float const max;
 	static bool const is_signed = true;
 };
-// (Can define only integral constants in-class)
-float const arithm_traits<float>::min = FLT_MIN;
-float const arithm_traits<float>::max = FLT_MAX;
 template<>
 struct arithm_traits<double>
 {
@@ -59,7 +66,5 @@ struct arithm_traits<double>
 	static double const max;
 	static bool const is_signed = true;
 };
-double const arithm_traits<double>::min = DBL_MIN;
-double const arithm_traits<double>::max = DBL_MAX;
 
 #endif
