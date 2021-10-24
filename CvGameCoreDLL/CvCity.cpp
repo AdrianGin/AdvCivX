@@ -10373,13 +10373,13 @@ void CvCity::doCulture()
 	changeCultureTimes100(getOwner(), getCommerceRateTimes100(COMMERCE_CULTURE), false, true);
 }
 
-// advc: Replacing magic number in doPlotCultureTimes100
+// advc: Replacing local variable in doPlotCultureTimes100
 namespace
 {
 	int iPLOT_CULTURE_EXTRA_RANGE = 3;
 }
 
-// advc: Was 10 as a magic number. Should still be 10.
+// advc: Was 10 as a local variable. Should still be 10.
 int CvCity::plotCultureScale()
 {	
 	return GC.getNumCultureLevelInfos() + iPLOT_CULTURE_EXTRA_RANGE;
@@ -11569,7 +11569,7 @@ void CvCity::read(FDataStreamBase* pStream)
 					if (GC.getInfo(eLoopBuilding).getReligionType() == eAPReligion)
 					{
 						setBuildingYieldChange(CvCivilization::buildingClass(eLoopBuilding),
-								/*	Set the yield to 1 rather than adding 1.
+								/*	Set the yield to 1 rather than subtracting 1.
 									To address a bug that had existed in AdvCiv 1.00
 									and had, in some circumstances, set the yield to 0. */
 								YIELD_PRODUCTION, 1);
