@@ -11549,8 +11549,11 @@ void CvCity::read(FDataStreamBase* pStream)
 				{
 					if (GC.getInfo(eLoopBuilding).getReligionType() == eAPReligion)
 					{
-						changeBuildingYieldChange(CvCivilization::buildingClass(eLoopBuilding),
-								YIELD_PRODUCTION, -1);
+						setBuildingYieldChange(CvCivilization::buildingClass(eLoopBuilding),
+								/*	Set the yield to 1 rather than adding 1.
+									To address a bug that had existed in AdvCiv 1.00
+									and had, in some circumstances, set the yield to 0. */
+								YIELD_PRODUCTION, 1);
 					}
 				}
 			}
