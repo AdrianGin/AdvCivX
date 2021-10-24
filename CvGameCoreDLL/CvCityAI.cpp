@@ -7064,7 +7064,7 @@ int CvCityAI::AI_culturePressureFactor() const
 	{
 		CvPlot const& kPlot = *itPlot;
 		if (!kPlot.isWithinCultureRange(getOwner()))
-			continue; // advc
+			continue;
 		for (PlayerIter<CIV_ALIVE,NOT_SAME_TEAM_AS> it(getTeam()); it.hasNext(); ++it)
 		{
 			CvPlayer const& kPlayer = *it;
