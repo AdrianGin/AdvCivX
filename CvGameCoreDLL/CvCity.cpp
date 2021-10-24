@@ -3783,10 +3783,11 @@ int CvCity::badHealth(bool bNoAngry, int iExtra) const
 	iHealth = GC.getInfo(getHandicapType()).getHealthBonus();
 	if (iHealth < 0)
 		iTotalHealth += iHealth;
-
-	iHealth = getExtraBuildingBadHealth();
+	/*	advc.001 (from Better BUG AI, fix by Fuyu):
+		Already counted by totalBadBuildingHealth. */
+	/*iHealth = getExtraBuildingBadHealth();
 	if (iHealth < 0)
-		iTotalHealth += iHealth;
+		iTotalHealth += iHealth;*/
 
 	return (unhealthyPopulation(bNoAngry, iExtra) - iTotalHealth);
 }
