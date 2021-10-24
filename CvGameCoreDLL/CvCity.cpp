@@ -8776,6 +8776,15 @@ void CvCity::changeEspionageDefenseModifier(int iChange)
 	m_iEspionageDefenseModifier += iChange;
 }
 
+// advc:
+int CvCity::cultureTimes100InsertedByMission(EspionageMissionTypes eMission) const
+{
+	int iCultureAmount = GC.getInfo(eMission).getCityInsertCultureAmountFactor() *
+			countTotalCultureTimes100();
+	iCultureAmount /= 100;
+	return std::max(100, iCultureAmount);
+}
+
 
 bool CvCity::isWorkingPlot(CvPlot const& kPlot) const
 {
@@ -10364,6 +10373,18 @@ void CvCity::doCulture()
 	changeCultureTimes100(getOwner(), getCommerceRateTimes100(COMMERCE_CULTURE), false, true);
 }
 
+// advc: Replacing magic number in doPlotCultureTimes100
+namespace
+{
+	int iPLOT_CULTURE_EXTRA_RANGE = 3;
+}
+
+// advc: Was 10 as a magic number. Should still be 10.
+int CvCity::plotCultureScale()
+{	
+	return GC.getNumCultureLevelInfos() + iPLOT_CULTURE_EXTRA_RANGE;
+}
+
 /*	This function has essentially been rewritten for K-Mod.
 	(and it used to not be 'times 100') */
 void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
@@ -10383,10 +10404,8 @@ void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
 	//const double iB = log((double)iOuterRatio)/iCultureRange;
 	/*	(iScale-1)(iDistance - iRange)^2/(iRange^2) + 1
 		This approximates the exponential pretty well */
-	int const iExtraRange = 3;
-	// advc: Was 10 - should still be 10.
-	int const iScale = GC.getNumCultureLevelInfos() + iExtraRange;
-	int const iCultureRange = eCultureLevel + iExtraRange;
+	int const iScale = plotCultureScale();
+	int const iCultureRange = eCultureLevel + iPLOT_CULTURE_EXTRA_RANGE;
 
 	if (bCityCulture)
 	{

@@ -19135,10 +19135,7 @@ void CvGameTextMgr::setEspionageCostHelp(CvWStringBuffer &szBuffer,
 		CvCity const* pCity = pPlot->getPlotCity();
 		if (pCity != NULL && pPlot->getCulture(kPlayer.getID()) > 0)
 		{
-			int iCultureAmount = kMission.getCityInsertCultureAmountFactor() *
-					pCity->countTotalCultureTimes100();
-			iCultureAmount /= 10000;
-			iCultureAmount = std::max(1, iCultureAmount);
+			int iCultureAmount = pCity->cultureTimes100InsertedByMission(eMission) / 100;
 			szBuffer.append(gDLL->getText("TXT_KEY_ESPIONAGE_HELP_INSERT_CULTURE",
 					pCity->getNameKey(), iCultureAmount,
 					kMission.getCityInsertCultureAmountFactor()));

@@ -11927,10 +11927,7 @@ int CvPlayer::getEspionageMissionBaseCost(EspionageMissionTypes eMission, Player
 		// Insert Culture into City
 		if (pPlot != NULL && pPlot->getCulture(getID()) > 0)
 		{
-			int iCultureAmount = kMission.getCityInsertCultureAmountFactor() *
-					pCity->countTotalCultureTimes100();
-			iCultureAmount /= 10000;
-			iCultureAmount = std::max(1, iCultureAmount);
+			int iCultureAmount = pCity->cultureTimes100InsertedByMission(eMission) / 100;
 			iMissionCost = iBaseMissionCost +
 					(kMission.getCityInsertCultureCostFactor() * iCultureAmount) / 100;
 		}
@@ -12274,8 +12271,9 @@ bool CvPlayer::doEspionageMission(EspionageMissionTypes eMission, PlayerTypes eT
 			pCity->changeCulture(getID(), iCultureAmount % iNumTurnsApplied, false, true);
 		}*/ // BtS
 		// K-Mod. apply culture in one hit. We don't need fake 'free city culture' anymore.
-		int iCultureTimes100 = std::max(1, kMission.getCityInsertCultureAmountFactor() *
-				pCity->countTotalCultureTimes100() / 100);
+		/*	advc: Calculation moved into new function.
+			And now at least 100/100 culture instead of 1/100. */
+		int iCultureTimes100 = pCity->cultureTimes100InsertedByMission(eMission);
 		//pCity->changeCultureTimes100(getID(), iCultureTimes100, true, true);
 		// plot culture only
 		pCity->doPlotCultureTimes100(true, getID(), iCultureTimes100, false);
