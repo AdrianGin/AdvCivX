@@ -4,22 +4,17 @@
 
 #include "CvGameCoreDLL.h"
 #include "CyPlayer.h"
-#include "CyUnit.h"
-#include "CyCity.h"
-#include "CyArea.h"
-#include "CyPlot.h"
 #include "CvPlayerAI.h"
-#include "CvMap.h"
+#include "CyArea.h"
 #include "CySelectionGroup.h"
+#include "CvMap.h"
 #include "CvDLLPythonIFaceBase.h"
 
-CyPlayer::CyPlayer() : m_pPlayer(NULL)
-{
-}
-
-CyPlayer::CyPlayer(CvPlayer* pPlayer) : m_pPlayer(pPlayer)
-{
-}
+CyPlayer::CyPlayer() : m_pPlayer(NULL) {}
+CyPlayer::CyPlayer(CvPlayer* pPlayer) : m_pPlayer(
+	pPlayer == NULL ? NULL : &pPlayer->AI()) // advc.003u
+{}
+//CvPlayer* CyPlayer::getPlayer() { return m_pPlayer; } // advc: unused
 
 // CHANGE_PLAYER, 08/27/08. jdog5000:
 void CyPlayer::changeLeader(int /*LeaderHeadTypes*/ eNewLeader)
@@ -49,10 +44,11 @@ bool CyPlayer::startingPlotWithinRange(CyPlot *pPlot, int /*PlayerTypes*/ ePlaye
 {
 	if (m_pPlayer && pPlot != NULL && !pPlot->isNone())
 	{
-		CvPlot *pcvPlot = pPlot->getPlot();
-		if (pPlot)
+		CvPlot* pCvPlot = pPlot->getPlot();
+		//if (pPlot)
+		if (pCvPlot != NULL) // advc.001
 		{
-			return m_pPlayer->startingPlotWithinRange(pcvPlot, (PlayerTypes)ePlayer, iRange, iPass);
+			return m_pPlayer->startingPlotWithinRange(*pCvPlot, (PlayerTypes)ePlayer, iRange, iPass);
 		}
 	}
 	return NULL;
@@ -60,7 +56,15 @@ bool CyPlayer::startingPlotWithinRange(CyPlot *pPlot, int /*PlayerTypes*/ ePlaye
 
 CyPlot* CyPlayer::findStartingPlot(bool bRandomize)
 {
-	return m_pPlayer ? new CyPlot(m_pPlayer->findStartingPlot(bRandomize)) : NULL;
+	if (m_pPlayer == NULL)
+		return NULL;
+	//return new CyPlot(m_pPlayer->findStartingPlot(true));
+	// <advc.027> bRandomize param no longer exists
+	/*	This is intended for the WB scenario parser, but will also work
+		if a map script uses the bRandomize param. */
+	if (bRandomize)
+		m_pPlayer->setRandomWBStart(true);
+	return new CyPlot(m_pPlayer->findStartingPlot()); // </advc.027>
 }
 
 CyCity* CyPlayer::initCity(int x, int y)
@@ -222,7 +226,7 @@ int CyPlayer::findBestFoundValue()
 
 int CyPlayer::countReligionSpreadUnits(CyArea* pArea, int /*ReligionTypes*/ eReligion)
 {
-	return m_pPlayer ? m_pPlayer->countReligionSpreadUnits(pArea->getArea(), (ReligionTypes) eReligion) : -1;
+	return m_pPlayer ? m_pPlayer->countReligionSpreadUnits(&pArea->getArea(), (ReligionTypes)eReligion) : -1;
 }
 
 int CyPlayer::countNumCoastalCities()
@@ -242,7 +246,7 @@ int CyPlayer::countTotalCulture()
 
 int CyPlayer::countOwnedBonuses(int /*BonusTypes*/ eBonus)
 {
-	return m_pPlayer ? m_pPlayer->countOwnedBonuses((BonusTypes)eBonus) : NO_BONUS;
+	return m_pPlayer ? m_pPlayer->AI().AI_countOwnedBonuses((BonusTypes)eBonus) : NO_BONUS;
 }
 
 int CyPlayer::countUnimprovedBonuses(CyArea* pArea, CyPlot* pFromPlot)
@@ -353,19 +357,19 @@ int CyPlayer::getNumGovernmentCenters()
 
 bool CyPlayer::canRaze(CyCity* pCity)
 {
-	return m_pPlayer ? m_pPlayer->canRaze(pCity->getCity()) : false;
+	return m_pPlayer ? m_pPlayer->canRaze(*pCity->getCity()) : false;
 }
 
 void CyPlayer::raze(CyCity* pCity)
 {
 	if (m_pPlayer)
-		m_pPlayer->raze(pCity->getCity());
+		m_pPlayer->raze(*pCity->getCity());
 }
 
 void CyPlayer::disband(CyCity* pCity)
 {
 	if (m_pPlayer)
-		m_pPlayer->disband(pCity->getCity());
+		m_pPlayer->disband(*pCity->getCity());
 }
 
 bool CyPlayer::canReceiveGoody(CyPlot* pPlot, int /*GoodyTypes*/ iIndex, CyUnit* pUnit)
@@ -387,7 +391,11 @@ void CyPlayer::doGoody(CyPlot* pPlot, CyUnit* pUnit)
 
 bool CyPlayer::canFound(int iX, int iY)
 {
-	return m_pPlayer ? m_pPlayer->canFound(iX, iY) : false;
+	/*	advc: Moved from CvPlayer::canFound b/c there no need to check this
+		for DLL-internal calls */
+	if (GC.getMap().plot(iX, iY) == NULL || m_pPlayer == NULL)
+		return false;
+	return m_pPlayer->canFound(iX, iY);
 }
 
 void CyPlayer::found(int x, int y)
@@ -459,7 +467,13 @@ void CyPlayer::removeBuildingClass(int /*BuildingClassTypes*/ eBuildingClass)
 
 bool CyPlayer::canBuild(CyPlot* pPlot, int /*BuildTypes*/ eBuild, bool bTestEra, bool bTestVisible)
 {
-	return m_pPlayer ? m_pPlayer->canBuild(pPlot->getPlot(), (BuildTypes)eBuild, bTestEra, bTestVisible) : false;
+	if (m_pPlayer == NULL)
+		return false;
+	// <advc> Pass by reference
+	CvPlot const* p = pPlot->getPlot();
+	if (p == NULL)
+		return false; // </advc>
+	return m_pPlayer->canBuild(*p, (BuildTypes)eBuild, bTestEra, bTestVisible);
 }
 
 int /*RouteTypes*/ CyPlayer::getBestRoute(CyPlot* pPlot) const
@@ -551,22 +565,17 @@ int CyPlayer::calculateResearchModifier(int /*TechTypes*/ eTech)
 {
 	return m_pPlayer ? m_pPlayer->calculateResearchModifier((TechTypes)eTech) : -1;
 }
-
-/*
-** K-Mod, 18/dec/10, karadoc
-*/
-int CyPlayer::calculatePollution(int iTypes) const
+// <K-Mod> 18/dec/10
+int CyPlayer::calculatePollution(int iPollution) const
 {
-	return m_pPlayer ? m_pPlayer->calculatePollution(iTypes) : 0;
+	return m_pPlayer ? m_pPlayer->calculatePollution(
+			(CvPlayer::PollutionFlags)iPollution) : -1; // advc.enum
 }
 
 int CyPlayer::getGwPercentAnger() const
 {
-	return m_pPlayer ? m_pPlayer->getGwPercentAnger() : 0;
-}
-/*
-** K-Mod end
-*/
+	return m_pPlayer ? m_pPlayer->getGwPercentAnger() : /* advc: */ -1;
+} // </K-Mod>
 
 /* int CyPlayer::calculateBaseNetResearch()
 {
@@ -617,8 +626,12 @@ bool CyPlayer::canSeeResearch(int /*PlayerTypes*/ ePlayer) const
 bool CyPlayer::canSeeDemographics(int /*PlayerTypes*/ ePlayer) const
 {
 	return m_pPlayer ? m_pPlayer->canSeeDemographics((PlayerTypes)ePlayer) : false;
+} // K-Mod end
+// advc.091:
+bool CyPlayer::hasEverSeenDemographics(int iPlayer) const
+{
+	return m_pPlayer ? m_pPlayer->hasEverSeenDemographics((PlayerTypes)iPlayer) : false;
 }
-// K-Mod end
 
 bool CyPlayer::isCivic(int /*CivicTypes*/ eCivic)
 {
@@ -630,15 +643,27 @@ bool CyPlayer::canDoCivics(int /*CivicTypes*/ eCivic)
 	return m_pPlayer ? m_pPlayer->canDoCivics((CivicTypes)eCivic) : false;
 }
 
-bool CyPlayer::canRevolution(int /*CivicTypes**/ paeNewCivics)
+bool CyPlayer::canRevolution(/* <advc> */int) // (see declaration)
 {
-	return m_pPlayer ? m_pPlayer->canRevolution((CivicTypes*)paeNewCivics) : false;
+	return m_pPlayer ? m_pPlayer->canDoAnyRevolution() : false; // </advc>
+}
+// advc.001:
+bool CyPlayer::canAdopt(boost::python::list& kNewCivics)
+{
+	if (m_pPlayer == NULL)
+		return false;
+	CivicMap aeNewCivics; // advc.enum
+	pyListToCivicMap(kNewCivics, aeNewCivics);
+	return m_pPlayer->canRevolution(aeNewCivics);
 }
 
-void CyPlayer::revolution(int /*CivicTypes**/ paeNewCivics, bool bForce)
+void CyPlayer::revolution(boost::python::list& kNewCivics, bool bForce)
 {
-	if (m_pPlayer)
-		m_pPlayer->revolution((CivicTypes*)paeNewCivics, bForce);
+	if (m_pPlayer == NULL)
+		return;
+	CivicMap aeNewCivics; // advc.enum
+	pyListToCivicMap(kNewCivics, aeNewCivics);
+	m_pPlayer->revolution(aeNewCivics, bForce);
 }
 
 int CyPlayer::getCivicPercentAnger(int /*CivicTypes*/ eCivic)
@@ -704,14 +729,13 @@ void CyPlayer::foundCorporation(int /*CorporationTypes*/ iIndex)
 		m_pPlayer->foundCorporation((CorporationTypes)iIndex);
 }
 
-int CyPlayer::getCivicAnarchyLength(boost::python::list& /*CivicTypes**/ paeNewCivics)
+int CyPlayer::getCivicAnarchyLength(boost::python::list& kNewCivics)
 {
-	int* pCivics = NULL;
-	gDLL->getPythonIFace()->putSeqInArray(paeNewCivics.ptr() /*src*/, &pCivics /*dst*/);
-
-	int iRet = m_pPlayer ? m_pPlayer->getCivicAnarchyLength((CivicTypes*)pCivics) : -1;
-	delete [] pCivics;
-	return iRet;
+	if (m_pPlayer == NULL)
+		return -1;
+	CivicMap aeNewCivics; // advc.enum
+	pyListToCivicMap(kNewCivics, aeNewCivics);
+	return m_pPlayer->getCivicAnarchyLength(aeNewCivics);
 }
 
 int CyPlayer::getReligionAnarchyLength()
@@ -770,6 +794,13 @@ void CyPlayer::setStartingPlot(CyPlot* pPlot, bool bUpdateStartDist)
 
 	m_pPlayer->setStartingPlot(NULL != pPlot ? pPlot->getPlot() : NULL, bUpdateStartDist);
 }
+// advc.027:
+void CyPlayer::forceRandomWBStart()
+{
+	if (m_pPlayer == NULL)
+		return;
+	m_pPlayer->setRandomWBStart(true);
+}
 
 int CyPlayer::getTotalPopulation()
 {
@@ -781,7 +812,7 @@ int CyPlayer::getAveragePopulation()
 	return m_pPlayer ? m_pPlayer->getAveragePopulation() : -1;
 }
 
-long CyPlayer::getRealPopulation()
+int CyPlayer::getRealPopulation() // advc: Return type was long
 {
 	return m_pPlayer ? m_pPlayer->getRealPopulation() : -1;
 }
@@ -1019,10 +1050,13 @@ int CyPlayer::getHurryModifier()
 
 void CyPlayer::createGreatPeople(int eGreatPersonUnit, bool bIncrementThreshold, bool bIncrementExperience, int iX, int iY)
 {
-	if (m_pPlayer)
-	{
-		m_pPlayer->createGreatPeople((UnitTypes)eGreatPersonUnit, bIncrementThreshold, bIncrementExperience, iX, iY);
-	}
+	if (m_pPlayer == NULL)
+		return;
+	// <advc> Pass by reference
+	CvPlot* p = GC.getMap().plot(iX, iY);
+	if (p == NULL)
+		return; // </advc>
+	m_pPlayer->createGreatPeople((UnitTypes)eGreatPersonUnit, bIncrementThreshold, bIncrementExperience, *p);
 
 }
 
@@ -1208,18 +1242,16 @@ int CyPlayer::getOverflowResearch()
 	return m_pPlayer ? m_pPlayer->getOverflowResearch() : 0;
 }
 
-/* original bts code
-bool CyPlayer::isNoUnhealthyPopulation() {
+/*bool CyPlayer::isNoUnhealthyPopulation() {
 	return m_pPlayer ? m_pPlayer->isNoUnhealthyPopulation() : false;
 }*/
-/*  K-Mod, 27/dec/10, karadoc
-	replaced NoUnhealthyPopulation with UnhealthyPopulationModifier */
+// K-Mod, 27/dec/10: replaced with UnhealthyPopulationModifier
 int CyPlayer::getUnhealthyPopulationModifier()
 {
 	return m_pPlayer ? m_pPlayer->getUnhealthyPopulationModifier() : 0;
-} // K-Mod end
+}
 
-bool CyPlayer::getExpInBorderModifier()
+int CyPlayer::getExpInBorderModifier() // advc: was bool
 {
 	return m_pPlayer ? m_pPlayer->getExpInBorderModifier() : false;
 }
@@ -1398,7 +1430,7 @@ int CyPlayer::getStateReligionFreeExperience()
 
 CyCity* CyPlayer::getCapitalCity()
 {
-	return m_pPlayer ? new CyCity(m_pPlayer->getCapitalCity()) : NULL;
+	return m_pPlayer ? new CyCity(m_pPlayer->getCapital()) : NULL;
 }
 
 int CyPlayer::getCitiesLost()
@@ -1588,6 +1620,12 @@ int CyPlayer::getCapitalYieldRateModifier(YieldTypes eIndex)
 int CyPlayer::getExtraYieldThreshold(YieldTypes eIndex)
 {
 	return m_pPlayer ? m_pPlayer->getExtraYieldThreshold(eIndex) : NO_YIELD;
+}
+
+// advc.908a:
+int CyPlayer::getExtraYieldNaturalThreshold(YieldTypes eIndex)
+{
+	return m_pPlayer ? m_pPlayer->getExtraYieldNaturalThreshold(eIndex) : NO_YIELD;
 }
 
 int CyPlayer::getTradeYieldModifier(YieldTypes eIndex)
@@ -1866,13 +1904,15 @@ int CyPlayer::getSingleCivicUpkeep(int /*CivicTypes*/ eCivic, bool bIgnoreAnarch
 	return m_pPlayer ? m_pPlayer->getSingleCivicUpkeep((CivicTypes) eCivic, bIgnoreAnarchy) : -1;
 }
 
-int CyPlayer::getCivicUpkeep(boost::python::list& /*CivicTypes*/ paiCivics, bool bIgnoreAnarchy)
+int CyPlayer::getCivicUpkeep(boost::python::list& kCivics, bool bIgnoreAnarchy)
 {
-	int* pCivics = NULL;
-	gDLL->getPythonIFace()->putSeqInArray(paiCivics.ptr() /*src*/, &pCivics /*dst*/);
-	int iRet = m_pPlayer ? m_pPlayer->getCivicUpkeep((CivicTypes*)pCivics, bIgnoreAnarchy) : -1;
-	delete [] pCivics;
-	return iRet;
+	if (m_pPlayer == NULL)
+		return -1;
+	// <advc.enum>
+	CivicMap aeCivics;
+	m_pPlayer->getCivics(aeCivics);
+	pyListToCivicMap(kCivics, aeCivics); // </advc.enum>
+	return m_pPlayer->getCivicUpkeep(&aeCivics, bIgnoreAnarchy);
 }
 
 void CyPlayer::setCivics(int /*CivicOptionTypes*/ eIndex, int /*CivicTypes*/ eNewValue)
@@ -1884,27 +1924,21 @@ void CyPlayer::setCivics(int /*CivicOptionTypes*/ eIndex, int /*CivicTypes*/ eNe
 int CyPlayer::getCombatExperience() const
 {
 	if (m_pPlayer)
-	{
 		return m_pPlayer->getCombatExperience();
-	}
 	return -1;
 }
 
 void CyPlayer::changeCombatExperience(int iChange)
 {
 	if (m_pPlayer)
-	{
 		m_pPlayer->changeCombatExperience(iChange);
-	}
 
 }
 
 void CyPlayer::setCombatExperience(int iExperience)
 {
 	if (m_pPlayer)
-	{
 		m_pPlayer->setCombatExperience(iExperience);
-	}
 
 }
 
@@ -1921,9 +1955,7 @@ int CyPlayer::findPathLength(int /*TechTypes*/ eTech, bool bCost)
 int CyPlayer::getQueuePosition(int /* TechTypes */ eTech)
 {
 	if (m_pPlayer)
-	{
 		return m_pPlayer->getQueuePosition((TechTypes)eTech);
-	}
 	return -1;
 }
 
@@ -1972,7 +2004,10 @@ python::tuple CyPlayer::firstCity(bool bRev)
 	CvCity* pvObj = m_pPlayer ? m_pPlayer->firstCity(&iterIn, bRev) : NULL;
 	CyCity* pyObj = pvObj ? new CyCity(pvObj) : NULL;
 	python::tuple tup=python::make_tuple(pyObj, iterIn);
-	delete pyObj;
+	/*  advc.001: m_pPlayer==NULL can't currently happen (it seems), but if it does,
+		pyObj will be NULL. Bugfix adopted from C2C (billw2015). Same for the
+		SAFE_DELETE calls in the other first/next functions below. */
+	SAFE_DELETE(pyObj);
 	return tup;
 }
 
@@ -1982,7 +2017,7 @@ python::tuple CyPlayer::nextCity(int iterIn, bool bRev)
 	CvCity* pvObj = m_pPlayer ? m_pPlayer->nextCity(&iterIn, bRev) : NULL;
 	CyCity* pyObj = pvObj ? new CyCity(pvObj) : NULL;
 	python::tuple tup=python::make_tuple(pyObj, iterIn);
-	delete pyObj;
+	SAFE_DELETE(pyObj);
 	return tup;
 }
 
@@ -2003,7 +2038,7 @@ python::tuple CyPlayer::firstUnit(bool bRev)
 	CvUnit* pvUnit = m_pPlayer ? m_pPlayer->firstUnit(&iterIn, bRev) : NULL;
 	CyUnit* pyUnit = pvUnit ? new CyUnit(pvUnit) : NULL;
 	python::tuple tup=python::make_tuple(pyUnit, iterIn);
-	delete pyUnit;
+	SAFE_DELETE(pyUnit);
 	return tup;
 }
 
@@ -2013,7 +2048,7 @@ python::tuple CyPlayer::nextUnit(int iterIn, bool bRev)
 	CvUnit* pvObj = m_pPlayer ? m_pPlayer->nextUnit(&iterIn, bRev) : NULL;
 	CyUnit* pyObj = pvObj ? new CyUnit(pvObj) : NULL;
 	python::tuple tup=python::make_tuple(pyObj, iterIn);
-	delete pyObj;
+	SAFE_DELETE(pyObj);
 	return tup;
 
 }
@@ -2035,7 +2070,7 @@ python::tuple CyPlayer::firstSelectionGroup(bool bRev)
 	CvSelectionGroup* pvObj = m_pPlayer ? m_pPlayer->firstSelectionGroup(&iterIn, bRev) : NULL;
 	CySelectionGroup* pyObj = pvObj ? new CySelectionGroup(pvObj) : NULL;
 	python::tuple tup=python::make_tuple(pyObj, iterIn);
-	delete pyObj;
+	SAFE_DELETE(pyObj);
 	return tup;
 }
 
@@ -2045,7 +2080,7 @@ python::tuple CyPlayer::nextSelectionGroup(int iterIn, bool bRev)
 	CvSelectionGroup* pvObj = m_pPlayer ? m_pPlayer->nextSelectionGroup(&iterIn, bRev) : NULL;
 	CySelectionGroup* pyObj = pvObj ? new CySelectionGroup(pvObj) : NULL;
 	python::tuple tup=python::make_tuple(pyObj, iterIn);
-	delete pyObj;
+	SAFE_DELETE(pyObj);
 	return tup;
 }
 
@@ -2096,15 +2131,31 @@ int CyPlayer::getEventTriggerWeight(int /*EventTriggerTypes*/ eTrigger)
 	return m_pPlayer ? m_pPlayer->getEventTriggerWeight((EventTriggerTypes)eTrigger) : NULL;
 }
 
-void CyPlayer::AI_updateFoundValues(bool bStartingLoc)
+void CyPlayer::AI_updateFoundValues(bool bStarting)
 {
 	if (m_pPlayer)
-		m_pPlayer->AI_updateFoundValues(bStartingLoc);
+		m_pPlayer->AI_updateFoundValues(bStarting);
 }
 
-int CyPlayer::AI_foundValue(int iX, int iY, int iMinUnitRange/* = -1*/, bool bStartingLoc/* = false*/)
+int CyPlayer::AI_foundValue(int iX, int iY, int iMinRivalRange/* = -1*/, bool bStarting/* = false*/)
 {
-	return m_pPlayer ? m_pPlayer->AI_foundValue(iX, iY, iMinUnitRange, bStartingLoc) : -1;
+	if (m_pPlayer == NULL)
+		return -1;
+	/*  <advc.031e> Moved from AI_foundValue. Within the DLL, the caller now explicitly
+		distinguishes between starting locations being placed (bStartingLoc) or
+		normalized (bNormalize). Python callers won't make this distinction; so the
+		old "nice hacky way to avoid messing with normalizer" (BtS comment) is still
+		needed here. */
+	bool bStartingLoc = false;
+	bool bNormalize = false;
+	if (bStarting)
+	{
+		if (GC.getMap().plot(iX, iY) != m_pPlayer->getStartingPlot())
+			bStartingLoc = true;
+		else bNormalize = true;
+	} // </advc.031e>
+	FErrorMsg("Just to see if this works correctly if it ever happens");
+	return m_pPlayer->AI_foundValue(iX, iY, iMinRivalRange, bStartingLoc, bNormalize);
 }
 
 bool CyPlayer::AI_isFinancialTrouble()
@@ -2132,12 +2183,12 @@ bool CyPlayer::AI_demandRebukedWar(int /*PlayerTypes*/ ePlayer)
 
 AttitudeTypes CyPlayer::AI_getAttitude(int /*PlayerTypes*/ ePlayer)
 {
-	return m_pPlayer ? m_pPlayer->AI_getAttitude((PlayerTypes)ePlayer) : NO_ATTITUDE;
+	return (m_pPlayer == NULL ? NO_ATTITUDE :m_pPlayer->AI_getAttitude((PlayerTypes)ePlayer));
 }
 
 int CyPlayer::AI_unitValue(int /*UnitTypes*/ eUnit, int /*UnitAITypes*/ eUnitAI, CyArea* pArea)
 {
-	return m_pPlayer ? m_pPlayer->AI_unitValue((UnitTypes)eUnit, (UnitAITypes)eUnitAI, pArea->getArea()) : -1;
+	return m_pPlayer ? m_pPlayer->AI_unitValue((UnitTypes)eUnit, (UnitAITypes)eUnitAI, &pArea->getArea()) : -1;
 }
 
 int CyPlayer::AI_civicValue(int /*CivicTypes*/ eCivic)
@@ -2208,37 +2259,37 @@ void CyPlayer::AI_setExtraGoldTarget(int iNewValue)
 
 int CyPlayer::getScoreHistory(int iTurn) const
 {
-	return (NULL != m_pPlayer ? m_pPlayer->getScoreHistory(iTurn) : 0);
+	return (NULL != m_pPlayer ? m_pPlayer->getHistorySafe(PLAYER_HISTORY_SCORE, iTurn) : -1);
 }
 
 int CyPlayer::getEconomyHistory(int iTurn) const
 {
-	return (NULL != m_pPlayer ? m_pPlayer->getEconomyHistory(iTurn) : 0);
+	return (NULL != m_pPlayer ? m_pPlayer->getHistorySafe(PLAYER_HISTORY_ECONOMY, iTurn) : -1);
 }
 
 int CyPlayer::getIndustryHistory(int iTurn) const
 {
-	return (NULL != m_pPlayer ? m_pPlayer->getIndustryHistory(iTurn) : 0);
+	return (NULL != m_pPlayer ? m_pPlayer->getHistorySafe(PLAYER_HISTORY_INDUSTRY, iTurn) : -1);
 }
 
 int CyPlayer::getAgricultureHistory(int iTurn) const
 {
-	return (NULL != m_pPlayer ? m_pPlayer->getAgricultureHistory(iTurn) : 0);
+	return (NULL != m_pPlayer ? m_pPlayer->getHistorySafe(PLAYER_HISTORY_AGRICULTURE, iTurn) : -1);
 }
 
 int CyPlayer::getPowerHistory(int iTurn) const
 {
-	return (NULL != m_pPlayer ? m_pPlayer->getPowerHistory(iTurn) : 0);
+	return (NULL != m_pPlayer ? m_pPlayer->getHistorySafe(PLAYER_HISTORY_POWER, iTurn) : -1);
 }
 
 int CyPlayer::getCultureHistory(int iTurn) const
 {
-	return (NULL != m_pPlayer ? m_pPlayer->getCultureHistory(iTurn) : 0);
+	return (NULL != m_pPlayer ? m_pPlayer->getHistorySafe(PLAYER_HISTORY_CULTURE, iTurn) : -1);
 }
 
 int CyPlayer::getEspionageHistory(int iTurn) const
 {
-	return (NULL != m_pPlayer ? m_pPlayer->getEspionageHistory(iTurn) : 0);
+	return (NULL != m_pPlayer ? m_pPlayer->getHistorySafe(PLAYER_HISTORY_ESPIONAGE, iTurn) : -1);
 }
 
 std::string CyPlayer::getScriptData() const
@@ -2303,8 +2354,14 @@ bool CyPlayer::canSplitEmpire() const
 bool CyPlayer::canSplitArea(int iAreaId) const
 {
 	if (m_pPlayer)
-	{
-		return m_pPlayer->canSplitArea(iAreaId);
+	{	// <advc> Handle the area lookup here
+		CvArea* pArea = GC.getMap().getArea(iAreaId);
+		if (pArea == NULL)
+		{
+			FAssert(pArea != NULL);
+			return false;
+		} // </advc>
+		return m_pPlayer->canSplitArea(*pArea);
 	}
 
 	return false;
@@ -2321,41 +2378,60 @@ void  CyPlayer::forcePeace(int iPlayer)
 		m_pPlayer->forcePeace((PlayerTypes)iPlayer);
 }
 
-// <advc.038>
-int CyPlayer::estimateYieldRate(YieldTypes yield) const {
-
-	if(m_pPlayer == NULL)
-		return -1;
-	return ::round(m_pPlayer->estimateYieldRate(yield));
-} // </advc.038>
-
-// <advc.210>
-void CyPlayer::checkAlert(int alertId, bool silent) {
-
+// advc.210:
+void CyPlayer::checkAlert(int alertId, bool silent)
+{
 	if(m_pPlayer != NULL)
 		m_pPlayer->checkAlert(alertId, silent);
-} // </advc.210>
+}
 
-// <advc.210e>
-int CyPlayer::AI_corporationBonusVal(int eBonus) const {
-
+// advc.210e:
+int CyPlayer::AI_corporationBonusVal(int eBonus) const
+{
 	if(m_pPlayer == NULL)
 		return -1;
-	/*  Adding a virtual function CvPlayer::AI_corporationBonusVal causes
-		the EXE to crash during initialization. Will have to cast down instead. */
-	return dynamic_cast<CvPlayerAI*>(m_pPlayer)->AI_corporationBonusVal((BonusTypes)eBonus);
-} // </advc.210e>
+	return m_pPlayer->AI_corporationBonusVal((BonusTypes)eBonus);
+}
 
 // <advc.085>
-void CyPlayer::setScoreboardExpanded(bool b) {
-
+void CyPlayer::setScoreboardExpanded(bool b)
+{
 	if(m_pPlayer != NULL)
 		m_pPlayer->setScoreboardExpanded(b);
 }
 
-bool CyPlayer::isScoreboardExpanded() const {
-
+bool CyPlayer::isScoreboardExpanded() const
+{
 	if(m_pPlayer == NULL)
 		return false;
 	return m_pPlayer->isScoreboardExpanded();
 } // </advc.085>
+
+// <advc.190c>
+bool CyPlayer::wasCivRandomlyChosen() const
+{
+	if (m_pPlayer == NULL)
+		return false;
+	return GC.getInitCore().wasCivRandomlyChosen(m_pPlayer->getID());
+}
+
+bool CyPlayer::wasLeaderRandomlyChosen() const
+{
+	if (m_pPlayer == NULL)
+		return false;
+	return GC.getInitCore().wasLeaderRandomlyChosen(m_pPlayer->getID());
+} // </advc.190c>
+
+// advc.001: In part cut from getCivicAnarchyLength
+void CyPlayer::pyListToCivicMap(boost::python::list const& kFrom, CivicMap& kTo)
+{
+	int* piTmp = NULL;
+	gDLL->getPythonIFace()->putSeqInArray(kFrom.ptr(), &piTmp);
+	if (piTmp != NULL)
+	{	// <advc.enum>
+		FOR_EACH_ENUM(CivicOption)
+			kTo.set(eLoopCivicOption, (CivicTypes)piTmp[eLoopCivicOption]);
+		// </advc.enum>
+		delete[] piTmp;
+	}
+}

@@ -7,47 +7,26 @@
 
 PopupReturn::PopupReturn(const PopupReturn &popupReturn)
 {
-	int iI;
+	// advc: (and original code commented out)
+	FErrorMsg("PopupReturn copy-constructor not implemented");
+	/*int iI;
 
 	for (iI = 0; iI < popupReturn.getRadioButtonSize(); iI++)
-	{
 		CvPopup_SetAtGrow(m_aiSelectedRadioButton, iI, popupReturn.getSelectedRadioButton(iI));
-	}
-
 	for (iI = 0; iI < popupReturn.getCheckboxSize(); iI++)
-	{
 		CvPopup_SetAtGrow(m_aiBitField, iI, popupReturn.getCheckboxBitfield(iI));
-	}
-
 	for (iI = 0; iI < popupReturn.getEditboxSize(); iI++)
-	{
 		CvPopup_SetAtGrow(m_aszEditBoxString, iI, popupReturn.getEditBoxString(iI));
-	}
-
 	for (iI = 0; iI < popupReturn.getSpinnerWidsize(); iI++)
-	{
 		CvPopup_SetAtGrow(m_aiSpinnerWidgetValues, iI, popupReturn.getSpinnerWidgetValue(iI));
-	}
-
 	for (iI = 0; iI < popupReturn.getPulldownSize(); iI++)
-	{
 		CvPopup_SetAtGrow(m_aiPulldownID, iI, popupReturn.getSelectedPullDownValue(iI));
-	}
-
 	for (iI = 0; iI < popupReturn.getListBoxSize(); iI++)
-	{
 		CvPopup_SetAtGrow(m_aiListBoxID, iI, popupReturn.getSelectedListBoxValue(iI));
-	}
-
 	for (iI = 0; iI < popupReturn.getSpinBoxSize(); iI++)
-	{
 		CvPopup_SetAtGrow(m_aiSpinBoxID, iI, popupReturn.getSpinnerWidgetValue(iI));
-	}
-
 	for (iI = 0; iI < popupReturn.getButtonSize(); iI++)
-	{
-		CvPopup_SetAtGrow(m_aiButtonID, iI, popupReturn.getButtonClicked(iI));
-	}
+		CvPopup_SetAtGrow(m_aiButtonID, iI, popupReturn.getButtonClicked(iI));*/
 }
 
 // Assignment operator
@@ -98,15 +77,12 @@ PopupReturn &PopupReturn::operator=(const PopupReturn &source)
 	return *this;
 }
 
-//
-// read object from a stream
-//
+
 void PopupReturn::read(FDataStreamBase* pStream)
 {
-	int iSize;
-	int iValue;
+	int iSize=-1;
+	int iValue=-1;
 	int i;
-	wchar szValue[1024];
 
 	pStream->Read(&iSize);
 	for (i = 0; i < iSize; i++)
@@ -121,14 +97,15 @@ void PopupReturn::read(FDataStreamBase* pStream)
 		pStream->Read(&iValue);
 		CvPopup_SetAtGrow(m_aiBitField, i, iValue);
 	}
-
-	pStream->Read(&iSize);
-	for (i = 0; i < iSize; i++)
 	{
-		pStream->ReadString(szValue);
-		CvPopup_SetAtGrow(m_aszEditBoxString, i, szValue);
+		pStream->Read(&iSize);
+		wchar szValue[1024];
+		for (i = 0; i < iSize; i++)
+		{
+			pStream->ReadString(szValue);
+			CvPopup_SetAtGrow(m_aszEditBoxString, i, szValue);
+		}
 	}
-
 	pStream->Read(&iSize);
 	for (i = 0; i < iSize; i++)
 	{
@@ -165,13 +142,10 @@ void PopupReturn::read(FDataStreamBase* pStream)
 	}
 }
 
-//
-// write object to a stream
-//
+
 void PopupReturn::write(FDataStreamBase* pStream) const
 {
-	unsigned int iI;
-	//char szString[1024];
+	size_t iI;
 
 	pStream->Write(m_aiSelectedRadioButton.size());
 	for (iI = 0; iI < m_aiSelectedRadioButton.size(); iI++)
@@ -223,3 +197,127 @@ void PopupReturn::write(FDataStreamBase* pStream) const
 	}
 }
 
+/*	<advc> Implementations moved from header. Neater. These don't need to be inlined.
+	Replaced some operator[] accesses with vector::at. */
+void PopupReturn::setSelectedRadioButton(int iValue, int iGroup)
+{
+	CvPopup_SetAtGrow(m_aiSelectedRadioButton, iGroup, iValue);
+}
+
+int PopupReturn::getSelectedRadioButton(int iGroup) const
+{
+	return m_aiSelectedRadioButton.at(iGroup);
+}
+
+int PopupReturn::getRadioButtonSize() const
+{
+	return m_aiSelectedRadioButton.size();
+}
+
+void PopupReturn::setCheckboxBitfield(int iValue, int iGroup)
+{
+	CvPopup_SetAtGrow(m_aiBitField, iGroup, iValue);
+}
+
+int PopupReturn::getCheckboxBitfield(int iGroup) const
+{
+	return m_aiBitField.at(iGroup);
+}
+
+int PopupReturn::getCheckboxSize() const
+{
+	return m_aiBitField.size();
+}
+
+void PopupReturn::setEditBoxString(CvWString szValue, int iGroup)
+{
+	CvPopup_SetAtGrow(m_aszEditBoxString, iGroup, szValue);
+}
+
+wchar const* PopupReturn::getEditBoxString(int iGroup) const
+{
+	if (iGroup < (int)m_aszEditBoxString.size())
+		return m_aszEditBoxString.at(iGroup);
+	return NULL;
+}
+
+int PopupReturn::getEditboxSize() const
+{
+	return m_aszEditBoxString.size();
+}
+
+void PopupReturn::setSpinnerWidgetValue(const int iValue, int iGroup)
+{
+	CvPopup_SetAtGrow(m_aiSpinnerWidgetValues, iGroup, iValue);
+}
+
+int PopupReturn::getSpinnerWidgetValue(int iGroup) const
+{
+	return (iGroup < ((int)m_aiSpinBoxID.size()) ? m_aiSpinBoxID.at(iGroup) : -1);
+}
+
+int PopupReturn::getSpinnerWidsize() const
+{
+	return m_aiSpinnerWidgetValues.size();
+}
+
+void PopupReturn::setSelectedPulldownValue(int iValue, int iGroup)
+{
+	CvPopup_SetAtGrow(m_aiPulldownID, iGroup, iValue);
+}
+
+int PopupReturn::getSelectedPullDownValue(int iGroup) const
+{
+	return m_aiPulldownID.at(iGroup);
+}
+
+int PopupReturn::getPulldownSize() const
+{
+	return m_aiPulldownID.size();
+}
+
+void PopupReturn::setSelectedListBoxValue(int iValue, int iGroup)
+{
+	CvPopup_SetAtGrow(m_aiListBoxID, iGroup, iValue);
+}
+
+int PopupReturn::getSelectedListBoxValue(int iGroup) const
+{
+	return (iGroup < ((int)m_aiListBoxID.size()) ? m_aiListBoxID.at(iGroup) : -1);
+}
+
+int PopupReturn::getListBoxSize() const
+{
+	return m_aiListBoxID.size();
+}
+
+void PopupReturn::setCurrentSpinBoxValue(int iValue, int iIndex)
+{
+	CvPopup_SetAtGrow(m_aiSpinBoxID, iIndex, iValue);
+}
+
+int PopupReturn::getCurrentSpinBoxValue(int iIndex) const
+{
+	return (iIndex < ((int)m_aiSpinBoxID.size()) ? m_aiSpinBoxID.at(iIndex) : -1);
+}
+
+int PopupReturn::getSpinBoxSize() const
+{
+	return m_aiSpinBoxID.size();
+}
+
+void PopupReturn::setButtonClicked(int iValue, int iGroup)
+{
+	CvPopup_SetAtGrow(m_aiButtonID, iGroup, iValue);
+}
+
+int PopupReturn::getButtonClicked(int iGroup) const
+{
+	return m_aiButtonID.at(iGroup);
+}
+
+int PopupReturn::getButtonSize() const
+{
+	return m_aiButtonID.size();
+}
+// </advc> (end of moved implementations)

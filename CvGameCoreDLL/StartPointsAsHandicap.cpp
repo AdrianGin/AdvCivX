@@ -2,14 +2,11 @@
 
 #include "CvGameCoreDLL.h"
 #include "StartPointsAsHandicap.h"
-#include "CvGameAI.h"
-#include "CvPlayerAI.h"
-#include "CvInitCore.h"
+#include "CvGame.h"
+#include "CvPlayer.h"
 #include "CvMap.h"
-#include <cmath>
-#include <sstream>
 
-/*  advc.003 (note): This was the first class added by AdvCiv and, apart from the
+/*  advc (note): This was the first class added by AdvCiv and, apart from the
 	includes above, it hasn't been looked at for the past few years, so there are
 	probably things that could be improved. Seems to be working as intended though. */
 
@@ -44,7 +41,7 @@ void StartPointsAsHandicap::reset() {
 }
 
 
-wstring* StartPointsAsHandicap::forSettingsScreen(bool bTab) {
+wstring* StartPointsAsHandicap::forSettingsScreen(bool bTab) const {
 
 	updatePointsDisplayString(bTab);
 	return pointsDisplayString;
@@ -166,7 +163,7 @@ bool StartPointsAsHandicap::assignPoints() {
 	report += CvString::format("Unequal distribution");
 	int weakestPercent = pointsEntered % 100;
 	int strongest = pointsEntered / 100;
-	int weakest = ::round(weakestPercent * strongest / 100.0);
+	int weakest = intdiv::uround(weakestPercent * strongest, 100);
 	report += CvString::format("Points strongest, weakest: (%d, %d)\n",
 			strongest, weakest);
 	int nAI = nCivs - nHuman;
@@ -174,8 +171,8 @@ bool StartPointsAsHandicap::assignPoints() {
 	/*  Rule 1: If there is a "middle" AI, that AI receives the mean of
 		the weakest and strongest. */
 	if(nAI % 2 != 0)
-		civs[middleAIIndex]->setStartPoints_configured(::round(
-				(strongest + weakest) / 2.0));
+		civs[middleAIIndex]->setStartPoints_configured(
+				intdiv::uround(strongest + weakest, 2));
 	if(nAI <= 3) {
 		// Rule 2: Strongest civ as entered
 		civs[nCivs - 1]->setStartPoints_configured(strongest);
@@ -188,13 +185,13 @@ bool StartPointsAsHandicap::assignPoints() {
 		equal points and let points increase linearly from pair to pair,
 		starting at 'weakest' and ending with 'strongest'. */
 	int nPairs = nAI / 2;
-	double step = (strongest - weakest) / (nPairs - 1.0);
-	double pts = weakest;
+	scaled step(strongest - weakest, nPairs - 1);
+	scaled pts = weakest;
 	for(int i = nHuman; i < nCivs; i += 2) {
 		// Middle element not paired; already set by Rule 1.
 		if(nAI % 2 != 0 && i == middleAIIndex)
 			i++;
-		civs[i]->setStartPoints_configured(::round(pts));
+		civs[i]->setStartPoints_configured(pts.round());
 		if(nAI % 2 != 0 && i + 1 == middleAIIndex)
 			i++;
 		civs[i + 1]->setStartPoints_configured(
@@ -246,23 +243,23 @@ void StartPointsAsHandicap::bounce(int i, int j) {
 		of 'randomizePoints' (see above) is that no civ overtake another
 		in terms of start points, though ties can be broken. */
 	int iPts = civs[i]->startPoints_configured();
+	int pursuerIpts = 0;
 	int pursuerI;
-	int pursuerIpts;
 	for(pursuerI = i; pursuerI >= nHuman; pursuerI--) {
 		pursuerIpts = civs[pursuerI]->startPoints_configured();
 		if(pursuerIpts < iPts)
 			break;
 	}
-	int deltaMaxNeg = ::round((iPts - pursuerIpts) / 2.0);
+	int deltaMaxNeg = intdiv::round(iPts - pursuerIpts, 2);
 	int jPts = civs[j]->startPoints_configured();
+	int pursuedByJpts = 0;
 	int pursuedByJ;
-	int pursuedByJpts;
 	for(pursuedByJ = j; pursuedByJ < nCivs; pursuedByJ++) {
 		pursuedByJpts = civs[pursuedByJ]->startPoints_configured();
 		if(pursuedByJpts > jPts)
 			break;
 	}
-	int deltaMaxPos = ::round((pursuedByJpts - jPts) / 2.0);
+	int deltaMaxPos = intdiv::round(pursuedByJpts - jPts, 2);
 	// To ensure that randomization leaves the sum of all points unchanged
 	int deltaMax = deltaMaxNeg < deltaMaxPos ? deltaMaxNeg : deltaMaxPos;
 	report += CvString::format("Bouncing apart civ ids %d (%d points) and %d"
@@ -270,7 +267,7 @@ void StartPointsAsHandicap::bounce(int i, int j) {
 			i, civs[i]->startPoints_configured(),
 			j, civs[j]->startPoints_configured(),
 			deltaMax);
-	int delta = GC.getGame().getSorenRandNum(deltaMax, "advc.250b");
+	int delta = SyncRandNum(deltaMax);
 	civs[i]->setStartPoints_actual(civs[i]->startPoints_configured() - delta);
 	civs[j]->setStartPoints_actual(civs[j]->startPoints_configured() + delta);
 }
@@ -314,7 +311,7 @@ int StartPointsAsHandicap::minDist(CvPlot* p) {
 }
 
 
-void StartPointsAsHandicap::updatePointsDisplayString(bool bTab) {
+void StartPointsAsHandicap::updatePointsDisplayString(bool bTab) const {
 
 	if(civs[nCivs - 1]->startPoints_configured() <= 0) {
 		pointsDisplayString = new wstring();
@@ -411,7 +408,7 @@ int StartPointsAsHandicap::MajorCiv::startPoints_actual() const {
 
 void StartPointsAsHandicap::MajorCiv::assignStartingPlot(CvPlot* plot) {
 
-	GET_PLAYER(civId).setStartingPlot(plot, true);
+	GET_PLAYER(civId).setStartingPlot(plot);
 }
 
 void StartPointsAsHandicap::MajorCiv::setDist(int dist) {

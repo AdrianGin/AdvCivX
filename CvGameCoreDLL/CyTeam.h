@@ -2,20 +2,17 @@
 
 #ifndef CyTeam_h
 #define CyTeam_h
-//
 // Python wrapper class for CvTeam
-//
-
-#include "CvTeam.h"
 
 class CvTeam;
 class CyArea;
+
 class CyTeam
 {
 public:
 	CyTeam();
-	CyTeam(CvTeam* pTeam);		// Call from C++
-	CvTeam* getTeam() { return m_pTeam;	}	// Call from C++
+	CyTeam(CvTeam* pTeam); // Call from C++
+	//CvTeam* getTeam(); // advc: unused
 
 	bool isNone() { return (m_pTeam==NULL); }
 
@@ -160,6 +157,7 @@ public:
 	void changeExtraMoves(int /*DomainTypes*/ eIndex, int iChange);
 
 	bool isHasMet(int /*TeamTypes*/ eIndex);
+	int getHasMetTurn(int iOtherTeam); // advc.091
 	bool isAtWar(int /*TeamTypes*/ eIndex);
 	bool isPermanentWarPeace(int /*TeamTypes*/ eIndex);
 	void setPermanentWarPeace(int /*TeamTypes*/ eIndex, bool bNewValue);
@@ -210,7 +208,7 @@ public:
 	int getVictoryDelay(int /*VictoryTypes*/ eVictory);
 	bool canLaunch(int /*VictoryTypes*/ eVictory);
 	int getLaunchSuccessRate(int /*VictoryTypes*/ eVictory);
-	bool hasSpaceshipArrived() { return (m_pTeam ? m_pTeam->hasSpaceshipArrived() : false); } // K-Mod
+	bool hasSpaceshipArrived();
 
 	int getEspionagePointsAgainstTeam(int /*TeamTypes*/ eIndex);
 	void setEspionagePointsAgainstTeam(int /*TeamTypes*/ eIndex, int iValue);
@@ -234,11 +232,12 @@ public:
 	int AI_getWarSuccess(int /*TeamTypes*/ eIndex) const;
 	// advc.152:
 	int /*DenialTypes*/ AI_declareWarTrade(int /*TeamTypes*/ eWarTeam, int /*TeamTypes*/ eTeam) const;
+	// advc.038: Returns int b/c I'm not sure if float would cause problems
+	int AI_estimateYieldRate(int iPlayer, int iYield) const;
 
 protected:
 
-	CvTeam* m_pTeam;
-
+	CvTeamAI* m_pTeam; // advc.003u: was CvTeam*
 };
 
 #endif	// #ifndef CyTeam

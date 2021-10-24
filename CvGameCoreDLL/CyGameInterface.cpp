@@ -1,6 +1,5 @@
 #include "CvGameCoreDLL.h"
 #include "CyGame.h"
-#include "CyCity.h"
 #include "CyDeal.h"
 #include "CyReplayInfo.h"
 
@@ -10,7 +9,7 @@
 
 void CyGamePythonInterface()
 {
-	OutputDebugString("Python Extension Module - CyGamePythonInterface\n");
+	printToConsole("Python Extension Module - CyGamePythonInterface\n");
 
 	python::class_<CyGame>("CyGame")
 		.def("isNone", &CyGame::isNone, "CyGame* () - is the instance valid?")
@@ -19,6 +18,9 @@ void CyGamePythonInterface()
 		.def("cycleCities", &CyGame::cycleCities, "void (bool bForward, bool bAdd)")
 		.def("cycleSelectionGroups", &CyGame::cycleSelectionGroups, "void (bool bClear, bool bForward, bool bWorkers)")
 		.def("cyclePlotUnits", &CyGame::cyclePlotUnits, "bool (CyPlot* pPlot, bool bForward, bool bAuto, int iCount)")
+		// <advc.154>
+		.def("getNextUnitInCycle", &CyGame::getNextUnitInCycle, python::return_value_policy<python::reference_existing_object>(),
+				"CyUnit* (bool bForward, bool bWorkers)") // </advc.154>
 
 		.def("selectionListMove", &CyGame::selectionListMove, "void (CyPlot* pPlot, bool bAlt, bool bShift, bool bCtrl)")
 		.def("selectionListGameNetMessage", &CyGame::selectionListGameNetMessage, "void (int eMessage, int iData2, int iData3, int iData4, int iFlags, bool bAlt, bool bShift)")
@@ -169,6 +171,7 @@ void CyGamePythonInterface()
 		.def("setWinner", &CyGame::setWinner)
 		.def("getGameState", &CyGame::getGameState)
 		.def("getHandicapType", &CyGame::getHandicapType, "HandicapType () - difficulty level settings")
+		.def("getAIHandicap", &CyGame::getAIHandicap, "HandicapTypes ()") // advc.708
 		.def("getCalendar", &CyGame::getCalendar, "CalendarType ()")
 		.def("getStartEra", &CyGame::getStartEra)
 		.def("getGameSpeedType", &CyGame::getGameSpeedType)
@@ -274,6 +277,8 @@ void CyGamePythonInterface()
 
 		.def("isEventActive", &CyGame::isEventActive, "bool (int /*EventTriggerTypes*/ eTrigger)")
 		.def("doControl", &CyGame::doControl, "void (int /*ControlTypes*/ iControl)")
+		// advc.095:
+		.def("setCityBarWidth", &CyGame::setCityBarWidth, "void (bool)")
 		// BULL - AutoSave:
 		.def("saveGame", &CyGame::saveGame, "void saveGame(string fullyQualifiedFileName)")
 		// advc.104:
@@ -299,6 +304,8 @@ void CyGamePythonInterface()
 		.def("isRFBlockPopups", &CyGame::isRFBlockPopups, "bool ()") // </advc.706>
 		// advc.004m:
 		.def("reportCurrentLayer", &CyGame::reportCurrentLayer, "void(int /*GlobeLayerTypes*/)")
+		.def("isCivLeaderSetupKnown", &CyGame::isCivLeaderSetupKnown, "bool ()") // advc.190c
+		.def("isScenario", &CyGame::isScenario, "bool ()") // advc.052
 		;
 
 	python::class_<CyDeal>("CyDeal")

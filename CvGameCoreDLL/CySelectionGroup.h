@@ -2,22 +2,23 @@
 
 #ifndef CySelectionGroup_h
 #define CySelectionGroup_h
+
 //
 // Python wrapper class for CySelectionGroup
 //
-//
 
 struct MissionData;
-
 class CyPlot;
 class CyArea;
 class CyUnit;
 class CvSelectionGroup;
+
 class CySelectionGroup
 {
 public:
 	CySelectionGroup();
 	CySelectionGroup(CvSelectionGroup* pSelectionGroup);		// Call from C++
+	CySelectionGroup(CvSelectionGroup const& kSelectionGroup); // advc.003y
 	CvSelectionGroup* getSelectionGroup() { return m_pSelectionGroup;	}	// Call from C++
 
 	bool isNone() { return (m_pSelectionGroup==NULL); }
@@ -75,6 +76,7 @@ public:
 	CyPlot* getPathFirstPlot();
 	CyPlot* getPathEndTurnPlot();
 	bool generatePath(CyPlot* pFromPlot, CyPlot* pToPlot, int iFlags, bool bReuse, int* piPathTurns);
+	//void resetPath(); K-Mod (removed)
 	int getNumUnits();
 	void clearMissionQueue();
 	int getLengthMissionQueue();
@@ -83,7 +85,7 @@ public:
 	int getMissionData2(int iNode);
 	MissionData* getMissionFromQueue(int iIndex);
 	CyUnit* getHeadUnit();
-	CyUnit* getUnitAt(int index);
+	CyUnit* getUnitAt(int iIndex);
 
 protected:
 	CvSelectionGroup* m_pSelectionGroup;

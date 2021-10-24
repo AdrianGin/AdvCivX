@@ -255,15 +255,15 @@
 	<ElementType name="Buildings" content="eltOnly">
 		<element type="Building" minOccurs="0" maxOccurs="*"/>
 	</ElementType>
-	<!-- advc.003t: Remove ForceBuildings -->
-	<!--ElementType name="bForceBuilding" content="textOnly" dt:type="boolean"/>
+	<!-- advc.003t (note): ForceBuildings is no longer read by the DLL -->
+	<ElementType name="bForceBuilding" content="textOnly" dt:type="boolean"/>
 	<ElementType name="ForceBuilding" content="eltOnly">
 		<element type="BuildingType"/>
 		<element type="bForceBuilding"/>
 	</ElementType>
 	<ElementType name="ForceBuildings" content="eltOnly">
 		<element type="ForceBuilding" minOccurs="0" maxOccurs="*"/>
-	</ElementType-->
+	</ElementType>
 	<ElementType name="HolyCity" content="textOnly"/>
 	<ElementType name="StateReligion" content="textOnly"/>
 	<ElementType name="PrereqReligion" content="textOnly"/>
@@ -547,10 +547,10 @@
 		<element type="bFood"/>
 		<element type="bNoBadGoodies"/>
 		<element type="bOnlyDefensive"/>
-		<!-- advc.315a -->
-		<element type="bOnlyAttackAnimals"/>
-		<!-- advc.315b -->
-		<element type="bOnlyAttackBarbarians"/>
+		<!-- advc.315a (set to false by default in the DLL) -->
+		<element type="bOnlyAttackAnimals" minOccurs="0"/>
+		<!-- advc.315b (set to false by default in the DLL) -->
+		<element type="bOnlyAttackBarbarians" minOccurs="0"/>
 		<element type="bNoCapture"/>
 		<element type="bQuickCombat"/>
 		<element type="bRivalTerritory"/>
@@ -597,8 +597,8 @@
 		<element type="CorporationSpreads"/>
 		<element type="GreatPeoples"/>
 		<element type="Buildings"/>
-		<!-- advc.003t -->
-		<!--element type="ForceBuildings"/-->
+		<!-- advc.003t: No longer has any effect, but still allowed. -->
+		<element type="ForceBuildings" minOccurs="0"/>
 		<element type="HolyCity"/>
 		<element type="ReligionType"/>
 		<element type="StateReligion"/>
@@ -610,7 +610,7 @@
 		<element type="BonusType"/>
 		<element type="PrereqBonuses"/>
 		<!-- advc.905b -->
-		<element type="SpeedBonuses"/>
+		<element type="SpeedBonuses" minOccurs="0"/>
 		<element type="ProductionTraits"/>
 		<element type="Flavors"/>
 		<element type="iAIWeight"/>
@@ -655,8 +655,8 @@
 		<element type="iCityAttack"/>
 		<element type="iCityDefense"/>
 		<element type="iAnimalCombat"/>
-		<!-- advc.315c -->
-		<element type="iBarbarianCombat"/>
+		<!-- advc.315c(set to 0 by default in the DLL) -->
+		<element type="iBarbarianCombat" minOccurs="0"/>
 		<element type="iHillsAttack"/>
 		<element type="iHillsDefense"/>
 		<element type="TerrainNatives"/>
@@ -677,6 +677,8 @@
 		<element type="DomainCargo"/>
 		<element type="iCargo"/>
 		<element type="iConscription"/>
+		<!-- advc.101 (note): No longer used, except that 0 still means that
+			 a unit can't suppress revolts. -->
 		<element type="iCultureGarrison"/>
 		<element type="iExtraCost"/>
 		<element type="iAsset"/>
@@ -802,6 +804,7 @@
 	<ElementType name="PromotionPrereq" content="textOnly"/>
 	<ElementType name="PromotionPrereqOr1" content="textOnly"/>
 	<ElementType name="PromotionPrereqOr2" content="textOnly"/>
+	<!-- K-Mod -->
 	<ElementType name="PromotionPrereqOr3" content="textOnly"/>
 	<ElementType name="TechPrereq" content="textOnly"/>
 	<ElementType name="StateReligionPrereq" content="textOnly"/>
@@ -865,7 +868,8 @@
 		<element type="PromotionPrereq"/>
 		<element type="PromotionPrereqOr1"/>
 		<element type="PromotionPrereqOr2"/>
-		<element type="PromotionPrereqOr3"/>
+		<!-- K-Mod (advc: optional) -->
+		<element type="PromotionPrereqOr3" minOccurs="0"/>
 		<element type="TechPrereq"/>
 		<element type="StateReligionPrereq"/>
 		<element type="bLeader"/>
@@ -880,6 +884,7 @@
 		<element type="iVisibilityChange"/>
 		<element type="iMovesChange"/>
 		<element type="iMoveDiscountChange"/>
+		<!-- advc.029 (note): -1 means infinite range -->
 		<element type="iAirRangeChange"/>
 		<element type="iInterceptChange"/>
 		<element type="iEvasionChange"/>

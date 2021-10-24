@@ -1,14 +1,10 @@
 #include "CvGameCoreDLL.h"
 #include "CyMap.h"
 #include "CyPlayer.h"
-#include "CyPlot.h"
 #include "CyGame.h"
-#include "CyUnit.h"
-#include "CyGlobalContext.h"
-#include "CyCity.h"
 
 void CyCityPythonInterface1(python::class_<CyCity>& x);
-void CyCityPythonInterface2(python::class_<CyCity>& x); // dlph.34
+void CyCityPythonInterface2(python::class_<CyCity>& x); // kekm.34
 void CyPlotPythonInterface1(python::class_<CyPlot>& x);
 void CyPlayerPythonInterface1(python::class_<CyPlayer>& x);
 void CyPlayerPythonInterface2(python::class_<CyPlayer>& x);
@@ -64,7 +60,7 @@ DllExport void DLLPublishToPython()
 	python::class_<CyCity> city ("CyCity");		// define city class
 	// publish its methods
 	CyCityPythonInterface1(city);
-	CyCityPythonInterface2(city); // dlph.34
+	CyCityPythonInterface2(city); // kekm.34
 
 	python::class_<CyPlayer> player ("CyPlayer");	// define player class
 	CyPlayerPythonInterface1(player);				// publish its methods

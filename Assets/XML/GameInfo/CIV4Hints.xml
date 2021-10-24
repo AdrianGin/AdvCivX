@@ -658,7 +658,10 @@
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_32</Description>
 		</HintInfo>
-		<!-- Skip 33-34; shouldn't be as frequent. -->
+		<!-- Skip 33; shouldn't be as frequent. -->
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_34</Description>
+		</HintInfo>
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_35</Description>
 		</HintInfo>
@@ -671,6 +674,27 @@
 		</HintInfo>
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_39</Description>
+		</HintInfo>
+		<!-- Skip 40, 41, 42, 43 -->
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_44</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_45</Description>
+		</HintInfo>
+		<!-- Skip 46, 47, 49 -->
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_48</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_50</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_51</Description>
+		</HintInfo>
+		<!-- Skip 52 -->
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_53</Description>
 		</HintInfo>
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_1</Description>
@@ -783,6 +807,45 @@
 		</HintInfo>
 		<HintInfo>
 			<Description>TXT_KEY_ADVC_HINT_39</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_40</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_41</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_43</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_44</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_45</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_46</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_47</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_48</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_49</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_50</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_51</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_52</Description>
+		</HintInfo>
+		<HintInfo>
+			<Description>TXT_KEY_ADVC_HINT_53</Description>
 		</HintInfo>
 	</HintInfos>
 </Civ4Hints>

@@ -2,10 +2,9 @@
 
 #ifndef CyGame_h
 #define CyGame_h
-//
+
 // Python wrapper class for CvGame
 // SINGLETON
-// updated 6-5
 
 class CvGame;
 class CvGameAI;
@@ -18,16 +17,17 @@ class CyPlot;
 class CyGame
 {
 public:
-	CyGame();
-	CyGame(CvGame* pGame);			// Call from C++
-	CyGame(CvGameAI* pGame);			// Call from C++;
-	CvGame* getGame() { return m_pGame;	}	// Call from C++
-	bool isNone() { return (m_pGame==NULL); }
+	CyGame(CvGame& kGame) : m_kGame(kGame) {} // Call from C++
+	/*CyGame(CvGameAI const& kGame);
+	CvGame const& getGame() { return m_kGame;	}*/ // advc: unused
+	CyGame() : m_kGame(GC.getGame()) {}
+	bool isNone() { return /*(m_pGame==NULL)*/ false; } // advc: Initialization is guaranteed
 
 	void updateScore(bool bForce);
 	void cycleCities(bool bForward, bool bAdd);
 	void cycleSelectionGroups(bool bClear, bool bForward, bool bWorkers);
 	bool cyclePlotUnits(CyPlot* pPlot, bool bForward, bool bAuto, int iCount);
+	CyUnit* getNextUnitInCycle(bool bForward, bool bWorkers); // advc.154
 
 	void selectionListMove(CyPlot* pPlot, bool bAlt, bool bShift, bool bCtrl);
 	void selectionListGameNetMessage(int eMessage, int iData2, int iData3, int iData4, int iFlags, bool bAlt, bool bShift);
@@ -177,6 +177,7 @@ public:
 	void setWinner(int /*TeamTypes*/ eNewWinner, int /*VictoryTypes*/ eNewVictory);
 	int /*GameStateTypes*/ getGameState();
 	int /*HandicapTypes*/ getHandicapType();
+	int /*HandicapTypes*/ getAIHandicap(); // advc.708
 	CalendarTypes getCalendar() const;
 	int /*EraTypes*/ getStartEra();
 	int /*GameSpeedTypes*/ getGameSpeedType();
@@ -283,7 +284,8 @@ public:
 	bool isEventActive(int /*EventTriggerTypes*/ eTrigger);
 	void doControl(int iControl);
 
-	void saveGame(std::string szFileName) const; // BULL - AutoSave
+	void setCityBarWidth(bool bWide); // advc.095
+	void saveGame(std::string szFileName); // BULL - AutoSave
 	bool useKModAI(); // advc.104
 	int getBarbarianStartTurn(); // advc.300
 	std::wstring SPaHPointsForSettingsScreen(); // advc.250b
@@ -303,9 +305,11 @@ public:
 	bool isRFInterlude();
 	bool isRFBlockPopups(); // </advc.706>
 	void reportCurrentLayer(int iLayer); // advc.004m
+	bool isCivLeaderSetupKnown(); // advc.190c
+	bool isScenario(); // advc.052
 
 protected:
-	CvGame* m_pGame;
+	CvGame& m_kGame; // advc: was pointer
 };
 
 #endif	// #ifndef CyGame

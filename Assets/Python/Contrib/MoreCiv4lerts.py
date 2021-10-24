@@ -7,6 +7,7 @@ import PyHelpers
 import BugCore
 import PlayerUtil
 import TradeUtil
+import CityUtil # advc
 
 # BUG - Mac Support - start
 import BugUtil
@@ -59,13 +60,13 @@ class AbstractMoreCiv4lertsEvent(object):
 			if gc.getGame().isRFBlockPopups() or gc.getPlayer(self.iOwner).isHumanDisabled() or gc.getPlayer(self.iOwner).isAutoPlayJustEnded():
 				return # </advc.706>
 			# advc.106c: Reduced time from LONG to normal
-			eventMessageTimeLong = gc.getDefineINT("EVENT_MESSAGE_TIME")
+			eventMessageTime = gc.getDefineINT("EVENT_MESSAGE_TIME")
 			# advc.135b: Ignore iPlayer. Shouldn't be necessary b/c
 			# the iActivePlayer (on the caller side) should always
 			# be iOwner. Tbd.: Remove the iPlayer attribute from all
 			# _addMessage... functions.
 			# advc.106: Set bForce to False
-			CyInterface().addMessage(self.iOwner, False, eventMessageTimeLong, szString, None, 0, szIcon, ColorTypes(iColor), iFlashX, iFlashY, bOffArrow, bOnArrow)
+			CyInterface().addMessage(self.iOwner, False, eventMessageTime, szString, None, 0, szIcon, ColorTypes(iColor), iFlashX, iFlashY, bOffArrow, bOnArrow)
 
 class MoreCiv4lertsEvent( AbstractMoreCiv4lertsEvent):
 
@@ -163,16 +164,16 @@ class MoreCiv4lertsEvent( AbstractMoreCiv4lertsEvent):
 		#return self.options.isShowPeaceTradeAlert()
 
 	def getCheckForDomVictory(self):
-		return self.getCheckForDomPopVictory() or self.getCheckForDomLandVictory()
+		return False # advc.210
+		#return self.getCheckForDomPopVictory() or self.getCheckForDomLandVictory()
 	
 	def getCheckForForeignCities(self):
-		# advc.210c: Disable this by force b/c players upgrading to v0.91 could still have it enabled, leading to messages from both the DLL and Python.
-		return False
+		return False # advc.210c
 		#return self.options.isShowCityFoundedAlert()
 
 	def onBeginActivePlayerTurn(self, argsList):
 		"Called when the active player can start making their moves."
-		#iGameTurn = argsList[0] # advc.003: Unused
+		#iGameTurn = argsList[0] # advc: Unused
 		# <advc.127>
 		if not gc.getPlayer(self.iOwner).isHuman():
 			return # </advc.127>
@@ -265,7 +266,8 @@ class MoreCiv4lertsEvent( AbstractMoreCiv4lertsEvent):
 				lCity = PyPlayer(loopPlayer).getCityList()
 				for loopCity in range(len(lCity)):
 					city = gc.getPlayer(loopPlayer).getCity(loopCity)
-					if (city.getFoodTurnsLeft() == 1 and not city.isFoodProduction()) and not city.AI_isEmphasize(5):
+					#if (city.getFoodTurnsLeft() == 1 and not city.isFoodProduction()) and not city.AI_isEmphasize(5):
+					if CityUtil.willGrowThisTurn(city): # advc
 						popGrowthCount = popGrowthCount + 1
 					if (BeginTurn and self.getCheckForCityBorderExpansion()):
 						if (city.getCultureLevel() != gc.getNumCultureLevelInfos() - 1):

@@ -1,13 +1,7 @@
 #include "CvGameCoreDLL.h"
 #include "CyPlayer.h"
-#include "CyUnit.h"
-#include "CyCity.h"
-#include "CyPlot.h"
 #include "CySelectionGroup.h"
 #include "CyArea.h"
-//# include <boost/python/manage_new_object.hpp>
-//# include <boost/python/return_value_policy.hpp>
-//# include <boost/python/scope.hpp>
 
 //
 // published python interface for CyPlayer
@@ -15,7 +9,7 @@
 
 void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 {
-	OutputDebugString("Python Extension Module - CyPlayerPythonInterface1\n");
+	printToConsole("Python Extension Module - CyPlayerPythonInterface1\n");
 
 	// set the docstring of the current module scope
 	python::scope().attr("__doc__") = "Civilization IV Player Class";
@@ -24,7 +18,7 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 		// CHANGE_PLAYER, 08/27/08, jdog5000: START
 		.def("changeLeader", &CyPlayer::changeLeader, "void ( int /*LeaderHeadTypes*/ eNewLeader) - change leader of player")
 		.def("changeCiv", &CyPlayer::changeCiv, "void ( int /*CivilizationTypes*/ eNewCiv ) - change civilization of player")
-		.def( "setIsHuman", &CyPlayer::setIsHuman, "void ( bool bNewValue ) - set whether player is human")
+		.def("setIsHuman", &CyPlayer::setIsHuman, "void ( bool bNewValue ) - set whether player is human")
 		// CHANGE_PLAYER: END
 		.def("startingPlotRange", &CyPlayer::startingPlotRange, "int ()")
 		.def("startingPlotWithinRange", &CyPlayer::startingPlotWithinRange, "bool (CyPlot *pPlot, int /*PlayerTypes*/ ePlayer, int iRange, int iPass)")
@@ -49,10 +43,10 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 		// </advc.127>
 		.def("isBarbarian", &CyPlayer::isBarbarian, "bool () - returns True if player is a Barbarian")
 		.def("getName", &CyPlayer::getName, "str ()")
-		.def("getNameForm", &CyPlayer::getNameForm, "str ()")
+		.def("getNameForm", &CyPlayer::getNameForm, "str (int)")
 		.def("getNameKey", &CyPlayer::getNameKey, "str ()")
-		.def("getCivilizationDescription", &CyPlayer::getCivilizationDescription, "str() - returns the Civilization Description String")
-		.def("getCivilizationShortDescription", &CyPlayer::getCivilizationShortDescription, "str() - returns the short Civilization Description")
+		.def("getCivilizationDescription", &CyPlayer::getCivilizationDescription, "str (int) - returns the Civilization Description String")
+		.def("getCivilizationShortDescription", &CyPlayer::getCivilizationShortDescription, "str (int) - returns the short Civilization Description")
 		.def("getCivilizationDescriptionKey", &CyPlayer::getCivilizationDescriptionKey, "str() - returns the Civilization Description String")
 		.def("getCivilizationShortDescriptionKey", &CyPlayer::getCivilizationShortDescriptionKey, "str() - returns the short Civilization Description")
 		.def("getCivilizationAdjective", &CyPlayer::getCivilizationAdjective, "str() - returns the Civilization name in adjective form")
@@ -151,11 +145,17 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 
 		.def("canSeeResearch", &CyPlayer::canSeeResearch, "bool (int /*PlayerTypes*/ ePlayer)") // K-Mod
 		.def("canSeeDemographics", &CyPlayer::canSeeDemographics, "bool (int /*PlayerTypes*/ ePlayer)") // K-Mod
+		// advc.091:
+		.def("hasEverSeenDemographics", &CyPlayer::hasEverSeenDemographics, "bool (int /*PlayerTypes*/ iPlayer)")
 
 		.def("isCivic", &CyPlayer::isCivic, "bool (int (CivicTypes) eCivic)")
 		.def("canDoCivics", &CyPlayer::canDoCivics, "bool (int (CivicTypes) eCivic)")
-		.def("canRevolution", &CyPlayer::canRevolution, "bool (int (CivicTypes*) paeNewCivics)")
-		.def("revolution", &CyPlayer::revolution, "void (int (CivicTypes*) paeNewCivics, bool bForce)")
+		 /*	<advc> For compatibility with BtS Python code. int param is needed but ignored.
+			Corresponds to CvPlayer::canDoAnyRevolution. */
+		.def("canRevolution", &CyPlayer::canRevolution, "bool (int iDummy)")
+		 // Proper can-revolution function:
+		.def("canAdopt", &CyPlayer::canAdopt, "bool (int* (CivicTypes*) paeNewCivics)") // </advc.001>
+		.def("revolution", &CyPlayer::revolution, "void (int* (CivicTypes*) paeNewCivics, bool bForce)")
 		.def("getCivicPercentAnger", &CyPlayer::getCivicPercentAnger, "int (int /*CivicTypes*/ eCivic)")
 
 		.def("canDoReligion", &CyPlayer::canDoReligion, "int (int /*ReligionTypes*/ eReligion)")
@@ -184,6 +184,7 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 
 		.def("getStartingPlot", &CyPlayer::getStartingPlot, python::return_value_policy<python::manage_new_object>(), "CyPlot* ()")
 		.def("setStartingPlot", &CyPlayer::setStartingPlot, "void (CyPlot*, bool) - sets the player's starting plot")
+		.def("forceRandomWBStart", &CyPlayer::forceRandomWBStart, "void forceRandomWBStart()") // advc.027
 		.def("getTotalPopulation", &CyPlayer::getTotalPopulation, "int ()")
 		.def("getAveragePopulation", &CyPlayer::getAveragePopulation, "int ()")
 		.def("getRealPopulation", &CyPlayer::getRealPopulation, "long int ()")
@@ -279,7 +280,7 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 		.def("getOverflowResearch", &CyPlayer::getOverflowResearch, "int ()")
 		//.def("isNoUnhealthyPopulation", &CyPlayer::isNoUnhealthyPopulation, "bool ()")
 		.def("getUnhealthyPopulationModifier", &CyPlayer::getUnhealthyPopulationModifier, "int ()") // K-Mod
-		.def("getExpInBorderModifier", &CyPlayer::getExpInBorderModifier, "bool ()")
+		.def("getExpInBorderModifier", &CyPlayer::getExpInBorderModifier, "int ()")
 		.def("isBuildingOnlyHealthy", &CyPlayer::isBuildingOnlyHealthy, "bool ()")
 
 		.def("getDistanceMaintenanceModifier", &CyPlayer::getDistanceMaintenanceModifier, "int ()")
@@ -365,6 +366,8 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 		.def("getYieldRateModifier", &CyPlayer::getYieldRateModifier, "int (YieldTypes eIndex)")
 		.def("getCapitalYieldRateModifier", &CyPlayer::getCapitalYieldRateModifier, "int (YieldTypes eIndex)")
 		.def("getExtraYieldThreshold", &CyPlayer::getExtraYieldThreshold, "int (YieldTypes eIndex)")
+		// advc.908a:
+		.def("getExtraYieldNaturalThreshold", &CyPlayer::getExtraYieldNaturalThreshold, "int (YieldTypes eIndex)")
 		.def("getTradeYieldModifier", &CyPlayer::getTradeYieldModifier, "int (YieldTypes eIndex)")
 		.def("getFreeCityCommerce", &CyPlayer::getFreeCityCommerce, "int (CommerceTypes eIndex)")
 		.def("getCommercePercent", &CyPlayer::getCommercePercent, "int (CommerceTypes eIndex)")

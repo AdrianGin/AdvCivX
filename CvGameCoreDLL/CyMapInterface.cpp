@@ -1,12 +1,7 @@
 #include "CvGameCoreDLL.h"
 #include "CyMap.h"
 #include "CyArea.h"
-#include "CyCity.h"
 #include "CySelectionGroup.h"
-#include "CyUnit.h"
-#include "CyPlot.h"
-//# include <boost/python/manage_new_object.hpp>
-//# include <boost/python/return_value_policy.hpp>
 
 //
 // published python interface for CyMap
@@ -14,7 +9,7 @@
 
 void CyMapPythonInterface()
 {
-	OutputDebugString("Python Extension Module - CyMapPythonInterface\n");
+	printToConsole("Python Extension Module - CyMapPythonInterface\n");
 
 	python::class_<CyMap>("CyMap")
 		.def("isNone", &CyMap::isNone, "bool () - valid CyMap() interface")
@@ -58,6 +53,9 @@ void CyMapPythonInterface()
 
 		.def("getNumCustomMapOptions", &CyMap::getNumCustomMapOptions, "int () - number of custom map settings")
 		.def("getCustomMapOption", &CyMap::getCustomMapOption, "CustomMapOptionTypes () - user defined map setting at this option id")
+		// advc.190b:
+		.def("getNonDefaultCustomMapOptionDesc", &CyMap::getNonDefaultCustomMapOptionDesc, "wstring (int)")
+		.def("getSettingsString", &CyMap::getSettingsString, "wstring ()") // advc.savem
 
 		.def("getNumBonuses", &CyMap::getNumBonuses, "int () - total bonuses")
 		.def("getNumBonusesOnLand", &CyMap::getNumBonusesOnLand, "int () - total bonuses on land plots")
@@ -80,5 +78,13 @@ void CyMapPythonInterface()
 		.def("updateFog", &CyMap::updateFog, "void ()")
 		.def("updateMinimapColor", &CyMap::updateMinimapColor, "void ()")
 		.def("updateMinOriginalStartDist", &CyMap::updateMinOriginalStartDist, "void (CyArea* pArea)")
+		// <advc.002a>
+		.def("setMinimapShowUnits", &CyMap::setMinimapShowUnits, "void (bool)")
+		.def("setMinimapWaterAlpha", &CyMap::setMinimapWaterAlpha, "void (float)")
+		.def("setMinimapLandAlpha", &CyMap::setMinimapLandAlpha, "void (float)")
+		.def("isMinimapShowUnits", &CyMap::isMinimapShowUnits, "bool ()")
+		.def("getMinimapWaterAlpha", &CyMap::getMinimapWaterAlpha, "float ()")
+		.def("getMinimapLandAlpha", &CyMap::getMinimapLandAlpha, "float ()")
+		// </advc.002a>
 		;
 }

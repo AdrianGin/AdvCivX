@@ -5,28 +5,32 @@
 
 #include "CvStatistics.h"
 #include "CvDllPythonEvents.h"
-#include "CvPlayer.h" // advc.make: for K-Mod's friend declaration
 
 //
 // A singleton class which is used to track game events.
 // It will report events to python and the stats collector.
 //
 
+/*class CyDiplomacyTrade;
+struct TradeData;*/ // advc: not used
 struct CvStatBase;
-struct TradeData;
-class CyDiplomacyTrade;
 class CvUnit;
 class CvCity;
 class CvPlot;
 class CvSelectionGroup;
+struct CombatDetails; // advc
+
 class CvEventReporter
 {
 	friend class CyStatistics;
-	friend const CvPlayerRecord* CvPlayer::getPlayerRecord() const; // K-Mod. Allow direct read-only access to player stats
+	/*  advc.make: Want to precompile this header, so CvPlayer.h can't be included.
+		I've instead added a public CvEventReporter::getPlayerRecord function. */
+	//friend const CvPlayerRecord* CvPlayer::getPlayerRecord() const; // K-Mod. Allow direct read-only access to player stats
 public:
 	CvEventReporter(); // advc.106l: Should perhaps be private, but that might break sth. in the EXE.
 	DllExport static CvEventReporter& getInstance();		// singleton accessor
 	DllExport void resetStatistics();
+	void initPythonCallbackGuards(); //n advc.003y
 
 	DllExport bool mouseEvent(int evt, int iCursorX, int iCursorY, bool bInterfaceConsumed=false);
 	DllExport bool kbdEvent(int evt, int key, int iCursorX, int iCursorY);
@@ -52,6 +56,10 @@ public:
 
 	void firstContact(TeamTypes eTeamID1, TeamTypes eTeamID2);
 	void combatResult(CvUnit* pWinner, CvUnit* pLoser);
+	// advc:
+	void combatLogHit(CombatDetails const& kAttackerDetails,
+			CombatDetails const& kDefenderDetails,
+			int iDamage, bool bAttackerTakesHit);
 	void improvementBuilt(int iImprovementType, int iX, int iY);
 	void improvementDestroyed(int iImprovementType, int iPlayer, int iX, int iY);
 	void routeBuilt(int iRouteType, int iX, int iY);
@@ -116,6 +124,7 @@ public:
 	void setPlayerAlive(PlayerTypes ePlayerID, bool bNewValue);
 	void playerChangeStateReligion(PlayerTypes ePlayerID, ReligionTypes eNewReligion, ReligionTypes eOldReligion);
 	void playerGoldTrade(PlayerTypes eFromPlayer, PlayerTypes eToPlayer, int iAmount);
+	CvPlayerRecord const* getPlayerRecord(PlayerTypes ePlayer); // advc.make
 
 	DllExport void chat(CvWString szString);
 

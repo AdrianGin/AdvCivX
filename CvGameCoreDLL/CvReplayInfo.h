@@ -3,22 +3,21 @@
 
 #pragma once
 
-#include "CvEnums.h"
-
 class CvReplayMessage;
-
 
 class CvReplayInfo
 {
+	CvReplayInfo& operator=(CvReplayInfo const&); // advc.003k (private)
 public:
+	CvReplayInfo(CvReplayInfo const&); // advc.003k
 	DllExport CvReplayInfo();
 	virtual ~CvReplayInfo();
 
 	void createInfo(PlayerTypes ePlayer);
 
-	int getActivePlayer() const;
-	LeaderHeadTypes getLeader(int iPlayer = -1) const;
-	ColorTypes getColor(int iPlayer = -1) const;
+	PlayerTypes getActivePlayer() const;
+	LeaderHeadTypes getLeader(PlayerTypes ePlayer = NO_PLAYER) const;
+	ColorTypes getColor(PlayerTypes ePlayer = NO_PLAYER) const;
 	HandicapTypes getDifficulty() const;
 	const CvWString& getLeaderName() const;
 	const CvWString& getCivDescription() const;
@@ -68,6 +67,10 @@ public:
 	DllExport int getMapHeight() const;
 	DllExport int getMapWidth() const;
 	DllExport const unsigned char* getMinimapPixels() const;
+	int getMinimapSize() const; // advc.106m: for expo to Python
+	static int minimapPixels(int iMinimapSize); // advc.106m
+	// advc.106h: (exposed to Python for advc.savem through CyMap::getSettingsString)
+	void appendSettingsMsg(CvWString& szSettings, PlayerTypes ePlayer) const;
 
 	DllExport const char* getModName() const;
 
@@ -77,6 +80,11 @@ public:
 protected:
 	bool isValidPlayer(int i) const;
 	bool isValidTurn(int i) const;
+	bool isReplayMsgValid(uint i) const; // advc
+	// <advc.106m>
+	int minimapPixels() const;
+	void setDefaultMinimapSize();
+	void setMinimapSizeFromXML(); // </advc.106m>
 	void addSettingsMsg(); // advc.106h
 	// <advc.106i>
 	bool checkBounds(int iValue, int iLower, int iUpper) const;
@@ -84,7 +92,7 @@ protected:
 	// </advc.106i>
 	static int REPLAY_VERSION;
 
-	int m_iActivePlayer;
+	PlayerTypes m_eActivePlayer;
 	HandicapTypes m_eDifficulty;
 	CvWString m_szLeaderName;
 	CvWString m_szCivDescription;
@@ -110,8 +118,21 @@ protected:
 	int m_iStartYear;
 	CvWString m_szFinalDate;
 	CalendarTypes m_eCalendar;
-	int m_iNormalizedScore;
-
+	//int m_iNormalizedScore;
+	// <advc.003k> Additional data members
+	class Data
+	{
+		int iNormalizedScore; // (moved into Data to make room for Data* m)
+		int iFinalScore; // advc.707
+		// <advc.106i>
+		int iVersionRead;
+		bool bDisplayOtherMods;
+		CvString szPurportedModName;
+		// </advc.106i>
+		friend CvReplayInfo;
+	};
+	Data* m;
+	// </advc.003k>
 	struct TurnData
 	{
 		int m_iScore;
@@ -120,6 +141,7 @@ protected:
 		int m_iAgriculture;
 	};
 	typedef std::vector<TurnData> ScoreHistory;
+	TurnData const& getTurnData(int iPlayer, int iTurn) const; // advc
 
 	struct PlayerInfo
 	{
@@ -132,24 +154,11 @@ protected:
 
 	int m_iMapHeight;
 	int m_iMapWidth;
-	unsigned char* m_pcMinimapPixels;
-
-	int m_nMinimapSize;
+	int m_iMinimapSize;
+	byte const* m_pcMinimapPixels; // advc.106n: const
 
 	CvString m_szModName;
-
-	// <advc.003k> Additional data members
-	class Data {
-		int iFinalScore; // advc.707
-		// <advc.106i>
-		int iVersionRead;
-		bool bDisplayOtherMods;
-		CvString szPurportedModName;
-		// </advc.106i>
-		friend CvReplayInfo;
-	};
-	Data* m;
 };
-typedef char assertSizeOfReplayInfo[(sizeof(CvReplayInfo)==340)*2-1];
-// </advc.003k>
+BOOST_STATIC_ASSERT(sizeof(CvReplayInfo) == 336); // advc.003k
+
 #endif

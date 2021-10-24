@@ -14,13 +14,21 @@ void logBBAI(TCHAR* format, ... )
 	va_start(args, format);
 	_vsnprintf(buf, 2048-4, format, args);
 	va_end(args); // kmodx
-	gDLL->logMsg("BBAI.log", buf);
+	// <advc.007>
+	CvString szLogName;
+	if (GC.getGame().isNetworkMultiPlayer())
+	{
+		// For OOS debugging on one PC
+		szLogName.Format("BBAI%d.log", (int)GC.getGame().getActivePlayer());
+	}
+	else szLogName = "BBAILog.log"; // </advc.007>
+	gDLL->logMsg(szLogName.GetCString(), buf, /* advc.007: No time stamps */ false, false);
 #endif
 }
 
-// <advc.133>
-void logBBAICancel(CvDeal const& d, PlayerTypes eCancelPlayer, wchar const* szReason) {
-
+// advc.133:
+void logBBAICancel(CvDeal const& d, PlayerTypes eCancelPlayer, wchar const* szReason)
+{
 	CvWStringBuffer szTmpBuffer;
 	GAMETEXT.getDealString(szTmpBuffer, d, eCancelPlayer, false);
 	CvWString szBuffer;
@@ -28,4 +36,4 @@ void logBBAICancel(CvDeal const& d, PlayerTypes eCancelPlayer, wchar const* szRe
 			szReason, szTmpBuffer.getCString());
 	// Leave it to logBBAI to narrow the string
 	logBBAI("%S", szBuffer.GetCString());
-} // </advc.133>
+}

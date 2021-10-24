@@ -17,9 +17,17 @@
 	<ElementType name="iTerrainGrainChange" content="textOnly" dt:type="int"/>
 	<ElementType name="iFeatureGrainChange" content="textOnly" dt:type="int"/>
 	<ElementType name="iResearchPercent" content="textOnly" dt:type="int"/>
-	<!-- BBAI start: effectively modify cost for all techs from an era. -->
+	<!-- BBAI: effectively modify cost for all techs from an era. -->
 	<ElementType name="iTechCostModifier" content="textOnly" dt:type="int"/>
-	<!-- BBAI end -->
+	<!-- advc.groundbr: start -->
+	<!-- Values less than 0 haven't been tested -->
+	<!-- No effect if AI_GROUNDBREAKING_PENALTY_ENABLE is set to 0 in
+		 TechDiffusion_GlobalDefines.xml -->
+	<ElementType name="iAIMaxGroundbreakingPenalty" content="textOnly" dt:type="int"/>
+	<!-- No effect if HUMAN_GROUNDBREAKING_PENALTY_ENABLE is set to 0 in
+		 TechDiffusion_GlobalDefines.xml -->
+	<ElementType name="iHumanMaxGroundbreakingPenalty" content="textOnly" dt:type="int"/>
+	<!-- advc.groundbr: end -->
 	<ElementType name="iTradeProfitPercent" content="textOnly" dt:type="int"/>
 	<ElementType name="iDistanceMaintenancePercent" content="textOnly" dt:type="int"/>
 	<ElementType name="iNumCitiesMaintenancePercent" content="textOnly" dt:type="int"/>
@@ -337,6 +345,8 @@
 	<ElementType name="iHurryPercent" content="textOnly" dt:type="int"/>
 	<ElementType name="iHurryConscriptAngerPercent" content="textOnly" dt:type="int"/>
 	<ElementType name="iInflationPercent" content="textOnly" dt:type="int"/>
+	<!-- advc.101 -->
+	<ElementType name="iForeignCultureStrength" content="textOnly" dt:type="int"/>
 	<ElementType name="iHealthBonus" content="textOnly" dt:type="int"/>
 	<ElementType name="iHappyBonus" content="textOnly" dt:type="int"/>
 	<ElementType name="iAttitudeChange" content="textOnly" dt:type="int"/>
@@ -434,6 +444,8 @@
 		<element type="iCorporationMaintenancePercent"/>
 		<element type="iCivicUpkeepPercent"/>
 		<element type="iInflationPercent"/>
+		<!-- advc.101 -->
+		<element type="iForeignCultureStrength"/>
 		<element type="iHealthBonus"/>
 		<element type="iHappyBonus"/>
 		<element type="iAttitudeChange"/>
@@ -660,6 +672,8 @@
 	</ElementType>
 	<ElementType name="iAnarchyLength" content="textOnly" dt:type="int"/>
 	<ElementType name="iAIWeight" content="textOnly" dt:type="int"/>
+	<!-- advc.132 -->
+	<ElementType name="bCanAlwaysForce" content="textOnly" dt:type="boolean"/>
 	<ElementType name="iGreatPeopleRateModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iGreatGeneralRateModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iDomesticGreatGeneralRateModifier" content="textOnly" dt:type="int"/>
@@ -668,7 +682,8 @@
 	<ElementType name="iNumCitiesMaintenanceModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iCorporationMaintenanceModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iExtraHealth" content="textOnly" dt:type="int"/>
-	<ElementType name="iExtraHappiness" content="textOnly" dt:type="int"/> <!-- K-Mod -->
+	<!-- K-Mod -->
+	<ElementType name="iExtraHappiness" content="textOnly" dt:type="int"/>
 	<ElementType name="iFreeExperience" content="textOnly" dt:type="int"/>
 	<ElementType name="iWorkerSpeedModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iImprovementUpgradeRateModifier" content="textOnly" dt:type="int"/>
@@ -684,6 +699,7 @@
 	<ElementType name="iLuxuryModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="bMilitaryFoodProduction" content="textOnly" dt:type="boolean"/>
 	<ElementType name="iMaxConscript" content="textOnly" dt:type="int"/>
+	<!-- K-Mod -->
 	<ElementType name="iUnhealthyPopulationModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iExpInBorderModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="bBuildingOnlyHealthy" content="textOnly" dt:type="boolean"/>
@@ -797,6 +813,10 @@
 		<element type="iAnarchyLength"/>
 		<element type="Upkeep"/>
 		<element type="iAIWeight"/>
+		<!-- advc.132: Set to 0 by default in the DLL.
+			 1 allows forcing the civic upon other players without running it
+			 in certain situations; see manual for details. -->
+		<element type="bCanAlwaysForce" minOccurs="0"/>
 		<element type="iGreatPeopleRateModifier"/>
 		<element type="iGreatGeneralRateModifier"/>
 		<element type="iDomesticGreatGeneralRateModifier"/>
@@ -805,7 +825,8 @@
 		<element type="iNumCitiesMaintenanceModifier"/>
 		<element type="iCorporationMaintenanceModifier"/>
 		<element type="iExtraHealth"/>
-		<element type="iExtraHappiness"/> <!-- K-Mod -->
+		<!-- K-Mod (advc: made optional) -->
+		<element type="iExtraHappiness"  minOccurs="0"/>
 		<element type="iFreeExperience"/>
 		<element type="iWorkerSpeedModifier"/>
 		<element type="iImprovementUpgradeRateModifier"/>
@@ -817,11 +838,12 @@
 		<element type="iGoldPerUnit"/>
 		<element type="iGoldPerMilitaryUnit"/>
 		<element type="iHappyPerMilitaryUnit"/>
-		<!-- advc.912c -->
-		<element type="iLuxuryModifier"/>
+		<!-- advc.912c (default is 0) -->
+		<element type="iLuxuryModifier" minOccurs="0"/>
 		<element type="bMilitaryFoodProduction"/>
 		<element type="iMaxConscript"/>
-		<element type="iUnhealthyPopulationModifier"/>
+		<!-- K-Mod (advc: made optional) -->
+		<element type="iUnhealthyPopulationModifier" minOccurs="0"/>
 		<element type="iExpInBorderModifier"/>
 		<element type="bBuildingOnlyHealthy"/>
 		<element type="iLargestCityHappiness"/>
@@ -1080,6 +1102,8 @@
 		<element type="DiplomacyInfo" maxOccurs="*"/>
 	</ElementType>
 	<ElementType name="bNoGoodies" content="textOnly" dt:type="boolean"/>
+	<!-- advc.314 -->
+	<ElementType name="bAllGoodyTechs" content="textOnly" dt:type="boolean"/>
 	<ElementType name="bNoAnimals" content="textOnly" dt:type="boolean"/>
 	<ElementType name="bNoBarbUnits" content="textOnly" dt:type="boolean"/>
 	<ElementType name="bNoBarbCities" content="textOnly" dt:type="boolean"/>
@@ -1105,11 +1129,25 @@
 	<ElementType name="AudioUnitVictoryScript" content="textOnly"/>
 	<ElementType name="AudioUnitDefeatScript" content="textOnly"/>
 	<ElementType name="iAdvancedStartPoints" content="textOnly" dt:type="int"/>
+	<!-- advc.erai: start -->
+	<ElementType name="iAIEraFactor" content="textOnly" dt:type="int"/>
+	<ElementType name="bAIAgeOfExploration" content="textOnly" dt:type="boolean"/>
+	<ElementType name="bAIAgeOfPestilence" content="textOnly" dt:type="boolean"/>
+	<ElementType name="bAIAgeOfPollution" content="textOnly" dt:type="boolean"/>
+	<ElementType name="bAIAgeOfFertility" content="textOnly" dt:type="boolean"/>
+	<ElementType name="bAIAgeOfGuns" content="textOnly" dt:type="boolean"/>
+	<ElementType name="bAIAtomicAge" content="textOnly" dt:type="boolean"/>
+	<!-- advc.erai: end -->
 	<ElementType name="EraInfo" content="eltOnly">
 		<element type="Type"/>
 		<element type="Description"/>
 		<element type="Strategy"/>
 		<element type="bNoGoodies"/>
+		<!-- advc.314: Set to 0 by default in the DLL. If set to 1, then
+			 goody huts can provide progress toward techs from this era
+			 and the bGoodyTech flags in Civ4TechInfos.xml only determine
+			 which techs can be completed through a goody hut. -->
+		<element type="bAllGoodyTechs" minOccurs="0"/>
 		<element type="bNoAnimals"/>
 		<element type="bNoBarbUnits"/>
 		<element type="bNoBarbCities"/>
@@ -1126,15 +1164,53 @@
 		<element type="iConstructPercent"/>
 		<element type="iCreatePercent"/>
 		<element type="iResearchPercent"/>
-		<!-- BBAI start: effectively modify cost for all techs from an era. -->
+		<!-- BBAI: Set to 0 by default in the DLL -->
 		<element type="iTechCostModifier" minOccurs="0"/>
-		<!-- BBAI end -->
+		<!-- advc.groundbr: start -->
+		<!-- Both optional; set to 0 by default in the DLL -->
+		<element type="iAIMaxGroundbreakingPenalty" minOccurs="0"/>
+		<element type="iHumanMaxGroundbreakingPenalty" minOccurs="0"/>
+		<!-- advc.groundbr: end -->
 		<element type="iBuildPercent"/>
 		<element type="iImprovementPercent"/>
 		<element type="iGreatPeoplePercent"/>
 		<element type="iCulturePercent"/>
 		<element type="iAnarchyPercent"/>
 		<element type="iEventChancePerTurn"/>
+		<!-- advc.erai: start -->
+		<!-- The DLL sets this to the era id (earliest era: 0) times 100
+			 by default. AI code generally assumes that the era factor is
+			 between 0 and 600, 0 meaning very early game and 600 meaning
+			 endgame. Mod-mods with more or fewer than 7 eras should use
+			 iAIEraFactor to map the available eras to that range.
+			 Don't use negative values. -->
+		<element type="iAIEraFactor" minOccurs="0"/>
+		<!-- These flags should be set for at most one era respectively.
+			 The AI uses them for some high-level planning. Not all of them
+			 play an important role at this point. -->
+		<!-- Should be 1 for the era during which oceangoing ships become
+			 available. In a mod-mod without such ships it might make sense,
+			 instead, to set the flag for an era that removes some other
+			 fundamental obstacle to unit movement (say, dromedaries in
+			 a desert-themed mod). -->
+		<element type="bAIAgeOfExploration" minOccurs="0"/>
+		<!-- Should be 1 for the era during which health tends to become a
+			 limiting factor for city growth. In BtS, that's the Medieval era -
+			 because of population growth ("pestilence" is just a colorful
+			 way of describing that era). -->
+		<element type="bAIAgeOfPestilence" minOccurs="0"/>
+		<!-- Should be 1 for the era during which health tends to become the
+			 predominant limiting factor for city growth. -->
+		<element type="bAIAgeOfPollution" minOccurs="0"/>
+		<!-- Should be 1 for the era during which tile improvements granting
+			 +2 food become widely available. -->
+		<element type="bAIAgeOfFertility" minOccurs="0"/>
+		<!-- Should be 1 for the era during which land units become available
+			 that ignore city defense or bombard cities very effectively . -->
+		<element type="bAIAgeOfGuns" minOccurs="0"/>
+		<!-- Should be 1 for the era during which nukes become available. -->
+		<element type="bAIAtomicAge" minOccurs="0"/>
+		<!-- advc.erai: end -->
 		<element type="iSoundtrackSpace"/>
 		<element type="bFirstSoundtrackFirst"/>
 		<element type="EraInfoSoundtracks"/>
@@ -1206,6 +1282,8 @@
 	<ElementType name="iDestroyProductionCostFactor" content="textOnly" dt:type="int"/>
 	<ElementType name="iBuyUnitCostFactor" content="textOnly" dt:type="int"/>
 	<ElementType name="iBuyCityCostFactor" content="textOnly" dt:type="int"/>
+	<!-- advc (note): The DLL now uses the name "StolenGoldPercent" for this.
+		 The name of the XML element makes no sense to me. -->
 	<ElementType name="iStealTreasuryTypes" content="textOnly" dt:type="int"/>
 	<ElementType name="iCityInsertCultureAmountFactor" content="textOnly" dt:type="int"/>
 	<ElementType name="iCityInsertCultureCostFactor" content="textOnly" dt:type="int"/>

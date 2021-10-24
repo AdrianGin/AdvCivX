@@ -5,13 +5,13 @@
 <!-- -->
 <!-- Civilization Infos -->
 <!-- advc.303: Not sure where comments are allowed in this file;
-     demonstrably not everywhere. Added NONE entries to the barbarians
+     demonstrably not everywhere. Added NONE entries to the Barbarians
 	 starting at Monument (still called "Obelisk" internally) until
 	 Supermarket.
 	 advc.305: Removed (now allowed) Workboat.
 	 advc.307: Allowed Musketman
 	 Disallowed Frigate, Privateer, Paratrooper, Rifleman, Grenadier,
-	 Spy (dlph.6). -->
+	 Spy (kekm.6). -->
 <Civ4CivilizationInfos xmlns="x-schema:CIV4CivilizationsSchema.xml">
 	<CivilizationInfos>
 		<CivilizationInfo>
@@ -2094,7 +2094,7 @@
 				<City>TXT_KEY_CITY_NAME_YASODHARAPURA</City>
 				<City>TXT_KEY_CITY_NAME_HARIHARALAYA</City>
 				<City>TXT_KEY_CITY_NAME_ANGKOR_THOM</City>
-				<!-- advc.005e: Commented out -->
+				<!-- advc.005g: Commented out -->
 				<!--City>TXT_KEY_CITY_NAME_ANGKOR_WAT</City-->
 				<City>TXT_KEY_CITY_NAME_NAGARA_JAYASRI</City>
 				<City>TXT_KEY_CITY_NAME_RAJAVIHARA</City>
@@ -2774,7 +2774,8 @@
 			</Buildings>
 			<Units>
 				<Unit>
-					<UnitClassType>UNITCLASS_GALLEON</UnitClassType>
+					<!-- advc.905b: was GALLEON -->
+					<UnitClassType>UNITCLASS_FRIGATE</UnitClassType>
 					<UnitType>UNIT_NETHERLANDS_OOSTINDIEVAARDER</UnitType>
 				</Unit>
 			</Units>
@@ -3830,7 +3831,8 @@
 			<ShortDescription>TXT_KEY_CIV_MINOR_SHORT_DESC</ShortDescription>
 			<Adjective>TXT_KEY_CIV_MINOR_ADJECTIVE</Adjective>
 			<Civilopedia>TXT_KEY_CIV_MINOR_PEDIA</Civilopedia>
-			<DefaultPlayerColor>PLAYERCOLOR_WHITE</DefaultPlayerColor>
+			<!-- advc.002i: was WHITE (clashes with England) -->
+			<DefaultPlayerColor>PLAYERCOLOR_BLACK_AND_GREEN</DefaultPlayerColor>
 			<ArtDefineTag>ART_DEF_CIVILIZATION_MINOR</ArtDefineTag>
 			<ArtStyleType>ARTSTYLE_BARBARIAN</ArtStyleType>
 			<bPlayable>0</bPlayable>
@@ -3877,7 +3879,7 @@
 				<City>TXT_KEY_CITY_NAME_HARAPPAN</City>
 				<City>TXT_KEY_CITY_NAME_MAURYAN</City>
 				<City>TXT_KEY_CITY_NAME_PARTHIAN</City>
-				<!-- advc.003: Duplicate removed -->
+				<!-- advc: Duplicate removed -->
 				<!--City>TXT_KEY_CITY_NAME_HARAPPAN</City-->
 				<City>TXT_KEY_CITY_NAME_NUBIAN</City>
 				<City>TXT_KEY_CITY_NAME_BACTRIAN</City>
@@ -4014,7 +4016,7 @@
 				<City>TXT_KEY_CITY_NAME_HARAPPAN</City>
 				<City>TXT_KEY_CITY_NAME_MAURYAN</City>
 				<City>TXT_KEY_CITY_NAME_PARTHIAN</City>
-				<!-- advc.003: Duplicate removed -->
+				<!-- advc: Duplicate removed -->
 				<!--City>TXT_KEY_CITY_NAME_HARAPPAN</City-->
 				<City>TXT_KEY_CITY_NAME_NUBIAN</City>
 				<City>TXT_KEY_CITY_NAME_BACTRIAN</City>

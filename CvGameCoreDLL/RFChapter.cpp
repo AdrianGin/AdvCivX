@@ -1,10 +1,6 @@
-// <advc.700> New class; see header file for description.
-
 #include "CvGameCoreDLL.h"
 #include "RFChapter.h"
-#include "CvGameAI.h"
-#include "CvPlayerAI.h"
-#include "CvTeamAI.h"
+#include "CoreAI.h"
 
 
 RFChapter::RFChapter() { reset(); }
@@ -26,7 +22,7 @@ RFChapter::RFChapter(int pos, int maxChapters, int playLength) {
 	chapters = maxChapters;
 	double meanChapterLength = playLength / (double)maxChapters;
 	double lengthShift = GC.getDefineINT("RF_CHAPTER_LENGTH_SHIFT_PERCENT") / 100.0;
-	length = ::roundToMultiple(meanChapterLength * ::dRange(
+	length = fmath::roundToMultiple(meanChapterLength * ::dRange(
 			1 - lengthShift + 2 * pos * (lengthShift / (maxChapters - 1)),
 			0.25, 1.75), 5);
 }
@@ -54,7 +50,7 @@ void RFChapter::write(FDataStreamBase* pStream) {
 	pStream->Write(scoreAtEnd);
 	pStream->Write(retireTurn);
 	pStream->Write(repeat);
-	pStream->Write((int)civ);
+	pStream->Write(civ);
 	pStream->Write(chapters);
 	breakdown.write(pStream);
 }
@@ -209,7 +205,7 @@ int RFChapter::computeScore() {
 		/*  If current Civ score unknown to active player, provide the last known
 			chapter score instead. */
 		if(activeId != NO_PLAYER && getCiv() != NO_PLAYER &&
-				!TEAMREF(activeId).isHasMet(TEAMID(getCiv())))
+				!GET_TEAM(activeId).isHasMet(TEAMID(getCiv())))
 			return scoreAtEnd;
 	}
 	breakdown.update();
@@ -259,7 +255,7 @@ int RFChapter::getRemainingTimePercent() const {
 		t = GC.getGame().getGameTurn();
 	return (length <= 0 ? 100 :
 			// Minus 1 b/c the current turn is already spent
-			::round((length - t + getStartTurn() - 1.0) / (0.01 * length)));
+			fmath::round((length - t + getStartTurn() - 1.0) / (0.01 * length)));
 }
 
 bool RFChapter::isRepeat() const {

@@ -1,10 +1,8 @@
 #include "CvGameCoreDLL.h"
 #include "CvEventReporter.h"
-#include "CvGameAI.h"
-#include "CvPlayerAI.h"
-#include "CvDllPythonEvents.h"
-#include "CvInitCore.h"
-#include "CvDLLInterfaceIFaceBase.h" // advc.106l
+#include "CvGame.h"
+#include "CvPlayer.h"
+#include "CvDLLPythonIFaceBase.h" // advc
 
 //
 // static, singleton accessor
@@ -21,17 +19,19 @@ void CvEventReporter::resetStatistics()
 	m_kStatistics.reset();
 }
 
-//
+// advc.003y: Just pass the call along
+void CvEventReporter::initPythonCallbackGuards()
+{
+	m_kPythonEventMgr.initCallbackGuards();
+}
+
 // Returns true if the event is consumed by Python
-//
 bool CvEventReporter::mouseEvent(int evt, int iCursorX, int iCursorY, bool bInterfaceConsumed)
 {
 	return m_kPythonEventMgr.reportMouseEvent(evt, iCursorX, iCursorY, bInterfaceConsumed);
 }
 
-//
 // Returns true if the event is consumed by Python
-//
 bool CvEventReporter::kbdEvent(int evt, int key, int iCursorX, int iCursorY)
 {
 	return m_kPythonEventMgr.reportKbdEvent(evt, key, iCursorX, iCursorY);
@@ -45,8 +45,8 @@ void CvEventReporter::genericEvent(const char* szEventName, void *pyArgs)
 
 void CvEventReporter::newGame()
 {
-	// This will only be called if statistics are being reported!
-	// Called at the launch of a game (new or loaded)
+	/*	This will only be called if statistics are being reported!
+		Called at the launch of a game (new or loaded) */
 
 	// Report initial stats for the game
 	m_kStatistics.setMapName(CvString(GC.getInitCore().getMapScriptName()).GetCString());
@@ -55,8 +55,8 @@ void CvEventReporter::newGame()
 
 void CvEventReporter::newPlayer(PlayerTypes ePlayer)
 {
-	// This will only be called if statistics are being reported!
-	// Called at the launch of a game (new or loaded)
+	/*	This will only be called if statistics are being reported!
+		Called at the launch of a game (new or loaded) */
 
 	// Report initial stats for this player
 	m_kStatistics.setLeader(ePlayer, GET_PLAYER(ePlayer).getLeaderType());
@@ -120,6 +120,18 @@ void CvEventReporter::firstContact(TeamTypes eTeamID1, TeamTypes eTeamID2)
 void CvEventReporter::combatResult(CvUnit* pWinner, CvUnit* pLoser)
 {
 	m_kPythonEventMgr.reportCombatResult(pWinner, pLoser);
+}
+
+// advc: Cut from CvUnit::resolveCombat
+void CvEventReporter::combatLogHit(CombatDetails const& kAttackerDetails,
+	CombatDetails const& kDefenderDetails, int iDamage, bool bAttackerTakesHit)
+{
+	CyArgsList pyArgs;
+	pyArgs.add(gDLL->getPythonIFace()->makePythonObject(&kAttackerDetails));
+	pyArgs.add(gDLL->getPythonIFace()->makePythonObject(&kDefenderDetails));
+	pyArgs.add(bAttackerTakesHit ? 1 : 0);
+	pyArgs.add(iDamage);
+	genericEvent("combatLogHit", pyArgs.makeFunctionArgs());
 }
 
 void CvEventReporter::improvementBuilt(int iImprovementType, int iX, int iY)
@@ -390,6 +402,13 @@ void CvEventReporter::playerGoldTrade(PlayerTypes eFromPlayer, PlayerTypes eToPl
 	m_kPythonEventMgr.reportPlayerGoldTrade(eFromPlayer, eToPlayer, iAmount);
 }
 
+/*	advc.make: To get rid of the K-Mod friend declaration in the header.
+	Not const because CvStatistics performs lazy initialization of player records. */
+CvPlayerRecord const* CvEventReporter::getPlayerRecord(PlayerTypes ePlayer)
+{
+	return m_kStatistics.getPlayerRecord(ePlayer);
+}
+
 void CvEventReporter::chat(CvWString szString)
 {
 	m_kPythonEventMgr.reportChat(szString);
@@ -408,9 +427,7 @@ void CvEventReporter::victory(TeamTypes eWinner, VictoryTypes eVictory)
 			m_kStatistics.setTimePlayed((PlayerTypes)i, GET_PLAYER((PlayerTypes)i).getTotalTimePlayed());
 		}
 	}
-
-	// automatically report MP stats on victory
-	gDLL->reportStatistics();
+	gDLL->reportStatistics(); // automatically report MP stats on victory
 }
 
 void CvEventReporter::vassalState(TeamTypes eMaster, TeamTypes eVassal, bool bVassal)
@@ -426,46 +443,50 @@ void CvEventReporter::preSave()
 	bool bAutoSave = m_bPreAutoSave;
 	bool bQuickSave = m_bPreQuickSave;
 	m_bPreAutoSave = m_bPreQuickSave = false;
-	CvGame const& g = GC.getGame();
-	FAssertMsg(bAutoSave || !g.isInBetweenTurns() || g.isNetworkMultiPlayer(),
-			"Quicksave in between turns?");
+	FAssertMsg(bAutoSave || !GC.getGame().isInBetweenTurns() ||
+			GC.getGame().isNetworkMultiPlayer(), "Quicksave in between turns?");
 	char const* szDefineName = "";
 	CvWString szMsgTag;
-	if(bAutoSave) {
+	if(bAutoSave)
+	{
 		szDefineName = "AUTO_SAVING_MESSAGE_TIME";
 		szMsgTag = L"TXT_KEY_AUTO_SAVING2";
 	}
-	else if(bQuickSave) {
+	else if(bQuickSave)
+	{
 		szDefineName = "QUICK_SAVING_MESSAGE_TIME";
 		szMsgTag = L"TXT_KEY_QUICK_SAVING2";
 	}
-	else {
+	else
+	{
 		szDefineName = "SAVING_MESSAGE_TIME";
 		szMsgTag = L"TXT_KEY_SAVING_GAME2";
 	}
 	int iLength = GC.getDefineINT(szDefineName);
 	if(iLength <= 0)
 		return;
-	PlayerTypes eActivePlayer = g.getActivePlayer();
-	if(eActivePlayer == NO_PLAYER) {
+	PlayerTypes eActivePlayer = GC.getGame().getActivePlayer();
+	if(eActivePlayer == NO_PLAYER)
+	{
 		FAssert(eActivePlayer != NO_PLAYER);
 		return;
 	}
-	gDLL->getInterfaceIFace()->addHumanMessage(eActivePlayer, true,
+	gDLL->UI().addMessage(eActivePlayer, true,
 			iLength, gDLL->getText(szMsgTag), NULL, MESSAGE_TYPE_DISPLAY_ONLY);
 }
 
-void CvEventReporter::preAutoSave() {
-
-	FAssertMsg(!m_bPreAutoSave || GC.getGame().isNetworkMultiPlayer(),
-			"Should've been reset by preSave");
+void CvEventReporter::preAutoSave()
+{
+	/*  Can detect failed auto-saves here, but only if AutoSaveInterval=1 in the INI.
+		Can't test in the DLL if that's the case. (Can't parse the INI file either;
+		it could be any file passed to the EXE at startup through ini="...") */
+	//FAssertMsg(!m_bPreAutoSave || GC.getGame().isNetworkMultiPlayer(), "Should've been reset by preSave");
 	m_bPreAutoSave = true;
 }
 
-void CvEventReporter::preQuickSave() {
-
-	FAssertMsg(!m_bPreAutoSave || GC.getGame().isNetworkMultiPlayer(),
-			"Should've been reset by preSave");
+void CvEventReporter::preQuickSave()
+{
+	//FAssertMsg(!m_bPreAutoSave || GC.getGame().isNetworkMultiPlayer(), "Should've been reset by preSave");
 	m_bPreQuickSave = true;
 } // </advc.106l>
 
@@ -500,33 +521,32 @@ void CvEventReporter::getPlayerStatistics(PlayerTypes ePlayer, std::vector<CvSta
 		aStats.push_back(new CvStatInt("citiesrazed", pRecord->getNumCitiesRazed()));
 		aStats.push_back(new CvStatInt("goldenages", pRecord->getNumGoldenAges()));
 
-
-		// Units by type
 		CvString strKey;
-		for (int j = 0; j < GC.getNumUnitInfos(); ++j)
+		FOR_EACH_ENUM(Unit)
 		{
-			strKey.format("unit_%d_built", j);
-			aStats.push_back(new CvStatInt(strKey, pRecord->getNumUnitsBuilt(j)));
-
-			strKey.format("unit_%d_killed", j);
-			aStats.push_back(new CvStatInt(strKey, pRecord->getNumUnitsKilled(j)));
-
-			strKey.format("unit_%d_lost", j);
-			aStats.push_back(new CvStatInt(strKey, pRecord->getNumUnitsWasKilled(j)));
+			strKey.format("unit_%d_built", eLoopUnit);
+			aStats.push_back(new CvStatInt(strKey,
+					pRecord->getNumUnitsBuilt(eLoopUnit)));
+			strKey.format("unit_%d_killed", eLoopUnit);
+			aStats.push_back(new CvStatInt(strKey,
+					pRecord->getNumUnitsKilled(eLoopUnit)));
+			strKey.format("unit_%d_lost", eLoopUnit);
+			aStats.push_back(new CvStatInt(strKey,
+					pRecord->getNumUnitsWasKilled(eLoopUnit)));
 		}
 
-		// Buildings by type
-		for (int j = 0; j < GC.getNumBuildingInfos(); ++j)
+		FOR_EACH_ENUM(Building)
 		{
-			strKey.format("building_%d_built", j);
-			aStats.push_back(new CvStatInt(strKey, pRecord->getNumBuildingsBuilt((BuildingTypes)j)));
+			strKey.format("building_%d_built", eLoopBuilding);
+			aStats.push_back(new CvStatInt(strKey,
+					pRecord->getNumBuildingsBuilt(eLoopBuilding)));
 		}
 
-		// Religions by type
-		for (int j = 0; j < GC.getNumReligionInfos(); ++j)
+		FOR_EACH_ENUM(Religion)
 		{
-			strKey.format("religion_%d_founded", j);
-			aStats.push_back(new CvStatInt(strKey, pRecord->getReligionFounded((ReligionTypes)j)));
+			strKey.format("religion_%d_founded", eLoopReligion);
+			aStats.push_back(new CvStatInt(strKey,
+					pRecord->getReligionFounded(eLoopReligion)));
 		}
 	}
 }
@@ -535,11 +555,15 @@ void CvEventReporter::readStatistics(FDataStreamBase* pStream)
 {
 	m_kStatistics.reset();
 	m_kStatistics.read(pStream);
-	GC.getGame().allGameDataRead(); // advc.003
+	GC.getGame().onAllGameDataRead(); // advc
 }
+
 void CvEventReporter::writeStatistics(FDataStreamBase* pStream)
 {
+	PROFILE_FUNC(); // advc
+	REPRO_TEST_BEGIN_WRITE("Statistics");
 	m_kStatistics.write(pStream);
+	REPRO_TEST_FINAL_WRITE();
 }
 
 // advc.106l: Explicit constructor added, so I can initialize my booleans.

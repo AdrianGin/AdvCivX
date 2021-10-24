@@ -1,13 +1,8 @@
 #include "CvGameCoreDLL.h"
 #include "CyPlayer.h"
-#include "CyUnit.h"
-#include "CyCity.h"
-#include "CyPlot.h"
+#include "CvPlayer.h" // advc.enum: for PollutionFlags
 #include "CySelectionGroup.h"
 #include "CyArea.h"
-//# include <boost/python/manage_new_object.hpp>
-//# include <boost/python/return_value_policy.hpp>
-//# include <boost/python/scope.hpp>
 
 //
 // published python interface for CyPlayer
@@ -15,7 +10,7 @@
 
 void CyPlayerPythonInterface2(python::class_<CyPlayer>& x)
 {
-	OutputDebugString("Python Extension Module - CyPlayerPythonInterface2\n");
+	printToConsole("Python Extension Module - CyPlayerPythonInterface2\n");
 
 	// set the docstring of the current module scope
 	python::scope().attr("__doc__") = "Civilization IV Player Class";
@@ -61,15 +56,27 @@ void CyPlayerPythonInterface2(python::class_<CyPlayer>& x)
 		.def("canSplitArea", &CyPlayer::canSplitArea, "bool (int)")
 		.def("canHaveTradeRoutesWith", &CyPlayer::canHaveTradeRoutesWith, "bool (int)")
 		.def("forcePeace", &CyPlayer::forcePeace, "void (int)")
-		// advc.038:
-		.def("estimateYieldRate", &CyPlayer::estimateYieldRate, "int (int /*YieldTypes*/ yield)")
 		// advc.210:
 		.def("checkAlert", &CyPlayer::checkAlert, "void (int alertId, bool silent)")
 		// advc.210e:
 		.def("AI_corporationBonusVal", &CyPlayer::AI_corporationBonusVal, "int (int)")
 		// <advc.085>
 		.def("setScoreboardExpanded", &CyPlayer::setScoreboardExpanded, "void (bool)")
-		.def("isScoreboardExpanded", &CyPlayer::isScoreboardExpanded, "bool (void)")
-		// </advc.085>
+		.def("isScoreboardExpanded", &CyPlayer::isScoreboardExpanded, "bool ()")
+		// </advc.085> <advc.190c>
+		.def("wasCivRandomlyChosen", &CyPlayer::wasCivRandomlyChosen, "bool ()")
+		.def("wasLeaderRandomlyChosen", &CyPlayer::wasLeaderRandomlyChosen, "bool ()")
+		// </advc.190c>
+		;
+
+	/*	K-Mod, 5/jan/11: pollution flags (advc.enum: Moved from CyEnumsInterface
+		b/c it's no longer a global type within the DLL) */
+	// (advc.enum: Keep the name "Types" in Python although it's now "Flags" in the DLL)
+	python::enum_<int>("PollutionTypes")
+		.value("POLLUTION_POPULATION", CvPlayer::POLLUTION_POPULATION)
+		.value("POLLUTION_BUILDINGS", CvPlayer::POLLUTION_BUILDINGS)
+		.value("POLLUTION_BONUSES", CvPlayer::POLLUTION_BONUSES)
+		.value("POLLUTION_POWER", CvPlayer::POLLUTION_POWER)
+		.value("POLLUTION_ALL", CvPlayer::POLLUTION_ALL)
 		;
 }

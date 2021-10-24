@@ -14,13 +14,14 @@ class CyCity;
 class CySelectionGroup;
 class CyUnit;
 class CyArea;
+
 class CyMap
 {
 public:
-	CyMap();
-	CyMap(CvMap* pMap);		// Call from C++
-	CvMap* getMap() { return m_pMap;	}	// Call from C++
-	bool isNone() { return (m_pMap==NULL); }
+	CyMap() : m_kMap(GC.getMap()) {}
+	CyMap(CvMap& kMap) : m_kMap(kMap) {} // Call from C++
+	//CvMap& getMap() { return m_kMap;	} // advc: unused
+	bool isNone() { return /*(m_pMap==NULL)*/ false; } // advc: Initialization guaranteed
 
 	void erasePlots();
 	void setRevealedPlots(int /*TeamTypes*/ eTeam, bool bNewValue, bool bTerrainOnly);
@@ -61,6 +62,8 @@ public:
 	SeaLevelTypes getSeaLevel();
 	int getNumCustomMapOptions();
 	CustomMapOptionTypes getCustomMapOption(int iOption);
+	std::wstring getNonDefaultCustomMapOptionDesc(int iOption); // advc.190b
+	std::wstring getSettingsString(); // advc.savem
 	int getNumBonuses(int /* BonusTypes */ eIndex);
 	int getNumBonusesOnLand(int /* BonusTypes */ eIndex);
 
@@ -82,12 +85,20 @@ public:
 	void updateFog();
 	void updateMinimapColor();
 	void updateMinOriginalStartDist(CyArea* pArea);
+	// <advc.002a>
+	void setMinimapShowUnits(bool b);
+	void setMinimapWaterAlpha(float f);
+	void setMinimapLandAlpha(float f);
+	bool isMinimapShowUnits();
+	float getMinimapWaterAlpha();
+	float getMinimapLandAlpha();
+	// </advc.002a>
 
 	// PYTHON HELPER FUNCTIONS
 	//int getNumPlayerOwnedPlots(int /*PlayerTypes*/ iPlayer);
 
 protected:
-	CvMap* m_pMap;
+	CvMap& m_kMap; // advc: was pointer
 };
 
-#endif	// CyMap_h
+#endif

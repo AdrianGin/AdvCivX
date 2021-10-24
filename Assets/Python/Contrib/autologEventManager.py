@@ -336,7 +336,7 @@ class AutoLogEvent(AbstractAutoLogEvent):
 			self.storeStuff()
 
 			#zcurrturn = gc.getGame().getElapsedGameTurns() + 1 + AutologOpt.get4000BCTurn()
-			# advc.004: Not sure why +1
+			# advc.004: (Not sure why +1)
 			zcurrturn = gc.getGame().getGameTurn() + 1
 			zmaxturn = gc.getGame().getMaxTurns()
 			zturn = gc.getGame().getGameTurn() + 1
@@ -387,7 +387,7 @@ class AutoLogEvent(AbstractAutoLogEvent):
 			for i in range(0, iPlayer.getNumCities(), 1):
 				iCity = iPlayer.getCity(i)
 				iCurrentWhipCounter = iCity.getHurryAngerTimer()
-				# advc.003: was ...ConstrictCounter
+				# advc: was ...ConstrictCounter
 				iCurrentConscriptCounter = iCity.getConscriptAngerTimer()
 #				if iCurrentWhipCounter != 0: iCurrentWhipCounter += 1  # onBeginPlayerTurn fires after whip counter has decreased by 1
 
@@ -678,11 +678,15 @@ class AutoLogEvent(AbstractAutoLogEvent):
 		if (AutologOpt.isLogTechnology()):
 			iTechType, iPlayer = argsList
 			if iPlayer == CyGame().getActivePlayer():
+				'''
 				researchProgress = gc.getTeam(gc.getPlayer(iPlayer).getTeam()).getResearchProgress(gc.getPlayer(iPlayer).getCurrentResearch())
 				overflowResearch = (gc.getPlayer(iPlayer).getOverflowResearch() * gc.getPlayer(iPlayer).calculateResearchModifier(gc.getPlayer(iPlayer).getCurrentResearch()))/100
 				researchCost = gc.getTeam(gc.getPlayer(iPlayer).getTeam()).getResearchCost(gc.getPlayer(iPlayer).getCurrentResearch())
 				researchRate = gc.getPlayer(iPlayer).calculateResearchRate(-1)
 				zTurns = (researchCost - researchProgress - overflowResearch) / researchRate + 1
+				'''
+				# advc.001 (inspired by MNAI): The above seems to be reinventing the wheel, badly. Might divide by 0.
+				zTurns = gc.getPlayer(iPlayer).getResearchTurnsLeft(gc.getPlayer(iPlayer).getCurrentResearch(), True)
 				message = BugUtil.getText("TXT_KEY_AUTOLOG_RESEARCH_BEGUN", (PyInfo.TechnologyInfo(iTechType).getDescription(), zTurns))
 				Logger.writeLog(message, vColor="Green")
 
@@ -729,7 +733,7 @@ class AutoLogEvent(AbstractAutoLogEvent):
 			player = PyPlayer(iFounder)
 			iCityId = gc.getGame().getHeadquarters(iCorporation).getID()
 			# advc.001: was ==0
-			if (player.getTeamID() == CyGame.getActiveTeam()):
+			if (player.getTeamID() == CyGame().getActiveTeam()):
 				messageEnd = gc.getPlayer(iFounder).getCity(iCityId).getName()
 			else:
 				messageEnd = BugUtil.getPlainText("TXT_KEY_AUTOLOG_DISTANT_LAND")
@@ -776,14 +780,18 @@ class AutoLogEvent(AbstractAutoLogEvent):
 
 	def onChangeWar(self, argsList):
 		bIsWar = argsList[0]
-		iPlayer = argsList[1]
+		iTeam = argsList[1] # advc.001: was iPlayer
 		iRivalTeam = argsList[2]
+		# <advc.001> Relevant when a colonial vassal is created
+		if iTeam == gc.getBARBARIAN_TEAM():
+			return # </advc.001>
 
 		if (gc.getGame().isFinalInitialized()
 		and AutologOpt.isLogWar()):
 
 #			Civ1 declares war on Civ2
-			iCiv1 = iPlayer
+			#iCiv1 = iPlayer
+			iCiv1 = gc.getTeam(iTeam).getLeaderID() # advc.001
 			iCiv2 = gc.getTeam(iRivalTeam).getLeaderID()
 			zsCiv1 = gc.getPlayer(iCiv1).getName() + " (" + gc.getPlayer(iCiv1).getCivilizationShortDescription(0) + ")"
 			zsCiv2 = gc.getPlayer(iCiv2).getName() + " (" + gc.getPlayer(iCiv2).getCivilizationShortDescription(0) + ")"

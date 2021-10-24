@@ -18,7 +18,7 @@
 		<section id="Main">
 		
 			<!-- Options Screen Shortcut Reminder -->
-			<!-- advc.003 (note): Now unused -->
+			<!-- advc (note): Now unused -->
 			<option id="OptionsKey" key="Options Shortcut Reminder" 
 					type="boolean" default="False" 
 					get="isShowOptionsKeyReminder" set="setShowOptionsKeyReminder" dirtyBit="GameData"/>
@@ -32,7 +32,7 @@
 					
 			<!-- advc.106b -->
 			<option id="AutoOpenEventLog" key="Auto Open Event Log" 
-					type="boolean" default="True" 
+					type="boolean" default="False" 
 					get="isAutoOpenEventLog"/>
 			<list   id="MessageLimit" key="Message Limit"
 					type="int" default="3" listType="int"
@@ -88,9 +88,15 @@
 			
 			<!-- advc.120c -->
 			<option id="Hide_EspSlider" key="Hide EspSlider" 
-					type="boolean" default="True" 
+					type="boolean" default="False" 
 					get="isHideEspSlider" dirtyBit="PercentButtons, GameData, Espionage_Advisor">
 				<change module="CvCustomizableDomesticAdvisor" function="forcePositionCalc"/>
+			</option>
+
+			<!-- advc.004p: -->
+			<option id="TotalCultureRate" key="Total Culture Rate" 
+					type="boolean" default="False" 
+					get="isShowTotalCultureRate" dirtyBit="GameData">
 			</option>
 			
 			<!-- City Cycle Arrows by SimCutie -->
@@ -117,7 +123,42 @@
 					get="isRememberFieldOfView"/>
 			<option id="FieldOfView_Value" key="Field of View Value"
 					type="string" default="-1"
-					get="getFieldOfView" set="setFieldOfView"/> 
+					get="getFieldOfView" set="setFieldOfView"/>
+
+			<!-- advc.004m: -->
+			<list   id="DefaultCamDistance" key="Default Cam Distance" 
+					type="int" default="0" listType="string" 
+					values="Automatic|Close|Medium|Far|Custom (XML)"
+					get="getDefaultCamDistance">
+				<change module="InputUtil" function="updateDefaultCamDistance"/>
+				<choice id="Automatic"/>
+				<choice id="Close"/>
+				<choice id="Medium"/>
+				<choice id="Far"/>
+				<choice id="Custom"/>
+			</list>
+
+			<!-- advc.002a: -->
+			<list   id="MinimapWaterColor" key="Minimap Water Color" 
+					type="int" default="1" listType="string" 
+					values="Maximal|Medium|Zero"
+					get="getMinimapWaterColor">
+				<change module="MinimapOptions" function="updateMinimapWaterColor"/>
+				<choice id="Maximal"/>
+				<choice id="Medium"/>
+				<choice id="Zero"/>
+			</list>
+			<option id="UnitsOnMinimap" key="Units On Minimap" 
+					type="boolean" default="False"
+					get="isUnitsOnMinimap">
+				<change module="MinimapOptions" function="updateUnitsOnMinimap"/>
+			</option>
+
+			<!-- advc.savem: -->
+			<option id="EnableSavemap" key="Enable Savemap" 
+					type="boolean" default="True"
+					get="isSavemapEnabled">
+			</option>
 
 			<!-- Movement Points -->
 			<option id="UnitMovementPointsFraction" key="Unit Movement Points Fraction" 
@@ -148,6 +189,13 @@
 			<!-- dirtyBit: Would like to redraw the unit layer indicators, but
 				 that's not possible through a dirty-bit. See tbd. in manual. -->
 
+			<!-- advc.101 -->
+			<option id="RevoltHelp" key="Revolt Help" 
+					type="boolean" default="True"/>
+			<!-- advc.187 -->
+			<option id="AirCapacity" key="Air Capacity" 
+					type="boolean" default="True"/>
+
 			<!-- Build/Action Icon Size by EmperorFool -->
 			<list   id="BuildIconSize" key="Build Icon Size" 
 					type="int" default="1" listType="string" 
@@ -158,6 +206,25 @@
 				<choice id="Large" get="isBuildIconSizeLarge"/>
 			</list>
 
+			<!-- advc.154: -->
+			<list   id="UnitCyclingButtons" key="Unit Cycling Buttons" 
+					type="int" default="1" listType="string" 
+					values="Workers|Units|None"
+					get="getUnitCyclingButtons" dirtyBit="SelectionButtons">
+				<choice id="Workers" get="isBothUnitCyclingButtons"/>
+				<choice id="Units" get="isSingleUnitCyclingButton"/>
+				<choice id="None" get="isUnitCyclingButtonsDisabled"/>
+			</list>
+
+			<!-- advc.002m: (Note: the DLL relies on this order of the choices) -->
+			<list   id="NukeMissionTime" key="Nuke Mission Time" 
+					type="int" default="0" listType="string" 
+					values="Full Length|Shortened|None">
+				<choice id="Full"/>
+				<choice id="Short"/>
+				<choice id="None"/>
+			</list>
+
 			<!-- Rapid unit cycling, by karadoc -->
 			<option id="RapidUnitCycling" key="Rapid Unit Cycling"
 					type="boolean" default="False"/>
@@ -166,6 +233,10 @@
 			<!-- advc.004: default was False -->
 			<option id="SimpleSelection" key="Simple Selection"
 					type="boolean" default="True"/>
+
+			<!-- advc.004k -->
+			<option id="SeaPatrol" key="Sea Patrol"
+					type="boolean" default="False" dirtyBit="SelectionButtons"/>
 			
 			<!-- advc.004z -->
 			<option id="ScoresInGlobeView" key="Scores in Globe View" 
@@ -193,11 +264,41 @@
 				<choice id="Adjacent"/>
 				<choice id="CityCross"/>
 			</list>
-			<!-- advc.002f -->
+
+			<!-- advc.002f: -->
+			<option id="AvoidGrowthIcon" key="Avoid Growth Icon" 
+					type="boolean" default="True" dirtyBit="CityInfo"/>
 			<option id="CityNetworkIcon" key="City Network Icon" 
 					type="boolean" default="False" dirtyBit="CityInfo"/>
 			<option id="AirportIcon" key="Airport Icon" 
 					type="boolean" default="True" dirtyBit="CityInfo"/>
+			<option id="TopCityIcons" key="Top City Icons" 
+					type="boolean" default="False" dirtyBit="CityInfo"/>
+			<!--option id="TopProductionIcon" key="Top Production Icon" 
+					type="boolean" default="False" dirtyBit="CityInfo"/>
+			<option id="TopGoldIcon" key="Top Gold Icon" 
+					type="boolean" default="False" dirtyBit="CityInfo"/>
+			<option id="TopResearchIcon" key="Top Research Icon" 
+					type="boolean" default="False" dirtyBit="CityInfo"/>
+			<option id="TopEspionageIcon" key="Top Espionage Icon" 
+					type="boolean" default="False" dirtyBit="CityInfo"/>
+			<option id="TopXPIcon" key="Top XP Icon" 
+					type="boolean" default="False" dirtyBit="CityInfo"/-->
+			<option id="NextGPIcon" key="Next GP Icon" 
+					type="boolean" default="False" dirtyBit="CityInfo"/>
+			<!--option id="NoUnhappyIcon" key="No Unhappy Icon" 
+					type="boolean" default="False" dirtyBit="CityInfo"/>
+			<option id="NoBadHealthIcon" key="No Bad Health Icon" 
+					type="boolean" default="False" dirtyBit="CityInfo"/-->
+			<!-- advc.101 -->
+			<option id="RevoltChanceIcon" key="Revolt Chance Icon" 
+					type="boolean" default="False" dirtyBit="CityInfo"/>
+
+			<!-- advc.095 (should perhaps be in 'BULL City Bar.xml' instead) -->
+			<option id="WideCityBars" key="Wide City Bars" 
+					type="boolean" default="False">
+				<change module="InputUtil" function="updateCityBarWidth"/>
+			</option>
 		</section>
 	</options>
 	

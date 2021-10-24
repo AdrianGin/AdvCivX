@@ -1,12 +1,11 @@
 #pragma once
-
 #ifndef DEFENDER_SELECTOR_H
 #define DEFENDER_SELECTOR_H
 
 class CvUnit;
 class CvPlot;
 
-/*  advco.defr: Main class hierarchy for the defender randomization module.
+/*	advco.defr: Main class hierarchy for the defender randomization component.
 	Part of the Advanced Combat (working title) mod. */
 // Abstract base class
 class DefenderSelector
@@ -20,17 +19,24 @@ public:
 	{	// Same defaults as in the BtS code (not very helpful ...)
 		Settings(PlayerTypes eDefOwner = NO_PLAYER, PlayerTypes eAttOwner = NO_PLAYER,
 			CvUnit const* pAttUnit = NULL, bool bTestAtWar = false,
-			bool bTestPotentialEnemy = false, bool bTestVisible = false) :
-			eDefOwner(eDefOwner), eAttOwner(eAttOwner), pAttUnit(pAttUnit),
+			bool bTestPotentialEnemy = false,
+			bool bTestVisible = false, // advc.028
+			// advc: for CvPlot::hasDefender
+			bool bTestCanAttack = false, bool bTestAny = false)
+		:	eDefOwner(eDefOwner), eAttOwner(eAttOwner), pAttUnit(pAttUnit),
 			bTestAtWar(bTestAtWar), bTestPotentialEnemy(bTestPotentialEnemy),
-			bTestVisible(bTestVisible) {}
+			bTestVisible(bTestVisible), bTestCanAttack(bTestCanAttack),
+			bTestAny(bTestAny)
+		{}
 		PlayerTypes eDefOwner, eAttOwner;
 		CvUnit const* pAttUnit;
-		bool bTestAtWar, bTestPotentialEnemy, bTestVisible;
+		bool bTestAtWar, bTestPotentialEnemy, bTestVisible,
+				bTestCanAttack, bTestAny;
 	};
-	virtual CvUnit* getDefender(Settings const& kSettings) const=0;
-	// Returns by parameter r. Empty r means all units!
-	virtual void getDefenders(std::vector<CvUnit*>& r, Settings const& kSettings) const;
+	virtual CvUnit* getDefender(Settings const& param) const=0;
+	// Returning empty apDef means all units are valid!
+	virtual void getDefenders(std::vector<CvUnit*>& apDef, // out-param
+			Settings const& param) const;
 
 protected:
 	CvPlot const& m_kPlot;
@@ -42,7 +48,7 @@ class BestDefenderSelector : public DefenderSelector
 public:
 	BestDefenderSelector(CvPlot const& kPlot);
 	~BestDefenderSelector();
-	CvUnit* getDefender(Settings const& kSettings) const;
+	CvUnit* getDefender(Settings const& param) const;
 };
 
 // Selects the best defender from a random set
@@ -53,8 +59,8 @@ public:
 	~RandomizedSelector();
 	void uninit();
 	void update();
-	CvUnit* getDefender(Settings const& kSettings) const;
-	void getDefenders(std::vector<CvUnit*>& r, Settings const& kSettings) const;
+	CvUnit* getDefender(Settings const& param) const;
+	void getDefenders(std::vector<CvUnit*>& apDef, Settings const& param) const;
 	static int maxAvailableDefenders();
 
 protected:
@@ -80,7 +86,7 @@ protected:
 	void cacheDefenders(PlayerTypes eAttackerOwner) const;
 	int biasValue(CvUnit const& kUnit) const;
 	int randomValue(CvUnit const& kUnit, PlayerTypes eAttackerOwner) const;
-	bool canCombat(CvUnit const& kDefUnit, Settings const& kSettings) const;
+	bool canCombat(CvUnit const& kDefUnit, Settings const& param) const;
 };
 
 #endif

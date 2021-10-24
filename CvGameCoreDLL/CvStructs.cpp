@@ -15,6 +15,18 @@
 #include "CvStructs.h"
 #include "CvUnit.h"
 #include "CvPlot.h" // advc.071
+#include "CvInfo_Command.h" // advc (for NukeMissionDef)
+
+// advc.opt: For reading legacy savegames
+void IDInfo::validateOwner()
+{
+	if (eOwner == NO_PLAYER)
+	{
+		if (iID == FFreeList::INVALID_INDEX)
+			eOwner = BARBARIAN_PLAYER;
+		else FAssert(iID == FFreeList::INVALID_INDEX);
+	}
+}
 
 int EventTriggeredData::getID() const
 {
@@ -99,11 +111,11 @@ void VoteSelectionData::write(FDataStreamBase* pStream)
 	pStream->Write(aVoteOptions.size());
 	for (std::vector<VoteSelectionSubData>::iterator it = aVoteOptions.begin(); it != aVoteOptions.end(); ++it)
 	{
-		pStream->Write((*it).eVote);
-		pStream->Write((*it).ePlayer);
-		pStream->Write((*it).iCityId);
-		pStream->Write((*it).eOtherPlayer);
-		pStream->WriteString((*it).szText);
+		pStream->Write(it->eVote);
+		pStream->Write(it->ePlayer);
+		pStream->Write(it->iCityId);
+		pStream->Write(it->eOtherPlayer);
+		pStream->WriteString(it->szText);
 	}
 }
 
@@ -176,33 +188,27 @@ void PlotExtraCost::write(FDataStreamBase* pStream)
 	pStream->Write(m_iCost);
 }
 
-void BuildingYieldChange::read(FDataStreamBase* pStream)
-{
+// advc.enum: Obsolete
+/*void BuildingYieldChange::read(FDataStreamBase* pStream) {
 	pStream->Read((int*)&eBuildingClass);
 	pStream->Read((int*)&eYield);
 	pStream->Read(&iChange);
 }
-
-void BuildingYieldChange::write(FDataStreamBase* pStream)
-{
+void BuildingYieldChange::write(FDataStreamBase* pStream) {
 	pStream->Write(eBuildingClass);
 	pStream->Write(eYield);
 	pStream->Write(iChange);
 }
-
-void BuildingCommerceChange::read(FDataStreamBase* pStream)
-{
+void BuildingCommerceChange::read(FDataStreamBase* pStream) {
 	pStream->Read((int*)&eBuildingClass);
 	pStream->Read((int*)&eCommerce);
 	pStream->Read(&iChange);
 }
-
-void BuildingCommerceChange::write(FDataStreamBase* pStream)
-{
+void BuildingCommerceChange::write(FDataStreamBase* pStream) {
 	pStream->Write(eBuildingClass);
 	pStream->Write(eCommerce);
 	pStream->Write(iChange);
-}
+}*/
 
 void checkBattleUnitType(BattleUnitTypes unitType)
 {
@@ -331,6 +337,18 @@ const CvPlot *CvMissionDefinition::getPlot() const
 void CvMissionDefinition::setPlot(const CvPlot *plot)
 {
 	m_pPlot = plot;
+}
+
+// advc: Body cut from CvUnit::nuke
+NukeMissionDef::NukeMissionDef(CvPlot const& kPlot, CvUnit& kNuke, bool bIntercept,
+	int iBaseTime) // advc.002m
+{
+	setMissionTime(iBaseTime * gDLL->getSecsPerTurn());
+	setMissionType(MISSION_NUKE);
+	setPlot(&kPlot);
+	setUnit(BATTLE_UNIT_ATTACKER, &kNuke);
+	if (bIntercept)
+		setUnit(BATTLE_UNIT_DEFENDER, &kNuke);
 }
 
 //------------------------------------------------------------------------------------------------
@@ -511,9 +529,9 @@ CvAirMissionDefinition::CvAirMissionDefinition() :
 {
 	m_fMissionTime = 0.0f;
 	m_eMissionType = MISSION_AIRPATROL;
-	// <advc.003> Safer to initialize this here
+	// <advc> Safer to initialize this here
 	for(int i = 0; i < BATTLE_UNIT_COUNT; i++)
-		m_aDamage[i] = 0; // </advc.003>
+		m_aDamage[i] = 0; // </advc>
 }
 
 //------------------------------------------------------------------------------------------------
@@ -570,24 +588,28 @@ PBGameSetupData::PBGameSetupData()
 
 // <advc.071>
 FirstContactData::FirstContactData(CvPlot const* pAt1, CvPlot const* pAt2,
-		CvUnit const* pUnit1, CvUnit const* pUnit2) {
-
+	CvUnit const* pUnit1, CvUnit const* pUnit2)
+{
 	/*  Don't need to worry here about which unit is where and who sees whom - can
 		figure that out when we know which teams are meeting. */
 
-	if(pAt1 != NULL) {
+	if(pAt1 != NULL)
+	{
 		x1 = pAt1->getX();
 		y1 = pAt1->getY();
 	}
-	if(pAt2 != NULL) {
+	if(pAt2 != NULL)
+	{
 		x2 = pAt2->getX();
 		y2 = pAt2->getY();
 	}
-	if(pUnit1 != NULL) {
+	if(pUnit1 != NULL)
+	{
 		u1.eOwner = pUnit1->getOwner();
 		u1.iID = pUnit1->getID();
 	}
-	if(pUnit2 != NULL) {
+	if(pUnit2 != NULL)
+	{
 		u2.eOwner = pUnit2->getOwner();
 		u2.iID = pUnit2->getID();
 	}

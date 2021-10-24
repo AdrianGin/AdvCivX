@@ -1,11 +1,6 @@
 #include "CvGameCoreDLL.h"
-#include "CyPlot.h"
-#include "CyCity.h"
-#include "CyArea.h"
-#include "CyUnit.h"
 #include "CvPlot.h"
-//# include <boost/python/manage_new_object.hpp>
-//# include <boost/python/return_value_policy.hpp>
+#include "CyArea.h"
 
 //
 // published python interface for CyPlot
@@ -13,7 +8,7 @@
 
 void CyPlotPythonInterface1(python::class_<CyPlot>& x)
 {
-	OutputDebugString("Python Extension Module - CyPlotPythonInterface1\n");
+	printToConsole("Python Extension Module - CyPlotPythonInterface1\n");
 
 	x
 		.def("isNone", &CyPlot::isNone, "bool ()")
@@ -91,7 +86,8 @@ void CyPlotPythonInterface1(python::class_<CyPlot>& x)
 		.def("isRevealedGoody", &CyPlot::isRevealedGoody, "bool (int (TeamTypes) eTeam)")
 
 		.def("isCity", &CyPlot::isCity, "bool ()")
-		.def("isFriendlyCity", &CyPlot::isFriendlyCity, "bool (CyUnit* pUnit, bool bCheckImprovement)")
+		// advc: CvPlot no longer has such a function
+		//.def("isFriendlyCity", &CyPlot::isFriendlyCity, "bool (CyUnit* pUnit, bool bCheckImprovement)")
 		.def("isEnemyCity", &CyPlot::isEnemyCity, "bool (CyUnit* pUnit)")
 		.def("isOccupation", &CyPlot::isOccupation, "bool ()")
 		.def("isBeingWorked", &CyPlot::isBeingWorked, "bool ()")
@@ -101,7 +97,8 @@ void CyPlotPythonInterface1(python::class_<CyPlot>& x)
 		.def("isVisibleEnemyDefender", &CyPlot::isVisibleEnemyDefender, "bool (CyUnit* pUnit)")
 		.def("getNumDefenders", &CyPlot::getNumDefenders, "int (int /*PlayerTypes*/ ePlayer)")
 		.def("getNumVisibleEnemyDefenders", &CyPlot::getNumVisibleEnemyDefenders, "int (CyUnit* pUnit)")
-		.def("getNumVisiblePotentialEnemyDefenders", &CyPlot::getNumVisiblePotentialEnemyDefenders, "int (CyUnit* pUnit)")
+		 // advc: No longer exposed
+		//.def("getNumVisiblePotentialEnemyDefenders", &CyPlot::getNumVisiblePotentialEnemyDefenders, "int (CyUnit* pUnit)")
 		.def("isVisibleEnemyUnit", &CyPlot::isVisibleEnemyUnit, "bool (int /*PlayerTypes*/ ePlayer)")
 		.def("isVisibleOtherUnit", &CyPlot::isVisibleOtherUnit, "bool (int /*PlayerTypes*/ ePlayer)")
 		.def("isFighting", &CyPlot::isFighting, "bool ()")
@@ -257,4 +254,20 @@ void CyPlotPythonInterface1(python::class_<CyPlot>& x)
 		.def("getScriptData", &CyPlot::getScriptData, "str () - Get stored custom data")
 		.def("setScriptData", &CyPlot::setScriptData, "void (str) - Set stored custom data")
 	;
+
+	// advc.enum: For CyMap::syncRandPlot
+	python::enum_<int>("RandPlotTypes")
+		.value("RANDPLOT_ANY", RANDPLOT_ANY)
+		.value("RANDPLOT_LAND", RANDPLOT_LAND)
+		.value("RANDPLOT_UNOWNED", RANDPLOT_UNOWNED)
+		.value("RANDPLOT_ADJACENT_UNOWNED", RANDPLOT_ADJACENT_UNOWNED)
+		.value("RANDPLOT_ADJACENT_LAND", RANDPLOT_ADJACENT_LAND)
+		.value("RANDPLOT_PASSABLE", RANDPLOT_PASSABLE)
+		.value("RANDPLOT_ADJACENT_LAND", RANDPLOT_ADJACENT_LAND)
+		.value("RANDPLOT_NOT_VISIBLE_TO_CIV", RANDPLOT_NOT_VISIBLE_TO_CIV)
+		/* <advc.300> */
+		.value("RANDPLOT_HABITABLE", RANDPLOT_HABITABLE)
+		.value("RANDPLOT_WATERSOURCE", RANDPLOT_WATERSOURCE)
+		/* </advc.300> */
+		;
 }

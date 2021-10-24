@@ -465,7 +465,7 @@ class EconomicsAdvisor:
 			screen.setLabel(self.getNextWidgetName(), "Background", u"<font=3>" + unicode(-goldFromCivs) + "</font>", CvUtil.FONT_RIGHT_JUSTIFY, self.X_RIGHT_PANEL + self.PANE_WIDTH - self.TEXT_MARGIN, yLocation + self.TEXT_MARGIN, self.Z_CONTROLS + self.DZ, FontTypes.GAME_FONT, WidgetTypes.WIDGET_HELP_FINANCE_FOREIGN_INCOME, self.iActiveLeader, 1)
 			iExpenses -= goldFromCivs
 
-		# advc.003: Unmarked K-Mod 1.45 change; inflation now already included
+		# advc: Unmarked K-Mod 1.45 change; inflation now already included
 		#yLocation += self.Y_SPACING
 		#iInflation = totalInflatedCosts - totalPreInflatedCosts
 		#screen.setLabel(self.getNextWidgetName(), "Background", u"<font=3>" + localText.getText("TXT_KEY_FINANCIAL_ADVISOR_INFLATION", ()) + "</font>", CvUtil.FONT_LEFT_JUSTIFY, self.X_RIGHT_PANEL + self.TEXT_MARGIN, yLocation + self.TEXT_MARGIN, self.Z_CONTROLS + self.DZ, FontTypes.GAME_FONT, WidgetTypes.WIDGET_HELP_FINANCE_INFLATED_COSTS, self.iActiveLeader, 1)
@@ -504,11 +504,11 @@ class EconomicsAdvisor:
 		szText = localText.getText("TXT_KEY_GW_SEVERITY_RATING", ()).upper() + ": "
 
 		# hopefully the words for low, medium, and high for sealevel will be good enough for GW severity as well...
-		# advc.137: Not anymore: One instance of SEALEVEL_LOW and SEALEVEL_HIGH replaced.
+		# advc.137: Better use separate keys
 		if (iSeverityRating < 30):
 			szText += localText.getColorText("TXT_KEY_LOW", (), gc.getInfoTypeForString ("COLOR_GREEN")).upper()
 		elif (iSeverityRating < 75):
-			szText += localText.getColorText("TXT_KEY_SEALEVEL_MEDIUM", (), gc.getInfoTypeForString ("COLOR_YELLOW")).upper()
+			szText += localText.getColorText("TXT_KEY_MEDIUM", (), gc.getInfoTypeForString ("COLOR_YELLOW")).upper()
 		else:
 			szText += localText.getColorText("TXT_KEY_HIGH", (), gc.getInfoTypeForString ("COLOR_RED")).upper()
 

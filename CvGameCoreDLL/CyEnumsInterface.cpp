@@ -1,17 +1,20 @@
 #include "CvGameCoreDLL.h"
-#include"CvEnums.h"
+#include "CvEnums.h"
 
-#include "CvGameCoreDLLUnDefNew.h"
+// advc.make: PCH now includes enum.hpp (before CvGameCoreDLLDefNew.h)
+/*#include "CvGameCoreDLLUnDefNew.h"
 # include <boost/python/enum.hpp>
-#include "CvGameCoreDLLDefNew.h"
+#include "CvGameCoreDLLDefNew.h"*/
 
 //
 // Python interface for free enums
 //
+/*	advc.enum (note): Unfortunately, these .value calls can't easily be generated
+	through macros. The string arguments are the main obstacle. */
 
 void CyEnumsPythonInterface()
 {
-	OutputDebugString("Python Extension Module - CyEnumsPythonInterface\n");
+	printToConsole("Python Extension Module - CyEnumsPythonInterface\n");
 
 	python::enum_<GameStateTypes>("GameStateTypes")
 		.value("GAMESTATE_ON", GAMESTATE_ON)
@@ -77,7 +80,7 @@ void CyEnumsPythonInterface()
 		;
 
 	python::enum_<PlotStyles>("PlotStyles")
-		.value("PLOT_STYLE_NONE", PLOT_STYLE_NONE)
+		.value("PLOT_STYLE_NONE", NO_PLOT_STYLE) // advc.enum
 		.value("PLOT_STYLE_NUMPAD_1", PLOT_STYLE_NUMPAD_1)
 		.value("PLOT_STYLE_NUMPAD_2", PLOT_STYLE_NUMPAD_2)
 		.value("PLOT_STYLE_NUMPAD_3", PLOT_STYLE_NUMPAD_3)
@@ -391,7 +394,7 @@ void CyEnumsPythonInterface()
 		.value("WIDGET_GLOBELAYER_OPTION", WIDGET_GLOBELAYER_OPTION)
 		.value("WIDGET_GLOBELAYER_TOGGLE", WIDGET_GLOBELAYER_TOGGLE)
 		// K-Mod widgets
-		// Environmental advisor
+		// Environmental advisor  (advc.enum: Pollution flags moved to CyPlayerInterface2.cpp)
 		.value("WIDGET_HELP_POLLUTION_OFFSETS", WIDGET_HELP_POLLUTION_OFFSETS)
 		.value("WIDGET_HELP_POLLUTION_SOURCE", WIDGET_HELP_POLLUTION_SOURCE)
 		.value("WIDGET_HELP_SUSTAINABILITY_THRESHOLD", WIDGET_HELP_SUSTAINABILITY_THRESHOLD)
@@ -419,23 +422,18 @@ void CyEnumsPythonInterface()
 		// BULL - Food Rate Hover:
 		.value("WIDGET_FOOD_MOD_HELP", WIDGET_FOOD_MOD_HELP)
 		// <advc.085>
+		.value("WIDGET_TRADE_ROUTES_SCOREBOARD", WIDGET_TRADE_ROUTES_SCOREBOARD)
 		.value("WIDGET_EXPAND_SCORES", WIDGET_EXPAND_SCORES)
 		.value("WIDGET_POWER_RATIO", WIDGET_POWER_RATIO)
 		.value("WIDGET_GOLDEN_AGE", WIDGET_GOLDEN_AGE)
 		.value("WIDGET_ANARCHY", WIDGET_ANARCHY) // </advc.085>
+		.value("WIDGET_CITY_TRADE", WIDGET_CITY_TRADE) // advc.ctr
+		.value("WIDGET_CYCLE_UNIT", WIDGET_CYCLE_UNIT) // advc.154
+		// advc.186b: (for BULL - Zoom City Details)
+		.value("WIDGET_EXAMINE_CITY", WIDGET_EXAMINE_CITY)
 		.value("NUM_WIDGET_TYPES", NUM_WIDGET_TYPES)
 		;
-	/*  K-Mod, 5/jan/11, karadoc
-		pollution flags */
-	python::enum_<int>("PollutionTypes")
-		.value("POLLUTION_POPULATION", POLLUTION_POPULATION)
-		.value("POLLUTION_BUILDINGS", POLLUTION_BUILDINGS)
-		.value("POLLUTION_BONUSES", POLLUTION_BONUSES)
-		.value("POLLUTION_POWER", POLLUTION_POWER)
 
-		.value("POLLUTION_ALL", POLLUTION_ALL)
-		;
-	// K-Mod end
 	python::enum_<ButtonPopupTypes>("ButtonPopupTypes")
 		.value("BUTTONPOPUP_TEXT", BUTTONPOPUP_TEXT)
 		.value("BUTTONPOPUP_MAIN_MENU", BUTTONPOPUP_MAIN_MENU)
@@ -497,7 +495,10 @@ void CyEnumsPythonInterface()
 		.value("WORLDSIZE_STANDARD", WORLDSIZE_STANDARD)
 		.value("WORLDSIZE_LARGE", WORLDSIZE_LARGE)
 		.value("WORLDSIZE_HUGE", WORLDSIZE_HUGE)
-		.value("NUM_WORLDSIZE_TYPES", NUM_WORLDSIZE_TYPES)
+		/*  advc.enum: Don't assume that all sizes are hardcoded.
+			NUM_WORLDSIZE_TYPES is unused in AdvCiv/BtS Python. If it's needed
+			in a mod-mod, one could use WORLDSIZE_HUGE+1. */
+		//.value("NUM_WORLDSIZE_TYPES", NUM_WORLDSIZE_TYPES)
 		;
 
 	python::enum_<TerrainTypes>("TerrainTypes")
@@ -670,10 +671,10 @@ void CyEnumsPythonInterface()
 	python::enum_<RouteTypes>("RouteTypes")
 		.value("NO_ROUTE", NO_ROUTE)
 		;
-
-	python::enum_<RiverTypes>("RiverTypes")
+	// advc.003j: unused
+	/*python::enum_<RiverTypes>("RiverTypes")
 		.value("NO_RIVER", NO_RIVER)
-		;
+		;*/
 
 	python::enum_<GoodyTypes>("GoodyTypes")
 		.value("NO_GOODY", NO_GOODY)
@@ -716,6 +717,7 @@ void CyEnumsPythonInterface()
 		.value("GREAT_GENERAL_CHAR", GREAT_GENERAL_CHAR)
 		.value("AIRPORT_CHAR", AIRPORT_CHAR)
 		// </advc.002f>
+		.value("WORST_ATTITUDE_CHAR", WORST_ATTITUDE_CHAR) // advc.187
 		.value("MAX_NUM_SYMBOLS", MAX_NUM_SYMBOLS)
 		;
 
@@ -774,7 +776,7 @@ void CyEnumsPythonInterface()
 		.value("VOICETARGET_DIPLO", VOICETARGET_DIPLO)
 		.value("VOICETARGET_TEAM", VOICETARGET_TEAM)
 		.value("VOICETARGET_ALL", VOICETARGET_ALL)
-		.value("NUM_VOICETARGETS", NUM_VOICETARGETS)
+		.value("NUM_VOICETARGETS", NUM_VOICETARGET_TYPES) // advc.enum
 		;
 
 	python::enum_<TeamTypes>("TeamTypes")
@@ -814,7 +816,7 @@ void CyEnumsPythonInterface()
 		.value("TASK_RALLY_PLOT", TASK_RALLY_PLOT)
 		.value("TASK_CLEAR_RALLY_PLOT", TASK_CLEAR_RALLY_PLOT)
 		.value("TASK_LIBERATE", TASK_LIBERATE)
-		.value("TASK_CEDE", TASK_CEDE) // advc.122
+		.value("TASK_CEDE", TASK_CEDE) // advc.ctr
 		.value("NUM_TASK_TYPES", NUM_TASK_TYPES)
 		;
 
@@ -1287,7 +1289,7 @@ void CyEnumsPythonInterface()
 		;
 
 	python::enum_<EntityEventTypes>("EntityEventTypes")
-		.value( "ENTITY_EVENT_NONE", ENTITY_EVENT_NONE )
+		.value( "NO_ENTITY_EVENT_NONE", NO_ENTITYEVENT )
 		;
 
 	python::enum_<AnimationPathTypes>("AnimationPathTypes")
@@ -1315,7 +1317,7 @@ void CyEnumsPythonInterface()
 		;
 
 	python::enum_<AnimationCategoryTypes>("AnimationCategoryTypes")
-		.value("ANIMCAT_NONE", ANIMCAT_NONE)
+		.value("ANIMCAT_NONE", NO_ANIMCAT)
 		;
 
 	python::enum_<CursorTypes>("CursorTypes")
@@ -1344,9 +1346,6 @@ void CyEnumsPythonInterface()
 		.value("TRADE_RELIGION", TRADE_RELIGION)
 		.value("NUM_TRADEABLE_HEADINGS", NUM_TRADEABLE_HEADINGS)
 		.value("NUM_TRADEABLE_ITEMS", NUM_TRADEABLE_ITEMS)
-		/*  advc.034: After NUM_TRADEABLE_ITEMS because it's not supposed to be
-			included in iterations over TradeableItems */
-		.value("TRADE_DISENGAGE", TRADE_DISENGAGE)
 		;
 
 	python::enum_<DiploEventTypes>("DiploEventTypes")
@@ -1798,8 +1797,10 @@ void CyEnumsPythonInterface()
 
 		.value("NUM_ACTIONSUBTYPES", NUM_ACTIONSUBTYPES)
 		;
-
-	python::enum_<GameMessageTypes>("GameMessageTypes")
+	/*	advc (commented out): I don't think Python can use these in a sensible way
+		given that CvMessageData isn't exposed to Python at all. 
+		Should instead use CyMessageControl for network stuff in Python. */
+	/*python::enum_<GameMessageTypes>("GameMessageTypes")
 		.value("GAMEMESSAGE_NETWORK_READY", GAMEMESSAGE_NETWORK_READY)
 		.value("GAMEMESSAGE_SAVE_GAME_FLAG", GAMEMESSAGE_SAVE_GAME_FLAG)
 		.value("GAMEMESSAGE_SAVE_FLAG_ACK", GAMEMESSAGE_SAVE_FLAG_ACK)
@@ -1895,10 +1896,8 @@ void CyEnumsPythonInterface()
 		.value("GAMEMESSAGE_ADVANCED_START_ACTION", GAMEMESSAGE_ADVANCED_START_ACTION)
 		.value("GAMEMESSAGE_FOUND_RELIGION", GAMEMESSAGE_FOUND_RELIGION)
 		.value("GAMEMESSAGE_MOD_NET_MESSAGE", GAMEMESSAGE_MOD_NET_MESSAGE)
-		// advc.011b: Not sure if anything breaks if I don't add this here
-		.value("GAMEMESSAGE_PUSH_MODIFIED_MISSION", GAMEMESSAGE_PUSH_MISSION)
-		.value("GAMEMESSAGE_PUSH_FP_TEST", GAMEMESSAGE_PUSH_MISSION) // advc.003g
-		;
+		// (advc: I've added enumerators, but I won't bother to include them here.)
+		;*/
 
 	python::enum_<PopupControlLayout>("PopupControlLayout")
 		.value("POPUP_LAYOUT_LEFT", POPUP_LAYOUT_LEFT)
@@ -1988,7 +1987,7 @@ void CyEnumsPythonInterface()
 		.value("ADVANCEDSTARTACTION_VISIBILITY", ADVANCEDSTARTACTION_VISIBILITY)
 		.value("ADVANCEDSTARTACTION_AUTOMATE", ADVANCEDSTARTACTION_AUTOMATE)
 		;
-	// <advc.004m>
+	// advc.004m:
 	python::enum_<GlobeLayerTypes>("GlobeLayerTypes")
 		.value("GLOBE_LAYER_STRATEGY", GLOBE_LAYER_STRATEGY)
 		.value("GLOBE_LAYER_TRADE", GLOBE_LAYER_TRADE)
@@ -1998,5 +1997,24 @@ void CyEnumsPythonInterface()
 		.value("GLOBE_LAYER_CULTURE", GLOBE_LAYER_CULTURE)
 		.value("NUM_GLOBE_LAYER_TYPES", NUM_GLOBE_LAYER_TYPES)
 		.value("NO_GLOBE_LAYER", NUM_GLOBE_LAYER_TYPES)
-		; // </advc.004m>
+		;
+	// advc.pf: If generatePath (CvUnit, CvSelectionGroup) is exposed, so should be this.
+	python::enum_<MovementFlags>("MovementFlags")
+		.value("NO_MOVEMENT_FLAGS", NO_MOVEMENT_FLAGS)
+		.value("MOVE_IGNORE_DANGER", MOVE_IGNORE_DANGER)
+		.value("MOVE_SAFE_TERRITORY", MOVE_SAFE_TERRITORY)
+		.value("MOVE_NO_ENEMY_TERRITORY", MOVE_NO_ENEMY_TERRITORY)
+		.value("MOVE_DECLARE_WAR", MOVE_DECLARE_WAR)
+		.value("MOVE_DIRECT_ATTACK", MOVE_DIRECT_ATTACK)
+		.value("MOVE_THROUGH_ENEMY", MOVE_THROUGH_ENEMY)
+		.value("MOVE_MAX_MOVES", MOVE_MAX_MOVES)
+		.value("MOVE_AVOID_ENEMY_WEIGHT_2", MOVE_AVOID_ENEMY_WEIGHT_2)
+		.value("MOVE_AVOID_ENEMY_WEIGHT_3", MOVE_AVOID_ENEMY_WEIGHT_3)
+		.value("MOVE_ATTACK_STACK", MOVE_ATTACK_STACK)
+		.value("MOVE_SINGLE_ATTACK", MOVE_SINGLE_ATTACK)
+		.value("MOVE_NO_ATTACK", MOVE_NO_ATTACK)
+		.value("MOVE_HAS_STEPPED", MOVE_HAS_STEPPED)
+		.value("MOVE_ASSUME_VISIBLE", MOVE_ASSUME_VISIBLE)
+		.value("MOVE_ROUTE_TO", MOVE_ROUTE_TO)
+		;
 }

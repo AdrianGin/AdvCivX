@@ -14,8 +14,6 @@
 #include "CvGameCoreDLL.h"
 #include "CvArtFileMgr.h"
 #include "CvXMLLoadUtility.h"
-#include "CvInfos.h"
-#include "CvDLLUtilityIFaceBase.h"
 
 // Macro for Building Art Info Maps
 #if 0	// DEBUGGING
@@ -54,43 +52,48 @@ class Cv##name##ArtInfoItem : public CvArtFileMgr::ArtInfoItem \
 { \
 	void init() { ARTFILEMGR.m_map##name##ArtInfos = new CvArtFileMgr::ArtInfo##name##MapType; } \
 	void deInit(); \
-	void buildMap() { BUILD_INFO_MAP(*ARTFILEMGR.m_map##name##ArtInfos, ARTFILEMGR.get##name##ArtInfo, ARTFILEMGR.getNum##name##ArtInfos()); } \
+	void buildMap() \
+	{ \
+		BUILD_INFO_MAP(*ARTFILEMGR.m_map##name##ArtInfos, ARTFILEMGR.get##name##ArtInfo, ARTFILEMGR.getNum##name##ArtInfos()); \
+	} \
 }; \
 \
 static Cv##name##ArtInfoItem* g##name##ArtInfoItem; \
 \
-CvArtInfo##name##* CvArtFileMgr::get##name##ArtInfo( const char *szArtDefineTag ) const \
+CvArtInfo##name* CvArtFileMgr::get##name##ArtInfo(char const* szArtDefineTag) const \
 { \
 	FAssertMsg(szArtDefineTag, "NULL string on art info lookup?"); \
-	ArtInfo##name##MapType::const_iterator it = m_map##name##ArtInfos->find( szArtDefineTag );\
-	if ( it == m_map##name##ArtInfos->end() ) \
+	ArtInfo##name##MapType::const_iterator it = m_map##name##ArtInfos->find(szArtDefineTag);\
+	if (it == m_map##name##ArtInfos->end()) \
 	{\
 		char szErrorMsg[256]; \
-		sprintf(szErrorMsg, "get##name##ArtInfo: %s was not found", szArtDefineTag); \
-		FAssertMsg(false, szErrorMsg ); \
-		if ( 0 == strcmp(szArtDefineTag, "ERROR") ) \
-		{ \
+		/* advc.001: Need to stringize for the error msg */ \
+		sprintf(szErrorMsg, "get" #name "ArtInfo: %s was not found", szArtDefineTag); \
+		FErrorMsg(szErrorMsg); \
+		if (strcmp(szArtDefineTag, "ERROR") == 0) \
 			return NULL; \
-		} \
-		else \
-		{ \
-			return get##name##ArtInfo( "ERROR" ); \
-		} \
+		return get##name##ArtInfo("ERROR"); \
 	} \
 	return it->second; \
 } \
+/* <advc> */\
+TCHAR const* CvArtFileMgr::get##name##ArtPath(char const* szArtDefineTag) const \
+{ \
+	return get##name##ArtInfo(szArtDefineTag)->getPath(); \
+} \
+/* </advc> */ \
 void Cv##name##ArtInfoItem::deInit() \
 { \
 	SAFE_DELETE(ARTFILEMGR.m_map##name##ArtInfos); \
-	for (uint i = 0; i < ARTFILEMGR.m_pa##name##ArtInfo.size(); ++i) \
+	for (uint i = 0; i < ARTFILEMGR.m_pa##name##ArtInfo.size(); i++) \
 	{ \
 		SAFE_DELETE(ARTFILEMGR.m_pa##name##ArtInfo[i]); \
 	} \
 	ARTFILEMGR.m_pa##name##ArtInfo.clear(); \
 } \
-CvArtInfo##name##& CvArtFileMgr::get##name##ArtInfo(int i) { return *(m_pa##name##ArtInfo[i]); }
+CvArtInfo##name& CvArtFileMgr::get##name##ArtInfo(int i) { return *(m_pa##name##ArtInfo[i]); }
 
-#define ART_INFO_INST(name) g##name##ArtInfoItem = new  Cv##name##ArtInfoItem();
+#define ART_INFO_INST(name) g##name##ArtInfoItem = new Cv##name##ArtInfoItem();
 
 
 // Macros the declaration of the art file info maps
@@ -118,7 +121,7 @@ static CvArtFileMgr* gs_ArtFileMgr = NULL;
 
 CvArtFileMgr& CvArtFileMgr::GetInstance()
 {
-	if ( gs_ArtFileMgr == NULL )
+	if (gs_ArtFileMgr == NULL)
 	{
 		gs_ArtFileMgr = new CvArtFileMgr();
 
@@ -139,68 +142,56 @@ CvArtFileMgr& CvArtFileMgr::GetInstance()
 	return *gs_ArtFileMgr;
 }
 
-//----------------------------------------------------------------------------
-//
-//	FUNCTION:	Init()
-//
-//	PURPOSE:	Initializes the Maps
-//
-//----------------------------------------------------------------------------
+// Initializes the maps
 void CvArtFileMgr::Init()
 {
-	int i;
-	for(i=0;i<(int)m_artInfoItems.size();i++)
-	{
+	for(size_t i = 0; i < m_artInfoItems.size(); i++)
 		m_artInfoItems[i]->init();
-	}
 }
 
-//----------------------------------------------------------------------------
-//
-//	FUNCTION:	DeInit()
-//
-//	PURPOSE:	Deletes the Maps
-//
-//----------------------------------------------------------------------------
+// Deletes the maps
 void CvArtFileMgr::DeInit()
 {
-	int i;
-	for(i=0;i<(int)m_artInfoItems.size();i++)
-	{
+	for(size_t i = 0; i < m_artInfoItems.size(); i++)
 		m_artInfoItems[i]->deInit();
-	}
 }
 
-//----------------------------------------------------------------------------
-//
-//	FUNCTION:	Reset()
-//
-//	PURPOSE:	Reloads the XML & Rebuilds the Maps
-//
-//----------------------------------------------------------------------------
+// Reloads the XML and rebuilds the maps
 void CvArtFileMgr::Reset()
 {	// <advc.007b> Reloading Art Defines (Ctrl+Alt+R) is broken; would crash.
 	if(GC.IsGraphicsInitialized())
 		return; // </advc.007b>
-	DeInit();		// Cleans Art Defines
+	DeInit(); // Cleans Art Defines
 	CvXMLLoadUtility XMLLoadUtility;
-	XMLLoadUtility.SetGlobalArtDefines();		// Reloads/allocs Art Defines
-	Init();			// reallocs maps
+	XMLLoadUtility.SetGlobalArtDefines(); // Reloads/allocs Art Defines
+	Init(); // reallocs maps
 	buildArtFileInfoMaps();
 }
 
-//----------------------------------------------------------------------------
-//
-//	FUNCTION:	buildArtFileInfoMaps()
-//
-//	PURPOSE:	Builds the Art File Maps
-//
-//----------------------------------------------------------------------------
+// advc.enum: (for CvGlobals::infosReset)
+void CvArtFileMgr::resetInfo()
+{
+	#define RESET_ART_INFO(Name) \
+		for (int i = 0; i < getNum##Name##ArtInfos(); i++) \
+			get##Name##ArtInfo(i).reset();
+	// These are the ones that used to be added to CvGlobals::m_aInfoVectors
+	RESET_ART_INFO(Misc);
+	RESET_ART_INFO(Unit);
+	RESET_ART_INFO(Building);
+	RESET_ART_INFO(Civilization);
+	RESET_ART_INFO(Leaderhead);
+	RESET_ART_INFO(Bonus);
+	RESET_ART_INFO(Improvement);
+	RESET_ART_INFO(Terrain);
+	RESET_ART_INFO(Feature);
+	RESET_ART_INFO(Movie);
+	RESET_ART_INFO(Interface);
+	#undef RESET_ART_INFO
+}
+
+// Builds the art file maps
 void CvArtFileMgr::buildArtFileInfoMaps()
 {
-	int i;
-	for(i=0;i<(int)m_artInfoItems.size();i++)
-	{
+	for(size_t i = 0; i < m_artInfoItems.size(); i++)
 		m_artInfoItems[i]->buildMap();
-	}
 }

@@ -7,13 +7,13 @@
 #include "CvTeamAI.h"
 #include "CyArea.h"
 
-CyTeam::CyTeam() : m_pTeam(NULL)
-{
-}
+CyTeam::CyTeam() : m_pTeam(NULL) {}
 
-CyTeam::CyTeam(CvTeam* pTeam) : m_pTeam(pTeam)
-{
-}
+CyTeam::CyTeam(CvTeam* pTeam) : m_pTeam(
+	pTeam == NULL ? NULL : &pTeam->AI()) // advc.003u
+{}
+
+//CvTeam* CyTeam::getTeam() { return m_pTeam; } // advc: unused
 
 void CyTeam::addTeam(int /*TeamTypes*/ eTeam)
 {
@@ -110,22 +110,22 @@ int CyTeam::getNumNukeUnits()
 
 int CyTeam::getAtWarCount(bool bIgnoreMinors)
 {
-	return m_pTeam ? m_pTeam->getAtWarCount(bIgnoreMinors) : -1;
+	return m_pTeam ? m_pTeam->getNumWars(bIgnoreMinors) : -1;
 }
 
 int CyTeam::getWarPlanCount(int /*WarPlanTypes*/ eWarPlan, bool bIgnoreMinors)
 {
-	return m_pTeam ? m_pTeam->getWarPlanCount((WarPlanTypes) eWarPlan, bIgnoreMinors) : -1;
+	return m_pTeam ? m_pTeam->AI_countWarPlans((WarPlanTypes)eWarPlan, bIgnoreMinors, MAX_CIV_PLAYERS) : -1;
 }
 
 int CyTeam::getAnyWarPlanCount(bool bIgnoreMinors)
 {
-	return m_pTeam ? m_pTeam->getAnyWarPlanCount(bIgnoreMinors) : -1;
+	return m_pTeam ? m_pTeam->AI_countWarPlans(NUM_WARPLAN_TYPES, bIgnoreMinors, MAX_CIV_PLAYERS) : -1;
 }
 
 int CyTeam::getChosenWarCount(bool bIgnoreMinors)
 {
-	return m_pTeam ? m_pTeam->getChosenWarCount(bIgnoreMinors) : -1;
+	return m_pTeam ? m_pTeam->AI_countChosenWars(bIgnoreMinors) : -1;
 }
 
 int CyTeam::getHasMetCivCount(bool bIgnoreMinors)
@@ -203,7 +203,7 @@ int CyTeam::countPowerByArea(CyArea* pArea)
 
 int CyTeam::countEnemyPowerByArea(CyArea* pArea)
 {
-	return m_pTeam ? m_pTeam->countEnemyPowerByArea(pArea->getArea()) : -1;
+	return m_pTeam ? m_pTeam->AI_countEnemyPowerByArea(pArea->getArea()) : -1;
 }
 
 int CyTeam::countNumAIUnitsByArea(CyArea* pArea, int /*UnitAITypes*/ eUnitAI)
@@ -213,7 +213,7 @@ int CyTeam::countNumAIUnitsByArea(CyArea* pArea, int /*UnitAITypes*/ eUnitAI)
 
 int CyTeam::countEnemyDangerByArea(CyArea* pArea)
 {
-	return m_pTeam ? m_pTeam->countEnemyDangerByArea(pArea->getArea()) : -1;
+	return m_pTeam ? m_pTeam->AI_countEnemyDangerByArea(pArea->getArea()) : -1;
 }
 
 int CyTeam::getResearchCost(int /*TechTypes*/ eTech)
@@ -608,18 +608,18 @@ void CyTeam::changeWarWeariness(int /*TeamTypes*/ eIndex, int iChange)
 
 int CyTeam::getTechShareCount(int iIndex)
 {
-	return m_pTeam ? m_pTeam->getTechShareCount(iIndex) : -1;
+	return m_pTeam ? m_pTeam->getTechShareCount((PlayerTypes)iIndex) : -1;
 }
 
 bool CyTeam::isTechShare(int iIndex)
 {
-	return m_pTeam ? m_pTeam->isTechShare(iIndex) : false;
+	return m_pTeam ? m_pTeam->isTechShare((PlayerTypes)iIndex) : false;
 }
 
 void CyTeam::changeTechShareCount(int iIndex, int iChange)
 {
 	if (m_pTeam)
-		m_pTeam->changeTechShareCount(iIndex, iChange);
+		m_pTeam->changeTechShareCount((PlayerTypes)iIndex, iChange);
 }
 
 int CyTeam::getCommerceFlexibleCount(int /*CommerceTypes*/ eIndex)
@@ -652,6 +652,11 @@ void CyTeam::changeExtraMoves(int /*DomainTypes*/ eIndex, int iChange)
 bool CyTeam::isHasMet(int /*TeamTypes*/ eIndex)
 {
 	return m_pTeam ? m_pTeam->isHasMet((TeamTypes)eIndex) : false;
+}
+// advc.091:
+int CyTeam::getHasMetTurn(int iOtherTeam)
+{
+	return m_pTeam ? m_pTeam->getHasMetTurn((TeamTypes)iOtherTeam) : -1;
 }
 
 bool CyTeam::isAtWar(int /*TeamTypes*/ iIndex)
@@ -913,6 +918,10 @@ int CyTeam::getLaunchSuccessRate(int /*VictoryTypes*/ eVictory)
 	return (m_pTeam ? m_pTeam->getLaunchSuccessRate((VictoryTypes)eVictory) : -1);
 }
 
+bool CyTeam::hasSpaceshipArrived() // K-Mod
+{
+	return (m_pTeam ? m_pTeam->hasSpaceshipArrived() : false);
+}
 
 int CyTeam::getEspionagePointsAgainstTeam(int /*TeamTypes*/ eIndex)
 {
@@ -1016,11 +1025,20 @@ int CyTeam::AI_getWarSuccess(int /*TeamTypes*/ eIndex) const
 	return m_pTeam ? m_pTeam->AI_getWarSuccess((TeamTypes)eIndex) : -1;
 }
 
-// <advc.152>
+// advc.152:
 int /*DenialTypes*/ CyTeam::AI_declareWarTrade(int /*TeamTypes*/ eWarTeam,
 		int /*TeamTypes*/ eTeam) const {
 
 	// Can't add AI_declareWarTrade to CvTeam
 	return m_pTeam ? GET_TEAM(m_pTeam->getID()).AI_declareWarTrade(
 			(TeamTypes)eWarTeam, (TeamTypes)eTeam) : -1;
-} // </advc.152>
+}
+
+// advc.038:
+int CyTeam::AI_estimateYieldRate(int iPlayer, int iYield) const
+{
+	if (m_pTeam == NULL)
+		return -1;
+	return m_pTeam->AI_estimateYieldRate((PlayerTypes)iPlayer,
+			(YieldTypes)iYield).round();
+}

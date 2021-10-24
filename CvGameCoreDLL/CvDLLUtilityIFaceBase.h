@@ -3,9 +3,6 @@
 #ifndef CvDLLUtilityIFaceBase_h
 #define CvDLLUtilityIFaceBase_h
 
-
-#include "LinkedList.h"
-
 //
 // abstract interface for utility functions used by DLL
 // Creator- Mustafa Thamer
@@ -21,19 +18,19 @@ class CvDLLFeatureIFaceBase;
 class CvDLLRouteIFaceBase;
 class CvDLLRiverIFaceBase;
 class CvDLLFAStarIFaceBase;
-class CvDLLEventReporterIFaceBase;
 class CvDLLXmlIFaceBase;
 class CvDLLFlagEntityIFaceBase;
 class CvDLLPythonIFaceBase;
 
+/*class CvDLLEventReporterIFaceBase;
 class CvSymbol;
 class CvPlot;
 class CvUnit;
 class CvCity;
-class CvCacheObject;
 class CvFont;
+class CvAudioGame;*/ // advc: unused
+class CvCacheObject;
 class CvDiploParameters;
-class CvAudioGame;
 struct ProfileSample;
 class CvReplayInfo;
 class CvPopupInfo;
@@ -45,6 +42,8 @@ public:
 	// accessors for other abstract interfaces
 	virtual CvDLLEntityIFaceBase* getEntityIFace() = 0;
 	virtual CvDLLInterfaceIFaceBase* getInterfaceIFace() = 0;
+	// advc: abbreviate
+	CvDLLInterfaceIFaceBase& UI() { return *getInterfaceIFace(); }
 	virtual CvDLLEngineIFaceBase* getEngineIFace() = 0;
 	virtual CvDLLIniParserIFaceBase* getIniParserIFace() = 0;
 	virtual CvDLLSymbolIFaceBase* getSymbolIFace() = 0;
@@ -131,7 +130,10 @@ public:
 
 	virtual CvWString getMapScriptName() = 0;
 	virtual bool getTransferredMap() = 0;
+	/*  advc (comment): Presumably checks if szFileName has a WBSave ending.
+		"Desc" probably refers to the WBSave language. */
 	virtual bool isDescFileName(const char * szFileName) = 0;
+	// advc (comment): Might call isDescFileName. Should probably use CvGame::isScenario (advc.052) instead.
 	virtual bool isWBMapScript() = 0;
 	virtual bool isWBMapNoPlayers() = 0;
 	virtual bool pythonMapExists(const char * szMapName) = 0;
@@ -163,6 +165,9 @@ public:
 	virtual void beginMPDiplomacy( PlayerTypes eWhoTalkingTo, bool bRenegotiate = false, bool bSimultaneous = true) = 0;
 	virtual void endMPDiplomacy() = 0;
 
+	/*	advc (note): Don't know what this does. It doesn't say whether "No Sound" is
+		checked under Audio Options. Would have to look that up in the user profile
+		via a Python call (see CvOptionsScreen.drawAudioOptionsTab). */
 	virtual bool getAudioDisabled() = 0;
 	virtual int getAudioTagIndex(const TCHAR* szTag, int iScriptType = -1) = 0;
 

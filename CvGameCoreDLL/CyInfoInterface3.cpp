@@ -1,5 +1,5 @@
 #include "CvGameCoreDLL.h"
-#include "CvInfos.h"
+#include "CvInfo_All.h"
 
 //
 // Python interface for info classes (formerly structs)
@@ -8,44 +8,9 @@
 // advc.003e: Added template parameters 'boost::noncopyable'
 void CyInfoPythonInterface3()
 {
-	OutputDebugString("Python Extension Module - CyInfoPythonInterface3\n");
+	printToConsole("Python Extension Module - CyInfoPythonInterface3\n");
 
-	python::class_<CvYieldInfo, boost::noncopyable, python::bases<CvInfoBase> >("CvYieldInfo")
-		.def("getChar", &CvYieldInfo::getChar, "int ()")
-		.def("getHillsChange", &CvYieldInfo::getHillsChange, "int ()")
-		.def("getPeakChange", &CvYieldInfo::getPeakChange, "int ()")
-		.def("getLakeChange", &CvYieldInfo::getLakeChange, "int ()")
-		.def("getCityChange", &CvYieldInfo::getCityChange, "int ()")
-		.def("getPopulationChangeOffset", &CvYieldInfo::getPopulationChangeOffset, "int ()")
-		.def("getPopulationChangeDivisor", &CvYieldInfo::getPopulationChangeDivisor, "int ()")
-		.def("getMinCity", &CvYieldInfo::getMinCity, "int ()")
-		.def("getTradeModifier", &CvYieldInfo::getTradeModifier, "int ()")
-		.def("getGoldenAgeYield", &CvYieldInfo::getGoldenAgeYield, "int ()")
-		.def("getGoldenAgeYieldThreshold", &CvYieldInfo::getGoldenAgeYieldThreshold, "int ()")
-		.def("getAIWeightPercent", &CvYieldInfo::getAIWeightPercent, "int ()")
-		.def("getColorType", &CvYieldInfo::getColorType, "int ()")
-		;
-	// advc.003e:
-	python::class_<CvTerrainInfo, boost::noncopyable, python::bases<CvInfoBase> >("CvTerrainInfo")
-
-		.def("getMovementCost", &CvTerrainInfo::getMovementCost, "int ()")
-		.def("getSeeFromLevel", &CvTerrainInfo::getSeeFromLevel, "int ()")
-		.def("getSeeThroughLevel", &CvTerrainInfo::getSeeThroughLevel, "int ()")
-		.def("getBuildModifier", &CvTerrainInfo::getBuildModifier, "int ()")
-		.def("getDefenseModifier", &CvTerrainInfo::getDefenseModifier, "int ()")
-
-		.def("isWater", &CvTerrainInfo::isWater, "bool ()")
-		.def("isImpassable", &CvTerrainInfo::isImpassable, "bool ()")
-		.def("isFound", &CvTerrainInfo::isFound, "bool ()")
-		.def("isFoundCoast", &CvTerrainInfo::isFoundCoast, "bool ()")
-		.def("isFoundFreshWater", &CvTerrainInfo::isFoundFreshWater, "bool ()")
-
-		// Arrays
-
-		.def("getYield", &CvTerrainInfo::getYield, "int (int i)")
-		.def("getRiverYieldChange", &CvTerrainInfo::getRiverYieldChange, "int (int i)")
-		.def("getHillsYieldChange", &CvTerrainInfo::getHillsYieldChange, "int (int i)")
-		;
+	// advc: CvYieldInfo and CvTerrainInfo interface moved to CyInfoInterface2.cpp
 
 	python::class_<CvInterfaceModeInfo, boost::noncopyable, python::bases<CvInfoBase> >("CvInterfaceModeInfo")
 
@@ -171,7 +136,7 @@ void CyInfoPythonInterface3()
 
 		// Arrays
 
-		.def("getProductionToCommerceModifier", &CvProcessInfo::getProductionToCommerceModifier, "int (int i)")
+		.def("getProductionToCommerceModifier", &CvProcessInfo::py_getProductionToCommerceModifier, "int (int i)")
 		;
 
 	python::class_<CvVoteInfo, boost::noncopyable, python::bases<CvInfoBase> >("CvVoteInfo")
@@ -195,8 +160,8 @@ void CyInfoPythonInterface3()
 
 		// Arrays
 
-		.def("isForceCivic", &CvVoteInfo::isForceCivic, "bool (int i)")
-		.def("isVoteSourceType", &CvVoteInfo::isVoteSourceType, "bool (int i)")
+		.def("isForceCivic", &CvVoteInfo::py_isForceCivic, "bool (int i)")
+		.def("isVoteSourceType", &CvVoteInfo::py_isVoteSourceType, "bool (int i)")
 		;
 
 	python::class_<CvProjectInfo, boost::noncopyable, python::bases<CvInfoBase> >("CvProjectInfo")
@@ -219,12 +184,12 @@ void CyInfoPythonInterface3()
 
 		// Arrays
 
-		.def("getBonusProductionModifier", &CvProjectInfo::getBonusProductionModifier, "int (int i)")
-		.def("getVictoryThreshold", &CvProjectInfo::getVictoryThreshold, "int (int i)")
-		.def("getVictoryMinThreshold", &CvProjectInfo::getVictoryMinThreshold, "int (int i)")
+		.def("getBonusProductionModifier", &CvProjectInfo::py_getBonusProductionModifier, "int (int i)")
+		.def("getVictoryThreshold", &CvProjectInfo::py_getVictoryThreshold, "int (int i)")
+		.def("getVictoryMinThreshold", &CvProjectInfo::py_getVictoryMinThreshold, "int (int i)")
 		.def("getVictoryDelayPercent", &CvProjectInfo::getVictoryDelayPercent, "int ()")
 		.def("getSuccessRate", &CvProjectInfo::getSuccessRate, "int ()")
-		.def("getProjectsNeeded", &CvProjectInfo::getProjectsNeeded, "int (int i)")
+		.def("getProjectsNeeded", &CvProjectInfo::py_getProjectsNeeded, "int (int i)")
 		;
 
 	python::class_<CvReligionInfo, boost::noncopyable, python::bases<CvInfoBase> >("CvReligionInfo")
@@ -266,8 +231,8 @@ void CyInfoPythonInterface3()
 		.def("getSound", &CvCorporationInfo::getSound, "string ()")
 
 		// Arrays
-
-		.def("getPrereqBonus", &CvCorporationInfo::getPrereqBonus, "int (int i)")
+		// advc.003t: py_...
+		.def("getPrereqBonus", &CvCorporationInfo::py_getPrereqBonus, "int (int i)")
 		.def("getHeadquarterCommerce", &CvCorporationInfo::getHeadquarterCommerce, "int (int i)")
 		.def("getCommerceProduced", &CvCorporationInfo::getCommerceProduced, "int (int i)")
 		.def("getYieldProduced", &CvCorporationInfo::getYieldProduced, "int (int i)")
@@ -288,6 +253,8 @@ void CyInfoPythonInterface3()
 
 		.def("getShortDescription", &CvTraitInfo::getShortDescription, "int (int i)")
 		.def("getExtraYieldThreshold", &CvTraitInfo::getExtraYieldThreshold, "int (int i)")
+		// advc.908a:
+		.def("getExtraYieldNaturalThreshold", &CvTraitInfo::py_getExtraYieldNaturalThreshold, "int (int i)")
 		.def("getTradeYieldModifier", &CvTraitInfo::getTradeYieldModifier, "int (int i)")
 		.def("getCommerceChange", &CvTraitInfo::getCommerceChange, "int (int i)")
 		.def("getCommerceModifier", &CvTraitInfo::getCommerceModifier, "int (int i)")
@@ -707,14 +674,16 @@ void CyInfoPythonInterface3()
 		.def("getUnitCombatPromotion", &CvEventInfo::getUnitCombatPromotion, "int (int)")
 		.def("getUnitClassPromotion", &CvEventInfo::getUnitClassPromotion, "int (int)")
 
-		.def("getBuildingYieldChange", &CvEventInfo::getBuildingYieldChange, "int (int /*BuildingClassTypes*/, int /*YieldTypes*/)")
-		.def("getNumBuildingYieldChanges", &CvEventInfo::getNumBuildingYieldChanges, "int ()")
-		.def("getBuildingCommerceChange", &CvEventInfo::getBuildingCommerceChange, "int (int /*BuildingClassTypes*/, int /*CommerceTypes*/)")
-		.def("getNumBuildingCommerceChanges", &CvEventInfo::getNumBuildingCommerceChanges, "int ()")
-		.def("getBuildingHappyChange", &CvEventInfo::getBuildingHappyChange, "int (int /*BuildingClassTypes*/)")
-		.def("getNumBuildingHappyChanges", &CvEventInfo::getNumBuildingHappyChanges, "int ()")
-		.def("getBuildingHealthChange", &CvEventInfo::getBuildingHealthChange, "int (int /*BuildingClassTypes*/)")
-		.def("getNumBuildingHealthChanges", &CvEventInfo::getNumBuildingHealthChanges, "int ()")
+		.def("getBuildingYieldChange", &CvEventInfo::py_getBuildingYieldChange, "int (int /*BuildingClassTypes*/, int /*YieldTypes*/)")
+		/*	advc.003t: The DLL doesn't need the getNum... functions, and
+			Python shouldn't need (and doesn't use) them either. */
+		//.def("getNumBuildingYieldChanges", &CvEventInfo::getNumBuildingYieldChanges, "int ()")
+		.def("getBuildingCommerceChange", &CvEventInfo::py_getBuildingCommerceChange, "int (int /*BuildingClassTypes*/, int /*CommerceTypes*/)")
+		//.def("getNumBuildingCommerceChanges", &CvEventInfo::getNumBuildingCommerceChanges, "int ()")
+		.def("getBuildingHappyChange", &CvEventInfo::py_getBuildingHappyChange, "int (int /*BuildingClassTypes*/)")
+		//.def("getNumBuildingHappyChanges", &CvEventInfo::getNumBuildingHappyChanges, "int ()")
+		.def("getBuildingHealthChange", &CvEventInfo::py_getBuildingHealthChange, "int (int /*BuildingClassTypes*/)")
+		//.def("getNumBuildingHealthChanges", &CvEventInfo::getNumBuildingHealthChanges, "int ()")
 		;
 
 	python::class_<CvEspionageMissionInfo, boost::noncopyable, python::bases<CvInfoBase> >("CvEspionageMissionInfo")
@@ -738,7 +707,7 @@ void CyInfoPythonInterface3()
 		// </advc.120d>
 		.def("getBuyUnitCostFactor", &CvEspionageMissionInfo::getBuyUnitCostFactor, "int ()")
 		.def("getBuyCityCostFactor", &CvEspionageMissionInfo::getBuyCityCostFactor, "int ()")
-		.def("getStealTreasuryTypes", &CvEspionageMissionInfo::getStealTreasuryTypes, "int ()")
+		.def("getStealTreasuryTypes", &CvEspionageMissionInfo::getStolenGoldPercent, "int ()")
 		.def("getCityInsertCultureAmountFactor", &CvEspionageMissionInfo::getCityInsertCultureAmountFactor, "int ()")
 		.def("getCityInsertCultureCostFactor", &CvEspionageMissionInfo::getCityInsertCultureCostFactor, "int ()")
 		.def("getCityPoisonWaterCounter", &CvEspionageMissionInfo::getCityPoisonWaterCounter, "int ()")
@@ -757,8 +726,8 @@ void CyInfoPythonInterface3()
 		.def("getVoteInterval", &CvVoteSourceInfo::getVoteInterval, "int ()")
 		.def("getCivic", &CvVoteSourceInfo::getCivic, "int ()")
 		.def("getFreeSpecialist", &CvVoteSourceInfo::getFreeSpecialist, "int ()")
-		.def("getReligionYield", &CvVoteSourceInfo::getReligionYield, "int (int)")
-		.def("getReligionCommerce", &CvVoteSourceInfo::getReligionCommerce, "int (int)")
+		.def("getReligionYield", &CvVoteSourceInfo::py_getReligionYield, "int (int)")
+		.def("getReligionCommerce", &CvVoteSourceInfo::py_getReligionCommerce, "int (int)")
 		.def("getSecretaryGeneralText", &CvVoteSourceInfo::pyGetSecretaryGeneralText, "wstring ()")
 		;
 

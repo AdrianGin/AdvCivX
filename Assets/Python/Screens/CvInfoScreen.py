@@ -26,6 +26,7 @@ import BugUtil
 AdvisorOpt = BugCore.game.Advisors
 ScoreOpt = BugCore.game.Scores
 #BUG: Change Graphs - end
+import copy # advc.091
 
 # globals
 gc = CyGlobalContext()
@@ -473,8 +474,8 @@ class CvInfoScreen:
 		self.TEXT_CITIES_RAZED = localText.getText("TXT_KEY_INFO_SCREEN_CITIES_RAZED", ())
 		self.TEXT_NUM_GOLDEN_AGES = localText.getText("TXT_KEY_INFO_SCREEN_NUM_GOLDEN_AGES", ())
 		self.TEXT_NUM_RELIGIONS_FOUNDED = localText.getText("TXT_KEY_INFO_SCREEN_RELIGIONS_FOUNDED", ())
-
-		self.TEXT_CURRENT = localText.getText("TXT_KEY_CURRENT", ())
+		# advc.002b: Text key was TXT_KEY_CURRENT; abbreviate.
+		self.TEXT_CURRENT = localText.getText("TXT_KEY_CURRENT_ABBR", ())
 		self.TEXT_UNITS = localText.getText("TXT_KEY_CONCEPT_UNITS", ())
 		self.TEXT_BUILDINGS = localText.getText("TXT_KEY_CONCEPT_BUILDINGS", ())
 		self.TEXT_KILLED = localText.getText("TXT_KEY_INFO_SCREEN_KILLED", ())
@@ -629,14 +630,15 @@ class CvInfoScreen:
 			screen.addDropDownBoxGFC(self.szDropdownName, 22, 12, 300, WidgetTypes.WIDGET_GENERAL, -1, -1, FontTypes.GAME_FONT)
 			for j in range(gc.getMAX_CIV_PLAYERS()): # advc.007: was MAX_PLAYERS
 				if (gc.getPlayer(j).isAlive()):
-					screen.addPullDownString(self.szDropdownName, gc.getPlayer(j).getName(), j, j, False )
-					
-		self.bRevealAll = (CyGame().isDebugMode() or CyGame().getGameState() == GameStateTypes.GAMESTATE_OVER) # advc.077
+					screen.addPullDownString(self.szDropdownName, gc.getPlayer(j).getName(), j, j, False)
 
 		self.iActivePlayer = CyGame().getActivePlayer()
 		self.pActivePlayer = gc.getPlayer(self.iActivePlayer)
 		self.iActiveTeam = self.pActivePlayer.getTeam()
 		self.pActiveTeam = gc.getTeam(self.iActiveTeam)
+
+		# advc.007: Don't reveal all when perspective switched (I guess this is possible when the game ends while in Debug mode)	
+		self.bRevealAll = (self.iActiveTeam == gc.getGame().getActiveTeam() and (CyGame().isDebugMode() or CyGame().getGameState() == GameStateTypes.GAMESTATE_OVER)) # advc.077
 
 		self.iInvestigateCityMission = -1
 		# See if Espionage allows graph to be shown for each player
@@ -865,9 +867,17 @@ class CvInfoScreen:
 
 #		print("Rebuilding score cache")
 
+		# <advc.091>
+		aiCachePlayers = copy.copy(self.aiPlayersMet)
+		if scoreType == self.TOTAL_SCORE:
+			for p in self.aiPlayersMetNAEspionage:
+				if self.showTotalScoreGraph(p):
+					aiCachePlayers.append(p)
+		# </advc.091>
+
 		# Get the player with the highest ID
 		maxPlayer = 0
-		for p in self.aiPlayersMet:
+		for p in aiCachePlayers: # advc.091: was self.aiPlayersMet
 			if (maxPlayer < p):
 				maxPlayer = p
 
@@ -875,7 +885,7 @@ class CvInfoScreen:
 		self.scoreCache[scoreType] = []
 		for p in range(maxPlayer + 1):
 
-			if (p not in self.aiPlayersMet):
+			if (p not in aiCachePlayers): # advc.091: was self.aiPlayersMet
 				# Don't compute score for people we haven't met
 				self.scoreCache[scoreType].append(None)
 			else:
@@ -883,8 +893,15 @@ class CvInfoScreen:
 				firstTurn	= CyGame().getStartTurn()
 				thisTurn	= CyGame().getGameTurn()
 				turn	= firstTurn
+				# advc.091:
+				bHideBeginning = (scoreType == self.TOTAL_SCORE and not self.pActivePlayer.hasEverSeenDemographics(p) and p in self.aiPlayersMetNAEspionage)
 				while (turn <= thisTurn):
-					self.scoreCache[scoreType][p].append(self.computeHistory(scoreType, p, turn))
+					# <advc.091>
+					if bHideBeginning and turn < self.pActiveTeam.getHasMetTurn(gc.getPlayer(p).getTeam()):
+						score = -1
+					else: # </advc.091>
+						score = self.computeHistory(scoreType, p, turn)
+					self.scoreCache[scoreType][p].append(score)
 					turn += 1
 
 		return
@@ -1129,6 +1146,9 @@ class CvInfoScreen:
 		for p in self.aiPlayersMet:
 			for turn in range(firstTurn,lastTurn + 1):
 				score = self.getHistory(iGraphID, p, turn - startTurn)
+				# <advc.091>
+				if score < 0:
+					continue # </advc.091>
 				if (max < score):
 					max = score
 				if (min > score):
@@ -1154,8 +1174,16 @@ class CvInfoScreen:
 #		self.timer.log("drawGraph - max, min")
 #		self.timer.start()
 
+		# <advc.091>
+		aiLinePlayers = copy.copy(self.aiPlayersMet)
+		if iGraphID == self.TOTAL_SCORE:
+			for p in self.aiPlayersMetNAEspionage:
+				if self.showTotalScoreGraph(p):
+					aiLinePlayers.append(p)
+		# </advc.091>
+
 		# Draw the lines
-		for p in self.aiPlayersMet:
+		for p in aiLinePlayers: # advc.091: was self.aiPlayersMet
 
 #BUG: Change Graphs - start
 			if AdvisorOpt.isGraphs():
@@ -1179,6 +1207,10 @@ class CvInfoScreen:
 			while (turn >= firstTurn):
 
 				score = self.getHistory(iGraphID, p, turn - startTurn)
+				# <advc.091>
+				if score < 0:
+					turn -= 1
+					continue # </advc.091>
 				if AdvisorOpt.isGraphsLogScale():
 					y = iH_GRAPH - int(yFactor * (self.getLog10(score) - self.getLog10(min)))
 				else:
@@ -1223,31 +1255,41 @@ class CvInfoScreen:
 
 	def drawLegend(self):
 		screen = self.getScreen()
+		# <advc.091>
+		aiLegendPlayers = copy.copy(self.aiPlayersMet)
+		bIgnoreEspionage = False
+		if not AdvisorOpt.isGraphs() or (self.Graph_Status_Current == self.Graph_Status_7in1 or (self.Graph_Status_Current == self.Graph_Status_3in1 and (self.iGraph_3in1[0] == self.TOTAL_SCORE or self.iGraph_3in1[1] == self.TOTAL_SCORE) or self.iGraph_3in1[2] == self.TOTAL_SCORE) or (self.Graph_Status_Current == self.Graph_Status_1in1 and self.iGraphTabID == self.TOTAL_SCORE)):
+			bIgnoreEspionage = True
+		if bIgnoreEspionage:
+			for p in self.aiPlayersMetNAEspionage:
+				if self.showTotalScoreGraph(p):
+					aiLegendPlayers.append(p)
+		# </advc.091>
 
 #BUG: Change Graphs - start
 		iW_LEGEND = self.W_LEGEND
 		if AdvisorOpt.isGraphs():
-			for p in self.aiPlayersMet:
+			for p in aiLegendPlayers:
 				szPlayerName = self.getPlayerName(p)
 				if not gc.getPlayer(p).isAlive(): szPlayerName += " [" + self.BUG_LEGEND_DEAD + "]"
-
 				if iW_LEGEND < self.X_LEGEND_TEXT + CyInterface().determineWidth(szPlayerName) + 10:
 					iW_LEGEND = self.X_LEGEND_TEXT + CyInterface().determineWidth(szPlayerName) + 10
-
 			for p in self.aiPlayersMetNAEspionage:
+				# <advc.091>
+				if bIgnoreEspionage and self.showTotalScoreGraph(p):
+					continue # </advc.091>
 				szPlayerName = self.getPlayerName(p)
 				if not gc.getPlayer(p).isAlive(): szPlayerName += " [" + self.BUG_LEGEND_DEAD + "]"
-
 				if iW_LEGEND < self.X_LEGEND_TEXT + CyInterface().determineWidth(szPlayerName) + 10:
 					iW_LEGEND = self.X_LEGEND_TEXT + CyInterface().determineWidth(szPlayerName) + 10
-
+		iLegendRows = self.iNumPlayersMet + self.iNumPlayersMetNAEspionage # advc.091
 		if not AdvisorOpt.isGraphs():
-			self.H_LEGEND = 2 * self.Y_LEGEND_MARGIN + self.iNumPlayersMet * self.H_LEGEND_TEXT + 3
+			self.H_LEGEND = 2 * self.Y_LEGEND_MARGIN + iLegendRows * self.H_LEGEND_TEXT + 3
 			if AdvisorOpt.isGraphsLogScale():
 				self.H_LEGEND += self.H_LEGEND_TEXT
 			self.Y_LEGEND = self.Y_GRAPH + self.H_GRAPH - self.H_LEGEND
 		else:
-			self.H_LEGEND = 2 * self.Y_LEGEND_MARGIN + (self.iNumPlayersMet + self.iNumPlayersMetNAEspionage + 4) * self.H_LEGEND_TEXT + 3
+			self.H_LEGEND = 2 * self.Y_LEGEND_MARGIN + (iLegendRows + 4) * self.H_LEGEND_TEXT + 3
 			if AdvisorOpt.isGraphsLogScale():
 				self.H_LEGEND += self.H_LEGEND_TEXT
 
@@ -1270,16 +1312,16 @@ class CvInfoScreen:
 		yLine = self.Y_LEGEND_LINE
 		yText = self.Y_LEGEND + self.Y_LEGEND_TEXT
 
-		for p in self.aiPlayersMet:
+		for p in aiLegendPlayers:
 #BUG: Change Graphs - start
 			if AdvisorOpt.isGraphs():
 				name = self.getPlayerName(p)
 			else:
 				name = gc.getPlayer(p).getName()
 
-			i = gc.getPlayer(p).getID()
-			if (self.bPlayerInclude[i]
-			or not AdvisorOpt.isGraphs()):
+			#i = gc.getPlayer(p).getID() # advc: redundant
+			# advc.091: No line when there'll be no graph - also with the non-BUG Advisor
+			if self.bPlayerInclude[p] or (not AdvisorOpt.isGraphs() and (p in self.aiPlayersMet or (self.iGraphTabID == self.TOTAL_SCORE and p in self.aiPlayersMetNAEspionage and self.showTotalScoreGraph(p)))):
 				textColorR = gc.getPlayer(p).getPlayerTextColorR()
 				textColorG = gc.getPlayer(p).getPlayerTextColorG()
 				textColorB = gc.getPlayer(p).getPlayerTextColorB()
@@ -1298,10 +1340,10 @@ class CvInfoScreen:
 
 #BUG: Change Graphs - start
 			if AdvisorOpt.isGraphs():
-				screen.setText(self.sPlayerTextWidget[i], "", u"<font=2>" + str + u"</font>", CvUtil.FONT_LEFT_JUSTIFY,
+				screen.setText(self.sPlayerTextWidget[p], "", u"<font=2>" + str + u"</font>", CvUtil.FONT_LEFT_JUSTIFY,
 							   self.X_LEGEND + self.X_LEGEND_TEXT, yText, 0, FontTypes.TITLE_FONT, WidgetTypes.WIDGET_GENERAL, -1, -1)
 			else:
-				screen.setLabel(self.sPlayerTextWidget[i], "", u"<font=2>" + str + u"</font>", CvUtil.FONT_LEFT_JUSTIFY,
+				screen.setLabel(self.sPlayerTextWidget[p], "", u"<font=2>" + str + u"</font>", CvUtil.FONT_LEFT_JUSTIFY,
 								self.X_LEGEND + self.X_LEGEND_TEXT, yText, 0, FontTypes.TITLE_FONT, WidgetTypes.WIDGET_GENERAL, -1, -1)
 #BUG: Change Graphs - end
 
@@ -1315,10 +1357,11 @@ class CvInfoScreen:
 			yLine += self.H_LEGEND_TEXT
 			yText += self.H_LEGEND_TEXT
 			for p in self.aiPlayersMetNAEspionage:
+				# <advc.091>
+				if bIgnoreEspionage and self.showTotalScoreGraph(p):
+					continue # </advc.091>
 				i = gc.getPlayer(p).getID()
-
 				name = self.getPlayerName(p)
-
 				if not gc.getPlayer(p).isAlive(): # player is dead!
 					textColorR = 175
 					textColorG = 175
@@ -1330,12 +1373,8 @@ class CvInfoScreen:
 					textColorG = gc.getPlayer(p).getPlayerTextColorG()
 					textColorB = gc.getPlayer(p).getPlayerTextColorB()
 					textColorA = gc.getPlayer(p).getPlayerTextColorA()
-
 				str = u"<color=%d,%d,%d,%d>%s</color>" %(textColorR,textColorG,textColorB,textColorA,name)
-
-				screen.setLabel(self.sPlayerTextWidget[i], "", u"<font=2>" + str + u"</font>", CvUtil.FONT_LEFT_JUSTIFY,
-								self.X_LEGEND + self.X_LEGEND_TEXT + 2, yText, 0, FontTypes.TITLE_FONT, WidgetTypes.WIDGET_GENERAL, -1, -1)
-
+				screen.setLabel(self.sPlayerTextWidget[i], "", u"<font=2>" + str + u"</font>", CvUtil.FONT_LEFT_JUSTIFY, self.X_LEGEND + self.X_LEGEND_TEXT + 2, yText, 0, FontTypes.TITLE_FONT, WidgetTypes.WIDGET_GENERAL, -1, -1)
 				yLine += self.H_LEGEND_TEXT
 				yText += self.H_LEGEND_TEXT
 
@@ -1367,12 +1406,15 @@ class CvInfoScreen:
 		return szPlayerName
 #BUG: Change Graphs - end
 
+	# advc.091:
+	def showTotalScoreGraph(self, iPlayer):
+		return ((gc.getGame().getGameTurn() - self.pActiveTeam.getHasMetTurn(gc.getPlayer(iPlayer).getTeam()) >= 5 and AdvisorOpt.isPartialScoreGraphs()) or self.pActivePlayer.hasEverSeenDemographics(iPlayer))
+
 #############################################################################################################
 ################################################# DEMOGRAPHICS ##############################################
 #############################################################################################################
 
 	def drawDemographicsTab(self):
-
 		self.drawTextChart()
 		
 	def getHappyValue(self, pPlayer):
@@ -1522,13 +1564,18 @@ class CvInfoScreen:
 		# Loop through all players to determine Rank and relative Strength
 		for iPlayerLoop in range(gc.getMAX_PLAYERS()):
 			# advc.077: Exclude MinorCivs (from the Dawn of Civilization mod)
-			if gc.getPlayer(iPlayerLoop).isAlive() and not gc.getPlayer(iPlayerLoop).isBarbarian() and not gc.getPlayer(iPlayerLoop).isMinorCiv():
+			if (gc.getPlayer(iPlayerLoop).isAlive() or iPlayerLoop == self.iActivePlayer) and not gc.getPlayer(iPlayerLoop).isBarbarian() and not gc.getPlayer(iPlayerLoop).isMinorCiv():
 
 				#iNumActivePlayers += 1 # advc.077: Replaced below
 				pCurrPlayer = gc.getPlayer(iPlayerLoop)
-				# <advc.077> Exclude civs that aren't rivals of the active player
-				if iPlayerLoop != self.iActivePlayer and gc.getTeam(pCurrPlayer.getTeam()).getMasterTeam() == self.pActiveTeam.getMasterTeam():
-					continue
+				# <advc.077> Exclude players that aren't rivals of the active player
+				if iPlayerLoop != self.iActivePlayer:
+					pCurrTeam = gc.getTeam(pCurrPlayer.getTeam())
+					if pCurrTeam.getID() == self.iActiveTeam:
+						continue
+					# If the active player is a vassal, then it'll probably want to break free. Therefore treat its master and other vassals of that master like rivals.
+					if not self.pActiveTeam.isAVassal() and pCurrTeam.getMasterTeam() == self.pActiveTeam.getMasterTeam():
+						continue
 				# </advc.077>
 				
 				#iValue = pCurrPlayer.calculateTotalCommerce()
@@ -1565,7 +1612,11 @@ class CvInfoScreen:
 				# advc.077: was *1000
 				iValue = pCurrPlayer.getPower() * iMilitaryCoeff
 				if iPlayerLoop == self.iActivePlayer:
-					iMilitary = iValue
+					# <advc.077> Don't show positive military (from tech) for defeated player
+					if not gc.getPlayer(iPlayerLoop).isAlive():
+						iMilitary = 0
+					else: # </advc.077>
+						iMilitary = iValue
 				else:
 					iMilitaryGameAverage += iValue
 				aiGroupMilitary.append((iValue, iPlayerLoop))
@@ -1953,8 +2004,9 @@ class CvInfoScreen:
 				iDistance = 350
 
 			self.szCityAnimWidgets.append(self.getNextWidgetName())
-			# advc.001d: Replaced gc.getGame().getActiveTeam() with self.iActiveTeam
-			if (pCity.isRevealed(self.iActiveTeam, false)):			
+			# advc.001d: Replaced gc.getGame().getActiveTeam() with self.iActiveTeam. But don't check bRevealAll - addPlotGraphicGFC requires the city to be revealed, will show an empty tile otherwise.
+			# advc.007: bDebug=True unless perspective switched. 
+			if pCity.isRevealed(self.iActiveTeam, self.iActiveTeam == gc.getGame().getActiveTeam()):
 				screen.addPlotGraphicGFC(self.szCityAnimWidgets[iWidgetLoop], self.X_CITY_ANIMATION, self.Y_ROWS_CITIES[iWidgetLoop] + self.Y_CITY_ANIMATION_BUFFER - self.H_CITY_ANIMATION / 2, self.W_CITY_ANIMATION, self.H_CITY_ANIMATION, pPlot, iDistance, false, WidgetTypes.WIDGET_GENERAL, -1, -1)
 
 		# Draw Wonder icons
@@ -1988,7 +2040,7 @@ class CvInfoScreen:
 					pBuilding = gc.getBuildingInfo(iBuildingLoop)
 
 					# If this building is a wonder...
-					# advc.003:
+					# advc:
 					if isWorldWonderClass(pBuilding.getBuildingClassType()):
 
 						if (pCity.getNumBuilding(iBuildingLoop) > 0):
@@ -2083,8 +2135,10 @@ class CvInfoScreen:
 					szTurnFounded = localText.getText("TXT_KEY_TIME_BC", (-iTurnYear,))#"%d %s" %(-iTurnYear, self.TEXT_BC)
 				else:
 					szTurnFounded = localText.getText("TXT_KEY_TIME_AD", (iTurnYear,))#"%d %s" %(iTurnYear, self.TEXT_AD)
-				# advc.001d: hasMet clause commented out, replaced gc.getGame().getActiveTeam() with self.iActiveTeam
-				if (pCity.isRevealed(self.iActiveTeam)):# or gc.getTeam(pPlayer.getTeam()).isHasMet(gc.getGame().getActiveTeam())):
+				# advc.007: bDebug=True unless perspective switched
+				bRevealed = pCity.GetCy().isRevealed(self.iActiveTeam, self.iActiveTeam == gc.getGame().getActiveTeam())
+				# advc.001d: hasMet clause commented out, replaced gc.getGame().getActiveTeam() with self.iActiveTeam. Check bRevealAll.
+				if bRevealed or self.bRevealAll:# or gc.getTeam(pPlayer.getTeam()).isHasMet(gc.getGame().getActiveTeam()):
 					self.szCityNames[iRankLoop] = pCity.getName().upper()
 					self.szCityDescs[iRankLoop] = ("%s, %s" %(pPlayer.getCivilizationAdjective(0), localText.getText("TXT_KEY_MISC_FOUNDED_IN", (szTurnFounded,))))
 				else:
@@ -2492,7 +2546,7 @@ class CvInfoScreen:
 			pPlayer = gc.getPlayer(iPlayerLoop)
 			iPlayerTeam = pPlayer.getTeam()
 
-			# No barbs and only display national wonders for the active player's team
+			# No Barbarians and only display national wonders for the active player's team
 			if (pPlayer and not pPlayer.isBarbarian() and ((self.szWonderDisplayMode != self.szWDM_NatnlWonder) or (iPlayerTeam == gc.getTeam(gc.getPlayer(self.iActivePlayer).getTeam()).getID()))):
 
 				# Loop through this player's cities and determine if they have any wonders to display
@@ -2531,7 +2585,7 @@ class CvInfoScreen:
 							pBuilding = gc.getBuildingInfo(iBuildingLoop)
 
 							# World Wonder Mode
-							# advc.003:
+							# advc:
 							if self.szWonderDisplayMode == self.szWDM_WorldWonder and isWorldWonderClass(pBuilding.getBuildingClassType()):
 
 								# Is this city building a wonder?
@@ -2551,7 +2605,7 @@ class CvInfoScreen:
 									self.iNumWonders += 1
 
 							# National/Team Wonder Mode
-							#advc.003
+							# advc:
 							elif self.szWonderDisplayMode == self.szWDM_NatnlWonder and (isNationalWonderClass(pBuilding.getBuildingClassType()) or isTeamWonderClass(pBuilding.getBuildingClassType())):
 
 								# Is this city building a wonder?
@@ -2614,6 +2668,9 @@ class CvInfoScreen:
 		self.aaWondersBeingBuilt_BUG = []
 		self.aaWondersBuilt_BUG = []
 		self.iNumWonders = 0
+		# advc.007: Use this to reveal all wonders in Debug mode unless perspective switched
+		# advc.001d: Check bRevealALl
+		bDebug = (CyGame().isDebugMode() or self.bRevealAll) and self.iActiveTeam == gc.getGame().getActiveTeam()
 
 		# Loop through players to determine Wonders
 		for iPlayerLoop in range(gc.getMAX_PLAYERS()):
@@ -2636,21 +2693,25 @@ class CvInfoScreen:
 				for pCity in apCityList:
 					pCityPlot = CyMap().plot(pCity.getX(), pCity.getY())
 
+					# advc.007: Note that pCity is a PyCity (PyHelpers.py), whose isRevealed function takes only one argument. Need a CyCity instead.
+					# advc.001d: Check bRevealAll
+					bRevealed = pCity.GetCy().isRevealed(self.iActiveTeam, bDebug) or self.bRevealAll
+
 					# Loop through projects to find any under construction
-					if (self.szWonderDisplayMode == self.szWDM_Project):
+					if self.szWonderDisplayMode == self.szWDM_Project:
 						for iProjectLoop in range(gc.getNumProjectInfos()):
 
 							iProjectProd = pCity.getProductionProject()
 
 							# Project is being constructed
-							if (iProjectProd == iProjectLoop):
-								if (iPlayerTeam == self.iActiveTeam):
+							if iProjectProd == iProjectLoop:
+								if iPlayerTeam == self.iActiveTeam or bDebug:
 									self.aaWondersBeingBuilt_BUG.append([iProjectLoop,pPlayer.getCivilizationShortDescription(0), pCity, iPlayerLoop])
-
-								if (self.pActiveTeam.isHasMet(iPlayerTeam)
+								# advc.001d: elif - Don't list it twice in Debug mode
+								elif (self.pActiveTeam.isHasMet(iPlayerTeam)
 								and self.iInvestigateCityMission != -1 # K-Mod, bugfix
 								and self.pActivePlayer.canDoEspionageMission(self.iInvestigateCityMission, pCity.getOwner(), pCity.plot(), -1) # advc.001d: Replaced gc.getGame().getActiveTeam with self.iActiveTeam
-								and pCity.isRevealed(self.iActiveTeam)):
+								and bRevealed) or bDebug:
 									self.aaWondersBeingBuilt_BUG.append([iProjectLoop,pPlayer.getCivilizationShortDescription(0), pCity, iPlayerLoop])
 
 					# Loop through buildings
@@ -2663,25 +2724,26 @@ class CvInfoScreen:
 							if pBuilding.isCapital():
 								continue
 							# World Wonder Mode
-							# advc.003
+							# advc:
 							if self.szWonderDisplayMode == self.szWDM_WorldWonder and isWorldWonderClass(pBuilding.getBuildingClassType()):
 								# Is this city building a wonder?
 								if (iBuildingProd == iBuildingLoop):
 									if (iPlayerTeam == self.iActiveTeam):
 										self.aaWondersBeingBuilt_BUG.append([iBuildingLoop,pPlayer.getCivilizationShortDescription(0), pCity, iPlayerLoop])
-
-									if (self.pActiveTeam.isHasMet(iPlayerTeam)
+									# advc.001d: elif - Don't list it twice in Debug mode
+									elif (self.pActiveTeam.isHasMet(iPlayerTeam)
 									and self.iInvestigateCityMission != -1 # K-Mod, bugfix
 									and self.pActivePlayer.canDoEspionageMission(self.iInvestigateCityMission, pCity.getOwner(), pCity.plot(), -1) # advc.001d: Replaced gc.getGame().getActiveTeam with self.iActiveTeam
-									and pCity.isRevealed(self.iActiveTeam)):
+									and bRevealed) or bDebug:
 										self.aaWondersBeingBuilt_BUG.append([iBuildingLoop,pPlayer.getCivilizationShortDescription(0), pCity, iPlayerLoop])
 
 								if (pCity.getNumBuilding(iBuildingLoop) > 0):
-									if (iPlayerTeam == self.iActiveTeam or self.pActiveTeam.isHasMet(iPlayerTeam)):
+									# advc.001d: bRevealed added. If the city is revealed, then the active player knows the city owner from the color of the borders - and wonders are shown on the main map.
+									if iPlayerTeam == self.iActiveTeam or bRevealed or self.pActiveTeam.isHasMet(iPlayerTeam) or bDebug:
 										self.aaWondersBuilt_BUG.append([pCity.getBuildingOriginalTime(iBuildingLoop),iBuildingLoop,True,pPlayer.getCivilizationShortDescription(0),pCity, iPlayerLoop])
 									else:
 										self.aaWondersBuilt_BUG.append([pCity.getBuildingOriginalTime(iBuildingLoop),iBuildingLoop,False,localText.getText("TXT_KEY_UNKNOWN", ()),pCity,gc.getBARBARIAN_PLAYER()])
-										# dlph: Replaced hardcoded 18 with barbarian player
+										# kekm: Replaced hardcoded 18 with barbarian player
 	#								print("Adding World wonder to list: %s, %d, %s" %(pCity.getBuildingOriginalTime(iBuildingLoop),iBuildingLoop,pPlayer.getCivilizationAdjective(0)))
 									self.iNumWonders += 1
 
@@ -2691,24 +2753,22 @@ class CvInfoScreen:
 								# Is this city building a wonder?
 								if (iBuildingProd == iBuildingLoop):
 									# Only show our wonders under construction
-									if (iPlayerTeam == self.iActiveTeam):
+									if iPlayerTeam == self.iActiveTeam or bDebug:
 										self.aaWondersBeingBuilt_BUG.append([iBuildingLoop,pPlayer.getCivilizationShortDescription(0), pCity, iPlayerLoop])
-
-									if (self.pActiveTeam.isHasMet(iPlayerTeam)
+									# advc.001d: elif - Don't list it twice in Debug mode
+									elif (self.pActiveTeam.isHasMet(iPlayerTeam)
 									and self.iInvestigateCityMission != -1 # K-Mod, bugfix
 									and self.pActivePlayer.canDoEspionageMission(self.iInvestigateCityMission, pCity.getOwner(), pCity.plot(), -1) # advc.001d: Replaced gc.getGame().getActiveTeam with self.iActiveTeam
-									and pCity.isRevealed(self.iActiveTeam)):
+									and bRevealed) or bDebug:
 										self.aaWondersBeingBuilt_BUG.append([iBuildingLoop,pPlayer.getCivilizationShortDescription(0), pCity, iPlayerLoop])
 
 								# Has this city built a wonder?
 								if (pCity.getNumBuilding(iBuildingLoop) > 0):
-									if (iPlayerTeam == self.iActiveTeam):
+									if iPlayerTeam == self.iActiveTeam or bDebug:
 										self.aaWondersBuilt_BUG.append([pCity.getBuildingOriginalTime(iBuildingLoop),iBuildingLoop,True,pPlayer.getCivilizationShortDescription(0), pCity, iPlayerLoop])
 										self.iNumWonders += 1
-									# advc.001d (comment): To hide (finished)
-									# national wonders of other teams, remove
-									# this code block:
-									elif (self.pActiveTeam.isHasMet(iPlayerTeam) and pCity.isRevealed(self.iActiveTeam)):
+									# advc.001d (comment): To hide (finished) national wonders of other teams, remove this code block:
+									elif self.pActiveTeam.isHasMet(iPlayerTeam) and bRevealed:
 										self.aaWondersBuilt_BUG.append([pCity.getBuildingOriginalTime(iBuildingLoop),iBuildingLoop,True,pPlayer.getCivilizationShortDescription(0), pCity, iPlayerLoop])
 										self.iNumWonders += 1
 
@@ -2737,7 +2797,7 @@ class CvInfoScreen:
 
 							for iI in range(pTeam.getProjectCount(iProjectLoop)):
 
-								if (iTeamLoop == self.iActiveTeam or self.pActiveTeam.isHasMet(iTeamLoop)):
+								if iTeamLoop == self.iActiveTeam or self.pActiveTeam.isHasMet(iTeamLoop) or bDebug:
 									self.aaWondersBuilt_BUG.append([-9999,iProjectLoop,True,gc.getPlayer(iPlayerLoop).getCivilizationShortDescription(0),None, iPlayerLoop])
 								else:
 									# advc.001: Last param was 9999
@@ -2770,8 +2830,9 @@ class CvInfoScreen:
 
 		screen.setTableColumnHeader(self.szWondersTable, 0, "", 30)
 		screen.setTableColumnHeader(self.szWondersTable, 1, sName, 115)
-		screen.setTableColumnHeader(self.szWondersTable, 2, sDate, 70)
-		screen.setTableColumnHeader(self.szWondersTable, 3, sOwner, 100)
+		# advc.002b: Confer 5 width from the owner column to the date column
+		screen.setTableColumnHeader(self.szWondersTable, 2, sDate, 75)
+		screen.setTableColumnHeader(self.szWondersTable, 3, sOwner, 95)
 		screen.setTableColumnHeader(self.szWondersTable, 4, sCity, 100)
 
 		iWBB = len(self.aaWondersBeingBuilt_BUG)
@@ -2790,7 +2851,7 @@ class CvInfoScreen:
 				playerColor = gc.getPlayerColorInfo(ePlayerColor)
 				if playerColor:
 					#color = playerColor.getColorTypePrimary()
-					color = playerColor.getTextColorType() # dlph.36
+					color = playerColor.getTextColorType() # kekm.36
 
 			if (self.szWonderDisplayMode == self.szWDM_Project):
 				pWonderInfo = gc.getProjectInfo(iWonderType)
@@ -2803,8 +2864,10 @@ class CvInfoScreen:
 			szTurnYearBuilt = u"<font=2>%c</font>" % gc.getYieldInfo(YieldTypes.YIELD_PRODUCTION).getChar()
 
 			# Check to see if active player can see this city
-			# advc.001d: replaced gc.getGame().getActiveTeam with self.iActiveTeam
-			if pCity and pCity.isRevealed(self.iActiveTeam):
+			# advc.001d: replaced gc.getGame().getActiveTeam with self.iActiveTeam. Check bRevealAll.
+			# advc.007: bDebug=True unless perspective switched. 
+			bRevealed = pCity.GetCy().isRevealed(self.iActiveTeam, self.iActiveTeam == gc.getGame().getActiveTeam()) or self.bRevealAll
+			if pCity and bRevealed:
 				szCityName = pCity.getName()
 			else:
 				szCityName = u""
@@ -2836,7 +2899,7 @@ class CvInfoScreen:
 				playerColor = gc.getPlayerColorInfo(ePlayerColor)
 				if playerColor:
 					#color = playerColor.getColorTypePrimary()
-					color = playerColor.getTextColorType() # dlph.36
+					color = playerColor.getTextColorType() # kekm.36
 
 			if (self.szWonderDisplayMode == self.szWDM_Project):
 				pWonderInfo = gc.getProjectInfo(iWonderType)
@@ -2852,8 +2915,10 @@ class CvInfoScreen:
 				szTurnYearBuilt = BugUtil.getDisplayYear(iTurnYearBuilt)
 
 			# Check to see if active player can see this city
-			# advc.001d: Replaced gc.getGame().getActiveTeam with self.iActiveTeam
-			if pCity and pCity.isRevealed(self.iActiveTeam):
+			# advc.001d: Replaced gc.getGame().getActiveTeam with self.iActiveTeam. Check bRevealAll.
+			# advc.007: bDebug=True unless perspective switched. 
+			bRevealed = pCity and (pCity.GetCy().isRevealed(self.iActiveTeam, self.iActiveTeam == gc.getGame().getActiveTeam()) or self.bRevealAll)
+			if bRevealed:
 				szCityName = pCity.getName()
 			else:
 				szCityName = u""
@@ -2863,8 +2928,7 @@ class CvInfoScreen:
 				szCityName = localText.changeTextColor(szCityName, color)
 
 			screen.appendTableRow(self.szWondersTable)
-			# advc.001d: Replaced gc.getGame().getActiveTeam with self.iActiveTeam
-			if bKnown and pCity and pCity.isRevealed(self.iActiveTeam):
+			if bKnown and bRevealed:
 				screen.setTableText(self.szWondersTable, 0, iWonderLoop+iWBB, "", zoomArt, WidgetTypes.WIDGET_ZOOM_CITY, pCity.getOwner(), pCity.getID(), CvUtil.FONT_LEFT_JUSTIFY)
 			screen.setTableText(self.szWondersTable, 1, iWonderLoop+iWBB, szWonderName   , "", iWidget, iWonderType, -1, CvUtil.FONT_LEFT_JUSTIFY)
 			screen.setTableInt (self.szWondersTable, 2, iWonderLoop+iWBB, szTurnYearBuilt, "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_RIGHT_JUSTIFY)
@@ -2880,7 +2944,8 @@ class CvInfoScreen:
 
 		# Bottom Chart
 #BUG: improvements - start
-		if AdvisorOpt.isShowImprovements():
+		#if AdvisorOpt.isShowImprovements():
+		if True: # advc.004
 			self.X_STATS_BOTTOM_CHART = 45
 			self.Y_STATS_BOTTOM_CHART = 280
 			self.W_STATS_BOTTOM_CHART_UNITS = 455
@@ -3077,7 +3142,8 @@ class CvInfoScreen:
 		screen.enableSort(szBuildingsTable)
 
 #BUG: improvements - start
-		if AdvisorOpt.isShowImprovements():
+		#if AdvisorOpt.isShowImprovements():
+		if True: # advc.004
 			szImprovementsTable = self.getNextWidgetName()
 			screen.addTableControlGFC(szImprovementsTable, self.iNumImprovementStatsChartCols, self.X_STATS_BOTTOM_CHART + self.W_STATS_BOTTOM_CHART_UNITS + self.W_STATS_BOTTOM_CHART_BUILDINGS, self.Y_STATS_BOTTOM_CHART, self.W_STATS_BOTTOM_CHART_IMPROVEMENTS, self.H_STATS_BOTTOM_CHART,
 						  True, True, 32,32, TableStyles.TABLE_STYLE_STANDARD)
@@ -3086,7 +3152,8 @@ class CvInfoScreen:
 
 		# Reducing the width a bit to leave room for the vertical scrollbar, preventing a horizontal scrollbar from also being created
 #BUG: improvements - start
-		if AdvisorOpt.isShowImprovements():
+		#if AdvisorOpt.isShowImprovements():
+		if True: # advc.004
 			iChartWidth = self.W_STATS_BOTTOM_CHART_UNITS + self.W_STATS_BOTTOM_CHART_BUILDINGS + self.W_STATS_BOTTOM_CHART_IMPROVEMENTS - 24
 
 			# Add Columns
@@ -3140,6 +3207,7 @@ class CvInfoScreen:
 
 # #BUG: improvements - start
 		# if AdvisorOpt.isShowImprovements():
+		# if True: # advc.004
 			# for i in range(self.iNumImprovementStatsChartRows):
 				# if (aiImprovementsCurrent[i] > 0):
 					# screen.appendTableRow(szImprovementsTable)
@@ -3148,18 +3216,21 @@ class CvInfoScreen:
 
 		# Add Units to table
 		iRow = 0 # K-Mod
+		# <advc.004> Sort by name. (Can't tell the table to sort itself.)
+		unitIDsByName = []
 		for iUnitLoop in range(iNumUnits):
-			# K-Mod. Hide zero rows option.
-			if ((True or AdvisorOpt.isNonZeroStatsOnly()) # advc.004
+			# K-Mod. Hide-rows option.
+			if ((True or AdvisorOpt.isNonZeroStatsOnly()) # advc: no longer optional
 					and aiUnitsCurrent[iUnitLoop] == 0 and aiUnitsBuilt[iUnitLoop] == 0
 					and aiUnitsKilled[iUnitLoop] == 0 and aiUnitsLost[iUnitLoop] == 0):
-				continue
+				continue # K-Mod end
+			unitIDsByName.append((gc.getUnitInfo(iUnitLoop).getDescription(), iUnitLoop))
+		unitIDsByName.sort()
+		for i in range(len(unitIDsByName)):
+			(szUnitName, iUnitLoop) = unitIDsByName[i] # </advc.004>
 			screen.appendTableRow(szUnitsTable)
-			# K-Mod end
 			#iRow = iUnitLoop
-
 			iCol = 0
-			szUnitName = gc.getUnitInfo(iUnitLoop).getDescription()
 			screen.setTableText(szUnitsTable, iCol, iRow, szUnitName, "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 
 			iCol = 1
@@ -3181,15 +3252,18 @@ class CvInfoScreen:
 
 		# Add Buildings to table
 		iRow = 0 # K-Mod
+		# <advc.004> Sort by name
+		buildingIDsByName = []
 		for iBuildingLoop in range(iNumBuildings):
-			# K-Mod. Hide zero rows option.
-			# advc.004:
-			if aiBuildingsBuilt[iBuildingLoop] == 0: #and AdvisorOpt.isNonZeroStatsOnly():
-				continue
+			# K-Mod. Hide-rows option.
+			if aiBuildingsBuilt[iBuildingLoop] == 0: #and AdvisorOpt.isNonZeroStatsOnly(): # advc: No longer optional
+				continue # K-Mod end
+			buildingIDsByName.append((gc.getBuildingInfo(iBuildingLoop).getDescription(), iBuildingLoop))
+		buildingIDsByName.sort()
+		for i in range(len(buildingIDsByName)):
+			(szBuildingName, iBuildingLoop) = buildingIDsByName[i] # </advc.004>
 			screen.appendTableRow(szBuildingsTable)
-			# K-Mod end
 			#iRow = iBuildingLoop
-
 			iCol = 0
 			szBuildingName = gc.getBuildingInfo(iBuildingLoop).getDescription()
 			screen.setTableText(szBuildingsTable, iCol, iRow, szBuildingName, "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
@@ -3199,20 +3273,24 @@ class CvInfoScreen:
 			iRow += 1 # K-Mod
 
 #BUG: improvements - start
-		if AdvisorOpt.isShowImprovements():
+		#if AdvisorOpt.isShowImprovements():
+		if True: # advc.004
 			# Add Improvements to table	
 			iRow = 0
-
+			# <advc.004> Sort by name
+			improvIDsByName = []
 			for iImprovementLoop in range(iNumImprovements):
-				iNumImprovementsCurrent = aiImprovementsCurrent[iImprovementLoop]
-				if (iNumImprovementsCurrent > 0):
-					screen.appendTableRow(szImprovementsTable) # K-Mod
-					iCol = 0
-					szImprovementName = gc.getImprovementInfo(iImprovementLoop).getDescription()
-					screen.setTableText(szImprovementsTable, iCol, iRow, szImprovementName, "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
-					iCol = 1
-					screen.setTableInt(szImprovementsTable, iCol, iRow, str(iNumImprovementsCurrent), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
-					iRow += 1
+				if aiImprovementsCurrent[iImprovementLoop] > 0:
+					improvIDsByName.append((gc.getImprovementInfo(iImprovementLoop).getDescription(), iImprovementLoop))
+			improvIDsByName.sort()
+			for i in range(len(improvIDsByName)):
+				(szImprovementName, iImprovementLoop) = improvIDsByName[i] # </advc.004>
+				screen.appendTableRow(szImprovementsTable) # K-Mod
+				iCol = 0
+				screen.setTableText(szImprovementsTable, iCol, iRow, szImprovementName, "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+				iCol = 1
+				screen.setTableInt(szImprovementsTable, iCol, iRow, str(aiImprovementsCurrent[iImprovementLoop]), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+				iRow += 1
 #BUG: improvements - end
 
 #############################################################################################################

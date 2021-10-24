@@ -119,7 +119,8 @@
 	<ElementType name="iDisappearance" content="textOnly" dt:type="int"/>
 	<ElementType name="iGrowth" content="textOnly" dt:type="int"/>
 	<ElementType name="iTurnDamage" content="textOnly" dt:type="int"/>
-	<ElementType name="iWarmingDefense" content="textOnly" dt:type="int"/> <!-- GWMod new XML field M.A. -->
+	<!-- GWMod new XML field M.A. -->
+	<ElementType name="iWarmingDefense" content="textOnly" dt:type="int"/>
 	<ElementType name="bNoCoast" content="textOnly" dt:type="boolean"/>
 	<ElementType name="bNoRiver" content="textOnly" dt:type="boolean"/>
 	<ElementType name="bNoAdjacent" content="textOnly" dt:type="boolean"/>
@@ -154,20 +155,26 @@
 		<element type="iSeeThrough"/>
 		<element type="iHealthPercent"/>
 		<element type="iDefense"/>
-		<!-- advc.012 -->
-		<element type="iRivalDefense"/>
+		<!-- advc.012 (set to 0 by default in the DLL) -->
+		<element type="iRivalDefense" minOccurs="0"/>
 		<element type="iAppearance"/>
 		<element type="iDisappearance"/>
 		<element type="iGrowth"/>
 		<element type="iTurnDamage"/>
-		<element type="iWarmingDefense"/>
+		<!-- GWMod (advc: now optional; 0 by default) -->
+		<element type="iWarmingDefense" minOccurs="0"/>
 		<element type="bNoCoast"/>
 		<element type="bNoRiver"/>
+		<!-- advc.129b (set to false by default in the DLL; currently unused)
+			 Value doesn't matter if bNoRiver is set. -->
+		<element type="bNoRiverSide" minOccurs="0"/>
 		<element type="bNoAdjacent"/>
 		<element type="bRequiresFlatlands"/>
 		<element type="bRequiresRiver"/>
-		<!-- advc.129b -->
-		<element type="bRequiresRiverSide"/>
+		<!-- advc.129b (set to false by default in the DLL)
+			 If bRequiresRiverSide is set, then the value of bRequiresRiver
+			 doesn't matter. -->
+		<element type="bRequiresRiverSide" minOccurs="0"/>
 		<element type="bAddsFreshWater"/>
 		<element type="bImpassable"/>
 		<element type="bNoCity"/>
@@ -244,6 +251,7 @@
 	<ElementType name="FeatureTerrainBooleans" content="eltOnly">
 		<element type="FeatureTerrainBoolean" minOccurs="0" maxOccurs="*"/>
 	</ElementType>
+	<!-- advc (note): Unused, the DLL doesn't even load it. -->
 	<ElementType name="bUseLSystem" content="textOnly" dt:type="boolean"/>
 	<ElementType name="BonusInfo" content="eltOnly">
 		<element type="Type"/>
@@ -397,6 +405,8 @@
 	<ElementType name="bPermanent" content="textOnly" dt:type="boolean"/>
 	<ElementType name="iGoodyRange" content="textOnly" dt:type="int"/>
 	<ElementType name="iFeatureGrowth" content="textOnly" dt:type="int"/>
+	<!-- advc.055: -->
+	<ElementType name="iGWFeatureProtection" content="textOnly" dt:type="int"/>
 	<ElementType name="iAirBombDefense" content="textOnly" dt:type="int"/>
 	<ElementType name="iDefenseModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iPillageGold" content="textOnly" dt:type="int"/>
@@ -451,9 +461,13 @@
 		<element type="iTilesPerGoody"/>
 		<element type="iGoodyRange"/>
 		<element type="iFeatureGrowth"/>
+		<!-- advc.055: (default value in DLL: 0) -->
+		<element type="iGWFeatureProtection" minOccurs="0"/>
 		<element type="iUpgradeTime"/>
 		<element type="iAirBombDefense"/>
 		<element type="iDefenseModifier"/>
+		<!-- advc.tag: (default value in DLL: 0) -->
+		<element type="iHealthPercent" minOccurs="0"/>
 		<element type="iHappiness"/>
 		<element type="iPillageGold"/>
 		<element type="bOutsideBorders"/>

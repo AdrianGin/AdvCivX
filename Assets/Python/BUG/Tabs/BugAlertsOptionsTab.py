@@ -23,7 +23,7 @@ class BugAlertsOptionsTab(BugOptionsTab.BugOptionsTab):
 		self.addCheckbox(screen, column, "Civ4lerts__Enabled")
 		left, center, right = self.addThreeColumnLayout(screen, column, "Civ4lerts", True)
 		
-		# Cities
+		# City management
 		self.addLabel(screen, left, "Alerts_City", "Cities:")
 		leftL, leftR = self.addTwoColumnLayout(screen, left, "Civ4lerts_TableGrowth")
 		self.addCheckbox(screen, leftL, "Civ4lerts__CityPendingGrowth")
@@ -32,6 +32,8 @@ class BugAlertsOptionsTab(BugOptionsTab.BugOptionsTab):
 		self.addCheckbox(screen, leftR, "Civ4lerts__CityHealthiness")		
 		self.addCheckbox(screen, leftL, "Civ4lerts__CityPendingHappiness")
 		self.addCheckbox(screen, leftR, "Civ4lerts__CityHappiness")
+		# advc.106d:
+		self.addCheckbox(screen, left, "Civ4lerts__CityPendingPositive")
 		# <advc.210b> Replacing these two left/right boxes with a single one
 		# for the revolt alert.
 		#self.addCheckbox(screen, leftL, "Civ4lerts__CityPendingOccupation")
@@ -59,6 +61,8 @@ class BugAlertsOptionsTab(BugOptionsTab.BugOptionsTab):
 		# Trades
 		self.addLabel(screen, right, "Alerts_Trade", "Trading:")
 		self.addCheckbox(screen, right, "MoreCiv4lerts__TechTrade")
+		# advc.ctr:
+		self.addCheckbox(screen, right, "Civ4lerts__CityTrade")
 		self.addCheckbox(screen, right, "MoreCiv4lerts__MapTrade")
 		# advc.210a:
 		self.addCheckbox(screen, right, "Civ4lerts__WarTrade")

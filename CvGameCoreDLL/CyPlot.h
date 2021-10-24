@@ -10,11 +10,14 @@ class CyArea;
 class CvPlot;
 class CyUnit;
 class CyCity;
+
 class CyPlot
 {
 public:
 	CyPlot();
 	DllExport CyPlot(CvPlot*);			// Call from C++
+	CyPlot(CvPlot const*); // advc.003y
+	CyPlot(CvPlot const&); // advc.003y
 	CvPlot* getPlot() { return m_pPlot; }	// Call from C++
 	void setPlot(CvPlot* p) { m_pPlot=p; }	// Call from C++
 	bool isNone() { return (m_pPlot==NULL); }
@@ -93,7 +96,8 @@ public:
 	bool isRevealedGoody(int /*TeamTypes*/ eTeam);
 
 	bool isCity();
-	bool isFriendlyCity(CyUnit* pUnit, bool bCheckImprovement);
+	// advc: CvPlot no longer has such a function
+	//bool isFriendlyCity(CyUnit* pUnit, bool bCheckImprovement);
 	bool isEnemyCity(CyUnit* pUnit);
 	bool isOccupation();
 	bool isBeingWorked();
@@ -103,7 +107,7 @@ public:
 	bool isVisibleEnemyDefender(CyUnit* pUnit);
 	int getNumDefenders(int /*PlayerTypes*/ ePlayer);
 	int getNumVisibleEnemyDefenders(CyUnit* pUnit);
-	int getNumVisiblePotentialEnemyDefenders(CyUnit* pUnit);
+	//int getNumVisiblePotentialEnemyDefenders(CyUnit* pUnit); // advc: No longer exposed
 	bool isVisibleEnemyUnit(int /*PlayerTypes*/ ePlayer);
 	bool isVisibleOtherUnit(int /*PlayerTypes*/ ePlayer);
 	bool isFighting();
@@ -205,10 +209,11 @@ public:
 	int getReconCount();
 	int getRiverCrossingCount();
 	int getYield(YieldTypes eIndex);
-	int calculateNatureYield(int /*YieldTypes*/ eIndex, int /*TeamTypes*/ eTeam, bool bIgnoreFeature = false);
+	int calculateNatureYield(YieldTypes eIndex, TeamTypes eTeam, bool bIgnoreFeature = false);
 	int calculateBestNatureYield(YieldTypes eIndex, TeamTypes eTeam);
 	int calculateTotalBestNatureYield(TeamTypes eTeam);
-	int calculateImprovementYieldChange(int /*ImprovementTypes*/ eImprovement, YieldTypes eYield, int /*PlayerTypes*/ ePlayer, bool bOptimal);
+	int calculateImprovementYieldChange(int /*ImprovementTypes*/ eImprovement, YieldTypes eYield,
+			int /*PlayerTypes*/ ePlayer, bool bOptimal);
 	int calculateYield(YieldTypes eIndex, bool bDisplay);
 	bool hasYield();
 
@@ -247,8 +252,8 @@ public:
 	// advc.251: Last param now ePlayer
 	bool changeBuildProgress(int /*BuildTypes*/ eBuild, int iChange, int /*PlayerTypes*/ ePlayer);
 
-	int getCultureRangeCities(int /*PlayerTypes*/ eOwnerIndex, int iRangeIndex);
-	bool isCultureRangeCity(int /*PlayerTypes*/ eOwnerIndex, int iRangeIndex);
+	int getCultureRangeCities(int /*PlayerTypes*/ eOwnerIndex, /*CultureLevelTypes*/int eRangeIndex);
+	bool isCultureRangeCity(int /*PlayerTypes*/ eOwnerIndex, /*CultureLevelTypes*/int eRangeIndex);
 
 	int getInvisibleVisibilityCount(int /*TeamTypes*/ eTeam, int /*InvisibleTypes*/ eInvisible);
 	bool isInvisibleVisible(int /*TeamTypes*/ eTeam, int /*InvisibleTypes*/ eInvisible);

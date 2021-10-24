@@ -56,7 +56,7 @@ NUM_PARTS = 28
 	WAITING,
 	NET_STATS,
 	OOS,
-	LEADER_BUTTON, CIV_BUTTON, # dlph.30
+	LEADER_BUTTON, CIV_BUTTON, # kekm.30
 	GOLDEN_AGE # advc.085
 ) = range(NUM_PARTS)
 
@@ -120,10 +120,10 @@ def init():
 	columns.append(Column('*', WAITING, FIXED, smallText("*")))
 	columns.append(Column('L', NET_STATS, DYNAMIC))
 	columns.append(Column('O', OOS, DYNAMIC))
-	# <dlph.30>
+	# <kekm.30>
 	columns.append(Column('F', LEADER_BUTTON, SPECIAL))
 	columns.append(Column('G', CIV_BUTTON, SPECIAL))
-	# </dlph.30>
+	# </kekm.30>
 	columns.append(Column('J', GOLDEN_AGE, DYNAMIC)) # advc.085
 	
 	global WAR_ICON, PEACE_ICON
@@ -267,8 +267,8 @@ class Scoreboard:
 		self._set(WAR, PEACE_ICON, self._getDealWidget(TradeableItems.TRADE_PEACE_TREATY))
 	# <advc.085> Widget help added; pass along color.
 	def setPower(self, value, color):
-		self._set(POWER, smallText(value), (WidgetTypes.WIDGET_POWER_RATIO, self._currPlayerScore.getID(), color)) # </advc.085>
-	# <advc.085>
+		self._set(POWER, smallText(value), (WidgetTypes.WIDGET_POWER_RATIO, self._currPlayerScore.getID(), color))
+
 	def setResearch(self, tech, progress): # Third param was 'turns'
 		if tech != -1: # No longer guaranteed by caller </advc.085>
 			if (ScoreOpt.isShowResearchIcons()):
@@ -287,7 +287,7 @@ class Scoreboard:
 		self._set(ESPIONAGE)
 		
 	def setTrade(self): # advc.004: BULL widget help enabled
-		self._set(TRADE, True, (WidgetTypes.WIDGET_TRADE_ROUTES, self._activePlayer, self._currPlayerScore.getID()))
+		self._set(TRADE, True, (WidgetTypes.WIDGET_TRADE_ROUTES_SCOREBOARD, self._activePlayer, self._currPlayerScore.getID()))
 		
 	def setBorders(self):
 		self._set(BORDERS, True, self._getDealWidget(TradeableItems.TRADE_OPEN_BORDERS))
@@ -316,13 +316,13 @@ class Scoreboard:
 		
 	def setOOS(self, value):
 		self._set(OOS, smallText(value))
-	# <dlph.30>
+	# <kekm.30>
 	def setLeaderIcon(self, leader):
 		self._set(LEADER_BUTTON, leader)
 
 	def setCivIcon(self, civ):
 		self._set(CIV_BUTTON, civ)
-	# </dlph.30>
+	# </kekm.30>
 	# <advc.085>
 	def setGoldenAge(self, bAnarchy):
 		eWidget = WidgetTypes.WIDGET_GOLDEN_AGE
@@ -401,10 +401,15 @@ class Scoreboard:
 		interface = CyInterface()
 		xResolution = screen.getXResolution()
 		yResolution = screen.getYResolution()
-		
+		# <advc.106d>
+		# Was effectively 18 in BtS regardless of resolution
+		iVOffset = 0
+		if screen.getYResolution() > 1100:
+			iVOffset = 6
+		# </advc.106d>
 		x = xResolution - 12 # start here and shift left with each column
 		if ( interface.getShowInterface() == InterfaceVisibility.INTERFACE_SHOW or interface.isInAdvancedStart()):
-			y = yResolution - 188 # advc.106d: was yResolution-206
+			y = yResolution - 188 - iVOffset # advc.106d: was yResolution-206
 		else:
 			y = yResolution - 88
 		totalWidth = 0
@@ -417,7 +422,6 @@ class Scoreboard:
 		# <advc.085>
 		bExpanded = False
 		if gc.getPlayer(self._activePlayer).isScoreboardExpanded():
-			gc.getPlayer(self._activePlayer).setScoreboardExpanded(False)
 			bExpanded = True
 		else: # Take out the keys preceded by an underscore
 			stringsToRemove = []
@@ -428,6 +432,9 @@ class Scoreboard:
 				szDisplayOrder = szDisplayOrder.replace(s, '')
 			# Remove any stray underscores as well
 			szDisplayOrder = szDisplayOrder.replace('_', '')
+			# A bit of a hack: Disable the option when there are no fly-out columns
+			if len(stringsToRemove) <= 0 and ScoreOpt.isExpandOnHover():
+				ScoreOpt.setExpandOnHover(False)
 		# </advc.085>
 		format = re.findall('(-?[0-9]+|[^0-9])', szDisplayOrder.replace(' ', '').upper())
 		format.reverse()
@@ -556,7 +563,7 @@ class Scoreboard:
 					x -= techIconSize
 					totalWidth += techIconSize + spacing
 					spacing = defaultSpacing
-				# <dlph.30>
+				# <kekm.30>
 				elif c == LEADER_BUTTON:
 					x -= spacing
 					for p, playerScore in enumerate(self._playerScores):
@@ -579,13 +586,13 @@ class Scoreboard:
 					x -= techIconSize
 					totalWidth += techIconSize + spacing
 					spacing = defaultSpacing
-				# </dlph.30>
+				# </kekm.30>
 		
 		for playerScore in self._playerScores:
 			interface.checkFlashReset( playerScore.getID() )
 		
 		if ( interface.getShowInterface() == InterfaceVisibility.INTERFACE_SHOW or interface.isInAdvancedStart()):
-			y = yResolution - 168 # advc.106d: was yResolution-186
+			y = yResolution - 168 - iVOffset # advc.106d: was yResolution-186
 		else:
 			y = yResolution - 68
 		screen.setPanelSize( "ScoreBackground", xResolution - 21 - totalWidth, y - (height * self.size()) - 4, 
@@ -600,8 +607,8 @@ class TeamScores:
 		self._team = team
 		self._rank = rank
 		self._playerScores = []
-		#self._isVassal = team.isAVassal()
-		self._isVassal = team.isAVassal() and gc.getTeam(gc.getGame().getActiveTeam()).isHasMet(team.getID()) # K-Mod
+		# advc.127: Debug mode check added; the hasMet check is from K-Mod.
+		self._isVassal = team.isAVassal() and (gc.getTeam(gc.getGame().getActiveTeam()).isHasMet(team.getID()) or gc.getGame().isDebugMode())
 		self._master = None
 		self._vassalTeamScores = []
 		

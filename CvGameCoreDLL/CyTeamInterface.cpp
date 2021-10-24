@@ -8,7 +8,7 @@
 
 void CyTeamPythonInterface()
 {
-	OutputDebugString("Python Extension Module - CyTeamPythonInterface\n");
+	printToConsole("Python Extension Module - CyTeamPythonInterface\n");
 
 	python::class_<CyTeam>("CyTeam")
 		.def("isNone", &CyTeam::isNone, "bool () - is this instance valid?")
@@ -155,6 +155,7 @@ void CyTeamPythonInterface()
 		.def("changeExtraMoves", &CyTeam::changeExtraMoves, "void (int /*DomainTypes*/ eIndex, int iChange)")
 
 		.def("isHasMet", &CyTeam::isHasMet, "bool (int /*TeamTypes*/ eIndex)")
+		.def("getHasMetTurn", &CyTeam::getHasMetTurn, "int (int /*TeamTypes*/ iOtherTeam)") // advc.091
 		.def("isAtWar", &CyTeam::isAtWar, "bool (int /*TeamTypes*/ eIndex)")
 		.def("isPermanentWarPeace", &CyTeam::isPermanentWarPeace, "bool (int /*TeamTypes*/ eIndex)")
 		.def("setPermanentWarPeace", &CyTeam::setPermanentWarPeace, "void (int /*TeamTypes*/ eIndex, bool bNewValue)")
@@ -228,5 +229,7 @@ void CyTeamPythonInterface()
 		.def("AI_getWarSuccess", &CyTeam::AI_getWarSuccess, "int (TeamTypes)")
 		// advc.152:
 		.def("AI_declareWarTrade", &CyTeam::AI_declareWarTrade, "DenialTypes (TeamTypes eWarTeam,TeamTypes eTeam)")
+		// advc.038:
+		.def("AI_estimateYieldRate", &CyTeam::AI_estimateYieldRate, "int (int/*PlayerTypes*/,int/*YieldTypes*/)")
 		;
 }

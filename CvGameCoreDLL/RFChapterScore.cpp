@@ -1,10 +1,11 @@
-// <advc.700> New class; see header file for description.
-
 #include "CvGameCoreDLL.h"
 #include "RFChapterScore.h"
 #include "RiseFall.h"
 #include "RFChapter.h"
 #include "CvGamePlay.h"
+#include "CvPlayerAI.h"
+
+using namespace fmath;
 
 
 RFChapterScore::RFChapterScore() {
@@ -97,7 +98,6 @@ std::pair<int,int> RFChapterScore::computeRank(bool storeCivScores,
 	int ourRivals = 0;
 	CvGame const& g = GC.getGame();
 	CvPlayerAI const& we = GET_PLAYER(chapter->getCiv());
-	bool weVassal = we.isAVassal();
 	int ourVictStage = g.getRiseFall().victoryStage(we.getID());
 	int ourScore = modifiedCivScore(we.getID());
 	for(int i = 0; i < MAX_CIV_PLAYERS; i++) {
@@ -112,7 +112,7 @@ std::pair<int,int> RFChapterScore::computeRank(bool storeCivScores,
 		if(they.getID() == we.getID() ||
 				/*  Current player civ can't hurt our rank if we're a
 					previous player civ */
-				they.getID() == g.getActivePlayer())
+				they.isActive())
 			continue;
 		ourRivals++;
 		if(!ignoreVictStage) {
@@ -144,7 +144,7 @@ int RFChapterScore::modifiedCivScore(PlayerTypes civId) const {
 	/*  Count winning AI as having the highest score. Could also be an
 		AI civ that the human player still gets score for, but not the current
 		human civ. */
-	if(g.getWinner() == TEAMID(civId) && civId != g.getActivePlayer())
+	if(g.getWinner() == TEAMID(civId) && !GET_PLAYER(civId).isActive())
 		return g.getPlayerScore(g.getRankPlayer(0)) + 1;
 	return g.getPlayerScore(civId);
 }
@@ -280,5 +280,3 @@ int RFChapterScore::getScoreFromRemainingTime() const {
 
 	return fromRemainingTime;
 }
-
-// </advc.700>

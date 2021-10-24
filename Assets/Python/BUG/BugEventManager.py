@@ -108,6 +108,7 @@ import types
 import CvUtil
 import CvScreensInterface
 # </advc.007b>
+import GameFontDisplay # advc.gfd
 # --------- Better BTS AI mod (1/2) -------------
 import AIAutoPlay
 import ChangePlayer
@@ -425,7 +426,7 @@ class BugEventManager(CvEventManager.CvEventManager):
 	# right after loading a game. Still fires when Python modules
 	# are reloaded, which causes (harmless) exceptions in Civ4lerts.
 	# Tbd.: BugEventManager should somehow detect during initialization
-	# whether it's the game is starting or if modules are being reloaded.
+	# whether the game is starting or if modules are being reloaded.
 	# In the latter case, resetActiveTurnAfterLoad needs to be called
 	# instead of resetActiveTurn.
 	def resetActiveTurnAfterLoad(self, argsList=None):
@@ -476,58 +477,62 @@ class BugEventManager(CvEventManager.CvEventManager):
 		Handles onKbdEvent by firing the keystroke's handler if it has one registered.
 		"""
 		eventType, key, mx, my, px, py = argsList
-		if eventType == self.EventKeyDown:
-			if not InputUtil.isModifier(key):
-				# <advc.007b>
-				theKey = int(key)
-				if self.bCtrl and self.bAlt and theKey == int(InputTypes.KB_R):
-					BugUtil.warn("Note (AdvCiv): Reloading of Art Defines (Ctrl+Alt+R) is disabled")
-					return 1 # Don't use this key combination for anything else
-				# </advc.007b>
-				stroke = InputUtil.Keystroke(key, self.bAlt, self.bCtrl, self.bShift)
-				if stroke in self.shortcuts:
-					BugUtil.debug("BugEventManager - calling handler for shortcut %s", stroke)
-					self.shortcuts[stroke](argsList)
+		if eventType == self.EventKeyDown and not InputUtil.isModifier(key):
+			# <advc.007b>
+			# Added not bCtrl/bAlt/bShift checks so that each cheat is triggered by only one combination of modifier keys
+			theKey = int(key)
+			if not self.bShift and self.bCtrl and self.bAlt and theKey == int(InputTypes.KB_R):
+				BugUtil.warn("Note (AdvCiv): Reloading of Art Defines (Ctrl+Alt+R) is disabled")
+				return 1 # Don't use this key combination for anything else
+			# </advc.007b>
+			stroke = InputUtil.Keystroke(key, self.bAlt, self.bCtrl, self.bShift)
+			if stroke in self.shortcuts:
+				BugUtil.debug("BugEventManager - calling handler for shortcut %s", stroke)
+				self.shortcuts[stroke](argsList)
+				return 1
+			# <advc.007b>
+			if gc.getGame().isDebugMode():
+				# Cheats copied from CvEventManager
+				# Shift - T Debug - techs
+				if self.bShift and not self.bCtrl and not self.bAlt and theKey == int(InputTypes.KB_T):
+					self.beginEvent(CvUtil.EventAwardTechsAndGold)
 					return 1
-				# <advc.007b>
-				if gc.getGame().isDebugMode():
-					# Cheats copied from CvEventManager
-					# Shift - T Debug - techs
-					if self.bShift and theKey == int(InputTypes.KB_T):
-						self.beginEvent(CvUtil.EventAwardTechsAndGold)
+				elif self.bShift and self.bCtrl and not self.bAlt and theKey == int(InputTypes.KB_W):
+					self.beginEvent(CvUtil.EventShowWonder)
+					return 1
+				# Shift - ] Debug - currently mouse-over'd unit: health+=10
+				elif theKey == int(InputTypes.KB_LBRACKET) and self.bShift and not self.bCtrl and not self.bAlt:
+					unit = CyMap().plot(px, py).getUnit(0)
+					if not unit.isNone():
+						d = min(unit.maxHitPoints()-1, unit.getDamage() + 10)
+						unit.setDamage(d, PlayerTypes.NO_PLAYER)
+				# Shift - [ Debug - currently mouse-over'd unit: health-= 10
+				elif theKey == int(InputTypes.KB_RBRACKET) and self.bShift and not self.bCtrl and not self.bAlt:
+					unit = CyMap().plot(px, py).getUnit(0)
+					if not unit.isNone():
+						d = max(0, unit.getDamage() - 10)
+						unit.setDamage(d, PlayerTypes.NO_PLAYER)
+				# <advc.gfd> Keep Nightinggale's key combination
+				elif theKey == int(InputTypes.KB_F1) and self.bShift and self.bCtrl and not self.bAlt:
+					GameFontDisplay.GameFontDisplay().interfaceScreen()
+					return 1 # </advc.gfd>
+				elif theKey == int(InputTypes.KB_F1):
+					if self.bShift and not self.bCtrl and not self.bAlt:
+						CvScreensInterface.replayScreen.showScreen(False)
 						return 1
-					elif self.bShift and self.bCtrl and theKey == int(InputTypes.KB_W):
-						self.beginEvent(CvUtil.EventShowWonder)
+				elif theKey == int(InputTypes.KB_F2):
+					if self.bShift and not self.bCtrl and not self.bAlt:
+						import CvDebugInfoScreen
+						CvScreensInterface.showDebugInfoScreen()
 						return 1
-					# Shift - ] Debug - currently mouse-over'd unit: health+=10
-					elif theKey == int(InputTypes.KB_LBRACKET) and self.bShift:
-						unit = CyMap().plot(px, py).getUnit(0)
-						if not unit.isNone():
-							d = min(unit.maxHitPoints()-1, unit.getDamage() + 10)
-							unit.setDamage(d, PlayerTypes.NO_PLAYER)
-					# Shift - [ Debug - currently mouse-over'd unit: health-= 10
-					elif theKey == int(InputTypes.KB_RBRACKET) and self.bShift:
-						unit = CyMap().plot(px, py).getUnit(0)
-						if not unit.isNone():
-							d = max(0, unit.getDamage() - 10)
-							unit.setDamage(d, PlayerTypes.NO_PLAYER)
-					elif theKey == int(InputTypes.KB_F1):
-						if self.bShift:
-							CvScreensInterface.replayScreen.showScreen(False)
-							return 1
-					elif theKey == int(InputTypes.KB_F2):
-						if self.bShift:
-							import CvDebugInfoScreen
-							CvScreensInterface.showDebugInfoScreen()
-							return 1
-					elif theKey == int(InputTypes.KB_F3):
-						if self.bShift:
-							CvScreensInterface.showDanQuayleScreen(())
-							return 1
-					elif theKey == int(InputTypes.KB_F4):
-						if self.bShift:
-							CvScreensInterface.showUnVictoryScreen(())
-							return 1
+				elif theKey == int(InputTypes.KB_F3):
+					if self.bShift and not self.bCtrl and not self.bAlt:
+						CvScreensInterface.showDanQuayleScreen(())
+						return 1
+				elif theKey == int(InputTypes.KB_F4):
+					if self.bShift and not self.bCtrl and not self.bAlt:
+						CvScreensInterface.showUnVictoryScreen(())
+						return 1
 				# </advc.007b>
 		return 0
 	
@@ -605,6 +610,13 @@ class BugEventManager(CvEventManager.CvEventManager):
 				civics.append(gc.getCivicInfo(eNewCivic).getDescription())
 		BugUtil.debug("Revolution for %s, %d turns: %s", gc.getPlayer(ePlayer).getName(), iAnarchyTurns, ", ".join(civics))
 
+	# advc.001: Moved this check out of the configure method. Now works via callback. configure only gets called once, namely the first time that a game is started or loaded. But multiple games can be started or loaded within the same session, so it's not enough to check isGameMultiPlayer only at one point.
+	def isCheatsEnabled(self):
+		# K-Mod, only enable these features if the cheat mode is enabled.
+		#return getChtLvl()
+		# advc.127: Replacing the above. ChtLvl is always 0 in multiplayer.
+		return (getChtLvl() or (CyGame().isGameMultiPlayer() and gc.getDefineINT("ENABLE_AUTOPLAY_MULTIPLAYER") > 0))
+
 
 EVENT_FUNCTION_MAP = {
 	"kbdEvent": BugEventManager._handleConsumableEvent,
@@ -646,13 +658,9 @@ def configure(logging=None, noLogEvents=None):
 	# K-Mod end
 
 	# --------- Better BTS AI (2/2) (moved by K-Mod) -------------
-	# K-Mod, only enable these features if the cheat mode is enabled.
-	#if getChtLvl():
-	# advc.127: Replacing the above. ChtLvl is always 0 in multiplayer.
-	if getChtLvl() or (CyGame().isGameMultiPlayer() and gc.getDefineINT("ENABLE_AUTOPLAY_MULTIPLAYER") > 0):
-		AIAutoPlay.AIAutoPlay(g_eventManager)
-		ChangePlayer.ChangePlayer(g_eventManager)
-		Tester.Tester(g_eventManager)
+	AIAutoPlay.AIAutoPlay(g_eventManager)
+	ChangePlayer.ChangePlayer(g_eventManager)
+	Tester.Tester(g_eventManager)
 
 	# advc.106c: Changed OnLoad handler
 	g_eventManager.addEventHandler("kbdEvent", g_eventManager.onKbdEvent)
