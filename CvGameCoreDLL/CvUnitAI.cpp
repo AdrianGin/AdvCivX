@@ -20510,11 +20510,9 @@ bool CvUnitAI::AI_cityOffenseSpy(int iMaxPath, CvCity* pSkipCity)
 
 		iTeamWeight *= 400 - kOurTeam.AI_getAttitudeWeight(kLoopPlayer.getTeam());
 		iTeamWeight /= 500;
-		/*  <advc.120> The "else" is the only functional change; don't want to
-			communicate too loudly that we're preparing war. */
 		if (kOurTeam.AI_getWarPlan(kLoopPlayer.getTeam()) != NO_WARPLAN)
 			iTeamWeight *= 2;
-		else if (kOurTeam.AI_isSneakAttackPreparing(kLoopPlayer.getTeam()))
+		if (kOurTeam.AI_isSneakAttackPreparing(kLoopPlayer.getTeam()))
 			iTeamWeight *= 2;
 		if (kOwner.AI_isMaliciousEspionageTarget(kLoopPlayer.getID()))
 		{
