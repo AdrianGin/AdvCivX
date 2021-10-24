@@ -10318,10 +10318,17 @@ VoteSelectionData* CvGame::addVoteSelection(VoteSourceTypes eVoteSource)
 				kData.ePlayer = it->getLeaderID();
 				if (isValidVoteSelection(eVoteSource, kData))
 				{
-					kData.szText = gDLL->getText("TXT_KEY_POPUP_ELECTION_FORCE_WAR",
+					kData.szText =
+							// <kekm.25/advc>
+							(it->isActive() ?
+							gDLL->getText("TXT_KEY_POPUP_ELECTION_FORCE_WAR_VS_YOU",
+							getVoteRequired(kData.eVote, eVoteSource),
+							countPossibleVote(kData.eVote, eVoteSource)) :
+							// </kekm.25/advc>
+							gDLL->getText("TXT_KEY_POPUP_ELECTION_FORCE_WAR",
 							it->getName().GetCString(),
 							getVoteRequired(kData.eVote, eVoteSource),
-							countPossibleVote(kData.eVote, eVoteSource));
+							countPossibleVote(kData.eVote, eVoteSource)));
 					pData->aVoteOptions.push_back(kData);
 				}
 			}
