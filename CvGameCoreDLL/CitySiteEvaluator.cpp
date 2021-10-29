@@ -1219,7 +1219,11 @@ bool AIFoundValue::isUsablePlot(CityPlotTypes ePlot, int& iTakenTiles, bool& bCi
 			iCities == 0))
 		{
 			bOtherInnerRing = adjacentOrSame(*p, *pOtherCity->plot());
-			FAssert(!bInnerRing || !bOtherInnerRing || !pOtherCity->isArea(kArea));
+			FAssert(!bInnerRing || !bOtherInnerRing || !pOtherCity->isArea(kArea) ||
+					/*	In that case, stealing from the inner ring should
+						perhaps be considered. (But AdvCiv uses range 2 like BtS,
+						so I'm not going to address range 1.) */
+					GC.getDefineINT(CvGlobals::MIN_CITY_RANGE) < 2);
 			if (bForeignOwned && (bOtherInnerRing ||
 				// Don't try to overlap with team member or master
 				TEAMID(eOwner) == eTeam ||

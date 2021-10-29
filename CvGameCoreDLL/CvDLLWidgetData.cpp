@@ -4734,13 +4734,13 @@ void CvDLLWidgetData::parseMaintenanceHelp(CvWidgetDataStruct &widgetDataStruct,
 {
 	CvCity* pHeadSelectedCity = gDLL->UI().getHeadSelectedCity();
 	if (pHeadSelectedCity == NULL)
-		return; // advc
+		return;
 
 	if (pHeadSelectedCity->isWeLoveTheKingDay())
 	{
 		szBuffer.append(NEWLINE);
 		szBuffer.append(gDLL->getText("TXT_KEY_MISC_WE_LOVE_KING_MAINT"));
-		return; // advc
+		return;
 	}
 
 	int iInflationFactor = 100 + GET_PLAYER(pHeadSelectedCity->getOwner()).calculateInflationRate(); // K-Mod

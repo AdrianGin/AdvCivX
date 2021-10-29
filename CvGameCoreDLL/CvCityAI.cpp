@@ -11218,7 +11218,7 @@ int CvCityAI::AI_buildUnitProb(bool bDraft)
 			if (rPowRatio > 1)
 			{
 				scaled rAdvantage = rPowRatio - 1;
-				if(rAdvantage >= fixp(1.5))
+				if (rAdvantage >= fixp(1.5))
 				{
 					r /= 4;
 					bGreatlyReduced = true;

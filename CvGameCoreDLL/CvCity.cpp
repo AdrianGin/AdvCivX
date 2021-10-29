@@ -550,7 +550,7 @@ void CvCity::doTurn()
 
 	updateSurroundingHealthHappiness(); // advc.901
 
-	if (isOccupation() || (angryPopulation() > 0) || (healthRate() < 0))
+	if (isOccupation() || angryPopulation() > 0 || healthRate() < 0)
 		setWeLoveTheKingDay(false);
 	else if (getPopulation() >= GC.getDefineINT("WE_LOVE_THE_KING_POPULATION_MIN_POPULATION") &&
 		SyncRandNum(GC.getDefineINT("WE_LOVE_THE_KING_RAND")) < getPopulation())
@@ -4438,7 +4438,7 @@ void CvCity::setPopulation(int iNewValue)
 {
 	int const iOldPopulation = getPopulation();
 	if (iOldPopulation == iNewValue)
-		return; // advc
+		return;
 
 	m_iPopulation = iNewValue;
 	FAssert(getPopulation() >= 0);
@@ -6376,7 +6376,7 @@ bool CvCity::isWeLoveTheKingDay() const
 
 void CvCity::setWeLoveTheKingDay(bool bNewValue)
 {
-	if(isWeLoveTheKingDay() == bNewValue)
+	if (isWeLoveTheKingDay() == bNewValue)
 		return;
 
 	m_bWeLoveTheKingDay = bNewValue;
@@ -6425,7 +6425,7 @@ void CvCity::setCitizensAutomated(bool bNewValue)
 void CvCity::setProductionAutomated(bool bNewValue, bool bClear)
 {
 	if (isProductionAutomated() == bNewValue)
-		return; // advc
+		return;
 
 	m_bProductionAutomated = bNewValue;
 	if (isActiveOwned() && isCitySelected())

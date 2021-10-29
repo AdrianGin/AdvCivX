@@ -19,15 +19,9 @@
 	in its log messages; see comment in randSuccess. */
 
 // Defined in BaseTsd.h. Easy to get them mixed up with ScaledNum::INTMAX, INTMIN.
-#ifdef MAXINT
-	#undef MAXINT
-#endif
-#ifdef MININT
-	#undef MININT
-#endif
-#ifdef MAXUINT
-	#undef MAXUINT
-#endif
+#undef MAXINT
+#undef MININT
+#undef MAXUINT
 
 /*	Uncomment for some additional runtime assertions
 	checking conditions that are really the user's responsibility. */

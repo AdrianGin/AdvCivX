@@ -2475,7 +2475,7 @@ int CvPlot::getFeatureProduction(BuildTypes eBuild, TeamTypes eTeam, CvCity** pp
 CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner, PlayerTypes eAttackingPlayer,
 	CvUnit const* pAttacker, bool bTestEnemy, bool bTestPotentialEnemy,
 	/* advc.028: */ bool bTestVisible,
-	bool bTestCanAttack, bool bAny) const // advc: new params (for CvPlot::hasDefender)
+	bool bTestCanAttack, bool bTestAny) const // advc: new params (for CvPlot::hasDefender)
 {
 	// <advc> Ensure consistency of parameters
 	if (pAttacker != NULL)
@@ -2500,7 +2500,7 @@ CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner, PlayerTypes eAttackingPlayer
 			pAttacker, bTestEnemy, bTestPotentialEnemy, /* advc.028: */ bTestVisible,
 			bTestCanAttack))
 		{
-			if (bAny)
+			if (bTestAny)
 				return &kUnit; // </advc>
 			if (kUnit.isBetterDefenderThan(pBestUnit, pAttacker,
 				&iBestUnitRank, // UncutDragon

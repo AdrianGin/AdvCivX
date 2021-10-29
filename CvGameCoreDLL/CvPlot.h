@@ -148,7 +148,7 @@ public:
 			PlayerTypes eAttackingPlayer, CvUnit const* pAttacker,
 			bool bTestEnemy, bool bTestPotentialEnemy,
 			bool bTestVisible, // advc.028
-			bool bTestCanAttack, bool bAny = false) const; // </advc>
+			bool bTestCanAttack, bool bTestAny = false) const; // </advc>
 	// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000:
 	bool hasDefender(bool bTestCanAttack, PlayerTypes eOwner,
 			PlayerTypes eAttackingPlayer = NO_PLAYER, const CvUnit* pAttacker = NULL,

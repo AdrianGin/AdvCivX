@@ -17885,7 +17885,7 @@ bool CvPlayer::canHaveTradeRoutesWith(PlayerTypes ePlayer) const
 	if (!kOtherPlayer.isAlive())
 		return false;
 	// <advc.124>
-	if(getID() != ePlayer && kOtherPlayer.isAnarchy())
+	if (getID() != ePlayer && kOtherPlayer.isAnarchy())
 		return false; // </advc.124>
 	if (getTeam() == kOtherPlayer.getTeam())
 		return true;
