@@ -28,7 +28,7 @@ namespace intdiv
 	inline int uceil(int iDividend, int iDivisor)
 	{
 		FAssert(iDividend >= 0 && iDivisor > 0);
-		return 1 + (iDividend - 1) / iDivisor;
+		return (iDividend + iDivisor - 1) / iDivisor;
 	}
 }
 

@@ -7624,7 +7624,7 @@ int CvCity::getCorporationYieldByCorporation(YieldTypes eYield,
 			}
 		}
 	}
-	return (iYieldRate + 99) / 100;
+	return intdiv::uceil(iYieldRate, 100);
 }
 
 int CvCity::getCorporationCommerceByCorporation(CommerceTypes eCommerce,
@@ -7645,7 +7645,7 @@ int CvCity::getCorporationCommerceByCorporation(CommerceTypes eCommerce,
 			}
 		}
 	}
-	return (iCommerceRate + 99) / 100;
+	return intdiv::uceil(iCommerceRate, 100);
 }
 
 void CvCity::updateCorporationCommerce(CommerceTypes eCommerce)
