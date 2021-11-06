@@ -2329,7 +2329,9 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 				it.hasNext(); ++it)
 			{
 				if (it->isCity() &&
-					/*	advc: This check was missng. Since there is no other reason
+					// advc.001: Don't give away rival cities in the fog of war
+					!kUnitOwner.canFound(kMissionPlot, false, false) &&
+					/*	advc: This check was missing. Since there is no other reason
 						for !canFound, it doesn't really matter. */
 					it->sameArea(kMissionPlot))
 				{
@@ -2341,7 +2343,7 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 			}
 		}
 		// <advc.004b> Show the projected increase in city maintenance
-		else
+		if (kUnitOwner.canFound(kMissionPlot, false, false))
 		{
 			// No projection for the initial city
 			if(kUnitOwner.getNumCities() > 0)

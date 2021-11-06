@@ -555,7 +555,7 @@ public:
 			bool bRandomize = false) const; // advc.052
 	bool isBestAdjacentFound(PlayerTypes eIndex) const;												// Exposed to Python
 	void setFoundValue(PlayerTypes eIndex, short iNewValue); // K-Mod (was int iNewValue)
-	bool canFound(bool bTestVisible = false) const; // advc
+	bool canFound(bool bTestVisible = false, TeamTypes eTeam = NO_TEAM) const; // advc
 	bool canEverFound() const; // advc.129d
 
 	int getPlayerCityRadiusCount(PlayerTypes eIndex) const											// Exposed to Python

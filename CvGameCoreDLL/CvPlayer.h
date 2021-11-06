@@ -277,6 +277,9 @@ public:
 			GoodyTypes eTaboo = NO_GOODY);
 
 	DllExport bool canFound(int iX, int iY, bool bTestVisible = false) const;										// Exposed to Python
+	// <advc.001>
+	bool canFound(CvPlot const& kPlot, bool bTestVisible = false,
+			bool bIgnoreFoW = true) const; // </advc.001>
 	void found(int iX, int iY);																						// Exposed to Python
 
 	bool canTrain(UnitTypes eUnit, bool bContinue = false, bool bTestVisible = false,								// Exposed to Python

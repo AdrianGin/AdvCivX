@@ -151,6 +151,8 @@ private:
 	bool isRemovableFeature(CvPlot const& p, bool& bPersistent,
 			int& iFeatureProduction) const;
 	bool isRevealed(CvPlot const& p) const;
+	PlayerTypes getRevealedOwner(CvPlot const& p) const;
+	TeamTypes getRevealedTeam(CvPlot const& p) const;
 	BonusTypes getBonus(CvPlot const& p) const;
 	ImprovementTypes getBonusImprovement(BonusTypes eBonus, CvPlot const& p,
 			bool& bCanTrade, bool& bCanTradeSoon, int* aiImprovementYield,

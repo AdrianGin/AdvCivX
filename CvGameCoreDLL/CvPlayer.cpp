@@ -4878,12 +4878,28 @@ void CvPlayer::doGoody(CvPlot* pPlot, CvUnit* pUnit, /* advc.314: */ GoodyTypes 
 
 bool CvPlayer::canFound(int iX, int iY, bool bTestVisible) const
 {
-	CvPlot const& kPlot = *GC.getMap().plot(iX, iY);
+	return canFound(GC.getMap().getPlot(iX, iY), bTestVisible);
+}
+
+
+bool CvPlayer::canFound(CvPlot const& kPlot, bool bTestVisible,  /* <advc.001> */
+	bool bIgnoreFoW) const
+{
+	if (!bIgnoreFoW)
+	{
+		PlayerTypes eRevealedOwner = kPlot.getRevealedOwner(getTeam(), true);
+		if (eRevealedOwner != NO_PLAYER && eRevealedOwner != getID())
+			return false;
+	}
+	else // </advc.001>
 	if (kPlot.isOwned() && kPlot.getOwner() != getID())
 		return false;
 	// advc: Checks that don't depend on player moved into new function at CvPlot
-	if (!kPlot.canFound(bTestVisible))
+	if (!kPlot.canFound(bTestVisible,
+		bIgnoreFoW ? NO_TEAM : getTeam())) // advc.001
+	{
 		return false;
+	}
 	if (GC.getGame().isFinalInitialized() && getNumCities() > 0 &&
 		isOneCityChallenge())
 	{
