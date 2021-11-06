@@ -2865,6 +2865,8 @@ int Effort::preEvaluate()
 				rNukeCost.uround(), rNukeProduction.uround());
 		rUtility += rNukeCost;
 	}
+	// Kludge introduced in AdvCiv 1.02, to get some more wars going overall.
+	rUtility *= fixp(0.95);
 	return -std::min(200, rUtility.round());
 }
 
@@ -4456,6 +4458,8 @@ void TacticalSituation::evalOperational()
 		log("Cost for lack of readiness vs. %s negligible",
 				m_kReport.leaderName(eThey));
 	}
+	// Kludge introduced in AdvCiv 1.02, to get some more wars going overall.
+	iUnreadinessCost = (iUnreadinessCost * 95) / 100;;
 	m_iU -= iUnreadinessCost;
 }
 
