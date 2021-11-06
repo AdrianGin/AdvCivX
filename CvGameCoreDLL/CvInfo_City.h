@@ -15,6 +15,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvProcessInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public:
 	CvProcessInfo();
 	~CvProcessInfo();
@@ -37,6 +38,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvSpecialistInfo : public CvHotkeyInfo
 {
+	typedef CvHotkeyInfo base_t;
 public: // All the const functions are exposed to Python
 	CvSpecialistInfo();
 	~CvSpecialistInfo();
@@ -78,6 +80,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvCultureLevelInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public:
 	CvCultureLevelInfo();
 	~CvCultureLevelInfo();
@@ -102,6 +105,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvEmphasizeInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // The const functions are exposed to Python
 
 	CvEmphasizeInfo();
@@ -128,6 +132,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvHurryInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // The const functions are exposed to Python
 	CvHurryInfo();
 

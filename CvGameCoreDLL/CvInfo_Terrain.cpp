@@ -68,7 +68,7 @@ int CvTerrainInfo::get3DAudioScriptFootstepIndex(int i) const
 
 bool CvTerrainInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(m_szArtDefineTag, "ArtDefineTag");
@@ -319,7 +319,7 @@ const CvArtInfoFeature* CvFeatureInfo::getArtInfo() const
 
 bool CvFeatureInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(m_szArtDefineTag, "ArtDefineTag");
@@ -617,7 +617,7 @@ const TCHAR* CvBonusInfo::getButton() const
 #if ENABLE_XML_FILE_CACHE
 void CvBonusInfo::read(FDataStreamBase* stream)
 {
-	CvInfoBase::read(stream);
+	base_t::read(stream);
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -671,7 +671,7 @@ void CvBonusInfo::read(FDataStreamBase* stream)
 
 void CvBonusInfo::write(FDataStreamBase* stream)
 {
-	CvInfoBase::write(stream);
+	base_t::write(stream);
 	uint uiFlag=0;
 	stream->Write(uiFlag);
 
@@ -716,7 +716,7 @@ void CvBonusInfo::write(FDataStreamBase* stream)
 #endif
 bool CvBonusInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetInfoIDFromChildXmlVal(m_eBonusClassType, "BonusClassType");
@@ -843,7 +843,7 @@ int CvBonusClassInfo::getUniqueRange() const
 
 bool CvBonusClassInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 	pXML->GetChildXmlValByName(&m_iUniqueRange, "iUnique");
 	return true;
@@ -902,7 +902,7 @@ int CvRouteInfo::py_getPrereqOrBonus(int i) const
 
 bool CvRouteInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iAdvancedStartCost, "iAdvancedStartCost");
@@ -1510,7 +1510,7 @@ int CvImprovementBonusInfo::getYieldChange(int i) const
 #if ENABLE_XML_FILE_CACHE
 void CvImprovementBonusInfo::read(FDataStreamBase* stream)
 {
-	CvInfoBase::read(stream);
+	base_t::read(stream);
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 	stream->Read(&m_iDiscoverRand);
@@ -1523,7 +1523,7 @@ void CvImprovementBonusInfo::read(FDataStreamBase* stream)
 
 void CvImprovementBonusInfo::write(FDataStreamBase* stream)
 {
-	CvInfoBase::write(stream);
+	base_t::write(stream);
 	uint uiFlag=0;
 	stream->Write(uiFlag);
 	stream->Write(m_iDiscoverRand);
@@ -1633,7 +1633,7 @@ const TCHAR* CvGoodyInfo::getSound() const
 
 bool CvGoodyInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(m_szSound, "Sound");

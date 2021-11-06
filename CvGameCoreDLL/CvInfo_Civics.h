@@ -14,6 +14,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvCivicInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // The const functions are exposed to Python except those (to be) added by AdvCiv
 	CvCivicInfo();
 	~CvCivicInfo();
@@ -177,6 +178,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvCivicOptionInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public:
 	CvCivicOptionInfo();
 	~CvCivicOptionInfo();
@@ -193,6 +195,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvUpkeepInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public:
 	CvUpkeepInfo();
 

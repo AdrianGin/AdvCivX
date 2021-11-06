@@ -10,6 +10,7 @@
 
 class CvBuildInfo : public CvHotkeyInfo
 {
+	typedef CvHotkeyInfo base_t;
 public: /*	All the const functions are exposed to Python.
 			Integers in signatures replaced with enum types. */
 	CvBuildInfo();

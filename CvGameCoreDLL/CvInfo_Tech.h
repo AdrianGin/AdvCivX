@@ -6,7 +6,8 @@
 // advc.003x: Cut from CvInfos.h. Just CvTechInfo b/c I want to precompile this one.
 class CvTechInfo : public CvInfoBase
 {
-friend class CvXMLLoadUtility;
+	typedef CvInfoBase base_t;
+	friend class CvXMLLoadUtility;
 public: // advc: All the const functions are exposed to Python except those added by mods
 	CvTechInfo();
 	~CvTechInfo();

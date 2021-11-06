@@ -54,7 +54,7 @@ const TCHAR* CvYieldInfo::getSymbolPath(int i) const
 
 bool CvYieldInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iHillsChange, "iHillsChange");
@@ -135,7 +135,7 @@ bool CvCommerceInfo::isFlexiblePercent() const
 
 bool CvCommerceInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iInitialPercent, "iInitialPercent");

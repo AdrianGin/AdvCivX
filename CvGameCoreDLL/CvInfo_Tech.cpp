@@ -126,7 +126,7 @@ bool CvTechInfo::isTerrainTrade(int i) const
 #if ENABLE_XML_FILE_CACHE
 void CvTechInfo::read(FDataStreamBase* stream)
 {
-	CvInfoBase::read(stream);
+	base_t::read(stream);
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -206,7 +206,7 @@ void CvTechInfo::read(FDataStreamBase* stream)
 
 void CvTechInfo::write(FDataStreamBase* stream)
 {
-	CvInfoBase::write(stream);
+	base_t::write(stream);
 	uint uiFlag = 0;
 	stream->Write(uiFlag);
 
@@ -272,7 +272,7 @@ void CvTechInfo::write(FDataStreamBase* stream)
 #endif
 bool CvTechInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetInfoIDFromChildXmlVal(m_iAdvisorType, "Advisor");

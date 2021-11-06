@@ -54,7 +54,7 @@ const TCHAR* CvOrganizationInfo::getSound() const
 
 bool CvOrganizationInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvHotkeyInfo::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetInfoIDFromChildXmlVal(m_iTechPrereq, "TechPrereq");

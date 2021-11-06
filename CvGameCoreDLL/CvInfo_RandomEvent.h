@@ -12,6 +12,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvEventInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 	friend class CvXMLLoadUtility;
 public: // All the const functions returning primitive types are exposed to Python
 	CvEventInfo();
@@ -190,6 +191,7 @@ private:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvEventTriggerInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 	friend class CvXMLLoadUtility;
 public: // All the const functions returning primitive types are exposed to Python
 	CvEventTriggerInfo();

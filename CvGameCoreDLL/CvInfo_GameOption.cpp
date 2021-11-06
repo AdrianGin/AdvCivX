@@ -34,7 +34,7 @@ void CvGameOptionInfo::setVisible(bool b) {
 
 bool CvGameOptionInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_bDefault, "bDefault");
@@ -53,7 +53,7 @@ bool CvMPOptionInfo::getDefault() const
 
 bool CvMPOptionInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_bDefault, "bDefault");
@@ -429,7 +429,7 @@ void CvGameSpeedInfo::allocateGameTurnInfos(const int iSize)
 
 bool CvGameSpeedInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iGrowthPercent, "iGrowthPercent");
@@ -513,7 +513,7 @@ int CvTurnTimerInfo::getFirstTurnMultiplier() const
 
 bool CvTurnTimerInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iBaseTime, "iBaseTime");
@@ -612,8 +612,7 @@ const char* CvVictoryInfo::getMovie() const
 
 bool CvVictoryInfo::read(CvXMLLoadUtility* pXML)
 {
-	
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_bTargetScore, "bTargetScore");
@@ -1424,7 +1423,7 @@ int CvWorldInfo::getAdvancedStartPointsMod() const
 
 bool CvWorldInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iDefaultPlayers, "iDefaultPlayers");
@@ -1522,7 +1521,7 @@ float CvClimateInfo::getRandIceLatitude() const
 
 bool CvClimateInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iDesertPercentChange, "iDesertPercentChange");
@@ -1553,7 +1552,7 @@ int CvSeaLevelInfo::getSeaLevelChange() const
 
 bool CvSeaLevelInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iSeaLevelChange, "iSeaLevelChange");
@@ -1579,5 +1578,5 @@ CvWString CvSeaLevelInfo::getDescriptionInternal() const
 		if (szText != szTag)
 			return szText;
 	}
-	return CvInfoBase::getDescriptionInternal();
+	return base_t::getDescriptionInternal();
 }

@@ -35,7 +35,7 @@ bool CvCommandInfo::getAll() const
 
 bool CvCommandInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvHotkeyInfo::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	CvString szTextVal;
@@ -78,7 +78,7 @@ bool CvAutomateInfo::getVisible() const
 
 bool CvAutomateInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvHotkeyInfo::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetInfoIDFromChildXmlVal(m_iCommand, "Command");
@@ -493,7 +493,7 @@ EntityEventTypes CvMissionInfo::getEntityEvent() const
 
 bool CvMissionInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvHotkeyInfo::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(m_szWaypoint, "Waypoint");
@@ -558,7 +558,7 @@ bool CvInterfaceModeInfo::getSelectAll() const
 
 bool CvInterfaceModeInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvHotkeyInfo::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetInfoIDFromChildXmlVal(m_iCursorIndex, "CursorType");

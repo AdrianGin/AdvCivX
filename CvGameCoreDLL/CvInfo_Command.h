@@ -14,6 +14,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvCommandInfo : public CvHotkeyInfo
 {
+	typedef CvHotkeyInfo base_t;
 public:
 	CvCommandInfo();
 
@@ -37,6 +38,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvAutomateInfo : public CvHotkeyInfo
 {
+	typedef CvHotkeyInfo base_t;
 public:
 	CvAutomateInfo();
 
@@ -124,6 +126,7 @@ private:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvMissionInfo : public CvHotkeyInfo
 {
+	typedef CvHotkeyInfo base_t;
 public: // The const functions are exposed to Python
 	CvMissionInfo();
 
@@ -154,6 +157,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvInterfaceModeInfo : public CvHotkeyInfo
 {
+	typedef CvHotkeyInfo base_t;
 public: // "(ADD to Python)" // <-- advc: Looks like all the const functions are exposed as usual
 	CvInterfaceModeInfo();
 

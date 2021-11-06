@@ -461,7 +461,7 @@ const wchar* CvEventInfo::getOtherPlayerPopup() const
 #if ENABLE_XML_FILE_CACHE
 void CvEventInfo::read(FDataStreamBase* stream)
 {
-	CvInfoBase::read(stream);
+	base_t::read(stream);
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -570,7 +570,7 @@ void CvEventInfo::read(FDataStreamBase* stream)
 
 void CvEventInfo::write(FDataStreamBase* stream)
 {
-	CvInfoBase::write(stream);
+	base_t::write(stream);
 	uint uiFlag=0;
 	stream->Write(uiFlag);
 
@@ -657,7 +657,7 @@ void CvEventInfo::write(FDataStreamBase* stream)
 #endif
 bool CvEventInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_bQuest, "bQuest");
@@ -1300,7 +1300,7 @@ const char* CvEventTriggerInfo::getPythonCanDoUnit() const
 void CvEventTriggerInfo::read(FDataStreamBase* stream)
 {
 	CvWString szElement;
-	CvInfoBase::read(stream);
+	base_t::read(stream);
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -1482,7 +1482,7 @@ void CvEventTriggerInfo::read(FDataStreamBase* stream)
 
 void CvEventTriggerInfo::write(FDataStreamBase* stream)
 {
-	CvInfoBase::write(stream);
+	base_t::write(stream);
 	uint uiFlag=0;
 	stream->Write(uiFlag);
 
@@ -1626,7 +1626,7 @@ void CvEventTriggerInfo::write(FDataStreamBase* stream)
 #endif
 bool CvEventTriggerInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iPercentGamesActive, "iPercentGamesActive");
