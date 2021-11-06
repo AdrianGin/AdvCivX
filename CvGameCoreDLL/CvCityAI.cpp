@@ -11198,7 +11198,7 @@ int CvCityAI::AI_buildUnitProb(bool bDraft)
 		if (iCities > 1)
 		{
 			CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
-			int iHighestRivalPow = 1;
+			int iHighestRivalPow = 0;
 			for (TeamAIIter<FREE_MAJOR_CIV,OTHER_KNOWN_TO> it(getTeam());
 				it.hasNext(); ++it)
 			{
@@ -11214,7 +11214,19 @@ int CvCityAI::AI_buildUnitProb(bool bDraft)
 					iHighestRivalPow = std::max(kRival.getPower(true), iHighestRivalPow);
 				}
 			}
-			scaled rPowRatio(kOurTeam.getPower(false), iHighestRivalPow);
+			// Don't throttle at all until we're clearly ahead of the best rival
+			scaled rTargetAdvantage = per100(25);
+			if (kOwner.AI_atVictoryStage(AI_VICTORY_MILITARY1))
+				rTargetAdvantage += per100(5);
+			if (kOwner.AI_atVictoryStage(AI_VICTORY_MILITARY2))
+				rTargetAdvantage += per100(5);
+			if (kOwner.AI_atVictoryStage(AI_VICTORY_MILITARY3))
+				rTargetAdvantage += per100(7);
+			if (kOwner.AI_atVictoryStage(AI_VICTORY_MILITARY4))
+				rTargetAdvantage += per100(8);
+			scaled rTargetPow = (rTargetAdvantage + 1) * iHighestRivalPow;
+			rTargetPow.increaseTo(scaled::epsilon());
+			scaled rPowRatio = kOurTeam.getPower(false) / rTargetPow;
 			if (rPowRatio > 1)
 			{
 				scaled rAdvantage = rPowRatio - 1;
