@@ -4792,8 +4792,11 @@ void CvTeam::setEspionagePointsAgainstTeam(TeamTypes eIndex, int iValue)
 		verifySpyUnitsValidPlot();
 		GET_TEAM(eIndex).verifySpyUnitsValidPlot();
 		// <advc.091>
-		for (MemberIter itOurMember(getID()); itOurMember.hasNext(); ++itOurMember)
-			itOurMember->updateEverSeenDemographics(eIndex); // </advc.091>
+		if (!isBarbarian()) // Barbarians shouldn't use even passive missions
+		{
+			for (MemberIter itOurMember(getID()); itOurMember.hasNext(); ++itOurMember)
+				itOurMember->updateEverSeenDemographics(eIndex);
+		} // </advc.091>
 	}
 }
 
