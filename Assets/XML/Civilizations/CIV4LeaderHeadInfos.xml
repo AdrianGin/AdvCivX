@@ -368,8 +368,9 @@
 					<iContactDelay>50</iContactDelay>
 				</ContactDelay>
 				<ContactDelay>
+					<!-- advc.124: was 20 -->
 					<ContactType>CONTACT_OPEN_BORDERS</ContactType>
-					<iContactDelay>20</iContactDelay>
+					<iContactDelay>40</iContactDelay>
 				</ContactDelay>
 				<ContactDelay>
 					<ContactType>CONTACT_DEFENSIVE_PACT</ContactType>
