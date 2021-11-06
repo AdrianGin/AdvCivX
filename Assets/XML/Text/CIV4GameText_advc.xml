@@ -7116,4 +7116,25 @@
 		<Spanish>Obliga a los miembros de pleno derecho a declararos la guerra(!!) (Requiere %d1_ReqNum de %d2_TotNum votos totales)</Spanish>
 	</TEXT>
 
+	<!-- advc.124: Originally in CIV4GameTextInfos.xml. Said "no foreign
+		 trade routes", but vassals and master are exempt (despite being
+		 "foreign"). Now vassals of the same master are also exempt. -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_NO_FOREIGN_TRADE</Tag>
+		<English>[ICON_BULLET]No Trade Routes ([ICON_TRADE]) with Rivals</English>
+		<French>[ICON_BULLET]Aucune route commerciale &#233;trang&#232;re</French>
+		<German>[ICON_BULLET]Keine Handelswege ([ICON_TRADE]) mit Gegnern</German>
+		<Italian>[ICON_BULLET]Nessuna rotta commerciale estera ([ICON_TRADE])</Italian>
+		<Spanish>[ICON_BULLET]Sin rutas comerciales extranjeras ([ICON_TRADE])</Spanish>
+	</TEXT>
+	<!-- Originally in CIV4GameText_Strategy.xml -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_MERCANTILISM_STRATEGY</Tag>
+		<English>Free specialist in each city but no trade routes with rivals</English>
+		<French>Un sp&#233;cialiste gratuit dans chaque ville, mais aucune route commerciale.</French>
+		<German>Bonus-Spezialist in allen St&#228;dten, aber keine Handelswege mit Gegnern.</German>
+		<Italian>Specialisti extra in ogni citt&#224;, ma nessuna rotta commerciale straniera</Italian>
+		<Spanish>Un especialista gratis en cada ciudad, pero no hay rutas comerciales con el extranjero.</Spanish>
+	</TEXT>
+
 </Civ4GameText>

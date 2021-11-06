@@ -17909,11 +17909,13 @@ bool CvPlayer::canHaveTradeRoutesWith(PlayerTypes ePlayer) const
 	if (!GET_TEAM(getTeam()).isFreeTrade(kOtherPlayer.getTeam()))
 		return false;
 
-	if (GET_TEAM(getTeam()).isVassal(kOtherPlayer.getTeam()))
+	/*if (GET_TEAM(getTeam()).isVassal(kOtherPlayer.getTeam()))
 		return true;
-
 	if (GET_TEAM(kOtherPlayer.getTeam()).isVassal(getTeam()))
-		return true;
+		return true;*/
+	// <advc.124> Also cover vassals of the same master
+	if (getMasterTeam() == kOtherPlayer.getMasterTeam())
+		return true; // </advc.124>
 
 	if (!isNoForeignTrade() && !kOtherPlayer.isNoForeignTrade())
 		return true;

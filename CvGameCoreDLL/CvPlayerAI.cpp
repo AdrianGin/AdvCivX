@@ -27407,8 +27407,8 @@ int CvPlayerAI::AI_countPotentialForeignTradeCities(bool bCheckConnected,
 		if (!kTeam.isFreeTrade(kOther.getTeam()))
 			continue;
 		if (bCheckForeignTradePolicy && kOther.isNoForeignTrade() &&
-			!kTeam.isVassal(kOther.getTeam()) &&
-			!GET_TEAM(kOther.getTeam()).isVassal(getTeam()))
+			// advc.124: Vassals of the same master now also exempt
+			kTeam.getMasterTeam() != kOther.getMasterTeam())
 		{
 			continue;
 		}
