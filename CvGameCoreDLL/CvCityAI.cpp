@@ -4151,9 +4151,33 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 
 			iTempValue *= AI_yieldMultiplier(YIELD_COMMERCE);
 			iTempValue /= 100;
-
-			iTempValue += kBuilding.getCoastalTradeRoutes() * std::max((iCitiesTarget+1)/2,
-					kOwner.countNumCoastalCities()) * iGlobalTradeValue;
+			{
+				int const iCoastalTradeRoutes = kBuilding.getCoastalTradeRoutes();
+				if (iCoastalTradeRoutes != 0)
+				{
+					int const iCoastalCities = kOwner.countNumCoastalCities();
+					// <advc.131>
+					scaled rCoastalCitySites;
+					int const iCitySites = kOwner.AI_getNumCitySites();
+					for (int i = 0; i < iCitySites; i++)
+					{
+						if (kOwner.AI_getCitySite(i).isCoastalLand(-1))
+						{	/*	Less likely to claim lower-priority sites;
+								and it'll take longer. */
+							rCoastalCitySites += 1 - scaled(i, iCitySites);
+						}
+					}
+					// K-Mod formula:
+					//std::max((iCitiesTarget+1)/2, kOwner.countNumCoastalCities())
+					int iProjectedCoastalCities = (iCoastalCities + rCoastalCitySites +
+							/*	City placement will favor the coast more once we have
+								extra trade routes */
+							scaled(iCoastalTradeRoutes, 2)).uround();
+					// </advc.131>
+					iTempValue += iCoastalTradeRoutes * iProjectedCoastalCities *
+							iGlobalTradeValue;
+				}
+			}
 			// <advc.310>
 			iTempValue += kBuilding.getAreaTradeRoutes() *
 					// Same formula as for AreaHappiness (Notre Dame)
