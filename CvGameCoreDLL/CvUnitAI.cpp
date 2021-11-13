@@ -21413,13 +21413,10 @@ int CvUnitAI::AI_stackOfDoomExtra() const
 	// K-Mod end
 	// <advc.104p>
 	scaled rMult = 1;
-	/*  Bigger AI stacks on higher difficulty (b/c units are cheaper to train then,
-		not b/c bigger stacks are generally smarter) */
-	if(!kOwner.isHuman() && !isBarbarian())
+	// Bigger AI stacks when units are cheaper to train
 	{
-		scaled rTrainMod = per100(GC.getInfo(GC.getGame().
-				getHandicapType()).getAITrainPercent());
-		rTrainMod.increaseTo(fixp(0.75));
+		scaled rTrainMod = kOwner.trainingModifierFromHandicap();
+		rTrainMod.increaseTo(fixp(0.7));
 		rMult /= rTrainMod;
 	}
 	// A little extra for naval assault
