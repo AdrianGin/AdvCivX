@@ -6871,8 +6871,8 @@ void CvGame::doGlobalWarming()
 		if (bChanged)
 		{
 			// only destroy the improvement if the new terrain cannot support it
-			if (!pPlot->canHaveImprovement(eImprov),
-				NO_BUILD, false) // kekm.9
+			if (!pPlot->canHaveImprovement(eImprov, NO_TEAM, false,
+				NO_BUILD, false)) // kekm.9
 			{
 				pPlot->setImprovementType(NO_IMPROVEMENT, /* advc.055: */ true);
 			}  // <advc.055>
