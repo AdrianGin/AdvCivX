@@ -176,7 +176,7 @@ char const* WarUtilityAspect::aspectName() const
 	return szBuffer.GetCString();
 }
 
-
+#if !DISABLE_UWAI_REPORT
 void WarUtilityAspect::log(char const* fmt, ...) const
 {
 	/*	The time spent in this function is negligible when the report is muted,
@@ -193,7 +193,7 @@ void WarUtilityAspect::log(char const* fmt, ...) const
 	va_end(args);
 	m_kReport.log(szMsg.c_str());
 }
-
+#endif
 
 scaled WarUtilityAspect::normalizeUtility(scaled rUtilityTeamOnTeam,
 	TeamTypes eOther) const
