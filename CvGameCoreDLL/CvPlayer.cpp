@@ -9002,7 +9002,8 @@ void CvPlayer::onTurnLogging() const
 			}
 		}
 
-		if (GET_TEAM(getTeam()).getNumWars(false) > 0)
+		if (GET_TEAM(getTeam()).getNumWars(false) > 0 &&
+			!isBarbarian()) // advc.007
 		{
 			szBuffer.append(CvWString::format(L";  at war with: "));
 
@@ -9016,7 +9017,8 @@ void CvPlayer::onTurnLogging() const
 			}
 		}
 
-		if (GET_TEAM(getTeam()).AI_isAnyWarPlan())
+		if (GET_TEAM(getTeam()).AI_isAnyWarPlan() &&
+			isBarbarian()) // advc.007
 		{
 			szBuffer.append(CvWString::format(L";  planning war with: "));
 			for (int iI = 0; iI < MAX_CIV_TEAMS; iI++)
