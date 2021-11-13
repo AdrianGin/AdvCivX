@@ -6130,9 +6130,21 @@ int CvPlayerAI::AI_techBuildingValue(TechTypes eTech, bool bConstCache, bool& bE
 				if (AI_isCapitalAreaAlone())
 					iScale += 30;
 				// decrease when at war
-				//if (GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0)
-				if(AI_isFocusWar()) // advc.105
-					iScale = iScale * 2/3;
+				{
+					if (//GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0
+							AI_isFocusWar() || // advc.105
+						/*	<advc.131> Toward the end of the Classical era,
+							discourage buildings even when a war plan is just a
+							plausible possibility. The game gets boring if no one
+							starts a war around that time. */
+						(getUWAI().isEnabled() &&
+						scaled(GET_TEAM(getTeam()).getTechCount(), GC.getNumTechInfos()).
+						approxEquals(per100(20), per100(5)) &&
+						GET_TEAM(getTeam()).uwai().isCloseToAdoptingAnyWarPlan()))
+					{	// </advc.131>
+						iScale = iScale * 2/3;
+					} 
+				}
 				/*	increase scale for limited wonders, because they
 					don't need to be built in every city. */
 				if (kLoopBuilding.isLimited())

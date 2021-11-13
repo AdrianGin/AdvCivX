@@ -2204,6 +2204,21 @@ bool UWAI::Team::canReach(TeamTypes eTarget) const
 }
 
 
+bool UWAI::Team::isCloseToAdoptingAnyWarPlan() const
+{
+	for (TeamIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itRival(m_eAgent);
+		itRival.hasNext(); ++itRival)
+	{
+		if (canSchemeAgainst(itRival->getID(), false) &&
+			leaderCache().warUtilityIgnoringDistraction(itRival->getID()) >= -20)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
 void UWAI::Team::startReport()
 {
 	bool bDoReport = isReportTurn();
