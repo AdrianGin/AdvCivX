@@ -63,7 +63,7 @@
 	<!-- advc.002g: Deleted TXT_KEY_PEDIA_CATEGORY_CONCEPT_NEW
 		 (en. BTS Concepts, fr. Conceptes BTS, dt. Beyond the Sword-Konzepte,
 		 it. Concetti di BTS, es. Conceptos BtS)
-		 because I'm replacing this key in CIV4GameText_advc.008.xml. -->
+		 because I'm replacing this key in CIV4GameText_advc_pedia.xml. -->
 	<TEXT>
 		<Tag>TXT_KEY_UNIQUE_BUILDINGS</Tag>
 		<English>Unique Buildings</English>

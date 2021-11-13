@@ -4882,8 +4882,8 @@ bool CvPlayer::canFound(int iX, int iY, bool bTestVisible) const
 }
 
 
-bool CvPlayer::canFound(CvPlot const& kPlot, bool bTestVisible,  /* <advc.001> */
-	bool bIgnoreFoW) const
+bool CvPlayer::canFound(CvPlot const& kPlot, bool bTestVisible,
+	/* <advc.001> */ bool bIgnoreFoW) const
 {
 	if (!bIgnoreFoW)
 	{

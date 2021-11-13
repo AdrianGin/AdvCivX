@@ -1950,7 +1950,11 @@ void CvGameTextMgr::setPlotListHelp(CvWStringBuffer &szString, CvPlot const& kPl
 		if (m_apbPromotion.empty())
 		{
 			for (int i = 0; i < (GC.getNumUnitInfos() * MAX_PLAYERS); i++)
+			{
+				/*	advc (note): The EXE frees this through DeInitialize -
+					or so we shall hope ... */
 				m_apbPromotion.push_back(new int[iPromotionInfos]);
+			}
 		}
 
 		for (int i = 0; i < (GC.getNumUnitInfos() * MAX_PLAYERS); i++)
@@ -7801,7 +7805,7 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 	CvGame const& kGame = GC.getGame(); // advc
 
 	// show debug info if cheat level > 0 and alt down
-	bool bAlt = GC.altKey();
+	bool const bAlt = GC.altKey();
 	if (bAlt && //(gDLL->getChtLvl() > 0))
 		kGame.isDebugMode()) // advc.135c
 	{

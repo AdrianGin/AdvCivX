@@ -67,7 +67,7 @@ DO_FOR_EACH_DYN_INFO_TYPE(MAKE_INFO_ENUM)
 
 /*  advc: WorldSize and Flavor are special -- there are hardcoded values, but it's
 	still possible to add values through XML only.
-	(The harcoded world sizes are used by map scripts.) */
+	(The harcoded world sizes are used by map scripts and random events.) */
 enum WorldSizeTypes
 {
 	NO_WORLDSIZE = -1,

@@ -5,7 +5,8 @@
 	 it should be easy to tell that the code is working as intended.
 	 In particular, the "shadowed local variable ...Anon..." warnings
 	 are spurious and "condition always true/false" warnings are guesswork;
-	 usually false positives. -->
+	 usually false positives.
+	 Note that this comment gets deleted when Cppcheck modifies this file. -->
 <project version="1">
     <builddir>AdvCiv-cppcheck-build-dir</builddir>
     <platform>win32W</platform>

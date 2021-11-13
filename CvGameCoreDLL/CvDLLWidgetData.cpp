@@ -2329,11 +2329,10 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 				it.hasNext(); ++it)
 			{
 				if (it->isCity() &&
-					// advc.001: Don't give away rival cities in the fog of war
+					/*	<advc.001> Don't give away rival cities in the fog of war.
+						And same-area check added. */
 					!kUnitOwner.canFound(kMissionPlot, false, false) &&
-					/*	advc: This check was missing. Since there is no other reason
-						for !canFound, it doesn't really matter. */
-					it->sameArea(kMissionPlot))
+					it->sameArea(kMissionPlot)) // </advc.001>
 				{
 					szBuffer.append(NEWLINE);
 					szBuffer.append(gDLL->getText("TXT_KEY_ACTION_CANNOT_FOUND",

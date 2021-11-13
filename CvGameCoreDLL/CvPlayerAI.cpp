@@ -6161,7 +6161,7 @@ int CvPlayerAI::AI_techBuildingValue(TechTypes eTech, bool bConstCache, bool& bE
 	/*if (getNumCities() == 1 && getCurrentEra() == kGame.getStartEra())
 		iScale/=2;*/ // I expect we'll want to be building mostly units until we get a second city.
 	// <advc.131> Replacing the above
-	if(bVeryEarly)
+	if (bVeryEarly)
 	{
 		iScale = scaled(iScale,
 				iVeryEarlyPopThresh - getCapital()->getPopulation() + 1).round();

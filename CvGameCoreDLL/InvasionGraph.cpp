@@ -554,7 +554,7 @@ void InvasionGraph::Node::logTypicalUnits()
 					m_kReport.leaderName(m_eAgent), iAgentCost, iAgentPow);
 		}
 	}
-	m_kReport.log("");
+	m_kReport.logNewline();
 }
 
 

@@ -535,7 +535,7 @@ void CvCityAI::AI_chooseProduction()
 
 	int const iWarSuccessRating = kTeam.AI_getWarSuccessRating();
 	int iEnemyPowerPerc = kTeam.AI_getEnemyPowerPercent(true);
-	// <cdtw> (Comment from Dave_uk:)
+	// <cdtw> (comment by Dave_uk:)
 	/*  if we are the weaker part of a team, and have a land war in our primary
 		area, increase enemy power percent so we aren't overconfident due to a
 		powerful team-mate who may not actually be that much help */
@@ -1304,7 +1304,8 @@ void CvCityAI::AI_chooseProduction()
 
 	if	(!bLandWar && !bAssault && getCommerceRate(COMMERCE_CULTURE) == 0)
 	{
-		if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE, bAggressiveAI ? 10 : 20, 0, bAggressiveAI ? 33 : 50))
+		if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE,
+			bAggressiveAI ? 10 : 20, 0, bAggressiveAI ? 33 : 50))
 		{
 			if (gCityLogLevel >= 2) logBBAI("      City %S uses minimal culture rate", getName().GetCString());
 			return;
@@ -1321,7 +1322,7 @@ void CvCityAI::AI_chooseProduction()
 	// BBAI TODO: Check that this works to produce early rushes on tight maps
 	if (!bUnitExempt && !bGetBetterUnits && bCapitalArea && (iAreaBestFoundValue < iMinFoundValue * 2))
 	{	//Building city hunting stack.
-		if ((getDomainFreeExperience(DOMAIN_LAND) == 0) &&
+		if (getDomainFreeExperience(DOMAIN_LAND) == 0 &&
 			getYieldRate(YIELD_PRODUCTION) > 4)
 		{
 			if (AI_chooseBuilding(BUILDINGFOCUS_EXPERIENCE,
@@ -1339,8 +1340,8 @@ void CvCityAI::AI_chooseProduction()
 		if (iStartAttackStackRand > 0)
 		{
 			int iAttackCityCount = kPlayer.AI_totalAreaUnitAIs(kArea, UNITAI_ATTACK_CITY);
-			int iAttackCount = iAttackCityCount + kPlayer.AI_totalAreaUnitAIs(kArea, UNITAI_ATTACK);
-
+			int iAttackCount = iAttackCityCount +
+					kPlayer.AI_totalAreaUnitAIs(kArea, UNITAI_ATTACK);
 			if (iAttackCount == 0)
 			{
 				if (!bFinancialTrouble)
@@ -1418,23 +1419,20 @@ void CvCityAI::AI_chooseProduction()
 	}
 
 	// K-Mod.
-	if (iProjectValue < 0 && (kPlayer.AI_atVictoryStage(AI_VICTORY_SPACE3) ||
+	if (iProjectValue < 0 &&
+		(kPlayer.AI_atVictoryStage(AI_VICTORY_SPACE3) ||
 		!(bLandWar && iWarSuccessRating < 30)))
 	{
 		eBestProject = AI_bestProject(&iProjectValue);
 	} // K-Mod end
 
 	int iSpreadUnitThreshold = 1000;
-
 	if (bLandWar)
-	{
 		iSpreadUnitThreshold += 800 - 10*iWarSuccessRating;
-	}
-	iSpreadUnitThreshold += 1000*getPlot().plotCount(PUF_isUnitAIType, UNITAI_MISSIONARY, -1, getOwner());
-
+	iSpreadUnitThreshold += 1000*getPlot().plotCount(
+			PUF_isUnitAIType, UNITAI_MISSIONARY, -1, getOwner());
 	UnitTypes eBestSpreadUnit = NO_UNIT;
 	int iBestSpreadUnitValue = -1;
-
 	if (!bDanger && !kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE) &&
 		!bAssault) // advc.131 (from MNAI)
 	{
@@ -1444,21 +1442,18 @@ void CvCityAI::AI_chooseProduction()
 		iSpreadUnitRoll *= (200 + std::max(iProjectValue, iBestBuildingValue));
 		iSpreadUnitRoll /= (100 + 3 * std::max(iProjectValue, iBestBuildingValue));
 		// K-Mod end
-
-		if (AI_bestSpreadUnit(true, true, iSpreadUnitRoll, &eBestSpreadUnit, &iBestSpreadUnitValue))
+		if (AI_bestSpreadUnit(true, true, iSpreadUnitRoll,
+			&eBestSpreadUnit, &iBestSpreadUnitValue) &&
+			iBestSpreadUnitValue > iSpreadUnitThreshold)
 		{
-			if (iBestSpreadUnitValue > iSpreadUnitThreshold)
+			if (AI_chooseUnit(eBestSpreadUnit, UNITAI_MISSIONARY))
 			{
-				if (AI_chooseUnit(eBestSpreadUnit, UNITAI_MISSIONARY))
-				{
-					if (gCityLogLevel >= 2) logBBAI("      City %S uses choose missionary 1", getName().GetCString());
+				if (gCityLogLevel >= 2) logBBAI("      City %S uses choose missionary 1", getName().GetCString());
 					return;
-				}
-				FErrorMsg("AI_bestSpreadUnit should provide a valid unit when it returns true");
 			}
+			FErrorMsg("AI_bestSpreadUnit should provide a valid unit when it returns true");
 		}
 	}
-
 	// K-Mod
 	if (eBestProject != NO_PROJECT && iProjectValue > iBestBuildingValue)
 	{
@@ -1623,7 +1618,7 @@ void CvCityAI::AI_chooseProduction()
 
 		// K-Mod (the spies stuff used to be lower down)
 		int iNumSpies = kPlayer.AI_totalAreaUnitAIs(kArea, UNITAI_SPY);
-				// advc.001j: Commented out
+				// advc.001j: already counted
 				//+ kPlayer.AI_getNumTrainAIUnits(UNITAI_SPY);
 		int iNeededSpies = iNumCitiesInArea / 3;
 		if (bPrimaryArea)
@@ -1665,14 +1660,13 @@ void CvCityAI::AI_chooseProduction()
 		}
 		// K-Mod end
 
-		if (bDefenseWar || (bLandWar && (iWarSuccessRating < -30)))
+		if (bDefenseWar || (bLandWar && iWarSuccessRating < -30))
 		{
 			UnitTypeWeightArray panicDefenderTypes;
 			panicDefenderTypes.push_back(std::make_pair(UNITAI_RESERVE, 100));
 			panicDefenderTypes.push_back(std::make_pair(UNITAI_COUNTER, 100));
 			panicDefenderTypes.push_back(std::make_pair(UNITAI_COLLATERAL, 100));
 			panicDefenderTypes.push_back(std::make_pair(UNITAI_ATTACK, 100));
-
 			if (AI_chooseLeastRepresentedUnit(panicDefenderTypes, (bGetBetterUnits ? 40 : 60) - iWarSuccessRating/3))
 			{
 				if (gCityLogLevel >= 2) logBBAI("      City %S uses choose panic defender", getName().GetCString());
@@ -1743,7 +1737,9 @@ void CvCityAI::AI_chooseProduction()
 				return;
 			}*/
 			// K-Mod
-			// Reduce the max time when at war (arbitrary - but then again, this part of the AI is not for strategy. It's for flavour.)
+			/*	Reduce the max time when at war
+				(arbitrary - but then again, this part of the AI is not for strategy.
+				It's for flavour.) */
 			if (kArea.getAreaAIType(getTeam()) != AREAAI_NEUTRAL)
 				iWonderTime = iWonderTime * 2/3;
 			// And only build the wonder if it is at least as valuable as the building we would have chosen anyway.
@@ -1753,8 +1749,7 @@ void CvCityAI::AI_chooseProduction()
 				if (gCityLogLevel >= 2) logBBAI("      City %S uses opportunistic wonder build 2", getName().GetCString());
 				pushOrder(ORDER_CONSTRUCT, eBestWonder);
 				return;
-			}
-			// K-Mod end
+			} // K-Mod end
 		}
 	}
 
