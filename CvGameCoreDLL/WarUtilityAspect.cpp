@@ -1075,6 +1075,8 @@ void GreedForCash::evaluate()
 		return;
 	}
 	int const iTheyLoseToUs = ourConquestsFromThem().size();
+	if (iTheyLoseToUs <= 0)
+		return;
 	int iWeLoseToThem = 0;
 	CitySet const& kTheyConquer = militAnalyst().conqueredCities(eThey);
 	for (CitySetIter it = kTheyConquer.begin(); it != kTheyConquer.end(); ++it)
@@ -2731,7 +2733,10 @@ int Effort::preEvaluate()
 		/*	If they're not part of the military analysis, estimate their power based
 			on BtS statistics. */
 		if (rRivalPowerChange == 0)
-			rRivalPowerChange = kWeAI.estimateBuildUpRate(kRival.getID());
+		{
+			rRivalPowerChange = kWeAI.estimateBuildUpRate(kRival.getID(),
+					militAnalyst().turnsSimulated());
+		}
 		else
 		{
 			rRivalPowerChange /= (GET_PLAYER(kRival.getID()).uwai().getCache().
@@ -3051,6 +3056,7 @@ int IllWill::preEvaluate()
 void IllWill::evaluate() 
 {
 	PROFILE_FUNC();
+	m_rCost = 0;
 	// We can't trade with our war enemies
 	evalLostPartner();
 	bool const bEndNigh = (kOurTeam.AI_anyMemberAtVictoryStage4() ||
