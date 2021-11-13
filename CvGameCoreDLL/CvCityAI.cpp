@@ -1320,7 +1320,14 @@ void CvCityAI::AI_chooseProduction()
 	}
 
 	// BBAI TODO: Check that this works to produce early rushes on tight maps
-	if (!bUnitExempt && !bGetBetterUnits && bCapitalArea && (iAreaBestFoundValue < iMinFoundValue * 2))
+	if (!bUnitExempt && !bGetBetterUnits && bCapitalArea &&
+		iAreaBestFoundValue < iMinFoundValue * 2 &&
+		// <advc.017>
+		!kPlayer.AI_isDoStrategy(AI_STRATEGY_ECONOMY_FOCUS) &&
+		/*	(And exclude Barbarians? Should perhaps also check
+			CvTeamAI::AI_isLandTarget ...) */
+		kArea.getNumCities() > kTeam.countNumCitiesByArea(kArea))
+		// </advc.017>
 	{	//Building city hunting stack.
 		if (getDomainFreeExperience(DOMAIN_LAND) == 0 &&
 			getYieldRate(YIELD_PRODUCTION) > 4)
@@ -1353,19 +1360,22 @@ void CvCityAI::AI_chooseProduction()
 			else
 			{
 				//if((iAttackCount > 1) && (iAttackCityCount == 0))
-				/*  advc.017: ^Just 1 city-attacker? Isn't it supposed to be a
+				/*  <advc.017> Just 1 city-attacker? Isn't it supposed to be a
 					"city hunting stack"? Early units don't have the ATTACK_CITY
 					AI type, but AI_chooseUnit doesn't care much about the AI types
-					assigned in XML. */
-				if(iAttackCount > iAttackCityCount + 1 && iAttackCityCount < 1 + iBuildUnitProb / 22)
+					assigned in XML. Otoh, ATTACK units will be more useful than
+					ATTACK_CITY if we don't end up hunting for any cities ... */
+				if (iAttackCount >= iAttackCityCount &&
+					iAttackCityCount < 1 + iBuildUnitProb / 19) // </advc.017>
 				{
 					if (AI_chooseUnit(UNITAI_ATTACK_CITY))
 					{
 						if (gCityLogLevel >= 2) logBBAI("      City %S uses choose start city attack stack", getName().GetCString());
 						return;
 					}
-				} // advc.017: Divisor was 10
-				else if (iAttackCount < (3 + iBuildUnitProb / 18))
+				}
+				//else if (iAttackCount < 3 + iBuildUnitProb / 10)
+				else if (iAttackCount < 2 + iBuildUnitProb / 18) // advc.017
 				{
 					if (AI_chooseUnit(UNITAI_ATTACK))
 					{
