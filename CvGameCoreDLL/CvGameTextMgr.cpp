@@ -7831,6 +7831,10 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 						kTeam.getResearchCost(ePlayerTech));
 			}
 			szBuffer.append(szTempBuffer);
+			szBuffer.append(NEWLINE);
+			// <advc.007> (Unrelated to the info above)
+			szTempBuffer.Format(L"tech id = %d", eTech);
+			szBuffer.append(szTempBuffer); // </advc.007>
 		}
 		return;
 	}
