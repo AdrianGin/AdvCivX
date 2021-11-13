@@ -4336,7 +4336,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 				scaled rCivicOptionValue;
 				/*	Should actually be 4(!), but I don't think it's good for game balance
 					to make the AI that interested in the Pyramids. */
-				scaled const rScaleAdjustment = fixp(1.7);
+				scaled const rScaleAdjustment = fixp(1.9);
 				scaled rCurrentCivicValue = rScaleAdjustment *
 						kOwner.AI_civicValue(kOwner.getCivics(eCivicOption));
 				scaled rBestNewCivicValue = scaled::min(0, rCurrentCivicValue);
