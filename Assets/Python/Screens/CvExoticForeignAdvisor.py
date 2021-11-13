@@ -820,14 +820,16 @@ class CvExoticForeignAdvisor (CvForeignAdvisor.CvForeignAdvisor):
 		self.nCount = 0
 		self.ltPlayerRelations = [[0] * gc.getMAX_PLAYERS() for i in range (gc.getMAX_PLAYERS())]
 		self.ltPlayerMet = [False] * gc.getMAX_PLAYERS()
-		# advc.130v: isCapitulated check added
 		for iLoopPlayer in range(gc.getMAX_PLAYERS()):
 			if (gc.getPlayer(iLoopPlayer).isAlive()
 			and (gc.getTeam(gc.getPlayer(iLoopPlayer).getTeam()).isHasMet(gc.getPlayer(self.iActiveLeader).getTeam())
 			or gc.getGame().isDebugMode())
 			and not gc.getPlayer(iLoopPlayer).isBarbarian()
-			and not gc.getPlayer(iLoopPlayer).isMinorCiv() and (not gc.getTeam(gc.getPlayer(iLoopPlayer).getTeam()).isCapitulated() or gc.getPlayer(iLoopPlayer).isHuman())):
-
+			and not gc.getPlayer(iLoopPlayer).isMinorCiv()
+			# <advc.130v> Exclude capitulated vassals. The last check is for AI Auto Play.
+			and (not gc.getTeam(gc.getPlayer(iLoopPlayer).getTeam()).isCapitulated()
+			or gc.getPlayer(iLoopPlayer).isHuman() or iLoopPlayer == self.iActiveLeader)):
+			# </advc.130v>
 #				ExoticForPrint ("Player = %d" % iLoopPlayer)
 				self.ltPlayerMet [iLoopPlayer] = True
 
