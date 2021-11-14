@@ -1197,15 +1197,6 @@
 		<Italian>Nuova estrazione casuale per ricarica</Italian>
 		<Spanish>Nueva "seed" aleatoria al volver a cargar</Spanish>
 	</TEXT>
-	<!-- Another bad German translation: "fremde Handelswege" -->
-	<TEXT>
-		<Tag>TXT_KEY_CIVIC_NO_FOREIGN_TRADE</Tag>
-		<English>[ICON_BULLET]No Foreign Trade Routes ([ICON_TRADE])</English>
-		<French>[ICON_BULLET]Aucune route commerciale &#233;trang&#232;re</French>
-		<German>[ICON_BULLET]Kein Auﬂenhandel ([ICON_TRADE])</German>
-		<Italian>[ICON_BULLET]Nessuna rotta commerciale estera ([ICON_TRADE])</Italian>
-		<Spanish>[ICON_BULLET]Sin rutas comerciales extranjeras ([ICON_TRADE])</Spanish>
-	</TEXT>
 	
 	<!-- advc.137: Originally in Civ4GameText_Help.xml. Changed only English and
 		 German. -->
