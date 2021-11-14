@@ -116,7 +116,7 @@
 				 promotion. The probability is multiplied by a factor based on
 				 the game turn. -->
 			<iBarbarianUnitProb>50</iBarbarianUnitProb>
-			<!-- advc.314: Together with bBad=false, this indicates the number of
+			<!-- advc.314: Together with bBad=0, this indicates the number of
 				 units to be created, and a value above 0 creates a unit even if
 				 UnitClass is set to NONE. -->
 			<iMinBarbarians>1</iMinBarbarians>

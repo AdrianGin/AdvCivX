@@ -16,7 +16,7 @@ using std::set_difference;
 AdvCiv4lert::AdvCiv4lert(PlayerTypes eOwner) : m_eOwner(eOwner)
 {
 	m_bSilent = false;
-	/*	Set this to true in a subclass constructor in order to test or debug a
+	/*	Set this to true in a derived constructor in order to test or debug a
 		particular alert through AI Auto Play */
 	m_bDebug = false;
 }

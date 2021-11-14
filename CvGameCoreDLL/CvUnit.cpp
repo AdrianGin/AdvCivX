@@ -11532,7 +11532,7 @@ bool CvUnit::LFBisBetterDefenderThan(const CvUnit* pDefender, const CvUnit* pAtt
 	// Get our adjusted rankings based on combat odds
 	int iOurRanking = LFBgetDefenderRank(pAttacker);
 	int iTheirRanking = -1;
-	if (pBestDefenderRank)
+	if (pBestDefenderRank != NULL)
 		iTheirRanking = *pBestDefenderRank;
 	if (iTheirRanking == -1)
 		iTheirRanking = pDefender->LFBgetDefenderRank(pAttacker);
@@ -11545,7 +11545,7 @@ bool CvUnit::LFBisBetterDefenderThan(const CvUnit* pDefender, const CvUnit* pAtt
 		else iTheirRanking--;
 	}
 	// Retain the basic rank (before value adjustment) for the best defender
-	if (pBestDefenderRank)
+	if (pBestDefenderRank != NULL)
 	{
 		if (iOurRanking > iTheirRanking)
 			(*pBestDefenderRank) = iOurRanking;

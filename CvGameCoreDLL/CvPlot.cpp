@@ -2475,7 +2475,7 @@ int CvPlot::getFeatureProduction(BuildTypes eBuild, TeamTypes eTeam, CvCity** pp
 CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner, PlayerTypes eAttackingPlayer,
 	CvUnit const* pAttacker, bool bTestEnemy, bool bTestPotentialEnemy,
 	/* advc.028: */ bool bTestVisible,
-	bool bTestCanAttack, bool bAny) const // advc: new params (for CvPlot::hasDefender)
+	bool bTestCanAttack, bool bTestAny) const // advc: new params (for CvPlot::hasDefender)
 {
 	// <advc> Ensure consistency of parameters
 	if (pAttacker != NULL)
@@ -2500,7 +2500,7 @@ CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner, PlayerTypes eAttackingPlayer
 			pAttacker, bTestEnemy, bTestPotentialEnemy, /* advc.028: */ bTestVisible,
 			bTestCanAttack))
 		{
-			if (bAny)
+			if (bTestAny)
 				return &kUnit; // </advc>
 			if (kUnit.isBetterDefenderThan(pBestUnit, pAttacker,
 				&iBestUnitRank, // UncutDragon
@@ -5546,7 +5546,8 @@ void CvPlot::setFoundValue(PlayerTypes eIndex, short iNewValue)
 }
 
 // advc: Cut from CvPlayer::canFound (for advc.027)
-bool CvPlot::canFound(bool bTestVisible) const
+bool CvPlot::canFound(bool bTestVisible,
+	TeamTypes eTeam) const // advc.001
 {
 	if (!canEverFound()) // advc.129d: Moved into another new function
 		return false;
@@ -5560,8 +5561,11 @@ bool CvPlot::canFound(bool bTestVisible) const
 	for (SquareIter it(*this, GC.getDefineINT(CvGlobals::MIN_CITY_RANGE));
 		it.hasNext(); ++it)
 	{
-		if (it->isCity() && it->sameArea(*this))
+		if (it->isCity() && it->sameArea(*this) &&
+			(eTeam == NO_TEAM || it->getPlotCity()->isRevealed(eTeam))) // advc.001
+		{
 			return false;
+		}
 	}
 
 	return true;

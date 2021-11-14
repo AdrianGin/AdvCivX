@@ -518,6 +518,7 @@ void CvCityAI::AI_chooseProduction()
 	}
 	// advc: Some old and unused code deleted
 	bool bLandWar = kPlayer.AI_isLandWar(kArea); // K-Mod
+	bool const bWarPrep = kTeam.AI_isSneakAttackPreparing(); // advc.104s
 	bool const bDefenseWar = (kArea.getAreaAIType(getTeam()) == AREAAI_DEFENSIVE);
 	bool const bAssaultAssist = (kArea.getAreaAIType(getTeam()) == AREAAI_ASSAULT_ASSIST);
 	bool const bTotalWar = (kTeam.AI_getNumWarPlans(WARPLAN_TOTAL) // K-Mod
@@ -535,7 +536,7 @@ void CvCityAI::AI_chooseProduction()
 
 	int const iWarSuccessRating = kTeam.AI_getWarSuccessRating();
 	int iEnemyPowerPerc = kTeam.AI_getEnemyPowerPercent(true);
-	// <cdtw> (Comment from Dave_uk:)
+	// <cdtw> (comment by Dave_uk:)
 	/*  if we are the weaker part of a team, and have a land war in our primary
 		area, increase enemy power percent so we aren't overconfident due to a
 		powerful team-mate who may not actually be that much help */
@@ -1141,8 +1142,7 @@ void CvCityAI::AI_chooseProduction()
 				if(10 * iExistingWorkers >= 8 * iNeededWorkers && iMaxSettlers > iNumSettlers)
 					iWorkerOdds -= 10 * (iMaxSettlers - iNumSettlers);
 				iWorkerOdds -= iBestBuildingValue + (iBuildUnitProb + 50) / // no change
-						// Divisor was 2 flat; war prep check added.
-						(kTeam.AI_isSneakAttackPreparing() ? 1 : 2);
+						(bWarPrep ? 1 : 2); // Don't halve when prepping
 				if(iWorkerOdds > 0 && !bPrimaryArea)
 					iWorkerOdds /= 2; // Wait for the mainland to send workers
 				bValid = SyncRandSuccess100(iWorkerOdds);
@@ -1304,7 +1304,8 @@ void CvCityAI::AI_chooseProduction()
 
 	if	(!bLandWar && !bAssault && getCommerceRate(COMMERCE_CULTURE) == 0)
 	{
-		if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE, bAggressiveAI ? 10 : 20, 0, bAggressiveAI ? 33 : 50))
+		if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE,
+			bAggressiveAI ? 10 : 20, 0, bAggressiveAI ? 33 : 50))
 		{
 			if (gCityLogLevel >= 2) logBBAI("      City %S uses minimal culture rate", getName().GetCString());
 			return;
@@ -1319,9 +1320,16 @@ void CvCityAI::AI_chooseProduction()
 	}
 
 	// BBAI TODO: Check that this works to produce early rushes on tight maps
-	if (!bUnitExempt && !bGetBetterUnits && bCapitalArea && (iAreaBestFoundValue < iMinFoundValue * 2))
+	if (!bUnitExempt && !bGetBetterUnits && bCapitalArea &&
+		iAreaBestFoundValue < iMinFoundValue * 2 &&
+		// <advc.017>
+		!kPlayer.AI_isDoStrategy(AI_STRATEGY_ECONOMY_FOCUS) &&
+		/*	(And exclude Barbarians? Should perhaps also check
+			CvTeamAI::AI_isLandTarget ...) */
+		kArea.getNumCities() > kTeam.countNumCitiesByArea(kArea))
+		// </advc.017>
 	{	//Building city hunting stack.
-		if ((getDomainFreeExperience(DOMAIN_LAND) == 0) &&
+		if (getDomainFreeExperience(DOMAIN_LAND) == 0 &&
 			getYieldRate(YIELD_PRODUCTION) > 4)
 		{
 			if (AI_chooseBuilding(BUILDINGFOCUS_EXPERIENCE,
@@ -1339,8 +1347,8 @@ void CvCityAI::AI_chooseProduction()
 		if (iStartAttackStackRand > 0)
 		{
 			int iAttackCityCount = kPlayer.AI_totalAreaUnitAIs(kArea, UNITAI_ATTACK_CITY);
-			int iAttackCount = iAttackCityCount + kPlayer.AI_totalAreaUnitAIs(kArea, UNITAI_ATTACK);
-
+			int iAttackCount = iAttackCityCount +
+					kPlayer.AI_totalAreaUnitAIs(kArea, UNITAI_ATTACK);
 			if (iAttackCount == 0)
 			{
 				if (!bFinancialTrouble)
@@ -1352,19 +1360,22 @@ void CvCityAI::AI_chooseProduction()
 			else
 			{
 				//if((iAttackCount > 1) && (iAttackCityCount == 0))
-				/*  advc.017: ^Just 1 city-attacker? Isn't it supposed to be a
+				/*  <advc.017> Just 1 city-attacker? Isn't it supposed to be a
 					"city hunting stack"? Early units don't have the ATTACK_CITY
 					AI type, but AI_chooseUnit doesn't care much about the AI types
-					assigned in XML. */
-				if(iAttackCount > iAttackCityCount + 1 && iAttackCityCount < 1 + iBuildUnitProb / 22)
+					assigned in XML. Otoh, ATTACK units will be more useful than
+					ATTACK_CITY if we don't end up hunting for any cities ... */
+				if (iAttackCount >= iAttackCityCount &&
+					iAttackCityCount < 1 + iBuildUnitProb / 19) // </advc.017>
 				{
 					if (AI_chooseUnit(UNITAI_ATTACK_CITY))
 					{
 						if (gCityLogLevel >= 2) logBBAI("      City %S uses choose start city attack stack", getName().GetCString());
 						return;
 					}
-				} // advc.017: Divisor was 10
-				else if (iAttackCount < (3 + iBuildUnitProb / 18))
+				}
+				//else if (iAttackCount < 3 + iBuildUnitProb / 10)
+				else if (iAttackCount < 2 + iBuildUnitProb / 18) // advc.017
 				{
 					if (AI_chooseUnit(UNITAI_ATTACK))
 					{
@@ -1418,47 +1429,45 @@ void CvCityAI::AI_chooseProduction()
 	}
 
 	// K-Mod.
-	if (iProjectValue < 0 && (kPlayer.AI_atVictoryStage(AI_VICTORY_SPACE3) ||
+	if (iProjectValue < 0 &&
+		(kPlayer.AI_atVictoryStage(AI_VICTORY_SPACE3) ||
 		!(bLandWar && iWarSuccessRating < 30)))
 	{
 		eBestProject = AI_bestProject(&iProjectValue);
 	} // K-Mod end
 
 	int iSpreadUnitThreshold = 1000;
-
 	if (bLandWar)
-	{
 		iSpreadUnitThreshold += 800 - 10*iWarSuccessRating;
-	}
-	iSpreadUnitThreshold += 1000*getPlot().plotCount(PUF_isUnitAIType, UNITAI_MISSIONARY, -1, getOwner());
-
+	iSpreadUnitThreshold += 1000*getPlot().plotCount(
+			PUF_isUnitAIType, UNITAI_MISSIONARY, -1, getOwner());
 	UnitTypes eBestSpreadUnit = NO_UNIT;
 	int iBestSpreadUnitValue = -1;
-
 	if (!bDanger && !kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE) &&
 		!bAssault) // advc.131 (from MNAI)
 	{
 		int iSpreadUnitRoll = (100 - iBuildUnitProb) / 3;
-		iSpreadUnitRoll += bLandWar ? 0 : 10;
+		// <advc.104s>
+		if (bWarPrep)
+			iSpreadUnitRoll -= 5; // </advc.104s>
+		else if (!bLandWar)
+			iSpreadUnitRoll += 10;
 		// K-Mod
 		iSpreadUnitRoll *= (200 + std::max(iProjectValue, iBestBuildingValue));
 		iSpreadUnitRoll /= (100 + 3 * std::max(iProjectValue, iBestBuildingValue));
 		// K-Mod end
-
-		if (AI_bestSpreadUnit(true, true, iSpreadUnitRoll, &eBestSpreadUnit, &iBestSpreadUnitValue))
+		if (AI_bestSpreadUnit(true, true, iSpreadUnitRoll,
+			&eBestSpreadUnit, &iBestSpreadUnitValue) &&
+			iBestSpreadUnitValue > iSpreadUnitThreshold)
 		{
-			if (iBestSpreadUnitValue > iSpreadUnitThreshold)
+			if (AI_chooseUnit(eBestSpreadUnit, UNITAI_MISSIONARY))
 			{
-				if (AI_chooseUnit(eBestSpreadUnit, UNITAI_MISSIONARY))
-				{
-					if (gCityLogLevel >= 2) logBBAI("      City %S uses choose missionary 1", getName().GetCString());
+				if (gCityLogLevel >= 2) logBBAI("      City %S uses choose missionary 1", getName().GetCString());
 					return;
-				}
-				FErrorMsg("AI_bestSpreadUnit should provide a valid unit when it returns true");
 			}
+			FErrorMsg("AI_bestSpreadUnit should provide a valid unit when it returns true");
 		}
 	}
-
 	// K-Mod
 	if (eBestProject != NO_PROJECT && iProjectValue > iBestBuildingValue)
 	{
@@ -1623,7 +1632,7 @@ void CvCityAI::AI_chooseProduction()
 
 		// K-Mod (the spies stuff used to be lower down)
 		int iNumSpies = kPlayer.AI_totalAreaUnitAIs(kArea, UNITAI_SPY);
-				// advc.001j: Commented out
+				// advc.001j: already counted
 				//+ kPlayer.AI_getNumTrainAIUnits(UNITAI_SPY);
 		int iNeededSpies = iNumCitiesInArea / 3;
 		if (bPrimaryArea)
@@ -1641,16 +1650,19 @@ void CvCityAI::AI_chooseProduction()
 
 		if (iNumSpies < iNeededSpies)
 		{
-			int iOdds = (kPlayer.AI_isDoStrategy(AI_STRATEGY_ESPIONAGE_ECONOMY) ||
-					//kTeam.getAnyWarPlanCount(true)
-					// advc.105: If anything
-					//kPlayer.AI_isFocusWar(&kArea)
-					/*  <advc.120> ... but actually, I don't think training extra
-						spies during war is a good idea at all. */
-					kTeam.AI_getNumWarPlans(WARPLAN_PREPARING_LIMITED) +
-					kTeam.AI_getNumWarPlans(WARPLAN_PREPARING_TOTAL) > 0
-					// </advc.120>
-				) ? 45 : 35;
+			int iOdds = 35;
+			if (kPlayer.AI_isDoStrategy(AI_STRATEGY_ESPIONAGE_ECONOMY))
+				//|| kTeam.getAnyWarPlanCount(true)
+				//|| kPlayer.AI_isFocusWar(&kArea)) // advc.105: if anything ...
+			{
+				iOdds += 10;
+			}
+			/*  <advc.120> ... but, actually, I don't think training extra
+				spies during war is a good idea at all. */
+			else if (kTeam.AI_getNumWarPlans(WARPLAN_PREPARING_TOTAL) > 0)
+				iOdds += 10;
+			else if (kTeam.AI_getNumWarPlans(WARPLAN_PREPARING_LIMITED) > 0)
+				iOdds += 5; // </advc.120>
 			iOdds *= 50 + std::max(iProjectValue, iBestBuildingValue);
 			iOdds /= 20 + 2 * std::max(iProjectValue, iBestBuildingValue);
 			iOdds *= iNeededSpies;
@@ -1665,14 +1677,13 @@ void CvCityAI::AI_chooseProduction()
 		}
 		// K-Mod end
 
-		if (bDefenseWar || (bLandWar && (iWarSuccessRating < -30)))
+		if (bDefenseWar || (bLandWar && iWarSuccessRating < -30))
 		{
 			UnitTypeWeightArray panicDefenderTypes;
 			panicDefenderTypes.push_back(std::make_pair(UNITAI_RESERVE, 100));
 			panicDefenderTypes.push_back(std::make_pair(UNITAI_COUNTER, 100));
 			panicDefenderTypes.push_back(std::make_pair(UNITAI_COLLATERAL, 100));
 			panicDefenderTypes.push_back(std::make_pair(UNITAI_ATTACK, 100));
-
 			if (AI_chooseLeastRepresentedUnit(panicDefenderTypes, (bGetBetterUnits ? 40 : 60) - iWarSuccessRating/3))
 			{
 				if (gCityLogLevel >= 2) logBBAI("      City %S uses choose panic defender", getName().GetCString());
@@ -1743,7 +1754,9 @@ void CvCityAI::AI_chooseProduction()
 				return;
 			}*/
 			// K-Mod
-			// Reduce the max time when at war (arbitrary - but then again, this part of the AI is not for strategy. It's for flavour.)
+			/*	Reduce the max time when at war
+				(arbitrary - but then again, this part of the AI is not for strategy.
+				It's for flavour.) */
 			if (kArea.getAreaAIType(getTeam()) != AREAAI_NEUTRAL)
 				iWonderTime = iWonderTime * 2/3;
 			// And only build the wonder if it is at least as valuable as the building we would have chosen anyway.
@@ -1753,15 +1766,22 @@ void CvCityAI::AI_chooseProduction()
 				if (gCityLogLevel >= 2) logBBAI("      City %S uses opportunistic wonder build 2", getName().GetCString());
 				pushOrder(ORDER_CONSTRUCT, eBestWonder);
 				return;
-			}
-			// K-Mod end
+			} // K-Mod end
 		}
 	}
 
 	// K-Mod, short-circuit 2 - a strong chance to build some high value buildings.
 	{
-		//int iOdds = std::max(0, (bLandWar || (bAssault && pWaterArea) ? 80 : 130) * iBestBuildingValue / (iBestBuildingValue + 20 + iBuildUnitProb) - 25);
-		int iOdds = std::max(0, (bLandWar || (bAssault && pWaterArea) ? 90 - iBuildUnitProb/4 : 150 - iBuildUnitProb/2) * iBestBuildingValue / (iBestBuildingValue + 40 + iBuildUnitProb) - 20);
+		bool const bLowOdds = (bLandWar || (bAssault && pWaterArea != NULL));
+		bool const bExtraLowOdds = (bLowOdds && bWarPrep); // advc.104s
+		//int iOdds = (bLowOdds ? 80 : 130);
+		int iOdds = (bLowOdds ? (bExtraLowOdds ?
+				(bTotalWar ? 77 : 84) - iBuildUnitProb/3 : // advc.104s
+				90 - iBuildUnitProb/4) :
+				150 - iBuildUnitProb/2);
+		iOdds *= iBestBuildingValue;
+		iOdds /= iBestBuildingValue + 40 + iBuildUnitProb; // was ...+20+...
+		iOdds = std::max(0, iOdds - 20); // was -25
 		if (AI_chooseBuilding(0, MAX_INT, 0, iOdds))
 		{
 			if (gCityLogLevel >= 2) logBBAI("      City %S uses building value short-circuit 2 (odds: %d)", getName().GetCString(), iOdds);
@@ -4156,9 +4176,33 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 
 			iTempValue *= AI_yieldMultiplier(YIELD_COMMERCE);
 			iTempValue /= 100;
-
-			iTempValue += kBuilding.getCoastalTradeRoutes() * std::max((iCitiesTarget+1)/2,
-					kOwner.countNumCoastalCities()) * iGlobalTradeValue;
+			{
+				int const iCoastalTradeRoutes = kBuilding.getCoastalTradeRoutes();
+				if (iCoastalTradeRoutes != 0)
+				{
+					int const iCoastalCities = kOwner.countNumCoastalCities();
+					// <advc.131>
+					scaled rCoastalCitySites;
+					int const iCitySites = kOwner.AI_getNumCitySites();
+					for (int i = 0; i < iCitySites; i++)
+					{
+						if (kOwner.AI_getCitySite(i).isCoastalLand(-1))
+						{	/*	Less likely to claim lower-priority sites;
+								and it'll take longer. */
+							rCoastalCitySites += 1 - scaled(i, iCitySites);
+						}
+					}
+					// K-Mod formula:
+					//std::max((iCitiesTarget+1)/2, kOwner.countNumCoastalCities())
+					int iProjectedCoastalCities = (iCoastalCities + rCoastalCitySites +
+							/*	City placement will favor the coast more once we have
+								extra trade routes */
+							scaled(iCoastalTradeRoutes, 2)).uround();
+					// </advc.131>
+					iTempValue += iCoastalTradeRoutes * iProjectedCoastalCities *
+							iGlobalTradeValue;
+				}
+			}
 			// <advc.310>
 			iTempValue += kBuilding.getAreaTradeRoutes() *
 					// Same formula as for AreaHappiness (Notre Dame)
@@ -4317,7 +4361,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 				scaled rCivicOptionValue;
 				/*	Should actually be 4(!), but I don't think it's good for game balance
 					to make the AI that interested in the Pyramids. */
-				scaled const rScaleAdjustment = fixp(1.7);
+				scaled const rScaleAdjustment = fixp(1.9);
 				scaled rCurrentCivicValue = rScaleAdjustment *
 						kOwner.AI_civicValue(kOwner.getCivics(eCivicOption));
 				scaled rBestNewCivicValue = scaled::min(0, rCurrentCivicValue);
@@ -7064,7 +7108,7 @@ int CvCityAI::AI_culturePressureFactor() const
 	{
 		CvPlot const& kPlot = *itPlot;
 		if (!kPlot.isWithinCultureRange(getOwner()))
-			continue; // advc
+			continue;
 		for (PlayerIter<CIV_ALIVE,NOT_SAME_TEAM_AS> it(getTeam()); it.hasNext(); ++it)
 		{
 			CvPlayer const& kPlayer = *it;
@@ -11144,9 +11188,9 @@ int CvCityAI::AI_experienceWeight()
 {
 	//return ((getProductionExperience() + getDomainFreeExperience(DOMAIN_SEA)) * 2);
 	// K-Mod
-	return 2 * getProductionExperience() + getDomainFreeExperience(DOMAIN_LAND) +
-			getDomainFreeExperience(DOMAIN_SEA)
-			- 4; /*  advc.017: Barracks are pretty ubiquitous; shouldn't add 6
+	return 2 * getProductionExperience() +
+			getDomainFreeExperience(DOMAIN_LAND) + getDomainFreeExperience(DOMAIN_SEA)
+			- 2; /*  advc.017: Barracks are pretty ubiquitous; shouldn't add 3
 					 to buildUnitProb. Rather make cities w/o Barracks hesitant
 					 to train units. */
 	// K-Mod end
@@ -11198,7 +11242,7 @@ int CvCityAI::AI_buildUnitProb(bool bDraft)
 		if (iCities > 1)
 		{
 			CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
-			int iHighestRivalPow = 1;
+			int iHighestRivalPow = 0;
 			for (TeamAIIter<FREE_MAJOR_CIV,OTHER_KNOWN_TO> it(getTeam());
 				it.hasNext(); ++it)
 			{
@@ -11214,11 +11258,23 @@ int CvCityAI::AI_buildUnitProb(bool bDraft)
 					iHighestRivalPow = std::max(kRival.getPower(true), iHighestRivalPow);
 				}
 			}
-			scaled rPowRatio(kOurTeam.getPower(false), iHighestRivalPow);
+			// Don't throttle at all until we're clearly ahead of the best rival
+			scaled rTargetAdvantage = per100(25);
+			if (kOwner.AI_atVictoryStage(AI_VICTORY_MILITARY1))
+				rTargetAdvantage += per100(5);
+			if (kOwner.AI_atVictoryStage(AI_VICTORY_MILITARY2))
+				rTargetAdvantage += per100(5);
+			if (kOwner.AI_atVictoryStage(AI_VICTORY_MILITARY3))
+				rTargetAdvantage += per100(7);
+			if (kOwner.AI_atVictoryStage(AI_VICTORY_MILITARY4))
+				rTargetAdvantage += per100(8);
+			scaled rTargetPow = (rTargetAdvantage + 1) * iHighestRivalPow;
+			rTargetPow.increaseTo(scaled::epsilon());
+			scaled rPowRatio = kOurTeam.getPower(false) / rTargetPow;
 			if (rPowRatio > 1)
 			{
 				scaled rAdvantage = rPowRatio - 1;
-				if(rAdvantage >= fixp(1.5))
+				if (rAdvantage >= fixp(1.5))
 				{
 					r /= 4;
 					bGreatlyReduced = true;

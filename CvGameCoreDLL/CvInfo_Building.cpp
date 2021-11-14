@@ -871,7 +871,7 @@ int CvBuildingClassInfo::getLimit() const
 
 bool CvBuildingClassInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iMaxGlobalInstances, "iMaxGlobalInstances");
@@ -914,7 +914,7 @@ m_bValid(false)
 
 bool CvSpecialBuildingInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetInfoIDFromChildXmlVal(m_eObsoleteTech, "ObsoleteTech");
@@ -946,7 +946,7 @@ const CvWString CvVoteSourceInfo::getSecretaryGeneralText() const
 
 bool CvVoteSourceInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iVoteInterval, "iVoteInterval");
@@ -1001,7 +1001,7 @@ m_bAssignCity(false)
 
 bool CvVoteInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iPopulationThreshold, "iPopulationThreshold");
@@ -1073,7 +1073,7 @@ bool CvProjectInfo::nameNeedsArticle() const
 
 bool CvProjectInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetInfoIDFromChildXmlVal(m_eVictoryPrereq, "VictoryPrereq");

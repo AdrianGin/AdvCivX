@@ -31,7 +31,12 @@ protected:
 	// Class to enum mapping
 	virtual UWAI::AspectTypes xmlID() const=0;
 	// Just for convenience (replacing m_kReport.log)
-	void log(char const* fmt, ...) const;
+	void log(char const* fmt, ...) const
+	#if DISABLE_UWAI_REPORT
+		{}
+	#else
+		;
+	#endif
 	/*	What can m_pAgentPlayer gain from or lose to m_pRivalPlayer
 		(both set by evaluate(MilitaryAnalyst const&)). Note that m_kRivalPlayer
 		is not necessarily a war enemy of the m_kAgentPlayer; it can be

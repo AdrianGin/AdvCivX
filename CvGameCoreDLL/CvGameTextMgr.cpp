@@ -1950,7 +1950,11 @@ void CvGameTextMgr::setPlotListHelp(CvWStringBuffer &szString, CvPlot const& kPl
 		if (m_apbPromotion.empty())
 		{
 			for (int i = 0; i < (GC.getNumUnitInfos() * MAX_PLAYERS); i++)
+			{
+				/*	advc (note): The EXE frees this through DeInitialize -
+					or so we shall hope ... */
 				m_apbPromotion.push_back(new int[iPromotionInfos]);
+			}
 		}
 
 		for (int i = 0; i < (GC.getNumUnitInfos() * MAX_PLAYERS); i++)
@@ -7801,7 +7805,7 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 	CvGame const& kGame = GC.getGame(); // advc
 
 	// show debug info if cheat level > 0 and alt down
-	bool bAlt = GC.altKey();
+	bool const bAlt = GC.altKey();
 	if (bAlt && //(gDLL->getChtLvl() > 0))
 		kGame.isDebugMode()) // advc.135c
 	{
@@ -7827,6 +7831,10 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 						kTeam.getResearchCost(ePlayerTech));
 			}
 			szBuffer.append(szTempBuffer);
+			szBuffer.append(NEWLINE);
+			// <advc.007> (Unrelated to the info above)
+			szTempBuffer.Format(L"tech id = %d", eTech);
+			szBuffer.append(szTempBuffer); // </advc.007>
 		}
 		return;
 	}
@@ -19135,10 +19143,7 @@ void CvGameTextMgr::setEspionageCostHelp(CvWStringBuffer &szBuffer,
 		CvCity const* pCity = pPlot->getPlotCity();
 		if (pCity != NULL && pPlot->getCulture(kPlayer.getID()) > 0)
 		{
-			int iCultureAmount = kMission.getCityInsertCultureAmountFactor() *
-					pCity->countTotalCultureTimes100();
-			iCultureAmount /= 10000;
-			iCultureAmount = std::max(1, iCultureAmount);
+			int iCultureAmount = pCity->cultureTimes100InsertedByMission(eMission) / 100;
 			szBuffer.append(gDLL->getText("TXT_KEY_ESPIONAGE_HELP_INSERT_CULTURE",
 					pCity->getNameKey(), iCultureAmount,
 					kMission.getCityInsertCultureAmountFactor()));

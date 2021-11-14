@@ -5571,12 +5571,18 @@ void CvUnitAI::AI_spyMove()
 				iLocalPoints += iPoints;
 			}
 		}
-		iAttackChance /=
-				!GET_PLAYER(getOwner()).AI_isFocusWar(area()) // advc.105
-				//kTeam.getAnyWarPlanCount(true) == 0
-				? 3 : 1;
-		iAttackChance /= (getPlot().getArea().getAreaAIType(getTeam()) == AREAAI_DEFENSIVE ? 2 : 1);
-		iAttackChance /= (kOwner.AI_atVictoryStage(AI_VICTORY_SPACE4) || kOwner.AI_atVictoryStage(AI_VICTORY_CULTURE3)) ? 2 : 1;
+		if (//kTeam.getAnyWarPlanCount(true) == 0
+			!GET_PLAYER(getOwner()).AI_isFocusWar(area())) // advc.105
+		{
+			iAttackChance /= 3;
+		}
+		if (getPlot().getArea().getAreaAIType(getTeam()) == AREAAI_DEFENSIVE)
+			iAttackChance /= 2;
+		if (kOwner.AI_atVictoryStage(AI_VICTORY_SPACE4) ||
+			kOwner.AI_atVictoryStage(AI_VICTORY_CULTURE3))
+		{
+			iAttackChance /= 2;
+		}
 		iAttackChance *= GC.getInfo(kOwner.getPersonalityType()).getEspionageWeight();
 		iAttackChance /= 100;
 		// scale for game speed
@@ -19932,7 +19938,7 @@ bool CvUnitAI::AI_nuke()
 		{
 			if (pLoopGroup->getNumUnits() <= 4)
 				continue;
-			CvPlot const& kLoopPlot = pLoopGroup->getPlot();
+			CvPlot& kLoopPlot = pLoopGroup->getPlot();
 			if (kLoopPlot.isVisible(kTeam.getID()) &&
 				// Units in or near cities are already taken care of
 				aeTargetEvaluated.count(kLoopPlot.plotNum()) <= 0 &&
@@ -19941,7 +19947,7 @@ bool CvUnitAI::AI_nuke()
 				apiPotentialTargets.push_back(std::make_pair(
 						/*	0 search range - let's not bother with max damage to
 							improvements here (see also comment in previous loop) */
-						pLoopGroup->plot(), 0));
+						&kLoopPlot, 0));
 				aeTargetEvaluated.insert(kLoopPlot.plotNum());
 			}
 		}
@@ -19953,6 +19959,10 @@ bool CvUnitAI::AI_nuke()
 			CvPlot* pTarget;
 			int iValue = AI_nukeValue(kCenter, iSearchRange, pTarget,
 					iDestructionWeight);
+			/*	<advc.650> Can happen that every potential target plot contains
+				friendly units */
+			if (pTarget == NULL)
+				continue; // </advc.650>
 			if (bLimited && iWarRating > -10)
 				iValue /= 2;
 			// <advc.650>
@@ -20407,8 +20417,7 @@ bool CvUnitAI::AI_revoltCitySpy()
 }
 
 // K-Mod, I've moved the pathfinding check out of this function.
-//int CvUnitAI::AI_getEspionageTargetValue(CvPlot* pPlot, int iMaxPath)
-int CvUnitAI::AI_getEspionageTargetValue(CvPlot* pPlot)
+int CvUnitAI::AI_getEspionageTargetValue(CvPlot* pPlot/*, int iMaxPath*/)
 {
 	PROFILE_FUNC();
 
@@ -20470,7 +20479,7 @@ bool CvUnitAI::AI_cityOffenseSpy(int iMaxPath, CvCity* pSkipCity)
 	CvPlot* pEndTurnPlot = NULL;
 
 	CvPlayerAI const& kOwner = GET_PLAYER(getOwner());
-	CvTeamAI const& kTeam = GET_TEAM(getTeam());
+	CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
 
 	// cf the "big espionage" minimum value. (AI_bestPlotEspionage)
 	int iBaselinePoints = 50;
@@ -20482,77 +20491,76 @@ bool CvUnitAI::AI_cityOffenseSpy(int iMaxPath, CvCity* pSkipCity)
 	{
 		int iTeamCount = 0;
 		int iTotalUnspentPoints = 0;
-		for (int iI = 0; iI < MAX_CIV_TEAMS; iI++)
+		for (TeamIter<CIV_ALIVE,NOT_SAME_TEAM_AS> itTarget(getTeam());
+			itTarget.hasNext(); ++itTarget)
 		{
-			const CvTeam& kLoopTeam = GET_TEAM((TeamTypes)iI);
-			if (iI != getTeam() && kLoopTeam.isAlive() && !kTeam.isVassal((TeamTypes)iI))
-			{
-				iTotalUnspentPoints += kTeam.getEspionagePointsAgainstTeam((TeamTypes)iI);
-				iTeamCount++;
-			}
+			if (kOurTeam.isVassal(itTarget->getID()))
+				continue;
+			iTotalUnspentPoints += kOurTeam.getEspionagePointsAgainstTeam(itTarget->getID());
+			iTeamCount++;
 		}
 		iAverageUnspentPoints = iTotalUnspentPoints /= std::max(1, iTeamCount);
 	}
-
-	for (int iPlayer = 0; iPlayer < MAX_CIV_PLAYERS; ++iPlayer)
+	for (PlayerIter<CIV_ALIVE,NOT_SAME_TEAM_AS> itTarget(getTeam());
+		itTarget.hasNext(); ++itTarget)
 	{
-		CvPlayer& kLoopPlayer = GET_PLAYER((PlayerTypes)iPlayer);
-		if (kLoopPlayer.isAlive() && kLoopPlayer.getTeam() != getTeam() && !GET_TEAM(getTeam()).isVassal(kLoopPlayer.getTeam()))
-		{
-			int iTeamWeight = 1000;
-			iTeamWeight *= kTeam.getEspionagePointsAgainstTeam(kLoopPlayer.getTeam());
-			iTeamWeight /= std::max(1, iAverageUnspentPoints+iBaselinePoints);
+		CvPlayer const& kLoopPlayer = *itTarget;
+		if (kOurTeam.isVassal(kLoopPlayer.getTeam()))
+			continue;
 
-			iTeamWeight *= 400 - kTeam.AI_getAttitudeWeight(kLoopPlayer.getTeam());
-			iTeamWeight /= 500;
-			/*  <advc.120> The "else" is the only functional change; don't want to
-				communicate too loudly that we're preparing war. */
-			if(kTeam.AI_getWarPlan(kLoopPlayer.getTeam()) != NO_WARPLAN)
-				iTeamWeight *= 2;
-			else if(kTeam.AI_isSneakAttackPreparing(kLoopPlayer.getTeam()))
-				iTeamWeight *= 2; // </advc.120>
-			iTeamWeight *= kOwner.AI_isMaliciousEspionageTarget((PlayerTypes)iPlayer) ? 3 : 2;
+		int iTeamWeight = 1000;
+		iTeamWeight *= kOurTeam.getEspionagePointsAgainstTeam(kLoopPlayer.getTeam());
+		iTeamWeight /= std::max(1, iAverageUnspentPoints+iBaselinePoints);
+
+		iTeamWeight *= 400 - kOurTeam.AI_getAttitudeWeight(kLoopPlayer.getTeam());
+		iTeamWeight /= 500;
+		if (kOurTeam.AI_getWarPlan(kLoopPlayer.getTeam()) != NO_WARPLAN)
+			iTeamWeight *= 2;
+		// advc.120: was AI_isSneakAttackPreparing
+		if (kOurTeam.AI_isSneakAttackReady(kLoopPlayer.getTeam()))
+			iTeamWeight *= 2;
+		if (kOwner.AI_isMaliciousEspionageTarget(kLoopPlayer.getID()))
+		{
+			iTeamWeight *= 3;
 			iTeamWeight /= 2;
-			// <advc.130v>
-			if(GET_TEAM(kLoopPlayer.getTeam()).isCapitulated())
-				iTeamWeight /= 2; // </advc.130v>
-			if (iTeamWeight < 200 && SyncRandSuccess100(90))
-			{	/*	low weight. Probably friendly attitude and below average points.
-					don't target this team. */
+		}
+		// <advc.130v>
+		if (GET_TEAM(kLoopPlayer.getTeam()).isCapitulated())
+			iTeamWeight /= 2; // </advc.130v>
+		if (iTeamWeight < 200 && SyncRandSuccess100(90))
+		{	/*	low weight. Probably friendly attitude and below average points.
+				don't target this team. */
+			continue;
+		}
+		FOR_EACH_CITY(pLoopCity, kLoopPlayer)
+		{
+			if (pLoopCity == pSkipCity || !kOwner.AI_deduceCitySite(*pLoopCity) ||
+				// advc.030: Replacing same-area and canMoveAllTerrain check
+				!AI_canEnterByLand(pLoopCity->getArea()))
+			{
 				continue;
 			}
-
-			FOR_EACH_CITY(pLoopCity, kLoopPlayer)
+			CvPlot* pLoopPlot = pLoopCity->plot();
+			// advc.opt: Area check should suffice
+			//if (!AI_plotValid(pLoopPlot)) continue;
+			int iPathTurns;
+			if (generatePath(*pLoopPlot, NO_MOVEMENT_FLAGS, true,
+				&iPathTurns, iMaxPath) && iPathTurns <= iMaxPath)
 			{
-				if (pLoopCity == pSkipCity || !kOwner.AI_deduceCitySite(*pLoopCity))
-					continue;
-				// advc.030: Replacing same-area and canMoveAllTerrain check
-				if (AI_canEnterByLand(pLoopCity->getArea()))
+				int iValue = AI_getEspionageTargetValue(pLoopPlot);
+				iValue *= 5;
+				iValue /= 5 + GET_PLAYER(getOwner()).AI_plotTargetMissionAIs(
+						*pLoopPlot, MISSIONAI_ATTACK_SPY, getGroup());
+				iValue *= iTeamWeight;
+				if (iValue > iBestValue)
 				{
-					CvPlot* pLoopPlot = pLoopCity->plot();
-					// advc.opt: Area check should suffice
-					//if (!AI_plotValid(pLoopPlot)) continue;
-					int iPathTurns;
-					if (generatePath(*pLoopPlot, NO_MOVEMENT_FLAGS, true,
-						&iPathTurns, iMaxPath) && iPathTurns <= iMaxPath)
-					{
-						int iValue = AI_getEspionageTargetValue(pLoopPlot);
-						iValue *= 5;
-						iValue /= 5 + GET_PLAYER(getOwner()).AI_plotTargetMissionAIs(
-								*pLoopPlot, MISSIONAI_ATTACK_SPY, getGroup());
-						iValue *= iTeamWeight;
-						if (iValue > iBestValue)
-						{
-							iBestValue = iValue;
-							pBestPlot = pLoopPlot;
-							pEndTurnPlot = &getPathEndTurnPlot();
-						}
-					}
+					iBestValue = iValue;
+					pBestPlot = pLoopPlot;
+					pEndTurnPlot = &getPathEndTurnPlot();
 				}
 			}
 		}
 	}
-
 	if (pBestPlot != NULL)
 	{
 		if (at(*pBestPlot))
@@ -20567,7 +20575,6 @@ bool CvUnitAI::AI_cityOffenseSpy(int iMaxPath, CvCity* pSkipCity)
 		}
 		return true;
 	}
-
 	return false;
 }
 
@@ -21410,13 +21417,10 @@ int CvUnitAI::AI_stackOfDoomExtra() const
 	// K-Mod end
 	// <advc.104p>
 	scaled rMult = 1;
-	/*  Bigger AI stacks on higher difficulty (b/c units are cheaper to train then,
-		not b/c bigger stacks are generally smarter) */
-	if(!kOwner.isHuman() && !isBarbarian())
+	// Bigger AI stacks when units are cheaper to train
 	{
-		scaled rTrainMod = per100(GC.getInfo(GC.getGame().
-				getHandicapType()).getAITrainPercent());
-		rTrainMod.increaseTo(fixp(0.75));
+		scaled rTrainMod = kOwner.trainingModifierFromHandicap();
+		rTrainMod.increaseTo(fixp(0.7));
 		rMult /= rTrainMod;
 	}
 	// A little extra for naval assault

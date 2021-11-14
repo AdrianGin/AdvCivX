@@ -13,6 +13,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvGameOptionInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public:
 	CvGameOptionInfo();
 
@@ -34,6 +35,7 @@ private:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvMPOptionInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public:
 	CvMPOptionInfo();
 
@@ -231,6 +233,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvGameSpeedInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // The const functions are exposed to Python
 	CvGameSpeedInfo();
 	~CvGameSpeedInfo();
@@ -298,6 +301,7 @@ private:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvTurnTimerInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // The const functions are exposed to Python
 
 	CvTurnTimerInfo();
@@ -321,6 +325,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvVictoryInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // The const functions are exposed to Python
 	CvVictoryInfo();
 
@@ -571,6 +576,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvWorldInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // All the const functions are exposed to Python
 	CvWorldInfo();
 
@@ -623,6 +629,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvClimateInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // All the const functions are exposed to Python
 	CvClimateInfo();
 
@@ -661,6 +668,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvSeaLevelInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public:
 	CvSeaLevelInfo();
 

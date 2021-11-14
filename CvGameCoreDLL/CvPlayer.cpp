@@ -4878,12 +4878,28 @@ void CvPlayer::doGoody(CvPlot* pPlot, CvUnit* pUnit, /* advc.314: */ GoodyTypes 
 
 bool CvPlayer::canFound(int iX, int iY, bool bTestVisible) const
 {
-	CvPlot const& kPlot = *GC.getMap().plot(iX, iY);
+	return canFound(GC.getMap().getPlot(iX, iY), bTestVisible);
+}
+
+
+bool CvPlayer::canFound(CvPlot const& kPlot, bool bTestVisible,
+	/* <advc.001> */ bool bIgnoreFoW) const
+{
+	if (!bIgnoreFoW)
+	{
+		PlayerTypes eRevealedOwner = kPlot.getRevealedOwner(getTeam(), true);
+		if (eRevealedOwner != NO_PLAYER && eRevealedOwner != getID())
+			return false;
+	}
+	else // </advc.001>
 	if (kPlot.isOwned() && kPlot.getOwner() != getID())
 		return false;
 	// advc: Checks that don't depend on player moved into new function at CvPlot
-	if (!kPlot.canFound(bTestVisible))
+	if (!kPlot.canFound(bTestVisible,
+		bIgnoreFoW ? NO_TEAM : getTeam())) // advc.001
+	{
 		return false;
+	}
 	if (GC.getGame().isFinalInitialized() && getNumCities() > 0 &&
 		isOneCityChallenge())
 	{
@@ -8986,7 +9002,8 @@ void CvPlayer::onTurnLogging() const
 			}
 		}
 
-		if (GET_TEAM(getTeam()).getNumWars(false) > 0)
+		if (GET_TEAM(getTeam()).getNumWars(false) > 0 &&
+			!isBarbarian()) // advc.007
 		{
 			szBuffer.append(CvWString::format(L";  at war with: "));
 
@@ -9000,7 +9017,8 @@ void CvPlayer::onTurnLogging() const
 			}
 		}
 
-		if (GET_TEAM(getTeam()).AI_isAnyWarPlan())
+		if (GET_TEAM(getTeam()).AI_isAnyWarPlan() &&
+			isBarbarian()) // advc.007
 		{
 			szBuffer.append(CvWString::format(L";  planning war with: "));
 			for (int iI = 0; iI < MAX_CIV_TEAMS; iI++)
@@ -11927,10 +11945,7 @@ int CvPlayer::getEspionageMissionBaseCost(EspionageMissionTypes eMission, Player
 		// Insert Culture into City
 		if (pPlot != NULL && pPlot->getCulture(getID()) > 0)
 		{
-			int iCultureAmount = kMission.getCityInsertCultureAmountFactor() *
-					pCity->countTotalCultureTimes100();
-			iCultureAmount /= 10000;
-			iCultureAmount = std::max(1, iCultureAmount);
+			int iCultureAmount = pCity->cultureTimes100InsertedByMission(eMission) / 100;
 			iMissionCost = iBaseMissionCost +
 					(kMission.getCityInsertCultureCostFactor() * iCultureAmount) / 100;
 		}
@@ -12274,8 +12289,9 @@ bool CvPlayer::doEspionageMission(EspionageMissionTypes eMission, PlayerTypes eT
 			pCity->changeCulture(getID(), iCultureAmount % iNumTurnsApplied, false, true);
 		}*/ // BtS
 		// K-Mod. apply culture in one hit. We don't need fake 'free city culture' anymore.
-		int iCultureTimes100 = std::max(1, kMission.getCityInsertCultureAmountFactor() *
-				pCity->countTotalCultureTimes100() / 100);
+		/*	advc: Calculation moved into new function.
+			And now at least 100/100 culture instead of 1/100. */
+		int iCultureTimes100 = pCity->cultureTimes100InsertedByMission(eMission);
 		//pCity->changeCultureTimes100(getID(), iCultureTimes100, true, true);
 		// plot culture only
 		pCity->doPlotCultureTimes100(true, getID(), iCultureTimes100, false);
@@ -17887,7 +17903,7 @@ bool CvPlayer::canHaveTradeRoutesWith(PlayerTypes ePlayer) const
 	if (!kOtherPlayer.isAlive())
 		return false;
 	// <advc.124>
-	if(getID() != ePlayer && kOtherPlayer.isAnarchy())
+	if (getID() != ePlayer && kOtherPlayer.isAnarchy())
 		return false; // </advc.124>
 	if (getTeam() == kOtherPlayer.getTeam())
 		return true;
@@ -17895,11 +17911,13 @@ bool CvPlayer::canHaveTradeRoutesWith(PlayerTypes ePlayer) const
 	if (!GET_TEAM(getTeam()).isFreeTrade(kOtherPlayer.getTeam()))
 		return false;
 
-	if (GET_TEAM(getTeam()).isVassal(kOtherPlayer.getTeam()))
+	/*if (GET_TEAM(getTeam()).isVassal(kOtherPlayer.getTeam()))
 		return true;
-
 	if (GET_TEAM(kOtherPlayer.getTeam()).isVassal(getTeam()))
-		return true;
+		return true;*/
+	// <advc.124> Also cover vassals of the same master
+	if (getMasterTeam() == kOtherPlayer.getMasterTeam())
+		return true; // </advc.124>
 
 	if (!isNoForeignTrade() && !kOtherPlayer.isNoForeignTrade())
 		return true;

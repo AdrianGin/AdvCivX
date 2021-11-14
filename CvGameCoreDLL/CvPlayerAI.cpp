@@ -6130,9 +6130,21 @@ int CvPlayerAI::AI_techBuildingValue(TechTypes eTech, bool bConstCache, bool& bE
 				if (AI_isCapitalAreaAlone())
 					iScale += 30;
 				// decrease when at war
-				//if (GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0)
-				if(AI_isFocusWar()) // advc.105
-					iScale = iScale * 2/3;
+				{
+					if (//GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0
+							AI_isFocusWar() || // advc.105
+						/*	<advc.131> Toward the end of the Classical era,
+							discourage buildings even when a war plan is just a
+							plausible possibility. The game gets boring if no one
+							starts a war around that time. */
+						(getUWAI().isEnabled() &&
+						scaled(GET_TEAM(getTeam()).getTechCount(), GC.getNumTechInfos()).
+						approxEquals(per100(20), per100(5)) &&
+						GET_TEAM(getTeam()).uwai().isCloseToAdoptingAnyWarPlan()))
+					{	// </advc.131>
+						iScale = iScale * 2/3;
+					} 
+				}
 				/*	increase scale for limited wonders, because they
 					don't need to be built in every city. */
 				if (kLoopBuilding.isLimited())
@@ -6161,7 +6173,7 @@ int CvPlayerAI::AI_techBuildingValue(TechTypes eTech, bool bConstCache, bool& bE
 	/*if (getNumCities() == 1 && getCurrentEra() == kGame.getStartEra())
 		iScale/=2;*/ // I expect we'll want to be building mostly units until we get a second city.
 	// <advc.131> Replacing the above
-	if(bVeryEarly)
+	if (bVeryEarly)
 	{
 		iScale = scaled(iScale,
 				iVeryEarlyPopThresh - getCapital()->getPopulation() + 1).round();
@@ -17696,15 +17708,22 @@ int CvPlayerAI::AI_espionageVal(PlayerTypes eTargetPlayer,
 	if (GC.getInfo(eMission).getCityInsertCultureAmountFactor() > 0 &&
 		pCity != NULL && pCity->getOwner() != getID())
 	{
-		int iCultureAmount = GC.getInfo(eMission).getCityInsertCultureAmountFactor() *
-				kPlot.getCulture(getID());
+		int iCultureAmount =
+				//GC.getInfo(eMission).getCityInsertCultureAmountFactor() * kPlot.getCulture(getID());
+				pCity->cultureTimes100InsertedByMission(eMission); // advc.001
 		iCultureAmount /= 100;
+		// <advc.120j> Will increase our city plot culture by at most this much
+		int iPlotCultureAmount = iCultureAmount * CvCity::plotCultureScale();
+		int iPlotCulturePercentagePtsGain = (iPlotCultureAmount * 100) /
+				(kPlot.getTotalCulture() + iPlotCultureAmount); // </advc.120j>
 		/*if (pCity->calculateCulturePercent(getID()) > 40)
-		iValue += iCultureAmount * 3;*/
-		// K-Mod - both offensive & defensive use of spread culture mission. (The first "if" is really just for effeciency.)
-		if (pCity->calculateCulturePercent(getID()) >= 8)
+			iValue += iCultureAmount * 3;*/
+		// K-Mod - both offensive & defensive use of spread culture mission
+		if (iPlotCulturePercentagePtsGain > 0 && // advc.120j: Don't drip in an ocean
+			// advc.120j: Was >=8. advc.001 (likely bug): Had checked city culture.
+			kPlot.calculateCulturePercent(getID()) >= 4) // really just for efficiency
 		{
-			CvMap const& kMap = GC.getMap(); // advc
+			CvMap const& kMap = GC.getMap();
 			CvCity const* pOurClosestCity = kMap.findCity(kPlot.getX(), kPlot.getY(), getID());
 			if (pOurClosestCity != NULL)
 			{
@@ -17712,11 +17731,19 @@ int CvPlayerAI::AI_espionageVal(PlayerTypes eTargetPlayer,
 						kMap.xDistance(kPlot.getX(), pOurClosestCity->getX()),
 						kMap.yDistance(kPlot.getY(), pOurClosestCity->getY()));
 				if (iDistance < 6)
-				{	// advc:
-					int iPressure = std::max(pCity->AI_culturePressureFactor() -
-							100, pOurClosestCity->AI().AI_culturePressureFactor());
-					int iMultiplier = std::min(2, (6 - iDistance) * iPressure / 500);
-					iValue += iCultureAmount * iMultiplier;
+				{
+					int iPressure = std::max(pCity->AI_culturePressureFactor() - 100,
+							pOurClosestCity->AI().AI_culturePressureFactor());
+					// advc.120j: Put multiplier at percent precision
+					int iMultiplier = std::min(200, ((6 - iDistance) * iPressure) / 5);
+					// <advc.120j>
+					iMultiplier *= 70 + 15 * std::min(5, iPlotCulturePercentagePtsGain);
+					iMultiplier /= 100;
+					if (iMultiplier >= 100) // </advc.120j>
+					{	/*	advc.120j: Divisor was 100. That would value 4 city culture
+							at the smallest multiplier (100) as highly as 1 stolen gold. */
+						iValue += (iCultureAmount * iMultiplier) / 225;
+					}
 				}
 			}
 		} // K-Mod end
@@ -27392,8 +27419,8 @@ int CvPlayerAI::AI_countPotentialForeignTradeCities(bool bCheckConnected,
 		if (!kTeam.isFreeTrade(kOther.getTeam()))
 			continue;
 		if (bCheckForeignTradePolicy && kOther.isNoForeignTrade() &&
-			!kTeam.isVassal(kOther.getTeam()) &&
-			!GET_TEAM(kOther.getTeam()).isVassal(getTeam()))
+			// advc.124: Vassals of the same master now also exempt
+			kTeam.getMasterTeam() != kOther.getMasterTeam())
 		{
 			continue;
 		}

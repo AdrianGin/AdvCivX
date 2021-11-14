@@ -1351,42 +1351,33 @@ def findStartingPlot(playerID, validFn = None):
 	player.AI_updateFoundValues(True)
 
 	iRange = player.startingPlotRange()
-	iPass = 0
+	# advc: startingPlotWithinRange is obsolete since the BtS expansion, always returns False. The while loop was bad b/c the game would freeze when no valid starting plot existed.
+	#iPass = 0
+	#while (true):
+	iBestValue = 0
+	pBestPlot = None
+	for iX in range(map.getGridWidth()):
+		for iY in range(map.getGridHeight()):
+			if validFn != None and not validFn(playerID, iX, iY):
+				continue
+			pLoopPlot = map.plot(iX, iY)
+			val = pLoopPlot.getFoundValue(playerID)
+			if val > iBestValue:
+				valid = True
+				'''for iI in range(gc.getMAX_CIV_PLAYERS()):
+					if (gc.getPlayer(iI).isAlive()):
+						if (iI != playerID):
+							if gc.getPlayer(iI).startingPlotWithinRange(pLoopPlot, playerID, iRange, iPass):
+								valid = False
+								break'''
+				if valid:
+						iBestValue = val
+						pBestPlot = pLoopPlot
 
-	while (true):
-		iBestValue = 0
-		pBestPlot = None
-		
-		for iX in range(map.getGridWidth()):
-			for iY in range(map.getGridHeight()):
-				if validFn != None and not validFn(playerID, iX, iY):
-					continue
-				pLoopPlot = map.plot(iX, iY)
-
-				val = pLoopPlot.getFoundValue(playerID)
-
-				if val > iBestValue:
-				
-					valid = True
-					
-					for iI in range(gc.getMAX_CIV_PLAYERS()):
-						if (gc.getPlayer(iI).isAlive()):
-							if (iI != playerID):
-								if gc.getPlayer(iI).startingPlotWithinRange(pLoopPlot, playerID, iRange, iPass):
-									valid = False
-									break
-
-					if valid:
-							iBestValue = val
-							pBestPlot = pLoopPlot
-
-		if pBestPlot != None:
-			return map.plotNum(pBestPlot.getX(), pBestPlot.getY())
-			
-		print "player", playerID, "pass", iPass, "failed"
-		
-		iPass += 1
-
+	if pBestPlot != None:
+		return map.plotNum(pBestPlot.getX(), pBestPlot.getY())
+	#print "player", playerID, "pass", iPass, "failed"
+	#iPass += 1
 	return -1
 
 def argmin(list):

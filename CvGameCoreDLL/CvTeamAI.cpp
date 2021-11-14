@@ -2004,8 +2004,9 @@ int CvTeamAI::AI_techTradeVal(TechTypes eTech, TeamTypes eFromTeam,
 		CvGame const& kGame = GC.getGame();
 		scaled rGameProgress(kGame.getGameTurn() - kGame.getStartTurn(),
 				std::max(1, kGame.getEstimateEndTurn() - kGame.getStartTurn()));
-		// Too big a discount too early this way? Could do:
-		//rGameProgress = 1 / (1 + 1 / rGameProgress);
+		// Too big a discount too early this way? Let's try this:
+		if (rGameProgress.isPositive())
+			rGameProgress = 1 / (1 + 1 / rGameProgress);
 		rGameProgress.clamp(0, fixp(0.5));
 		rPowRatio.clamp(1 - rGameProgress, 1 + rGameProgress);
 		rTechRatio.clamp(1 - rGameProgress, 1 + rGameProgress);
@@ -2050,9 +2051,13 @@ int CvTeamAI::AI_techTradeVal(TechTypes eTech, TeamTypes eFromTeam,
 			FAssert(!rTeamRank.isNegative() && rTeamRank <= 1);
 			scaled rModifier = 1;
 			if (rTeamRank < scaled(1, 2))
-				rModifier += rTeamRank / 2;
+			{	// Add at most 0.275
+				rModifier += (11 * rTeamRank) / 20;
+			}
 			else if (rTeamRank > scaled(1, 2))
-				rModifier -= (2 * (rTeamRank - scaled(1, 2))) / 3;
+			{	// Subtract at most 5/12
+				rModifier -= (5 * (rTeamRank - scaled(1, 2))) / 6;
+			}
 			rValue *= rModifier;
 		}
 	} // </advc.550g>

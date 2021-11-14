@@ -27,6 +27,7 @@ public:
 	/*	K-Mod. public for the "insert culture" espionage mission.
 		(I've also changed the functionality of it quite a bit.) */
 	void doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer, int iCultureRateTimes100, bool bCityCulture);
+	static int plotCultureScale(); // advc.120j
 
 	bool isCitySelected();
 	DllExport bool canBeSelected() const;
@@ -1114,6 +1115,7 @@ public:
 		return m_iEspionageDefenseModifier;
 	}
 	void changeEspionageDefenseModifier(int iChange);
+	int cultureTimes100InsertedByMission(EspionageMissionTypes eMission) const; // advc
 
 	bool isWorkingPlot(CityPlotTypes ePlot) const																// Exposed to Python
 	{

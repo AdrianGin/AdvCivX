@@ -492,9 +492,9 @@
 			<iGPThresholdPercent>100</iGPThresholdPercent>
 			<iCultureLevelPercent>100</iCultureLevelPercent>
 			<!-- advc.251: Was 100. Note that this doesn't mean that humans
-				 have an advantage over the AI; ResearchPercent applies to
-				 all civs. -->
-			<iResearchPercent>94</iResearchPercent>
+				 have an advantage over the AI; ResearchPercent on Noble
+				 applies to all civs. -->
+			<iResearchPercent>95</iResearchPercent>
 			<iTrainPercent>100</iTrainPercent>
 			<iConstructPercent>100</iConstructPercent>
 			<iCreatePercent>100</iCreatePercent>
@@ -617,7 +617,7 @@
 			<iGPThresholdPercent>100</iGPThresholdPercent>
 			<iCultureLevelPercent>100</iCultureLevelPercent>
 			<!-- was 110 -->
-			<iResearchPercent>105</iResearchPercent>
+			<iResearchPercent>108</iResearchPercent>
 			<iTrainPercent>100</iTrainPercent>
 			<iConstructPercent>100</iConstructPercent>
 			<iCreatePercent>100</iCreatePercent>
@@ -674,7 +674,7 @@
 			<!-- advc.251 -->
 			<iAIGPThresholdPercent>100</iAIGPThresholdPercent>
 			<!-- advc.251 -->
-			<iAIResearchPercent>100</iAIResearchPercent>
+			<iAIResearchPercent>103</iAIResearchPercent>
 			<iAITrainPercent>95</iAITrainPercent>
 			<iAIWorldTrainPercent>100</iAIWorldTrainPercent>
 			<iAIConstructPercent>95</iAIConstructPercent>
@@ -743,7 +743,7 @@
 			<iGPThresholdPercent>100</iGPThresholdPercent>
 			<iCultureLevelPercent>106</iCultureLevelPercent>
 			<!-- advc.251 (end) -->
-			<iResearchPercent>115</iResearchPercent>
+			<iResearchPercent>120</iResearchPercent>
 			<!-- advc.251 (start) -->
 			<iTrainPercent>100</iTrainPercent>
 			<iConstructPercent>100</iConstructPercent>
@@ -802,7 +802,7 @@
 			<iAIGrowthPercent>95</iAIGrowthPercent>
 			<!-- advc.251 (start) -->
 			<iAIGPThresholdPercent>95</iAIGPThresholdPercent>
-			<iAIResearchPercent>105</iAIResearchPercent>
+			<iAIResearchPercent>110</iAIResearchPercent>
 			<!-- was 90 -->
 			<iAITrainPercent>95</iAITrainPercent>
 			<!-- was 100 -->
@@ -899,7 +899,7 @@
 			<iBaseGrowthThresholdPercent>110</iBaseGrowthThresholdPercent>
 			<iGPThresholdPercent>110</iGPThresholdPercent>
 			<iCultureLevelPercent>112</iCultureLevelPercent>
-			<iResearchPercent>125</iResearchPercent>
+			<iResearchPercent>130</iResearchPercent>
 			<iTrainPercent>110</iTrainPercent>
 			<iConstructPercent>105</iConstructPercent>
 			<iCreatePercent>100</iCreatePercent>
@@ -956,7 +956,7 @@
 			<!-- advc.251 (start) -->
 			<iAIGPThresholdPercent>90</iAIGPThresholdPercent>
 			<!-- Higher tech costs for the AI -->
-			<iAIResearchPercent>110</iAIResearchPercent>
+			<iAIResearchPercent>115</iAIResearchPercent>
 			<!-- was 85 -->
 			<iAITrainPercent>95</iAITrainPercent>
 			<!-- was 100 -->
@@ -1058,7 +1058,7 @@
 			<iGPThresholdPercent>120</iGPThresholdPercent>
 			<iCultureLevelPercent>118</iCultureLevelPercent>
 			<!-- was 125 -->
-			<iResearchPercent>135</iResearchPercent>
+			<iResearchPercent>140</iResearchPercent>
 			<iTrainPercent>120</iTrainPercent>
 			<iConstructPercent>110</iConstructPercent>
 			<iCreatePercent>110</iCreatePercent>
@@ -1118,7 +1118,7 @@
 			<!-- advc.251 (start) -->
 			<iAIGPThresholdPercent>85</iAIGPThresholdPercent>
 			<!-- Higher tech costs for the AI -->
-			<iAIResearchPercent>115</iAIResearchPercent>
+			<iAIResearchPercent>120</iAIResearchPercent>
 			<!-- was 80 -->
 			<iAITrainPercent>90</iAITrainPercent>
 			<!-- was 100 -->
@@ -1281,7 +1281,7 @@
 			<!-- advc.251 (start) -->
 			<iAIGPThresholdPercent>80</iAIGPThresholdPercent>
 			<!-- Higher tech costs for the AI -->
-			<iAIResearchPercent>120</iAIResearchPercent>
+			<iAIResearchPercent>124</iAIResearchPercent>
 			<!-- was 60 -->
 			<iAITrainPercent>85</iAITrainPercent>
 			<!-- was 100-->

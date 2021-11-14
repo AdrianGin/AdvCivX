@@ -10,6 +10,7 @@
 	was exactly the same in CvReligionInfo and CvCorporationInfo. */
 class CvOrganizationInfo : public CvHotkeyInfo
 {
+	typedef CvHotkeyInfo base_t;
 public: // All the const functions are exposed to Python
 	CvOrganizationInfo();
 

@@ -728,7 +728,7 @@ const CvArtInfoUnit* CvUnitInfo::getArtInfo(int i, EraTypes eEra, UnitArtStyleTy
 #if ENABLE_XML_FILE_CACHE
 void CvUnitInfo::read(FDataStreamBase* stream)
 {
-	CvHotkeyInfo::read(stream);
+	base_t::read(stream);
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -1005,7 +1005,7 @@ void CvUnitInfo::read(FDataStreamBase* stream)
 
 void CvUnitInfo::write(FDataStreamBase* stream)
 {
-	CvHotkeyInfo::write(stream);
+	base_t::write(stream);
 	uint uiFlag = 0;
 	stream->Write(uiFlag);
 
@@ -1191,7 +1191,7 @@ void CvUnitInfo::write(FDataStreamBase* stream)
 
 bool CvUnitInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvHotkeyInfo::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetInfoIDFromChildXmlVal(m_eUnitClassType, "Class");
@@ -1681,7 +1681,7 @@ m_iDefaultUnitIndex(NO_UNIT)
 
 bool CvUnitClassInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iMaxGlobalInstances, "iMaxGlobalInstances");
@@ -1749,7 +1749,7 @@ int CvSpecialUnitInfo::getProductionTraits(int i) const
 
 bool CvSpecialUnitInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_bValid, "bValid");
@@ -2115,7 +2115,7 @@ bool CvPromotionInfo::getUnitCombat(int i) const
 #if ENABLE_XML_FILE_CACHE
 void CvPromotionInfo::read(FDataStreamBase* stream)
 {
-	CvHotkeyInfo::read(stream);
+	base_t::read(stream);
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -2195,7 +2195,7 @@ void CvPromotionInfo::read(FDataStreamBase* stream)
 
 void CvPromotionInfo::write(FDataStreamBase* stream)
 {
-	CvHotkeyInfo::write(stream);
+	base_t::write(stream);
 	uint uiFlag = 0;
 	stream->Write(uiFlag);
 
@@ -2257,7 +2257,7 @@ void CvPromotionInfo::write(FDataStreamBase* stream)
 #endif
 bool CvPromotionInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvHotkeyInfo::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(m_szSound, "Sound");
@@ -2510,7 +2510,7 @@ int CvEspionageMissionInfo::getDifficultyMod() const
 
 bool CvEspionageMissionInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_iCost, "iCost");

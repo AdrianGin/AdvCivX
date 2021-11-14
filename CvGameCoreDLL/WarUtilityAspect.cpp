@@ -176,7 +176,7 @@ char const* WarUtilityAspect::aspectName() const
 	return szBuffer.GetCString();
 }
 
-
+#if !DISABLE_UWAI_REPORT
 void WarUtilityAspect::log(char const* fmt, ...) const
 {
 	/*	The time spent in this function is negligible when the report is muted,
@@ -193,7 +193,7 @@ void WarUtilityAspect::log(char const* fmt, ...) const
 	va_end(args);
 	m_kReport.log(szMsg.c_str());
 }
-
+#endif
 
 scaled WarUtilityAspect::normalizeUtility(scaled rUtilityTeamOnTeam,
 	TeamTypes eOther) const
@@ -1075,6 +1075,8 @@ void GreedForCash::evaluate()
 		return;
 	}
 	int const iTheyLoseToUs = ourConquestsFromThem().size();
+	if (iTheyLoseToUs <= 0)
+		return;
 	int iWeLoseToThem = 0;
 	CitySet const& kTheyConquer = militAnalyst().conqueredCities(eThey);
 	for (CitySetIter it = kTheyConquer.begin(); it != kTheyConquer.end(); ++it)
@@ -2659,6 +2661,21 @@ scaled KingMaking::theirRelativeLoss() const
 	return rTheirLostAssets / rTheirAssets;
 }
 
+namespace
+{
+	/*	Kludge. ArmamentForecast will often predict dramatic increases in
+		military power. Not sure how wrong those are, but I don't want to
+		base the evaluation of future uses for military units on such
+		grandiose projections. */
+	void adjustPowerChangeProjection(scaled& rChange)
+	{
+		if (rChange > fixp(1.5))
+		{
+			rChange.exponentiate(fixp(0.5));
+			rChange *= fixp(1.225);
+		}
+	}
+}
 
 int Effort::preEvaluate()
 {
@@ -2719,8 +2736,9 @@ int Effort::preEvaluate()
 		branches. Our rival's per-branch power isn't public info either.
 		The simulation yields per-branch losses though. Use relative losses
 		in armies to predict the BtS power ratios. */
-	scaled const rOurPowerChange = militAnalyst().gainedPower(eWe, ARMY) /
+	scaled rOurPowerChange = militAnalyst().gainedPower(eWe, ARMY) /
 			(ourCache().getPowerValues()[ARMY]->power() + scaled::epsilon());
+	adjustPowerChangeProjection(rOurPowerChange); // Don't drink the koolaid
 	scaled const rOurPower = kWe.getPower() * (1 + rOurPowerChange);
 	scaled rHighestRivalPower;
 	for (PlayerAIIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itRival(eOurTeam);
@@ -2731,12 +2749,16 @@ int Effort::preEvaluate()
 		/*	If they're not part of the military analysis, estimate their power based
 			on BtS statistics. */
 		if (rRivalPowerChange == 0)
-			rRivalPowerChange = kWeAI.estimateBuildUpRate(kRival.getID());
+		{
+			rRivalPowerChange = kWeAI.estimateBuildUpRate(kRival.getID(),
+					militAnalyst().turnsSimulated());
+		}
 		else
 		{
 			rRivalPowerChange /= (GET_PLAYER(kRival.getID()).uwai().getCache().
 					getPowerValues()[ARMY]->power() + scaled::epsilon());
 		}
+		adjustPowerChangeProjection(rRivalPowerChange);
 		scaled rRivalPower = kRival.getPower() * (1 + rRivalPowerChange);
 		if (kWe.isHuman())
 			rRivalPower *= kRival.uwai().confidenceAgainstHuman();
@@ -2778,10 +2800,10 @@ int Effort::preEvaluate()
 	rFutureUse.clamp(fixp(0.35), fixp(1.65));
 	/*	Division by e.g. 2.2 means survivors can be valued up to 75%; 2.75: 60%
 		(not taking account the exponentiation below) */
-	rFutureUse /= fixp(2.6);
+	rFutureUse /= fixp(2.5);
 	bool const bHuman = kWe.isHuman();
 	// sqrt would be a bit much
-	rFutureUse.exponentiate(bHuman ? fixp(0.9) : fixp(0.74));
+	rFutureUse.exponentiate(bHuman ? fixp(0.9) : fixp(0.77));
 	if (!bHuman)
 	{
 		rFutureUse += scaled::max(0,
@@ -3049,6 +3071,7 @@ int IllWill::preEvaluate()
 void IllWill::evaluate() 
 {
 	PROFILE_FUNC();
+	m_rCost = 0;
 	// We can't trade with our war enemies
 	evalLostPartner();
 	bool const bEndNigh = (kOurTeam.AI_anyMemberAtVictoryStage4() ||
@@ -4368,7 +4391,7 @@ void TacticalSituation::evalOperational()
 		rTargetAttackers *= fixp(1.25);
 	/*	To account for the AI's inability to put all available attackers in one spot,
 		and misc. distractions like barbarians */
-	rTargetAttackers += scaled::max(0, fixp(0.75) * kWe.getNumCities() - fixp(1.5));
+	rTargetAttackers += scaled::max(0, fixp(0.75) * kWe.getNumCities() - 2);
 	scaled rTargetCargo;
 	scaled rCargo;
 	scaled rTargetEscort;

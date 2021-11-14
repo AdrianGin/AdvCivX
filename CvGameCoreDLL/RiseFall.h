@@ -13,7 +13,7 @@ class CvWString;
 /*	advc.700: Main class for the Rise & Fall mod component.
 	(The coding style of the R&F classes is inconsistent with the rest
 	of the codebase. The R&F code isn't really subject to change, so I'm
-	not going to overhault it.) */
+	not going to overhaul it.) */
 class RiseFall {
 
 public:

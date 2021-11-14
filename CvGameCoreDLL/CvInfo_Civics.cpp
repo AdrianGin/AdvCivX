@@ -207,7 +207,7 @@ int CvCivicInfo::getImprovementYieldChanges(int i, int j) const
 #if ENABLE_XML_FILE_CACHE
 void CvCivicInfo::read(FDataStreamBase* stream)
 {
-	CvInfoBase::read(stream);
+	base_t::read(stream);
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -312,7 +312,7 @@ void CvCivicInfo::read(FDataStreamBase* stream)
 
 void CvCivicInfo::write(FDataStreamBase* stream)
 {
-	CvInfoBase::write(stream);
+	base_t::write(stream);
 	uint uiFlag = 0;
 	stream->Write(uiFlag);
 
@@ -383,7 +383,7 @@ void CvCivicInfo::write(FDataStreamBase* stream)
 #endif
 bool CvCivicInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetInfoIDFromChildXmlVal(m_eCivicOptionType, "CivicOptionType");
@@ -546,7 +546,7 @@ bool CvCivicOptionInfo::getTraitNoUpkeep(int i) const
 
 bool CvCivicOptionInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetVariableListTagPair(&m_pabTraitNoUpkeep, "TraitNoUpkeeps", GC.getNumTraitInfos());
@@ -561,7 +561,7 @@ m_iCityPercent(0)
 
 bool CvUpkeepInfo::read(CvXMLLoadUtility* pXml)
 {
-	if (!CvInfoBase::read(pXml))
+	if (!base_t::read(pXml))
 		return false;
 
 	pXml->GetChildXmlValByName(&m_iPopulationPercent, "iPopulationPercent");

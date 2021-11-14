@@ -19,7 +19,7 @@ using std::set;
 namespace
 {
 	int const iMaxReparationUtility = 25;
-	int const iWarTradeUtilityThresh = -35;
+	int const iWarTradeUtilityThresh = -37;
 	// AI payments for peace (with human or AI enemy)
 	scaled const rReparationsModifierAI = fixp(0.5);
 	/*  Modifier for human payments for peace, i.e what the AI asks a human to pay
@@ -2198,6 +2198,21 @@ bool UWAI::Team::canReach(TeamTypes eTarget) const
 			{
 				return true;
 			}
+		}
+	}
+	return false;
+}
+
+
+bool UWAI::Team::isCloseToAdoptingAnyWarPlan() const
+{
+	for (TeamIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itRival(m_eAgent);
+		itRival.hasNext(); ++itRival)
+	{
+		if (canSchemeAgainst(itRival->getID(), false) &&
+			leaderCache().warUtilityIgnoringDistraction(itRival->getID()) >= -20)
+		{
+			return true;
 		}
 	}
 	return false;

@@ -554,7 +554,7 @@ void InvasionGraph::Node::logTypicalUnits()
 					m_kReport.leaderName(m_eAgent), iAgentCost, iAgentPow);
 		}
 	}
-	m_kReport.log("");
+	m_kReport.logNewline();
 }
 
 
@@ -590,8 +590,10 @@ void InvasionGraph::Node::predictArmament(int iTurns, bool bNoUpgrading)
 			!m_kOuter.m_bLossesDone, m_kOuter.m_bAllWarPartiesKnown,
 			pTargetCity, productionPortion());
 	m_rProductionInvested += forec.getProductionInvested();
+#if !DISABLE_UWAI_REPORT
 	logPower("Predicted power");
 	m_kReport.logNewline();
+#endif
 }
 
 
@@ -2116,7 +2118,9 @@ void InvasionGraph::simulate(int iTurns)
 		PlayerTypes const ePlayer = it->getID();
 		if (m_nodeMap[ePlayer] != NULL)
 		{
+	#if !DISABLE_UWAI_REPORT
 			m_nodeMap[ePlayer]->logTypicalUnits();
+	#endif
 			m_nodeMap[ePlayer]->prepareForSimulation();
 		}
 	}
@@ -2193,6 +2197,7 @@ void InvasionGraph::simulateComponent(Node& kStart)
 	}
 	if(!aCycle.empty())
 	{
+	#if !DISABLE_UWAI_REPORT
 		m_kReport.log("*Cycle*");
 		std::string szMsg = "";
 		for (size_t i = 0; i < aCycle.size(); i++)
@@ -2201,6 +2206,7 @@ void InvasionGraph::simulateComponent(Node& kStart)
 			szMsg += " --> ";
 		}
 		m_kReport.log("%s\n", szMsg.c_str());
+	#endif
 		breakCycle(aCycle);
 	}
 	kStart.findSink().resolveLossesRec();

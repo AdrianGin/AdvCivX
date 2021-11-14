@@ -284,19 +284,25 @@ void CvGame::updateColoredPlots()
 		/*	K-Mod. I've rearranged the following code a bit, so that it is more efficient, and so that
 			it shows city sites within 7 turns, rather than just the ones in 4 plot range.
 			the original code has been deleted, because it was quite bulky. */
+		int const iMaxPathTurns = 7;
 
 		// city sites
 		CvPlayerAI const& kActivePlayer = GET_PLAYER(getActivePlayer());
 		GroupPathFinder sitePath;
 		sitePath.setGroup(*pHeadSelectedUnit->getGroup(), NO_MOVEMENT_FLAGS,
-				7, GC.getMOVE_DENOMINATOR());
+				iMaxPathTurns, GC.getMOVE_DENOMINATOR());
 		if (pHeadSelectedUnit->isFound())
 		{
 			for (int i = 0; i < kActivePlayer.AI_getNumCitySites(); i++)
 			{
 				CvPlot const& kSite = kActivePlayer.AI_getCitySite(i);
-				if (sitePath.generatePath(kSite))
-				{
+				/*	(advc: BUFFY adds this check. I've instead removed the
+					vision cheats from the AI city site evaluation.) */
+				if (//kSite.isVisible(kActivePlayer.getTeam()) &&
+					sitePath.generatePath(kSite))
+				{	// <advc.004> Don't show weak sites if they're far away
+					if (sitePath.getPathTurns() + i > iMaxPathTurns + 1)
+						continue; // </advc.004>
 					kEngine.addColoredPlot(kSite.getX(), kSite.getY(),
 							GC.getInfo(GC.getColorType("HIGHLIGHT_TEXT")).getColor(),
 							PLOT_STYLE_CIRCLE, PLOT_LANDSCAPE_LAYER_RECOMMENDED_PLOTS);

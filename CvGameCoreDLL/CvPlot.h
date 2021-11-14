@@ -148,7 +148,7 @@ public:
 			PlayerTypes eAttackingPlayer, CvUnit const* pAttacker,
 			bool bTestEnemy, bool bTestPotentialEnemy,
 			bool bTestVisible, // advc.028
-			bool bTestCanAttack, bool bAny = false) const; // </advc>
+			bool bTestCanAttack, bool bTestAny = false) const; // </advc>
 	// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000:
 	bool hasDefender(bool bTestCanAttack, PlayerTypes eOwner,
 			PlayerTypes eAttackingPlayer = NO_PLAYER, const CvUnit* pAttacker = NULL,
@@ -555,7 +555,7 @@ public:
 			bool bRandomize = false) const; // advc.052
 	bool isBestAdjacentFound(PlayerTypes eIndex) const;												// Exposed to Python
 	void setFoundValue(PlayerTypes eIndex, short iNewValue); // K-Mod (was int iNewValue)
-	bool canFound(bool bTestVisible = false) const; // advc
+	bool canFound(bool bTestVisible = false, TeamTypes eTeam = NO_TEAM) const; // advc
 	bool canEverFound() const; // advc.129d
 
 	int getPlayerCityRadiusCount(PlayerTypes eIndex) const											// Exposed to Python

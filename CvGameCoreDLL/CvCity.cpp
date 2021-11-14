@@ -550,7 +550,7 @@ void CvCity::doTurn()
 
 	updateSurroundingHealthHappiness(); // advc.901
 
-	if (isOccupation() || (angryPopulation() > 0) || (healthRate() < 0))
+	if (isOccupation() || angryPopulation() > 0 || healthRate() < 0)
 		setWeLoveTheKingDay(false);
 	else if (getPopulation() >= GC.getDefineINT("WE_LOVE_THE_KING_POPULATION_MIN_POPULATION") &&
 		SyncRandNum(GC.getDefineINT("WE_LOVE_THE_KING_RAND")) < getPopulation())
@@ -3783,10 +3783,11 @@ int CvCity::badHealth(bool bNoAngry, int iExtra) const
 	iHealth = GC.getInfo(getHandicapType()).getHealthBonus();
 	if (iHealth < 0)
 		iTotalHealth += iHealth;
-
-	iHealth = getExtraBuildingBadHealth();
+	/*	advc.001 (from Better BUG AI, fix by Fuyu):
+		Already counted by totalBadBuildingHealth. */
+	/*iHealth = getExtraBuildingBadHealth();
 	if (iHealth < 0)
-		iTotalHealth += iHealth;
+		iTotalHealth += iHealth;*/
 
 	return (unhealthyPopulation(bNoAngry, iExtra) - iTotalHealth);
 }
@@ -4437,7 +4438,7 @@ void CvCity::setPopulation(int iNewValue)
 {
 	int const iOldPopulation = getPopulation();
 	if (iOldPopulation == iNewValue)
-		return; // advc
+		return;
 
 	m_iPopulation = iNewValue;
 	FAssert(getPopulation() >= 0);
@@ -6375,7 +6376,7 @@ bool CvCity::isWeLoveTheKingDay() const
 
 void CvCity::setWeLoveTheKingDay(bool bNewValue)
 {
-	if(isWeLoveTheKingDay() == bNewValue)
+	if (isWeLoveTheKingDay() == bNewValue)
 		return;
 
 	m_bWeLoveTheKingDay = bNewValue;
@@ -6424,7 +6425,7 @@ void CvCity::setCitizensAutomated(bool bNewValue)
 void CvCity::setProductionAutomated(bool bNewValue, bool bClear)
 {
 	if (isProductionAutomated() == bNewValue)
-		return; // advc
+		return;
 
 	m_bProductionAutomated = bNewValue;
 	if (isActiveOwned() && isCitySelected())
@@ -7623,7 +7624,7 @@ int CvCity::getCorporationYieldByCorporation(YieldTypes eYield,
 			}
 		}
 	}
-	return (iYieldRate + 99) / 100;
+	return intdiv::uceil(iYieldRate, 100);
 }
 
 int CvCity::getCorporationCommerceByCorporation(CommerceTypes eCommerce,
@@ -7644,7 +7645,7 @@ int CvCity::getCorporationCommerceByCorporation(CommerceTypes eCommerce,
 			}
 		}
 	}
-	return (iCommerceRate + 99) / 100;
+	return intdiv::uceil(iCommerceRate, 100);
 }
 
 void CvCity::updateCorporationCommerce(CommerceTypes eCommerce)
@@ -8773,6 +8774,15 @@ void CvCity::changeSpecialistFreeExperience(int iChange)
 void CvCity::changeEspionageDefenseModifier(int iChange)
 {
 	m_iEspionageDefenseModifier += iChange;
+}
+
+// advc:
+int CvCity::cultureTimes100InsertedByMission(EspionageMissionTypes eMission) const
+{
+	int iCultureAmount = GC.getInfo(eMission).getCityInsertCultureAmountFactor() *
+			countTotalCultureTimes100();
+	iCultureAmount /= 100;
+	return std::max(100, iCultureAmount);
 }
 
 
@@ -10363,6 +10373,18 @@ void CvCity::doCulture()
 	changeCultureTimes100(getOwner(), getCommerceRateTimes100(COMMERCE_CULTURE), false, true);
 }
 
+// advc: Replacing local variable in doPlotCultureTimes100
+namespace
+{
+	int iPLOT_CULTURE_EXTRA_RANGE = 3;
+}
+
+// advc: Was 10 as a local variable. Should still be 10.
+int CvCity::plotCultureScale()
+{	
+	return GC.getNumCultureLevelInfos() + iPLOT_CULTURE_EXTRA_RANGE;
+}
+
 /*	This function has essentially been rewritten for K-Mod.
 	(and it used to not be 'times 100') */
 void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
@@ -10382,10 +10404,8 @@ void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
 	//const double iB = log((double)iOuterRatio)/iCultureRange;
 	/*	(iScale-1)(iDistance - iRange)^2/(iRange^2) + 1
 		This approximates the exponential pretty well */
-	int const iExtraRange = 3;
-	// advc: Was 10 - should still be 10.
-	int const iScale = GC.getNumCultureLevelInfos() + iExtraRange;
-	int const iCultureRange = eCultureLevel + iExtraRange;
+	int const iScale = plotCultureScale();
+	int const iCultureRange = eCultureLevel + iPLOT_CULTURE_EXTRA_RANGE;
 
 	if (bCityCulture)
 	{
@@ -11548,8 +11568,11 @@ void CvCity::read(FDataStreamBase* pStream)
 				{
 					if (GC.getInfo(eLoopBuilding).getReligionType() == eAPReligion)
 					{
-						changeBuildingYieldChange(CvCivilization::buildingClass(eLoopBuilding),
-								YIELD_PRODUCTION, -1);
+						setBuildingYieldChange(CvCivilization::buildingClass(eLoopBuilding),
+								/*	Set the yield to 1 rather than subtracting 1.
+									To address a bug that had existed in AdvCiv 1.00
+									and had, in some circumstances, set the yield to 0. */
+								YIELD_PRODUCTION, 1);
 					}
 				}
 			}

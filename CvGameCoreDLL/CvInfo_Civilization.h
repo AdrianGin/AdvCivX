@@ -16,6 +16,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvCivilizationInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // advc: All the const functions are exposed to Python
 	CvCivilizationInfo();
 	~CvCivilizationInfo();
@@ -108,7 +109,8 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvLeaderHeadInfo : public CvInfoBase
 {
-friend class UWAI; // advc.104x (for applyPersonalityWeight)
+	typedef CvInfoBase base_t;
+	friend class UWAI; // advc.104x (for applyPersonalityWeight)
 public: // advc: All the const functions are exposed to Python except those added by mods
 	CvLeaderHeadInfo();
 	CvLeaderHeadInfo(CvLeaderHeadInfo const& kOther); // advc.xmldefault

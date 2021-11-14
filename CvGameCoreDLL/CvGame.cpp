@@ -6871,8 +6871,8 @@ void CvGame::doGlobalWarming()
 		if (bChanged)
 		{
 			// only destroy the improvement if the new terrain cannot support it
-			if (!pPlot->canHaveImprovement(eImprov),
-				NO_BUILD, false) // kekm.9
+			if (!pPlot->canHaveImprovement(eImprov, NO_TEAM, false,
+				NO_BUILD, false)) // kekm.9
 			{
 				pPlot->setImprovementType(NO_IMPROVEMENT, /* advc.055: */ true);
 			}  // <advc.055>
@@ -8947,13 +8947,15 @@ int CvGame::FPChecksum() const
 	/*if(getActivePlayer() == 0)
 		_controlfp(_PC_64, _MCW_PC);*/
 
-	// Test 1: based on https://stackoverflow.com/questions/14749929/c-float-operations-have-different-results-on-i386-and-arm-but-why
+	// Test 1: based on stackoverflow.com/questions/14749929/c-float-operations-have-different-results-on-i386-and-arm-but-why
 	float x = 4.80000019f;
 	int result1 = (int)(38000 / x + 10000 / x);
-	result1 -= 9995; // 4 or 5
-	// Test 2: based on https://stackoverflow.com/questions/11832428/windows-intel-and-ios-arm-differences-in-floating-point-calculations
+	result1 -= 9995;
+	FAssert(result1 == 4 || result1 == 5);
+	// Test 2: based on stackoverflow.com/questions/11832428/windows-intel-and-ios-arm-differences-in-floating-point-calculations
 	x = (-5.241729736328125f * 94.37158203125f) - (-7.25933837890625f * 68.14253997802734f);
-	int result2 = fmath::round(-10000.0 * x); // 5 or 6
+	int result2 = fmath::round(-10000.0 * x);
+	FAssert(result2 == 5 || result2 == 6);
 
 	/*if(getActivePlayer()==0)
 		_controlfp(_PC_24, _MCW_PC);*/
@@ -10318,10 +10320,17 @@ VoteSelectionData* CvGame::addVoteSelection(VoteSourceTypes eVoteSource)
 				kData.ePlayer = it->getLeaderID();
 				if (isValidVoteSelection(eVoteSource, kData))
 				{
-					kData.szText = gDLL->getText("TXT_KEY_POPUP_ELECTION_FORCE_WAR",
+					kData.szText =
+							// <kekm.25/advc>
+							(it->isActive() ?
+							gDLL->getText("TXT_KEY_POPUP_ELECTION_FORCE_WAR_VS_YOU",
+							getVoteRequired(kData.eVote, eVoteSource),
+							countPossibleVote(kData.eVote, eVoteSource)) :
+							// </kekm.25/advc>
+							gDLL->getText("TXT_KEY_POPUP_ELECTION_FORCE_WAR",
 							it->getName().GetCString(),
 							getVoteRequired(kData.eVote, eVoteSource),
-							countPossibleVote(kData.eVote, eVoteSource));
+							countPossibleVote(kData.eVote, eVoteSource)));
 					pData->aVoteOptions.push_back(kData);
 				}
 			}

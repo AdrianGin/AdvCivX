@@ -4,7 +4,7 @@
 #define CV_AGENTS_H
 
 /*  advc.agent: New class for access (via AgentIterator) to sequences of
-	agent (CvTeam, CvPlayer) objects. Caches frequently needed sequences. */
+	agent (CvTeam, CvPlayer) instances. Caches frequently needed sequences. */
 
 class CvPlayerAI;
 class CvTeamAI;

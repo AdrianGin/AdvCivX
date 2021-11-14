@@ -2329,9 +2329,10 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 				it.hasNext(); ++it)
 			{
 				if (it->isCity() &&
-					/*	advc: This check was missng. Since there is no other reason
-						for !canFound, it doesn't really matter. */
-					it->sameArea(kMissionPlot))
+					/*	<advc.001> Don't give away rival cities in the fog of war.
+						And same-area check added. */
+					!kUnitOwner.canFound(kMissionPlot, false, false) &&
+					it->sameArea(kMissionPlot)) // </advc.001>
 				{
 					szBuffer.append(NEWLINE);
 					szBuffer.append(gDLL->getText("TXT_KEY_ACTION_CANNOT_FOUND",
@@ -2341,7 +2342,7 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 			}
 		}
 		// <advc.004b> Show the projected increase in city maintenance
-		else
+		if (kUnitOwner.canFound(kMissionPlot, false, false))
 		{
 			// No projection for the initial city
 			if(kUnitOwner.getNumCities() > 0)
@@ -4734,13 +4735,13 @@ void CvDLLWidgetData::parseMaintenanceHelp(CvWidgetDataStruct &widgetDataStruct,
 {
 	CvCity* pHeadSelectedCity = gDLL->UI().getHeadSelectedCity();
 	if (pHeadSelectedCity == NULL)
-		return; // advc
+		return;
 
 	if (pHeadSelectedCity->isWeLoveTheKingDay())
 	{
 		szBuffer.append(NEWLINE);
 		szBuffer.append(gDLL->getText("TXT_KEY_MISC_WE_LOVE_KING_MAINT"));
-		return; // advc
+		return;
 	}
 
 	int iInflationFactor = 100 + GET_PLAYER(pHeadSelectedCity->getOwner()).calculateInflationRate(); // K-Mod

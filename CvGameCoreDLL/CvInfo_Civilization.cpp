@@ -41,7 +41,7 @@ CvCivilizationInfo::~CvCivilizationInfo()
 
 void CvCivilizationInfo::reset()
 {
-	CvInfoBase::reset();
+	base_t::reset();
 
 	m_aszAdjective.clear();
 	m_aszShortDescription.clear();
@@ -203,7 +203,7 @@ std::string CvCivilizationInfo::getCityNames(int i) const
 #if ENABLE_XML_FILE_CACHE
 void CvCivilizationInfo::read(FDataStreamBase* stream)
 {
-	CvInfoBase::read(stream);
+	base_t::read(stream);
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -251,7 +251,7 @@ void CvCivilizationInfo::read(FDataStreamBase* stream)
 
 void CvCivilizationInfo::write(FDataStreamBase* stream)
 {
-	CvInfoBase::write(stream);
+	base_t::write(stream);
 	uint uiFlag=0;
 	stream->Write(uiFlag);
 
@@ -282,7 +282,7 @@ void CvCivilizationInfo::write(FDataStreamBase* stream)
 
 bool CvCivilizationInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	// Get the Text from Text/Civ4GameTextXML.xml
@@ -665,7 +665,7 @@ const TCHAR* CvLeaderHeadInfo::getLeaderHead() const
 #if ENABLE_XML_FILE_CACHE
 void CvLeaderHeadInfo::read(FDataStreamBase* stream)
 {
-	CvInfoBase::read(stream);
+	base_t::read(stream);
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -808,7 +808,7 @@ void CvLeaderHeadInfo::read(FDataStreamBase* stream)
 
 void CvLeaderHeadInfo::write(FDataStreamBase* stream)
 {
-	CvInfoBase::write(stream);
+	base_t::write(stream);
 	uint uiFlag=1; // BETTER_BTS_AI_MOD, 03/21/10, jdog5000
 	uiFlag = 2; // advc.104i
 	uiFlag = 3; // advc.104 (love of peace)
@@ -922,7 +922,7 @@ const CvArtInfoLeaderhead* CvLeaderHeadInfo::getArtInfo() const
 
 bool CvLeaderHeadInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(m_szArtDefineTag, "ArtDefineTag",

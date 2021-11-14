@@ -76,6 +76,7 @@ public:
 	/*	Whether this team can reach any city of eTarget with military units;
 		based on cached info. */
 	bool canReach(TeamTypes eTarget) const;
+	bool isCloseToAdoptingAnyWarPlan() const;
 	UWAI::Player const& leaderUWAI() const;
 	// E.g. never need to (directly) evaluate war against vassals
 	bool isWarEvalNeeded(TeamTypes eTeam) const;

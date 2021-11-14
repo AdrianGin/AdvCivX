@@ -18,6 +18,12 @@ class FDataStreamBase;
 // The parentheses are unnecessary, but I think it's more intuitive this way.
 #define getUWAI() GC.AI_getGame().uwai()
 
+
+/*	Setting this to 1 should remove almost all runtime overhead from logging in
+	optimized release builds. The overhead should be pretty small in any case,
+	so I'd rather keep logging available (via an XML switch) in releases. */
+#define DISABLE_UWAI_REPORT 0
+
 class UWAI : private boost::noncopyable
 {
 public:
