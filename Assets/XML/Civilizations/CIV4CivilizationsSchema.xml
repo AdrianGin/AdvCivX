@@ -230,7 +230,7 @@
 		<element type="iLimitedWarPowerRatio"/>
 		<element type="iDogpileWarRand"/>
 		<element type="iMakePeaceRand"/>
-		<element type="iDeclareWarTradeRand"/>
+		<element type="iDeclareWarTradeRand" minOccurs="0"/>
 		<element type="iDemandRebukedSneakProb"/>
 		<element type="iDemandRebukedWarProb"/>
 		<element type="iRazeCityProb"/>
