@@ -3660,7 +3660,7 @@ int CvPlayerAI::AI_financialTroubleMargin() const
 			could potentially cause the site selection to oscillate. */
 		iSafePercent -= 14 * (iCitiesTarget - getNumCities()) / iCitiesTarget;
 	} // K-Mod end
-	FAssert(iSafePercent >= 0); // advc
+	iSafePercent = std::max(5, iSafePercent); // advc.001 (very rarely an issue)
 	return iFundedPercent - iSafePercent;
 }
 
