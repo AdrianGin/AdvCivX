@@ -25987,7 +25987,7 @@ int CvPlayerAI::AI_playerCloseness(PlayerTypes eIndex, int iMaxDistance,
 	//PROFILE_FUNC(); // advc.003o (the cache seems to be very effective)
 	FAssert(GET_PLAYER(eIndex).isAlive());
 	FAssert(eIndex != getID());
-
+	FAssert(iMaxDistance >= 0); // advc (no longer treated as DEFAULT_PLAYER_CLOSENESS)
 	int iValue = 0;
 	FOR_EACH_CITYAI(pLoopCity, *this)
 	{

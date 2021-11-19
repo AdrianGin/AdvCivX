@@ -1579,7 +1579,8 @@ int CvTeamAI::AI_warCommitmentCost(TeamTypes eTarget, WarPlanTypes eWarPlan,
 		}
 
 		// increase the cost for distant targets...
-		if (0 == AI_teamCloseness(eTarget, /* advc.001n: */ -1, false, bConstCache))
+		if (0 == AI_teamCloseness(eTarget,
+			DEFAULT_PLAYER_CLOSENESS, false, bConstCache)) // advc.001n
 		{
 			// ... in the early game.
 			if (getNumCities() < GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities() * getAliveCount())
@@ -2525,7 +2526,8 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 	scaled128_t rMasterPower = kMasterTeam.getPower(false);
 	// <advc.112>
 	if(bFaraway ||
-		(getNumWars() <= 0 && AI_teamCloseness(eMasterTeam, -1, false, true) <= 0))
+		(getNumWars() <= 0 &&
+		AI_teamCloseness(eMasterTeam, DEFAULT_PLAYER_CLOSENESS, false, true) <= 0))
 	{
 		rMasterPower *= fixp(0.7); // </advc.112>
 	}
@@ -4898,10 +4900,6 @@ int CvTeamAI::AI_teamCloseness(TeamTypes eIndex, int iMaxDistance,
 	bool bConstCache) const // advc.001n
 {
 	//PROFILE_FUNC(); // advc.003o (the cache seems to be very effective)
-
-	if (iMaxDistance == -1)
-		iMaxDistance = DEFAULT_PLAYER_CLOSENESS;
-
 	FAssert(eIndex != getID());
 	int iValue = 0;
 	for (MemberAIIter itOurMember(getID()); itOurMember.hasNext(); ++itOurMember)
@@ -5608,7 +5606,7 @@ scaled CvTeamAI::AI_getOpenBordersCounterIncrement(TeamTypes eOther) const
 	int iTheirCities = GET_TEAM(eOther).getNumCities();
 	if (iOurCities > 0 && iTheirCities > 0)
 	{
-		rFromCloseness = AI_teamCloseness(eOther, DEFAULT_PLAYER_CLOSENESS) /
+		rFromCloseness = AI_teamCloseness(eOther) /
 				(scaled(iOurCities + iTheirCities).sqrt() * 20);
 	}
 	/*  Would be nice to add another, say, 0.25 if any of our units w/o

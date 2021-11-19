@@ -604,7 +604,8 @@ public:
 	int AI_averageCulturePressure() const; // K-Mod
 	int AI_averageCommerceExchange(CommerceTypes eCommerce) const;
 
-	int AI_playerCloseness(PlayerTypes eIndex, int iMaxDistance,
+	int AI_playerCloseness(PlayerTypes eIndex,
+			int iMaxDistance /* advc: */ = DEFAULT_PLAYER_CLOSENESS,
 			bool bConstCache = false) const; // advc.001n
 
 	int AI_getTotalCityThreat() const;
