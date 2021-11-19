@@ -619,7 +619,7 @@ scaled WarUtilityAspect::partnerUtilFromTrade() const
 		if (iTurnsToCancel > 0)
 		{
 			rTimeHorizon = scaled(iTurnsToCancel + 10, 2);
-			log("Reduced time horizon for recent deal: %d", rTimeHorizon);
+			log("Reduced time horizon for recent deal: %d", rTimeHorizon.round());
 		}
 		rDealVal *= rTimeHorizon;
 		rGoldVal += rDealVal;
