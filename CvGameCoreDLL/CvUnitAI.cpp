@@ -21426,7 +21426,27 @@ int CvUnitAI::AI_stackOfDoomExtra() const
 	// A little extra for naval assault
 	if (getArea().getAreaAIType(kOurTeam.getID()) == AREAAI_ASSAULT)
 		rMult += fixp(0.225);
-	if(kOurTeam.AI_getNumWarPlans(WARPLAN_TOTAL) <= 0)
+	else if (kOwner.hasCapital() && !kOwner.getCapital()->isArea(getArea()))
+	{	/*	Smaller stacks for colonial wars. (Not against enemy colonies
+			in our capital area b/c those could well be cities recently lost
+			to a big naval invasion. Ideally, we should know which specific
+			cities we're hoping to conquer. Not really how this function works.) */
+		bool bOnlyColonies = true;
+		int iEnemyColonies = 0;
+		for (PlayerIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itEnemy(getTeam());
+			bOnlyColonies && itEnemy.hasNext(); ++itEnemy)
+		{
+			if (kOurTeam.AI_getWarPlan(itEnemy->getTeam()) == NO_WARPLAN)
+				continue;
+			CvCity const* pEnemyCapital = itEnemy->getCapital();
+			if (pEnemyCapital != NULL && pEnemyCapital->isArea(getArea()))
+				bOnlyColonies = false;
+			else iEnemyColonies += getArea().getCitiesPerPlayer(itEnemy->getID());
+		}
+		if (bOnlyColonies && iEnemyColonies <= 3 && iEnemyColonies > 0)
+			rMult *= fixp(0.25) + fixp(0.2) * iEnemyColonies;
+	}
+	if (kOurTeam.AI_getNumWarPlans(WARPLAN_TOTAL) <= 0)
 		rMult *= fixp(0.85);
 	iR = (rMult * iR).round();
 	FAssert(iR > 0);
