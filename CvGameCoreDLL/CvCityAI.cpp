@@ -6327,8 +6327,8 @@ int CvCityAI::AI_projectValue(ProjectTypes eProject) /* advc: */ const
 			// Willing to thwart victory through nuclear war?
 			(((4 * iOurScore > 3 * iBestScore ||
 			10 * kTeam.getPower(true) > 7 * GET_TEAM(eWinningTeam).getPower(false)) &&
-			kTeam.AI_noWarAttitudeProb((AttitudeTypes)
-			(kTeam.AI_getAttitude(eWinningTeam) + 1)) < 100) ||
+			kTeam.AI_noWarAttitudeProb((AttitudeTypes)std::min(NUM_ATTITUDE_TYPES - 1,
+			kTeam.AI_getAttitude(eWinningTeam) + 1)) < 100) ||
 			/*	Need defensive nukes? (When already losing a war,
 				then getting nukes will take too long.) */
 			kTeam.AI_countMembersWithStrategy(AI_STRATEGY_ALERT1) > 0 ||
