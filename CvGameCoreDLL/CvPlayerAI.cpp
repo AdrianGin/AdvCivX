@@ -22059,7 +22059,8 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 			!GET_TEAM(kToPlayer.getTeam()).isVassal(getTeam()));
 	CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
 	CvTeam const& kToTeam = GET_TEAM(eToPlayer);
-	bool const bNonColonialVassal = (kToTeam.isVassal(getTeam()) &&
+	bool const bToVassal = kToTeam.isVassal(kOurTeam.getID());
+	bool const bNonColonialVassal = (bToVassal &&
 			!kOurTeam.isParent(kToTeam.getID()));
 	if (bNonColonialVassal && kToTeam.isCapitulated() &&
 		/*	Even if they pay for the city, it's probably not worth letting a
@@ -22156,6 +22157,41 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 						scaled(TeamIter<EVER_ALIVE>::count()).sqrt();
 				rEnemyTradeFactor = (rEnemyTradeFactor + fixp(5/3.)) / fixp(8/3.); // dilute
 			}
+			// Don't sabotage ourselves in nearby border conflicts
+			scaled rPlotCultureFactor = 1;
+			int const iOurCultureLevel = kCity.getCultureLevel();
+			int const iTheirCultureLevel = kCity.calculateCultureLevel(eToPlayer);
+			int const iRange = std::max(iOurCultureLevel, iTheirCultureLevel) +
+					/*	Stop one short of the full culture range; culture spread
+						to the final ring should be pretty insignificant. */
+					CvCity::plotCultureExtraRange() - 1;
+			if (iRange > GC.getDefineINT(CvGlobals::MIN_CITY_RANGE))
+			{
+				bool const bToTrustedVassal = (bToVassal &&
+						(kToPlayer.getParent() == getID() || kToTeam.isCapitulated()));
+				for (PlotCircleIter itPlot(kCity.getPlot(), iRange, false);
+					itPlot.hasNext(); ++itPlot)
+				{
+					if (!itPlot->isCity() ||
+						itPlot->getPlotCity()->getOwner() != getID())
+					{
+						continue;
+					}
+					scaled rOurCulture = per100(
+							itPlot->calculateCulturePercent(getID()));
+					if (rOurCulture < fixp(0.58))
+					{
+						rPlotCultureFactor += scaled(3, itPlot.currPlotDist()) *
+						// (Doesn't really matter just how little culture we have)
+								(fixp(0.4) * std::max(iOurCultureLevel, 1) +
+								(bToTrustedVassal ? 0 :
+								per100(itPlot->calculateCulturePercent(eToPlayer)) *
+								std::max(iTheirCultureLevel, 1)));
+						if (rPlotCultureFactor > fixp(8/3.))
+							return false;
+					}
+				}
+			}
 			// City mustn't be too valuable to us
 			{
 				scaled rSizeDiffFactor = 1;
@@ -22168,8 +22204,8 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 					rSizeDiffFactor = scaled::min(rTheirPopToOurs + fixp(0.375), 1);
 				}
 				scaled rTotalYieldVal = AI_totalYieldVal();
-				if (iKeepVal * rEnemyTradeFactor > rSizeDiffFactor * rTotalYieldVal /
-					(18 - iAttitudeLevel))
+				if (iKeepVal * rEnemyTradeFactor * rPlotCultureFactor >
+					rSizeDiffFactor * rTotalYieldVal / (18 - iAttitudeLevel))
 				{
 					return false;
 				}

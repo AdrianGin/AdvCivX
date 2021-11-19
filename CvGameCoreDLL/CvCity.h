@@ -27,7 +27,17 @@ public:
 	/*	K-Mod. public for the "insert culture" espionage mission.
 		(I've also changed the functionality of it quite a bit.) */
 	void doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer, int iCultureRateTimes100, bool bCityCulture);
-	static int plotCultureScale(); // advc.120j
+	/*	advc.120j: Was 10 as a local variable (doPlotCultureTimes100).
+		Should still be 10. */
+	static int plotCultureScale()
+	{
+		return GC.getNumCultureLevelInfos() + plotCultureExtraRange();
+	}
+	// advc.ctr: Replacing local variable in doPlotCultureTimes100
+	static int plotCultureExtraRange()
+	{
+		return 3;
+	}
 
 	bool isCitySelected();
 	DllExport bool canBeSelected() const;
