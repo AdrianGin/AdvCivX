@@ -2290,6 +2290,8 @@ scaled const KingMaking::m_rScoreMargin = fixp(0.25);
 int KingMaking::preEvaluate()
 {
 	PROFILE_FUNC();
+	m_winningFuture.clear();
+	m_winningPresent.clear();
 	/*	(Scoreboard ranks just aren't meaningful off the bat, even if the game
 		starts in the Modern era. Leaving m_winningPresent empty causes 0 utility
 		to be counted by evaluate.) */
