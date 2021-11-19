@@ -1493,7 +1493,10 @@ void UWAI::Team::scheme()
 		/*  WarRand of e.g. Alexander and Montezuma 50 for total war, else 40;
 			Gandhi and Mansa Musa 400 for total, else 200.
 			I.e. peaceful leaders hesitate longer before starting war preparations;
-			warlike leaders have more drive. */
+			warlike leaders have more drive.
+			(Could easily use DogpileWarRand here when the target is already
+			in a war, but I think I've found a better use for DogpileWarRand
+			in warConfidenceAllies. Less dogpiling on weak targets that way.) */
 		scaled rDiv = (bTotal ? kAgent.AI_maxWarRand() : kAgent.AI_limitedWarRand());
 		FAssert(rDiv >= 0);
 		// Let's make the AI a bit less patient, especially the peaceful types.
@@ -2071,8 +2074,8 @@ scaled UWAI::Team::reparationsToHuman(scaled rUtility) const
 
 void UWAI::Team::respondToRebuke(TeamTypes eTarget, bool bPrepare)
 {
-	/*  Caveat: Mustn't use RNG here b/c this is called from both async (prepare=false)
-		and sync (prepare=true) contexts */
+	/*  Caveat: Mustn't use RNG here b/c this is called from both async (bPrepare=false)
+		and sync (bPrepare=true) contexts */
 	CvTeamAI& kAgent = GET_TEAM(m_eAgent);
 	if (!canSchemeAgainst(eTarget, true) || (bPrepare ?
 		kAgent.AI_isSneakAttackPreparing(eTarget) :

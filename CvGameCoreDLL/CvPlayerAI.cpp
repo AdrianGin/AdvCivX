@@ -24989,18 +24989,17 @@ void CvPlayerAI::AI_updateStrategyHash()
 
 	// Scale paranoia in later eras/larger games
 	//iParanoia -= (100*(iCurrentEra + 1)) / std::max(1, GC.getNumEraInfos());
-
 	/*	K-Mod. You call that scaling for "later eras/larger games"?
 		It isn't scaling, and it doesn't use the map size.
-		Lets try something else. Rough and ad hoc, but hopefully a bit better. */
+		Lets try something else. Rough and ad hoc, but hopefully a bit better.
+		This starts as a factor of 1, and drops to 1/3. */
 	iParanoia *= 3 * GC.getNumEraInfos() - 2 * iCurrentEra;
 	iParanoia /= 3 * std::max(1, GC.getNumEraInfos());
-	// That starts as a factor of 1, and drop to 1/3.  And now for game size...
+	// And now for game size...
 	iParanoia *= 14;
 	iParanoia /= 7 + std::max(kTeam.getHasMetCivCount(true),
 			//GC.getInfo(GC.getMap().getWorldSize()).getDefaultPlayers()));
 			kGame.getRecommendedPlayers()); // advc.137
-
 	// Alert strategy
 	if (iParanoia >= 200)
 	{

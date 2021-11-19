@@ -5541,9 +5541,9 @@ int CvTeamAI::AI_noWarAttitudeProb(AttitudeTypes eAttitude) const
 int CvTeamAI::AI_noWarProbAdjusted(TeamTypes eOther) const
 {
 	AttitudeTypes eTowardThem = AI_getAttitude(eOther, true);
-	int r = AI_noWarAttitudeProb(eTowardThem);
-	if(r < 100 || isOpenBorders(eOther) || eTowardThem == ATTITUDE_FURIOUS)
-		return r;
+	int iR = AI_noWarAttitudeProb(eTowardThem);
+	if (iR < 100 || isOpenBorders(eOther) || eTowardThem == 0)
+		return iR;
 	return AI_noWarAttitudeProb((AttitudeTypes)(eTowardThem - 1));
 }
 
