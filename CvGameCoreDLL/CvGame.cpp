@@ -4900,7 +4900,7 @@ int CvGame::calculateGwSeverityRating() const
 			std::max(1, GC.getMap().getLandPlots() * 4 *
 			GC.getInfo(getGameSpeedType()).getVictoryDelayPercent());
 	// shape parameter. Lower values result in the function being steeper earlier.
-	int const b = 70;
+	int const b = 55; // advc.055: was 70
 	return 100 - (b * 100) / (b + SQR(x));
 } // K-Mod end
 
