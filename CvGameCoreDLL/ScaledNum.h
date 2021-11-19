@@ -455,8 +455,8 @@ public:
 	}*/
 
 	// Operand on different scale: Let ctor implicitly convert it to ScaledNum
-	ScaledNum& operator+=(ScaledNum rOther);
-	ScaledNum& operator-=(ScaledNum rOther);
+	__forceinline ScaledNum& operator+=(ScaledNum rOther);
+	__forceinline ScaledNum& operator-=(ScaledNum rOther);
 
 	template<int iOTHER_SCALE, typename OtherIntType, typename OtherEnumType>
 	ScaledNum& operator*=(ScaledNum<iOTHER_SCALE,OtherIntType,OtherEnumType> rOther);
