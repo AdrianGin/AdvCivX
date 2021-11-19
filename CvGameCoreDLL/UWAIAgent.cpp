@@ -1294,7 +1294,8 @@ int UWAI::Team::reluctanceToPeace(TeamTypes eEnemy, bool bNonNegative) const
 }
 
 
-bool UWAI::Team::canSchemeAgainst(TeamTypes eTarget, bool bAssumeNoWarPlan) const
+bool UWAI::Team::canSchemeAgainst(TeamTypes eTarget, bool bAssumeNoWarPlan,
+	bool bCheckDefensivePacts) const
 {
 	CvTeamAI const& kAgent = GET_TEAM(m_eAgent);
 	if (eTarget == NO_TEAM || eTarget == BARBARIAN_TEAM || eTarget == kAgent.getID())
@@ -1310,10 +1311,48 @@ bool UWAI::Team::canSchemeAgainst(TeamTypes eTarget, bool bAssumeNoWarPlan) cons
 	{
 		return false;
 	}
-	return (kTarget.isAlive() && !kTarget.isMinorCiv() && kAgent.isHasMet(eTarget) &&
-			!kTarget.isAVassal() && kTarget.getNumCities() > 0 && (bAssumeNoWarPlan ||
-			kAgent.AI_getWarPlan(eTarget) == NO_WARPLAN) &&
-			kAgent.canEventuallyDeclareWar(eTarget));
+	if (!(kTarget.isAlive() && !kTarget.isMinorCiv() && kAgent.isHasMet(eTarget) &&
+		!kTarget.isAVassal() && kTarget.getNumCities() > 0 &&
+		(bAssumeNoWarPlan || kAgent.AI_getWarPlan(eTarget) == NO_WARPLAN) &&
+		kAgent.canEventuallyDeclareWar(eTarget)))
+	{
+		return false;
+	}
+	/*	Important not to scheme against a faraway member of a DP b/c that
+		may delay our DoW considerably, may even require transports. CvUnitAI
+		is only going to target cities of the target team and its vassals.
+		The initial DoW matters for diplo penalties, but that's a less important
+		consideration. */
+	if (bCheckDefensivePacts)
+	{
+		for (TeamIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itAlly(eTarget);
+			itAlly.hasNext(); ++itAlly)
+		{
+			if (itAlly->isDefensivePact(eTarget) &&
+				/*	(Should come up rarely, so the performance of these checks
+					shouldn't matter much. Closeness also gets cached.) */
+				canSchemeAgainst(itAlly->getID(), bAssumeNoWarPlan, false))
+			{
+				int iAllyCloseness = kAgent.AI_teamCloseness(itAlly->getID());
+				for (TeamIter<MAJOR_CIV,VASSAL_OF> itVassal(itAlly->getID());
+					itVassal.hasNext(); ++itVassal)
+				{
+					iAllyCloseness = std::max(iAllyCloseness,
+							kAgent.AI_teamCloseness(itVassal->getID()));
+				}
+				int iTargetCloseness = kAgent.AI_teamCloseness(eTarget);
+				for (TeamIter<MAJOR_CIV,VASSAL_OF> itVassal(eTarget);
+					itVassal.hasNext(); ++itVassal)
+				{
+					iTargetCloseness = std::max(iTargetCloseness,
+							kAgent.AI_teamCloseness(itVassal->getID()));
+				}
+				if (2 * iAllyCloseness > 3 * iTargetCloseness)
+					return false;
+			}
+		}
+	}
+	return true;
 }
 
 
@@ -1376,7 +1415,7 @@ void UWAI::Team::scheme()
 		itTarget.hasNext(); ++itTarget)
 	{
 		TeamTypes const eTarget = itTarget->getID();
-		if (!canSchemeAgainst(eTarget, true))
+		if (!canSchemeAgainst(eTarget, true, false))
 			kCache.setCanBeHiredAgainst(eTarget, false);
 		if (!canSchemeAgainst(eTarget, false))
 			continue;
@@ -1626,7 +1665,7 @@ int UWAI::Team::declareWarTradeVal(TeamTypes eTarget, TeamTypes eSponsor) const
 	/*  Sponsored war results in a peace treaty with the sponsor. Don't check if
 		we're planning war against the sponsor - too easy to read (b/c there are
 		just two possibilities). Instead check war utility against the sponsor. */
-	if (canSchemeAgainst(eSponsor, true))
+	if (canSchemeAgainst(eSponsor, true, false))
 	{
 		WarEvalParameters paramsVsSponsor(kAgent.getID(), eSponsor, silentReport);
 		WarEvaluator evalVsSponsor(paramsVsSponsor);

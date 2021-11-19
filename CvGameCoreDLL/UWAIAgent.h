@@ -27,6 +27,8 @@ public:
 			CLinkList<TradeData> const* pWeGive = NULL);
 	void turnPre();
 	void doWar(); // replacement for CvTeamAI::doWar
+	bool canSchemeAgainst(TeamTypes eTarget, bool bAssumeNoWarPlan,
+			bool bCheckDefensivePacts = true) const;
 	// Replacing parts of CvTeamAI::AI_declareWarTrade
 	DenialTypes declareWarTrade(TeamTypes eTeam, TeamTypes eSponsor) const;
 	/*	Replacing CvTeamAI::AI_declareWarTradeVal. However, that function is
@@ -110,7 +112,6 @@ private:
 	bool considerConcludePreparations(TeamTypes eTarget, int iU, int iTurnsRemaining);
 
 	void scheme(); // Consider new war plans
-	bool canSchemeAgainst(TeamTypes eTarget, bool bAssumeNoWarPlan) const;
 	void alignAreaAI(bool bNaval);
 	int peaceThreshold(TeamTypes eTarget) const;
 	scaled limitedWarWeight() const;
