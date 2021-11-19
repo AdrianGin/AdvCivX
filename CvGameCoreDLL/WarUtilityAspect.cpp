@@ -947,7 +947,7 @@ void GreedForVassals::evaluate()
 	scaled rUtilityFromResources = ourCache().vassalResourceScore(eThey);
 	log("Resource score: %d", rUtilityFromResources.uround());
 	// Expect just +1.5 commerce per each of their cities from trade routes
-	scaled rUtilityFromTR = fixp(1.5) * kThey.getNumCities() * rOurIncome;
+	scaled rUtilityFromTR = fixp(1.5) * kThey.getNumCities() / rOurIncome;
 	log("Trade route score: %d", rUtilityFromTR.uround());
 	// These trades are pretty safe bets; treated as 75% probable
 	rUtility += fixp(0.75) * rTheirCityRatio * (rUtilityFromResources + rUtilityFromTR);
