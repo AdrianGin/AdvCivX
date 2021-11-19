@@ -8622,7 +8622,8 @@ void CvGame::processVote(const VoteTriggeredData& kData, int iChange)
 			if (kNewOwner.getID() != pCity->getOwner())
 			{
 				if (gTeamLogLevel >= 1) logBBAI("  Vote for assigning %S to %d (%S) passes", pCity->getName().GetCString(), kNewOwner.getTeam(), kNewOwner.getCivilizationDescription(0)); // BETTER_BTS_AI_MOD, AI logging, 10/02/09, jdog5000
-				kNewOwner.acquireCity(pCity, false, true, true);
+				kNewOwner.acquireCity(pCity, false, true, true,
+						false, true); // advc.ctr
 			}
 		}
 		// advc (note): Otherwise, the city has changed owner while the votes were cast.

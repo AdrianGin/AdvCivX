@@ -839,7 +839,7 @@ void CvCity::doTask(TaskTypes eTask, int iData1, int iData2, bool bOption,
 		else
 		{
 			GET_PLAYER((PlayerTypes)iData1).acquireCity(this, false, true, true,
-					bCede); // advc.ctr
+					bCede, bCede); // advc.ctr
 		}
 		break;
 

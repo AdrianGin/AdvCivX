@@ -6017,6 +6017,14 @@
 		<Spanish>%s1_Ldr ha cedido %s2_City a %s3_Ldr.</Spanish>
 	</TEXT>
 	<TEXT>
+		<Tag>TXT_KEY_MISC_CITY_TRADED_TO</Tag>
+		<English>%s1_Ldr has traded %s2_City to %s3_Ldr.</English>
+		<French>%s1_Ldr a troqué %s2_City à %s3_Ldr.</French>
+		<German>%s1_Ldr hat %s2_City an %s3_Ldr vertauscht.</German>
+		<Italian>%s1_Ldr ha barattato %s2_City a %s3_Ldr.</Italian>
+		<Spanish>%s1_Ldr ha negociado %s2_City a %s3_Ldr.</Spanish>
+	</TEXT>
+	<TEXT>
 		<Tag>TXT_KEY_FOREIGN_ADVISOR_REJECTS</Tag>
 		<English>Rejects</English>
 		<French>Rejette</French>
