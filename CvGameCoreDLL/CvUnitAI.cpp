@@ -21424,7 +21424,7 @@ int CvUnitAI::AI_stackOfDoomExtra() const
 		rMult /= rTrainMod;
 	}
 	// A little extra for naval assault
-	if(getArea().getAreaAIType(kOurTeam.getID()) == AREAAI_ASSAULT)
+	if (getArea().getAreaAIType(kOurTeam.getID()) == AREAAI_ASSAULT)
 		rMult += fixp(0.225);
 	if(kOurTeam.AI_getNumWarPlans(WARPLAN_TOTAL) <= 0)
 		rMult *= fixp(0.85);

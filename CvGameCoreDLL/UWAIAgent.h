@@ -185,8 +185,8 @@ public:
 	scaled confidenceFromPastWars(TeamTypes eTarget) const;
 	// LeaderHead-derived personality values that aren't cached. More in UWAICache.
 	/*	A measure of how paranoid our leader is, based on EspionageWeight and
-		protective trait. EspionageWeight is between 50 (Gandhi) and 150 (Stalin).
-		Return value is between 0.5 and 1.8.
+		protective trait. EspionageWeight is between 50 (Gandhi) and 140 (Stalin).
+		Return value is between 0.5 and 1.6.
 		"Paranoia" would be a better name, but that already means sth. else
 		(related to the Alert AI strategy). */
 	scaled distrustRating() const;

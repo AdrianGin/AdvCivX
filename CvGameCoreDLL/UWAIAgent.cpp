@@ -2040,7 +2040,7 @@ void UWAI::Team::respondToRebuke(TeamTypes eTarget, bool bPrepare)
 		kAgent.AI_isSneakAttackReady(eTarget)))
 	{
 		return;
-		}
+	}
 	if (!bPrepare && !kAgent.canDeclareWar(eTarget))
 		return;
 	FAssert(GET_TEAM(eTarget).isHuman());

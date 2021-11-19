@@ -21067,7 +21067,7 @@ void CvPlayerAI::AI_proposeWarTrade(PlayerTypes eHireling)
 		iDeclareWarTradeRand ++;
 	}*/
 	// <advc.161>
-	if(iMinAtWarCounter == MAX_INT)
+	if (iMinAtWarCounter == MAX_INT)
 		return;
 	iDeclareWarTradeRand = iDeclareWarTradeRand / 10 + std::min(10, iMinAtWarCounter);
 	{
