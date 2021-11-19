@@ -21412,7 +21412,7 @@ int CvUnitAI::AI_stackOfDoomExtra() const
 			rEraRatio * iFlavourExtra +
 			// <advc.104p> Half of rMeanTargetEra factored into the non-random portion
 			rMeanTargetEra / 2)).round();
-	int iR = (rMeanTargetEra / 2).ceil() + // </advc.104p>
+	int iR = (rMeanTargetEra / 2).floor() + // </advc.104p>
 			4 + (AI_getBirthmark() % iModulus);
 	// K-Mod end
 	// <advc.104p>
