@@ -3935,7 +3935,7 @@ void FairPlay::evaluate()
 					another enemy and our DoW won't really hurt. */
 				((int)militAnalyst().lostCities(eThey).size()) -
 				((int)militAnalyst().conqueredCities(eWe).size()))).sqrt()) /
-				scaled(std::max(1, iPotentialOtherEnemies)).sqrt() - fixp(1/3.));
+				(scaled(std::max(1, iPotentialOtherEnemies)).sqrt() - fixp(1/3.)));
 		rFromOtherEnemies *= (1 - fixp(2/3.) * m_kGame.gameTurnProgress());
 		/*	Once we've gone through the trouble of preparing war, we'd like to go
 			through with it, but if there are many civs in the game, there's a good
