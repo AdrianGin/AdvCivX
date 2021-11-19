@@ -5227,9 +5227,9 @@ VoteSourceTypes CvTeamAI::AI_getLatestVictoryVoteSource() const
 int CvTeamAI::AI_countVSNonMembers(VoteSourceTypes eVS) const
 {
 	int iCount = 0;
-	for(PlayerIter<MAJOR_CIV,KNOWN_TO> itPlayer(getID()); itPlayer.hasNext(); ++itPlayer)
+	for(PlayerIter<MAJOR_CIV> itPlayer(getID()); itPlayer.hasNext(); ++itPlayer)
 	{
-		if(!itPlayer->isVotingMember(eVS))
+		if (!itPlayer->isVotingMember(eVS) || !isHasMet(itPlayer->getTeam()))
 			iCount++;
 	}
 	return iCount;
