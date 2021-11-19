@@ -2802,10 +2802,9 @@ int Effort::preEvaluate()
 	rFutureUse.clamp(fixp(0.35), fixp(1.65));
 	/*	Division by e.g. 2.2 means survivors can be valued up to 75%; 2.75: 60%
 		(not taking account the exponentiation below) */
-	rFutureUse /= fixp(2.5);
+	rFutureUse /= fixp(2.55);
 	bool const bHuman = kWe.isHuman();
-	// sqrt would be a bit much
-	rFutureUse.exponentiate(bHuman ? fixp(0.9) : fixp(0.77));
+	rFutureUse.exponentiate(bHuman ? fixp(0.9) : fixp(0.75));
 	if (!bHuman)
 	{
 		rFutureUse += scaled::max(0,
