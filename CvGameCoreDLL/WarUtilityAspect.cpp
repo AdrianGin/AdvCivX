@@ -2278,9 +2278,7 @@ void PreEmptiveWar::evaluate()
 		rThreatChange.flipSign();
 	log("Change in threat: %d percent", rThreatChange.getPercent());
 	scaled rUtility = -90 * rCurrThreat * rThreatChange;
-	scaled rDistrustFactor = 1;
-	if (!kWe.isHuman())
-		rDistrustFactor = kWeAI.distrustRating();
+	scaled rDistrustFactor = kWeAI.distrustRating();
 	log("Our distrust: %d percent", rDistrustFactor.getPercent());
 	m_iU += (rUtility * rDistrustFactor).round();
 }
@@ -4501,4 +4499,305 @@ void LoveOfPeace::evaluate()
 		iLoPCost /= 2;
 	}
 	m_iU -= iLoPCost;
+}
+
+
+int ThirdPartyIntervention::preEvaluate()
+{
+	scaled rOurLostPow = militAnalyst().lostPower(eWe, ARMY) +
+			militAnalyst().lostPower(eWe, HOME_GUARD) +
+			/*	Squared b/c logistics power is only the cargo capacity.
+				(Fixme: should track power of cargo ships separately.) */
+			SQR(militAnalyst().lostPower(eWe, LOGISTICS));
+	/*	The timing of the intervention is difficult to predict. They may or may not
+		need to build up units, and we may be weakest early in the simulation or
+		late, but, even in the latter case, they might attack early b/c we already
+		appear weak enough ... I'm just going to look at the current power values
+		b/c that's easy to implement. */
+	m_rDefPow = /*(militAnalyst().gainedPower(eWe, ARMY) +
+			militAnalyst().gainedPower(eWe, HOME_GUARD)) / 2 +*/ // Count gains half?
+			// The cache includes HOME_GUARD in ARMY
+			ourCache().getPowerValues()[ARMY]->power();
+	m_rDefPow.increaseTo(scaled::epsilon());
+	for (PlayerAIIter<MAJOR_CIV,OTHER_KNOWN_TO> itAlly(eOurTeam);
+		itAlly.hasNext(); ++itAlly)
+	{
+		if(militAnalyst().isEliminated(itAlly->getID()))
+			continue;
+		if (itAlly->getMasterTeam() == kOurTeam.getMasterTeam() ||
+			(kOurTeam.isDefensivePact(itAlly->getTeam()) &&
+			// This distinction should make us reluctant to kill our DPs
+			militAnalyst().getWarsDeclaredBy(eWe).empty()))
+		{
+			m_rDefPow += itAlly->uwai().getCache().
+					getPowerValues()[ARMY]->power() / 2;
+			// Let's not bother with their guard units, but count army fully.
+			rOurLostPow += militAnalyst().lostPower(itAlly->getID(), ARMY);
+		}
+	}
+	m_rLostDefPowRatio = rOurLostPow / m_rDefPow;
+	m_rLostDefPowRatio.clamp(0, fixp(0.5));
+	return 0;
+}
+
+
+void ThirdPartyIntervention::evaluate()
+{
+	/*	For setting a debugger breakpoint, may want to use this condition:
+		m_kAgentTeam.m_eID == x && m_kParams.m_eTarget == y && m_pRivalPlayer->m_eID == z
+	*/
+	// Mustn't modify those members here
+	scaled rOurPow = m_rDefPow;
+	scaled rOurLostPowRatio = m_rLostDefPowRatio;
+	TeamTypes const eTarget = m_kParams.getTarget();
+	/*	Count this cost only when we're actually incurring losses from fighting
+		against a 2nd party. Otherwise, we'd veer into the lane of the
+		PreEmptiveWar aspect. If we're not incurring losses, then we're doing
+		all that we can to avoid exposing us to the 3rd party (eThey). Active
+		preparations for an anticipated DoW are handled by the Alert AI strategy. */
+	if (rOurLostPowRatio <= 0 ||
+		// War against them is already covered by the military analysis
+		militAnalyst().isOnTheirSide(eTheirTeam, true) ||
+		/*	They're busy fighting someone else. Need to be careful not to use a
+			narrow check here - like them conquering cities - b/c that could
+			indirectly encourage us to support their war effort. */
+		militAnalyst().lostPower(eThey, ARMY) >= 1 ||
+		/*	When already at war and winning decisively, try to wrap it up
+			before worrying about 3rd parties. */
+		(m_kParams.isConsideringPeace() && eTarget != NO_TEAM &&
+		(militAnalyst().isEliminated(GET_TEAM(eTarget).getLeaderID()) ||
+		!militAnalyst().getCapitulationsAccepted(eOurTeam).empty())) ||
+		// Vassals are covered when evaluating their master
+		!kTheirTeam.uwai().canSchemeAgainst(eOurTeam, true) ||
+		!kTheirTeam.uwai().isLandTarget(eOurTeam))
+	{
+		return;
+	}
+	{	/*	Our losses should be small if our enemies are weak, but perhaps
+			better not to rely on that. Fear of 3rd parties should not stop
+			us from waging minor wars. (Well, having our troops away from
+			home could actually hurt us a lot, but I'm more worried about
+			the AI just sitting there in tonic immobility.) */
+		bool bAllPushOver = true;
+		for (TeamIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itEnemy(eOurTeam);
+			itEnemy.hasNext(); ++itEnemy)
+		{
+			if (militAnalyst().isWar(eOurTeam, itEnemy->getID()) &&
+				!kOurTeam.AI_isPushover(itEnemy->getID()))
+			{
+				bAllPushOver = false;
+				break;
+			}
+		}
+		if (bAllPushOver)
+		{
+			log("Not considering 3rd-party interventions b/c all enemies are weak");
+			return;
+		}
+	}
+	// Sending troops abroad is dangerous; will take long to redeploy.
+	if (!militAnalyst().isPeaceScenario() && eTarget != NO_TEAM &&
+		!kOurTeam.uwai().isLandTarget(eTarget) &&
+		!GET_TEAM(eTarget).AI_hasSharedPrimaryArea(eTheirTeam))
+	{
+		log("Losses treated as higher b/c of overseas deployment");
+		rOurLostPowRatio *= 2;
+		rOurLostPowRatio.decreaseTo(fixp(0.6));
+	}
+	scaled rInterventionProb;
+	/*	(If we applied different measures in the war/peace scenario, we could
+		get inconsistent results, making us feel safer in the war scenario.) */
+	if (//militAnalyst().isPeaceScenario() ||
+		m_kParams.isConsideringPeace())
+	{
+		/*	In this case, all relevant wars are already reflected by their
+			war utility against us. No worries if that utility is 0.
+			Not sure if war utility _including_ Distraction would be better here;
+			well, that's not cached and it shouldn't matter much. */
+		scaled rUtilityVsUs = kThey.uwai().getCache().
+				warUtilityIgnoringDistraction(eOurTeam);
+		/*	We're not supposed to know everything that enters their war utility
+			calculation. Add some noise. Hashing rank should result in a somewhat
+			stable error. */
+		scaled rNoise = 30 *
+				(scaled::hash(m_kGame.getPlayerRank(eWe), eWe) - fixp(0.5));
+		rUtilityVsUs += rNoise;
+		if (rUtilityVsUs > 0)
+		{
+			log("Their war utility: %d (%d from noise)",
+					rUtilityVsUs.uround(), rNoise.round());
+			rUtilityVsUs.decreaseTo(94);
+			rInterventionProb = fixp(0.8) * rUtilityVsUs / 100;
+		}
+	}
+	else
+	{	/*	If there are undeclared wars, it's really difficult to say how much
+			higher their war utility will be after those DoW. Not worth letting
+			the AI cheat more. Better just rely on paranoia. */
+		int iOurDefPow = kOurTeam.getDefensivePower();
+		iOurDefPow = (iOurDefPow * (1 - rOurLostPowRatio)).uround();
+		int iParanoia = kWe.AI_paranoiaRating(eThey, iOurDefPow, false);
+		iParanoia = std::min(iParanoia, 190);
+		rInterventionProb = scaled(iParanoia - 25, 215);
+		if (rInterventionProb > 0)
+		{
+			log("Our paranoia rating: %d", iParanoia);
+			if (!kTheirTeam.isHuman() &&
+				!m_kGame.isOption(GAMEOPTION_RANDOM_PERSONALITIES))
+			{
+				scaled rWarRand = kTheirTeam.AI_dogpileWarRand();
+				log("Adjusting paranoia based on DogpileWarRand=%d", rWarRand.floor());
+				rWarRand.mulDiv(4, 3);
+				rWarRand.clamp(25, 200);
+				// War rands matter less when war utility is high
+				rInterventionProb /= (rWarRand / 100 + 5 * rInterventionProb) /
+						(5 * rInterventionProb + 1);
+			}
+		}
+	}
+	if (rInterventionProb < per100(1))
+		return;
+	/*	(Would be nice to do this also when there has been no war, but there
+		is no counter for the number of turns that we've been considering
+		war against the target or have been afraid of an intervention.) */
+	if (kWe.AI_getMemoryCount(eThey, MEMORY_DECLARED_WAR) +
+		kThey.AI_getMemoryCount(eWe, MEMORY_DECLARED_WAR) > 0)
+	{	// Avoid stalemates: don't be afraid of interventions forever
+		int iAtPeaceTurns = kOurTeam.AI_getAtPeaceCounter(eTheirTeam);
+		int iThresh = (5 * GC.getDefineINT(CvGlobals::PEACE_TREATY_LENGTH)) / 3 - 1;
+		if (iAtPeaceTurns > iThresh)
+		{
+			scaled rAtPeaceTurns = fixp(1.5) * iAtPeaceTurns /
+					(per100(m_kSpeed.getGoldenAgePercent()) + fixp(0.5));
+			scaled rMult = std::max(fixp(1/3.), 1 - scaled(iAtPeaceTurns - iThresh, 30));
+			log("Taking intervention prob times %d percent b/c peace has lasted %d turns",
+					rMult.getPercent(), iAtPeaceTurns);
+			rInterventionProb *= rMult;
+		}
+	}
+	if (!kTheirTeam.isHuman() &&
+		!m_kGame.isOption(GAMEOPTION_RANDOM_PERSONALITIES))
+	{	/*	(DogpileWarRand is already accounted for above;
+			is part of the war utility calc.) */
+		int iLimitedWarRand = kTheirTeam.AI_limitedWarRand();
+		scaled rWarRand(iLimitedWarRand +
+				std::min(iLimitedWarRand, kTheirTeam.AI_maxWarRand()), 2);
+		log("Adjusting intervention prob based on WarRand=%d", rWarRand.round());
+		rWarRand.clamp(25, 200);
+		rInterventionProb /= (rWarRand / 100 + 5 * rInterventionProb) /
+				(5 * rInterventionProb + 1);
+	}
+	if (rInterventionProb < per100(1))
+		return;
+	/*	(Would be nice to anticipate war trades, but the request frequency is the
+		same for almost all leaders anyway, and checking attitude thresholds -
+		not to mention trade items - gets pretty complicated, especially
+		considering that all parties involved could be human.) */
+	/*	(Better not to create an incentive for joining the wars of civs
+		that we fear. Let the SuckingUp aspect deal with that.) */
+	/*if (militAnalyst().isOnOurSide(eTheirTeam))
+		rInterventionProb *= fixp(2/3.);*/
+	rInterventionProb.decreaseTo(fixp(0.85));
+	log("Probability of intervention by %s: %d percent", m_kReport.leaderName(eThey),
+			rInterventionProb.getPercent());
+	scaled rTheirPow = kThey.uwai().getCache().
+			getPowerValues()[ARMY]->power();
+	if (kWe.isHuman())
+		rTheirPow *= kThey.uwai().confidenceAgainstHuman();
+	for (PlayerAIIter<MAJOR_CIV,VASSAL_OF> itTheirVassal(eTheirTeam);
+		itTheirVassal.hasNext(); ++itTheirVassal)
+	{
+		rTheirPow += itTheirVassal->uwai().getCache().
+				getPowerValues()[ARMY]->power() / 2;
+	}
+	rTheirPow.increaseTo(scaled::epsilon());
+	// Preserve for later
+	scaled const rTheirCurPowToOurs = rTheirPow / rOurPow;
+	{
+		// (Ignore their losses in home guard; we know that they haven't lost cities.)
+		scaled rTheirLostPowMult = rTheirPow - militAnalyst().lostPower(eThey, ARMY);
+		for (PlayerAIIter<MAJOR_CIV,VASSAL_OF> itTheirVassal(eTheirTeam);
+			itTheirVassal.hasNext(); ++itTheirVassal)
+		{
+			rTheirLostPowMult -= militAnalyst().lostPower(
+					itTheirVassal->getID(), ARMY) / 2;
+		}
+		rTheirLostPowMult /= rTheirPow;
+		rTheirLostPowMult.increaseTo(fixp(0.6));
+		rTheirPow *= rTheirLostPowMult;
+	}
+	if (kThey.isHuman())
+		rOurPow *= kWeAI.confidenceAgainstHuman();
+	rOurPow *= 1 - rOurLostPowRatio;
+	scaled rTheirPowToOurs = rTheirPow / rOurPow;
+	scaled const rPowRatioFloor = fixp(0.5);
+	if (rTheirPowToOurs <= rPowRatioFloor)
+		return;
+	log("Our loss ratio from fighting 2nd parties: %d percent",
+			rOurLostPowRatio.getPercent());
+	log("Power ratio (they:we) %d:%d=%d percent", rTheirPow.uround(),
+			rOurPow.uround(), rTheirPowToOurs.getPercent());
+	/*	Proportional to the square of our losses (which are in the unit interval,
+		hence sqrt). We want to avoid any tough fights with 2nd parties, when a
+		dangerous 3rd-party intervention looms. */
+	scaled rCost = rInterventionProb * 85 * rOurLostPowRatio.sqrt();
+	{	// These formulas are a mess
+		scaled const rPowRatioThresh = 2;
+		if (rTheirPowToOurs > rPowRatioThresh)
+		{
+			rTheirPowToOurs = rPowRatioThresh +
+					(rTheirPowToOurs - rPowRatioThresh + 1).sqrt() - 1;
+		}
+		else if (rTheirPowToOurs < 1)
+			rTheirPowToOurs.exponentiate(fixp(0.5));
+		rCost *= rTheirPowToOurs - rPowRatioThresh + 1 + rPowRatioFloor;
+		rCost /= 1 + rPowRatioFloor;
+		/*	If we can't stand up to them in any case, then we might as well
+			expose ourselves and hope for the best. That said, even if we can't
+			win, us being able to put up a fight may dissuade them on the
+			bottom line. Important only to look at current power values for
+			this - to avoid an incentive for incurring greater losses. */
+		scaled rThresh = fixp(5/3.);
+		if (rTheirCurPowToOurs > rThresh)
+		{
+			scaled rMult = rThresh / rTheirCurPowToOurs;
+			log("Cost reduced by a factor of %d percent b/c 3rd party very powerful",
+					rMult.getPercent());
+			rCost *= rMult;
+		}
+	}
+	if (kOurTeam.isHuman())
+	{	// Humans tend to not worry much about being backstabbed
+		rCost *= fixp(2/3.);
+	}
+	else
+	{
+		log("Our distrust rating: %d percent", kWeAI.distrustRating().getPercent());
+		rCost *= kWeAI.distrustRating().sqrt();
+	}
+	if (kWe.hasCapital() && kThey.hasCapital() &&
+		!kWe.getCapital()->sameArea(*kThey.getCapital()))
+	{
+		log("Cost decreased for differing capital areas");
+		rCost /= 2;
+	}
+	if (!militAnalyst().getWarsDeclaredBy(eWe).empty() &&
+		!kOurTeam.AI_isSneakAttackPreparing())
+	{	/*	Not starting war preparations should be less of an inconvenience
+			than abandoning preparations or ending an ongoing war. */
+		log("Cost increased for our DoW");
+		rCost *= fixp(4/3.);
+	}
+	{
+		int iThresh = 35;
+		if (rCost > iThresh)
+			rCost = iThresh + (rCost - iThresh).sqrt();
+	}
+	{
+		rCost *= 2;
+		rCost /= (kOurTeam.getNumMembers() + kTheirTeam.getNumMembers());
+	}
+	if (rCost < fixp(0.5))
+		log("(Not a relevant threat: %s)", m_kReport.leaderName(eThey));
+	else m_iU -= rCost.uround();
 }

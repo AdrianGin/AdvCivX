@@ -2811,6 +2811,8 @@ scaled UWAI::Player::confidenceFromPastWars(TeamTypes eTarget) const
 
 scaled UWAI::Player::distrustRating() const
 {
+	if (GET_PLAYER(m_eAgent).isHuman())
+		return 1;
 	int iR = GC.getInfo(GET_PLAYER(m_eAgent).getPersonalityType()).
 			getEspionageWeight() - 10;
 	if (m_cache.hasDefensiveTrait())
