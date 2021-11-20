@@ -420,7 +420,7 @@
 			<iCreatePercent>70</iCreatePercent>
 			<iResearchPercent>50</iResearchPercent>
 			<!-- advc.910: Was 20 in K-Mod, 18 in BBAI. -->
-			<iTechCostModifier>11</iTechCostModifier>
+			<iTechCostModifier>8</iTechCostModifier>
 			<!-- advc.groundbr: start -->
 			<iAIMaxGroundbreakingPenalty>25</iAIMaxGroundbreakingPenalty>
 			<!-- 40 in DoC, but, that late in the game, aren't players
