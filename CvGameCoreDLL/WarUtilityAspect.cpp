@@ -2801,25 +2801,28 @@ int Effort::preEvaluate()
 	/*	Division by e.g. 2.2 means survivors can be valued up to 75%; 2.75: 60%
 		(not taking account the exponentiation below) */
 	rFutureUse /= fixp(2.55);
-	bool const bHuman = kWe.isHuman();
-	rFutureUse.exponentiate(bHuman ? fixp(0.9) : fixp(0.75));
-	if (!bHuman)
+	rFutureUse.exponentiate(fixp(0.75));
+	if (!kWe.isHuman())
 	{
 		rFutureUse += scaled::max(0,
 				// I.e. add between 3 (Gandhi) and 8 (Ragnar) percentage points
 				scaled(kOurPersonality.getBuildUnitProb(), 500));
 	}
-	/*	If we're at peace, units trained are apparently deemed useful by CvCityAI;
-		we still shouldn't assume that they'll _certainly_ be useful. */
-	/*bool bAnyWar = false;
-	for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it) {
-		if (militAnalyst().isWar(eWe, it->getID())) {
-			bAnyWar = true;
-			break;
+	{
+		bool bAnyWar = false;
+		for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
+		{
+			if (militAnalyst().isWar(eWe, it->getID()))
+			{
+				bAnyWar = true;
+				break;
+			}
 		}
+		/*	If we're at peace, units trained are apparently deemed useful by CvCityAI;
+			we still shouldn't assume that they'll _certainly_ be useful. */
+		if (!bAnyWar)
+			rFutureUse *= fixp(1.18);
 	}
-	if (!bAnyWar)
-		rFutureUse = 1;*/
 	scaled const rInvested = militAnalyst().militaryProduction(eWe);
 	scaled const rOurLostProduction = rOurLostProductionInUnits * rFutureUse +
 			rInvested *
