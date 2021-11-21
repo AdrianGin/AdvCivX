@@ -5363,19 +5363,19 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 
 		FOR_EACH_ENUM(Commerce)
 		{
-			int iTempValue = (kLoopProcess.getProductionToCommerceModifier(eLoopCommerce) * 4);
-
-			if (iTempValue <= 0) // K-Mod (check out what would happen to "bGoodProcess" without this bit.  "oops.")
+			int iTempValue = kLoopProcess.getProductionToCommerceModifier(eLoopCommerce) * 4;
+			/*	<K-Mod> (check out what would happen to "bGoodProcess" without this bit.
+				"oops.") */
+			if (iTempValue <= 0)
+			{
 				continue;
-
+			} // </K-Mod>
 			iTempValue *= AI_commerceWeight(eLoopCommerce);
 			iTempValue /= 100;
-
 			if (eLoopCommerce == COMMERCE_GOLD || eLoopCommerce == COMMERCE_RESEARCH)
 				bGoodProcess = true;
 			else if (eLoopCommerce == COMMERCE_CULTURE && AI_atVictoryStage(AI_VICTORY_CULTURE1))
 				iTempValue *= 2; // k146: was 3
-
 			iValue += iTempValue * iCityCount / 100;
 		}
 	}
@@ -8968,7 +8968,7 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 		else if (eWarTeam == getTeam() || kOurTeam.isVassal(eWarTeam))
 		{	// Explicit rejection by all who will definitely be attacked
 			bValid = false;
-		} // <kekm.25/advc> Try to honor peace treaty
+		}  // <kekm.25/advc> Try to honor peace treaty
 		else if (kOurTeam.isForcePeace(eWarTeam))
 			bValid = false; // </kekm.25/advc>
 		else if (kOurTeam.AI_getWarPlan(eWarTeam) != NO_WARPLAN) // BETTER_BTS_AI_MOD: END
