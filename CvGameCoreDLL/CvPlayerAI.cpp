@@ -4126,10 +4126,8 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bFreeTech, bool bAsyn
 		return techs[0].second;
 	}
 	// ... and the case where there are not enough techs in the list.
-	if ((int)techs.size() < iMaxPathLength)
-	{
+	if (((int)techs.size()) < iMaxPathLength)
 		return techs[0].second;
-	}
 
 	// Create a list of possible tech paths.
 	std::vector<std::pair<int,std::vector<int> > > tech_paths; // (total_value, path)
@@ -4169,7 +4167,8 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bFreeTech, bool bAsyn
 			{
 				techs_to_check.push(techs[i].second);
 			}
-			while (!techs_to_check.empty() && (int)techs_in_path.size() <= iMaxPathLength)
+			while (!techs_to_check.empty() &&
+				((int)techs_in_path.size()) <= iMaxPathLength)
 			{
 				bool bMissingPrereq = false;
 				// AndTech prereqs:
@@ -7029,10 +7028,10 @@ void CvPlayerAI::AI_chooseResearch()
 
 	if (eBestTech == NO_TECH)
 	{	// <k146>
-		int iResearchDepth = (isHuman() || isBarbarian() ||
+		int iResearchDepth = ((isHuman() || isBarbarian() ||
 				AI_atVictoryStage(AI_VICTORY_CULTURE3) ||
 				AI_isDoStrategy(AI_STRATEGY_ESPIONAGE_ECONOMY))
-			? 1 : 3;
+				? 1 : 3);
 		eBestTech = AI_bestTech(iResearchDepth); // </k146>
 	}
 	if (eBestTech != NO_TECH)
