@@ -7813,7 +7813,6 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 		kGame.isDebugMode()) // advc.135c
 	{
 		szBuffer.clear();
-
 		for (PlayerIter<ALIVE> it; it.hasNext(); ++it)
 		{
 			CvPlayer const& kPlayer = *it;
@@ -7835,10 +7834,10 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 			}
 			szBuffer.append(szTempBuffer);
 			szBuffer.append(NEWLINE);
-			// <advc.007> (Unrelated to the info above)
-			szTempBuffer.Format(L"tech id = %d", eTech);
-			szBuffer.append(szTempBuffer); // </advc.007>
 		}
+		// <advc.007> (Unrelated to the info above)
+		szTempBuffer.Format(L"tech id = %d", eTech);
+		szBuffer.append(szTempBuffer); // </advc.007>
 		return;
 	}
 
