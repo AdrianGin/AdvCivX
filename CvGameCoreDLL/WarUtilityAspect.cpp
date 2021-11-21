@@ -2827,7 +2827,7 @@ int Effort::preEvaluate()
 		/*	If we're at peace, units trained are apparently deemed useful by CvCityAI;
 			we still shouldn't assume that they'll _certainly_ be useful. */
 		if (!bAnyWar)
-			rFutureUse *= fixp(1.18);
+			rFutureUse *= fixp(1.12);
 	}
 	scaled const rInvested = militAnalyst().militaryProduction(eWe);
 	scaled const rOurLostProduction = rOurLostProductionInUnits * rFutureUse +
