@@ -8944,6 +8944,9 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 		{
 			if (bFriendlyToSecretary)
 				return PLAYER_VOTE_YES;
+			// <advc.001> Don't evaluate embargo against unmet non-member of AP
+			else if (!kOurTeam.isHasMet(eEmbargoTeam))
+				return PLAYER_VOTE_ABSTAIN; // </advc.001>
 			else if (canStopTradingWithTeam(eEmbargoTeam))
 			{
 				bValid = (NO_DENIAL == AI_stopTradingTrade(
@@ -8973,6 +8976,9 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 			bValid = false; // </kekm.25/advc>
 		else if (kOurTeam.AI_getWarPlan(eWarTeam) != NO_WARPLAN) // BETTER_BTS_AI_MOD: END
 			bValid = true;
+		// <advc.001> Don't evaluate war against unmet non-member of AP
+		else if (!kOurTeam.isHasMet(eWarTeam))
+			bValid = false; // </advc.001>
 		else
 		{	// BETTER_BTS_AI_MOD, Diplomacy AI, 07/20/09, jdog5000: START
 			/*bValid = (bPropose || NO_DENIAL == GET_TEAM(getTeam()).AI_declareWarTrade(eWarTeam, eSecretaryGeneral));
@@ -9006,7 +9012,7 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 			else
 			{
 				bValid = (bPropose ||
-						NO_DENIAL == kOurTeam.AI_declareWarTrade(eWarTeam, eSecretaryGeneral));
+						kOurTeam.AI_declareWarTrade(eWarTeam, eSecretaryGeneral) == NO_DENIAL);
 			}
 
 			if (bValid || /* <advc.104n> */ getUWAI().isEnabled())
