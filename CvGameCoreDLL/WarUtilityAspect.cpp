@@ -2300,7 +2300,13 @@ int KingMaking::preEvaluate()
 		return 0;
 	addWinning(m_winningFuture, true);
 	addWinning(m_winningPresent, false);
-	if (m_winningFuture.count(kOurTeam.getLeaderID()) > 0 &&
+	scaled const rEraFactor = kOurTeam.AI_getCurrEraFactor();
+	// Sealing the deal through war is a pretty aggressive move
+	int const iPeaceWeight = kWe.AI_getPeaceWeight();
+	int const iVeryHighPeaceWeight = 11;
+	if (iPeaceWeight < iVeryHighPeaceWeight &&
+		rEraFactor > 0 &&
+		m_winningFuture.count(kOurTeam.getLeaderID()) > 0 &&
 		m_winningFuture.size() <= 1 &&
 		// We don't want to be the only winner if it means betraying our partners
 		(m_kParams.getTarget() == NO_TEAM ||
@@ -2308,8 +2314,8 @@ int KingMaking::preEvaluate()
 		kOurTeam.AI_isChosenWar(m_kParams.getTarget()) ||
 		!kOurTeam.AI_isAvoidWar(m_kParams.getTarget(), true)))
 	{
-		log("We'll be the only winners");
-		return (kOurTeam.AI_getCurrEraFactor() * 9).round();
+		log("We'll be the only winners; peace weight: %d", iPeaceWeight);
+		return (rEraFactor * (iVeryHighPeaceWeight - iPeaceWeight)).round();
 	}
 	return 0;
 }
