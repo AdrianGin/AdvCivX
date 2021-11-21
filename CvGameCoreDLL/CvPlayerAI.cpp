@@ -23259,7 +23259,7 @@ void CvPlayerAI::AI_doSplit(/* advc.104r: */ bool bForce)
 	std::map<int,int>::iterator it;
 	for (it = mapAreaValues.begin(); it != mapAreaValues.end(); ++it)
 	{	// advc.ctr: First condition inverted to match new semantics of AI_splitEmpireValue
-		if (it->second < 0 /* advc.104r: */ && !bForce)
+		if (it->second <= 0 /* advc.104r: */ && !bForce)
 			continue;
 
 		CvArea& kArea = *m.getArea(it->first);
