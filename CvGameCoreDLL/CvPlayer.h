@@ -89,7 +89,7 @@ public:
 	CvCity* initCity(int iX, int iY, bool bBumpUnits, bool bUpdatePlotGroups,										// Exposed to Python
 			int iOccupationTimer = 0); // advc.ctr
 	void acquireCity(CvCity* pCity, bool bConquest, bool bTrade, bool bUpdatePlotGroups,							// Exposed to Python
-			bool bPeaceDeal = false); // advc.ctr
+			bool bPeaceDeal = false, bool bForFree = false); // advc.ctr
 	void keepCity(CvCity& kCity); // advc
 	void killCities();																								// Exposed to Python
 	CvWString getNewCityName() const;																				// Exposed to Python

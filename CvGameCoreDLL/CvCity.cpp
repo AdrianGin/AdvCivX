@@ -839,7 +839,7 @@ void CvCity::doTask(TaskTypes eTask, int iData1, int iData2, bool bOption,
 		else
 		{
 			GET_PLAYER((PlayerTypes)iData1).acquireCity(this, false, true, true,
-					bCede); // advc.ctr
+					bCede, bCede); // advc.ctr
 		}
 		break;
 
@@ -10373,18 +10373,6 @@ void CvCity::doCulture()
 	changeCultureTimes100(getOwner(), getCommerceRateTimes100(COMMERCE_CULTURE), false, true);
 }
 
-// advc: Replacing local variable in doPlotCultureTimes100
-namespace
-{
-	int iPLOT_CULTURE_EXTRA_RANGE = 3;
-}
-
-// advc: Was 10 as a local variable. Should still be 10.
-int CvCity::plotCultureScale()
-{	
-	return GC.getNumCultureLevelInfos() + iPLOT_CULTURE_EXTRA_RANGE;
-}
-
 /*	This function has essentially been rewritten for K-Mod.
 	(and it used to not be 'times 100') */
 void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
@@ -10405,7 +10393,7 @@ void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
 	/*	(iScale-1)(iDistance - iRange)^2/(iRange^2) + 1
 		This approximates the exponential pretty well */
 	int const iScale = plotCultureScale();
-	int const iCultureRange = eCultureLevel + iPLOT_CULTURE_EXTRA_RANGE;
+	int const iCultureRange = eCultureLevel + plotCultureExtraRange();
 
 	if (bCityCulture)
 	{

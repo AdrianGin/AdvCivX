@@ -10,7 +10,7 @@
 #include "CvSelectionGroupAI.h"
 #include "CityPlotIterator.h"
 #include "CvArea.h"
-#include "CvInfo_Building.h"
+#include "CvInfo_City.h"
 #include "CvInfo_Terrain.h"
 
 
@@ -533,8 +533,8 @@ void UWAICache::updateGoldPerProduction()
 	m_rGoldPerProduction = std::max(goldPerProdBuildings(), goldPerProdSites());
 	m_rGoldPerProduction *= GET_PLAYER(m_eOwner).uwai().amortizationMultiplier();
 	m_rGoldPerProduction.increaseTo(goldPerProdVictory());
-	/*	Currently, this ratio is currently pretty much 1. Just so that any changes
-		to AI_yieldWeight or Civ4YieldInfos.xml take effect here. */
+	/*	Currently, this ratio is pretty much 1. Just so that any changes
+		to AI_yieldWeight or Civ4YieldInfos.xml are taken into account here. */
 	m_rGoldPerProduction.mulDiv(
 			GET_PLAYER(m_eOwner).AI_yieldWeight(YIELD_PRODUCTION), 225);
 }
@@ -616,7 +616,26 @@ scaled UWAICache::goldPerProdBuildings()
 	r *= scaled(100 - kOwnerPersonality.getBuildUnitProb(), 75);
 	r.decreaseTo(1);
 	r *= rGoldPerProductionCap;
-	r.increaseTo(1);
+	r.increaseTo(1); // (even if we don't have a good coversion process)
+	scaled rBestProcessConvRate;
+	FOR_EACH_ENUM(Process)
+	{
+		if (kOwner.canMaintain(eLoopProcess))
+		{
+			rBestProcessConvRate.increaseTo(per100(GC.getInfo(eLoopProcess).
+					getProductionToCommerceModifier(COMMERCE_RESEARCH)));
+			rBestProcessConvRate.increaseTo(per100(GC.getInfo(eLoopProcess).
+					getProductionToCommerceModifier(COMMERCE_GOLD)));
+		}
+	}
+	/*	If our buildings are so bad that a process is our best option - but we do
+		at least have a process - then we shouldn't necessarily wage war; focusing
+		on tech might help us more. This function is supposed to say how much we
+		value production in terms of gold, not how much we value gold or research.
+		So it would more consistent to make this adjustment, say, in WarUtilityAspect
+		::Effort. However, it's convenient to do it here b/c we've already determined
+		that (or whether) we've run out of buildings to construct. */
+	r.increaseTo(rBestProcessConvRate * fixp(1.28));
 	return r;
 }
 

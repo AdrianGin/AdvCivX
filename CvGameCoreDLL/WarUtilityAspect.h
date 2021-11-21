@@ -483,4 +483,17 @@ public:
 	UWAI::AspectTypes xmlID() const { return UWAI::LOVE_OF_PEACE; }
 };
 
+class ThirdPartyIntervention : public WarUtilityBroaderAspect
+{
+public:
+	ThirdPartyIntervention(WarEvalParameters const& kParams)
+	:	WarUtilityBroaderAspect(kParams) {}
+	int preEvaluate();
+	void evaluate();
+	UWAI::AspectTypes xmlID() const { return UWAI::THIRD_PARTY_INTERVENTION; }
+private:
+	scaled m_rDefPow;
+	scaled m_rLostDefPowRatio;
+};
+
 #endif

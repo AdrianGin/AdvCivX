@@ -4,6 +4,7 @@
 #define CIV4_CITY_AI_H
 
 #include "CvCity.h"
+#include "AIStrategies.h" // advc.enum
 
 typedef std::vector<std::pair<UnitAITypes, int> > UnitTypeWeightArray;
 
@@ -147,7 +148,8 @@ public:
 	int AI_countNumImprovableBonuses(bool bIncludeNeutral, TechTypes eExtraTech = NO_TECH,
 			bool bLand = true, bool bWater = false) const; // BBAI
 
-	int AI_playerCloseness(PlayerTypes eIndex, int iMaxDistance = 7,
+	int AI_playerCloseness(PlayerTypes eIndex,
+			int iMaxDistance /* advc: */ = DEFAULT_PLAYER_CLOSENESS,
 			bool bConstCache = false) const; // advc.001n
 	int AI_highestTeamCloseness(TeamTypes eTeam, // K-Mod
 			bool bConstCache) const; // advc.001n

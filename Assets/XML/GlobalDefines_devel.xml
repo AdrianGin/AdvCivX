@@ -19,11 +19,12 @@
     </Define>
 
 	<!-- [advc.104]
-		 If UWAI reports are enabled (see above), no details about a AI war plan
+		 If UWAI reports are enabled (see above), no details about an AI war plan
 		 are logged unless that war plan has greater utility than this
-		 threshold. There's a separate threshold for war plans against
-		 human players. Recommended: -10/-50; use sth. like -1000/-1000 to log
-		 details always. -->
+		 threshold. Exception: Details abound ongoing wars (i.e. when considering
+		 peace) are logged regardless of the threshold.
+		 There's a separate threshold for war plans against human players.
+		 Recommended: -10/-50; use sth. like -1000/-1000 to log details always. -->
     <Define>
         <DefineName>UWAI_REPORT_THRESH</DefineName>
         <iDefineIntVal>-10</iDefineIntVal>

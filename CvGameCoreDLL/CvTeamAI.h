@@ -313,7 +313,8 @@ public:
 	// advc.158:
 	AIStrengthMemoryMap& AI_strengthMemory() const { return m_strengthMemory; }
 	// advc.104:
-	int AI_teamCloseness(TeamTypes eIndex, int iMaxDistance = -1,
+	int AI_teamCloseness(TeamTypes eIndex,
+			int iMaxDistance = DEFAULT_PLAYER_CLOSENESS,
 			bool bConsiderLandTarget = false, // advc.104o
 			bool bConstCache = false) const; // advc.001n
 

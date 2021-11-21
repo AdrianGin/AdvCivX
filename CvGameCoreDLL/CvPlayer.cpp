@@ -1397,8 +1397,11 @@ CvCity* CvPlayer::initCity(int iX, int iY, bool bBumpUnits, bool bUpdatePlotGrou
 
 // (advc: Some comments added)
 void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool bUpdatePlotGroups,
-	bool bPeaceDeal) // advc.ctr
+	bool bPeaceDeal, bool bForFree) // advc.ctr
 {
+	FAssert(!bConquest || !bTrade); // advc: mutually exclusive
+	// advc.ctr: bForFree isn't meaningful for conquests
+	FAssert(!bForFree || bTrade);
 	CvPlot& kCityPlot = *pOldCity->plot();
 	// Kill ICBMs
 	//CLinkList<IDInfo> oldUnits; ... // advc: Deleted; unnecessary.
@@ -1483,7 +1486,9 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 		{	// Need to cache these locally
 			CvWString szOldOwnerReplayName = GET_PLAYER(pOldCity->getOwner()).getReplayName();
 			CvWString szNewOwnerReplayName = getReplayName();
-			szHasCeded = gDLL->getText("TXT_KEY_MISC_CITY_CEDED_TO",
+			szHasCeded = gDLL->getText(bForFree ?
+					"TXT_KEY_MISC_CITY_CEDED_TO" :
+					"TXT_KEY_MISC_CITY_TRADED_TO",
 					/*	Don't obscure any names; isRevealed in the loop implies
 						isHasSeen (though not isHasMet). */
 					szOldOwnerReplayName.GetCString(), pOldCity->getNameKey(),
@@ -12271,7 +12276,8 @@ bool CvPlayer::doEspionageMission(EspionageMissionTypes eMission, PlayerTypes eT
 	{
 		szBuffer = gDLL->getText("TXT_KEY_ESPIONAGE_TARGET_CITY_BOUGHT",
 				pCity->getNameKey()).GetCString();
-		acquireCity(pCity, false, true, true);
+		acquireCity(pCity, false, true, true,
+				false, true); // advc.ctr
 		bSomethingHappened = true;
 	}
 
@@ -17227,7 +17233,8 @@ bool CvPlayer::splitEmpire(CvArea& kArea) // advc: was iAreaId
 
 		int iCulture = pOldCity->getCultureTimes100(getID());
 		CvPlot* pPlot = pOldCity->plot();
-		GET_PLAYER(eNewPlayer).acquireCity(pOldCity, false, true, false);
+		GET_PLAYER(eNewPlayer).acquireCity(pOldCity, false, true, false,
+				false, true); // advc.ctr
 		/*	advc: acquireCity kills pOldCity. Note that
 			it's OK to do this while traversing the city list (m_cities). */
 		pOldCity = NULL;

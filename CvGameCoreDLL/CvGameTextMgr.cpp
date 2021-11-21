@@ -3851,8 +3851,9 @@ void CvGameTextMgr::setPlotHelpDebug_Ctrl(CvWStringBuffer& szString, CvPlot cons
 					szString.append(CvWString::format(L" [%d, ", iPlayerCloseness));
 					if(kPlayer.getTeam() != kLoopPlayer.getTeam())
 					{
-						szString.append(CvWString::format(L"%d]", GET_TEAM(kPlayer.
-								getTeam()).AI_teamCloseness(kLoopPlayer.getTeam(), DEFAULT_PLAYER_CLOSENESS,
+						szString.append(CvWString::format(L"%d]",
+								GET_TEAM(kPlayer.getTeam()).AI_teamCloseness(
+								kLoopPlayer.getTeam(), DEFAULT_PLAYER_CLOSENESS,
 								false, true))); // advc.001n
 					/*  advc.001n: Only relevant for the K-Mod war AI, and I'm not totally sure that
 						CvTeamAI::AI_startWarVal is safe for networked games
@@ -3899,13 +3900,15 @@ void CvGameTextMgr::setPlotHelpDebug_Ctrl(CvWStringBuffer& szString, CvPlot cons
 						bFirst = false;
 						szString.append(CvWString::format(L"\n\nCloseness:"));
 					}
-					szString.append(CvWString::format(L"\n%s(%d) : %d ", kLoopPlayer.getName(), DEFAULT_PLAYER_CLOSENESS, iCloseness));
-					szString.append(CvWString::format(L" [%d, ", kPlayer.AI_playerCloseness(eLoopPlayer, DEFAULT_PLAYER_CLOSENESS,
+					szString.append(CvWString::format(L"\n%s(%d) : %d ", kLoopPlayer.getName(),
+							DEFAULT_PLAYER_CLOSENESS, iCloseness));
+					szString.append(CvWString::format(L" [%d, ",
+							kPlayer.AI_playerCloseness(eLoopPlayer, DEFAULT_PLAYER_CLOSENESS,
 							true))); // advc.001n
 					if (kPlayer.getTeam() != kLoopPlayer.getTeam())
 					{
 						szString.append(CvWString::format(L"%d]", GET_TEAM(kPlayer.getTeam()).
-								AI_teamCloseness( kLoopPlayer.getTeam(), DEFAULT_PLAYER_CLOSENESS,
+								AI_teamCloseness(kLoopPlayer.getTeam(), DEFAULT_PLAYER_CLOSENESS,
 								false, true))); // advc.001n
 					}
 					else szString.append(CvWString::format(L"-]"));
@@ -7810,7 +7813,6 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 		kGame.isDebugMode()) // advc.135c
 	{
 		szBuffer.clear();
-
 		for (PlayerIter<ALIVE> it; it.hasNext(); ++it)
 		{
 			CvPlayer const& kPlayer = *it;
@@ -7832,10 +7834,10 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 			}
 			szBuffer.append(szTempBuffer);
 			szBuffer.append(NEWLINE);
-			// <advc.007> (Unrelated to the info above)
-			szTempBuffer.Format(L"tech id = %d", eTech);
-			szBuffer.append(szTempBuffer); // </advc.007>
 		}
+		// <advc.007> (Unrelated to the info above)
+		szTempBuffer.Format(L"tech id = %d", eTech);
+		szBuffer.append(szTempBuffer); // </advc.007>
 		return;
 	}
 

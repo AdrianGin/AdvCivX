@@ -75,7 +75,10 @@ CyCity* CyPlayer::initCity(int x, int y)
 void CyPlayer::acquireCity(CyCity* pCity, bool bConquest, bool bTrade)
 {
 	if (m_pPlayer)
-		m_pPlayer->acquireCity(pCity->getCity(), bConquest, bTrade, true);
+	{
+		m_pPlayer->acquireCity(pCity->getCity(), bConquest, bTrade, true,
+				false, !bConquest); // advc.ctr
+	}
 }
 
 void CyPlayer::killCities()

@@ -95,7 +95,7 @@
 	<!-- advc.055: was 500 in K-Mod -->
 	<Define>
 		<DefineName>GLOBAL_WARMING_INDEX_PER_CHANCE</DefineName>
-		<iDefineIntVal>300</iDefineIntVal>
+		<iDefineIntVal>250</iDefineIntVal>
 	</Define>
 	<!-- global warming index above the threshold is decreased by a percentage given by the restoration rate -->
 	<Define>

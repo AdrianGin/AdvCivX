@@ -27,6 +27,8 @@ public:
 			CLinkList<TradeData> const* pWeGive = NULL);
 	void turnPre();
 	void doWar(); // replacement for CvTeamAI::doWar
+	bool canSchemeAgainst(TeamTypes eTarget, bool bAssumeNoWarPlan,
+			bool bCheckDefensivePacts = true) const;
 	// Replacing parts of CvTeamAI::AI_declareWarTrade
 	DenialTypes declareWarTrade(TeamTypes eTeam, TeamTypes eSponsor) const;
 	/*	Replacing CvTeamAI::AI_declareWarTradeVal. However, that function is
@@ -110,7 +112,6 @@ private:
 	bool considerConcludePreparations(TeamTypes eTarget, int iU, int iTurnsRemaining);
 
 	void scheme(); // Consider new war plans
-	bool canSchemeAgainst(TeamTypes eTarget, bool bAssumeNoWarPlan) const;
 	void alignAreaAI(bool bNaval);
 	int peaceThreshold(TeamTypes eTarget) const;
 	scaled limitedWarWeight() const;
@@ -185,8 +186,8 @@ public:
 	scaled confidenceFromPastWars(TeamTypes eTarget) const;
 	// LeaderHead-derived personality values that aren't cached. More in UWAICache.
 	/*	A measure of how paranoid our leader is, based on EspionageWeight and
-		protective trait. EspionageWeight is between 50 (Gandhi) and 150 (Stalin).
-		Return value is between 0.5 and 1.8.
+		protective trait. EspionageWeight is between 50 (Gandhi) and 140 (Stalin).
+		Return value is between 0.5 and 1.6.
 		"Paranoia" would be a better name, but that already means sth. else
 		(related to the Alert AI strategy). */
 	scaled distrustRating() const;

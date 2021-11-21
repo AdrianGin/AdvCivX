@@ -1579,7 +1579,8 @@ int CvTeamAI::AI_warCommitmentCost(TeamTypes eTarget, WarPlanTypes eWarPlan,
 		}
 
 		// increase the cost for distant targets...
-		if (0 == AI_teamCloseness(eTarget, /* advc.001n: */ -1, false, bConstCache))
+		if (0 == AI_teamCloseness(eTarget,
+			DEFAULT_PLAYER_CLOSENESS, false, bConstCache)) // advc.001n
 		{
 			// ... in the early game.
 			if (getNumCities() < GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities() * getAliveCount())
@@ -1746,7 +1747,7 @@ int CvTeamAI::AI_warDiplomacyCost(TeamTypes eTarget) const
 	This function computes the value of starting a war against eTeam.
 	The returned value should be compared against other possible targets
 	to pick the best target. */ // advc.104: UWAI bypasses this function
-// K-Mod. Complete remake of the function.
+// K-Mod: Complete remake of the function.
 int CvTeamAI::AI_startWarVal(TeamTypes eTarget, WarPlanTypes eWarPlan,
 	bool bConstCache) const // advc.001n
 {
@@ -1782,7 +1783,7 @@ int CvTeamAI::AI_startWarVal(TeamTypes eTarget, WarPlanTypes eWarPlan,
 		}
 	}
 	return iTotalValue;
-} // K-Mod end
+}
 
 
 int CvTeamAI::AI_endWarVal(TeamTypes eTeam) const // XXX this should consider area power...
@@ -1790,32 +1791,27 @@ int CvTeamAI::AI_endWarVal(TeamTypes eTeam) const // XXX this should consider ar
 	FAssert(eTeam != getID());
 	FAssert(isAtWar(eTeam));
 
-	const CvTeamAI& kWarTeam = GET_TEAM(eTeam); // K-Mod
+	CvTeamAI const& kWarTeam = GET_TEAM(eTeam); // K-Mod
 
 	int iValue = 100;
-
-	iValue += (getNumCities() * 3);
-	iValue += (kWarTeam.getNumCities() * 3);
-
+	iValue += getNumCities() * 3;
+	iValue += kWarTeam.getNumCities() * 3;
 	iValue += getTotalPopulation();
 	iValue += kWarTeam.getTotalPopulation();
+	iValue += kWarTeam.AI_getWarSuccess(getID()) * 20;
 
-	iValue += (kWarTeam.AI_getWarSuccess(getID()) * 20);
-
-	int iOurPower = std::max(1, getPower(true));
-	int iTheirPower = std::max(1, kWarTeam.getDefensivePower(getID()));
-
-	iValue *= iTheirPower + 10;
-	iValue /= std::max(1, iOurPower + iTheirPower + 10);
-
+	int const iOurPower = std::max(1, getPower(true));
+	int const iTheirPower = std::max(1, kWarTeam.getDefensivePower(getID()));
+	{	// <kekm.39> Multiplying by iTheirPower can overflow
+		scaled rPowMult(iTheirPower + 10, iOurPower + iTheirPower + 10);
+		iValue = (iValue * rPowMult).uround(); // </kekm.39>
+	}
 	WarPlanTypes const eWarPlan = AI_getWarPlan(eTeam);
-
-	// if we are not human, do we want to continue war for strategic reasons?
-	// only check if our power is at least 120% of theirs
+	/*	if we are not human, do we want to continue war for strategic reasons?
+		only check if our power is at least 120% of theirs */
 	if (!isHuman() && iOurPower > 120 * iTheirPower / 100)
 	{
 		bool bDagger = false;
-
 		bool bAnyFinancialTrouble = false;
 		for (MemberAIIter it(getID()); it.hasNext(); ++it)
 		{
@@ -1825,16 +1821,14 @@ int CvTeamAI::AI_endWarVal(TeamTypes eTeam) const // XXX this should consider ar
 			if (kMember.AI_isFinancialTrouble())
 				bAnyFinancialTrouble = true;
 		}
-
-		// if dagger, value peace at 90% * power ratio
 		if (bDagger)
 		{
 			iValue *= 9 * iTheirPower;
 			iValue /= 10 * iOurPower;
 		}
 
-		// for now, we will always do the land mass check for domination
-		// if we have more than half the land, then value peace at 90% * land ratio
+		/*	for now, we will always do the land mass check for domination
+			if we have more than half the land, then value peace at 90% * land ratio */
 		int iLandRatio = getTotalLand(true) * 100 / std::max(1, kWarTeam.getTotalLand(true));
 		if (iLandRatio > 120)
 		{
@@ -1901,7 +1895,8 @@ int CvTeamAI::AI_endWarVal(TeamTypes eTeam) const // XXX this should consider ar
 		iValue *= 2;
 	}
 	else if ((!isHuman() && eWarPlan == WARPLAN_DOGPILE && kWarTeam.getNumWars() > 1) ||
-			(!kWarTeam.isHuman() && kWarTeam.AI_getWarPlan(getID()) == WARPLAN_DOGPILE && getNumWars() > 1))
+		(!kWarTeam.isHuman() &&
+		kWarTeam.AI_getWarPlan(getID()) == WARPLAN_DOGPILE && getNumWars() > 1))
 	{
 		iValue *= 3;
 		iValue /= 2;
@@ -2525,7 +2520,8 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 	scaled128_t rMasterPower = kMasterTeam.getPower(false);
 	// <advc.112>
 	if(bFaraway ||
-		(getNumWars() <= 0 && AI_teamCloseness(eMasterTeam, -1, false, true) <= 0))
+		(getNumWars() <= 0 &&
+		AI_teamCloseness(eMasterTeam, DEFAULT_PLAYER_CLOSENESS, false, true) <= 0))
 	{
 		rMasterPower *= fixp(0.7); // </advc.112>
 	}
@@ -4898,10 +4894,6 @@ int CvTeamAI::AI_teamCloseness(TeamTypes eIndex, int iMaxDistance,
 	bool bConstCache) const // advc.001n
 {
 	//PROFILE_FUNC(); // advc.003o (the cache seems to be very effective)
-
-	if (iMaxDistance == -1)
-		iMaxDistance = DEFAULT_PLAYER_CLOSENESS;
-
 	FAssert(eIndex != getID());
 	int iValue = 0;
 	for (MemberAIIter itOurMember(getID()); itOurMember.hasNext(); ++itOurMember)
@@ -5229,9 +5221,9 @@ VoteSourceTypes CvTeamAI::AI_getLatestVictoryVoteSource() const
 int CvTeamAI::AI_countVSNonMembers(VoteSourceTypes eVS) const
 {
 	int iCount = 0;
-	for(PlayerIter<MAJOR_CIV,KNOWN_TO> itPlayer(getID()); itPlayer.hasNext(); ++itPlayer)
+	for(PlayerIter<MAJOR_CIV> itPlayer(getID()); itPlayer.hasNext(); ++itPlayer)
 	{
-		if(!itPlayer->isVotingMember(eVS))
+		if (!itPlayer->isVotingMember(eVS) || !isHasMet(itPlayer->getTeam()))
 			iCount++;
 	}
 	return iCount;
@@ -5543,9 +5535,9 @@ int CvTeamAI::AI_noWarAttitudeProb(AttitudeTypes eAttitude) const
 int CvTeamAI::AI_noWarProbAdjusted(TeamTypes eOther) const
 {
 	AttitudeTypes eTowardThem = AI_getAttitude(eOther, true);
-	int r = AI_noWarAttitudeProb(eTowardThem);
-	if(r < 100 || isOpenBorders(eOther) || eTowardThem == ATTITUDE_FURIOUS)
-		return r;
+	int iR = AI_noWarAttitudeProb(eTowardThem);
+	if (iR < 100 || isOpenBorders(eOther) || eTowardThem == 0)
+		return iR;
 	return AI_noWarAttitudeProb((AttitudeTypes)(eTowardThem - 1));
 }
 
@@ -5608,7 +5600,7 @@ scaled CvTeamAI::AI_getOpenBordersCounterIncrement(TeamTypes eOther) const
 	int iTheirCities = GET_TEAM(eOther).getNumCities();
 	if (iOurCities > 0 && iTheirCities > 0)
 	{
-		rFromCloseness = AI_teamCloseness(eOther, DEFAULT_PLAYER_CLOSENESS) /
+		rFromCloseness = AI_teamCloseness(eOther) /
 				(scaled(iOurCities + iTheirCities).sqrt() * 20);
 	}
 	/*  Would be nice to add another, say, 0.25 if any of our units w/o

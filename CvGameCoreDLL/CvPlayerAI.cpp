@@ -3660,7 +3660,7 @@ int CvPlayerAI::AI_financialTroubleMargin() const
 			could potentially cause the site selection to oscillate. */
 		iSafePercent -= 14 * (iCitiesTarget - getNumCities()) / iCitiesTarget;
 	} // K-Mod end
-	FAssert(iSafePercent >= 0); // advc
+	iSafePercent = std::max(5, iSafePercent); // advc.001 (very rarely an issue)
 	return iFundedPercent - iSafePercent;
 }
 
@@ -4126,10 +4126,8 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bFreeTech, bool bAsyn
 		return techs[0].second;
 	}
 	// ... and the case where there are not enough techs in the list.
-	if ((int)techs.size() < iMaxPathLength)
-	{
+	if (((int)techs.size()) < iMaxPathLength)
 		return techs[0].second;
-	}
 
 	// Create a list of possible tech paths.
 	std::vector<std::pair<int,std::vector<int> > > tech_paths; // (total_value, path)
@@ -4169,7 +4167,8 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bFreeTech, bool bAsyn
 			{
 				techs_to_check.push(techs[i].second);
 			}
-			while (!techs_to_check.empty() && (int)techs_in_path.size() <= iMaxPathLength)
+			while (!techs_to_check.empty() &&
+				((int)techs_in_path.size()) <= iMaxPathLength)
 			{
 				bool bMissingPrereq = false;
 				// AndTech prereqs:
@@ -4211,7 +4210,7 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bFreeTech, bool bAsyn
 				}
 				// OrTechs:
 				int iBestOrIndex = -1;
-				int iBestOrValue = -1;
+				int iBestOrValue = MIN_INT; // advc.001: Was -1. Values can be negative.
 				for (int iPrereq = 0;
 					iPrereq < GC.getInfo(techs_to_check.front()).getNumOrTechPrereqs();
 					iPrereq++)
@@ -5363,19 +5362,19 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 
 		FOR_EACH_ENUM(Commerce)
 		{
-			int iTempValue = (kLoopProcess.getProductionToCommerceModifier(eLoopCommerce) * 4);
-
-			if (iTempValue <= 0) // K-Mod (check out what would happen to "bGoodProcess" without this bit.  "oops.")
+			int iTempValue = kLoopProcess.getProductionToCommerceModifier(eLoopCommerce) * 4;
+			/*	<K-Mod> (check out what would happen to "bGoodProcess" without this bit.
+				"oops.") */
+			if (iTempValue <= 0)
+			{
 				continue;
-
+			} // </K-Mod>
 			iTempValue *= AI_commerceWeight(eLoopCommerce);
 			iTempValue /= 100;
-
 			if (eLoopCommerce == COMMERCE_GOLD || eLoopCommerce == COMMERCE_RESEARCH)
 				bGoodProcess = true;
 			else if (eLoopCommerce == COMMERCE_CULTURE && AI_atVictoryStage(AI_VICTORY_CULTURE1))
 				iTempValue *= 2; // k146: was 3
-
 			iValue += iTempValue * iCityCount / 100;
 		}
 	}
@@ -7029,10 +7028,10 @@ void CvPlayerAI::AI_chooseResearch()
 
 	if (eBestTech == NO_TECH)
 	{	// <k146>
-		int iResearchDepth = (isHuman() || isBarbarian() ||
+		int iResearchDepth = ((isHuman() || isBarbarian() ||
 				AI_atVictoryStage(AI_VICTORY_CULTURE3) ||
 				AI_isDoStrategy(AI_STRATEGY_ESPIONAGE_ECONOMY))
-			? 1 : 3;
+				? 1 : 3);
 		eBestTech = AI_bestTech(iResearchDepth); // </k146>
 	}
 	if (eBestTech != NO_TECH)
@@ -8025,7 +8024,7 @@ int CvPlayerAI::AI_getShareWarAttitude(PlayerTypes ePlayer) const
 	iLimit = std::min(iLimit, 1 + scaled(iTurnsShared, iDiv).uround());
 	iR += range(((iTheirContribution * rNonSharedModifier) /
 			// This divisor seems to produce roughly the result I have in mind
-			(fixp(2.9) * GC.getWAR_SUCCESS_CITY_CAPTURING() * iDiv)).round(), 0, iLimit);
+			(fixp(3.1) * GC.getWAR_SUCCESS_CITY_CAPTURING() * iDiv)).round(), 0, iLimit);
 	return iR;
 	// </advc.130m>
 }
@@ -8944,6 +8943,9 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 		{
 			if (bFriendlyToSecretary)
 				return PLAYER_VOTE_YES;
+			// <advc.001> Don't evaluate embargo against unmet non-member of AP
+			else if (!kOurTeam.isHasMet(eEmbargoTeam))
+				return PLAYER_VOTE_ABSTAIN; // </advc.001>
 			else if (canStopTradingWithTeam(eEmbargoTeam))
 			{
 				bValid = (NO_DENIAL == AI_stopTradingTrade(
@@ -8968,11 +8970,14 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 		else if (eWarTeam == getTeam() || kOurTeam.isVassal(eWarTeam))
 		{	// Explicit rejection by all who will definitely be attacked
 			bValid = false;
-		} // <kekm.25/advc> Try to honor peace treaty
+		}  // <kekm.25/advc> Try to honor peace treaty
 		else if (kOurTeam.isForcePeace(eWarTeam))
 			bValid = false; // </kekm.25/advc>
 		else if (kOurTeam.AI_getWarPlan(eWarTeam) != NO_WARPLAN) // BETTER_BTS_AI_MOD: END
 			bValid = true;
+		// <advc.001> Don't evaluate war against unmet non-member of AP
+		else if (!kOurTeam.isHasMet(eWarTeam))
+			bValid = false; // </advc.001>
 		else
 		{	// BETTER_BTS_AI_MOD, Diplomacy AI, 07/20/09, jdog5000: START
 			/*bValid = (bPropose || NO_DENIAL == GET_TEAM(getTeam()).AI_declareWarTrade(eWarTeam, eSecretaryGeneral));
@@ -9006,7 +9011,7 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 			else
 			{
 				bValid = (bPropose ||
-						NO_DENIAL == kOurTeam.AI_declareWarTrade(eWarTeam, eSecretaryGeneral));
+						kOurTeam.AI_declareWarTrade(eWarTeam, eSecretaryGeneral) == NO_DENIAL);
 			}
 
 			if (bValid || /* <advc.104n> */ getUWAI().isEnabled())
@@ -9585,6 +9590,7 @@ bool CvPlayerAI::AI_considerOffer(PlayerTypes ePlayer,
 					/*  ePlayer is human; could still let the proxy AI remember,
 						but that gets confusing in R&F games when a human demands
 						tribute from a civ and later takes control of that civ.
+						Would also affect AI_paranoiaRating (advc.022).
 						So don't do this after all: */
 					  //GET_PLAYER(ePlayer).AI_rememberEvent(getID(), MEMORY_ACCEPT_DEMAND);
 					AI_rememberEvent(ePlayer, MEMORY_MADE_DEMAND);
@@ -21067,7 +21073,7 @@ void CvPlayerAI::AI_proposeWarTrade(PlayerTypes eHireling)
 		iDeclareWarTradeRand ++;
 	}*/
 	// <advc.161>
-	if(iMinAtWarCounter == MAX_INT)
+	if (iMinAtWarCounter == MAX_INT)
 		return;
 	iDeclareWarTradeRand = iDeclareWarTradeRand / 10 + std::min(10, iMinAtWarCounter);
 	{
@@ -22059,7 +22065,8 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 			!GET_TEAM(kToPlayer.getTeam()).isVassal(getTeam()));
 	CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
 	CvTeam const& kToTeam = GET_TEAM(eToPlayer);
-	bool const bNonColonialVassal = (kToTeam.isVassal(getTeam()) &&
+	bool const bToVassal = kToTeam.isVassal(kOurTeam.getID());
+	bool const bNonColonialVassal = (bToVassal &&
 			!kOurTeam.isParent(kToTeam.getID()));
 	if (bNonColonialVassal && kToTeam.isCapitulated() &&
 		/*	Even if they pay for the city, it's probably not worth letting a
@@ -22156,6 +22163,41 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 						scaled(TeamIter<EVER_ALIVE>::count()).sqrt();
 				rEnemyTradeFactor = (rEnemyTradeFactor + fixp(5/3.)) / fixp(8/3.); // dilute
 			}
+			// Don't sabotage ourselves in nearby border conflicts
+			scaled rPlotCultureFactor = 1;
+			int const iOurCultureLevel = kCity.getCultureLevel();
+			int const iTheirCultureLevel = kCity.calculateCultureLevel(eToPlayer);
+			int const iRange = std::max(iOurCultureLevel, iTheirCultureLevel) +
+					/*	Stop one short of the full culture range; culture spread
+						to the final ring should be pretty insignificant. */
+					CvCity::plotCultureExtraRange() - 1;
+			if (iRange > GC.getDefineINT(CvGlobals::MIN_CITY_RANGE))
+			{
+				bool const bToTrustedVassal = (bToVassal &&
+						(kToPlayer.getParent() == getID() || kToTeam.isCapitulated()));
+				for (PlotCircleIter itPlot(kCity.getPlot(), iRange, false);
+					itPlot.hasNext(); ++itPlot)
+				{
+					if (!itPlot->isCity() ||
+						itPlot->getPlotCity()->getOwner() != getID())
+					{
+						continue;
+					}
+					scaled rOurCulture = per100(
+							itPlot->calculateCulturePercent(getID()));
+					if (rOurCulture < fixp(0.58))
+					{
+						rPlotCultureFactor += scaled(3, itPlot.currPlotDist()) *
+						// (Doesn't really matter just how little culture we have)
+								(fixp(0.4) * std::max(iOurCultureLevel, 1) +
+								(bToTrustedVassal ? 0 :
+								per100(itPlot->calculateCulturePercent(eToPlayer)) *
+								std::max(iTheirCultureLevel, 1)));
+						if (rPlotCultureFactor > fixp(8/3.))
+							return false;
+					}
+				}
+			}
 			// City mustn't be too valuable to us
 			{
 				scaled rSizeDiffFactor = 1;
@@ -22168,8 +22210,8 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 					rSizeDiffFactor = scaled::min(rTheirPopToOurs + fixp(0.375), 1);
 				}
 				scaled rTotalYieldVal = AI_totalYieldVal();
-				if (iKeepVal * rEnemyTradeFactor > rSizeDiffFactor * rTotalYieldVal /
-					(18 - iAttitudeLevel))
+				if (iKeepVal * rEnemyTradeFactor * rPlotCultureFactor >
+					rSizeDiffFactor * rTotalYieldVal / (18 - iAttitudeLevel))
 				{
 					return false;
 				}
@@ -23222,7 +23264,7 @@ void CvPlayerAI::AI_doSplit(/* advc.104r: */ bool bForce)
 	std::map<int,int>::iterator it;
 	for (it = mapAreaValues.begin(); it != mapAreaValues.end(); ++it)
 	{	// advc.ctr: First condition inverted to match new semantics of AI_splitEmpireValue
-		if (it->second < 0 /* advc.104r: */ && !bForce)
+		if (it->second <= 0 /* advc.104r: */ && !bForce)
 			continue;
 
 		CvArea& kArea = *m.getArea(it->first);
@@ -24792,156 +24834,14 @@ void CvPlayerAI::AI_updateStrategyHash()
 	}
 	log_strat(AI_STRATEGY_TURTLE)
 
-	int iCurrentEra = getCurrentEra();
 	int iParanoia = 0;
-	int iCloseTargets = 0;
-	int iOurDefensivePower = kTeam.getDefensivePower();
-	// advc.022: Don't include our master as a possible cause for paranoia
-	for (PlayerAIIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itOther(getTeam());
-		itOther.hasNext(); ++itOther)
 	{
-		CvPlayerAI const& kLoopPlayer = *itOther;
-		CvTeamAI const& kLoopTeam = GET_TEAM(kLoopPlayer.getTeam());
-		// <advc.022> Don't fear (AI) civs that are busy
-		if(!kLoopPlayer.isHuman() && kLoopPlayer.AI_isFocusWar() &&
-			kLoopTeam.getNumWars() > 0 &&
-			kLoopTeam.AI_getWarSuccessRating() < 50)
-		{
-			continue;
-		} // </advc.022>
-		// K-Mod:
-		bool bCitiesInPrime = kTeam.AI_hasCitiesInPrimaryArea(kLoopPlayer.getTeam());
-
-		if (kTeam.AI_getWarPlan(kLoopPlayer.getTeam()) != NO_WARPLAN)
-		{
-			iCloseTargets++;
-			continue; // advc
-		}
-		// Are they a threat?
-		int iTempParanoia = 0;
-
-		int iTheirPower = kLoopTeam.getPower(true);
-		if (4*iTheirPower > 3*iOurDefensivePower)
-		{
-			if (//kLoopTeam.getAtWarCount(true) == 0
-				!kLoopPlayer.AI_isFocusWar() || // advc.105
-				kLoopTeam.AI_getEnemyPowerPercent(false) < 140)
-			{
-				// Memory of them declaring on us and our friends
-				int iWarMemory = AI_getMemoryCount(kLoopPlayer.getID(),
-						MEMORY_DECLARED_WAR);
-				iWarMemory += (AI_getMemoryCount(kLoopPlayer.getID(),
-						MEMORY_DECLARED_WAR_ON_FRIEND) + 1) / 2;
-				iWarMemory = (iWarMemory / fixp(2.5)).ceil(); // advc.130j
-				if (iWarMemory > 0)
-				{
-					//they are a snake
-					iTempParanoia += 50 + 50 * iWarMemory;
-					if (gPlayerLogLevel >= 2) logBBAI( "    Player %d (%S) wary of %S because of war memory %d", getID(), getCivilizationDescription(0), kLoopPlayer.getCivilizationDescription(0), iWarMemory);
-				}
-			}
-		}
-
-		// Do we think our relations are bad?
-		int iCloseness = AI_playerCloseness(kLoopPlayer.getID(), DEFAULT_PLAYER_CLOSENESS);
-		// <advc.022>
-		if(!AI_hasSharedPrimaryArea(kLoopPlayer.getID()))
-		{
-			int iNoSharePenalty = 99;
-			int const iLoopEra = kLoopPlayer.getCurrentEra();
-			int const iExploreEra = CvEraInfo::AI_getAgeOfExploration();
-			if (iLoopEra >= iExploreEra)
-				iNoSharePenalty -= 33;
-			if (iLoopEra >= iExploreEra + 1)
-				iNoSharePenalty -= 33;
-			if (iLoopEra >= std::min(iExploreEra + 2, GC.getNumEraInfos() - 1))
-				iNoSharePenalty -= 33;
-			iCloseness = std::max(0, iCloseness - iNoSharePenalty);
-		} // </advc.022>
-		// if (iCloseness > 0)
-		if (iCloseness > 0 || bCitiesInPrime) // K-Mod
-		{	// <advc.022>
-			// Humans tend to reciprocate our feelings
-			int iHumanWarProb = 70 - AI_getAttitude(kLoopPlayer.getID()) * 10;
-			int iAttitudeWarProb = (kLoopPlayer.isHuman() ? iHumanWarProb :
-					// Now based on kLoopPlayer's personality and attitude
-					100 - GET_TEAM(kLoopPlayer.getTeam()).
-					AI_noWarProbAdjusted(getTeam())); // advc.104y
-			// </advc.022>
-			// (original BBAI code deleted) // advc
-			// K-Mod. Paranoia gets scaled by relative power anyway...
-			iTempParanoia += std::max(0, iAttitudeWarProb/2);
-			/*  <advc.022> This is about us attacking someone (not relevant for
-				Paranoia, but for Dagger), so our attitude should be used.
-				K-Mod already did that, but iAttitudeWarProb now refers to
-				kLoopPlayer. */
-			//if (iAttitudeWarProb > 10 && iCloseness > 0)
-			if(iCloseness > 0 && 100 - GET_TEAM(getTeam()).
-				AI_noWarProbAdjusted(kLoopPlayer.getTeam()) > 10) // advc.104y
-			{ // </advc.022>
-				iCloseTargets++;
-			}
-			// K-Mod end
-			/*  advc.022: Commented out. Defensive measures make most sense
-				around 150% power ratio; 200% is probably a lost cause. */
-			/*if (iTheirPower > 2*iOurDefensivePower) {
-				//if (AI_getAttitude(kLoopPlayer.getID()) != ATTITUDE_FRIENDLY)
-				// advc.022: Replacing the above
-				if(iAttitudeWarProb > 0)
-					iTempParanoia += 25;
-			}*/
-		}
-
-		if (iTempParanoia > 0)
-		{
-			iTempParanoia *= std::min(iTheirPower,
-					// advc.022: At most double paranoia based on power ratio
-					2 * iOurDefensivePower);
-			iTempParanoia /= std::max(1, iOurDefensivePower);
-			// K-Mod
-			if (kLoopTeam.AI_getWorstEnemy() == getTeam())
-			{
-				//iTempParanoia *= 2;
-				/*  advc.022: Don't give their attitude too much weight (replacing
-					the above) */
-				iTempParanoia = intdiv::round(3 * iTempParanoia, 2);
-			}
-			// K-Mod end
-		}
-
-		// Do they look like they're going for militaristic victory?
-		// advc.022: New temp variable
-		int iVictStratParanoia = 0;
-		if (kLoopPlayer.AI_atVictoryStage(AI_VICTORY_CONQUEST4))
-			iVictStratParanoia += 200;
-		else if (kLoopPlayer.AI_atVictoryStage(AI_VICTORY_CONQUEST3))
-			iVictStratParanoia += 100;
-		else if (kLoopPlayer.AI_atVictoryStage(AI_VICTORY_DOMINATION3))
-			iVictStratParanoia += 50;
-		/*  advc.022: Too high in K-Mod I think; who knows when they'll get around
-			to attack us. (Could count the alternative targets I guess ...). */
-		iTempParanoia += iVictStratParanoia / 2;
-		if (iTempParanoia > 0)
-		{	// <advc.022> Replace this with something smoother
-			/*if (iCloseness == 0)
-				iTempParanoia /= 2;*/
-			scaled rMultiplier = 2;
-			/*  I don't think closeness is intended to be a percentage, but based on
-				some sample values (Ctrl key on the capital in debug mode; closeness
-				is shown in square brackets), it tends to be between 0 and 100. */
-			rMultiplier *= scaled::clamp(per100(iCloseness), 0, 1) + fixp(0.3);
-			// <advc.022> Reduced paranoia if resistance futile
-			scaled rPowRatioFactor(iTheirPower, iOurDefensivePower);
-			/*  No change if ratio is 165% or less; 215% -> 50% reduced paranoia;
-				260% -> 0 paranoia */
-			rPowRatioFactor -= fixp(1.65);
-			rPowRatioFactor.increaseTo(0);
-			rPowRatioFactor = 1 - rPowRatioFactor;
-			rPowRatioFactor.increaseTo(0);
-			rMultiplier *= rPowRatioFactor;
-			iTempParanoia = (iTempParanoia * rMultiplier).round();
-			// </advc.022>
-			iParanoia += iTempParanoia;
+		int const iOurDefensivePower = kTeam.getDefensivePower();
+		// advc.022: Don't include our master as a possible cause for paranoia
+		for (PlayerAIIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itRival(getTeam());
+			itRival.hasNext(); ++itRival)
+		{	// advc: Calculation moved into new function
+			iParanoia += AI_paranoiaRating(itRival->getID(), iOurDefensivePower);
 		}
 	}
 	/*  advc.022: Commented out. BETTER_UNITS is supposed to make us train fewer
@@ -24950,21 +24850,20 @@ void CvPlayerAI::AI_updateStrategyHash()
 		iParanoia *= 3;
 		iParanoia /= 2;
 	}*/
-
+	int const iCurrentEra = getCurrentEra();
 	// Scale paranoia in later eras/larger games
 	//iParanoia -= (100*(iCurrentEra + 1)) / std::max(1, GC.getNumEraInfos());
-
 	/*	K-Mod. You call that scaling for "later eras/larger games"?
 		It isn't scaling, and it doesn't use the map size.
-		Lets try something else. Rough and ad hoc, but hopefully a bit better. */
+		Lets try something else. Rough and ad hoc, but hopefully a bit better.
+		This starts as a factor of 1, and drops to 1/3. */
 	iParanoia *= 3 * GC.getNumEraInfos() - 2 * iCurrentEra;
 	iParanoia /= 3 * std::max(1, GC.getNumEraInfos());
-	// That starts as a factor of 1, and drop to 1/3.  And now for game size...
+	// And now for game size...
 	iParanoia *= 14;
 	iParanoia /= 7 + std::max(kTeam.getHasMetCivCount(true),
 			//GC.getInfo(GC.getMap().getWorldSize()).getDefaultPlayers()));
 			kGame.getRecommendedPlayers()); // advc.137
-
 	// Alert strategy
 	if (iParanoia >= 200)
 	{
@@ -25002,119 +24901,126 @@ void CvPlayerAI::AI_updateStrategyHash()
 			GET_TEAM(getTeam()).AI_isAnyChosenWar()); // </advc.104f>
 
 	/*	BBAI TODO: Integrate Dagger with new conquest victory strategy,
-		have Dagger focus on early rushes */
-	//dagger
-	if (!AI_atVictoryStage(AI_VICTORY_CULTURE2) &&
+		have Dagger focus on early rushes. (advc.104f: UWAI doesn't use Dagger,
+		so don't bother with that to-do comment.) */
+	if (!bNoDagger && // advc.104f
+		!AI_atVictoryStage(AI_VICTORY_CULTURE2) &&
 		!(m_eStrategyHash & AI_STRATEGY_MISSIONARY) &&
-		AI_getCurrEraFactor() <= (2 + (AI_getStrategyRand(11) % 2)) &&
-		iCloseTargets > 0 &&
-		!bNoDagger) // advc.104f
+		AI_getCurrEraFactor() <= (2 + (AI_getStrategyRand(11) % 2)))
 	{
-		int iDagger = 0;
-		iDagger += 12000 / std::max(100,
-				50 + GC.getInfo(getPersonalityType()).getMaxWarRand());
-		iDagger *= (AI_getStrategyRand(12) % 11);
-		iDagger /= 10;
-		iDagger += 5 * std::min(8, AI_getFlavorValue(FLAVOR_MILITARY));
-
-		for (int i = 0; i < kCiv.getNumUniqueUnits(); i++)
+		/*	<advc> Counting of close targets moved out of the paranoia calculation.
+			(playerCloseness gets cached, so this shouldn't matter for performance.) */
+		int iCloseTargets = 0;
+		for (PlayerAIIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itRival(getTeam());
+			itRival.hasNext(); ++itRival)
 		{
-			UnitTypes eUnit = kCiv.uniqueUnitAt(i);
-			CvUnitInfo const& kUnit = GC.getInfo(eUnit);
-			if (kUnit.getCombat() <= 0)
-				continue;
-			UnitClassTypes eLoopUnitClass = kUnit.getUnitClassType();
-			/*  (advc: A little crazy to have all this code just for counting
-				unique units for Dagger - which UWAI bypasses anyway -,
-				but that's how it was and is.) */
-			//if ((GC.getInfo(eLoopUnitClass).getDefaultUnitIndex()) != (GC.getInfo(getCivilizationType()).getCivilizationUnits(eLoopUnitClass))) {
-			bool bDefensive = (kUnit.getUnitAIType(UNITAI_CITY_DEFENSE) &&
-					!kUnit.getUnitAIType(UNITAI_RESERVE));
-
-			iDagger += bDefensive ? -10 : 0;
-
-			if (getCapital()->canTrain(eUnit))
+			if (kTeam.AI_getWarPlan(itRival->getTeam()) != NO_WARPLAN ||
+				(AI_playerCloseness(itRival->getID()) > 0 && // K-Mod
+				//GC.getInfo(getPersonalityType()).getNoWarAttitudeProb(AI_getAttitude(itRival->getID())) // BBAI
+				// advc.104y:
+				GET_TEAM(getTeam()).AI_noWarProbAdjusted(itRival->getTeam()) < 90))
 			{
-				iDagger += bDefensive ? 10 : 40;
-
-				int iUUStr = kUnit.getCombat();
-				int iNormalStr = GC.getInfo(GC.getInfo(eLoopUnitClass).
-						getDefaultUnit()).getCombat();
-				iDagger += 20 * range(iUUStr - iNormalStr, 0, 2);
-				if (kUnit.getPrereqAndTech() == NO_TECH)
-					iDagger += 20;
+				iCloseTargets++;
 			}
-			else
+		}
+		if (iCloseTargets > 0) // </advc>
+		{
+			int iDagger = 0;
+			iDagger += 12000 / std::max(100,
+					50 + GC.getInfo(getPersonalityType()).getMaxWarRand());
+			iDagger *= (AI_getStrategyRand(12) % 11);
+			iDagger /= 10;
+			iDagger += 5 * std::min(8, AI_getFlavorValue(FLAVOR_MILITARY));
+			// advc (note): This whole loop is just for counting unique units
+			for (int i = 0; i < kCiv.getNumUniqueUnits(); i++)
 			{
-				if (kUnit.getPrereqAndTech() != NO_TECH &&
-					GC.getInfo(kUnit.getPrereqAndTech()).getEra() <= iCurrentEra + 1)
+				UnitTypes eUnit = kCiv.uniqueUnitAt(i);
+				CvUnitInfo const& kUnit = GC.getInfo(eUnit);
+				if (kUnit.getCombat() <= 0)
+					continue;
+				UnitClassTypes eLoopUnitClass = kUnit.getUnitClassType();
+				//if ((GC.getInfo(eLoopUnitClass).getDefaultUnitIndex()) != (GC.getInfo(getCivilizationType()).getCivilizationUnits(eLoopUnitClass))) {
+				bool bDefensive = (kUnit.getUnitAIType(UNITAI_CITY_DEFENSE) &&
+						!kUnit.getUnitAIType(UNITAI_RESERVE));
+				if (bDefensive)
+					iDagger -= 10;
+				if (getCapital()->canTrain(eUnit))
 				{
-					if (kTeam.isHasTech((TechTypes)kUnit.getPrereqAndTech()))
-					{
-						//we have the tech but can't train the unit, dejection.
-						iDagger += 10;
-					}
-					else
-					{
-						//we don't have the tech, it's understandable we can't train.
-						iDagger += 30;
-					}
+					iDagger += (bDefensive ? 10 : 40);
+					int iUUStr = kUnit.getCombat();
+					int iNormalStr = GC.getInfo(GC.getInfo(eLoopUnitClass).
+							getDefaultUnit()).getCombat();
+					iDagger += 20 * range(iUUStr - iNormalStr, 0, 2);
+					if (kUnit.getPrereqAndTech() == NO_TECH)
+						iDagger += 20;
 				}
-
-				bool bNeedsAndBonus = false;
-				int iOrBonusCount = 0;
-				int iOrBonusHave = 0;
-
-				FOR_EACH_ENUM(Bonus)
+				else
 				{
-					if (eLoopBonus != NO_BONUS)
+					if (kUnit.getPrereqAndTech() != NO_TECH &&
+						GC.getInfo(kUnit.getPrereqAndTech()).getEra() <= iCurrentEra + 1)
 					{
-						if (kUnit.getPrereqAndBonus() == eLoopBonus)
-						{
-							if (getNumTradeableBonuses(eLoopBonus) == 0)
-								bNeedsAndBonus = true;
+						if (kTeam.isHasTech((TechTypes)kUnit.getPrereqAndTech()))
+						{	//we have the tech but can't train the unit, dejection.
+							iDagger += 10;
 						}
-						for (int j = 0; j < kUnit.getNumPrereqOrBonuses(); j++)
+						else
+						{	//we don't have the tech, it's understandable we can't train.
+							iDagger += 30;
+						}
+					}
+					bool bNeedsAndBonus = false;
+					int iOrBonusCount = 0;
+					int iOrBonusHave = 0;
+					FOR_EACH_ENUM(Bonus)
+					{
+						if (eLoopBonus != NO_BONUS)
 						{
-							if (kUnit.getPrereqOrBonuses(j) == eLoopBonus)
+							if (kUnit.getPrereqAndBonus() == eLoopBonus)
 							{
-								iOrBonusCount++;
-								if (getNumTradeableBonuses(eLoopBonus) > 0)
-									iOrBonusHave++;
+								if (getNumTradeableBonuses(eLoopBonus) == 0)
+									bNeedsAndBonus = true;
+							}
+							for (int j = 0; j < kUnit.getNumPrereqOrBonuses(); j++)
+							{
+								if (kUnit.getPrereqOrBonuses(j) == eLoopBonus)
+								{
+									iOrBonusCount++;
+									if (getNumTradeableBonuses(eLoopBonus) > 0)
+										iOrBonusHave++;
+								}
 							}
 						}
 					}
+					iDagger += 20;
+					if (bNeedsAndBonus)
+						iDagger -= 20;
+					if (iOrBonusCount > 0 && iOrBonusHave == 0)
+						iDagger -= 20;
 				}
-				iDagger += 20;
-				if (bNeedsAndBonus)
-					iDagger -= 20;
-				if (iOrBonusCount > 0 && iOrBonusHave == 0)
-					iDagger -= 20;
 			}
-		}
-		if (!kGame.isOption(GAMEOPTION_AGGRESSIVE_AI))
-		{
-			iDagger += range(100 - GC.getInfo(kGame.getHandicapType()).
-					getAITrainPercent(), 0, 15);
-		}
-		if (getCapital()->getArea().getAreaAIType(getTeam()) == AREAAI_OFFENSIVE ||
-			(getCapital()->getArea().getAreaAIType(getTeam()) == AREAAI_DEFENSIVE))
-		{
-			iDagger += (iAttackUnitCount > 0 ? 40 : 20);
-		}
-		if (iDagger >= AI_DAGGER_THRESHOLD)
-			m_eStrategyHash |= AI_STRATEGY_DAGGER;
-		else
-		{
-			//if (eLastStrategyHash &= AI_STRATEGY_DAGGER)
-			if (eLastStrategyHash & AI_STRATEGY_DAGGER) // advc.001
+			if (!kGame.isOption(GAMEOPTION_AGGRESSIVE_AI))
 			{
-				if (iDagger >= (9 * AI_DAGGER_THRESHOLD) / 10)
-					m_eStrategyHash |= AI_STRATEGY_DAGGER;
+				iDagger += range(100 - GC.getInfo(kGame.getHandicapType()).
+						getAITrainPercent(), 0, 15);
 			}
+			if (getCapital()->getArea().getAreaAIType(getTeam()) == AREAAI_OFFENSIVE ||
+				(getCapital()->getArea().getAreaAIType(getTeam()) == AREAAI_DEFENSIVE))
+			{
+				iDagger += (iAttackUnitCount > 0 ? 40 : 20);
+			}
+			if (iDagger >= AI_DAGGER_THRESHOLD)
+				m_eStrategyHash |= AI_STRATEGY_DAGGER;
+			else
+			{
+				//if (eLastStrategyHash &= AI_STRATEGY_DAGGER)
+				if (eLastStrategyHash & AI_STRATEGY_DAGGER) // advc.001
+				{
+					if (iDagger >= (9 * AI_DAGGER_THRESHOLD) / 10)
+						m_eStrategyHash |= AI_STRATEGY_DAGGER;
+				}
+			}
+			log_strat2(AI_STRATEGY_DAGGER, iDagger)
 		}
-
-		log_strat2(AI_STRATEGY_DAGGER, iDagger)
 	}
 
 	if (!(m_eStrategyHash & AI_STRATEGY_ALERT2) && !(m_eStrategyHash & AI_STRATEGY_TURTLE))
@@ -25951,13 +25857,158 @@ int CvPlayerAI::AI_playerCloseness(PlayerTypes eIndex, int iMaxDistance,
 	//PROFILE_FUNC(); // advc.003o (the cache seems to be very effective)
 	FAssert(GET_PLAYER(eIndex).isAlive());
 	FAssert(eIndex != getID());
-
+	FAssert(iMaxDistance >= 0); // advc (no longer treated as DEFAULT_PLAYER_CLOSENESS)
 	int iValue = 0;
 	FOR_EACH_CITYAI(pLoopCity, *this)
 	{
 		iValue += pLoopCity->AI_playerCloseness(eIndex, iMaxDistance,
 				bConstCache); // advc.001n
 	}
+	return iValue;
+}
+
+/*	advc: Cut from AI_updateStrategyHash (so that advc.104 can re-use it).
+	The rating expresses how much this player worries about a DoW by eRival
+	in the near future. 0 means no fear. Based on how the BtS code uses
+	the result, let's say that 500 means that we're certain that a
+	major attack is imminent and 250 that it's a strong possibility. At 100,
+	we're worried, but probably shouldn't act on it much (unless we're worried
+	about several rivals). */
+int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
+	bool bReduceWhenHopeless) const // advc.104
+{
+	CvPlayerAI const& kRival = GET_PLAYER(eRival);
+	CvTeamAI const& kRivalTeam = GET_TEAM(eRival);
+	if (GET_TEAM(getTeam()).AI_getWarPlan(kRivalTeam.getID()) != NO_WARPLAN)
+		return 0;
+	bool const bRivalFocusWar = kRival.AI_isFocusWar();
+	// <advc.022> Don't fear (AI) civs that are busy
+	if (!kRivalTeam.isHuman() && bRivalFocusWar &&
+		kRivalTeam.getNumWars() > 0 &&
+		kRivalTeam.AI_getWarSuccessRating() < 50)
+	{
+		return 0;
+	} // </advc.022>
+	int iValue = 0;
+	// K-Mod:
+	int const iTheirPower = kRivalTeam.getPower(true);
+	if (4*iTheirPower > 3*iOurDefPow)
+	{
+		if (//kRivalTeam.getAtWarCount(true) == 0
+			!bRivalFocusWar || // advc.105
+			kRivalTeam.AI_getEnemyPowerPercent(false) < 140)
+		{
+			// Memory of them declaring on us and our friends
+			/*int iWarMemory = AI_getMemoryCount(eRival, MEMORY_DECLARED_WAR);
+			iWarMemory += intdiv::uceil(
+					AI_getMemoryCount(eRival, MEMORY_DECLARED_WAR_ON_FRIEND), 2);
+			// advc.130j: One is counted at times-2 scale, the other at times-3 scale.
+			iWarMemory = (iWarMemory / fixp(2.5)).ceil();*/
+			// <advc.022> Let's simply use memory attitude
+			scaled rWarMem = AI_getMemoryAttitude(eRival, MEMORY_DECLARED_WAR) +
+					AI_getMemoryAttitude(eRival, MEMORY_DECLARED_WAR_ON_FRIEND) +
+					// (Note that humans don't remember rejected demands)
+					kRival.AI_getMemoryAttitude(getID(), MEMORY_REJECTED_DEMAND);
+			rWarMem.decreaseTo(4); // </advc.022>
+			if (rWarMem > 0) //they are a snake [advc: a bully, I'd say]
+			{
+				//iValue += 50 + 50 * iWarMemory;
+				iValue += 40 + (20 * rWarMem).round(); // advc.022
+				if (gPlayerLogLevel >= 2) logBBAI( "    Player %d (%S) wary of %S because of war memory %d", getID(), getCivilizationDescription(0), kRival.getCivilizationDescription(0), rWarMem.round());
+			}
+		}
+	}
+	int iCloseness = AI_playerCloseness(eRival);
+	// <advc.022>
+	if (!AI_hasSharedPrimaryArea(eRival))
+	{
+		int iNoSharePenalty = 99;
+		int const iRivalEra = kRival.getCurrentEra();
+		int const iExploreEra = CvEraInfo::AI_getAgeOfExploration();
+		if (iRivalEra >= iExploreEra)
+			iNoSharePenalty -= 33;
+		if (iRivalEra >= iExploreEra + 1)
+			iNoSharePenalty -= 33;
+		if (iRivalEra >= std::min(iExploreEra + 2, GC.getNumEraInfos() - 1))
+			iNoSharePenalty -= 33;
+		iCloseness = std::max(0, iCloseness - iNoSharePenalty);
+	}
+	else
+	{	/*	Adjust for increasing mobility over the course of a game.
+			Maybe also for increasing volatility in power ratios.
+			(Perhaps this should be handled by the closeness functions?) */
+		iCloseness = (iCloseness * (kRival.AI_getCurrEraFactor() + 1).
+				pow(fixp(0.23))).round();
+	} // </advc.022>
+	if (iCloseness > 0 ||
+		GET_TEAM(getTeam()).AI_hasCitiesInPrimaryArea(kRivalTeam.getID())) // K-Mod
+	{
+		// <advc.022>
+		// Humans tend to reciprocate our feelings
+		int iHumanWarProb = 70 - AI_getAttitude(eRival) * 10;
+		int iAttitudeWarProb = (kRival.isHuman() ? iHumanWarProb :
+				// Now based on rival's personality and attitude
+				100 - kRivalTeam.AI_noWarProbAdjusted(getTeam()));
+		// (BBAI military power check deleted)
+		//iValue += std::max(0, iAttitudeWarProb/2); // K-Mod
+		iValue += std::max(0, (3 * iAttitudeWarProb) / 4);
+		// </advc.022>	
+		/*  advc.022: Commented out. Defensive measures make most sense
+			around 150% power ratio; 200% is probably a lost cause. */
+		/*if (iTheirPower > 2*iOurDefensivePower) {
+			//if (AI_getAttitude(kLoopPlayer.getID()) != ATTITUDE_FRIENDLY)
+			if (iAttitudeWarProb > 0) // advc.022
+				iTempParanoia += 25;
+		}*/
+	}
+	if (iValue > 0)
+	{
+		iValue *= std::min(iTheirPower,
+				// advc.022: At most double paranoia based on power ratio
+				2 * iOurDefPow);
+		iValue /= std::max(1, iOurDefPow);
+		// <K-Mod>
+		if (kRivalTeam.AI_getWorstEnemy() == getTeam())
+		{
+			//iTempParanoia *= 2;
+			// advc.022: Don't give their attitude too much weight
+			iValue = intdiv::uround(3 * iValue, 2);
+		} // </K-Mod>
+	}
+	// Do they look like they're going for militaristic victory?
+	int iVictStratParanoia = 0; // advc.022: New temp variable
+	if (kRival.AI_atVictoryStage(AI_VICTORY_CONQUEST4))
+		iVictStratParanoia += 200;
+	else if (kRival.AI_atVictoryStage(AI_VICTORY_CONQUEST3))
+		iVictStratParanoia += 100;
+	else if (kRival.AI_atVictoryStage(AI_VICTORY_DOMINATION3))
+		iVictStratParanoia += 75; // advc.022: was 50
+	/*  advc.022: Too high in K-Mod I think; who knows when they'll get around
+		to attacking us. (Could count the alternative targets I guess ...). */
+	iValue += iVictStratParanoia / 2;
+	if (iValue <= 0)
+		return 0;
+	/*if (iCloseness == 0)
+		iTempParanoia /= 2;*/
+	// <advc.022> Do something smoother
+	scaled rMultiplier = 2;
+	/*  I don't think closeness is intended to be a percentage, but based on some
+		sample values (Ctrl key on the capital in debug mode; closeness is shown
+		in square brackets), it tends to be between 0 and 100, up to 200 at times. */
+	rMultiplier *= scaled::clamp(per100(iCloseness), 0, 1) + fixp(0.3);
+	scaled rPowRatioFactor(iTheirPower, iOurDefPow);
+	// Don't worry too much about closeness if they're weak
+	rMultiplier.decreaseTo(2 * rPowRatioFactor);
+	if (bReduceWhenHopeless) // advc.104: Don't want this for war planning
+	{
+		/*  Reduced paranoia if resistance futile. No change if ratio is
+			165% or less; 240% -> 50% reduced paranoia; 265% -> 0 paranoia. */
+		rPowRatioFactor -= fixp(1.65);
+		rPowRatioFactor.clamp(0, 1);
+		rPowRatioFactor = (1 - rPowRatioFactor).sqrt();
+		rMultiplier *= rPowRatioFactor;
+		iValue = (iValue * rMultiplier).round();
+	} // </advc.022>	
 	return iValue;
 }
 

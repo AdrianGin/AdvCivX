@@ -354,6 +354,7 @@ void WarEvaluator::fillWithAspects(vector<WarUtilityAspect*>& kAspects)
 	v.push_back(new Bellicosity(params));
 	v.push_back(new FairPlay(params));
 	v.push_back(new LoveOfPeace(params));
+	v.push_back(new ThirdPartyIntervention(params));
 	FAssert(UWAI::NUM_ASPECTS - (params.isIgnoreDistraction() ? 1 : 0) == (int)v.size());
 }
 
