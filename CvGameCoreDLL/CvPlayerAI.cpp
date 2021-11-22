@@ -5366,7 +5366,8 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bFreeTech, bool bAsyn
 
 				// OrTechs:
 				int iBestOrIndex = -1;
-				int iBestOrValue = -1;
+				// f1rpo: Was -1. Tech values can be negative.
+				int iBestOrValue = MIN_INT;
 				for (int p = 0; p < GC.getNUM_OR_TECH_PREREQS(); ++p)
 				{
 					TechTypes ePrereq = (TechTypes)GC.getTechInfo(techs_to_check.front()).getPrereqOrTechs(p);
