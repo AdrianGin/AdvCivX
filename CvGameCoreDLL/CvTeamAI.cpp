@@ -1901,10 +1901,12 @@ int CvTeamAI::AI_endWarVal(TeamTypes eTeam) const
 
 	int iOurPower = std::max(1, getPower(true));
 	int iTheirPower = std::max(1, kWarTeam.getDefensivePower(getID()));
-
-	iValue *= iTheirPower + 10;
-	iValue /= std::max(1, iOurPower + iTheirPower + 10);
-
+	{	// f1rpo (based on Kek-Mod): The multiplication can overflow
+		long long lValue = iValue;
+		lValue *= iTheirPower + 10;
+		lValue /= iOurPower + iTheirPower + 10;
+		iValue = static_cast<int>(lValue); // f1rpo
+	}
 	WarPlanTypes eWarPlan = AI_getWarPlan(eTeam);
 
 	// if we are not human, do we want to continue war for strategic reasons?
