@@ -8944,9 +8944,9 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 			if (bFriendlyToSecretary)
 				return PLAYER_VOTE_YES;
 			// <advc.001> Don't evaluate embargo against unmet non-member of AP
-			else if (!kOurTeam.isHasMet(eEmbargoTeam))
+			if (!kOurTeam.isHasMet(eEmbargoTeam))
 				return PLAYER_VOTE_ABSTAIN; // </advc.001>
-			else if (canStopTradingWithTeam(eEmbargoTeam))
+			if (canStopTradingWithTeam(eEmbargoTeam))
 			{
 				bValid = (NO_DENIAL == AI_stopTradingTrade(
 						eEmbargoTeam, kVoteData.ePlayer));
@@ -25942,8 +25942,7 @@ int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
 	} // </advc.022>
 	if (iCloseness > 0 ||
 		GET_TEAM(getTeam()).AI_hasCitiesInPrimaryArea(kRivalTeam.getID())) // K-Mod
-	{
-		// <advc.022>
+	{	// <advc.022>
 		// Humans tend to reciprocate our feelings
 		int iHumanWarProb = 70 - AI_getAttitude(eRival) * 10;
 		int iAttitudeWarProb = (kRival.isHuman() ? iHumanWarProb :
@@ -25951,10 +25950,10 @@ int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
 				100 - kRivalTeam.AI_noWarProbAdjusted(getTeam()));
 		// (BBAI military power check deleted)
 		//iValue += std::max(0, iAttitudeWarProb/2); // K-Mod
-		iValue += std::max(0, (3 * iAttitudeWarProb) / 4);
-		// </advc.022>	
-		/*  advc.022: Commented out. Defensive measures make most sense
-			around 150% power ratio; 200% is probably a lost cause. */
+		iValue += std::max(0, (std::min(3, (1 + kRival.AI_getCurrEra()))
+				* iAttitudeWarProb) / 4);
+		/*  Commented out. Defensive measures make most sense around
+			150% power ratio; 200% is probably a lost cause. */ // </advc.022>
 		/*if (iTheirPower > 2*iOurDefensivePower) {
 			//if (AI_getAttitude(kLoopPlayer.getID()) != ATTITUDE_FRIENDLY)
 			if (iAttitudeWarProb > 0) // advc.022
