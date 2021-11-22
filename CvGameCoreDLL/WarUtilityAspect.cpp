@@ -2814,21 +2814,6 @@ int Effort::preEvaluate()
 				// I.e. add between 3 (Gandhi) and 8 (Ragnar) percentage points
 				scaled(kOurPersonality.getBuildUnitProb(), 500));
 	}
-	{
-		bool bAnyWar = false;
-		for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
-		{
-			if (militAnalyst().isWar(eWe, it->getID()))
-			{
-				bAnyWar = true;
-				break;
-			}
-		}
-		/*	If we're at peace, units trained are apparently deemed useful by CvCityAI;
-			we still shouldn't assume that they'll _certainly_ be useful. */
-		if (!bAnyWar)
-			rFutureUse *= fixp(1.12);
-	}
 	scaled const rInvested = militAnalyst().militaryProduction(eWe);
 	scaled const rOurLostProduction = rOurLostProductionInUnits * rFutureUse +
 			rInvested *
