@@ -4106,7 +4106,7 @@ void CvGameTextMgr::setPlotHelpDebug_Ctrl(CvWStringBuffer& szString, CvPlot cons
 		{
 			CvUnit const* pUnit = gDLL->UI().getHeadSelectedUnit();
 			CvPlot const* pPlot = gDLL->UI().getMouseOverPlot();
-			if (pUnit != NULL && pPlot != NULL)
+			if (pUnit != NULL && pPlot != NULL && pPlot->isRevealed(pUnit->getTeam()))
 			{	// Avoid lag from computing the same path over and over
 				static CvPlot const* pOldPlot = NULL;
 				static CvUnit const* pOldUnit = NULL;
