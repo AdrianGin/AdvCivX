@@ -1499,8 +1499,13 @@ void UWAI::Team::scheme()
 			in warConfidenceAllies. Less dogpiling on weak targets that way.) */
 		scaled rDiv = (bTotal ? kAgent.AI_maxWarRand() : kAgent.AI_limitedWarRand());
 		FAssert(rDiv >= 0);
-		// Let's make the AI a bit less patient, especially the peaceful types.
-		rDiv.exponentiate(fixp(0.95)); // This maps e.g. 400 to 296 and 40 to 33
+		// Let's make the AI a bit less patient
+		// Especially the peaceful types; this maps e.g. 400 to 296 and 40 to 33.
+		//rDiv.exponentiate(fixp(0.95));
+		/*	Not a good idea after all. Overall, UWAI tends to make peaceful leaders
+			rather too utilitarian with their war plans, I've come to think.
+			So let's adjust only linearly. */
+		rDiv *= fixp(0.85);
 		if (rDiv <= 0)
 			rDrive = 0;
 		else rDrive /= rDiv;
