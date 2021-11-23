@@ -473,6 +473,8 @@ scaled WarUtilityAspect::remainingCityRatio(PlayerTypes ePlayer) const
 scaled WarUtilityAspect::partnerUtilFromTech() const
 {
 	// Some overlap with the "Tech Groundbreaker" code in CvPlayerAI::AI_techValue
+	if (m_kGame.isOption(GAMEOPTION_NO_TECH_TRADING))
+		return 0;
 	// How good our and their attitude needs to be at least to allow tech trade
 	AttitudeTypes eOurAttitudeThresh = techRefuseThresh(eWe);
 	AttitudeTypes eTheirAttitudeThresh = techRefuseThresh(eThey);
@@ -516,15 +518,15 @@ scaled WarUtilityAspect::partnerUtilFromTech() const
 			(kOurTeam.AI_estimateYieldRate(eWe, YIELD_COMMERCE) + scaled::epsilon());
 	if (rTheyToUsCommerceRatio > 1)
 		rTheyToUsCommerceRatio.flipFraction();
-	scaled r = SQR(rTheyToUsCommerceRatio) * (20 + iHumanExtra);
-	int iNearFutureTrades = std::min(iWeCanOffer, iTheyCanOffer);
-	if (iNearFutureTrades > 1) // Just 1 isn't likely to result in a trade
+	scaled r = SQR(rTheyToUsCommerceRatio) * (17 + iHumanExtra);
+	scaled rNearFutureTrades = std::min(iWeCanOffer, iTheyCanOffer);
+	if (rNearFutureTrades > 1) // Just 1 isn't likely to result in a trade
 	{
-		log("Added utility for %d foreseeable trades", iNearFutureTrades);
+		log("Added utility for %d foreseeable trades", rNearFutureTrades.floor());
 		// Humans tend to make trades immediately, and avoid certain techs entirely.
 		if (kThey.isHuman())
-			iNearFutureTrades /= 2;
-		r += 4 * std::min(3, iNearFutureTrades);
+			rNearFutureTrades /= 2;
+		r += fixp(10/3.) * scaled::min(3, rNearFutureTrades);
 	}
 	if (r > 0)
 		log("Tech trade utility: %d", r.round());
@@ -536,6 +538,8 @@ scaled WarUtilityAspect::partnerUtilFromTech() const
 		log("Tech trade utility halved for distrust");
 		r /= 2;
 	}
+	if (m_kGame.isOption(GAMEOPTION_NO_TECH_BROKERING))
+		r *= fixp(2/3.);
 	return r * kWeAI.amortizationMultiplier();
 }
 
@@ -2726,7 +2730,7 @@ int Effort::preEvaluate()
 			/*	Reduced cost for long-distance war; less disturbance of Workers
 				and Settlers, and less danger of pillaging. */
 			rUtility += militAnalyst().turnsSimulated() /
-					((bAllWarsLongDist ? 8 : fixp(5.5)) +
+					((bAllWarsLongDist ? 10 : 7) +
 					// Workers not much of a concern later on
 					kWe.AI_getCurrEraFactor() / 2);
 			log("Cost for wartime economy and ravages: %d%s", rUtility.uround(),
