@@ -10210,7 +10210,8 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 	int iProductionValue = 0;
 	if (eProcess == NO_PROCESS)
 	{
-		iProductionTimes100 += bFoodIsProduction ? iFoodYieldTimes100 : 0;
+		if (bFoodIsProduction)
+			iProductionTimes100 += iFoodYieldTimes100;
 
 		iProductionValue += iProductionTimes100 * iBaseProductionValue / 100;
 		// If city has more than enough food, but very little production, add large value to production
@@ -10218,10 +10219,12 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 		// (based on BBAI code)
 		if (!bWorkerOptimization && iProductionTimes100 > 0 && !bFoodIsProduction && isProduction())
 		{
-			if (!isHuman() || AI_isEmphasizeYield(YIELD_PRODUCTION)
-				|| (!bEmphasizeFood && !AI_isEmphasizeYield(YIELD_COMMERCE) && !AI_isEmphasizeGreatPeople()))
+			if (!isHuman() || AI_isEmphasizeYield(YIELD_PRODUCTION) ||
+				(!bEmphasizeFood && !AI_isEmphasizeYield(YIELD_COMMERCE) &&
+				!AI_isEmphasizeGreatPeople()))
 			{
-				// don't worry about minimum production if there is any hurry type available for us. If we need the productivity, we can just buy it.
+				/*	don't worry about minimum production if there is any hurry type
+					available for us. If we need the productivity, we can just buy it. */
 				bool bAnyHurry = false;
 				for (HurryTypes i = (HurryTypes)0; !bAnyHurry && i < GC.getNumHurryInfos(); i=(HurryTypes)(i+1))
 					bAnyHurry = kOwner.canHurry(i);
@@ -10229,27 +10232,24 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 				if (!bAnyHurry && foodDifference(false)-(bRemove ? iFoodYield : 0) >= GC.getFOOD_CONSUMPTION_PER_POPULATION())
 				{
 					/*if (getYieldRate(YIELD_PRODUCTION) - (bRemove ? iProductionTimes100/100 : 0)  < 1 + getPopulation()/3)
-					{
-						iValue += 60 + iBaseProductionValue * iProductionTimes100 / 100;
-					}*/
-					int iCurrentProduction = getCurrentProductionDifference(true, false) - (bRemove ? iProductionTimes100/100 : 0);
+						iValue += 60 + iBaseProductionValue * iProductionTimes100 / 100;*/
+					int iCurrentProduction = getCurrentProductionDifference(true, false)
+							- (bRemove ? iProductionTimes100/100 : 0);
 					if (iCurrentProduction < 1 + getPopulation()/3)
 					{
-						iValue += 5 * iBaseProductionValue * std::min(iProductionTimes100, (1 + getPopulation()/3 - iCurrentProduction)*100) / 100;
+						iValue += 5 * iBaseProductionValue *
+								std::min(iProductionTimes100,
+								(1 + getPopulation()/3 - iCurrentProduction)*100) / 100;
 					}
 				}
 			}
 		}
 		if (!isProduction() && !isHuman())
-		{
 			iProductionValue /= 2;
-		}
 	}
 
 	int iSlaveryValue = 0;
-
 	int iFoodGrowthValue = 0;
-
 	if (!bIgnoreFood && iFoodYield != 0)
 	{
 		if (iGrowthValue < 0)
@@ -10565,16 +10565,16 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 		iFoodValue = (iSlaveryValue + 2 * iFoodGrowthValue) / 3;
 	}
 
-	//Lets have some fun with the multipliers, this basically bluntens the impact of
-	//massive bonuses.....
+	/*	Lets have some fun with the multipliers, this basically bluntens the
+		impact of massive bonuses..... */
 
-	//normalize the production... this allows the system to account for rounding
-	//and such while preventing an "out to lunch smoking weed" scenario with
-	//unusually high transient production modifiers.
-	//Other yields don't have transient bonuses in quite the same way.
+	/*	normalize the production... this allows the system to account for rounding
+		and such while preventing an "out to lunch smoking weed" scenario with
+		unusually high transient production modifiers.
+		Other yields don't have transient bonuses in quite the same way. */
 
-	// Rounding can be a problem, particularly for small commerce amounts.  Added safe guards to make
-	// sure commerce is counted, even if just a tiny amount.
+	/*	Rounding can be a problem, particularly for small commerce amounts.
+		Added safeguards to make sure commerce is counted, even if just a tiny amount. */
 	if (AI_isEmphasizeYield(YIELD_PRODUCTION))
 	{
 		iProductionValue *= 140; // was 130
@@ -10624,7 +10624,8 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 	{
 		if (isFoodProduction())
 		{
-			iProductionValue *= 100 + (bWorkerOptimization ? 0 : AI_specialYieldMultiplier(YIELD_PRODUCTION));
+			iProductionValue *= 100 + (bWorkerOptimization ? 0 :
+					AI_specialYieldMultiplier(YIELD_PRODUCTION));
 			iProductionValue /= 100;
 		}
 		else
@@ -10633,8 +10634,8 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 			iProductionValue /= (iBaseProductionModifier + iExtraProductionModifier);
 
 			// Note: iSlaveryValue use to be added here. Now it is counted as food value instead.
-			iProductionValue *= (100 + (bWorkerOptimization ? 0 : AI_specialYieldMultiplier(YIELD_PRODUCTION)));
-
+			iProductionValue *= 100 + (bWorkerOptimization ? 0 :
+					AI_specialYieldMultiplier(YIELD_PRODUCTION));
 			iProductionValue /= kOwner.AI_averageYieldMultiplier(YIELD_PRODUCTION);
 		}
 
@@ -10659,7 +10660,7 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 }
 
 // units of 400x commerce
-int CvCityAI::AI_plotValue(CvPlot const& kPlot, bool bRemove, bool bIgnoreFood, // advc: 1st param was pointer
+int CvCityAI::AI_plotValue(CvPlot const& kPlot, bool bRemove, bool bIgnoreFood,
 	bool bIgnoreStarvation, int iGrowthValue) const
 {
 	FAssert(getCityPlotIndex(kPlot) < NUM_CITY_PLOTS);
