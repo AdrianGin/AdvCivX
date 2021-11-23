@@ -10226,10 +10226,19 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 				/*	don't worry about minimum production if there is any hurry type
 					available for us. If we need the productivity, we can just buy it. */
 				bool bAnyHurry = false;
-				for (HurryTypes i = (HurryTypes)0; !bAnyHurry && i < GC.getNumHurryInfos(); i=(HurryTypes)(i+1))
-					bAnyHurry = kOwner.canHurry(i);
-
-				if (!bAnyHurry && foodDifference(false)-(bRemove ? iFoodYield : 0) >= GC.getFOOD_CONSUMPTION_PER_POPULATION())
+				/*	advc.121: I don't think a human will want to hurry production
+					when setting a city to "emphasize production" */
+				if (!isHuman())
+				{
+					for (HurryTypes i = (HurryTypes)0;
+						!bAnyHurry && i < GC.getNumHurryInfos(); i=(HurryTypes)(i+1))
+					{
+						bAnyHurry = kOwner.canHurry(i);
+					}
+				}
+				if (!bAnyHurry &&
+					foodDifference(false) - (bRemove ? iFoodYield : 0) >=
+					GC.getFOOD_CONSUMPTION_PER_POPULATION())
 				{
 					/*if (getYieldRate(YIELD_PRODUCTION) - (bRemove ? iProductionTimes100/100 : 0)  < 1 + getPopulation()/3)
 						iValue += 60 + iBaseProductionValue * iProductionTimes100 / 100;*/
@@ -11180,7 +11189,9 @@ int CvCityAI::AI_growthValuePerFood() const
 	std::partial_sort(unworked_jobs.begin(), unworked_jobs.begin() + 3,
 			unworked_jobs.end(), std::greater<int>());
 	return (unworked_jobs[0]*4 + unworked_jobs[1]*2 + unworked_jobs[2]*1) /
-			(700 * iConsumtionPerPop);
+			/*	advc.121: Coefficient was 700. I think that prioritized growth
+				too much. */
+			(800 * iConsumtionPerPop);
 	// </k146>
 }
 
