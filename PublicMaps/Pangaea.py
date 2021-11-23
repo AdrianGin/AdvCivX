@@ -25,12 +25,12 @@ def getGridSize(argsList):
 	if iWorldSize < 0:
 		return ()
 	sizeModifiers = {
-		WorldSizeTypes.WORLDSIZE_DUEL:		(2, 0),
-		WorldSizeTypes.WORLDSIZE_TINY:		(2, 0),
-		WorldSizeTypes.WORLDSIZE_SMALL:		(2, 0),
-		WorldSizeTypes.WORLDSIZE_STANDARD:	(2, 0),
-		WorldSizeTypes.WORLDSIZE_LARGE:		(2, 1),
-		WorldSizeTypes.WORLDSIZE_HUGE:		(3, 2)
+		WorldSizeTypes.WORLDSIZE_DUEL:		(0, 1),
+		WorldSizeTypes.WORLDSIZE_TINY:		(0, 1),
+		WorldSizeTypes.WORLDSIZE_SMALL:		(0, 1),
+		WorldSizeTypes.WORLDSIZE_STANDARD:	(0, 1),
+		WorldSizeTypes.WORLDSIZE_LARGE:		(1, 1),
+		WorldSizeTypes.WORLDSIZE_HUGE:		(2, 2)
 	}
 	wi = CyGlobalContext().getWorldInfo(iWorldSize)
 	return (sizeModifiers[iWorldSize][0] + wi.getGridWidth(), sizeModifiers[iWorldSize][1] + wi.getGridHeight())
