@@ -6360,7 +6360,9 @@ int CvCityAI::AI_projectValue(ProjectTypes eProject) /* advc: */ const
 						if (kLoopPlayer.getID() == kOwner.getID())
 						{
 							iTemp = GC.getInfo(kOwner.getPersonalityType()).
-									// victory weight is between 0 and 100. (usually around 30).
+									/*	victory weight is between 0 and 100. (usually around 30).
+										(advc, note: Just for flavor, don't check whether
+										conquest is actually possible.) */
 									getConquestVictoryWeight() / 2
 									/*  advc.650: Was just 85. More civs =>
 										more targets to choose from. */

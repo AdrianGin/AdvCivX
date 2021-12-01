@@ -566,6 +566,12 @@ public:
 	bool AI_atVictoryStage4() const;
 	bool AI_atVictoryStage3() const;
 	AIVictoryStage AI_getVictoryStageHash() const { return m_eVictoryStageHash; }
+	// advc.115f:
+	int AI_getVictoryWeight(VictoryTypes eVictory) const
+	{
+		return m_aiVictoryWeights.get(eVictory);
+	}
+	void AI_updateVictoryWeights(); // advc.115f
 	void AI_updateVictoryStageHash(); // K-Mod
 	void AI_initStrategyRand(); // K-Mod
 	int AI_getStrategyRand(int iShift) const;
@@ -791,6 +797,7 @@ protected:
 	int* m_aiBonusValueTrade; // advc.036
 	int* m_aiUnitClassWeights;
 	int* m_aiUnitCombatWeights;
+	ArrayEnumMap<VictoryTypes,short> m_aiVictoryWeights; // advc.115f
 	// <advc.130c>
 	bool m_abTheyFarAhead[MAX_CIV_PLAYERS];
 	bool m_abTheyBarelyAhead[MAX_CIV_PLAYERS]; // </advc.130c>
@@ -926,6 +933,7 @@ protected:
 	int AI_calculateDominationVictoryStage() const;
 	int AI_calculateDiplomacyVictoryStage() const;
 	// BETTER_BTS_AI_MOD: END
+	bool AI_isVictoryValid(VictoryTypes eVictory, int& iWeight) const; // advc.115f
 	// K-Mod. I've moved the bulk of AI_getStrategyHash into a new function: AI_updateStrategyHash.
 	AIStrategy AI_getStrategyHash() const { return m_eStrategyHash; }
 	void AI_updateStrategyHash();

@@ -804,6 +804,7 @@ public:
 	DllExport ColorTypes getPlotHighlightColor(CvPlot* pPlot) const;
 	DllExport void cheatSpaceship() const;
 	DllExport VictoryTypes getSpaceVictory() const;
+	VictoryTypes getDominationVictory() const; // advc.115f
 	DllExport void nextActivePlayer(bool bForward);
 
 	DllExport DomainTypes getUnitDomain(UnitTypes eUnit) const; // advc.003j: Isn't and imo shouldn't be used DLL-internally

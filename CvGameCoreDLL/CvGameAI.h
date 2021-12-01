@@ -31,6 +31,7 @@ public:
 	EraTypes AI_getVoteSourceEra(VoteSourceTypes eVS = NO_VOTESOURCE) const;
 	// </advc.erai>
 	scaled AI_exclusiveRadiusWeight(int iDist = -1) const; // advc.099b
+	void AI_updateVictoryWeights(); // advc.115f
 
 	void read(FDataStreamBase* pStream);
 	void write(FDataStreamBase* pStream);

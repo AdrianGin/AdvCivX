@@ -5059,26 +5059,55 @@ void CvUnitAI::AI_greatPersonMove()
 		missions.push_back(std::pair<int, int>(rDiscoverValue.round(), GP_DISCOVER));
 	}
 
-	// SlowValue is meant to be a rough estimation of how much value we'll get from doing the best join / build mission.
-	// To give this estimate, I'm going to do a rough personality-based calculation of how many turns to count.
-	// Note that "iBestValue" is roughly 100x commerce per turn for our best join or build mission.
-	// Also note that the commerce per turn is likely to increase as we improve our city infrastructure and so on.
+	CvGame const& kGame = GC.getGame();
+	/*	SlowValue is meant to be a rough estimation of how much value we'll get
+		from doing the best join / build mission. To give this estimate,
+		I'm going to do a rough personality-based calculation of how many turns
+		to count. Note that "iBestValue" is roughly 100x commerce per turn for
+		our best join or build mission. Also note that the commerce per turn is
+		likely to increase as we improve our city infrastructure and so on. */
 	int iSlowValue = iBestValue;
 	if (iSlowValue > 0)
 	{
 		// multiply by the full number of turns remaining
-		iSlowValue *= GC.getGame().getEstimateEndTurn() - GC.getGame().getGameTurn();
+		iSlowValue *= kGame.getEstimateEndTurn() - kGame.getGameTurn();
 
 		// construct a modifier based on what victory we might like to aim for with our personality & situation
-		const CvLeaderHeadInfo& kLeader = GC.getInfo(kPlayer.getPersonalityType());
-		int iModifier =
-			2 * std::max(kLeader.getSpaceVictoryWeight(), kPlayer.AI_atVictoryStage(AI_VICTORY_SPACE1) ? 35 : 0) +
-			1 * std::max(kLeader.getCultureVictoryWeight(), kPlayer.AI_atVictoryStage(AI_VICTORY_CULTURE1) ? 35 : 0) +
-			//0 * kLeader.getDiplomacyVictoryWeight() +
-			-1 * std::max(kLeader.getDominationVictoryWeight(), kPlayer.AI_atVictoryStage(AI_VICTORY_DOMINATION1) ? 35 : 0) +
-			-2 * std::max(kLeader.getConquestVictoryWeight(), kPlayer.AI_atVictoryStage(AI_VICTORY_CONQUEST1) ? 35 : 0);
-		// If we're small, then slow & steady progress might be our best hope to keep up. So increase the modifier for small civs. (think avg. cities / our cities)
-		iModifier += range(40 * GC.getGame().getNumCivCities() / std::max(1, GC.getGame().countCivPlayersAlive()*kPlayer.getNumCities()) - 50, 0, 50);
+		int iModifier = 0;
+		/*	<advc.115f> Had used weights from kOwner's personality directly.
+			I don't think the weights should count when the respective
+			victory is unavailable (debatable ...). */
+		FOR_EACH_ENUM(Victory)
+		{
+			int const iWeight = kOwner.AI_getVictoryWeight(eLoopVictory);
+			if (eLoopVictory == kGame.getSpaceVictory())
+			{
+				iModifier += 2 * std::max(iWeight,
+						kOwner.AI_atVictoryStage(AI_VICTORY_SPACE1) ? 35 : 0);
+			}
+			if (GC.getInfo(eLoopVictory).getCityCulture() > 0)
+			{
+				iModifier += 1 * std::max(iWeight,
+						kOwner.AI_atVictoryStage(AI_VICTORY_CULTURE1) ? 35 : 0);
+			}
+			if (eLoopVictory == kGame.getDominationVictory())
+			{
+				iModifier -= std::max(iWeight,
+						kOwner.AI_atVictoryStage(AI_VICTORY_DOMINATION1) ? 35 : 0);
+			}
+			if (GC.getInfo(eLoopVictory).isConquest())
+			{
+				iModifier -= 2 * std::max(iWeight,
+						kOwner.AI_atVictoryStage(AI_VICTORY_CONQUEST1) ? 35 : 0);
+			}
+			//if (GC.getInfo(eLoopVictory).isDiploVote()) {}
+		} // </advc.115f>
+		/*	If we're small, then slow & steady progress might be our best hope
+			to keep up. So increase the modifier for small civs.
+			(think avg. cities / our cities) */
+		iModifier += range(40 * kGame.getNumCivCities() / std::max(1,
+				kGame.countCivPlayersAlive() * kOwner.getNumCities()) - 50,
+				0, 50);
 
 		// convert the modifier into some percentage of the remaining turns
 		iModifier = range(30 + iModifier/2, 20, 80);

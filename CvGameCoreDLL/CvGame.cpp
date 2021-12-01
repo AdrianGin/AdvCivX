@@ -951,6 +951,7 @@ void CvGame::initFreeState()
 			it->initFreeState();
 	}
 	applyOptionEffects(); // advc.310
+	AI().AI_updateVictoryWeights(); // advc.115f
 	FOR_EACH_ENUM(Tech)
 	{
 		// <advc.126> Later-era free tech only for later-era starts.
@@ -3608,6 +3609,39 @@ bool CvGame::isDiploVictoryValid() const
 	return false;
 }
 
+// advc.115f:
+VictoryTypes CvGame::getDominationVictory() const
+{
+	FOR_EACH_ENUM(Victory)
+	{
+		if (GC.getInfo(eLoopVictory).getLandPercent() > 0 &&
+			GC.getInfo(eLoopVictory).getPopulationPercentLead())
+		{
+			return eLoopVictory;
+		}
+	}
+	return NO_VICTORY;
+}
+
+// advc: Moved from CvGameInterface.cpp
+VictoryTypes CvGame::getSpaceVictory() const
+{
+	FOR_EACH_ENUM(Project)
+	{
+		if (GC.getInfo(eLoopProject).isSpaceship())
+			return GC.getInfo(eLoopProject).getVictoryPrereq();
+	}
+	FErrorMsg("Invalid space victory type");
+	return NO_VICTORY;
+	/*	advc: Alternative check, cut from AI_calculateSpaceVictoryStage (BBAI),
+		disused. */
+	/*FOR_EACH_ENUM(Victory) {
+		if (GC.getInfo(eLoopVictory).getVictoryDelayTurns() > 0)
+			return eLoopVictory;
+	}
+	return NO_VICTORY;*/
+}
+
 
 bool CvGame::isTeamVote(VoteTypes eVote) const
 {
@@ -6179,6 +6213,7 @@ void CvGame::makeCorporationFounded(CorporationTypes eIndex, PlayerTypes ePlayer
 void CvGame::setVictoryValid(VictoryTypes eVict, bool bValid)
 {
 	GC.getInitCore().setVictory(eVict, bValid);
+	AI().AI_updateVictoryWeights(); // advc.115f
 }
 
 

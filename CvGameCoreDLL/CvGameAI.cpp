@@ -224,6 +224,13 @@ scaled CvGameAI::AI_exclusiveRadiusWeight(int iDist) const
 	return m_arExclusiveRadiusWeight[iDist];
 }
 
+// advc.115f:
+void CvGameAI::AI_updateVictoryWeights()
+{
+	for (PlayerAIIter<CIV_ALIVE> it; it.hasNext(); ++it)
+		it->AI_updateVictoryWeights();
+}
+
 // advc.009b:
  void CvGameAI::AI_updateExclusiveRadiusWeight()
  {
