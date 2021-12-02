@@ -2538,14 +2538,15 @@ void KingMaking::evaluate()
 	/*	As humans we are very much not OK with rivals winning the game,
 		so ATTITUDE_FURIOUS would be the smarter assumption, however, I don't want
 		a leading AI to be extremely alert about a human runner-up. */
-	AttitudeTypes const eAttitude = (kWe.isHuman() ? ATTITUDE_ANNOYED :
-			towardThem());
-	if (eAttitude >= ATTITUDE_FRIENDLY)
+	int iAttitude = (kWe.isHuman() ? ATTITUDE_ANNOYED : towardThem());
+	if (kOurTeam.isAtWar(eTheirTeam)) // When at war, bad attitude is normal.
+		iAttitude++;
+	if (iAttitude >= ATTITUDE_FRIENDLY)
 	{	/*	We don't go as far as helping a friend win
 			(only indirectly by trying to thwart the victory of a disliked civ) */
 		return;
 	}
-	scaled rAttitudeMult = fixp(0.03) + fixp(0.25) * (ATTITUDE_PLEASED - eAttitude);
+	scaled rAttitudeMult = fixp(0.03) + fixp(0.25) * (ATTITUDE_PLEASED - iAttitude);
 	scaled rCaughtUpPremium;
 	scaled rCatchUpVal = (16 * m_rGameEraAIFactor) / m_winningPresent.size();
 	rCatchUpVal.exponentiate(fixp(0.75));
@@ -2595,7 +2596,7 @@ void KingMaking::evaluate()
 		m_iU += rCaughtUpPremium.round();
 		return;
 	}
-	scaled rWeight = 4; // So that 25% loss correspond to 100 utility
+	scaled rWeight(10,3); // So that 30% loss correspond to 100 utility
 	// We're a bit less worried about helping them indirectly
 	if (rTheirLoss < 0)
 	{
@@ -2608,7 +2609,7 @@ void KingMaking::evaluate()
 	{
 		/*	Over the course of the game, we become more willing to take out rivals
 			even if several rivals are still in competition. */
-		scaled rProgressFactor = fixp(2/3.) - fixp(1/3.) * m_kGame.gameTurnProgress();
+		scaled rProgressFactor = fixp(3/4.) - fixp(1/3.) * m_kGame.gameTurnProgress();
 		FAssert(rProgressFactor > 0);
 		scaled rDiv = 1 + SQR(rProgressFactor * iWinningRivals);
 		rCompetitionMult = 1 / rDiv;
