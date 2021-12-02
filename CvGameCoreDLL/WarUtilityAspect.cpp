@@ -2825,7 +2825,9 @@ int Effort::preEvaluate()
 			/*	Total vs. limited war is already reflected by ArmamentForecast,
 				but a strong focus on military build-up is extra harmful b/c
 				even essential buildings may not get constructed then. */
-			(1 - rFutureUse) * (m_kParams.isTotal() ? fixp(1.1) : 1);
+			(1 - rFutureUse) * (m_kParams.isTotal() ? fixp(1.1) : 1) *
+			// Future use of transports is a long shot
+			(m_kParams.isNaval() ? fixp(1.2) : 1);
 	log("Production value of lost units: %d, invested production: %d,"
 			" multiplier for future use of trained units: %d percent, "
 			"adjusted production value of build-up and losses: %d",
