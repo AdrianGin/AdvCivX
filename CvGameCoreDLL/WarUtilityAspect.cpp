@@ -441,11 +441,15 @@ scaled WarUtilityAspect::conqAssetScore(bool bMute) const
 		Tbd.: Would better to apply this per area, i.e. no culture pressure if we
 		take all their cities in one area. Then again, we may not know about
 		all their cities in the area. */
+	int const iTheirRemainingCities = kThey.getNumCities()
+			- (int)militAnalyst().lostCities(eThey).size();
 	if (militAnalyst().getCapitulationsAccepted(eOurTeam).count(eTheirTeam) == 0 &&
-		((int)militAnalyst().lostCities(eThey).size()) < kThey.getNumCities())
+		iTheirRemainingCities > 0)
 	{
-		// Equivalent to subtracting 50% of the mean per-city score
-		r *= 1 - scaled(1, 2 * (int)ourConquestsFromThem().size());
+		/*	Mean of a quotient based just on how many cities we conquer and another
+			based on how much of them remains. Then shift that toward 1 a little. */
+		r *= (4 * (1 - (scaled(1, 1 + (int)ourConquestsFromThem().size()) +
+				scaled(iTheirRemainingCities, kThey.getNumCities())) / 2) + 1) / 5;
 		if (!bMute)
 			log("Asset score reduced to %d due to culture pressure", r.round());
 	}
