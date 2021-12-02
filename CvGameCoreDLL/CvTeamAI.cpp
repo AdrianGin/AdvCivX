@@ -200,11 +200,8 @@ int CvTeamAI::AI_countMilitaryWeight(CvArea const* pArea) const
 	return iCount;
 }
 
-/*	advc.104: Replacing AI_estimateTotalYieldRate. This is a team function
-	so that we could check for visible demographics. (But we don't b/c the AI
-	routinely cheats in that respect.) */
-scaled CvTeamAI::AI_estimateYieldRate(PlayerTypes ePlayer, YieldTypes eYield,
-	int iSamples) const
+scaled CvTeamAI::AI_estimateDemographic(PlayerTypes ePlayer,
+	PlayerHistoryTypes eDemographic, int iSamples) const
 {
 	//PROFILE_FUNC(); // Called very frequently; about 1.5% of the turn times (July 2019).
 	CvPlayer const& kPlayer = GET_PLAYER(ePlayer);
@@ -221,20 +218,7 @@ scaled CvTeamAI::AI_estimateYieldRate(PlayerTypes ePlayer, YieldTypes eYield,
 		for (int i = 1; i <= iSamples; i++)
 		{
 			int iSampleIndex = iGameTurn - i;
-			int iHist = 0;
-			switch (eYield)
-			{
-			case YIELD_COMMERCE:
-				iHist = kPlayer.getHistory(PLAYER_HISTORY_ECONOMY, iSampleIndex);
-				break;
-			case YIELD_PRODUCTION:
-				iHist = kPlayer.getHistory(PLAYER_HISTORY_INDUSTRY, iSampleIndex);
-				break;
-			case YIELD_FOOD:
-				iHist = kPlayer.getHistory(PLAYER_HISTORY_AGRICULTURE, iSampleIndex);
-				break;
-			default: FAssert(false);
-			}
+			int iHist = kPlayer.getHistory(eDemographic, iSampleIndex);
 			if (iHist > 0) // Omit revolution turns
 				arSamples.push_back(iHist);
 		}
@@ -243,6 +227,29 @@ scaled CvTeamAI::AI_estimateYieldRate(PlayerTypes ePlayer, YieldTypes eYield,
 	if (arSamples.empty())
 		return 0;
 	return stats::median(arSamples);
+}
+
+/*	advc.104: Replacing AI_estimateTotalYieldRate. This is a team function
+	so that we could check for visible demographics. (But we don't b/c the AI
+	routinely cheats in that respect.) */
+scaled CvTeamAI::AI_estimateYieldRate(PlayerTypes ePlayer,
+	YieldTypes eYield, int iSamples) const
+{
+	PlayerHistoryTypes eHistory = NO_PLAYER_HISTORY;
+	switch (eYield)
+	{
+	case YIELD_COMMERCE:
+		eHistory = PLAYER_HISTORY_ECONOMY;
+		break;
+	case YIELD_PRODUCTION:
+		eHistory = PLAYER_HISTORY_INDUSTRY;
+		break;
+	case YIELD_FOOD:
+		eHistory = PLAYER_HISTORY_AGRICULTURE;
+		break;
+	}
+	FAssert(eHistory != NO_PLAYER_HISTORY);
+	return AI_estimateDemographic(ePlayer, eHistory, iSamples);;
 }
 
 /*	K-Mod: return the total yield of the team, estimated by averaging

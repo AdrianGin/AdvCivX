@@ -27460,7 +27460,7 @@ bool CvPlayerAI::AI_isAdjacentCitySite(CvPlot const& p, bool bCheckCenter) const
 bool CvPlayerAI::AI_isAwfulSite(CvCity const& kCity, bool bConquest) const
 {
 	int const iEra = GC.getGame().getCurrentEra();
-	// If the city has grown, the site has somewhat proven its usefulness.
+	// If the city has grown, the site has somewhat proved its usefulness.
 	if (kCity.getPopulation() >= (3 * iEra + 8 - (bConquest ? 2 : 0)) / 2)
 		return false;
 

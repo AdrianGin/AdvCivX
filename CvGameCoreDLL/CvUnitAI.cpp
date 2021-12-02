@@ -4893,12 +4893,12 @@ void CvUnitAI::AI_generalMove()
 	getGroup()->pushMission(MISSION_SKIP);
 }
 
-// K-Mod. For most great people, the AI needs to do similar checks and calculations.
-// I've made this general function to do those calculations for all types of great people.
-// advc: Now handles the entire GP move (except Great General)
+/*	K-Mod. For most great people, the AI needs to do similar checks and calculations.
+	I've made this general function to do those calculations for all types of GP.
+	advc: Now handles the entire GP move (except Great General). */
 void CvUnitAI::AI_greatPersonMove()
 {
-	const CvPlayerAI& kPlayer = GET_PLAYER(getOwner());
+	const CvPlayerAI& kOwner = GET_PLAYER(getOwner());
 
 	enum
 	{
@@ -4923,7 +4923,7 @@ void CvUnitAI::AI_greatPersonMove()
 	bool bCanHurry = (getUnitInfo().getBaseHurry() > 0 ||
 			getUnitInfo().getHurryMultiplier() > 0);
 
-	FOR_EACH_CITYAI(pLoopCity, kPlayer)
+	FOR_EACH_CITYAI(pLoopCity, kOwner)
 	{	// <advc.139>
 		if (!pLoopCity->AI_isSafe())
 			continue; // </advc.139>
@@ -5023,7 +5023,7 @@ void CvUnitAI::AI_greatPersonMove()
 	{
 		iGoldenAgeValue = GET_PLAYER(getOwner()).AI_calculateGoldenAgeValue() /
 				GET_PLAYER(getOwner()).unitsRequiredForGoldenAge();
-		iGoldenAgeValue *= (75 + kPlayer.AI_getStrategyRand(0) % 51);
+		iGoldenAgeValue *= (75 + kOwner.AI_getStrategyRand(0) % 51);
 		iGoldenAgeValue /= 100;
 		missions.push_back(std::pair<int, int>(iGoldenAgeValue, GP_GOLDENAGE));
 	}
@@ -5037,25 +5037,25 @@ void CvUnitAI::AI_greatPersonMove()
 		rDiscoverValue = getDiscoverResearch(eDiscoverTech);
 		// if this isn't going to immediately help our research, it isn't worth as much.
 		if (rDiscoverValue < GET_TEAM(getTeam()).getResearchLeft(eDiscoverTech) &&
-			kPlayer.getCurrentResearch() != eDiscoverTech)
+			kOwner.getCurrentResearch() != eDiscoverTech)
 		{
 			rDiscoverValue.mulDiv(2, 3);
 		}
 		// founding religions / free techs / free great people
-		if (kPlayer.AI_isFirstTech(eDiscoverTech))
+		if (kOwner.AI_isFirstTech(eDiscoverTech))
 			rDiscoverValue *= 2;
 		// amplify the 'undiscovered' bonus based on how likely we are to try to trade the tech.
 		rDiscoverValue *= 1 +
-				((2 - per100(GC.getInfo(kPlayer.getPersonalityType()).getTechTradeKnownPercent())) *
+				((2 - per100(GC.getInfo(kOwner.getPersonalityType()).getTechTradeKnownPercent())) *
 				(GET_TEAM(getTeam()).AI_knownTechValModifier(eDiscoverTech)
 				-1)); // advc: AI_knownTechValModifier now 1 higher than in K-Mod
 		if(GET_PLAYER(getOwner()).AI_isFocusWar()) // advc.105
-		//if (GET_TEAM(getTeam()).getAnyWarPlanCount(true) || kPlayer.AI_isDoStrategy(AI_STRATEGY_ALERT2))
+		//if (GET_TEAM(getTeam()).getAnyWarPlanCount(true) || kOwner.AI_isDoStrategy(AI_STRATEGY_ALERT2))
 		{
 			rDiscoverValue *= (getArea().getAreaAIType(getTeam()) == AREAAI_DEFENSIVE ? 5 : 4);
 			rDiscoverValue /= 3;
 		}
-		rDiscoverValue *= per100(75 + kPlayer.AI_getStrategyRand(3) % 51);
+		rDiscoverValue *= per100(75 + kOwner.AI_getStrategyRand(3) % 51);
 		missions.push_back(std::pair<int, int>(rDiscoverValue.round(), GP_DISCOVER));
 	}
 
@@ -5126,7 +5126,7 @@ void CvUnitAI::AI_greatPersonMove()
 			}
 		}
 		//if (gUnitLogLevel > 2) logBBAI("    %S GP slow modifier: %d, value: %d", GET_PLAYER(getOwner()).getCivilizationDescription(0), range(30 + iModifier/2, 20, 80), iSlowValue);
-		iSlowValue *= (75 + kPlayer.AI_getStrategyRand(6) % 51);
+		iSlowValue *= (75 + kOwner.AI_getStrategyRand(6) % 51);
 		iSlowValue /= 100;
 		missions.push_back(std::pair<int, int>(iSlowValue, GP_SLOW));
 	}
@@ -5137,10 +5137,10 @@ void CvUnitAI::AI_greatPersonMove()
 	// make it roughly comparable to research points
 	if (pBestTradePlot != NULL)
 	{
-		iTradeValue *= kPlayer.AI_commerceWeight(COMMERCE_GOLD);
+		iTradeValue *= kOwner.AI_commerceWeight(COMMERCE_GOLD);
 		iTradeValue /= 100;
-		iTradeValue *= kPlayer.AI_averageCommerceMultiplier(COMMERCE_RESEARCH);
-		iTradeValue /= kPlayer.AI_averageCommerceMultiplier(COMMERCE_GOLD);
+		iTradeValue *= kOwner.AI_averageCommerceMultiplier(COMMERCE_RESEARCH);
+		iTradeValue /= kOwner.AI_averageCommerceMultiplier(COMMERCE_GOLD);
 		// gold can be targeted where it is needed, but it's benefits typically aren't instant. (cf AI_knownTechValModifier)
 		iTradeValue *= 130;
 		iTradeValue /= 100;
@@ -5151,7 +5151,7 @@ void CvUnitAI::AI_greatPersonMove()
 			iTradeValue *= 120;
 			iTradeValue /= 100;
 		}
-		iTradeValue *= (75 + kPlayer.AI_getStrategyRand(9) % 51);
+		iTradeValue *= (75 + kOwner.AI_getStrategyRand(9) % 51);
 		iTradeValue /= 100;
 		missions.push_back(std::pair<int, int>(iTradeValue, GP_TRADE));
 	}
@@ -5214,14 +5214,14 @@ void CvUnitAI::AI_greatPersonMove()
 				if (gUnitLogLevel > 2) logBBAI("    %S chooses 'golden age' with their %S (value: %d, choice #%d)", GET_PLAYER(getOwner()).getCivilizationDescription(0), getName(0).GetCString(), iGoldenAgeValue, iChoice);
 				return;
 			}
-			else if (kPlayer.AI_totalUnitAIs(AI_getUnitAIType()) < 2)
+			else if (kOwner.AI_totalUnitAIs(AI_getUnitAIType()) < 2)
 			{
 				// Do we want to wait for another great person? How long will it take?
-				int iGpThreshold = kPlayer.greatPeopleThreshold();
+				int iGpThreshold = kOwner.greatPeopleThreshold();
 				int iMinTurns = MAX_INT;
 				//int iPercentOther; // chance of it being a different GP.
 				// unfortunately, it's non-trivial to calculate the GP type probabilies. So I'm leaving it out.
-				FOR_EACH_CITY(pLoopCity, kPlayer)
+				FOR_EACH_CITY(pLoopCity, kOwner)
 				{
 					int iGpRate = pLoopCity->getGreatPeopleRate();
 					if (iGpRate > 0)
@@ -5235,9 +5235,9 @@ void CvUnitAI::AI_greatPersonMove()
 
 				if (iMinTurns != MAX_INT)
 				{
-					int iRelativeWaitTime = iMinTurns + (GC.getGame().getGameTurn() - getGameTurnCreated());
+					int iRelativeWaitTime = iMinTurns + (kGame.getGameTurn() - getGameTurnCreated());
 					iRelativeWaitTime *= 100;
-					iRelativeWaitTime /= GC.getInfo(GC.getGame().getGameSpeedType()).getVictoryDelayPercent();
+					iRelativeWaitTime /= GC.getInfo(kGame.getGameSpeedType()).getVictoryDelayPercent();
 					// lets say 1% per turn.
 					iScoreThreshold = std::max(iScoreThreshold, it->first * (100 - iRelativeWaitTime) / 100);
 				}
@@ -5299,7 +5299,8 @@ void CvUnitAI::AI_greatPersonMove()
 		}
 		iChoice++;
 	}
-	FAssert(iScoreThreshold > 0);
+	// advc: Can be 0 when no city has a positive GP rate. I don't think that's a problem.
+	//FAssert(iScoreThreshold > 0);
 	// advc: Branch for Great Spy - cut from the deleted AI_greatSpyMove.
 	if (alwaysInvisible())
 	{	// K-Mod note: spies can't be seen, and can't be attacked. So we don't need to worry about retreating to safety.
@@ -5317,13 +5318,13 @@ void CvUnitAI::AI_greatPersonMove()
 	/*  advc: I've cut and pasted the rest of this function from AI_greatEngineerMove;
 		the exact same thing was being done for Prophet, Merchant, Artist and Scientist. */
 	/*if ((GET_PLAYER(getOwner()).AI_getAnyPlotDanger(plot(), 2)) ||
-		(getGameTurnCreated() < (GC.getGame().getGameTurn() - 25)))*/ // BtS
+		(getGameTurnCreated() < (kGame.getGameTurn() - 25)))*/ // BtS
 	if (GET_PLAYER(getOwner()).AI_isAnyPlotDanger(getPlot(), 2)) // K-Mod (there are good reasons for saving a great person)
 	{
 		if (AI_discover())
 			return;
 	}
-	if (gUnitLogLevel > 2) logBBAI("    %S chooses 'wait' with their %S (value: %d, dead time: %d)", GET_PLAYER(getOwner()).getCivilizationDescription(0), getName(0).GetCString(), iScoreThreshold, GC.getGame().getGameTurn() - getGameTurnCreated());
+	if (gUnitLogLevel > 2) logBBAI("    %S chooses 'wait' with their %S (value: %d, dead time: %d)", GET_PLAYER(getOwner()).getCivilizationDescription(0), getName(0).GetCString(), iScoreThreshold, kGame.getGameTurn() - getGameTurnCreated());
 	if (AI_retreatToCity())
 		return;
 	// K-Mod

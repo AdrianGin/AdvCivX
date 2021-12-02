@@ -4186,7 +4186,7 @@ bool CvPlayer::hasBonus(BonusTypes eBonus) const
 }
 
 
-int CvPlayer::getNumTradeBonusImports(PlayerTypes eFromPlayer) const // advc: Simplified using the new CvDeal interface
+int CvPlayer::getNumTradeBonusImports(PlayerTypes eFromPlayer) const
 {
 	FAssert(eFromPlayer != getID());
 	int iCount = 0;
@@ -9906,7 +9906,7 @@ void CvPlayer::setPlayable(bool bNewValue)
 void CvPlayer::changeBonusExport(BonusTypes eBonus, int iChange)
 {
 	if(iChange == 0)
-		return; // advc
+		return;
 	CvCity* pCapital = getCapital();
 	if (pCapital != NULL)
 		pCapital->getPlot().updatePlotGroupBonus(false, /* advc.064d: */ false);
@@ -9924,7 +9924,7 @@ void CvPlayer::changeBonusExport(BonusTypes eBonus, int iChange)
 void CvPlayer::changeBonusImport(BonusTypes eBonus, int iChange)
 {
 	if(iChange == 0)
-		return; // advc
+		return;
 	CvCity* pCapital = getCapital();
 	if (pCapital != NULL)
 		pCapital->getPlot().updatePlotGroupBonus(false, /* advc.064d: */ false);

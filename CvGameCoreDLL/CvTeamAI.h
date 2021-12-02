@@ -58,6 +58,8 @@ public:
 	int AI_countFinancialTrouble() const; // addvc.003j (comment): unused
 	int AI_countMilitaryWeight(CvArea const* pArea = NULL) const;
 	// <advc.104>, advc.038, advc.132:
+	scaled AI_estimateDemographic(PlayerTypes ePlayer, PlayerHistoryTypes eDemographic,
+			int iSamples = 5) const;
 	scaled AI_estimateYieldRate(PlayerTypes ePlayer, YieldTypes eYield, // (exposed to Python)
 			 int iSamples = 5) const; // </advc.104>
 	int AI_estimateTotalYieldRate(YieldTypes eYield) const; // K-Mod

@@ -2809,7 +2809,7 @@ int Effort::preEvaluate()
 	scaled rFutureUse = rHighestRivalPower / (rOurPower + scaled::epsilon());
 	rFutureUse.clamp(fixp(0.35), fixp(1.65));
 	/*	Division by e.g. 2.2 means survivors can be valued up to 75%; 2.75: 60%
-		(not taking account the exponentiation below) */
+		(not taking into account the exponentiation below) */
 	rFutureUse /= fixp(2.55);
 	rFutureUse.exponentiate(fixp(0.75));
 	if (!kWe.isHuman())
