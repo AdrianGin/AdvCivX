@@ -198,6 +198,7 @@ private:
 	void updateGoldPerProduction();
 	scaled goldPerProdBuildings();
 	scaled goldPerProdSites();
+	scaled goldPerProdProcess();
 	scaled goldPerProdVictory();
 	void updateWarUtility();
 	void updateWarUtilityIgnDistraction(TeamTypes eTarget);
