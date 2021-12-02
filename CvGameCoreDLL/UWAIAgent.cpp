@@ -2726,25 +2726,30 @@ bool UWAI::Player::canReach(PlayerTypes eTarget) const
 	return (getCache().numReachableCities(eTarget) > 0);
 }
 
-
+/*	This player makes the prediction; the prediction is _about_ ePlayer.
+	Like CvTeamAI::AI_estimateYieldRate (and other AI code), this function
+	currently cheats by not checking whether demographics are visible.
+	Would, in any case, make more sense as a team-level function,
+	but I want to keep it together with buildUnitProb for now. */
 scaled UWAI::Player::estimateBuildUpRate(PlayerTypes ePlayer, int iTurns) const
 {
-	/*	This player makes the prediction; the prediction is _about_ ePlayer.
-		Like CvTeamAI::AI_estimateYieldRate (and other AI code), this function
-		currently cheats by not checking whether demographics are visible.
-		Would, in any case, make more sense as a team-level function,
-		but I want to keep it together with buildUnitProb for now. */
-	CvGame const& kGame = GC.getGame();
-	iTurns *= GC.getInfo(kGame.getGameSpeedType()).getTrainPercent();
+	iTurns *= GC.getInfo(GC.getGame().getGameSpeedType()).getTrainPercent();
 	iTurns /= 100;
-	if (kGame.getElapsedGameTurns() < iTurns + 1)
+	return estimateDemographicGrowthRate(ePlayer, PLAYER_HISTORY_POWER, iTurns);
+}
+
+
+scaled UWAI::Player::estimateDemographicGrowthRate(PlayerTypes ePlayer,
+	PlayerHistoryTypes eDemographic, int iTurns) const
+{
+	if (GC.getGame().getElapsedGameTurns() < iTurns + 1)
 		return 0;
-	int iGameTurn = kGame.getGameTurn();
-	int iPastPow = std::max(1, GET_PLAYER(ePlayer).getHistory(
-			PLAYER_HISTORY_POWER, iGameTurn - 1 - iTurns));
-	int iDelta = GET_PLAYER(ePlayer).getHistory(PLAYER_HISTORY_POWER, iGameTurn - 1)
-			- iPastPow;
-	return scaled::max(0, scaled(iDelta, iPastPow));
+	int iGameTurn = GC.getGame().getGameTurn();
+	int iPastValue = std::max(1, GET_PLAYER(ePlayer).getHistory(
+			eDemographic, iGameTurn - 1 - iTurns));
+	int iDelta = GET_PLAYER(ePlayer).getHistory(eDemographic, iGameTurn - 1)
+			- iPastValue;
+	return scaled::max(0, scaled(iDelta, iPastValue));
 }
 
 
