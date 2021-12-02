@@ -23744,7 +23744,7 @@ int CvPlayerAI::AI_calculateSpaceVictoryStage() const
 			}
 		}
 	}
-	/*  <advc.115> All the parts together cost some 15000 to 20000 production on
+	/*	<advc.115> All the parts together cost some 15000 to 20000 production on
 		Normal speed. Can't be sure that production will increase much in the future;
 		most tech that could boost production is already known by the time
 		Apollo is built. If it'll take more than 100 turns, then it's hopeless
@@ -23752,46 +23752,25 @@ int CvPlayerAI::AI_calculateSpaceVictoryStage() const
 	int iTotalProduction = ((AI_estimateYieldRate(YIELD_PRODUCTION) * 100) /
 			std::max(1, GC.getInfo(GC.getGame().getGameSpeedType()).
 			getCreatePercent())).round();
-	bool bEnoughProduction = (iTotalProduction > 240);
-	// </advc.115>
+	bool bEnoughProduction = (iTotalProduction > 240); // </advc.115>
 	if (bHasApollo)
-	{
-		if (bNearAllTechs)
-		{
-			bool bOtherLaunched = false;
-			// K-Mod. (just tidying up a bit.)
-			int iOurCountdown = GET_TEAM(getTeam()).getVictoryCountdown(eSpace);
-			for (TeamIter<CIV_ALIVE,OTHER_KNOWN_TO> it(getTeam()); it.hasNext(); ++it)
-			{
-				if (it->getVictoryCountdown(eSpace) >= 0 &&
-					(iOurCountdown < 0 || it->getVictoryCountdown(eSpace) <= iOurCountdown))
-				{
-					bOtherLaunched = true;
-					break;
-				}
-			} // K-Mod end
-
-			if (!bOtherLaunched)
-				return 4;
-
-			if (bEnoughProduction || iOurCountdown > 0) // advc.115
-				return 3;
-		}
-
-		/*if (GET_TEAM(getTeam()).getBestKnownTechScorePercent() > (m_iVictoryStrategyHash & AI_VICTORY_SPACE3 ? 80 : 85))
-			return 3;*/ // BBAI
-		// K-Mod. I don't think that's a good way to do it.
-		// instead, compare our spaceship progress to that of our rivals.
+	{	// <advc.115>
+		int iTotalNeeded = 0; // (well, not strictly needed)
+		int iTotalHave = 0; // </advc.115>
+		// K-Mod. Compare our spaceship progress to that of our rivals.
 		int iOurProgress = 0;
 		FOR_EACH_ENUM(Project)
 		{
-			if (GC.getInfo(eLoopProject).isSpaceship())
+			CvProjectInfo const& kLoopProject = GC.getInfo(eLoopProject);
+			if (kLoopProject.isSpaceship())
 			{
+				iTotalNeeded += kLoopProject.getVictoryThreshold(eSpace); // advc.115
 				int iBuilt = GET_TEAM(getTeam()).getProjectCount(eLoopProject);
 				if (iBuilt > 0 ||
 					GET_TEAM(getTeam()).isHasTech(
-					GC.getInfo(eLoopProject).getTechPrereq()))
+					kLoopProject.getTechPrereq()))
 				{
+					iTotalHave += iBuilt; // advc.115
 					iOurProgress += 2 + iBuilt;
 				}
 			}
@@ -23819,6 +23798,32 @@ int CvPlayerAI::AI_calculateSpaceVictoryStage() const
 			if (iProgress > iOurProgress)
 				iSpaceTeams++;
 		}
+		// <advc.115>
+		scaled rProjectRatio(iTotalHave, std::max(1, iTotalNeeded));
+		int const iOurCountdown = GET_TEAM(getTeam()).getVictoryCountdown(eSpace);
+		/*	Moved this block down so that the K-Mod project counts
+			can be taken into account. And changed much of the code too. */
+		if (bNearAllTechs && rProjectRatio > fixp(0.42) &&
+			(bEnoughProduction || iOurCountdown > 0))
+		{
+			int iOtherCountdown = -1;
+			for (TeamIter<CIV_ALIVE,OTHER_KNOWN_TO> it(getTeam()); it.hasNext(); ++it)
+			{
+				int iLoopCountdown = it->getVictoryCountdown(eSpace);
+				if (iLoopCountdown >= 0 &&
+					(iOurCountdown < 0 || iLoopCountdown <= iOurCountdown))
+				{
+					if (iOtherCountdown < 0)
+						iOtherCountdown = iLoopCountdown;
+					else iOtherCountdown = std::min(iLoopCountdown, iOtherCountdown);
+				}
+			}
+			return ((iOtherCountdown >= 0 && iOtherCountdown <= 8) ||
+					rProjectRatio < fixp(2/3.) ? 3 : 4);
+		} // </advc.115>
+		/*if (GET_TEAM(getTeam()).getBestKnownTechScorePercent() > (m_iVictoryStrategyHash & AI_VICTORY_SPACE3 ? 80 : 85))
+			return 3;*/ // BBAI
+		// K-Mod. I don't think that's a good way to do it.
 		if (200 * iSpaceTeams / (1+iKnownTeams) <=
 			//GC.getInfo(getPersonalityType()).getSpaceVictoryWeight()
 			iWeight + // advc.115f
