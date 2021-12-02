@@ -1106,7 +1106,7 @@ void CvTeam::declareWar(TeamTypes eTarget, bool bNewDiplo, WarPlanTypes eWarPlan
 		kMembers[i]->updateTradeRoutes();
 
 	if (GC.getGame().isFinalInitialized() && !gDLL->GetWorldBuilderMode() &&
-		!isBarbarian() && !kTarget.isBarbarian() && !isMinorCiv() && !kTarget.isMinorCiv()) // advc: Moved these checks up
+		isMajorCiv() && kTarget.isMajorCiv()) // Moved these checks up
 	{
 		if (bNewDiplo && !isHuman())
 		{
@@ -1122,95 +1122,11 @@ void CvTeam::declareWar(TeamTypes eTarget, bool bNewDiplo, WarPlanTypes eWarPlan
 				}
 			}
 		}
-		CvWString szBuffer;
-		// <advc.100>
-		CvWString szSponsorName;
-		wchar const* cpSponsorName = L"";
-		if (eSponsor != NO_PLAYER)
-		{
-			// Need to make a copy b/c getName returns a pointer into a local string object
-			szSponsorName = GET_PLAYER(eSponsor).getName();
-			cpSponsorName = szSponsorName.GetCString();
-		} // </advc.100>
-		for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
-		{
-			CvPlayer const& kObs = *it;
-			// <advc.002l>
-			LPCTSTR szSoundYou = (bPrimaryDoW ? "AS2D_DECLAREWAR" : NULL);
-			LPCTSTR szSoundThey = (bPrimaryDoW ? "AS2D_THEIRDECLAREWAR" : NULL);
-			// </advc.002l>
-			if (kObs.getTeam() == getID())
-			{
-				szBuffer = gDLL->getText("TXT_KEY_MISC_YOU_DECLARED_WAR_ON",
-						kTarget.getName().GetCString());
-				gDLL->UI().addMessage(kObs.getID(), true, -1, szBuffer,
-						szSoundYou, // advc.002l
-						MESSAGE_TYPE_MAJOR_EVENT, NULL, GC.getColorType("WARNING_TEXT"),
-						// advc.127b:
-						kTarget.getCapitalX(kObs.getTeam()), kTarget.getCapitalY(kObs.getTeam()));
-			}
-			else if(kObs.getTeam() == eTarget)
-			{	// <advc.100> Inform the target of the DoW about the sponsor
-				if(eSponsor != NO_PLAYER)
-					szBuffer = gDLL->getText("TXT_KEY_MISC_HIRED_WAR_ON_YOU",
-							getName().GetCString(), cpSponsorName);
-				else // </advc.100>
-					szBuffer = gDLL->getText("TXT_KEY_MISC_DECLARED_WAR_ON_YOU", getName().GetCString());
-				gDLL->UI().addMessage(kObs.getID(), true, -1, szBuffer,
-						szSoundYou, // advc.002l
-						MESSAGE_TYPE_MAJOR_EVENT, NULL, GC.getColorType("WARNING_TEXT"),
-						// advc.127b:
-						getCapitalX(kObs.getTeam()), getCapitalY(kObs.getTeam()));
-			}
-			else if((isHasMet(kObs.getTeam()) && kTarget.isHasMet(kObs.getTeam())) ||
-				kObs.isSpectator()) // advc.127
-			{	// <advc.100> Inform third parties about sponsor
-				if(eSponsor != NO_PLAYER && eSponsor != kObs.getID() &&
-					(GET_TEAM(eSponsor).isHasMet(kObs.getTeam()) ||
-					kObs.isSpectator())) // advc.127
-				{
-					szBuffer = gDLL->getText("TXT_KEY_MISC_SOMEONE_HIRED_WAR",
-							getName().GetCString(), kTarget.getName().GetCString(), cpSponsorName);
-				}
-				else // </advc.100>
-				{
-					szBuffer = gDLL->getText("TXT_KEY_MISC_SOMEONE_DECLARED_WAR",
-							getName().GetCString(), kTarget.getName().GetCString());
-				}
-				gDLL->UI().addMessage(kObs.getID(), false, -1, szBuffer,
-						szSoundThey, // advc.002l
-						// <advc.106b>
-						(isAVassal() || kTarget.isAVassal() ?
-						MESSAGE_TYPE_MAJOR_EVENT_LOG_ONLY : // </advc.106b>
-						MESSAGE_TYPE_MAJOR_EVENT), NULL, GC.getColorType("WARNING_TEXT"),
-						// advc.127b:
-						getCapitalX(kObs.getTeam(), true), getCapitalY(kObs.getTeam(), true));
-			}
+		// advc.106o: Vassals now mentioned along with the master
+		if (!isAVassal() && !kTarget.isAVassal())
+		{	// advc: Moved into new function
+			announceWar(eTarget, bPrimaryDoW, eSponsor, bRandomEvent);
 		}
-		// <advc.100> Put info about hired wars in the replay log
-		if (eSponsor != NO_PLAYER)
-		{
-			szSponsorName = GET_PLAYER(eSponsor).getReplayName();
-			cpSponsorName = szSponsorName.GetCString();
-			szBuffer = gDLL->getText("TXT_KEY_MISC_SOMEONE_HIRED_WAR",
-					getReplayName().GetCString(),
-					kTarget.getReplayName().GetCString(), cpSponsorName);
-		}
-		else // </advc.100>
-		{	// <advc.106g>
-			if (bRandomEvent)
-			{
-				szBuffer = gDLL->getText("TXT_KEY_MISC_WAR_VIA_EVENT",
-						getReplayName().GetCString(), kTarget.getReplayName().GetCString());
-			}
-			else // </advc.106g>
-			{
-				szBuffer = gDLL->getText("TXT_KEY_MISC_SOMEONE_DECLARES_WAR",
-						getReplayName().GetCString(), kTarget.getReplayName().GetCString());
-			}
-		}
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getLeaderID(), szBuffer,
-				-1, -1, GC.getColorType("WARNING_TEXT"));
 	}
 	// kekm.26 (advc): EventReporter call moved down
 	triggerDefensivePacts(eTarget, bNewDiplo, bPrimaryDoW); // advc: Moved into subroutine
@@ -1363,114 +1279,12 @@ void CvTeam::makePeace(TeamTypes eTarget, bool bBumpUnits,  // advc: refactored
 		kMembers[i]->updateTradeRoutes();
 	// advc: AI code moved down a bit and then into a new function
 	AI().AI_postMakePeace(eTarget);
-
-	for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
-	{
-		CvPlayer const& kObs = *it;
-		// <advc.002l>
-		LPCTSTR szSoundYou = "AS2D_MAKEPEACE";
-		LPCTSTR szSoundThey = "AS2D_THEIRMAKEPEACE";
-		if (isAVassal() || kTarget.isAVassal())
-			szSoundYou = szSoundThey = NULL; // </advc.002l>
-		bool bWarTeam = false; // advc.039
-		if (kObs.getTeam() == getID())
-		{
-			CvWString szBuffer(gDLL->getText("TXT_KEY_MISC_YOU_MADE_PEACE_WITH",
-					kTarget.getName().GetCString()));
-			gDLL->UI().addMessage(kObs.getID(), true, -1, szBuffer,
-					szSoundYou, // advc.002l
-					MESSAGE_TYPE_MAJOR_EVENT, NULL, GC.getColorType("HIGHLIGHT_TEXT"),
-					// advc.127b:
-					kTarget.getCapitalX(kObs.getTeam(), true), kTarget.getCapitalY(kObs.getTeam(), true));
-			bWarTeam = true; // advc.039
-		}
-		else if (kObs.getTeam() == eTarget)
-		{
-			CvWString szBuffer(gDLL->getText("TXT_KEY_MISC_YOU_MADE_PEACE_WITH",
-					getName().GetCString()));
-			gDLL->UI().addMessage(kObs.getID(), true, -1, szBuffer,
-					szSoundYou, // advc.002l
-					MESSAGE_TYPE_MAJOR_EVENT, NULL, GC.getColorType("HIGHLIGHT_TEXT"),
-					// advc.127b:
-					getCapitalX(kObs.getTeam()), getCapitalY(kObs.getTeam()));
-			/*  <advc.039> Show message about reparations also to non-leading
-				members of a (human) team (in addition to YOU_MADE_PEACE) */
-			bWarTeam = true;
-		}
-		//else
-		if ((!bWarTeam || (pReparations != NULL && kObs.getID() != getLeaderID() &&
-			kObs.getID() != kTarget.getLeaderID())) &&  // </advc.039>
-			((isHasMet(kObs.getTeam()) && kTarget.isHasMet(kObs.getTeam())) ||
-			kObs.isSpectator())) // advc.127
-		{
-			// <advc.039>
-			CvWString szBuffer;
-			bool bAnyReparations = false;
-			if (pReparations != NULL)
-			{
-				szBuffer = gDLL->getText("TXT_KEY_MISC_PEACE_IN_EXCHANGE",
-						getName().GetCString(), kTarget.getName().GetCString()) + L" ";
-				std::vector<CvWString> aszTradeItems;
-				FOR_EACH_TRADE_ITEM(*pReparations)
-				{
-					CvWString const szItem(tradeItemString(
-							pItem->m_eItemType, pItem->m_iData, eTarget));
-					if (szItem.length() > 0)
-						aszTradeItems.push_back(szItem);
-				}
-				// The loop above has only filtered out items w/o string representation
-				for (size_t i = 0; i < aszTradeItems.size(); i++)
-				{
-					bAnyReparations = true;
-					szBuffer += aszTradeItems[i];
-					int iRemaining = ((int)aszTradeItems.size()) - i - 1;
-					if (iRemaining > 0)
-					{
-						if(iRemaining == 1)
-							szBuffer += L" " + gDLL->getText("TXT_KEY_AND") + L" ";
-						else szBuffer += L", ";
-					}
-					else szBuffer += L".";
-				} // Can handle it, but I don't think it should happen:
-				FAssert(bAnyReparations);
-			}
-			if(!bAnyReparations) // </advc.039>
-			{
-				szBuffer = gDLL->getText("TXT_KEY_MISC_SOMEONE_MADE_PEACE",
-						getName().GetCString(), kTarget.getName().GetCString());
-			}
-			gDLL->UI().addMessage(kObs.getID(), false, -1, szBuffer,
-					szSoundThey, // advc.002l
-					// <advc.106b>
-					(isAVassal() || kTarget.isAVassal() ?
-					MESSAGE_TYPE_MAJOR_EVENT_LOG_ONLY : // </advc.106b>
-					MESSAGE_TYPE_MAJOR_EVENT), NULL,
-					(bAnyReparations ? NO_COLOR : // advc.039
-					GC.getColorType("HIGHLIGHT_TEXT")),
-					// advc.127b:
-					getCapitalX(kObs.getTeam(), true), getCapitalY(kObs.getTeam(), true));
-		}
+	// advc.106o: Vassals now mentioned along with their master
+	if (!isAVassal() && !kTarget.isAVassal())
+	{	// advc: Moved into new function
+		announcePeace(eTarget, eBroker, pReparations, bRandomEvent);
 	}
-	CvWString szBuffer;
-	// <advc.100b>
-	if (eBroker != NO_TEAM && eBroker != eTarget && eBroker != getID())
-	{
-		szBuffer = gDLL->getText("TXT_KEY_MISC_SOMEONE_BROKERED_PEACE",
-				getReplayName().GetCString(),
-				kTarget.getReplayName().GetCString(),
-				GET_TEAM(eBroker).getReplayName().GetCString());
-	}
-	else // </advc.100b>
-	{
-		szBuffer = gDLL->getText(/* advc.106g: */ bRandomEvent ? "TXT_KEY_MISC_PEACE_VIA_EVENT" :
-			"TXT_KEY_MISC_SOMEONE_MADE_PEACE", getReplayName().GetCString(),
-			kTarget.getReplayName().GetCString());
-	}
-	GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getLeaderID(), szBuffer,
-			-1, -1, GC.getColorType("HIGHLIGHT_TEXT"));
-
 	CvEventReporter::getInstance().changeWar(false, getID(), eTarget);
-
 	for (TeamIter<MAJOR_CIV> it; it.hasNext(); ++it)
 	{
 		CvTeam& kVassal = *it;
@@ -1478,6 +1292,281 @@ void CvTeam::makePeace(TeamTypes eTarget, bool bBumpUnits,  // advc: refactored
 			kVassal.makePeace(getID(), bBumpUnits);
 		else if (kVassal.isVassal(getID()))
 			kVassal.makePeace(eTarget, bBumpUnits);
+	}
+}
+
+// advc: Cut from declareWar
+void CvTeam::announceWar(TeamTypes eTarget, bool bPrimaryDoW,
+	PlayerTypes eSponsor, bool bRandomEvent)
+{
+	CvWString szBuffer;
+	// <advc.100>
+	CvWString szSponsorName;
+	wchar const* cpSponsorName = L"";
+	if (eSponsor != NO_PLAYER)
+	{
+		// Need to make a copy b/c getName returns a pointer into a local string object
+		szSponsorName = GET_PLAYER(eSponsor).getName();
+		cpSponsorName = szSponsorName.GetCString();
+	} // </advc.100>
+	// advc.106o:
+	bool const bMultiple = (TeamIter<MAJOR_CIV,VASSAL_OF>::count(getID()) > 0);
+	CvTeam const& kTarget = GET_TEAM(eTarget);
+	for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
+	{
+		CvPlayer const& kObs = *it;
+		if ((!isHasMet(kObs.getTeam()) || !kTarget.isHasMet(kObs.getTeam())) &&
+			!kObs.isSpectator()) // advc.127
+		{
+			continue;
+		}
+		LPCTSTR szSound = NULL;
+		// <advc.106o>
+		CvWString szAggressors, szTargets;
+		GET_TEAM(kObs.getTeam()).setWarPeacePartyStrings(getID(), eTarget,
+				szAggressors, szTargets);
+		bool bForce = true;
+		// (These branches exist only to get the grammar right)
+		if (bMultiple)
+		{
+			szBuffer = gDLL->getText("TXT_KEY_MISC_DOW_BY_MULTIPLE",
+					szAggressors.c_str(), szTargets.c_str());
+		}
+		else if (kObs.getTeam() == getID())
+		{
+			szBuffer = gDLL->getText("TXT_KEY_MISC_YOU_DECLARED_WAR_ON",
+					szTargets.c_str());
+		}
+		else
+		{
+			szBuffer = gDLL->getText("TXT_KEY_MISC_DOW_ON_MULTIPLE",
+					szAggressors.c_str(), szTargets.c_str());
+		} // </advc.106o>
+		if (kObs.getTeam() == getID())
+			szSound = "AS2D_DECLAREWAR";
+		else if (kObs.getTeam() == eTarget)
+			szSound = "AS2D_DECLAREWAR";
+		else
+		{
+			szSound = "AS2D_THEIRDECLAREWAR";
+			bForce = false;
+		}
+		// <advc.100> Inform target, third parties about sponsor.
+		if (eSponsor != NO_PLAYER && 
+			eSponsor != kObs.getID() &&
+			(GET_TEAM(eSponsor).isHasMet(kObs.getTeam()) ||
+			kObs.isSpectator())) // advc.127
+		{
+			szBuffer.append(L" ");
+			szBuffer.append(gDLL->getText("TXT_KEY_MISC_SPONSORED_WAR",
+					cpSponsorName));
+		} // </advc.100>
+		gDLL->UI().addMessage(kObs.getID(), bForce, -1, szBuffer,
+					(bPrimaryDoW ? szSound : NULL), // advc.002l
+					MESSAGE_TYPE_MAJOR_EVENT, NULL, GC.getColorType("WARNING_TEXT"),
+					// advc.127b:
+					getCapitalX(kObs.getTeam(), true), getCapitalY(kObs.getTeam(), true));
+	}
+	// <advc.106o>
+	CvWString szAggressors, szTargets;
+	GET_TEAM(GC.getGame().getActiveTeam()).setWarPeacePartyStrings(
+			getID(), eTarget, szAggressors, szTargets, true);
+	if (bMultiple)
+	{
+		szBuffer = gDLL->getText("TXT_KEY_MISC_DOW_BY_MULTIPLE_REPLAY",
+				szAggressors.c_str(), szTargets.c_str());
+	}
+	else // </advc.106o>
+	{
+		szBuffer = gDLL->getText("TXT_KEY_MISC_SOMEONE_DECLARES_WAR",
+				getReplayName().c_str(), szTargets.c_str());
+	}
+	// <advc.100> Put info about hired wars in the replay log
+	if (eSponsor != NO_PLAYER)
+	{
+		szSponsorName = GET_PLAYER(eSponsor).getReplayName();
+		cpSponsorName = szSponsorName.c_str();
+		szBuffer.append(L" ");
+		szBuffer.append(gDLL->getText("TXT_KEY_MISC_SPONSORED_WAR",
+				cpSponsorName));
+	} // </advc.100>  <advc.106g>
+	else if (bRandomEvent)
+	{
+		szBuffer.append(L" ");
+		szBuffer.append(gDLL->getText("TXT_KEY_MISC_WAR_VIA_EVENT"));
+	} // </advc.106g>
+	GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getLeaderID(), szBuffer,
+			-1, -1, GC.getColorType("WARNING_TEXT"));
+}
+
+// advc: Cut from makePeace
+void CvTeam::announcePeace(TeamTypes eTarget, TeamTypes eBroker,
+	CLinkList<TradeData> const* pReparations, bool bRandomEvent)
+{
+	CvWString szBuffer;
+	CvTeam const& kTarget = GET_TEAM(eTarget);
+	// advc.106o:
+	bool const bMultiple = (TeamIter<MAJOR_CIV,VASSAL_OF>::count(getID()) > 0);
+	for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
+	{
+		CvPlayer const& kObs = *it;
+		if ((!isHasMet(kObs.getTeam()) || !kTarget.isHasMet(kObs.getTeam())) &&
+			!kObs.isSpectator()) // advc.127
+		{
+			continue;
+		}
+		// <advc.106o>
+		CvWString szPeacemakers, szTargets;
+		GET_TEAM(kObs.getTeam()).setWarPeacePartyStrings(
+				getID(), eTarget, szPeacemakers, szTargets);
+		// (These branches exist only to get the grammar right)
+		if (bMultiple)
+		{
+			szBuffer = gDLL->getText("TXT_KEY_MISC_PEACE_BY_MULTIPLE",
+					szPeacemakers.c_str(), szTargets.c_str());
+		}
+		else if (kObs.getTeam() == getID())
+		{
+			szBuffer = gDLL->getText("TXT_KEY_MISC_YOU_MADE_PEACE_WITH",
+					szTargets.c_str());
+		}
+		else
+		{
+			szBuffer = gDLL->getText("TXT_KEY_MISC_PEACE_WITH_MULTIPLE",
+					szPeacemakers.c_str(), szTargets.c_str());
+		} // </advc.106o>
+		LPCTSTR szSound = NULL;
+		ColorTypes eColor = GC.getColorType("HIGHLIGHT_TEXT");
+		bool bForce = false;
+		bool bDebugCoords = true; // advc.127b
+		if (kObs.getTeam() == getID())
+		{
+			szSound = "AS2D_MAKEPEACE";
+			bForce = true;
+			
+		}
+		else if (kObs.getTeam() == eTarget)
+		{
+			szSound = "AS2D_MAKEPEACE";
+			bForce = true;
+			bDebugCoords = false; // advc.127b
+			/*  <advc.039> Show message about reparations also to non-leading
+				members of a (human) team (in addition to YOU_MADE_PEACE) */
+		}
+		else szSound = "AS2D_THEIRMAKEPEACE";
+		// <advc.039>
+		if (pReparations != NULL && kObs.getID() != getLeaderID() &&
+			kObs.getID() != kTarget.getLeaderID()) 
+		{
+			szBuffer.Format(SETCOLR L"%s" ENDCOLR,
+					TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), szBuffer.c_str());
+			eColor = NO_COLOR; // Don't color the whole message
+			szBuffer.append(L" ");
+			szBuffer.append(gDLL->getText("TXT_KEY_MISC_IN_EXCHANGE_FOR"));
+			szBuffer.append(L" ");
+			std::vector<CvWString> aszTradeItems;
+			FOR_EACH_TRADE_ITEM(*pReparations)
+			{
+				CvWString const szItem(tradeItemString(
+						pItem->m_eItemType, pItem->m_iData, eTarget));
+				if (szItem.length() > 0)
+					aszTradeItems.push_back(szItem);
+			}
+			// The loop above has only filtered out items w/o string representation
+			FAssert(!aszTradeItems.empty()); // Can handle it, but shouldn't happen.
+			for (size_t i = 0; i < aszTradeItems.size(); i++)
+			{
+				szBuffer += aszTradeItems[i];
+				int iRemaining = ((int)aszTradeItems.size()) - i - 1;
+				if (iRemaining > 0)
+				{
+					if(iRemaining == 1)
+						szBuffer += L" " + gDLL->getText("TXT_KEY_AND") + L" ";
+					else szBuffer += L", ";
+				}
+			}
+		}
+		szBuffer.append(L"."); // (Moved out of XML text)  </advc.039>
+		gDLL->UI().addMessage(kObs.getID(), bForce, -1, szBuffer,
+				szSound, // advc.002l
+				MESSAGE_TYPE_MAJOR_EVENT, NULL, eColor,
+				// <advc.127b>
+				getCapitalX(kObs.getTeam(), bDebugCoords),
+				getCapitalY(kObs.getTeam(), bDebugCoords)); // </advc.127b>
+	}
+	// <advc.106o>
+	CvWString szPeacemakers, szTargets;
+	GET_TEAM(GC.getGame().getActiveTeam()).setWarPeacePartyStrings(
+			getID(), eTarget, szPeacemakers, szTargets, true);
+	if (bMultiple)
+	{
+		szBuffer = gDLL->getText("TXT_KEY_MISC_PEACE_BY_MULTIPLE",
+				szPeacemakers.c_str(), szTargets.c_str());
+	}
+	else
+	{
+		szBuffer = gDLL->getText("TXT_KEY_MISC_PEACE_WITH_MULTIPLE",
+				szPeacemakers.c_str(), szTargets.c_str());
+	} // </advc.106o>  <advc.100b>
+	if (eBroker != NO_TEAM && eBroker != eTarget && eBroker != getID())
+	{	
+		szBuffer.append(L" ");
+		szBuffer.append(gDLL->getText("TXT_KEY_MISC_BROKERED_PEACE",
+				GET_TEAM(eBroker).getReplayName().c_str()));
+	} // </advc.100b>  <advc.106g>
+	else if (bRandomEvent)
+	{
+		szBuffer.append(L" ");
+		szBuffer.append(gDLL->getText("TXT_KEY_MISC_PEACE_VIA_EVENT"));
+	} // </advc.106g>
+	GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getLeaderID(), szBuffer,
+			-1, -1, GC.getColorType("HIGHLIGHT_TEXT"));
+}
+
+/*	advc.106o: To be called on the observer, i.e. the recipient of a message about a
+	change in war peace status between eAgent and eTarget, initiated by eAgent. */
+void CvTeam::setWarPeacePartyStrings(TeamTypes eAgent, TeamTypes eTarget,
+	CvWString& szAgents, CvWString& szTargets, bool bReplay)
+{
+	setWarPeacePartyStrings(eAgent, szAgents, bReplay, true);
+	setWarPeacePartyStrings(eTarget, szTargets, bReplay, false);
+}
+
+// advc.106o: Helper for the above
+void CvTeam::setWarPeacePartyStrings(TeamTypes eTeam, CvWString& szTeams, bool bReplay,
+	bool bCapitalize) // just for the pronoun "you"
+{
+	FAssert(szTeams.empty());
+	FAssert(!GET_TEAM(eTeam).isAVassal());
+	CvTeam const& kTeam = GET_TEAM(eTeam);
+	int iTeams = TeamIter<MAJOR_CIV,NOT_A_RIVAL_OF>::count(eTeam);
+	bool bFirst = true;
+	if (!bReplay && getMasterTeam() == kTeam.getMasterTeam())
+	{
+		iTeams--;
+		setListHelp(szTeams, gDLL->getText(bCapitalize ?
+				"TXT_KEY_MISC_YOU" : "TXT_KEY_SYSTEM_YOU"),
+				L"", L", ", bFirst);
+	}
+	CvWString szAnd(L" ");
+	szAnd.append(gDLL->getText("TXT_KEY_MISC_AND"));
+	szAnd.append(L" ");
+	if (bReplay || getID() != eTeam)
+	{
+		iTeams--;
+		setListHelp(szTeams, L"",
+				(bReplay ? kTeam.getReplayName() : kTeam.getName()).c_str(),
+				iTeams <= 0 ? szAnd : L", ", bFirst);
+	}
+	for (TeamIter<MAJOR_CIV,VASSAL_OF> itVassal(eTeam); itVassal.hasNext(); ++itVassal)
+	{
+		if (bReplay || itVassal->getID() != getID())
+		{
+			iTeams--;
+			setListHelp(szTeams, L"",
+					(bReplay ? itVassal->getReplayName() : itVassal->getName()).c_str(),
+					iTeams <= 0 ? szAnd : L", ", bFirst);
+		}
 	}
 }
 

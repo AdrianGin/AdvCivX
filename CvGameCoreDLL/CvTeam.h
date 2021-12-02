@@ -687,6 +687,17 @@ protected:
 	void announceTechToPlayers(TechTypes eIndex,
 			PlayerTypes eDiscoverPlayer, // advc.156
 			bool bPartial = false);
+	// <advc>
+	void announceWar(TeamTypes eTarget, bool bPrimaryDoW,
+			PlayerTypes eSponsor = NO_PLAYER, bool bRandomEvent = false);
+	void announcePeace(TeamTypes eTarget, TeamTypes eBroker = NO_TEAM,
+			CLinkList<TradeData> const* pReparations = NULL, bool bRandomEvent = false);
+	// </advc>  <advc.106o>
+	void setWarPeacePartyStrings(TeamTypes eAgent, TeamTypes eTarget,
+			CvWString& szAgents, CvWString& szTargets, bool bReplay = false);
+	void setWarPeacePartyStrings(TeamTypes eTeam, CvWString& szTeams, bool bReplay,
+			bool bCapitalize);
+	// </advc.106o>
 
 private: // advc.003u: (See comments in the private section of CvPlayer.h)
 	/*virtual void AI_initExternal();

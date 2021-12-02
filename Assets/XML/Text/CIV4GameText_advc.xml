@@ -17,56 +17,194 @@
 		 hired DoW. Original BtS text bits pertaining to DoW are located in
 		 CIV4GameTextInfos.xml. -->
 	<TEXT>
-		<Tag>TXT_KEY_MISC_HIRED_WAR_ON_YOU</Tag>
-		<English>%s1_PlyrName has declared war on you! (At the request of %s2_PlyrName.)</English>
-		<French>%s1_PlyrName vous a d&#233;clar&#233; la guerre ! (Sur requ&#233;te de %s2_PlyrName.)</French>
-		<German>%s1_PlyrName hat Euch den Krieg erkl&#228;rt! (Auf Ersuchen von %s2_PlyrName.)</German>
-		<Italian>%s1_PlyrName ti ha dichiarato guerra! (Su richiesta di %s2_PlyrName.)</Italian>
-		<Spanish>%s1_PlyrName os han declarado la guerra. (A petici&#243;n de %s2_PlyrName.)</Spanish>
+		<Tag>TXT_KEY_MISC_SPONSORED_WAR</Tag>
+		<English>(At the request of %s1_PlyrName.)</English>
+		<French>(Sur requ&#233;te de %s1_PlyrName.)</French>
+		<German>(Auf Ersuchen von %s1_PlyrName.)</German>
+		<Italian>(Su richiesta di %s1_PlyrName.)</Italian>
+		<Spanish>(A petici&#243;n de %s1_PlyrName.)</Spanish>
+	</TEXT>
+	<!-- advc.106o -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_DOW_BY_MULTIPLE</Tag>
+		<English>%s1_TeamNames have declared war on %s2_TeamNames!</English>
+		<French>%s1_TeamNames ont d&#233;clar&#233; la guerre &#224; %s2_TeamNames !</French>
+		<German>%s1_TeamNames haben %s2_TeamNames den Krieg erkl&#228;rt!</German>
+		<Italian>%s1_TeamNames hanno dichiarati guerra a %s2_TeamNames!</Italian>
+		<Spanish>%s1_TeamNames le han declarado la guerra a %s1_TeamNames.</Spanish>
 	</TEXT>
 	<TEXT>
-		<Tag>TXT_KEY_MISC_SOMEONE_HIRED_WAR</Tag>
-		<English>%s1_PlyrName declares war on %s2_PlyrName! (At the request of %s3_PlyrName.)</English>
-		<French>%s1_PlyrName d&#233;clare la guerre &#224; %s2_PlyrName !  (Sur requ&#233;te de %s3_PlyrName.)</French>
-		<German>%s1_PlyrName erkl&#228;rt %s2_PlyrName den Krieg! (Auf Ersuchen von %s3_PlyrName.)</German>
-		<Italian>%s1_PlyrName dichiara guerra a %s2_PlyrName! (Su richiesta di %s3_PlyrName.)</Italian>
-		<Spanish>%s1_PlyrName le declara la guerra a %s2_PlyrName. (A petici&#243;n de %s3_PlyrName.)</Spanish>
+		<Tag>TXT_KEY_MISC_DOW_ON_MULTIPLE</Tag>
+		<English>%s1_TeamName has declared war on %s2_TeamNames!</English>
+		<French>%s1_TeamName a d&#233;clar&#233; la guerre &#224; %s2_TeamNames !</French>
+		<German>%s1_TeamName hat %s2_TeamNames den Krieg erkl&#228;rt!</German>
+		<Italian>%s1_TeamName ha dichiarati guerra a %s2_TeamNames!</Italian>
+		<Spanish>%s1_TeamName le ha declarado la guerra a %s1_TeamNames.</Spanish>
+	</TEXT>
+	<!-- As in BtS, use present tense for replays. (And, as in BtS, don't bother
+		 with that for peace deals. -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_DOW_BY_MULTIPLE_REPLAY</Tag>
+		<English>%s1_TeamNames declare war on %s2_TeamNames!</English>
+		<French>%s1_TeamNames d&#233;clarent la guerre &#224; %s2_TeamNames !</French>
+		<German>%s1_TeamNames erkl&#228;ren %s2_TeamNames den Krieg!</German>
+		<Italian>%s1_TeamNames dichiarano guerra a %s2_TeamNames!</Italian>
+		<Spanish>%s1_TeamNames le declaran la guerra a %s1_TeamNames.</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_MISC_PEACE_BY_MULTIPLE</Tag>
+		<English>%s1_TeamNames have made peace with %s2_TeamNames</English>
+		<French>%s1_TeamNames ont fait la paix avec %s2_TeamNames</French>
+		<German>%s1_TeamNames haben Frieden mit %s2_TeamNames geschlossen</German>
+		<Italian>%s1_TeamNames hanno fatto pace con %s2_TeamNames</Italian>
+		<Spanish>%s1_TeamNames han firmado la paz con %s2_TeamNames</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_MISC_PEACE_WITH_MULTIPLE</Tag>
+		<English>%s1_TeamName has made peace with %s2_TeamNames</English>
+		<French>%s1_TeamName a fait la paix avec %s2_TeamNames</French>
+		<German>%s1_TeamName hat Frieden mit %s2_TeamNames geschlossen</German>
+		<Italian>%s1_TeamName ha fatto pace con %s2_TeamNames</Italian>
+		<Spanish>%s1_TeamName ha firmado la paz con %s2_TeamNames</Spanish>
+	</TEXT>
+	<!-- advc.039: From CIV4GameText_Misc1.xml.
+		 Just removing the exlamation point. -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_YOU_MADE_PEACE_WITH</Tag>
+		<English>You have made peace with %s1_TeamName</English>
+		<French>Vous avez fait la paix avec %s1_TeamName</French>
+		<German>Ihr habt Frieden mit Team %s1_TeamName geschlossen</German>
+		<Italian>Hai fatto pace con %s1_TeamName</Italian>
+		<Spanish>Hab&#233;is firmado la paz con %s1_TeamName</Spanish>
+	</TEXT>
+	<!-- There's already TXT_KEY_SYSTEM_YOU, but that's
+		 not capitalized. -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_YOU</Tag>
+		<English>You</English>
+		<French>
+			<Text>Vous</Text>
+			<Gender>Male</Gender>
+			<Plural>0</Plural>
+		</French>
+		<German>
+			<Text>Ihr:Euch</Text>
+			<Gender>Male</Gender>
+			<Plural>0</Plural>
+		</German>
+		<Italian>
+			<Text>Tu</Text>
+			<Gender>Male</Gender>
+			<Plural>0</Plural>
+		</Italian>
+		<Spanish>
+			<Text>T&#250;:Vosotros</Text>
+			<Gender>Male</Gender>
+			<Plural>0:1</Plural>
+		</Spanish>
+	</TEXT>
+	<!-- Amazingly, this didn't exist yet. -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_AND</Tag>
+		<English>and</English>
+		<French>et</French>
+		<German>und</German>
+		<Italian>e</Italian>
+		<Spanish>y</Spanish>
 	</TEXT>
 	
-	<!-- advc.106g: Based on TXT_KEY_MISC_SOMEONE_DECLARES_WAR
-		 (CIV4GameTextInfos.xml) and TXT_KEY_GAME_OPTION_NO_EVENTS
+	<!-- advc.106g: Based on TXT_KEY_GAME_OPTION_NO_EVENTS
 		 (CIV4GameText_BTS.xml) -->
 	<TEXT>
 		<Tag>TXT_KEY_MISC_WAR_VIA_EVENT</Tag>
-		<English>%s1_PlyrName declares war on %s2_PlyrName! (In response to a random event.)</English>
-		<French>%s1_PlyrName d&#233;clare la guerre &#224; %s2_PlyrName !  (En réponse à un événement aléatoire.)</French>
-		<German>%s1_PlyrName erkl&#228;rt %s2_PlyrName den Krieg! (Als Reaktion auf ein Zufallsereignis.)</German>
-		<Italian>%s1_PlyrName dichiara guerra a %s2_PlyrName! (In risposta a un evento casuale.)</Italian>
-		<Spanish>%s1_PlyrName le declara la guerra a %s2_PlyrName. (En respuesta a un suceso al azar.)</Spanish>
+		<English>(In response to a random event.)</English>
+		<French>(En réponse à un événement aléatoire.)</French>
+		<German>(Als Reaktion auf ein Zufallsereignis.)</German>
+		<Italian>(In risposta a un evento casuale.)</Italian>
+		<Spanish>(En respuesta a un suceso al azar.)</Spanish>
 	</TEXT>
-	
-	<!-- advc.106g: Based on TXT_KEY_MISC_SOMEONE_MADE_PEACE
-		 (CIV4GameTextInfos.xml) and TXT_KEY_GAME_OPTION_NO_EVENTS
+	<!-- advc.106g: Based on TXT_KEY_GAME_OPTION_NO_EVENTS
 		 (CIV4GameText_BTS.xml) -->
 	<TEXT>
 		<Tag>TXT_KEY_MISC_PEACE_VIA_EVENT</Tag>
-		<English>%s1_PlyrName has made peace with %s2_PlyrName! (Through a random event.)</English>
-		<French>%s1_PlyrName a fait la paix avec %s2_PlyrName !  (En réponse à un événement aléatoire.)</French>
-		<German>%s1_PlyrName hat mit %s2_PlyrName Frieden geschlossen! (Durch ein Zufallsereignis.)</German>
-		<Italian>%s1_PlyrName ha siglato la pace con %s2_PlyrName! (In risposta a un evento casuale.)</Italian>
-		<Spanish>%s1_PlyrName ha firmado la paz con %s2_PlyrName. (En respuesta a un suceso al azar.)</Spanish>
+		<English>(Through a random event.)</English>
+		<French>(En réponse à un événement aléatoire.)</French>
+		<German>(Durch ein Zufallsereignis.)</German>
+		<Italian>(In risposta a un evento casuale.)</Italian>
+		<Spanish>(En respuesta a un suceso al azar.)</Spanish>
 	</TEXT>
 
-	<!-- advc.100b: Replay message for brokered peace. Based on
-		 TXT_KEY_MISC_SOMEONE_MADE_PEACE from CIV4GameTextInfos.xml.
-		 I'm reusing the "on request" translations from above. -->
+	<!-- advc.100b: Replay message for brokered peace. I'm reusing the
+		"on request" translations from above. -->
 	<TEXT>
-		<Tag>TXT_KEY_MISC_SOMEONE_BROKERED_PEACE</Tag>
-		<English>%s1_PlyrName has made peace with %s2_PlyrName! (Brokered by %s3_PlyrName.)</English>
-		<French>%s1_PlyrName a fait la paix avec %s2_PlyrName ! (Sur requ&#233;te de %s3_PlyrName.)</French>
-		<German>%s1_PlyrName hat mit %s2_PlyrName Frieden geschlossen! (Auf Ersuchen von %s3_PlyrName.)</German>
-		<Italian>%s1_PlyrName ha siglato la pace con %s2_PlyrName! (Su richiesta di %s3_PlyrName.)</Italian>
-		<Spanish>%s1_PlyrName ha firmado la paz con %s2_PlyrName. (A petici&#243;n de %s3_PlyrName.)</Spanish>
+		<Tag>TXT_KEY_MISC_BROKERED_PEACE</Tag>
+		<English>(Brokered by %s1_PlyrName.)</English>
+		<French>(Sur requ&#233;te de %s1_PlyrName.)</French>
+		<German>(Auf Ersuchen von %s1_PlyrName.)</German>
+		<Italian>(Su richiesta di %s1_PlyrName.)</Italian>
+		<Spanish>(A petici&#243;n de %s1_PlyrName.)</Spanish>
+	</TEXT>
+
+		<!-- advc.039: Based on TXT_KEY_MISC_SOMEONE_MADE_PEACE in
+		 CIV4GameTextInfos.xml -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_IN_EXCHANGE_FOR</Tag>
+		<English>in exchange for</English>
+		<French>en échange de:</French>
+		<German>im Austausch für</German>
+		<Italian>in cambio di:</Italian>
+		<Spanish>a cambio de</Spanish>
+	</TEXT>
+	<!-- Spanish based on AI_DIPLO_CIVIC_PRESSURE_1 in CIV4DiplomacyText.xml;
+		 hope for the best. -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_ADOPTING_CIVIC</Tag>
+		<English>adopting [COLOR_HIGHLIGHT_TEXT]%s1_CivicName[COLOR_REVERT]</English>
+		<French>l'adoption de: [COLOR_HIGHLIGHT_TEXT]%s1_CivicName[COLOR_REVERT]</French>
+		<German>einen Staatsformwechsel ([COLOR_HIGHLIGHT_TEXT]%s1_CivicName[COLOR_REVERT])</German>
+		<Italian>un cambio della forma di governo ([COLOR_HIGHLIGHT_TEXT]%s1_CivicName[COLOR_REVERT])</Italian>
+		<Spanish>adoptar [NUM1:el:la:los:las] [COLOR_HIGHLIGHT_TEXT]%s1_CivicName[COLOR_REVERT]</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_MISC_CONVERTING_RELIGION</Tag>
+		<English>converting to [COLOR_HIGHLIGHT_TEXT]%s1_ReligionName[COLOR_REVERT]</English>
+		<French>la conversion au [COLOR_HIGHLIGHT_TEXT]%s1_ReligionName[COLOR_REVERT]</French>
+		<German>den Übertritt zum [COLOR_HIGHLIGHT_TEXT]%s1_ReligionName[COLOR_REVERT]</German>
+		<Italian>a conversione al [COLOR_HIGHLIGHT_TEXT]%s1_ReligionName[COLOR_REVERT]</Italian>
+		<Spanish>convertirse al [COLOR_HIGHLIGHT_TEXT]%s1_ReligionName[COLOR_REVERT]</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_MISC_EMBARGO_AGAINST</Tag>
+		<English>an embargo against %s1_TeamName</English>
+		<French>un embargo contre %s1_TeamName</French>
+		<German>ein Embargo gegen %s1_TeamName</German>
+		<Italian>un embargo contro %s1_TeamName</Italian>
+		<Spanish>un embargo contra %s1_TeamName</Spanish>
+	</TEXT>
+	<!-- Based on TXT_KEY_CIVIC_SCREEN_UPKEEP in CIV4GameTextInfos.xml -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_GPT</Tag>
+		<English>%d1[ICON_GOLD] per turn</English>
+		<French>%d1[ICON_GOLD] par tour</French>
+		<German>%d1[ICON_GOLD] pro Runde</German>
+		<Italian>%d1[ICON_GOLD] per turno</Italian>
+		<Spanish>%d1 [ICON_GOLD] por turno</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_MISC_CASH</Tag>
+		<English>%d1[ICON_GOLD]</English>
+		<French>%d1[ICON_GOLD]</French>
+		<German>%d1[ICON_GOLD]</German>
+		<Italian>%d1[ICON_GOLD]</Italian>
+		<Spanish>%d1 [ICON_GOLD]</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_MISC_MAPS_CIV</Tag>
+		<English>%s1's maps</English>
+		<French>les cartes de %s1</French>
+		<German>%s1s Weltkarte</German>
+		<Italian>le mappe di %s1</Italian>
+		<Spanish>los mapas de %s1</Spanish>
 	</TEXT>
 
 	<!-- advc.101: Additional text for Nationality and tile help. Similar
@@ -4628,68 +4766,6 @@
 			<Gender>Female</Gender>
 			<Plural>0:1</Plural>
 		</Spanish>
-	</TEXT>
-	
-	<!-- advc.039: Based on TXT_KEY_MISC_SOMEONE_MADE_PEACE in
-		 CIV4GameTextInfos.xml -->
-	<TEXT>
-		<Tag>TXT_KEY_MISC_PEACE_IN_EXCHANGE</Tag>
-		<English>[COLOR_HIGHLIGHT_TEXT]%s1_TeamName has made peace with %s2_TeamName[COLOR_REVERT] in exchange for</English>
-		<French>[COLOR_HIGHLIGHT_TEXT]%s1_TeamName a fait la paix avec %s2_TeamName[COLOR_REVERT] en échange de:</French>
-		<German>[COLOR_HIGHLIGHT_TEXT]%s1_TeamName hat mit %s2_TeamName[COLOR_REVERT] Frieden geschlossen im Austausch für</German>
-		<Italian>[COLOR_HIGHLIGHT_TEXT]%s1_TeamName ha siglato la pace con %s2_TeamName[COLOR_REVERT] in cambio di:</Italian>
-		<Spanish>[COLOR_HIGHLIGHT_TEXT]%s1_TeamName ha firmado la paz con %s2_TeamName[COLOR_REVERT] a cambio de</Spanish>
-	</TEXT>
-	<!-- Spanish based on AI_DIPLO_CIVIC_PRESSURE_1 in CIV4DiplomacyText.xml;
-		 hope for the best. -->
-	<TEXT>
-		<Tag>TXT_KEY_MISC_ADOPTING_CIVIC</Tag>
-		<English>adopting [COLOR_HIGHLIGHT_TEXT]%s1_CivicName[COLOR_REVERT]</English>
-		<French>l'adoption de: [COLOR_HIGHLIGHT_TEXT]%s1_CivicName[COLOR_REVERT]</French>
-		<German>einen Staatsformwechsel ([COLOR_HIGHLIGHT_TEXT]%s1_CivicName[COLOR_REVERT])</German>
-		<Italian>un cambio della forma di governo ([COLOR_HIGHLIGHT_TEXT]%s1_CivicName[COLOR_REVERT])</Italian>
-		<Spanish>adoptar [NUM1:el:la:los:las] [COLOR_HIGHLIGHT_TEXT]%s1_CivicName[COLOR_REVERT]</Spanish>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_MISC_CONVERTING_RELIGION</Tag>
-		<English>converting to [COLOR_HIGHLIGHT_TEXT]%s1_ReligionName[COLOR_REVERT]</English>
-		<French>la conversion au [COLOR_HIGHLIGHT_TEXT]%s1_ReligionName[COLOR_REVERT]</French>
-		<German>den Übertritt zum [COLOR_HIGHLIGHT_TEXT]%s1_ReligionName[COLOR_REVERT]</German>
-		<Italian>a conversione al [COLOR_HIGHLIGHT_TEXT]%s1_ReligionName[COLOR_REVERT]</Italian>
-		<Spanish>convertirse al [COLOR_HIGHLIGHT_TEXT]%s1_ReligionName[COLOR_REVERT]</Spanish>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_MISC_EMBARGO_AGAINST</Tag>
-		<English>an embargo against %s1_TeamName</English>
-		<French>un embargo contre %s1_TeamName</French>
-		<German>ein Embargo gegen %s1_TeamName</German>
-		<Italian>un embargo contro %s1_TeamName</Italian>
-		<Spanish>un embargo contra %s1_TeamName</Spanish>
-	</TEXT>
-	<!-- Based on TXT_KEY_CIVIC_SCREEN_UPKEEP in CIV4GameTextInfos.xml -->
-	<TEXT>
-		<Tag>TXT_KEY_MISC_GPT</Tag>
-		<English>%d1[ICON_GOLD] per turn</English>
-		<French>%d1[ICON_GOLD] par tour</French>
-		<German>%d1[ICON_GOLD] pro Runde</German>
-		<Italian>%d1[ICON_GOLD] per turno</Italian>
-		<Spanish>%d1 [ICON_GOLD] por turno</Spanish>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_MISC_CASH</Tag>
-		<English>%d1[ICON_GOLD]</English>
-		<French>%d1[ICON_GOLD]</French>
-		<German>%d1[ICON_GOLD]</German>
-		<Italian>%d1[ICON_GOLD]</Italian>
-		<Spanish>%d1 [ICON_GOLD]</Spanish>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_MISC_MAPS_CIV</Tag>
-		<English>%s1's maps</English>
-		<French>les cartes de %s1</French>
-		<German>%s1s Weltkarte</German>
-		<Italian>le mappe di %s1</Italian>
-		<Spanish>los mapas de %s1</Spanish>
 	</TEXT>
 
 	<!-- advc.002k: Based on TXT_KEY_TIME_AD in CIV4GameTextInfos.xml.
