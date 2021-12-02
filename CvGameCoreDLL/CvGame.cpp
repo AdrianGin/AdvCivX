@@ -3631,7 +3631,8 @@ VictoryTypes CvGame::getSpaceVictory() const
 		if (GC.getInfo(eLoopProject).isSpaceship())
 			return GC.getInfo(eLoopProject).getVictoryPrereq();
 	}
-	FErrorMsg("Invalid space victory type");
+	// (Could be fine in mods)
+	//FErrorMsg("Invalid space victory type");
 	return NO_VICTORY;
 	/*	advc: Alternative check, cut from AI_calculateSpaceVictoryStage (BBAI),
 		disused. */

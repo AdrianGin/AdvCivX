@@ -24375,7 +24375,7 @@ bool CvPlayerAI::AI_isVictoryValid(VictoryTypes eVictory, int& iWeight) const
 	}
 	if (GC.getInfo(eVictory).isConquest())
 	{
-		iWeight = iWeight = (bHuman ? iHumanWeight : kPersonality.getConquestVictoryWeight());
+		iWeight = (bHuman ? iHumanWeight : kPersonality.getConquestVictoryWeight());
 		if (bCheckBBAIDefine &&
 			!GC.getDefineBOOL("BBAI_VICTORY_STRATEGY_CONQUEST"))
 		{
@@ -24384,7 +24384,7 @@ bool CvPlayerAI::AI_isVictoryValid(VictoryTypes eVictory, int& iWeight) const
 	}
 	if (eVictory == kGame.getDominationVictory())
 	{
-		iWeight = iWeight = (bHuman ? iHumanWeight : kPersonality.getDominationVictoryWeight());
+		iWeight = (bHuman ? iHumanWeight : kPersonality.getDominationVictoryWeight());
 		if (bCheckBBAIDefine &&
 			!GC.getDefineBOOL("BBAI_VICTORY_STRATEGY_DOMINATION"))
 		{
@@ -24393,7 +24393,7 @@ bool CvPlayerAI::AI_isVictoryValid(VictoryTypes eVictory, int& iWeight) const
 	}
 	if (kVictory.isDiploVote())
 	{
-		iWeight = iWeight = (bHuman ? iHumanWeight : kPersonality.getDiplomacyVictoryWeight());
+		iWeight = (bHuman ? iHumanWeight : kPersonality.getDiplomacyVictoryWeight());
 		if (bCheckBBAIDefine &&
 			!GC.getDefineBOOL("BBAI_VICTORY_STRATEGY_DIPLOMACY"))
 		{
