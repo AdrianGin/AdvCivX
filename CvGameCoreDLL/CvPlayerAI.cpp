@@ -21966,10 +21966,7 @@ bool CvPlayerAI::AI_proposeCityTrade(PlayerTypes eToPlayer)
 		weGive.insertAtEnd(TradeData(TRADE_CITIES, aiiiCityPairs[i].second.first));
 		bool const bEvac = AI_getCity(aiiiCityPairs[i].second.first)->AI_isEvacuating();
 		if (aiiiCityPairs[i].second.second != -1)
-		{
-			FErrorMsg("To verify that a city-for-city trade ever happens"); // advc.test
 			theyGive.insertAtEnd(TradeData(TRADE_CITIES, aiiiCityPairs[i].second.second));
-		}
 		else
 		{
 			CvCityAI const& kWeGiveCity = *AI_getCity(aiiiCityPairs[i].second.first);
@@ -21996,13 +21993,15 @@ bool CvPlayerAI::AI_proposeCityTrade(PlayerTypes eToPlayer)
 			}
 			else
 			{
-				FErrorMsg("Just to verify that this branch is reachable; hasn't come up in tests yet."); // advc.test
 				/*	Even if we think that gifting a city will benefit us more than them,
 					we're not going to pay a human extra to accept a free city. */
 				if (theyGive.getLength() <= 0 && kToPlayer.isHuman())
 					bDeal = true;
-				else bDeal = kToPlayer.AI_counterPropose(getID(), weGive, theyGive, true, false,
-						kToPlayer.isHuman() ? fixp(0.9) : 1);
+				else
+				{
+					bDeal = kToPlayer.AI_counterPropose(getID(), weGive, theyGive, true, false,
+							kToPlayer.isHuman() ? fixp(0.9) : 1);
+				}
 			}
 			if (bSameTeam) // Get what we can in exchange, but always make a trade.
 				bDeal = true;
@@ -22273,9 +22272,7 @@ scaled CvPlayerAI::AI_totalYieldVal() const
 
 // advc.104: (also used for advc.031)
 /*  Assets like additional cities become less valuable over the course of a game
-	b/c there are fewer and fewer turns to go. Not worth considering in the
-	first half of the game, but e.g. after 300 turns (normal settings),
-	the multiplier will have decreased to 0.8. The current implementation isn't
+	b/c there are fewer and fewer turns to go. The current implementation isn't
 	specific to a CvPlayerAI, but this could change, i.e. one could estimate the
 	end turn based on the knowledge of this CvPlayerAI.
 	iDelay: When an asset is not immediately acquired. */
