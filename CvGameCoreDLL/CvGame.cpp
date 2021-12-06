@@ -4841,10 +4841,14 @@ int CvGame::getGlobalWarmingChances() const
 		number of turns in the game, so, by scaling the chances, and the
 		probability per chance, I hope to get roughly the same number of
 		actual events per game. */
-	int iIndexPerChance = GC.getDefineINT("GLOBAL_WARMING_INDEX_PER_CHANCE");
-	iIndexPerChance *= GC.getInfo(getGameSpeedType()).getVictoryDelayPercent();
-	iIndexPerChance /= 100;
-	return intdiv::round(getGlobalWarmingIndex(), std::max(1, iIndexPerChance));
+	scaled rIndexPerChance = GC.getDefineINT("GLOBAL_WARMING_INDEX_PER_CHANCE");
+	rIndexPerChance *= per100(GC.getInfo(getGameSpeedType()).getVictoryDelayPercent());
+	/*	advc.055: The more teams there are, the less evenly the world tends to
+		develop. GW causes the most damage when much of the world has a similar
+		tech level in the middle of the Industrial era. */
+	rIndexPerChance *= scaled(getCivTeamsEverAlive(), 8).pow(fixp(1/3.));
+	rIndexPerChance.increaseTo(1);
+	return (getGlobalWarmingIndex() / rIndexPerChance).round();
 }
 
 int CvGame::getGwEventTally() const
