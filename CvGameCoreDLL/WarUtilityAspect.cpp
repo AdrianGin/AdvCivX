@@ -1917,6 +1917,7 @@ void HiredHand::evaluate()
 	FAssert((eSponsor == NO_PLAYER) == (iOriginalUtility <= 0));
 	scaled rUtility;
 	if (eSponsor != NO_PLAYER && iOriginalUtility > 0 &&
+		GET_PLAYER(eSponsor).isAlive() &&
 		kOurTeam.AI_getAttitude(TEAMID(eSponsor)) >= kOurPersonality.
 		/*	Between Annoyed and Pleased; has to be strictly better to allow
 			sponsorship. If it becomes strictly worse, we bail. */
