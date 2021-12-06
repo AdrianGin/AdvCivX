@@ -22282,7 +22282,11 @@ scaled CvPlayerAI::AI_totalYieldVal() const
 scaled CvPlayerAI::AI_amortizationMultiplier(int iDelay) const
 {
 	scaled r = 1 - GC.getGame().gameTurnProgress(std::max(0, iDelay));
-	r *= 2; // Use this coefficient to fine-tune the effect
+	/*	2 would mean that amortization multiplier begins to decrease right in
+		the middle of the game, and that it will have decreased e.g. to 0.8
+		after 300 turns (normal settings). */
+	static scaled const rCoeff = fixp(1.95);
+	r *= rCoeff;
 	r.clamp(fixp(0.2), 1);
 	return r;
 }
