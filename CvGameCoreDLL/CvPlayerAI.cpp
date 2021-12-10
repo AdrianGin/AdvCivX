@@ -146,10 +146,11 @@ void CvPlayerAI::AI_updatePersonality()
 	CvLeaderHeadInfo const& kPersonality = GC.getInfo(getPersonalityType());
 	AI_setPeaceWeight(kPersonality.getBasePeaceWeight() +
 			SyncRandNum(kPersonality.getPeaceWeightRand()));
+	// advc.120 (note): The next AI_updateCommerceWeights call will set the weight properly
 	AI_setEspionageWeight((kPersonality.getEspionageWeight() *
 			// K-Mod. (I've changed the meaning of this value)
 			GC.getInfo(COMMERCE_ESPIONAGE).getAIWeightPercent()) / 100);
-	// advc.120 (note): The next AI_updateCommerceWeights call will set the weight properly
+	AI_updateVictoryWeights(); // advc.115f
 }
 
 
@@ -24306,6 +24307,8 @@ bool CvPlayerAI::AI_atVictoryStage3() const
 // advc.115f: In part moved from the AI_calculate...VictoryStage functions
 void CvPlayerAI::AI_updateVictoryWeights()
 {
+	if (getPersonalityType() == NO_LEADER)
+		return;
 	EagerEnumMap<VictoryTypes,bool> abValid;
 	EagerEnumMap<VictoryTypes,short> aiWeight;
 	FOR_EACH_ENUM(Victory)
