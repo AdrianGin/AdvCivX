@@ -4386,7 +4386,7 @@ void CvTeamAI::AI_changeWarSuccess(TeamTypes eIndex, int iChange)
 {
 	AI_setWarSuccess(eIndex, (AI_getWarSuccess(eIndex) + iChange));
 	// <advc.130m>
-	if(iChange <= 0 || eIndex == BARBARIAN_TEAM)
+	if(iChange <= 0 || eIndex == BARBARIAN_TEAM || isBarbarian())
 		return;
 
 	for (TeamAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
