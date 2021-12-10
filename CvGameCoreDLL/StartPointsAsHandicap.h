@@ -10,6 +10,7 @@ class MajorCiv;
 
 public:
 	void setInitialItems();
+	void rearrangeStartingPlots();
 	void distribution(std::vector<int>& r) const;
 	std::wstring* forSettingsScreen(bool bTab=true) const; // Exposed to Python through CvGame
 	void write(FDataStreamBase* pStream);
@@ -25,7 +26,6 @@ private:
 	void assignAIPoints();
 	void randomizePoints();
 	void bounce(int i, int j);
-	void rearrangeStartingPlots();
 	int minDist(CvPlot* p);
 	void updatePointsDisplayString(bool bTab) const;
 	/*int maxStartPoints(); // obsolete
@@ -35,6 +35,7 @@ private:
 
 	std::vector<MajorCiv*> civs;
 	int nCivs, nHuman;
+	bool unequalDistrib;
 	CvString report;
 	mutable std::wstring* pointsDisplayString;
 
