@@ -417,9 +417,9 @@ class MapConstants:
 
 		#Chance for plates to grow. Higher chance tends to make more regular
 		#shapes. Lower chance makes more irregular shapes and takes longer.
-		# advc: Was 0.3, both.
-		self.plateGrowthChanceX = 0.6
-		self.plateGrowthChanceY = 0.6
+		# advc: Was 0.3, both. Also randomized now.
+		self.plateGrowthChanceX = 0.5
+		self.plateGrowthChanceY = 0.5
 
 		#This sets the amount that tectonic plates differ in altitude.
 		self.plateStagger = 0.1
@@ -439,9 +439,9 @@ class MapConstants:
 		#This is the amount of noise added to the plate map.
 		self.plateNoiseFactor = 1.2
 
-		#Filter size for altitude smoothing and distance finding. Must be
-		#odd number
-		self.distanceFilterSize = 5
+		#Filter size for altitude smoothing and distance finding. Must be odd number.
+		# advc: Was 5 (15 in Totestra). Also randomized now.
+		self.distanceFilterSize = 11
 
 		#It is necessary to eliminate small inland lakes during the initial
 		#heightmap generation. Keep in mind this number is in relation to
@@ -1740,6 +1740,13 @@ class ElevationMap2(FloatMap):
 		borderMap           = array('i') #this will help in later distance calculations
 		self.plateHeightMap = array('d')
 		preSmoothMap        = array('d')
+		# <advc>
+		plateGrowthChanceRand = PRand.random() * 0.3 - 0.15
+		mc.plateGrowthChanceX += plateGrowthChanceRand
+		mc.plateGrowthChanceY += plateGrowthChanceRand
+		mc.distanceFilterSize += 2 * int(PRand.random() * 4 - 2)
+		assert mc.distanceFilterSize % 2 == 1
+		# </advc>
 		maxDistance = math.sqrt(pow(float(mc.distanceFilterSize / 2), 2) + pow(float(mc.distanceFilterSize / 2), 2))
 		#initialize maps
 		for y in range(mc.hmHeight):
@@ -1780,6 +1787,10 @@ class ElevationMap2(FloatMap):
 		while(len(growthPlotList) > 0):
 			iterations += 1
 			if iterations > 200000:
+				# <advc>
+				print("plateGrowthChance=" + str(mc.plateGrowthChanceY))
+				print("distanceFilterSize=" + str(mc.distanceFilterSize))
+				# </advc>
 				raise ValueError, "endless loop in plate growth"
 			plot = growthPlotList[0]
 			roomLeft = False
@@ -1842,7 +1853,7 @@ class ElevationMap2(FloatMap):
 		#Since the algorithm is the same
 		for y in range(mc.hmHeight):
 			for x in range(mc.hmWidth):
-				contributers = 0
+				contributors = 0
 				avg = 0
 				i = GetHmIndex(x, y)
 				isBorder = False
@@ -1854,13 +1865,14 @@ class ElevationMap2(FloatMap):
 						ii = GetHmIndex(xx, yy)
 						if ii == -1:
 							continue
-						contributers += 1
+						contributors += 1
 						avg += preSmoothMap[ii]
 						if isBorder and plateID != self.plateMap[ii].plateID:
 							distance = math.sqrt(pow(float(y - yy), 2) + pow(float(x - xx), 2))
 							if distance < self.plateMap[ii].distanceList[plateID]:
 								self.plateMap[ii].distanceList[plateID] = distance
-				avg = avg/float(contributers)
+				if avg > 0: # advc.001
+					avg = avg/float(contributors)
 				self.plateHeightMap[i] = avg
 		#Now add ripple formula to plateHeightMap
 		for i in range(self.length):
