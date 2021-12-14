@@ -104,12 +104,12 @@ public:
 	{
 		/*	This is, at worst, an up-cast. But the compiler doesn't know this
 			b/c the AI headers aren't included here. */
-		return *reinterpret_cast<AgentType*>(m_pNext);
+		return *(AgentType*)m_pNext;
 	}
 
 	AgentType* operator->() const
-	{
-		return m_pNext;
+	{	// See above
+		return (AgentType*)m_pNext;
 	}
 
 	/*  Like ListIterator.nextIndex in Java: "The index of the element that would be
