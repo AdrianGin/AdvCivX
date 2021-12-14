@@ -839,17 +839,29 @@ bool CvXMLLoadUtility::LoadPostMenuGlobals()
 // <advc.003v>
 bool CvXMLLoadUtility::LoadOptionalGlobals()
 {
-	if (m->bEventsLoaded || GC.getGame().isOption(GAMEOPTION_NO_EVENTS))
-		return true;
-
-	if (!CreateFXml())
-		return false;
-
-	LoadGlobalClassInfo(GC.m_paEventInfo, "CIV4EventInfos", "Events", "Civ4EventInfos/EventInfos/EventInfo", true, &CvDLLUtilityIFaceBase::createEventInfoCacheObject);
-	LoadGlobalClassInfo(GC.m_paEventTriggerInfo, "CIV4EventTriggerInfos", "Events", "Civ4EventTriggerInfos/EventTriggerInfos/EventTriggerInfo", false, &CvDLLUtilityIFaceBase::createEventTriggerInfoCacheObject);
+	bool bFXmlCreated = false; // Perhaps better not to do this twice
+	if (!m->bEventsLoaded && GC.getGame().isOption(GAMEOPTION_NO_EVENTS))
+	{
+		if (!CreateFXml())
+			return false;
+		LoadGlobalClassInfo(GC.m_paEventInfo, "CIV4EventInfos", "Events", "Civ4EventInfos/EventInfos/EventInfo", true, &CvDLLUtilityIFaceBase::createEventInfoCacheObject);
+		LoadGlobalClassInfo(GC.m_paEventTriggerInfo, "CIV4EventTriggerInfos", "Events", "Civ4EventTriggerInfos/EventTriggerInfos/EventTriggerInfo", false, &CvDLLUtilityIFaceBase::createEventTriggerInfoCacheObject);
+		m->bEventsLoaded = true;
+		bFXmlCreated = true;
+	}
+	// <advc.tsl>
+	if (!m->bTruCivsLoaded && GC.getGame().isOption(GAMEOPTION_TRUE_STARTS))
+	{
+		if (!bFXmlCreated)
+		{
+			if (!CreateFXml())
+				return false;
+		}
+		LoadGlobalClassInfo(GC.m_paTruCivInfo, "CIV4TruCivInfos", "Civilizations", "Civ4TruCivInfos/TruCivInfos/TruCivInfo", false);
+		m->bTruCivsLoaded = true;
+		//bFXmlCreated = true;
+	} // </advc.tsl>
 	DestroyFXml();
-	m->bEventsLoaded = true;
-
 	return true;
 }
 

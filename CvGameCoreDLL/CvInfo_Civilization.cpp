@@ -1572,3 +1572,17 @@ bool CvDiplomacyInfo::read(CvXMLLoadUtility* pXML)
 
 	return true;
 }
+
+// advc.tsl:
+bool CvTruCivInfo::read(CvXMLLoadUtility* pXML)
+{
+	if (!base_t::read(pXML))
+		return false;
+	FAssertBounds(minLatitude(), maxLatitude() + 1, get(CvTruCivInfo::iLatitudeTimes10));
+	FAssertBounds(minLongitude(), maxLongitude() +1 , get(CvTruCivInfo::iLongitudeTimes10));
+	CvString szTextVal;
+	pXML->GetChildXmlValByName(szTextVal, "Civilization");
+	m_eCiv = (CivilizationTypes)GC.getInfoTypeForString(szTextVal);
+	FAssert(m_eCiv != NO_CIVILIZATION);
+	return true;
+}

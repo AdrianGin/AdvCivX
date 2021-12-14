@@ -351,8 +351,12 @@ public: // advc: made several functions const
 	float getWidthCoords() const;
 	float getHeightCoords() const;
 
-	int maxPlotDistance() const;																								// Exposed to Python
-	int maxStepDistance() const;																								// Exposed to Python
+	int maxPlotDistance() const																			// Exposed to Python
+	{	// <advc.tsl>
+		return maxPlotDistance(getGridWidth(), getGridHeight());
+	}
+	int maxPlotDistance(int iGridWidth, int iGridHeight) const; // </advc.tsl>
+	int maxStepDistance() const;																		// Exposed to Python
 	// <advc.140>
 	int maxMaintenanceDistance() const
 	{

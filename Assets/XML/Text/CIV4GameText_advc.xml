@@ -7212,4 +7212,16 @@
 		<Spanish>Un especialista gratis en cada ciudad, pero no hay rutas comerciales con el extranjero.</Spanish>
 	</TEXT>
 
+	<!-- advc.tsl -->
+	<TEXT>
+		<Tag>TXT_KEY_GAME_OPTION_TRUE_STARTS</Tag>
+		<English>True Starts</English>
+		<German>Historische Startorte</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_GAME_OPTION_TRUE_STARTS_HELP</Tag>
+		<English>Civilizations set to "Random" are selected according to the (randomly chosen) starting locations. E.g. a player who starts in rocky terrain near the equator will probably receive the Inca.</English>
+		<German>Spieler, für die eine "zufällige" Zivilisation eingestellt ist, erhalten eine, die zu ihrem Startort passt - z.B. die Inka bei Start in äquatornahem Gebirge.</German>
+	</TEXT>
+
 </Civ4GameText>

@@ -396,6 +396,7 @@ private:
 	{
 		bool bAssertMandatory; // advc.006b
 		bool bEventsLoaded, bThroneRoomLoaded; // advc.003v
+		bool bTruCivsLoaded; // advc.tsl
 		friend CvXMLLoadUtility;
 	};
 	//int m_iCurProgressStep; // Unused, remove it to make room.

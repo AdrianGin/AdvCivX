@@ -22,6 +22,7 @@
 #include "CvMessageControl.h"
 #include "BarbarianWeightMap.h" // advc.304
 #include "StartingPositionIteration.h" // advc.027
+#include "TrueStarts.h" // advc.tsl
 #include "StartPointsAsHandicap.h" // advc.250b
 #include "RiseFall.h" // advc.700
 #include "CvHallOfFameInfo.h" // advc.106i
@@ -227,8 +228,17 @@ void CvGame::setInitialItems()
 	if(GC.getDefineBOOL("PASSABLE_AREAS"))
 		kMap.recalculateAreas(false);
 	// </advc.030>
-	// advc.tsl: Delay part of the freebies until starting sites have been assigned
-	initFreeCivState();
+	// <advc.tsl>
+	if (isOption(GAMEOPTION_TRUE_STARTS))
+	{
+		TrueStarts ts;
+		if (!ts.changeCivs())
+		{
+			// Tbd.: Regen map and retry? (Will need some XML switch for this.)
+		}
+	} // </advc.tsl>
+	// Delay part of the freebies until starting sites have been assigned
+	initFreeCivState(); // </advc.tsl>
 	initFreeUnits();
 	// <advc.250c>
 	if (GC.getDefineBOOL("INCREASE_START_TURN") && getStartEra() == 0)
@@ -9336,6 +9346,12 @@ void CvGame::read(FDataStreamBase* pStream)
 		setOption(GAMEOPTION_NEW_RANDOM_SEED, isOption(GAMEOPTION_RISE_FALL));
 		setOption(GAMEOPTION_RISE_FALL, false);
 	} // </advc.701>
+	// <advc.tsl>
+	if (uiFlag < 15)
+	{
+		setOption(GAMEOPTION_LOCK_MODS, isOption(GAMEOPTION_TRUE_STARTS));
+		setOption(GAMEOPTION_TRUE_STARTS, false);
+	} // </advc.tsl>
 	{
 		clearReplayMessageMap();
 		ReplayMessageList::_Alloc::size_type iSize;
@@ -9466,7 +9482,8 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 11; // advc.enum: new enum map save behavior
 	//uiFlag = 12; // advc.130n: DifferentReligionThreat added to CvPlayerAI
 	//uiFlag = 13; // advc.148: RELATIONS_THRESH_WORST_ENEMY
-	uiFlag = 14; // advc.148, advc.130n, advc.130x (religion attitude)
+	//uiFlag = 14; // advc.148, advc.130n, advc.130x (religion attitude)
+	uiFlag = 15; // advc.tsl: new game option
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);

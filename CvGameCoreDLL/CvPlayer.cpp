@@ -758,10 +758,11 @@ void CvPlayer::setIsHuman(bool bNewValue, /* advc.127c: */ bool bUpdateAI)
 // CHANGE_PLAYER: END
 // CHANGE_PLAYER, 05/09/09, jdog5000: START
 // for changing the civilization of this player
-void CvPlayer::changeCiv(CivilizationTypes eNewCiv)
+void CvPlayer::changeCiv(CivilizationTypes eNewCiv,
+	bool bForceColorUpdate) // advc.tsl
 {
 	CivilizationTypes eOldCiv = getCivilizationType();
-	if (eOldCiv == eNewCiv)
+	if (eOldCiv == eNewCiv /* advc.tsl: */ && !bForceColorUpdate)
 		return;
 
 	PlayerColorTypes eColor = (PlayerColorTypes)GC.getInfo(eNewCiv).getDefaultPlayerColor();
@@ -798,8 +799,10 @@ void CvPlayer::changeCiv(CivilizationTypes eNewCiv)
 	}
 
 	CvInitCore& kInitCore = GC.getInitCore();
-	kInitCore.setCiv(getID(), eNewCiv);
 	kInitCore.setColor(getID(), eColor);
+	if (eOldCiv == eNewCiv)
+		return;
+	kInitCore.setCiv(getID(), eNewCiv);
 	setCivilization(eNewCiv); // advc.003u
 	resetCivTypeEffects(/* advc.003q: */ false);
 	CvDLLInterfaceIFaceBase& kUI = *gDLL->getInterfaceIFace();

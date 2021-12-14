@@ -805,12 +805,12 @@ float CvMap::getHeightCoords() const
 	return GC.getPLOT_SIZE() * getGridHeight();
 }
 
-
-int CvMap::maxPlotDistance() const
+// advc.tsl: Cut from maxPlotDistance
+int CvMap::maxPlotDistance(int iGridWidth, int iGridHeight) const
 {
 	return std::max(1, plotDistance(0, 0,
-			isWrapX() ? getGridWidth() / 2 : getGridWidth() - 1,
-			isWrapY() ? getGridHeight() / 2 : getGridHeight() - 1));
+			isWrapX() ? iGridWidth / 2 : iGridWidth - 1,
+			isWrapY() ? iGridHeight / 2 : iGridHeight - 1));
 }
 
 

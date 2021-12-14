@@ -546,4 +546,39 @@
 		<element type="CivilizationInfos" minOccurs="0" maxOccurs="*"/>
 		<element type="UnitArtStyleTypeInfos" minOccurs="0" maxOccurs="*"/>
 	</ElementType>
+	<!-- advc.tsl: start -->
+	<ElementType name="Civilization" content="textOnly"/>
+	<ElementType name="iLatitudeTimes10" content="textOnly" dt:type="int"/>
+	<ElementType name="iLongitudeTimes10" content="textOnly" dt:type="int"/>
+	<ElementType name="TruCivInfo" content="eltOnly">
+		<!-- Mostly just to be consistent with other info types. Could also be
+			 used for lookup by type string for debugging. -->
+		<element type="Type"/>
+		<!-- "CIVILIZATION_..." type name of the civilization that the TruCiv
+			 info refers to. Not linking those two info types in the inverse
+			 direction because I want to keep all the TruCiv XML code in
+			 one place. -->
+		<element type="Civilization"/>
+		<!-- Latitude and longitude of the civ's capital, given as degrees
+			 at times 10 precision. I.e. _not_ given as minutes. -->
+		<!-- Can take any values between -900 and +900.
+			 Negative sign for southern hemisphere. -->
+		<element type="iLatitudeTimes10"/>
+		<!-- Can take any values between -1800 and +1800.
+			 Negative sign for western hemisphere. -->
+		<element type="iLongitudeTimes10"/>
+		<!-- Any further elements should be optional (minOccurs 0),
+			 with a sensible default value set by the DLL. So that mods with
+			 additional civs need to define only the geo coordinates,
+			 which are easy to look up on Wikipedia (though the minutes stated
+			 there will have to be converted to tenths of degrees through
+			 multiplication by 5/3). -->
+	</ElementType>
+	<ElementType name="TruCivInfos" content="eltOnly">
+		<element type="TruCivInfo" maxOccurs="*"/>
+	</ElementType>
+	<ElementType name="Civ4TruCivInfos" content="eltOnly">
+		<element type="TruCivInfos" minOccurs="0" maxOccurs="*"/>
+	</ElementType>
+	<!-- advc.tsl: end -->
 </Schema>

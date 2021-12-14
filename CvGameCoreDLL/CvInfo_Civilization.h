@@ -5,7 +5,8 @@
 
 /*  advc.003x: Cut from CvInfos.h.
 	CvCivilizationInfo, CvLeaderHeadInfo, CvTraitInfo,
-	CvDiplomacyInfo, CvDiplomacyResponse
+	CvDiplomacyInfo, CvDiplomacyResponse,
+	CvTruCivInfo (advc.tsl)
 	Want to precompile these. CvLeaderHeadInfo is frequently needed (by most of
 	the AI code - but not only), is large and tags are added rarely. CvCivilization
 	still (despite change advc.003w) plays a role in mapping building/ unit classes
@@ -500,6 +501,41 @@ public: // advc: All the const functions are exposed to Python
 
 protected:
 	std::vector<CvDiplomacyResponse*> m_pResponses;
+};
+
+// advc.tsl (nothing exposed to Python):
+class CvTruCivInfo : public CvXMLInfo
+{
+	typedef CvXMLInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		kElements.addMandatoryInt(iLatitudeTimes10, "LatitudeTimes10");
+		kElements.addMandatoryInt(iLongitudeTimes10, "LongitudeTimes10");
+	}
+public:
+	enum IntElementTypes
+	{
+		iLatitudeTimes10 = base_t::NUM_INT_ELEMENT_TYPES,
+		iLongitudeTimes10,
+		NUM_INT_ELEMENT_TYPES
+	};
+	int get(IntElementTypes e) const
+	{
+		return CvXMLInfo::get(static_cast<base_t::IntElementTypes>(e));
+	}
+	CvTruCivInfo() : m_eCiv(NO_CIVILIZATION) {}
+	CivilizationTypes getCiv() const { return m_eCiv; }
+	bool read(CvXMLLoadUtility* pXML);
+
+	static int minLatitude() { return -900; }
+	static int maxLatitude() { return 900; }
+	static int minLongitude() { return -1800; }
+	static int maxLongitude() { return 1800; }
+
+protected:
+	CivilizationTypes m_eCiv;
 };
 
 #endif

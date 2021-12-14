@@ -190,6 +190,7 @@
     <ClCompile Include="..\StartingPositionIteration.cpp" />
     <ClCompile Include="..\StartPointsAsHandicap.cpp" />
     <ClCompile Include="..\TeamPathFinder.cpp" />
+    <ClCompile Include="..\TrueStarts.cpp" />
     <ClCompile Include="..\TSCProfiler.cpp" />
     <ClCompile Include="..\UWAIAgent.cpp" />
     <ClCompile Include="..\UWAI.cpp" />
@@ -359,6 +360,7 @@
     <ClInclude Include="..\StartingPositionIteration.h" />
     <ClInclude Include="..\TeamPathFinder.h" />
     <ClInclude Include="..\Trigonometry.h" />
+    <ClInclude Include="..\TrueStarts.h" />
     <ClInclude Include="..\TSCProfiler.h" />
     <ClInclude Include="..\TypeChoice.h" />
     <ClInclude Include="..\UWAISets.h" />
