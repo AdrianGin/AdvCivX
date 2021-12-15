@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
-<!-- advc.tsl: Per-civ data for the True Starts game option -->
+<!-- advc.tsl: Per-civ data for the True Starts game option.
+	 Could argue that much of this should be tied to leaders as the
+	 civilizations had different extents under different leaders,
+	 but each civ has just one city list, so ... -->
 <Civ4TruCivInfos xmlns="x-schema:CIV4CivilizationsSchema.xml">
 	<TruCivInfos>
 		<TruCivInfo>

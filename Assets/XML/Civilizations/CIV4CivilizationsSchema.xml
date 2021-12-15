@@ -580,5 +580,26 @@
 	<ElementType name="Civ4TruCivInfos" content="eltOnly">
 		<element type="TruCivInfos" minOccurs="0" maxOccurs="*"/>
 	</ElementType>
+	<!-- Just "Leader" would clash with other (more complex) elements -->
+	<ElementType name="LeaderType" content="textOnly"/>
+	<ElementType name="iStartOfReign" content="textOnly" dt:type="int"/>
+	<ElementType name="TruLeaderInfo" content="eltOnly">
+		<element type="Type"/>
+		<!-- "LEADER_..." type name of the leader that the TruLeader
+			 info refers to. -->
+		<element type="LeaderType"/>
+		<!-- Gregorian year number. Negative sign for BC(E). When in doubt,
+			 it should be the year in which the leader took control of the bulk
+			 of his or her domain. Should ideally also have ruled for several
+			 years after. Optional - the DLL treats the date as (entirely) unknown
+			 when none is stated. -->
+		<element type="iStartOfReign" minOccurs="0"/>
+	</ElementType>
+	<ElementType name="TruLeaderInfos" content="eltOnly">
+		<element type="TruLeaderInfo" maxOccurs="*"/>
+	</ElementType>
+	<ElementType name="Civ4TruLeaderInfos" content="eltOnly">
+		<element type="TruLeaderInfos" minOccurs="0" maxOccurs="*"/>
+	</ElementType>
 	<!-- advc.tsl: end -->
 </Schema>

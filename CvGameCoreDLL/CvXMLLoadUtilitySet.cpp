@@ -850,7 +850,7 @@ bool CvXMLLoadUtility::LoadOptionalGlobals()
 		bFXmlCreated = true;
 	}
 	// <advc.tsl>
-	if (!m->bTruCivsLoaded && GC.getGame().isOption(GAMEOPTION_TRUE_STARTS))
+	if (!m->bTrueStartsDataLoaded && GC.getGame().isOption(GAMEOPTION_TRUE_STARTS))
 	{
 		if (!bFXmlCreated)
 		{
@@ -858,7 +858,8 @@ bool CvXMLLoadUtility::LoadOptionalGlobals()
 				return false;
 		}
 		LoadGlobalClassInfo(GC.m_paTruCivInfo, "CIV4TruCivInfos", "Civilizations", "Civ4TruCivInfos/TruCivInfos/TruCivInfo", false);
-		m->bTruCivsLoaded = true;
+		LoadGlobalClassInfo(GC.m_paTruLeaderInfo, "CIV4TruLeaderInfos", "Civilizations", "Civ4TruLeaderInfos/TruLeaderInfos/TruLeaderInfo", false);
+		m->bTrueStartsDataLoaded = true;
 		//bFXmlCreated = true;
 	} // </advc.tsl>
 	DestroyFXml();

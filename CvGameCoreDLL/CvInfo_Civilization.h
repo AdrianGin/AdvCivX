@@ -503,7 +503,7 @@ protected:
 	std::vector<CvDiplomacyResponse*> m_pResponses;
 };
 
-// advc.tsl (nothing exposed to Python):
+// <advc.tsl> (nothing exposed to Python):
 class CvTruCivInfo : public CvXMLInfo
 {
 	typedef CvXMLInfo base_t;
@@ -511,14 +511,14 @@ protected:
 	void addElements(ElementList& kElements) const
 	{
 		base_t::addElements(kElements);
-		kElements.addMandatoryInt(iLatitudeTimes10, "LatitudeTimes10");
-		kElements.addMandatoryInt(iLongitudeTimes10, "LongitudeTimes10");
+		kElements.addMandatoryInt(LatitudeTimes10, "LatitudeTimes10");
+		kElements.addMandatoryInt(LongitudeTimes10, "LongitudeTimes10");
 	}
 public:
 	enum IntElementTypes
 	{
-		iLatitudeTimes10 = base_t::NUM_INT_ELEMENT_TYPES,
-		iLongitudeTimes10,
+		LatitudeTimes10 = base_t::NUM_INT_ELEMENT_TYPES,
+		LongitudeTimes10,
 		NUM_INT_ELEMENT_TYPES
 	};
 	int get(IntElementTypes e) const
@@ -537,5 +537,33 @@ public:
 protected:
 	CivilizationTypes m_eCiv;
 };
+
+
+class CvTruLeaderInfo : public CvXMLInfo
+{
+	typedef CvXMLInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		kElements.addInt(StartOfReign, "StartOfReign", MIN_INT);
+	}
+public:
+	enum IntElementTypes
+	{
+		StartOfReign = base_t::NUM_INT_ELEMENT_TYPES,
+		NUM_INT_ELEMENT_TYPES
+	};
+	int get(IntElementTypes e) const
+	{
+		return CvXMLInfo::get(static_cast<base_t::IntElementTypes>(e));
+	}
+	CvTruLeaderInfo() : m_eLeader(NO_LEADER) {}
+	LeaderHeadTypes getLeader() const { return m_eLeader; }
+	bool read(CvXMLLoadUtility* pXML);
+
+protected:
+	LeaderHeadTypes m_eLeader;
+}; // </advc.tsl>
 
 #endif

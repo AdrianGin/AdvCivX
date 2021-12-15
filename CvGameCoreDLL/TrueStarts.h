@@ -12,16 +12,28 @@ public:
 	bool changeCivs();
 
 private:
+	int m_iAttempts;
 	ArrayEnumMap<CivilizationTypes,CvTruCivInfo*> m_truCivs;
-	ArrayEnumMap2D<CivPlayerTypes,CivilizationTypes,int,void*,MIN_INT> m_fitnessVals;
-	ArrayEnumMap<CivPlayerTypes,CivilizationTypes> m_civs;
+	ArrayEnumMap<LeaderHeadTypes,CvTruLeaderInfo*> m_truLeaders;
+	ArrayEnumMap2D<LeaderHeadTypes,LeaderHeadTypes,int,void*,-1> m_contemporaries;
+	ArrayEnumMap<LeaderHeadTypes,int,void*,-1> m_maxTimeDiff;
+	/*	Fitness values stored per civ-leader pair. In case that a leader
+		is valid for multiple civs. (Does the game really support that?)
+		Need those values for each player, hence the surrounding vector. */
+	std::vector<
+		ListEnumMap2D<CivilizationTypes,LeaderHeadTypes,int,void*,MIN_INT>
+	> m_fitnessVals;
+	ArrayEnumMap<PlayerTypes,CivilizationTypes> m_civs;
+	ArrayEnumMap<PlayerTypes,LeaderHeadTypes> m_leaders;
 	ArrayEnumMap<CivilizationTypes,bool> m_civTaken;
 	ArrayEnumMap<LeaderHeadTypes,bool> m_leaderTaken;
-	int m_iAttempts;
+	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validAICivs;
+	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validHumanCivs;
 
+	void initContemporaries();
 	void updateFitnessValues();
 	int calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
-			bool bLog = false) const;
+			LeaderHeadTypes eLeader, bool bLog = false) const;
 };
 
 #endif

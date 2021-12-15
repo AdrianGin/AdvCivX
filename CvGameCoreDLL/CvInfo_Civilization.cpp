@@ -1573,16 +1573,28 @@ bool CvDiplomacyInfo::read(CvXMLLoadUtility* pXML)
 	return true;
 }
 
-// advc.tsl:
+// <advc.tsl>
 bool CvTruCivInfo::read(CvXMLLoadUtility* pXML)
 {
 	if (!base_t::read(pXML))
 		return false;
-	FAssertBounds(minLatitude(), maxLatitude() + 1, get(CvTruCivInfo::iLatitudeTimes10));
-	FAssertBounds(minLongitude(), maxLongitude() +1 , get(CvTruCivInfo::iLongitudeTimes10));
+	FAssertBounds(minLatitude(), maxLatitude() + 1, get(CvTruCivInfo::LatitudeTimes10));
+	FAssertBounds(minLongitude(), maxLongitude() +1 , get(CvTruCivInfo::LongitudeTimes10));
 	CvString szTextVal;
 	pXML->GetChildXmlValByName(szTextVal, "Civilization");
 	m_eCiv = (CivilizationTypes)GC.getInfoTypeForString(szTextVal);
 	FAssert(m_eCiv != NO_CIVILIZATION);
 	return true;
 }
+
+
+bool CvTruLeaderInfo::read(CvXMLLoadUtility* pXML)
+{
+	if (!base_t::read(pXML))
+		return false;
+	CvString szTextVal;
+	pXML->GetChildXmlValByName(szTextVal, "LeaderType");
+	m_eLeader = (LeaderHeadTypes)GC.getInfoTypeForString(szTextVal);
+	FAssert(m_eLeader != NO_LEADER);
+	return true;
+} // </advc.tsl>

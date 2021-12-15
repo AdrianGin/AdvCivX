@@ -59,7 +59,9 @@
 	DO(Bonus, BONUS) \
 	DO(LeaderHead, LEADER) \
 	DO(Civilization, CIVILIZATION) \
-	DO(TruCiv, TRUCIV) /* advc.tsl (not exposed to Python) */ \
+	/* <advc.tsl> (not exposed to Python) */ \
+	DO(TruCiv, TRUCIV) \
+	DO(TruLeader, TRULEADER) /* </advc.tsl> */ \
 	DO(Cursor, CURSOR) \
 	/* internal only */ \
 	DO(BuildingClass, BUILDINGCLASS) \
