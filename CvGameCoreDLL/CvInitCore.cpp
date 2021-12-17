@@ -1048,11 +1048,12 @@ void CvInitCore::setType(GameType eType)
 	// Otherwise as set in XML
 	else kPermWarPeace.setVisible(kPermWarPeace.getVisibleXML());
 	// Never visible in MP
-	std::vector<GameOptionTypes> aeHideMP;
-	aeHideMP.push_back(GAMEOPTION_LOCK_MODS);
-	aeHideMP.push_back(GAMEOPTION_NEW_RANDOM_SEED);
-	aeHideMP.push_back(GAMEOPTION_RISE_FALL); // advc.701
-	for (size_t i = 0; i < aeHideMP.size(); i++)
+	GameOptionTypes aeHideMP[] = {
+		GAMEOPTION_LOCK_MODS,
+		GAMEOPTION_NEW_RANDOM_SEED,
+		GAMEOPTION_RISE_FALL, // advc.701
+	};
+	for (int i = 0; i < ARRAYSIZE(aeHideMP); i++)
 	{
 		CvGameOptionInfo& kOption = GC.getInfo(aeHideMP[i]);
 		if (eType == GAME_MP_SCENARIO || eType == GAME_MP_NEW || eType == GAME_MP_LOAD ||

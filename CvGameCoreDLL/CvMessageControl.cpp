@@ -206,7 +206,7 @@ void CvMessageControl::sendPing(int iX, int iY)
 	if (isActive())
 		gDLL->sendMessageData(new CvNetPing(getActivePlayer(), iX, iY));
 }
-
+// advc.003g:
 void CvMessageControl::sendFPTest(int iResult)
 {
 	gDLL->sendMessageData(new CvNetFPTest(getActivePlayer(), iResult));

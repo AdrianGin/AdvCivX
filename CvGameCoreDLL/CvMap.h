@@ -380,8 +380,14 @@ public: // advc: made several functions const
 	int getOwnedPlots() const { return m_iOwnedPlots; }														// Exposed to Python
 	void changeOwnedPlots(int iChange);
 
-	int getTopLatitude() const;																									// Exposed to Python
-	int getBottomLatitude() const;																							// Exposed to Python
+	int getTopLatitude() const																									// Exposed to Python
+	{
+		return m_iTopLatitude;
+	}
+	int getBottomLatitude() const																							// Exposed to Python
+	{
+		return m_iBottomLatitude;
+	}
 
 	short getNextRiverID() const;																									// Exposed to Python
 	void incrementNextRiverID();																					// Exposed to Python

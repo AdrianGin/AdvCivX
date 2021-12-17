@@ -21,7 +21,7 @@ private:
 		is valid for multiple civs. (Does the game really support that?)
 		Need those values for each player, hence the surrounding vector. */
 	std::vector<
-		ListEnumMap2D<CivilizationTypes,LeaderHeadTypes,int,void*,MIN_INT>
+		ArrayEnumMap2D<CivilizationTypes,LeaderHeadTypes,int,void*,MIN_INT>
 	> m_fitnessVals;
 	ArrayEnumMap<PlayerTypes,CivilizationTypes> m_civs;
 	ArrayEnumMap<PlayerTypes,LeaderHeadTypes> m_leaders;

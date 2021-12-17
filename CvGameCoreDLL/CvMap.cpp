@@ -121,7 +121,7 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 	m_iLandPlots = 0;
 	m_iOwnedPlots = 0;
 
-	if (pInitInfo)
+	if (pInitInfo != NULL)
 	{
 		m_iTopLatitude = pInitInfo->m_iTopLatitude;
 		m_iBottomLatitude = pInitInfo->m_iBottomLatitude;
@@ -852,18 +852,6 @@ void CvMap::changeOwnedPlots(int iChange)
 {
 	m_iOwnedPlots = (m_iOwnedPlots + iChange);
 	FAssert(getOwnedPlots() >= 0);
-}
-
-
-int CvMap::getTopLatitude() const
-{
-	return m_iTopLatitude;
-}
-
-
-int CvMap::getBottomLatitude() const
-{
-	return m_iBottomLatitude;
 }
 
 
