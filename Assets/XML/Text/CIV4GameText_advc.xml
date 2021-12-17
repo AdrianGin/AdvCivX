@@ -7220,8 +7220,8 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_GAME_OPTION_TRUE_STARTS_HELP</Tag>
-		<English>Civilizations set to "Random" are selected according to the (randomly chosen) starting locations. E.g. a player who starts in rocky terrain near the equator will probably receive the Inca.</English>
-		<German>Spieler, für die eine "zufällige" Zivilisation eingestellt ist, erhalten eine, die zu ihrem Startort passt - z.B. die Inka bei Start in äquatornahem Gebirge.</German>
+		<English>Players set to a "Random" civilization receive a civilization that matches their starting location. E.g. a player who starts in rocky terrain near the equator will probably receive the Inca. (Known limitation in network games: The option affects all players, not just those set to "Random".)</English>
+		<German>Spieler, für die eine "zufällige" Zivilisation eingestellt ist, erhalten eine, die zu ihrem Startort passt - z.B. die Inka bei Start in äquatornahem Gebirge. (In Netzwerk-Spielen wirkt sich diese Option leider auch auf Spieler aus, für die eine nicht-zufällige Zivilisation eingestellt wurde.)</German>
 	</TEXT>
 
 </Civ4GameText>

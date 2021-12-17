@@ -265,7 +265,9 @@ void TrueStarts::updateFitnessValues()
 	m_fitnessVals.resize(NUM_CIV_PLAYER_TYPES);
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 	{
-		if (!GC.getInitCore().wasCivRandomlyChosen(itPlayer->getID()))
+		if (!GC.getInitCore().wasCivRandomlyChosen(itPlayer->getID()) &&
+			// Can't sync up the was-randomly-chosen info in time
+			!GC.getGame().isNetworkMultiPlayer())
 		{
 			m_civs.set(itPlayer->getID(), itPlayer->getCivilizationType());
 			m_leaders.set(itPlayer->getID(), itPlayer->getLeaderType());

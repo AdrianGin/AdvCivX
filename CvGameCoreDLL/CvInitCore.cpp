@@ -1066,6 +1066,14 @@ void CvInitCore::setType(GameType eType)
 		// Otherwise as set in XML
 		else kOption.setVisible(kOption.getVisibleXML());
 	} // </advc.054>
+	/*	<advc.tsl> Disable in network games b/c it can't apply just to civs
+		set to "random"? (Cf. comment in TrueStarts::updateFitnessValues.)
+		No, I think it's still worth having. */
+	/*CvGameOptionInfo& kTrueStarts = GC.getInfo(GAMEOPTION_TRUE_STARTS);
+	if (eType == GAME_MP_SCENARIO || eType == GAME_MP_NEW || eType == GAME_MP_LOAD)
+		kTrueStarts.setVisible(false);
+	else kTrueStarts.setVisible(kTrueStarts.getVisibleXML());*/
+	// </advc.tsl>
 	if (CvPlayer::areStaticsInitialized())
 	{
 		for (int i = 0; i < MAX_PLAYERS; ++i)
