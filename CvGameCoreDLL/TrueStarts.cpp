@@ -412,8 +412,10 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			if (iTimeDiff >= 0)
 			{
 				FAssert(iTimeDiff <= iMaxTimeDiff);
-				int iPlus = iFixed +
-						(iMaxTimeDiff - iTimeDiff) * iWeight / iMaxTimeDiff;
+				int iPlus = (iMaxTimeDiff - iTimeDiff) * iWeight / iMaxTimeDiff;
+				if (TEAMID(perPlayerVal.first) == kPlayer.getTeam())
+					iPlus *= 2;
+				iPlus += iFixed;
 				if (bMutuallyContemporary)
 					iPlus += iFixed; // add a second time
 				else IFLOG logBBAI("Not counted as mutually contemporary");
