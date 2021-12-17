@@ -30,9 +30,7 @@ bEarthlike = True
 
 # advc.tsl: Consult the DLL for this
 def latitudeAtPlot(map, iX, iY, iHeight):
-	iTopLat = map.getTopLatitude()
-	iBottomLat = map.getBottomLatitude()
-	bFallback = (not map.isPlot(iX, iY) or iTopLat <= iBottomLat or iBottomLat >= iTopLat)
+	bFallback = (not map.isPlot(iX, iY) or map.getTopLatitude() <= map.getBottomLatitude())
 	if not bFallback:
 		iAbsLat = map.plot(iX, iY).getLatitude() # new DLL call
 		if iAbsLat < 0 or iAbsLat > 90:
