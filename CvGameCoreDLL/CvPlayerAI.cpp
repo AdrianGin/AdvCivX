@@ -8055,7 +8055,7 @@ int CvPlayerAI::AI_getTradeAttitude(PlayerTypes ePlayer) const
 {
 	scaled r = AI_getPeacetimeGrantValue(ePlayer);
 	scaled rTradeValDiff = AI_getPeacetimeTradeValue(ePlayer) -
-			fixp(5/6.) * GET_PLAYER(ePlayer).AI_getPeacetimeTradeValue(getID());
+			fixp(4/5.) * GET_PLAYER(ePlayer).AI_getPeacetimeTradeValue(getID());
 	r += scaled::max(0, rTradeValDiff);
 	if (r > 0)
 		r = fixp(11.5) * r.pow(fixp(2/3.)); // Diminishing returns
