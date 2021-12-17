@@ -1068,6 +1068,16 @@ void CvGame::initFreeCivState()
 void CvGame::initScenario()
 {
 	initFreeState(); // Tech from handicap
+	// <advc.tsl>
+	if (isOption(GAMEOPTION_TRUE_STARTS) &&
+		/*	Replacing fixed players should actually be OK -
+			just so long as the scenario doesn't define any cities. */
+		//GC.getInitCore().getWBMapNoPlayers()
+		getNumCities() <= 0)
+	{
+		TrueStarts ts;
+		ts.changeCivs();
+	} // </advc.tsl>
 	// <advc.030>
 	if (GC.getDefineBOOL("PASSABLE_AREAS"))
 	{

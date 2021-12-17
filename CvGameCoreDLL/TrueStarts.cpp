@@ -104,6 +104,12 @@ bool TrueStarts::changeCivs()
 	m_leaders.reset();
 	m_civTaken.reset();
 	m_leaderTaken.reset();
+
+	/*	The official non-Earth scenarios set all latitude values to 0.
+		Can't work with that. */
+	if (GC.getMap().getTopLatitude() <= GC.getMap().getBottomLatitude())
+		return true;
+
 	m_iAttempts++; // (Tbd.: Maybe the caller will have to keep this count instead)
 	{
 		std::vector<CivilizationTypes> aeValidHumanCivs;
@@ -235,19 +241,23 @@ bool TrueStarts::changeCivs()
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 	{
 		CivilizationTypes const eCiv = m_civs.get(itPlayer->getID());
-		if (m_civs.get(itPlayer->getID()) == NO_CIVILIZATION)
+		LeaderHeadTypes const eLeader = m_leaders.get(itPlayer->getID());
+		if (eCiv == NO_CIVILIZATION)
 		{
 			FErrorMsg("No civ found for player");
 			continue;
 		}
-		itPlayer->changeCiv(eCiv, true);
-		LeaderHeadTypes const eLeader = m_leaders.get(itPlayer->getID());
-		if (m_leaders.get(itPlayer->getID()) == NO_LEADER)
+		if (eLeader == NO_LEADER)
 		{
 			FErrorMsg("No leader found for player");
 			continue;
 		}
-		itPlayer->changeLeader(eLeader);
+		/*	bChangeDescr param:
+			Non-scenario games leave all civ and leader names empty,
+			which means that CvInfo descriptions get used. That's fine, but
+			the hardwired names in scenarios need to be changed explicitly. */
+		itPlayer->changeCiv(eCiv, GC.getGame().isScenario(), true);
+		itPlayer->changeLeader(eLeader, GC.getGame().isScenario());
 	}
 
 	/*	Tbd.: Check if the overall fitness values are high enough.
@@ -266,6 +276,7 @@ void TrueStarts::updateFitnessValues()
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 	{
 		if (!GC.getInitCore().wasCivRandomlyChosen(itPlayer->getID()) &&
+			!GC.getGame().isScenario() &&
 			// Can't sync up the was-randomly-chosen info in time
 			!GC.getGame().isNetworkMultiPlayer())
 		{

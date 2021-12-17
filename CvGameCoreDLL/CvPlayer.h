@@ -118,9 +118,10 @@ public:
 	void processTraits(int iChange); // advc.003q: Replacing the above
 	void changePersonalityType();
 	void resetCivTypeEffects(/* advc.003q: */ bool bInit);
-	void changeLeader(LeaderHeadTypes eNewLeader);
+	void changeLeader(LeaderHeadTypes eNewLeader,
+			bool bChangeName = false); // advc.tsl
 	void changeCiv(CivilizationTypes eNewCiv,
-			bool bForceColorUpdate = false); // advc.tsl
+			bool bChangeDescr = false, bool bForceColorUpdate = false); // advc.tsl
 	void setIsHuman(bool bNewValue, /* advc.127c: */ bool bAIUpdate = false);
 	// CHANGE_PLAYER: END
 	// AI_AUTO_PLAY_MOD, 07/09/08, jdog5000: START
