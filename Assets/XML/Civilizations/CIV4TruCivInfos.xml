@@ -14,7 +14,12 @@
 		<TruCivInfo>
 			<Type>TRU_ARABIA</Type>
 			<Civilization>CIVILIZATION_ARABIA</Civilization>
-			<iLatitudeTimes10>214</iLatitudeTimes10>
+			<!-- Actually 214, but that tends to be quite close to the
+				 Jungle belt. Especially considering that the DLL tends to
+				 start civs at slightly lower latitude than this file says
+				 in order to avoid using the same few near-equatorial civs
+				 over and over. -->
+			<iLatitudeTimes10>245</iLatitudeTimes10>
 			<iLongitudeTimes10>400</iLongitudeTimes10>
 		</TruCivInfo>
 		<TruCivInfo>
