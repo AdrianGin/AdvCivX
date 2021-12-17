@@ -307,13 +307,20 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 	CvTruCivInfo const& kTruCiv = *m_truCivs.get(eCiv);
 	int iFitness = 1000;
 	{
+		int const iAbsPlotLat = kPlot.getLatitude();
+		int iAbsPlotLatAdjustedTimes10 = iAbsPlotLat * 10;
 		/*	Try to match latitudes slightly higher than the actual latitudes -
 			to bias the civ choice toward the temperate zones and subtropics. */
-		int iAbsLatTimes10 = std::min(90, kPlot.getLatitude() + 4) * 10;
+		iAbsPlotLatAdjustedTimes10 += (scaled(std::max(0,
+				40 - iAbsPlotLat)).pow(fixp(0.4)) * 10).round();
+		// Temperate latitudes need to keep some distance from the Tundra
+		iAbsPlotLatAdjustedTimes10 -= (scaled(std::max(0,
+				std::min(52, iAbsPlotLat) - 40)).pow(fixp(0.4)) * 10).round();
+		int iAbsLatTimes10 = range(iAbsPlotLatAdjustedTimes10, 0, 900);
 		int iCivAbsLatTimes10 = abs(kTruCiv.get(CvTruCivInfo::LatitudeTimes10));
-		int iLatPenalty = abs(iCivAbsLatTimes10 - iAbsLatTimes10);
+		int iLatPenalty = (3 * abs(iCivAbsLatTimes10 - iAbsLatTimes10)) / 2;
 		IFLOG logBBAI("Penalty for latitude %d (plot at %d, civ at %d/10)",
-				iLatPenalty, kPlot.getLatitude(), kTruCiv.get(CvTruCivInfo::LatitudeTimes10));
+				iLatPenalty, iAbsPlotLat, kTruCiv.get(CvTruCivInfo::LatitudeTimes10));
 		iFitness -= iLatPenalty;
 	}
 	{
