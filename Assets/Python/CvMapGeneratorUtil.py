@@ -28,6 +28,21 @@ alternative method to the default process for placing the starting units for eac
 # advc.129c: Master switch for turning off all my terrain changes (they're not extensive enough to justify new subclasses)
 bEarthlike = True
 
+# advc.tsl: Consult the DLL for this
+def latitudeAtPlot(map, iX, iY, iHeight):
+	iTopLat = map.getTopLatitude()
+	iBottomLat = map.getBottomLatitude()
+	bFallback = (not map.isPlot(iX, iY) or iTopLat <= iBottomLat or iBottomLat >= iTopLat)
+	if not bFallback:
+		iAbsLat = map.plot(iX, iY).getLatitude() # new DLL call
+		if iAbsLat < 0 or iAbsLat > 90:
+			bFallback = True
+	if bFallback:
+		# BtS code moved from TerrainGenerator.latitudeAtPlot, FeatureGenerator.latitudeAtPlot.
+		# Only a fallback mechanism now. Doesn't support asymmetric top and bottom latitude.
+		return abs(float((iHeight-1)/2) - iY) / float((iHeight-1)/2)
+	return float(iAbsLat) / 90
+
 class FractalWorld:
 	def __init__(self, fracXExp=CyFractal.FracVals.DEFAULT_FRAC_X_EXP,
 				 fracYExp=CyFractal.FracVals.DEFAULT_FRAC_Y_EXP):
@@ -1153,7 +1168,9 @@ class TerrainGenerator:
 		This function can be overridden to change the latitudes; for example,
 		to make an entire map have temperate terrain, or to make terrain change from east to west
 		instead of from north to south"""
-		lat = abs(float((self.iHeight-1)/2 - iY)/float((self.iHeight-1)/2)) # 0.0 = equator, 1.0 = pole
+		#lat = abs(float((self.iHeight-1)/2 - iY)/float((self.iHeight-1)/2)) # 0.0 = equator, 1.0 = pole
+		# advc: Forward to global function
+		lat = latitudeAtPlot(self.map, iX, iY, self.iHeight)
 
 		# Adjust latitude using self.variation fractal, to mix things up:
 		lat += (128 - self.variation.getHeight(iX, iY))/(255.0 * 5.0)
@@ -1285,7 +1302,8 @@ class FeatureGenerator:
 
 	def getLatitudeAtPlot(self, iX, iY):
 		"returns a value in the range of 0.0 (tropical) to 1.0 (polar)"
-		return abs(float((self.iGridH-1)/2) - iY)/float((self.iGridH-1)/2) # 0.0 = equator, 1.0 = pole
+		# advc: Forward to global function
+		return latitudeAtPlot(self.map, iX, iY, self.iGridH)
 
 	def addFeaturesAtPlot(self, iX, iY):
 		"adds any appropriate features at the plot (iX, iY) where (0,0) is in the SW"
