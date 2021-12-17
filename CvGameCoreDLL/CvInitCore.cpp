@@ -1613,6 +1613,13 @@ bool CvInitCore::wasLeaderRandomlyChosen(PlayerTypes eID) const
 	return m_abLeaderChosenRandomly.get(eID);
 }
 
+void CvInitCore::setCivLeaderRandomlyChosen(PlayerTypes eID, bool bRandomCiv, bool bRandomLeader)
+{
+	m_bCivLeaderSetupKnown = true;
+	m_abCivChosenRandomly.set(eID, bRandomCiv);
+	m_abLeaderChosenRandomly.set(eID, bRandomLeader);
+} // </advc.190c>
+
 // <advc.191>
 void CvInitCore::setLeaderExternal(PlayerTypes eID, LeaderHeadTypes eLeader)
 {
@@ -1645,6 +1652,10 @@ void CvInitCore::setLeaderExternal(PlayerTypes eID, LeaderHeadTypes eLeader)
 
 void CvInitCore::reRandomizeCivsAndLeaders()
 {
+	/*	NB: Only executed by the host. The EXE syncs most of the data, but not the
+		was-randomly-chosen info. That gets handled by CvGame::setInitialItems.
+		Not letting CvInitCore send net messages makes clear that they're not
+		delivered until CvGame takes over the setup procedure. */
 	if (getOption(GAMEOPTION_LEAD_ANY_CIV))
 		return;
 	int const iPER_EXTRA_LEADER_CIV_SELECTION_WEIGHT = GC.getDefineINT(

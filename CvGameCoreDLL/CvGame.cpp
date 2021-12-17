@@ -237,6 +237,21 @@ void CvGame::setInitialItems()
 			// Tbd.: Regen map and retry? (Will need some XML switch for this.)
 		}
 	} // </advc.tsl>
+	/*	<advc.190c> Letting CvInitCore do this would be misleading b/c
+		net messages don't get delivered that early in game setup. */
+	if (isNetworkMultiPlayer())
+	{
+		CvInitCore const& kInitCore = GC.getInitCore();
+		FOR_EACH_ENUM(Player)
+		{
+			if (kInitCore.wasCivRandomlyChosen(eLoopPlayer) ||
+				kInitCore.wasLeaderRandomlyChosen(eLoopPlayer))
+			{	// We're the host
+				CvMessageControl::getInstance().sendCivLeaderSetup(kInitCore);
+				break;
+			}
+		}
+	} // </advc.190c>
 	// Delay part of the freebies until starting sites have been assigned
 	initFreeCivState(); // </advc.tsl>
 	initFreeUnits();

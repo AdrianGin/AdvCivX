@@ -428,7 +428,7 @@ private:
 	int m_iX;
 	int m_iY;
 };
-// <advc.003g>
+// advc.003g:
 class CvNetFPTest : public CvMessageData
 {
 public:
@@ -441,6 +441,19 @@ private:
 	PlayerTypes m_ePlayer;
 	int m_iResult;
 };
-// </advc.003g>
+// advc.190c:
+class CvNetCivLeaderSetup : public CvMessageData
+{
+public:
+	CvNetCivLeaderSetup(PlayerTypes ePlayer = NO_PLAYER, CvInitCore const* pInitCore = NULL);
+	virtual void Debug(char* szAddendum);
+	virtual void Execute();
+	virtual void PutInBuffer(FDataStreamBase* pStream);
+	virtual void SetFromBuffer(FDataStreamBase* pStream);
+private:
+	PlayerTypes m_ePlayer;
+	ArrayEnumMap<PlayerTypes,bool> m_abCivChosenRandomly;
+	ArrayEnumMap<PlayerTypes,bool> m_abLeaderChosenRandomly;
+};
 
 #endif
