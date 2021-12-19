@@ -41,6 +41,46 @@ def latitudeAtPlot(map, iX, iY, iHeight):
 		return abs(float((iHeight-1)/2) - iY) / float((iHeight-1)/2)
 	return float(iAbsLat) / 90
 
+# advc.tsl: Wrapper for CyFractal that stores the height map at the dimensions of the game map (CyFractal uses different dimensions internally). But the main goal is to let Python modify the height data, which CyFractal doesn't allow.
+class ExplicitFractal:
+	def __init__(self, fractal, map):
+		self.map = map
+		self.w = map.getGridWidth()
+		self.h = map.getGridHeight()
+		self.data = []
+		for y in range(self.h):
+			for x in range(self.w):
+				self.data.append(fractal.getHeight(x, y))
+
+	def indexXY(self, x, y):
+		return y * self.w + x
+
+	def getHeight(self, x, y):
+		return self.data[self.indexXY(x, y)]
+
+	def getHeightFromPercent(self, iPercent):
+		sortedData = self.data * 1
+		sortedData.sort()
+		return sortedData[((len(sortedData) - 1) * iPercent) // 100]
+
+	def multiplyBy(self, x, y, fMult):
+		print "assigning to "+str(x)+","+str(y)+" at index "+str(self.indexXY(x, y))
+		self.data[self.indexXY(x, y)] = round(self.getHeight(x, y) * fMult)
+
+	def decreaseNearMiddle(self, bMiddleRow, fMaxDecrease):
+		dim = self.w
+		if bMiddleRow:
+			dim = self.h
+		for x in range(self.w):
+			for y in range(self.h):
+				coord = x
+				if bMiddleRow:
+					coord = y
+				equatorDist = abs(coord * 2 - dim) / float(dim)
+				fMult = 1 - fMaxDecrease + fMaxDecrease * equatorDist
+				self.multiplyBy(x, y, fMult)
+
+
 class FractalWorld:
 	def __init__(self, fracXExp=CyFractal.FracVals.DEFAULT_FRAC_X_EXP,
 				 fracYExp=CyFractal.FracVals.DEFAULT_FRAC_Y_EXP):
@@ -207,6 +247,16 @@ class FractalWorld:
 		water_percent = max(water_percent, self.seaLevelMin)
 
 		iWaterThreshold = self.continentsFrac.getHeightFromPercent(water_percent)
+		# <advc.tsl>
+		bSparseEquator = (CyGame().isOption(GameOptionTypes.GAMEOPTION_TRUE_STARTS) and
+				# Better not mess with maps that have strange latitude settings
+				self.map.getTopLatitude() == -self.map.getBottomLatitude() and
+				self.map.getTopLatitude() == 90)
+		if bSparseEquator:
+			sparseEquatorFractal = ExplicitFractal(self.continentsFrac, self.map)
+			sparseEquatorFractal.decreaseNearMiddle(self.map.isWrapX() or not self.map.isWrapY(), 0.15)
+			iWaterThreshold = sparseEquatorFractal.getHeightFromPercent(water_percent)
+		# </advc.tsl>
 		iHillsBottom1 = self.hillsFrac.getHeightFromPercent(max((self.hillGroupOneBase - self.hillGroupOneRange), 0))
 		iHillsTop1 = self.hillsFrac.getHeightFromPercent(min((self.hillGroupOneBase + self.hillGroupOneRange), 100))
 		iHillsBottom2 = self.hillsFrac.getHeightFromPercent(max((self.hillGroupTwoBase - self.hillGroupTwoRange), 0))
@@ -218,6 +268,9 @@ class FractalWorld:
 			for y in range(self.iNumPlotsY):
 				i = y*self.iNumPlotsX + x
 				val = self.continentsFrac.getHeight(x,y)
+				# <advc.tsl>
+				if bSparseEquator:
+					val = sparseEquatorFractal.getHeight(x,y) # </advc.tsl>
 				if val <= iWaterThreshold:
 					self.plotTypes[i] = PlotTypes.PLOT_OCEAN
 				else:
@@ -238,7 +291,10 @@ class FractalWorld:
 									adjy = y + dy
 									if adjy < 0 or adjy >= self.iNumPlotsY:
 										continue
-									if self.continentsFrac.getHeight(adjx,adjy) <= iWaterThreshold:
+									# <advc.tsl>
+									if (bSparseEquator and sparseEquatorFractal.getHeight(x,y) <= iWaterThreshold or
+											(not bSparseEquator and # </advc.tsl>
+											self.continentsFrac.getHeight(adjx,adjy) <= iWaterThreshold)):
 										bWaterFound = True
 										break
 								if bWaterFound:
