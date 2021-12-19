@@ -1546,6 +1546,32 @@ class ElevationMap3(FloatMap):
 
 e3 = ElevationMap3()
 
+# advc: Based on Totestra's "rotateMap" function
+def centerMap(heightMap, width, height, indexfunc):
+	minX = 0
+	minVal = 10000.0
+	# <advc>
+	extraRange = width // 50
+	#print("extraRange=" + str(extraRange)) # </advc>
+	for x in range(width):
+		val = 0.0
+		for y in range(height):
+			# advc: A wider ocean strip is better
+			for i in range(x - extraRange, x + extraRange + 1):
+				val += ( heightMap[indexfunc(#x, y)
+						i % width, y)] / (abs(x - i) + 1) ) # advc
+		#print "for x %d val is %f minVal %f" % (x,val,minVal)
+		if val < minVal:
+			minX = x
+			minVal = val
+	#print "minX is %d" % (minX) #DEBUG
+	for y in range(height):
+		tempRow = []
+		for x in range(width):
+			tempRow.append(heightMap[indexfunc(x, y)])
+		for x in range(width):
+			heightMap[indexfunc(x,y)] = tempRow[((x + minX) % width)]
+
 
 ##############################################################################
 ## PW2 Landmass Generator
@@ -6293,6 +6319,13 @@ def generatePlotTypes():
 		em.FillInLakes()
 	if mc.maximumMeteorCount > 0: # advc
 		pb.breakPangaeas()
+	# <advc>
+	if mc.LandmassGenerator == 2:
+		centerMap(em.data, mc.hmWidth, mc.hmHeight, GetHmIndex)
+	else:
+		# (ElevationMap3 normally uses FloatMap.GetIndex, but the global function should be equivalent.)
+		centerMap(em.data, em.width, em.height, GetIndex)
+	# </advc>
 	if mc.ClimateSystem == 0:
 		c3.GenerateTemperatureMap()
 		c3.GenerateRainfallMap()
