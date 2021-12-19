@@ -5481,7 +5481,7 @@ void CvGame::setFinalInitialized(bool bNewValue)
 	PROFILE_FUNC();
 
 	if (isFinalInitialized() == bNewValue)
-		return; // advc
+		return;
 	m_bFinalInitialized = bNewValue;
 	if (!isFinalInitialized())
 		return;

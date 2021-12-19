@@ -6,8 +6,8 @@
 #include "CvGamePlay.h"
 #include "BBAILog.h"
 
-// To enable, toggle 'false' to 'true' and also toggle gLogBBAI.
-#define IFLOG if (gLogBBAI && bLog && false)
+// To enable, toggle 'false' to 'true' and also enable BBAI map logging.
+#define IFLOG if (gMapLogLevel > 0 && bLog && false)
 
 
 TrueStarts::TrueStarts()
@@ -316,7 +316,19 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				std::min(52, iAbsPlotLat) - 40)).pow(fixp(0.4)) * 10).round();
 		int iAbsLatTimes10 = range(iAbsPlotLatAdjustedTimes10, 0, 900);
 		int iCivAbsLatTimes10 = abs(kTruCiv.get(CvTruCivInfo::LatitudeTimes10));
-		int iLatPenalty = (3 * abs(iCivAbsLatTimes10 - iAbsLatTimes10)) / 2;
+		int iError = iCivAbsLatTimes10 - iAbsLatTimes10;
+		bool const bPlotTooWarm = (iError > 0);
+		iError = abs(iError);
+		int const iMaxMagnifiedError = 5;
+		int iErrorMagnifier = std::max(0, iMaxMagnifiedError -
+				/*	Errors near the temperate-subarctic and the subtropic-tropic
+					boundaries are especially noticeable */
+				(bPlotTooWarm ? abs(iAbsPlotLat - 20) : abs(iAbsPlotLat - 50)));
+		iError = std::max(0, iError - iMaxMagnifiedError * 10) + // Not magnified
+				(std::min(iError, iMaxMagnifiedError * 10) * // Magnify this portion
+				// At most double it
+				(100 + (100 * iErrorMagnifier) / iMaxMagnifiedError)) / 100;
+		int iLatPenalty = (3 * iError) / 2; // weight
 		IFLOG logBBAI("Penalty for latitude %d (plot at %d, civ at %d/10)",
 				iLatPenalty, iAbsPlotLat, kTruCiv.get(CvTruCivInfo::LatitudeTimes10));
 		iFitness -= iLatPenalty;

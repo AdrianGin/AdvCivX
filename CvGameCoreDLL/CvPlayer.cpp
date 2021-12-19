@@ -820,17 +820,17 @@ void CvPlayer::changeCiv(CivilizationTypes eNewCiv,
 		if (!bHuman || wcscmp(getCivilizationDescription(),
 			GC.getCivilizationInfo(eOldCiv).getDescription()) == 0)
 		{
-			GC.getInitCore().setCivDescription(getID(), szEmpty);
+			kInitCore.setCivDescription(getID(), szEmpty);
 		}
 		if (!bHuman || wcscmp(getCivilizationShortDescription(),
 			GC.getCivilizationInfo(eOldCiv).getShortDescription()) == 0)
 		{
-			GC.getInitCore().setCivShortDesc(getID(), szEmpty);
+			kInitCore.setCivShortDesc(getID(), szEmpty);
 		}
 		if (!bHuman || wcscmp(getCivilizationAdjective(),
 			GC.getCivilizationInfo(eOldCiv).getAdjective()) == 0)
 		{
-			GC.getInitCore().setCivAdjective(getID(), szEmpty);
+			kInitCore.setCivAdjective(getID(), szEmpty);
 		}
 		kInitCore.setFlagDecal(getID(), szEmpty);
 	} // </advc.tsl>
