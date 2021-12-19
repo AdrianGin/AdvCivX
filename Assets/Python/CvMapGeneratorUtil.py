@@ -64,7 +64,6 @@ class ExplicitFractal:
 		return sortedData[((len(sortedData) - 1) * iPercent) // 100]
 
 	def multiplyBy(self, x, y, fMult):
-		print "assigning to "+str(x)+","+str(y)+" at index "+str(self.indexXY(x, y))
 		self.data[self.indexXY(x, y)] = round(self.getHeight(x, y) * fMult)
 
 	def decreaseNearMiddle(self, bMiddleRow, fMaxDecrease):
@@ -292,7 +291,7 @@ class FractalWorld:
 									if adjy < 0 or adjy >= self.iNumPlotsY:
 										continue
 									# <advc.tsl>
-									if (bSparseEquator and sparseEquatorFractal.getHeight(x,y) <= iWaterThreshold or
+									if (bSparseEquator and sparseEquatorFractal.getHeight(adjx,adjy) <= iWaterThreshold or
 											(not bSparseEquator and # </advc.tsl>
 											self.continentsFrac.getHeight(adjx,adjy) <= iWaterThreshold)):
 										bWaterFound = True
