@@ -3517,22 +3517,41 @@ int CvPlot::getLatitude() const
 // advc.tsl: was getLatitude()
 char CvPlot::calculateLatitude() const
 {
+	CvMap const& kMap = GC.getMap();
 	scaled rLatitude;
+	int iCoord = getY();
+	int iDim = kMap.getGridHeight();
+	if (!kMap.isWrapX() && kMap.isWrapY())
+	{
+		iCoord = getX();
+		iCoord = kMap.getGridWidth();
+	}
+	int const iTop = kMap.getTopLatitude();
+	int const iBottom = kMap.getBottomLatitude();
 	/*	UNOFFICIAL_PATCH (UP), Bugfix, 07/12/09, Temudjin & jdog5000:
 		Subtract 1 from dimensions */
-	/*if (GC.getMap().isWrapX() || !GC.getMap().isWrapY())
-		rLatitude = scaled(getY(), GC.getMap().getGridHeight() - 1);
-	else rLatitude = scaled(getX(), GC.getMap().getGridWidth() - 1);
-	rLatitude *= GC.getMap().getTopLatitude() - GC.getMap().getBottomLatitude();
-	rLatitude += GC.getMap().getBottomLatitude();*/
+	/*rLatitude = scaled(iCoord, iDim - 1);
+	rLatitude *= iTop - iBottom;
+	rLatitude += iBottom;*/
 	/*	<advc.129> Let top and bottom latitude refer to the _edges_ of the map.
 		I.e. the topmost and bottommost _row_ will receive smaller (absolute)
 		latitude values. */
-	rLatitude = GC.getMap().getBottomLatitude() + scaled(
-			GC.getMap().getTopLatitude() - GC.getMap().getBottomLatitude(),
-			GC.getMap().getGridHeight()) *
-			(((GC.getMap().isWrapX() || !GC.getMap().isWrapY()) ?
-			getY() : getX()) + fixp(0.5)); // </advc.129>
+	rLatitude = iBottom + scaled(iTop - iBottom, iDim) *
+			(iCoord + fixp(0.5)); // </advc.129>
+	/*	<advc.tsl> Compress southern hemisphere so that the equator is less
+		central and fewer civs get placed there? Doesn't seem to help much.
+		Nor does shaving off the south pole (by decreasing m_iBottomLatitude
+		in CvMap::reset). */
+	/*if (GC.getGame().isOption(GAMEOPTION_TRUE_STARTS) && iTop == -iBottom &&
+		iTop > 0 && MapRandSuccess(fixp(2/3.)))
+	{
+		scaled rEquator = iDim * fixp(0.45);
+		rLatitude = iBottom +
+				(scaled::min(iCoord, rEquator - 1) + fixp(0.5))
+				* -iBottom / rEquator +
+				scaled::max(0, iCoord - (rEquator - 1) + fixp(0.5))
+				* iTop / (iDim - rEquator);
+	}*/ // </advc.tsl>
 	rLatitude = rLatitude.abs();
 	rLatitude.decreaseTo(90);
 	return safeIntCast<char>(rLatitude.round());

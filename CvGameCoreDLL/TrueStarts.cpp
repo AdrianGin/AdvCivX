@@ -10,7 +10,7 @@
 #define IFLOG if (gLogBBAI && bLog && false)
 
 
-TrueStarts::TrueStarts() : m_iAttempts(0)
+TrueStarts::TrueStarts()
 {
 	FOR_EACH_ENUM(TruCiv)
 	{
@@ -96,9 +96,8 @@ void TrueStarts::initContemporaries()
 	}
 }
 
-/*	Returns false when we're unhappy with the civ assignment.
-	Caller could then regenerate the map. */
-bool TrueStarts::changeCivs()
+
+void TrueStarts::changeCivs()
 {
 	m_civs.reset();
 	m_leaders.reset();
@@ -108,9 +107,8 @@ bool TrueStarts::changeCivs()
 	/*	The official non-Earth scenarios set all latitude values to 0.
 		Can't work with that. */
 	if (GC.getMap().getTopLatitude() <= GC.getMap().getBottomLatitude())
-		return true;
+		return;
 
-	m_iAttempts++; // (Tbd.: Maybe the caller will have to keep this count instead)
 	{
 		std::vector<CivilizationTypes> aeValidHumanCivs;
 		std::vector<CivilizationTypes> aeValidAICivs;
@@ -265,7 +263,7 @@ bool TrueStarts::changeCivs()
 		latitude values - i.e. civs near the equator. We only have a few of those,
 		don't want half of them in every game.
 		Become more tolerant as m_iAttempts increases. */
-	return true;
+	return;
 }
 
 

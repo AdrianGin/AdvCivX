@@ -232,10 +232,7 @@ void CvGame::setInitialItems()
 	if (isOption(GAMEOPTION_TRUE_STARTS))
 	{
 		TrueStarts ts;
-		if (!ts.changeCivs())
-		{
-			// Tbd.: Regen map and retry? (Will need some XML switch for this.)
-		}
+		ts.changeCivs();
 	} // </advc.tsl>
 	/*	<advc.190c> Letting CvInitCore do this would be misleading b/c
 		net messages don't get delivered that early in game setup. */

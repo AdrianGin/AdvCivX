@@ -9,10 +9,9 @@ class TrueStarts
 {
 public:
 	TrueStarts();
-	bool changeCivs();
+	void changeCivs();
 
 private:
-	int m_iAttempts;
 	ArrayEnumMap<CivilizationTypes,CvTruCivInfo*> m_truCivs;
 	ArrayEnumMap<LeaderHeadTypes,CvTruLeaderInfo*> m_truLeaders;
 	ArrayEnumMap2D<LeaderHeadTypes,LeaderHeadTypes,int,void*,-1> m_contemporaries;
