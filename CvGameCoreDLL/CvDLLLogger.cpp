@@ -10,6 +10,7 @@
 #include "CvArea.h"
 #include "CvInfo_Terrain.h"
 // </advc.mapstat>
+#include "AgentIterator.h" // advc.tsl
 
 CvDLLLogger::CvDLLLogger(bool bEnabled, bool bRandEnabled)
 :	m_bEnabled(bEnabled), m_bRandEnabled(bRandEnabled) {}
@@ -260,3 +261,20 @@ void CvDLLLogger::logMapStats(bool bAfterNormalization)
 	out << std::endl;
 	gDLL->messageControlLog(const_cast<char*>(out.str().c_str()));
 } // </advc.mapstat>
+
+// advc.tsl:
+void CvDLLLogger::logCivLeaders()
+{
+	if (!isEnabled())
+		return;
+	CvWString szCivNames;
+	bool bFirst = true;
+	for (PlayerIter<CIV_ALIVE> it; it.hasNext(); ++it)
+	{
+		setListHelp(szCivNames, L"\nCiv leaders on map: ",
+				GC.getInfo(it->getLeaderType()).getDescription(),
+				L", ", bFirst);
+	}
+	szCivNames.append(NEWLINE);
+	gDLL->messageControlLog(const_cast<char*>(CvString(szCivNames).c_str()));
+}

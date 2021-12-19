@@ -233,7 +233,8 @@ void CvGame::setInitialItems()
 	{
 		TrueStarts ts;
 		ts.changeCivs();
-	} // </advc.tsl>
+	}
+	GC.getLogger().logCivLeaders(); // </advc.tsl>
 	/*	<advc.190c> Letting CvInitCore do this would be misleading b/c
 		net messages don't get delivered that early in game setup. */
 	if (isNetworkMultiPlayer())
@@ -294,10 +295,13 @@ void CvGame::setInitialItems()
 	} // </advc.250c>
 	for (PlayerAIIter<CIV_ALIVE> it; it.hasNext(); ++it)
 		it->AI_updateFoundValues();
+	// <advc.tsl>
+	if (m_iMapRegens < GC.getDefineINT("AUTO_REGEN_MAP"))
+		regenerateMap(true); // </advc.tsl>
 }
 
 
-void CvGame::regenerateMap()
+void CvGame::regenerateMap(/* advc.tsl: */ bool bAutomated)
 {
 	if (GC.getInitCore().getWBMapScript())
 		return;
@@ -361,7 +365,11 @@ void CvGame::regenerateMap()
 	setTurnSlice(0); // advc.001: Reset minutesPlayed to 0
 	CvEventReporter::getInstance().resetStatistics();
 
+	m_iMapRegens++; // advc.tsl
 	setInitialItems();
+	// <advc.tsl>
+	if (bAutomated)
+		return; // </advc.tsl>
 
 	initScoreCalculation();
 	setFinalInitialized(true);
@@ -722,6 +730,7 @@ void CvGame::reset(HandicapTypes eHandicap, bool bConstructorCall)
 	m_initialRandSeed.uiMap = m_initialRandSeed.uiSync = 0; // advc.027b
 
 	m_iNumSessions = 1;
+	m_iMapRegens = 0; // advc.tsl
 
 	m_iShrineBuildingCount = 0;
 	m_iNumCultureVictoryCities = 0;
@@ -9389,6 +9398,9 @@ void CvGame::read(FDataStreamBase* pStream)
 	// m_pReplayInfo not saved
 
 	pStream->Read(&m_iNumSessions);
+	// <advc.tsl>
+	if (uiFlag >= 16)
+		pStream->Read(&m_iMapRegens); // </advc.tsl>
 	if (!isNetworkMultiPlayer())
 		m_iNumSessions++;
 
@@ -9505,7 +9517,8 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 12; // advc.130n: DifferentReligionThreat added to CvPlayerAI
 	//uiFlag = 13; // advc.148: RELATIONS_THRESH_WORST_ENEMY
 	//uiFlag = 14; // advc.148, advc.130n, advc.130x (religion attitude)
-	uiFlag = 15; // advc.tsl: new game option
+	//uiFlag = 15; // advc.tsl: new game option
+	uiFlag = 16; // advc.tsl: map regen counter
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9639,6 +9652,9 @@ void CvGame::write(FDataStreamBase* pStream)
 	}
 	// m_pReplayInfo not saved
 	pStream->Write(m_iNumSessions);
+	/*	advc.tsl: Doesn't really have to be saved so far, but might become
+		useful in the future. */
+	pStream->Write(m_iMapRegens);
 	REPRO_TEST_BEGIN_WRITE("Game pt3"); // (skip replay messages, sessions)
 
 	pStream->Write(m_aPlotExtraYields.size());
