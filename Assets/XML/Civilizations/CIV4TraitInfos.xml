@@ -4,7 +4,9 @@
 <!-- Copyright Firaxis Games 2005 -->
 <!-- -->
 <!-- Leader Trait Infos -->
-<!-- advc.004y: Civilopedia tags added -->
+<!-- advc.004y: Civilopedia tags added. NB: To add a new trait and have it
+	 appear in Pedia, code needs to be added in TraitUtil.py and in
+	 Civ4NewConceptInfos.xml. -->
 <Civ4TraitInfos xmlns="x-schema:CIV4CivilizationsSchema.xml">
 	<TraitInfos>
 		<TraitInfo>
