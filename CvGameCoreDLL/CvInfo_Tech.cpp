@@ -45,6 +45,7 @@ m_bWaterWork(false),
 m_bRiverTrade(false),
 m_piDomainExtraMoves(NULL),
 m_piFlavorValue(NULL),
+m_piCommerceModifier(NULL), // K-Mod
 m_piSpecialistExtraCommerce(NULL), // K-Mod
 m_pbCommerceFlexible(NULL),
 m_pbTerrainTrade(NULL)
@@ -54,6 +55,7 @@ CvTechInfo::~CvTechInfo()
 {
 	SAFE_DELETE_ARRAY(m_piDomainExtraMoves);
 	SAFE_DELETE_ARRAY(m_piFlavorValue);
+	SAFE_DELETE_ARRAY(m_piCommerceModifier); // K-Mod
 	SAFE_DELETE_ARRAY(m_piSpecialistExtraCommerce); // K-Mod
 	SAFE_DELETE_ARRAY(m_pbCommerceFlexible);
 	SAFE_DELETE_ARRAY(m_pbTerrainTrade);
@@ -101,6 +103,17 @@ int CvTechInfo::py_getPrereqAndTechs(int i) const
 } // </advc.003t>
 
 // K-Mod
+int CvTechInfo::getCommerceModifier(int i) const
+{
+	FAssertBounds(0, NUM_COMMERCE_TYPES, i);
+	return m_piCommerceModifier ? m_piCommerceModifier[i] : 0;
+}
+
+int* CvTechInfo::getCommerceModifierArray() const
+{
+	return m_piCommerceModifier;
+}
+
 int CvTechInfo::getSpecialistExtraCommerce(int i) const
 {
 	FAssertBounds(0, GC.getNumFlavorTypes(), i);
@@ -189,6 +202,9 @@ void CvTechInfo::read(FDataStreamBase* stream)
 		stream->Read(iAndTechPrereqs, (int*)&m_aePrereqAndTechs[0]);
 	} // </advc.003t>
 	// K-Mod
+	SAFE_DELETE_ARRAY(m_piCommerceModifier)
+	m_piCommerceModifier = new int[NUM_COMMERCE_TYPES];
+	stream->Read(NUM_COMMERCE_TYPES, m_piCommerceModifier);
 	SAFE_DELETE_ARRAY(m_piSpecialistExtraCommerce)
 	m_piSpecialistExtraCommerce = new int[NUM_COMMERCE_TYPES];
 	stream->Read(NUM_COMMERCE_TYPES, m_piSpecialistExtraCommerce);
@@ -262,6 +278,7 @@ void CvTechInfo::write(FDataStreamBase* stream)
 		if (iAndTechPrereqs > 0)
 			stream->Write(iAndTechPrereqs, (int*)&m_aePrereqAndTechs[0]);
 	} // </advc.003t>
+	stream->Write(NUM_COMMERCE_TYPES, m_piCommerceModifier); // K-Mod
 	stream->Write(NUM_COMMERCE_TYPES, m_piSpecialistExtraCommerce); // K-Mod
 	stream->Write(NUM_COMMERCE_TYPES, m_pbCommerceFlexible);
 	stream->Write(GC.getNumTerrainInfos(), m_pbTerrainTrade);
@@ -317,6 +334,13 @@ bool CvTechInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_iGridY, "iGridY");
 
 	// K-Mod
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"CommerceModifiers"))
+	{
+		pXML->SetCommerce(&m_piCommerceModifier);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+	}
+	else pXML->InitList(&m_piCommerceModifier, NUM_COMMERCE_TYPES);
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"SpecialistExtraCommerces"))
 	{

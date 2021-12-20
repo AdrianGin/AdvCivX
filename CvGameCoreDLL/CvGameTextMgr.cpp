@@ -7974,6 +7974,11 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 		buildDomainExtraMovesString(szBuffer, eTech, eLoopDomain, true, bPlayerContext);
 	}
 
+	//	K-Mod. Global commerce modifiers
+	setCommerceChangeHelp(szBuffer, L"", L"",
+			gDLL->getText("TXT_KEY_CIVIC_IN_ALL_CITIES").GetCString(),
+			GC.getInfo(eTech).getCommerceModifierArray(), true);
+
 	//	K-Mod. Extra specialist commerce
 	setCommerceChangeHelp(szBuffer, L"", L"",
 			gDLL->getText("TXT_KEY_CIVIC_PER_SPECIALIST").GetCString(),
@@ -17232,6 +17237,30 @@ void CvGameTextMgr::setCommerceHelp(CvWStringBuffer &szBuffer, CvCity const& kCi
 			iModifier += iCivicMod;
 		}
 	}
+	// Techs (K-Mod)
+	/* Rather than counting just tech modifiers, we might as well just have a
+		generic case which supports other sources too. */
+	/*{int iTechMod = 0;
+	FOR_EACH_ENUM(Tech) {
+		if (GET_TEAM(kOwner.getTeam()).isHasTech(eLoopTech))
+			iTechMod += GC.getInfo(eLoopTech).getCommerceModifier(eCommerce);
+	} if (iTechMod != 0) {
+		szBuffer.append(gDLL->getText("TXT_KEY_MISC_HELP_MODIFIER_FROM_CIV", iTechMod, iCommerceChar));
+		szBuffer.append(NEWLINE);
+		iModifier += iCivicMod;
+	}}*/
+	// Left over modifiers!
+	{
+		int iUnaccountedModifiers = kCity.getTotalCommerceRateModifier(eCommerce)
+				- iModifier;
+		if (iUnaccountedModifiers != 0)
+		{
+			szBuffer.append(gDLL->getText("TXT_KEY_MISC_HELP_MODIFIER_FROM_CIV",
+					iUnaccountedModifiers, iCommerceChar));
+			szBuffer.append(NEWLINE);
+			iModifier += iUnaccountedModifiers;
+		}
+	} // K-Mod end
 	int iModYield = (iModifier * iBaseCommerceRate) / 100;
 	{
 		int iProductionToCommerce = kCity.getProductionToCommerceModifier(eCommerce) *

@@ -5504,9 +5504,11 @@ void CvTeam::processTech(TechTypes eTech, int iChange,
 				* iChange);
 		kMember.changePower(kTech.getPowerValue() * iChange);
 		kMember.changeTechScore(GC.getGame().getTechScore(eTech) * iChange);
-		// K-Mod. Extra commerce for specialist (new xml field)
+		// K-Mod. Processing for new xml fields
 		FOR_EACH_ENUM(Commerce)
 		{
+			kMember.changeCommerceRateModifier(eLoopCommerce,
+					kTech.getCommerceModifier(eLoopCommerce) * iChange);
 			kMember.changeSpecialistExtraCommerce(eLoopCommerce,
 					kTech.getSpecialistExtraCommerce(eLoopCommerce) * iChange);
 		} // K-Mod end
