@@ -4435,7 +4435,7 @@ void CvPlayerAI::AI_calculateTechRevealBonuses(
 
 /*	This function has been mostly rewritten for K-Mod.
 	Note: many of the values used in this function are arbitrary;
-	but adjusted them all to get closer to having a common scale.
+	but I've adjusted them all to get closer to having a common scale.
 	The scale before research time is taken into account is roughly
 	4 = 1 commerce per turn. Afterwards it is arbitrary.
 	(Compared to the original numbers, this is * 1/100 * 7 * 4. 28/100)
@@ -4806,21 +4806,26 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 					std::max((getTotalPopulation()+12*iTotalBonusSpecialists) /
 					12, iTotalCurrentSpecialists));
  		}
+		/*	Commerce multipliers
+			(using iCommerceValue from above to calculate compound effect). */
+		iCommerceValue += (kTech.getCommerceModifier(eLoopCommerce) *
+				(4*getCommerceRate(eLoopCommerce)+iCommerceValue)) /
+				AI_averageCommerceMultiplier(eLoopCommerce);
 
- 		// Flexible commerce. (This is difficult to evaluate accurately without checking a lot of things - which I'm not going to do right now.)
+ 		/*	Flexible commerce. (This is difficult to evaluate accurately
+			without checking a lot of things - which I'm not going to do right now.) */
  		if (kTech.isCommerceFlexible(eLoopCommerce))
  		{
-			iCommerceValue += 40 + 4 * iCityCount;
+			iCommerceValue += 80 + 4 * iCityCount; // (was 40 in K-Mod 1.44)
  			/*iValue += 4 * iCityCount * (3*AI_averageCulturePressure()-200) / 100;
  			if (i == COMMERCE_CULTURE && AI_atVictoryStage(AI_VICTORY_CULTURE2))
  				iValue += 280;*/ // BtS
  		}
 
- 		if (iCommerceValue)
+ 		if (iCommerceValue != 0)
  		{
  			iCommerceValue *= AI_commerceWeight(eLoopCommerce);
  			iCommerceValue /= 100;
-
  			iValue += iCommerceValue;
  		}
 	} // </k146>

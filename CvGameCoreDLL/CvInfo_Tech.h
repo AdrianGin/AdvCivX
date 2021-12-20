@@ -77,6 +77,8 @@ public: // advc: All the const functions are exposed to Python except those adde
 	int py_getPrereqAndTechs(int i) const;
 	// </advc.003t>
 	// K-Mod, exposed to Python
+	int getCommerceModifier(int i) const;
+	int* getCommerceModifierArray() const;
 	int getSpecialistExtraCommerce(int i) const;
 	int* getSpecialistExtraCommerceArray() const;
 	// K-Mod end
@@ -142,6 +144,7 @@ protected:
 	std::vector<TechTypes> m_aePrereqOrTechs; // advc.003t: was int*
 	std::vector<TechTypes> m_aePrereqAndTechs; // advc.003t: was int*
 
+	int* m_piCommerceModifier; // K-Mod
 	int* m_piSpecialistExtraCommerce; // K-Mod
 	bool* m_pbCommerceFlexible;
 	bool* m_pbTerrainTrade;
