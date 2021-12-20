@@ -3304,11 +3304,11 @@
 			<iGridY>9</iGridY>
 			<DomainExtraMoves/>
 			<!-- K-Mod 1.45 (reverted by advc.200): -->
-			<CommerceModifiers>
+			<!--CommerceModifiers>
 				<iCommerce>0</iCommerce>
 				<iCommerce>10</iCommerce>
 				<iCommerce>0</iCommerce>
-			</CommerceModifiers>
+			</CommerceModifiers-->
 			<!-- K-Mod 1.44: -->
 			<SpecialistExtraCommerces>
 				<iCommerce>0</iCommerce>
