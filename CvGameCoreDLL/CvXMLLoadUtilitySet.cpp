@@ -1803,6 +1803,11 @@ template CvXMLLoadUtility::XMLTagPairIterator<bool>;
 template CvXMLLoadUtility::XMLTagPairIterator<float>;
 template CvXMLLoadUtility::XMLTagPairIterator<short>;
 template CvXMLLoadUtility::XMLTagPairIterator<char>;
+#define INSTANTIATE_XML_TAG_PAIR_ITERATOR(EnumPrefix, Dummy) \
+	template CvXMLLoadUtility::XMLTagPairIterator<EnumPrefix##Types>;
+DO_FOR_EACH_DYN_INFO_TYPE(INSTANTIATE_XML_TAG_PAIR_ITERATOR);
+DO_FOR_EACH_STATIC_INFO_TYPE(INSTANTIATE_XML_TAG_PAIR_ITERATOR);
+#undef INSTANTIATE_XML_TAG_PAIR_ITERATOR
 // </advc.003t>
 // <advc.enum>
 template<class EncodableMap>
