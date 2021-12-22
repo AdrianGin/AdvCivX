@@ -3,11 +3,15 @@
 #include "CvGameCoreDLL.h"
 #include "TrueStarts.h"
 #include "CvMap.h"
+#include "CvArea.h"
 #include "CvGamePlay.h"
+#include "PlotRadiusIterator.h"
 #include "BBAILog.h"
 
+using std::auto_ptr;
+
 // To enable, toggle 'false' to 'true' and also enable BBAI map logging.
-#define IFLOG if (gMapLogLevel > 0 && bLog && false)
+#define IFLOG if (gMapLogLevel > 0 && bLog && true)
 
 
 TrueStarts::TrueStarts()
@@ -108,6 +112,7 @@ void TrueStarts::changeCivs()
 	m_leaders.reset();
 	m_civTaken.reset();
 	m_leaderTaken.reset();
+	m_radii.reset();
 
 	/*	The official non-Earth scenarios set all latitude values to 0.
 		Can't work with that. */
@@ -155,6 +160,8 @@ void TrueStarts::changeCivs()
 	}
 	// Could do this in ctor, but I want to use the valid-civ lists above.
 	initContemporaries();
+	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		calculateRadius(*itPlayer);
 	updateFitnessValues();
 
 	std::vector<std::pair<int,PlayerTypes> > aiePriorityPerPlayer;
@@ -272,6 +279,50 @@ void TrueStarts::changeCivs()
 }
 
 
+void TrueStarts::calculateRadius(CvPlayer const& kPlayer)
+{
+	CvMap const& kMap = GC.getMap();
+	scaled rBaseRadius = 7 + kMap.getWorldSize();
+	{
+		scaled rCrowdedness(PlayerIter<CIV_ALIVE>::count(),
+				GC.getGame().getRecommendedPlayers());
+		if (rCrowdedness > 1)
+			rBaseRadius /= rCrowdedness.sqrt();
+		else rBaseRadius += 2 / rCrowdedness - 1;
+	}
+	// Increase radius when there's a lot of ocean in surrounding plots
+	int iExtra = 0;
+	scaled const rTargetNonOcean = fixp(2.25) * SQR(rBaseRadius);
+	CvPlot const& kStart = *kPlayer.getStartingPlot();
+	CvArea const& kStartArea = kStart.getArea();
+	do
+	{
+		int iNonOcean = 0;
+		for (PlotCircleIter itPlot(kStart, rBaseRadius.round() + iExtra);
+			itPlot.hasNext(); ++itPlot)
+		{
+			if (itPlot->isArea(kStartArea) ||
+				(itPlot->getTerrainType() == GC.getWATER_TERRAIN(true) &&
+				itPlot->isAdjacentToArea(kStartArea)))
+			{
+				/*	Would be nice not to count plots fully that are close to
+					another starting plot (tbd.?) */
+				iNonOcean++;
+			}
+		}
+		if (iNonOcean >= rTargetNonOcean)
+			break;
+		iExtra++;
+	} while (iExtra < fixp(0.4) * rBaseRadius);
+	rBaseRadius += iExtra;
+	FOR_EACH_ENUM(Civilization)
+	{
+		// Tbd.: Adjust to preference for space to be defined in Civ4TruCivInfos.xml
+		m_radii.set(kPlayer.getID(), eLoopCivilization, rBaseRadius.round());
+	}
+}
+
+
 void TrueStarts::updateFitnessValues()
 {
 	m_fitnessVals.clear();
@@ -301,41 +352,50 @@ void TrueStarts::updateFitnessValues()
 }
 
 
+namespace
+{
+	scaled distWeight(CvPlot const& kStart, CvPlot const& kPlot, int iMaxDist)
+	{
+		return scaled::max(0, 1 - SQR(scaled(plotDistance(&kStart, &kPlot), iMaxDist + 1)));
+	}
+}
+
+
 int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 	LeaderHeadTypes eLeader, bool bLog) const
 {
-	CvPlot const& kPlot = *kPlayer.getStartingPlot();
+	CvPlot const& kStart = *kPlayer.getStartingPlot();
 	IFLOG logBBAI("Fitness calc for %S of %S on (%d,%d)",
-			GC.getInfo(eLeader).getDescription(), GC.getInfo(eCiv).getDescription(), kPlot.getX(), kPlot.getY());
+			GC.getInfo(eLeader).getDescription(), GC.getInfo(eCiv).getDescription(), kStart.getX(), kStart.getY());
 	CvTruCivInfo const& kTruCiv = *m_truCivs.get(eCiv);
 	int iFitness = 1000;
 	{
-		int const iAbsPlotLat = kPlot.getLatitude();
-		int iAbsPlotLatAdjustedTimes10 = iAbsPlotLat * 10;
+		int const iAbsStartLat = kStart.getLatitude();
+		int iAbsStartLatAdjustedTimes10 = iAbsStartLat * 10;
 		/*	Try to match latitudes slightly higher than the actual latitudes -
 			to bias the civ choice toward the temperate zones and subtropics. */
-		iAbsPlotLatAdjustedTimes10 += (scaled(std::max(0,
-				40 - iAbsPlotLat)).pow(fixp(0.4)) * 10).round();
+		iAbsStartLatAdjustedTimes10 += (scaled(std::max(0,
+				40 - iAbsStartLat)).pow(fixp(0.4)) * 10).round();
 		// Temperate latitudes need to keep some distance from the Tundra
-		iAbsPlotLatAdjustedTimes10 -= (scaled(std::max(0,
-				std::min(52, iAbsPlotLat) - 40)).pow(fixp(0.4)) * 10).round();
-		int iAbsLatTimes10 = range(iAbsPlotLatAdjustedTimes10, 0, 900);
+		iAbsStartLatAdjustedTimes10 -= (scaled(std::max(0,
+				std::min(52, iAbsStartLat) - 40)).pow(fixp(0.4)) * 10).round();
+		int iAbsLatTimes10 = range(iAbsStartLatAdjustedTimes10, 0, 900);
 		int iCivAbsLatTimes10 = abs(kTruCiv.get(CvTruCivInfo::LatitudeTimes10));
 		int iError = iCivAbsLatTimes10 - iAbsLatTimes10;
-		bool const bPlotTooWarm = (iError > 0);
+		bool const bStartTooWarm = (iError > 0);
 		iError = abs(iError);
 		int const iMaxMagnifiedError = 5;
 		int iErrorMagnifier = std::max(0, iMaxMagnifiedError -
 				/*	Errors near the temperate-subarctic and the subtropic-tropic
 					boundaries are especially noticeable */
-				(bPlotTooWarm ? abs(iAbsPlotLat - 20) : abs(iAbsPlotLat - 50)));
+				(bStartTooWarm ? abs(iAbsStartLat - 20) : abs(iAbsStartLat - 50)));
 		iError = std::max(0, iError - iMaxMagnifiedError * 10) + // Not magnified
 				(std::min(iError, iMaxMagnifiedError * 10) * // Magnify this portion
 				// At most double it
 				(100 + (100 * iErrorMagnifier) / iMaxMagnifiedError)) / 100;
 		int iLatPenalty = (3 * iError) / 2; // weight
-		IFLOG logBBAI("Penalty for latitude %d (plot at %d, civ at %d/10)",
-				iLatPenalty, iAbsPlotLat, kTruCiv.get(CvTruCivInfo::LatitudeTimes10));
+		IFLOG logBBAI("Penalty for latitude %d (start at %d, civ at %d/10)",
+				iLatPenalty, iAbsStartLat, kTruCiv.get(CvTruCivInfo::LatitudeTimes10));
 		iFitness -= iLatPenalty;
 	}
 	{
@@ -351,7 +411,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			iOtherPlayers++;
 			CvTruCivInfo const& kLoopTruCiv = *m_truCivs.get(perPlayerVal.second);
 			int iDist = kMap.plotDistance(GET_PLAYER(perPlayerVal.first).
-					getStartingPlot(), &kPlot);
+					getStartingPlot(), &kStart);
 			int iMaxDist = GC.getMap().maxPlotDistance();
 			int iLoopLatitudeTimes10 = kLoopTruCiv.get(CvTruCivInfo::LatitudeTimes10);
 			int iLatitudeDiffTimes10 = abs(iCivLatitudeTimes10 - iLoopLatitudeTimes10);
@@ -449,7 +509,63 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		iFitness += (iFromContemporaries /
 				scaled(m_leaders.numNonDefault()).sqrt()).round();
 	}
-	//CvTruLeaderInfo const* pTruLeader = m_truLeaders.get(eLeader); // can be NULL!
+	{	// Evaluation of surrounding plots ...
+		ArrayEnumMap<PlotNumTypes,scaled> aerWeights;
+		calculatePlotWeights(aerWeights, kPlayer.getID(), eCiv);
+		auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer.getID(), eCiv);
+		scaled rElevation;
+		scaled rWetness;
+		for (PlotCircleIter& itPlot = *pSurroundings; itPlot.hasNext(); ++itPlot)
+		{
+			scaled const rWeight = aerWeights.get(itPlot->plotNum());
+			BonusTypes const eBonus = itPlot->getBonusType(); // all-seeing
+			if (eBonus != NO_BONUS)
+			{
+				CvTruBonusInfo const* pTruBonus = m_truBonuses.get(eBonus);
+				if (pTruBonus != NULL)
+				{
+					rWeight; // tbd.
+				}
+			}
+			/*	Tbd.: Calculate elevation value, wetness value, fitness,
+				something about how maritime the region is; apply weight. */
+		}
+	}
 	IFLOG logBBAI("\n");
 	return iFitness;
+}
+
+void TrueStarts::calculatePlotWeights(ArrayEnumMap<PlotNumTypes,scaled>& aerWeights,
+	PlayerTypes ePlayer, CivilizationTypes eCiv) const
+{
+	CvPlayer const& kPlayer = GET_PLAYER(ePlayer);
+	CvPlot const& kStart = *kPlayer.getStartingPlot();
+	auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(ePlayer, eCiv);
+	for (PlotCircleIter& itPlot = *pSurroundings; itPlot.hasNext(); ++itPlot)
+	{
+		scaled const rDistWeight = distWeight(kStart, *itPlot, itPlot.radius());
+		scaled rWeight = rDistWeight;
+		// Reduce based on rival weights
+		for (PlayerIter<CIV_ALIVE> itOther; itOther.hasNext(); ++itOther)
+		{
+			if (itOther->getID() != kPlayer.getID())
+			{
+				scaled rOtherDistWeight = distWeight(
+						*itOther->getStartingPlot(), *itPlot, itPlot.radius());
+				rWeight *= 1 - scaled::max(0, rOtherDistWeight - rDistWeight);
+			}
+		}
+		// Tbd.: Adjust based on civ's shape preference and CvMap::xDistance, yDistance
+		aerWeights.set(itPlot->plotNum(), rWeight);
+	}
+}
+
+
+auto_ptr<PlotCircleIter> TrueStarts::getSurroundings(PlayerTypes ePlayer,
+	CivilizationTypes eCiv) const
+{
+	return auto_ptr<PlotCircleIter>(
+			new PlotCircleIter(*GET_PLAYER(ePlayer).getStartingPlot(),
+			m_radii.get(ePlayer, eCiv == NO_CIVILIZATION ?
+			GET_PLAYER(ePlayer).getCivilizationType() : eCiv)));
 }
