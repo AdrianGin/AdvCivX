@@ -40,43 +40,9 @@ TrueStarts::TrueStarts()
 }
 
 
-bool TrueStarts::isBonusDiscouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
-	BonusTypes eBonus) const
+void TrueStarts::sanitize()
 {
-	CvTruBonusInfo const* pTruBonus = getTruBonus(kPlot, eBonus);
-	if (pTruBonus == NULL)
-		return false;
-	CvCivilizationInfo const& kCiv = GC.getInfo(eCiv);
-	EraTypes eUntil = std::max(pTruBonus->getCivDiscouragedUntil(eCiv),
-			pTruBonus->getRegionDiscouragedUntil(kCiv.getArtStyleType()));
-	return (eUntil == NO_ERA || eUntil > GC.getGame().getStartEra());
-}
-
-
-bool TrueStarts::isBonusEncouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
-	BonusTypes eBonus) const
-{
-	CvTruBonusInfo const* pTruBonus = getTruBonus(kPlot, eBonus);
-	if (pTruBonus == NULL)
-		return false;
-	CvCivilizationInfo const& kCiv = GC.getInfo(eCiv);
-	EraTypes eUntil = pTruBonus->getCivEncouragedUntil(eCiv);
-	return (eUntil == NO_ERA || eUntil > GC.getGame().getStartEra());
-}
-
-
-CvTruBonusInfo const* TrueStarts::getTruBonus(CvPlot const& kPlot, BonusTypes eBonus) const
-{
-	if (eBonus == NO_BONUS)
-		eBonus = kPlot.getBonusType(); // all-seeing
-	if (eBonus == NO_BONUS)
-		return NULL;
-	CvTruBonusInfo const* pTruBonus = m_truBonuses.get(eBonus);
-	if (pTruBonus == NULL)
-		return NULL;
-	if (pTruBonus->get(CvTruBonusInfo::LandOnly) && kPlot.isWater())
-		return NULL;
-	return pTruBonus;
+	// Tbd.: Swap bonus resources near starting sites around
 }
 
 
@@ -145,6 +111,46 @@ void TrueStarts::initContemporaries()
 			}
 		}
 	}
+}
+
+
+bool TrueStarts::isBonusDiscouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
+	BonusTypes eBonus) const
+{
+	CvTruBonusInfo const* pTruBonus = getTruBonus(kPlot, eBonus);
+	if (pTruBonus == NULL)
+		return false;
+	CvCivilizationInfo const& kCiv = GC.getInfo(eCiv);
+	EraTypes eUntil = std::max(pTruBonus->getCivDiscouragedUntil(eCiv),
+			pTruBonus->getRegionDiscouragedUntil(kCiv.getArtStyleType()));
+	return (eUntil == NO_ERA || eUntil > GC.getGame().getStartEra());
+}
+
+
+bool TrueStarts::isBonusEncouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
+	BonusTypes eBonus) const
+{
+	CvTruBonusInfo const* pTruBonus = getTruBonus(kPlot, eBonus);
+	if (pTruBonus == NULL)
+		return false;
+	CvCivilizationInfo const& kCiv = GC.getInfo(eCiv);
+	EraTypes eUntil = pTruBonus->getCivEncouragedUntil(eCiv);
+	return (eUntil == NO_ERA || eUntil > GC.getGame().getStartEra());
+}
+
+
+CvTruBonusInfo const* TrueStarts::getTruBonus(CvPlot const& kPlot, BonusTypes eBonus) const
+{
+	if (eBonus == NO_BONUS)
+		eBonus = kPlot.getBonusType(); // all-seeing
+	if (eBonus == NO_BONUS)
+		return NULL;
+	CvTruBonusInfo const* pTruBonus = m_truBonuses.get(eBonus);
+	if (pTruBonus == NULL)
+		return NULL;
+	if (pTruBonus->get(CvTruBonusInfo::LandOnly) && kPlot.isWater())
+		return NULL;
+	return pTruBonus;
 }
 
 

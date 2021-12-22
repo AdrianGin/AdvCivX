@@ -233,6 +233,8 @@ void CvGame::setInitialItems()
 	{
 		TrueStarts ts;
 		ts.changeCivs();
+		if (GC.getDefineBOOL("TRUE_STARTS_SANITIZE"))
+			ts.sanitize();
 	}
 	GC.getLogger().logCivLeaders(); // </advc.tsl>
 	/*	<advc.190c> Letting CvInitCore do this would be misleading b/c
@@ -1083,6 +1085,8 @@ void CvGame::initScenario()
 	{
 		TrueStarts ts;
 		ts.changeCivs();
+		if (GC.getDefineBOOL("TRUE_STARTS_SANITIZE_SCENARIOS"))
+			ts.sanitize();
 	} // </advc.tsl>
 	// <advc.030>
 	if (GC.getDefineBOOL("PASSABLE_AREAS"))

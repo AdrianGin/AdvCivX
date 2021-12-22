@@ -11,15 +11,7 @@ class TrueStarts
 public:
 	TrueStarts();
 	void changeCivs();
-	// These can guide changes to the surroundings of starting plots
-	void calculatePlotWeights(ArrayEnumMap<PlotNumTypes,scaled>& aerWeights,
-			PlayerTypes ePlayer, CivilizationTypes eCiv = NO_CIVILIZATION) const;
-	std::auto_ptr<PlotCircleIter> getSurroundings(PlayerTypes ePlayer,
-			CivilizationTypes eCiv = NO_CIVILIZATION) const;
-	bool isBonusDiscouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
-			BonusTypes eBonus = NO_BONUS) const;
-	bool isBonusEncouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
-			BonusTypes eBonus = NO_BONUS) const;
+	void sanitize();
 
 private:
 	ArrayEnumMap<CivilizationTypes,CvTruCivInfo*> m_truCivs;
@@ -41,9 +33,17 @@ private:
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validAICivs;
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validHumanCivs;
 
+	void initContemporaries();
+	void calculatePlotWeights(ArrayEnumMap<PlotNumTypes,scaled>& aerWeights,
+			PlayerTypes ePlayer, CivilizationTypes eCiv = NO_CIVILIZATION) const;
+	std::auto_ptr<PlotCircleIter> getSurroundings(PlayerTypes ePlayer,
+			CivilizationTypes eCiv = NO_CIVILIZATION) const;
+	bool isBonusDiscouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
+			BonusTypes eBonus = NO_BONUS) const;
+	bool isBonusEncouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
+			BonusTypes eBonus = NO_BONUS) const;
 	CvTruBonusInfo const* getTruBonus(CvPlot const& kPlot,
 			BonusTypes eBonus = NO_BONUS) const;
-	void initContemporaries();
 	void calculateRadius(CvPlayer const& kPlayer);
 	void updateFitnessValues();
 	int calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
