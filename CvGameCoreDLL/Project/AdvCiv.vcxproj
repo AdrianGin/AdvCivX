@@ -88,6 +88,7 @@
     <ClCompile Include="..\CvInfo_Symbol.cpp" />
     <ClCompile Include="..\CvInfo_Tech.cpp" />
     <ClCompile Include="..\CvInfo_Terrain.cpp" />
+    <ClCompile Include="..\CvInfo_TrueStarts.cpp" />
     <ClCompile Include="..\CvInfo_Unit.cpp" />
     <ClCompile Include="..\CvInfo_Water.cpp" />
     <ClCompile Include="..\CvInitCore.cpp" />
@@ -276,6 +277,7 @@
     <ClInclude Include="..\CvInfo_Symbol.h" />
     <ClInclude Include="..\CvInfo_Tech.h" />
     <ClInclude Include="..\CvInfo_Terrain.h" />
+    <ClInclude Include="..\CvInfo_TrueStarts.h" />
     <ClInclude Include="..\CvInfo_Unit.h" />
     <ClInclude Include="..\CvInfo_Water.h" />
     <ClInclude Include="..\CvInitCore.h" />

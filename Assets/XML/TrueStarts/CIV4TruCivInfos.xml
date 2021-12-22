@@ -3,7 +3,7 @@
 	 Could argue that much of this should be tied to leaders as the
 	 civilizations had different extents under different leaders,
 	 but each civ has just one city list, so ... -->
-<Civ4TruCivInfos xmlns="x-schema:CIV4CivilizationsSchema.xml">
+<Civ4TruCivInfos xmlns="x-schema:CIV4TrueStartsSchema.xml">
 	<TruCivInfos>
 		<TruCivInfo>
 			<Type>TRU_AMERICA</Type>

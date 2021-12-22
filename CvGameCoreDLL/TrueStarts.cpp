@@ -2,6 +2,8 @@
 
 #include "CvGameCoreDLL.h"
 #include "TrueStarts.h"
+#include "CvInfo_TrueStarts.h"
+#include "CvInfo_Terrain.h"
 #include "CvMap.h"
 #include "CvArea.h"
 #include "CvGamePlay.h"
@@ -41,13 +43,12 @@ TrueStarts::TrueStarts()
 bool TrueStarts::isBonusDiscouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
 	BonusTypes eBonus) const
 {
-	CvTruBonusInfo const* pTmp = getTruBonus(kPlot, eBonus);
-	if (pTmp == NULL)
+	CvTruBonusInfo const* pTruBonus = getTruBonus(kPlot, eBonus);
+	if (pTruBonus == NULL)
 		return false;
-	CvTruBonusInfo const& kTruBonus = *pTmp;
 	CvCivilizationInfo const& kCiv = GC.getInfo(eCiv);
-	EraTypes eUntil = std::max(kTruBonus.getCivDiscouragedUntil(eCiv),
-			kTruBonus.getRegionDiscouragedUntil(kCiv.getArtStyleType()));
+	EraTypes eUntil = std::max(pTruBonus->getCivDiscouragedUntil(eCiv),
+			pTruBonus->getRegionDiscouragedUntil(kCiv.getArtStyleType()));
 	return (eUntil == NO_ERA || eUntil > GC.getGame().getStartEra());
 }
 
@@ -55,12 +56,11 @@ bool TrueStarts::isBonusDiscouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
 bool TrueStarts::isBonusEncouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
 	BonusTypes eBonus) const
 {
-	CvTruBonusInfo const* pTmp = getTruBonus(kPlot, eBonus);
-	if (pTmp == NULL)
+	CvTruBonusInfo const* pTruBonus = getTruBonus(kPlot, eBonus);
+	if (pTruBonus == NULL)
 		return false;
-	CvTruBonusInfo const& kTruBonus = *pTmp;
 	CvCivilizationInfo const& kCiv = GC.getInfo(eCiv);
-	EraTypes eUntil = kTruBonus.getCivEncouragedUntil(eCiv);
+	EraTypes eUntil = pTruBonus->getCivEncouragedUntil(eCiv);
 	return (eUntil == NO_ERA || eUntil > GC.getGame().getStartEra());
 }
 

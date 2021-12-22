@@ -1,0 +1,114 @@
+<!-- advc.tsl: XML schema for data used by the True Starts option -->
+<Schema xmlns="urn:schemas-microsoft-com:xml-data" xmlns:dt="urn:schemas-microsoft-com:datatypes">
+	<!-- Mostly just to be consistent with other info types. Could also be
+		 used for lookup by type string for debugging. -->
+	<ElementType name="Type" content="textOnly"/>
+	<!-- TruCivs ... -->
+	<ElementType name="CivilizationType" content="textOnly"/>
+	<ElementType name="iLatitudeTimes10" content="textOnly" dt:type="int"/>
+	<ElementType name="iLongitudeTimes10" content="textOnly" dt:type="int"/>
+	<ElementType name="GeoRegion" content="textOnly"/>
+	<ElementType name="TruCivInfo" content="eltOnly">
+		<element type="Type"/>
+		<!-- "CIVILIZATION_..." type name of the civilization that the
+			 TruCiv info refers to. Not linking those two info types in the
+			 inverse direction because I want to keep all the TruCiv XML code
+			 in one place. -->
+		<element type="CivilizationType"/>
+		<!-- Latitude and longitude of the civ's capital, given as degrees
+			 at times 10 precision. I.e. _not_ given as minutes. -->
+		<!-- Can take any values between -900 and +900.
+			 Negative sign for southern hemisphere. -->
+		<element type="iLatitudeTimes10"/>
+		<!-- Can take any values between -1800 and +1800.
+			 Negative sign for western hemisphere. -->
+		<element type="iLongitudeTimes10"/>
+		<!-- Any further elements should be optional (minOccurs 0),
+			 with a sensible default value set by the DLL. So that mods with
+			 additional civs need to define only the geo coordinates,
+			 which are easy to look up on Wikipedia (though the minutes stated
+			 there will have to be converted to tenths of degrees through
+			 multiplication by 5/3). -->
+		<!-- To make preferences for bonus resources easier to specify.
+			 Use ARTSTYLE_... strings here to avoid having to define a new
+			 global type for the regions. Using the artstyles already assigned
+			 for CivilizationInfos wouldn't (always) work since those are based
+			 on culture, not geography. Moreover, a mod might add and assign
+			 new artstyles (but I doubt that it would eliminate any of the
+			 existing ones). -->
+		<element type="GeoRegion" minOccurs="0"/>
+	</ElementType>
+	<ElementType name="TruCivInfos" content="eltOnly">
+		<element type="TruCivInfo" maxOccurs="*"/>
+	</ElementType>
+	<ElementType name="Civ4TruCivInfos" content="eltOnly">
+		<element type="TruCivInfos" minOccurs="0" maxOccurs="*"/>
+	</ElementType>
+	<!-- TruLeaders ... -->
+	<ElementType name="Description" content="textOnly"/>
+	<ElementType name="LeaderType" content="textOnly"/>
+	<ElementType name="iStartOfReign" content="textOnly" dt:type="int"/>
+	<ElementType name="TruLeaderInfo" content="eltOnly">
+		<element type="Type"/>
+		<!-- "LEADER_..." type name of the leader that the
+			 TruLeader info refers to. -->
+		<element type="LeaderType"/>
+		<!-- Gregorian year number. Negative sign for BC(E). When in doubt,
+			 it should be the year in which the leader took control of the bulk
+			 of his or her domain. Should ideally also have ruled for several
+			 years after. Optional - the DLL treats the date as (entirely) unknown
+			 when none is stated. -->
+		<element type="iStartOfReign" minOccurs="0"/>
+	</ElementType>
+	<ElementType name="TruLeaderInfos" content="eltOnly">
+		<element type="TruLeaderInfo" maxOccurs="*"/>
+	</ElementType>
+	<ElementType name="Civ4TruLeaderInfos" content="eltOnly">
+		<element type="TruLeaderInfos" minOccurs="0" maxOccurs="*"/>
+	</ElementType>
+	<!-- TruBonuses ... -->
+	<ElementType name="BonusType" content="textOnly"/>
+	<ElementType name="bLandOnly" content="textOnly" dt:type="boolean"/>
+	<ElementType name="UntilEra" content="textOnly"/>
+	<ElementType name="DiscouragedRegion" content="eltOnly">
+		<element type="GeoRegion" minOccurs="1" maxOccurs="1"/>
+		<element type="UntilEra" minOccurs="1" maxOccurs="1"/>
+	</ElementType>
+	<ElementType name="DiscouragedRegions" content="eltOnly">
+		<element type="DiscouragedRegion" maxOccurs="*"/>
+	</ElementType>
+	<ElementType name="DiscouragedCiv" content="eltOnly">
+		<element type="CivilizationType" minOccurs="1" maxOccurs="1"/>
+		<element type="UntilEra" minOccurs="1" maxOccurs="1"/>
+	</ElementType>
+	<ElementType name="DiscouragedCivs" content="eltOnly">
+		<element type="DiscouragedCiv" maxOccurs="*"/>
+	</ElementType>
+	<ElementType name="EncouragedCiv" content="eltOnly">
+		<element type="CivilizationType" minOccurs="1" maxOccurs="1"/>
+		<element type="UntilEra" minOccurs="1" maxOccurs="1"/>
+	</ElementType>
+	<ElementType name="EncouragedCivs" content="eltOnly">
+		<element type="EncouragedCiv" maxOccurs="*"/>
+	</ElementType>
+	<ElementType name="TruBonusInfo" content="eltOnly">
+		<element type="Type"/>
+		<!-- "BONUS_..." type name of the bonus resource that the
+			 TruBonus info refers to. -->
+		<element type="BonusType"/>
+		<!-- Applies the biases only to instances of the bonus resource
+			 that get placed on land. Using this only makes sense for
+			 bonus resources that can be placed on both land and water. -->
+		<element type="bLandOnly" minOccurs="0"/>
+		<element type="DiscouragedRegions" minOccurs="0" maxOccurs="*"/>
+		<element type="DiscouragedCivs" minOccurs="0" maxOccurs="*"/>
+		<element type="EncouragedCivs" minOccurs="0" maxOccurs="*"/>
+	</ElementType>
+	<ElementType name="TruBonusInfos" content="eltOnly">
+		<element type="TruBonusInfo" maxOccurs="*"/>
+	</ElementType>
+	<ElementType name="Civ4TruBonusInfos" content="eltOnly">
+		<element type="TruBonusInfos" minOccurs="0" maxOccurs="*"/>
+	</ElementType>
+	<!-- advc.tsl: end -->
+</Schema>

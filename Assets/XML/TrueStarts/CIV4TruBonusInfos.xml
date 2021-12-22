@@ -9,7 +9,7 @@
 	 restriction really makes sense. Avoid encouraging resources required
 	 for early uniques; don't want players to be able to rely on those
 	 (too powerful that way). -->
-<Civ4TruBonusInfos xmlns="x-schema:CIV4CivilizationsSchema.xml">
+<Civ4TruBonusInfos xmlns="x-schema:CIV4TrueStartsSchema.xml">
 	<TruBonusInfos>
 		<!-- (Much of Europe doesn't mine any bauxite, but it's not clear that
 			 there is none, and, anyway, doesn't really seem consequential.
