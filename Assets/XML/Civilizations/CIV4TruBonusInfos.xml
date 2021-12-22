@@ -92,6 +92,10 @@
 					<CivilizationType>CIVILIZATION_JAPAN</CivilizationType>
 					<UntilEra>ERA_MEDIEVAL</UntilEra>
 				</DiscouragedCiv>
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
+					<UntilEra>NO_ERA</UntilEra>
+				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
 				<EncouragedCiv>
@@ -500,10 +504,6 @@
 					<CivilizationType>CIVILIZATION_OTTOMAN</CivilizationType>
 					<UntilEra>NO_ERA</UntilEra>
 				</DiscouragedCiv>
-				<DiscouragedCiv>
-					<CivilizationType>CIVILIZATION_PERSIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
-				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
 				<EncouragedCiv>
@@ -771,7 +771,8 @@
 					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
 					<UntilEra>NO_ERA</UntilEra>
 				</EncouragedCiv>
-				<!-- Somalia is not Ethiopia, but few resources fit well. -->
+				<!-- Although Somalia is not Ethiopia ...
+					 Horse could be an alternative. -->
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_ETHIOPIA</CivilizationType>
 					<UntilEra>NO_ERA</UntilEra>
@@ -1040,6 +1041,10 @@
 					<CivilizationType>CIVILIZATION_MONGOL</CivilizationType>
 					<UntilEra>ERA_RENAISSANCE</UntilEra>
 				</DiscouragedCiv>
+				<!-- (The Ottoman Empire placed bans on wine consumption, but
+					 still allowed religious minorities to cultivate and
+					 consume or export wine. And Anatolia has much suitable
+					 land for vineyards.) -->
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
 					<UntilEra>NO_ERA</UntilEra>
