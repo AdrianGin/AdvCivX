@@ -859,6 +859,7 @@ bool CvXMLLoadUtility::LoadOptionalGlobals()
 		}
 		LoadGlobalClassInfo(GC.m_paTruCivInfo, "CIV4TruCivInfos", "Civilizations", "Civ4TruCivInfos/TruCivInfos/TruCivInfo", false);
 		LoadGlobalClassInfo(GC.m_paTruLeaderInfo, "CIV4TruLeaderInfos", "Civilizations", "Civ4TruLeaderInfos/TruLeaderInfos/TruLeaderInfo", false);
+		LoadGlobalClassInfo(GC.m_paTruBonusInfo, "CIV4TruBonusInfos", "Civilizations", "Civ4TruBonusInfos/TruBonusInfos/TruBonusInfo", false);
 		m->bTrueStartsDataLoaded = true;
 		//bFXmlCreated = true;
 	} // </advc.tsl>

@@ -26,6 +26,11 @@ TrueStarts::TrueStarts()
 					&GC.getInfo(eLoopTruLeader));
 		}
 	}
+	FOR_EACH_ENUM(TruBonus)
+	{
+		m_truBonuses.set(GC.getInfo(eLoopTruBonus).getBonus(),
+				&GC.getInfo(eLoopTruBonus));
+	}
 }
 
 

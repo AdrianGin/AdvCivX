@@ -1574,16 +1574,21 @@ bool CvDiplomacyInfo::read(CvXMLLoadUtility* pXML)
 }
 
 // <advc.tsl>
+#include "CvInfo_Terrain.h"
+
 bool CvTruCivInfo::read(CvXMLLoadUtility* pXML)
 {
 	if (!base_t::read(pXML))
 		return false;
 	FAssertBounds(minLatitude(), maxLatitude() + 1, get(CvTruCivInfo::LatitudeTimes10));
 	FAssertBounds(minLongitude(), maxLongitude() +1 , get(CvTruCivInfo::LongitudeTimes10));
-	CvString szTextVal;
-	pXML->GetChildXmlValByName(szTextVal, "Civilization");
-	m_eCiv = (CivilizationTypes)GC.getInfoTypeForString(szTextVal);
-	FAssert(m_eCiv != NO_CIVILIZATION);
+	{
+		CvString szTextVal;
+		pXML->GetChildXmlValByName(szTextVal, "CivilizationType");
+		m_eCiv = (CivilizationTypes)GC.getInfoTypeForString(szTextVal);
+		pXML->GetChildXmlValByName(szTextVal, "GeoRegion", "");
+		m_eGeoRegion = (ArtStyleTypes)GC.getTypesEnum(szTextVal);
+	}
 	return true;
 }
 
@@ -1595,6 +1600,39 @@ bool CvTruLeaderInfo::read(CvXMLLoadUtility* pXML)
 	CvString szTextVal;
 	pXML->GetChildXmlValByName(szTextVal, "LeaderType");
 	m_eLeader = (LeaderHeadTypes)GC.getInfoTypeForString(szTextVal);
-	FAssert(m_eLeader != NO_LEADER);
+	return true;
+}
+
+bool CvTruBonusInfo::read(CvXMLLoadUtility* pXML)
+{
+	if (!base_t::read(pXML))
+		return false;
+	{
+		CvString szTextVal;
+		pXML->GetChildXmlValByName(szTextVal, "BonusType");
+		m_eBonus = (BonusTypes)GC.getInfoTypeForString(szTextVal);
+	}
+	#ifdef FASSERT_ENABLE
+	if (get(CvTruBonusInfo::LandOnly))
+	{	// Only makes sense when the bonus resource can appear on water and land
+		bool bWaterFound = false;
+		bool bLandFound = false;
+		FOR_EACH_ENUM(Terrain)
+		{
+			if (!GC.getInfo(eLoopTerrain).isGraphicalOnly() &&
+				GC.getInfo(getBonus()).isTerrain(eLoopTerrain))
+			{
+				if (!bWaterFound)
+					bWaterFound = GC.getInfo(eLoopTerrain).isWater();
+				if (!bLandFound)
+					bLandFound = !GC.getInfo(eLoopTerrain).isWater();
+			}
+		}
+		FAssert(bWaterFound && bLandFound);
+	}
+	#endif
+	pXML->SetVariableListTagPair(DiscouragedRegions(), "DiscouragedRegions");
+	pXML->SetVariableListTagPair(DiscouragedCivs(), "DiscouragedCivs");
+	pXML->SetVariableListTagPair(EncouragedCivs(), "EncouragedCivs");
 	return true;
 } // </advc.tsl>

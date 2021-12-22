@@ -525,8 +525,9 @@ public:
 	{
 		return CvXMLInfo::get(static_cast<base_t::IntElementTypes>(e));
 	}
-	CvTruCivInfo() : m_eCiv(NO_CIVILIZATION) {}
+	CvTruCivInfo() : m_eCiv(NO_CIVILIZATION), m_eGeoRegion(NO_ARTSTYLE) {}
 	CivilizationTypes getCiv() const { return m_eCiv; }
+	ArtStyleTypes getGeoRegion() const { return m_eGeoRegion; }
 	bool read(CvXMLLoadUtility* pXML);
 
 	static int minLatitude() { return -900; }
@@ -536,6 +537,7 @@ public:
 
 protected:
 	CivilizationTypes m_eCiv;
+	ArtStyleTypes m_eGeoRegion;
 };
 
 
@@ -564,6 +566,37 @@ public:
 
 protected:
 	LeaderHeadTypes m_eLeader;
+};
+
+
+class CvTruBonusInfo : public CvXMLInfo
+{
+	typedef CvXMLInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		kElements.addBool(LandOnly, "LandOnly", false);
+	}
+public:
+	enum BoolElementTypes
+	{
+		LandOnly = base_t::NUM_BOOL_ELEMENT_TYPES,
+		NUM_BOOL_ELEMENT_TYPES
+	};
+	int get(BoolElementTypes e) const
+	{
+		return CvXMLInfo::get(static_cast<base_t::BoolElementTypes>(e));
+	}
+	CvTruBonusInfo() : m_eBonus(NO_BONUS) {}
+	BonusTypes getBonus() const { return m_eBonus; }
+	DEF_INFO_ENUM2ENUM_MAP_DEFAULT(DiscouragedRegions, ArtStyle, Era, ArrayEnumMap, (EraTypes)0);
+	DEF_INFO_ENUM2ENUM_MAP_DEFAULT(DiscouragedCivs, Civilization, Era, ArrayEnumMap, (EraTypes)0);
+	DEF_INFO_ENUM2ENUM_MAP_DEFAULT(EncouragedCivs, Civilization, Era, ArrayEnumMap, (EraTypes)0);
+	bool read(CvXMLLoadUtility* pXML);
+
+protected:
+	BonusTypes m_eBonus;
 }; // </advc.tsl>
 
 #endif

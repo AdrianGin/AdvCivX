@@ -14,6 +14,7 @@ public:
 private:
 	ArrayEnumMap<CivilizationTypes,CvTruCivInfo*> m_truCivs;
 	ArrayEnumMap<LeaderHeadTypes,CvTruLeaderInfo*> m_truLeaders;
+	ArrayEnumMap<BonusTypes,CvTruBonusInfo*> m_truBonuses;
 	ArrayEnumMap2D<LeaderHeadTypes,LeaderHeadTypes,int,void*,-1> m_contemporaries;
 	ArrayEnumMap<LeaderHeadTypes,int,void*,-1> m_maxTimeDiff;
 	/*	Fitness values stored per civ-leader pair. In case that a leader

@@ -7,13 +7,15 @@
 	<TruCivInfos>
 		<TruCivInfo>
 			<Type>TRU_AMERICA</Type>
-			<Civilization>CIVILIZATION_AMERICA</Civilization>
+			<CivilizationType>CIVILIZATION_AMERICA</CivilizationType>
 			<iLatitudeTimes10>389</iLatitudeTimes10>
 			<iLongitudeTimes10>-770</iLongitudeTimes10>
+			<!-- Use this for both Americas; all the Maize growers. -->
+			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_ARABIA</Type>
-			<Civilization>CIVILIZATION_ARABIA</Civilization>
+			<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
 			<!-- Actually 214, but that tends to be quite close to the
 				 Jungle belt. Especially considering that the DLL tends to
 				 start civs at slightly lower latitude than this file says
@@ -21,196 +23,232 @@
 				 over and over. -->
 			<iLatitudeTimes10>245</iLatitudeTimes10>
 			<iLongitudeTimes10>400</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_AZTEC</Type>
-			<Civilization>CIVILIZATION_AZTEC</Civilization>
+			<CivilizationType>CIVILIZATION_AZTEC</CivilizationType>
 			<iLatitudeTimes10>194</iLatitudeTimes10>
 			<iLongitudeTimes10>-991</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_BABYLON</Type>
-			<Civilization>CIVILIZATION_BABYLON</Civilization>
+			<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
 			<iLatitudeTimes10>325</iLatitudeTimes10>
 			<iLongitudeTimes10>444</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_BYZANTIUM</Type>
-			<Civilization>CIVILIZATION_BYZANTIUM</Civilization>
+			<CivilizationType>CIVILIZATION_BYZANTIUM</CivilizationType>
 			<iLatitudeTimes10>410</iLatitudeTimes10>
 			<iLongitudeTimes10>290</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_CARTHAGE</Type>
-			<Civilization>CIVILIZATION_CARTHAGE</Civilization>
+			<CivilizationType>CIVILIZATION_CARTHAGE</CivilizationType>
 			<iLatitudeTimes10>369</iLatitudeTimes10>
 			<iLongitudeTimes10>103</iLongitudeTimes10>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_CELT</Type>
-			<Civilization>CIVILIZATION_CELT</Civilization>
+			<CivilizationType>CIVILIZATION_CELT</CivilizationType>
 			<iLatitudeTimes10>469</iLatitudeTimes10>
 			<iLongitudeTimes10>40</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_CHINA</Type>
-			<Civilization>CIVILIZATION_CHINA</Civilization>
+			<CivilizationType>CIVILIZATION_CHINA</CivilizationType>
 			<iLatitudeTimes10>399</iLatitudeTimes10>
 			<iLongitudeTimes10>1164</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_EGYPT</Type>
-			<Civilization>CIVILIZATION_EGYPT</Civilization>
+			<CivilizationType>CIVILIZATION_EGYPT</CivilizationType>
 			<iLatitudeTimes10>298</iLatitudeTimes10>
 			<iLongitudeTimes10>310</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_ENGLAND</Type>
-			<Civilization>CIVILIZATION_ENGLAND</Civilization>
+			<CivilizationType>CIVILIZATION_ENGLAND</CivilizationType>
 			<iLatitudeTimes10>515</iLatitudeTimes10>
 			<iLongitudeTimes10>1</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_ETHIOPIA</Type>
-			<Civilization>CIVILIZATION_ETHIOPIA</Civilization>
+			<CivilizationType>CIVILIZATION_ETHIOPIA</CivilizationType>
 			<iLatitudeTimes10>98</iLatitudeTimes10>
 			<iLongitudeTimes10>387</iLongitudeTimes10>
+			<!-- Close enough -->
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_FRANCE</Type>
-			<Civilization>CIVILIZATION_FRANCE</Civilization>
+			<CivilizationType>CIVILIZATION_FRANCE</CivilizationType>
 			<iLatitudeTimes10>489</iLatitudeTimes10>
 			<iLongitudeTimes10>24</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_GERMANY</Type>
-			<Civilization>CIVILIZATION_GERMANY</Civilization>
+			<CivilizationType>CIVILIZATION_GERMANY</CivilizationType>
 			<iLatitudeTimes10>525</iLatitudeTimes10>
 			<iLongitudeTimes10>130</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_GREECE</Type>
-			<Civilization>CIVILIZATION_GREECE</Civilization>
+			<CivilizationType>CIVILIZATION_GREECE</CivilizationType>
 			<iLatitudeTimes10>379</iLatitudeTimes10>
 			<iLongitudeTimes10>237</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_HOLY_ROMAN</Type>
-			<Civilization>CIVILIZATION_HOLY_ROMAN</Civilization>
+			<CivilizationType>CIVILIZATION_HOLY_ROMAN</CivilizationType>
 			<iLatitudeTimes10>508</iLatitudeTimes10>
 			<iLongitudeTimes10>61</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_INCA</Type>
-			<Civilization>CIVILIZATION_INCA</Civilization>
+			<CivilizationType>CIVILIZATION_INCA</CivilizationType>
 			<iLatitudeTimes10>-135</iLatitudeTimes10>
 			<iLongitudeTimes10>-720</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_INDIA</Type>
-			<Civilization>CIVILIZATION_INDIA</Civilization>
+			<CivilizationType>CIVILIZATION_INDIA</CivilizationType>
 			<iLatitudeTimes10>286</iLatitudeTimes10>
 			<iLongitudeTimes10>772</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_JAPAN</Type>
-			<Civilization>CIVILIZATION_JAPAN</Civilization>
+			<CivilizationType>CIVILIZATION_JAPAN</CivilizationType>
 			<iLatitudeTimes10>350</iLatitudeTimes10>
 			<iLongitudeTimes10>1358</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_KHMER</Type>
-			<Civilization>CIVILIZATION_KHMER</Civilization>
+			<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
 			<iLatitudeTimes10>134</iLatitudeTimes10>
 			<iLongitudeTimes10>1038</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_KOREA</Type>
-			<Civilization>CIVILIZATION_KOREA</Civilization>
+			<CivilizationType>CIVILIZATION_KOREA</CivilizationType>
 			<iLatitudeTimes10>376</iLatitudeTimes10>
 			<iLongitudeTimes10>1269</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_MALI</Type>
-			<Civilization>CIVILIZATION_MALI</Civilization>
+			<CivilizationType>CIVILIZATION_MALI</CivilizationType>
 			<iLatitudeTimes10>168</iLatitudeTimes10>
 			<iLongitudeTimes10>30</iLongitudeTimes10>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_MAYA</Type>
-			<Civilization>CIVILIZATION_MAYA</Civilization>
+			<CivilizationType>CIVILIZATION_MAYA</CivilizationType>
 			<iLatitudeTimes10>172</iLatitudeTimes10>
 			<iLongitudeTimes10>-896</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_MONGOL</Type>
-			<Civilization>CIVILIZATION_MONGOL</Civilization>
+			<CivilizationType>CIVILIZATION_MONGOL</CivilizationType>
 			<iLatitudeTimes10>472</iLatitudeTimes10>
 			<iLongitudeTimes10>1028</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_NATIVE_AMERICA</Type>
-			<Civilization>CIVILIZATION_NATIVE_AMERICA</Civilization>
+			<CivilizationType>CIVILIZATION_NATIVE_AMERICA</CivilizationType>
 			<iLatitudeTimes10>387</iLatitudeTimes10>
 			<iLongitudeTimes10>-900</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_NETHERLANDS</Type>
-			<Civilization>CIVILIZATION_NETHERLANDS</Civilization>
+			<CivilizationType>CIVILIZATION_NETHERLANDS</CivilizationType>
 			<iLatitudeTimes10>523</iLatitudeTimes10>
 			<iLongitudeTimes10>50</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_OTTOMAN</Type>
-			<Civilization>CIVILIZATION_OTTOMAN</Civilization>
+			<CivilizationType>CIVILIZATION_OTTOMAN</CivilizationType>
 			<iLatitudeTimes10>399</iLatitudeTimes10>
 			<iLongitudeTimes10>329</iLongitudeTimes10>
+			<!-- For a strictly post-Medieval civ like this, far-eastern
+				 resources could be acceptable from the start of the game.
+				 However, the core region is probably going to be at a too
+				 high latitude for those anyway, so I don't think the
+				 Ottomans need to be handled separately. -->
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_PERSIA</Type>
-			<Civilization>CIVILIZATION_PERSIA</Civilization>
+			<CivilizationType>CIVILIZATION_PERSIA</CivilizationType>
 			<iLatitudeTimes10>299</iLatitudeTimes10>
 			<iLongitudeTimes10>529</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_PORTUGAL</Type>
-			<Civilization>CIVILIZATION_PORTUGAL</Civilization>
+			<CivilizationType>CIVILIZATION_PORTUGAL</CivilizationType>
 			<iLatitudeTimes10>387</iLatitudeTimes10>
 			<iLongitudeTimes10>-92</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_ROME</Type>
-			<Civilization>CIVILIZATION_ROME</Civilization>
+			<CivilizationType>CIVILIZATION_ROME</CivilizationType>
 			<iLatitudeTimes10>419</iLatitudeTimes10>
 			<iLongitudeTimes10>125</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_RUSSIA</Type>
-			<Civilization>CIVILIZATION_RUSSIA</Civilization>
+			<CivilizationType>CIVILIZATION_RUSSIA</CivilizationType>
 			<iLatitudeTimes10>556</iLatitudeTimes10>
 			<iLongitudeTimes10>376</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_SPAIN</Type>
-			<Civilization>CIVILIZATION_SPAIN</Civilization>
+			<CivilizationType>CIVILIZATION_SPAIN</CivilizationType>
 			<iLatitudeTimes10>403</iLatitudeTimes10>
 			<iLongitudeTimes10>-40</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_SUMERIA</Type>
-			<Civilization>CIVILIZATION_SUMERIA</Civilization>
+			<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
 			<iLatitudeTimes10>313</iLatitudeTimes10>
 			<iLongitudeTimes10>456</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_VIKING</Type>
-			<Civilization>CIVILIZATION_VIKING</Civilization>
+			<CivilizationType>CIVILIZATION_VIKING</CivilizationType>
 			<iLatitudeTimes10>634</iLatitudeTimes10>
 			<iLongitudeTimes10>104</iLongitudeTimes10>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_ZULU</Type>
-			<Civilization>CIVILIZATION_ZULU</Civilization>
+			<CivilizationType>CIVILIZATION_ZULU</CivilizationType>
 			<iLatitudeTimes10>-283</iLatitudeTimes10>
 			<iLongitudeTimes10>314</iLongitudeTimes10>
 		</TruCivInfo>
