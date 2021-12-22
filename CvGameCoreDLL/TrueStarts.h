@@ -16,6 +16,10 @@ public:
 			PlayerTypes ePlayer, CivilizationTypes eCiv = NO_CIVILIZATION) const;
 	std::auto_ptr<PlotCircleIter> getSurroundings(PlayerTypes ePlayer,
 			CivilizationTypes eCiv = NO_CIVILIZATION) const;
+	bool isBonusDiscouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
+			BonusTypes eBonus = NO_BONUS) const;
+	bool isBonusEncouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
+			BonusTypes eBonus = NO_BONUS) const;
 
 private:
 	ArrayEnumMap<CivilizationTypes,CvTruCivInfo*> m_truCivs;
@@ -37,13 +41,13 @@ private:
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validAICivs;
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validHumanCivs;
 
+	CvTruBonusInfo const* getTruBonus(CvPlot const& kPlot,
+			BonusTypes eBonus = NO_BONUS) const;
 	void initContemporaries();
 	void calculateRadius(CvPlayer const& kPlayer);
 	void updateFitnessValues();
 	int calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			LeaderHeadTypes eLeader, bool bLog = false) const;
-	scaled shapedPlotDist(CvPlot const& kFirst, CvPlot const& kSecond,
-			CivilizationTypes eCiv) const;
 };
 
 #endif

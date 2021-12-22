@@ -11,7 +11,7 @@
 using std::auto_ptr;
 
 // To enable, toggle 'false' to 'true' and also enable BBAI map logging.
-#define IFLOG if (gMapLogLevel > 0 && bLog && true)
+#define IFLOG if (gMapLogLevel > 0 && bLog && false)
 
 
 TrueStarts::TrueStarts()
@@ -35,6 +35,48 @@ TrueStarts::TrueStarts()
 		m_truBonuses.set(GC.getInfo(eLoopTruBonus).getBonus(),
 				&GC.getInfo(eLoopTruBonus));
 	}
+}
+
+
+bool TrueStarts::isBonusDiscouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
+	BonusTypes eBonus) const
+{
+	CvTruBonusInfo const* pTmp = getTruBonus(kPlot, eBonus);
+	if (pTmp == NULL)
+		return false;
+	CvTruBonusInfo const& kTruBonus = *pTmp;
+	CvCivilizationInfo const& kCiv = GC.getInfo(eCiv);
+	EraTypes eUntil = std::max(kTruBonus.getCivDiscouragedUntil(eCiv),
+			kTruBonus.getRegionDiscouragedUntil(kCiv.getArtStyleType()));
+	return (eUntil == NO_ERA || eUntil > GC.getGame().getStartEra());
+}
+
+
+bool TrueStarts::isBonusEncouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
+	BonusTypes eBonus) const
+{
+	CvTruBonusInfo const* pTmp = getTruBonus(kPlot, eBonus);
+	if (pTmp == NULL)
+		return false;
+	CvTruBonusInfo const& kTruBonus = *pTmp;
+	CvCivilizationInfo const& kCiv = GC.getInfo(eCiv);
+	EraTypes eUntil = kTruBonus.getCivEncouragedUntil(eCiv);
+	return (eUntil == NO_ERA || eUntil > GC.getGame().getStartEra());
+}
+
+
+CvTruBonusInfo const* TrueStarts::getTruBonus(CvPlot const& kPlot, BonusTypes eBonus) const
+{
+	if (eBonus == NO_BONUS)
+		eBonus = kPlot.getBonusType(); // all-seeing
+	if (eBonus == NO_BONUS)
+		return NULL;
+	CvTruBonusInfo const* pTruBonus = m_truBonuses.get(eBonus);
+	if (pTruBonus == NULL)
+		return NULL;
+	if (pTruBonus->get(CvTruBonusInfo::LandOnly) && kPlot.isWater())
+		return NULL;
+	return pTruBonus;
 }
 
 
@@ -518,7 +560,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		for (PlotCircleIter& itPlot = *pSurroundings; itPlot.hasNext(); ++itPlot)
 		{
 			scaled const rWeight = aerWeights.get(itPlot->plotNum());
-			BonusTypes const eBonus = itPlot->getBonusType(); // all-seeing
+			BonusTypes const eBonus = itPlot->getBonusType();
 			if (eBonus != NO_BONUS)
 			{
 				CvTruBonusInfo const* pTruBonus = m_truBonuses.get(eBonus);
