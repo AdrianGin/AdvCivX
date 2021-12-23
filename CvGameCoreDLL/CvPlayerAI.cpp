@@ -146,10 +146,11 @@ void CvPlayerAI::AI_updatePersonality()
 	CvLeaderHeadInfo const& kPersonality = GC.getInfo(getPersonalityType());
 	AI_setPeaceWeight(kPersonality.getBasePeaceWeight() +
 			SyncRandNum(kPersonality.getPeaceWeightRand()));
+	// advc.120 (note): The next AI_updateCommerceWeights call will set the weight properly
 	AI_setEspionageWeight((kPersonality.getEspionageWeight() *
 			// K-Mod. (I've changed the meaning of this value)
 			GC.getInfo(COMMERCE_ESPIONAGE).getAIWeightPercent()) / 100);
-	// advc.120 (note): The next AI_updateCommerceWeights call will set the weight properly
+	AI_updateVictoryWeights(); // advc.115f
 }
 
 
@@ -299,6 +300,7 @@ void CvPlayerAI::AI_reset(bool bConstructor)
 	{
 		m_aiUnitCombatWeights[iI] = 0;
 	}
+	m_aiVictoryWeights.reset(); // advc.115f
 
 	/*for (iI = 0; iI < MAX_PLAYERS; iI++) {
 		m_aiCloseBordersAttitude[iI] = 0;
@@ -4433,7 +4435,7 @@ void CvPlayerAI::AI_calculateTechRevealBonuses(
 
 /*	This function has been mostly rewritten for K-Mod.
 	Note: many of the values used in this function are arbitrary;
-	but adjusted them all to get closer to having a common scale.
+	but I've adjusted them all to get closer to having a common scale.
 	The scale before research time is taken into account is roughly
 	4 = 1 commerce per turn. Afterwards it is arbitrary.
 	(Compared to the original numbers, this is * 1/100 * 7 * 4. 28/100)
@@ -4804,21 +4806,26 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 					std::max((getTotalPopulation()+12*iTotalBonusSpecialists) /
 					12, iTotalCurrentSpecialists));
  		}
+		/*	Commerce multipliers
+			(using iCommerceValue from above to calculate compound effect). */
+		iCommerceValue += (kTech.getCommerceModifier(eLoopCommerce) *
+				(4*getCommerceRate(eLoopCommerce)+iCommerceValue)) /
+				AI_averageCommerceMultiplier(eLoopCommerce);
 
- 		// Flexible commerce. (This is difficult to evaluate accurately without checking a lot of things - which I'm not going to do right now.)
+ 		/*	Flexible commerce. (This is difficult to evaluate accurately
+			without checking a lot of things - which I'm not going to do right now.) */
  		if (kTech.isCommerceFlexible(eLoopCommerce))
  		{
-			iCommerceValue += 40 + 4 * iCityCount;
+			iCommerceValue += 80 + 4 * iCityCount; // (was 40 in K-Mod 1.44)
  			/*iValue += 4 * iCityCount * (3*AI_averageCulturePressure()-200) / 100;
  			if (i == COMMERCE_CULTURE && AI_atVictoryStage(AI_VICTORY_CULTURE2))
  				iValue += 280;*/ // BtS
  		}
 
- 		if (iCommerceValue)
+ 		if (iCommerceValue != 0)
  		{
  			iCommerceValue *= AI_commerceWeight(eLoopCommerce);
  			iCommerceValue /= 100;
-
  			iValue += iCommerceValue;
  		}
 	} // </k146>
@@ -8053,7 +8060,7 @@ int CvPlayerAI::AI_getTradeAttitude(PlayerTypes ePlayer) const
 {
 	scaled r = AI_getPeacetimeGrantValue(ePlayer);
 	scaled rTradeValDiff = AI_getPeacetimeTradeValue(ePlayer) -
-			fixp(5/6.) * GET_PLAYER(ePlayer).AI_getPeacetimeTradeValue(getID());
+			fixp(4/5.) * GET_PLAYER(ePlayer).AI_getPeacetimeTradeValue(getID());
 	r += scaled::max(0, rTradeValDiff);
 	if (r > 0)
 		r = fixp(11.5) * r.pow(fixp(2/3.)); // Diminishing returns
@@ -8841,6 +8848,8 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 							(12 +
 							getCapital()->getDefyResolutionAngerTimer() +
 							scaled(kPersonality.getBasePeaceWeight(), 2) +
+							/*	Just for flavor; don't check whether diplo victory
+								is actually enabled or realistic. */
 							scaled(kPersonality.getDiplomacyVictoryWeight(), 10)) *
 							rCityRatio).round();
 					if (AI_isFinancialTrouble())
@@ -8944,9 +8953,9 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 			if (bFriendlyToSecretary)
 				return PLAYER_VOTE_YES;
 			// <advc.001> Don't evaluate embargo against unmet non-member of AP
-			else if (!kOurTeam.isHasMet(eEmbargoTeam))
+			if (!kOurTeam.isHasMet(eEmbargoTeam))
 				return PLAYER_VOTE_ABSTAIN; // </advc.001>
-			else if (canStopTradingWithTeam(eEmbargoTeam))
+			if (canStopTradingWithTeam(eEmbargoTeam))
 			{
 				bValid = (NO_DENIAL == AI_stopTradingTrade(
 						eEmbargoTeam, kVoteData.ePlayer));
@@ -14705,7 +14714,7 @@ int CvPlayerAI::AI_nukeWeight() const
 			GC.getGame().getRecommendedPlayers()); // advc.137
 	iHistory = std::min(iHistory, 300);
 	if (iHistory > 0)
-	{
+	{	// advc (note): Just for flavor; don't check whether conquest is possible.
 		iHistory *= 90 + kPersonality.getConquestVictoryWeight();
 		iHistory /= 100;
 	}
@@ -21963,10 +21972,7 @@ bool CvPlayerAI::AI_proposeCityTrade(PlayerTypes eToPlayer)
 		weGive.insertAtEnd(TradeData(TRADE_CITIES, aiiiCityPairs[i].second.first));
 		bool const bEvac = AI_getCity(aiiiCityPairs[i].second.first)->AI_isEvacuating();
 		if (aiiiCityPairs[i].second.second != -1)
-		{
-			FErrorMsg("To verify that a city-for-city trade ever happens"); // advc.test
 			theyGive.insertAtEnd(TradeData(TRADE_CITIES, aiiiCityPairs[i].second.second));
-		}
 		else
 		{
 			CvCityAI const& kWeGiveCity = *AI_getCity(aiiiCityPairs[i].second.first);
@@ -21993,13 +21999,15 @@ bool CvPlayerAI::AI_proposeCityTrade(PlayerTypes eToPlayer)
 			}
 			else
 			{
-				FErrorMsg("Just to verify that this branch is reachable; hasn't come up in tests yet."); // advc.test
 				/*	Even if we think that gifting a city will benefit us more than them,
 					we're not going to pay a human extra to accept a free city. */
 				if (theyGive.getLength() <= 0 && kToPlayer.isHuman())
 					bDeal = true;
-				else bDeal = kToPlayer.AI_counterPropose(getID(), weGive, theyGive, true, false,
-						kToPlayer.isHuman() ? fixp(0.9) : 1);
+				else
+				{
+					bDeal = kToPlayer.AI_counterPropose(getID(), weGive, theyGive, true, false,
+							kToPlayer.isHuman() ? fixp(0.9) : 1);
+				}
 			}
 			if (bSameTeam) // Get what we can in exchange, but always make a trade.
 				bDeal = true;
@@ -22270,16 +22278,18 @@ scaled CvPlayerAI::AI_totalYieldVal() const
 
 // advc.104: (also used for advc.031)
 /*  Assets like additional cities become less valuable over the course of a game
-	b/c there are fewer and fewer turns to go. Not worth considering in the
-	first half of the game, but e.g. after 300 turns (normal settings),
-	the multiplier will have decreased to 0.8. The current implementation isn't
+	b/c there are fewer and fewer turns to go. The current implementation isn't
 	specific to a CvPlayerAI, but this could change, i.e. one could estimate the
 	end turn based on the knowledge of this CvPlayerAI.
 	iDelay: When an asset is not immediately acquired. */
 scaled CvPlayerAI::AI_amortizationMultiplier(int iDelay) const
 {
 	scaled r = 1 - GC.getGame().gameTurnProgress(std::max(0, iDelay));
-	r *= 2; // Use this coefficient to fine-tune the effect
+	/*	2 would mean that amortization multiplier begins to decrease right in
+		the middle of the game, and that it will have decreased e.g. to 0.8
+		after 300 turns (normal settings). */
+	static scaled const rCoeff = fixp(1.95);
+	r *= rCoeff;
 	r.clamp(fixp(0.2), 1);
 	return r;
 }
@@ -22449,6 +22459,10 @@ void CvPlayerAI::read(FDataStreamBase* pStream)
 
 	pStream->Read(GC.getNumUnitClassInfos(), m_aiUnitClassWeights);
 	pStream->Read(GC.getNumUnitCombatInfos(), m_aiUnitCombatWeights);
+	// <advc.115f>
+	if (uiFlag >= 20)
+		m_aiVictoryWeights.read(pStream);
+	else AI_updateVictoryWeights(); // </advc.115f>
 	// <advc.130n>
 	if (uiFlag == 18)
 	{
@@ -22548,7 +22562,8 @@ void CvPlayerAI::write(FDataStreamBase* pStream)
 	//uiFlag = 16; // advc.651
 	//uiFlag = 17; // advc.550g
 	//uiFlag = 18; // advc.130n
-	uiFlag = 19; // advc.130n (mostly removed again)
+	//uiFlag = 19; // advc.130n (mostly removed again)
+	uiFlag = 20; // advc.115f
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iPeaceWeight);
@@ -22630,6 +22645,7 @@ void CvPlayerAI::write(FDataStreamBase* pStream)
 
 	pStream->Write(GC.getNumUnitClassInfos(), m_aiUnitClassWeights);
 	pStream->Write(GC.getNumUnitCombatInfos(), m_aiUnitCombatWeights);
+	m_aiVictoryWeights.write(pStream); // advc.115f
 	// K-Mod. save great person weights.
 	{
 		int iItems = m_GreatPersonWeights.size();
@@ -23436,18 +23452,17 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 {
 	PROFILE_FUNC();
 
-	CvGame const& kGame = GC.getGame();
-	if (!isHuman() && // advc.115d
-		!kGame.isOption(GAMEOPTION_RISE_FALL) && // advc.700
-		!GC.getDefineBOOL("BBAI_VICTORY_STRATEGY_CULTURE"))
-	{
-		return 0;
-	}
-	if (!kGame.culturalVictoryValid())
-		return 0;
-
 	if (!hasCapital())
 		return 0;
+	// <advc.115f>
+	int iWeight = 0;
+	FOR_EACH_ENUM(Victory)
+	{
+		if (GC.getInfo(eLoopVictory).getCityCulture() > 0)
+			iWeight += AI_getVictoryWeight(eLoopVictory);
+	}
+	if (iWeight < 0)
+		return 0; // </advc.115f>
 
 	int iHighCultureCount = 0;
 	int iCloseToLegendaryCount = 0;
@@ -23456,6 +23471,7 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 	/*	some (arbitrary) fraction of the game, after which we get more serious.
 		(cf. old code) */
 	int iEraThresholdPercent = 80 - (AI_getStrategyRand(1) % 2) * 20;
+	CvGame const& kGame = GC.getGame();
 	int iLegendaryCulture = kGame.getCultureThreshold(
 			CvCultureLevelInfo::finalCultureLevel());
 	int iVictoryCities = kGame.culturalVictoryNumCultureCities();
@@ -23544,7 +23560,8 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 		then we need to consider whether or not to aim for culture at all. */
 	if (iCloseToLegendaryCount < iVictoryCities)
 	{
-		int iValue = GC.getInfo(getPersonalityType()).getCultureVictoryWeight();
+		int iValue = //GC.getInfo(getPersonalityType()).getCultureVictoryWeight()
+				iWeight; // advc.115f
 
 		//if (kGame.isOption(GAMEOPTION_ALWAYS_PEACE))
 		if (!GET_TEAM(getTeam()).AI_isWarPossible()) // advc.001j
@@ -23707,32 +23724,15 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 
 int CvPlayerAI::AI_calculateSpaceVictoryStage() const
 {
-	if (!isHuman() && // advc.115d
-		!GC.getGame().isOption(GAMEOPTION_RISE_FALL) && // advc.700
-		!GC.getDefineBOOL("BBAI_VICTORY_STRATEGY_SPACE"))
-	{
-		return 0;
-	}
 	if (!hasCapital())
 		return 0;
-
-	// Better way to determine if spaceship victory is valid?
-	VictoryTypes eSpace = NO_VICTORY;
-	FOR_EACH_ENUM(Victory)
-	{
-		if (GC.getGame().isVictoryValid(eLoopVictory))
-		{
-			CvVictoryInfo& kVictoryInfo = GC.getInfo(eLoopVictory);
-			if (kVictoryInfo.getVictoryDelayTurns() > 0)
-			{
-				eSpace = eLoopVictory;
-				break;
-			}
-		}
-	}
-
+	// <advc.115f>
+	VictoryTypes const eSpace = GC.getGame().getSpaceVictory();
 	if (eSpace == NO_VICTORY)
 		return 0;
+	int const iWeight = AI_getVictoryWeight(eSpace);
+	if (iWeight < 0)
+		return 0; // </advc.115f>
 
 	// If have built Apollo, then the race is on!
 	bool bHasApollo = false;
@@ -23751,7 +23751,7 @@ int CvPlayerAI::AI_calculateSpaceVictoryStage() const
 			}
 		}
 	}
-	/*  <advc.115> All the parts together cost some 15000 to 20000 production on
+	/*	<advc.115> All the parts together cost some 15000 to 20000 production on
 		Normal speed. Can't be sure that production will increase much in the future;
 		most tech that could boost production is already known by the time
 		Apollo is built. If it'll take more than 100 turns, then it's hopeless
@@ -23759,46 +23759,25 @@ int CvPlayerAI::AI_calculateSpaceVictoryStage() const
 	int iTotalProduction = ((AI_estimateYieldRate(YIELD_PRODUCTION) * 100) /
 			std::max(1, GC.getInfo(GC.getGame().getGameSpeedType()).
 			getCreatePercent())).round();
-	bool bEnoughProduction = (iTotalProduction > 240);
-	// </advc.115>
+	bool bEnoughProduction = (iTotalProduction > 240); // </advc.115>
 	if (bHasApollo)
-	{
-		if (bNearAllTechs)
-		{
-			bool bOtherLaunched = false;
-			// K-Mod. (just tidying up a bit.)
-			int iOurCountdown = GET_TEAM(getTeam()).getVictoryCountdown(eSpace);
-			for (TeamIter<CIV_ALIVE,OTHER_KNOWN_TO> it(getTeam()); it.hasNext(); ++it)
-			{
-				if (it->getVictoryCountdown(eSpace) >= 0 &&
-					(iOurCountdown < 0 || it->getVictoryCountdown(eSpace) <= iOurCountdown))
-				{
-					bOtherLaunched = true;
-					break;
-				}
-			} // K-Mod end
-
-			if (!bOtherLaunched)
-				return 4;
-
-			if (bEnoughProduction || iOurCountdown > 0) // advc.115
-				return 3;
-		}
-
-		/*if (GET_TEAM(getTeam()).getBestKnownTechScorePercent() > (m_iVictoryStrategyHash & AI_VICTORY_SPACE3 ? 80 : 85))
-			return 3;*/ // BBAI
-		// K-Mod. I don't think that's a good way to do it.
-		// instead, compare our spaceship progress to that of our rivals.
+	{	// <advc.115>
+		int iTotalNeeded = 0; // (well, not strictly needed)
+		int iTotalHave = 0; // </advc.115>
+		// K-Mod. Compare our spaceship progress to that of our rivals.
 		int iOurProgress = 0;
 		FOR_EACH_ENUM(Project)
 		{
-			if (GC.getInfo(eLoopProject).isSpaceship())
+			CvProjectInfo const& kLoopProject = GC.getInfo(eLoopProject);
+			if (kLoopProject.isSpaceship())
 			{
+				iTotalNeeded += kLoopProject.getVictoryThreshold(eSpace); // advc.115
 				int iBuilt = GET_TEAM(getTeam()).getProjectCount(eLoopProject);
 				if (iBuilt > 0 ||
 					GET_TEAM(getTeam()).isHasTech(
-					GC.getInfo(eLoopProject).getTechPrereq()))
+					kLoopProject.getTechPrereq()))
 				{
+					iTotalHave += iBuilt; // advc.115
 					iOurProgress += 2 + iBuilt;
 				}
 			}
@@ -23826,8 +23805,35 @@ int CvPlayerAI::AI_calculateSpaceVictoryStage() const
 			if (iProgress > iOurProgress)
 				iSpaceTeams++;
 		}
+		// <advc.115>
+		scaled rProjectRatio(iTotalHave, std::max(1, iTotalNeeded));
+		int const iOurCountdown = GET_TEAM(getTeam()).getVictoryCountdown(eSpace);
+		/*	Moved this block down so that the K-Mod project counts
+			can be taken into account. And changed much of the code too. */
+		if (bNearAllTechs && rProjectRatio > fixp(0.42) &&
+			(bEnoughProduction || iOurCountdown > 0))
+		{
+			int iOtherCountdown = -1;
+			for (TeamIter<CIV_ALIVE,OTHER_KNOWN_TO> it(getTeam()); it.hasNext(); ++it)
+			{
+				int iLoopCountdown = it->getVictoryCountdown(eSpace);
+				if (iLoopCountdown >= 0 &&
+					(iOurCountdown < 0 || iLoopCountdown <= iOurCountdown))
+				{
+					if (iOtherCountdown < 0)
+						iOtherCountdown = iLoopCountdown;
+					else iOtherCountdown = std::min(iLoopCountdown, iOtherCountdown);
+				}
+			}
+			return ((iOtherCountdown >= 0 && iOtherCountdown <= 8) ||
+					rProjectRatio < fixp(2/3.) ? 3 : 4);
+		} // </advc.115>
+		/*if (GET_TEAM(getTeam()).getBestKnownTechScorePercent() > (m_iVictoryStrategyHash & AI_VICTORY_SPACE3 ? 80 : 85))
+			return 3;*/ // BBAI
+		// K-Mod. I don't think that's a good way to do it.
 		if (200 * iSpaceTeams / (1+iKnownTeams) <=
-			GC.getInfo(getPersonalityType()).getSpaceVictoryWeight() +
+			//GC.getInfo(getPersonalityType()).getSpaceVictoryWeight()
+			iWeight + // advc.115f
 			AI_getStrategyRand(3) % 100 && // note, correlated with number used lower down.
 			(bEnoughProduction || iOurProgress > 10)) // advc.115
 		{
@@ -23889,31 +23895,24 @@ int CvPlayerAI::AI_calculateConquestVictoryStage() const
 {
 	PROFILE_FUNC();
 
-	CvGame const& kGame = GC.getGame(); // advc
+	CvGame const& kGame = GC.getGame();
 	CvTeamAI const& kTeam = GET_TEAM(getTeam());
-
 	// check for validity of conquest victory
 	//if (kGame.isOption(GAMEOPTION_ALWAYS_PEACE)
 	if (!kTeam.AI_isWarPossible() || // advc.001j
-		isAVassal() || (/* advc.115d: */ !isHuman() &&
-		!kGame.isOption(GAMEOPTION_RISE_FALL) && // advc.700
-		!GC.getDefineBOOL("BBAI_VICTORY_STRATEGY_CONQUEST")))
+		isAVassal())
 	{
 		return 0;
 	}
+	// <advc.115f>
+	int iWeight = 0;
+	FOR_EACH_ENUM(Victory)
 	{
-		bool bValid = false;
-		FOR_EACH_ENUM(Victory)
-		{
-			if (kGame.isVictoryValid(eLoopVictory) &&
-				GC.getInfo(eLoopVictory).isConquest())
-			{
-				bValid = true;
-			}
-		}
-		if (!bValid)
-			return 0;
+		if (GC.getInfo(eLoopVictory).isConquest())
+			iWeight += AI_getVictoryWeight(eLoopVictory);
 	}
+	if (iWeight < 0)
+		return 0; // </advc.115f>
 
 	/* Things to consider:
 	 - personality (conquest victory weight)
@@ -23998,7 +23997,8 @@ int CvPlayerAI::AI_calculateConquestVictoryStage() const
 	// This decision is based on situation and on personality.
 
 	// personality & randomness
-	int iValue = GC.getInfo(getPersonalityType()).getConquestVictoryWeight();
+	int iValue = //GC.getInfo(getPersonalityType()).getConquestVictoryWeight()
+			iWeight; // advc.115f
 	//iValue += (kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ? 20 : 0);
 	iValue += (AI_getStrategyRand(4) % 100);
 
@@ -24082,34 +24082,21 @@ int CvPlayerAI::AI_calculateConquestVictoryStage() const
 
 int CvPlayerAI::AI_calculateDominationVictoryStage() const
 {
-	CvGame const& kGame = GC.getGame(); // advc
+	CvGame const& kGame = GC.getGame();
 	CvTeamAI const& kTeam = GET_TEAM(getTeam());
 	//if (kGame.isOption(GAMEOPTION_ALWAYS_PEACE))
 	if (!kTeam.AI_isWarPossible() || // advc.001j
-		isAVassal() || (/* advc.115d: */ !isHuman() &&
-		!kGame.isOption(GAMEOPTION_RISE_FALL) && // advc.700
-		GC.getDefineINT("BBAI_VICTORY_STRATEGY_DOMINATION") <= 0))
+		isAVassal())
 	{
 		return 0;
 	}
-	VictoryTypes eDomination = NO_VICTORY;
-	
-	FOR_EACH_ENUM(Victory)
-	{
-		if (kGame.isVictoryValid(eLoopVictory))
-		{
-			CvVictoryInfo& kVictoryInfo = GC.getInfo(eLoopVictory);
-			if (kVictoryInfo.getLandPercent() > 0 &&
-				kVictoryInfo.getPopulationPercentLead())
-			{
-				eDomination = eLoopVictory;
-				break;
-			}
-		}
-	}
-
+	// <advc.115f>
+	VictoryTypes const eDomination = kGame.getDominationVictory();
 	if (eDomination == NO_VICTORY)
 		return 0;
+	int const iWeight = AI_getVictoryWeight(eDomination);
+	if (iWeight < 0)
+		return 0; // </advc.115f>
 
 	int iPercentOfDomination = 0;
 	int iOurPopPercent = (100 * kTeam.getTotalPopulation()) /
@@ -24154,7 +24141,8 @@ int CvPlayerAI::AI_calculateDominationVictoryStage() const
 
 	// Check for whether we are inclined to pursue a domination strategy
 	{
-		int iValue = GC.getInfo(getPersonalityType()).getDominationVictoryWeight();
+		int iValue = //GC.getInfo(getPersonalityType()).getDominationVictoryWeight()
+				iWeight; // advc.115f
 		iValue += (kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ?
 				10 : 0); // advc.019: was ?20:0
 		//int iNonsense = AI_getStrategyRand() + 70;
@@ -24177,20 +24165,19 @@ int CvPlayerAI::AI_calculateDominationVictoryStage() const
 
 int CvPlayerAI::AI_calculateDiplomacyVictoryStage() const
 {
-	//int iValue = 0; // advc.115b
-	CvGame const& kGame = GC.getGame(); // advc
-	if (!isHuman() && // advc.115d
-		!kGame.isOption(GAMEOPTION_RISE_FALL) && // advc.700
-		!GC.getDefineBOOL("BBAI_VICTORY_STRATEGY_DIPLOMACY"))
+	// <advc.115f>
+	int iWeight = 0;
+	FOR_EACH_ENUM(Victory)
 	{
-		return 0;
+		if (GC.getInfo(eLoopVictory).isDiploVote())
+			iWeight += AI_getVictoryWeight(eLoopVictory);
 	}
+	if (iWeight < 0)
+		return 0; // </advc.115f>
 	// <advc.115c>
 	if (TeamIter<CIV_ALIVE>::count() <= 2)
 		return 0; // </advc.115c>
-	// <advc.178> Code moved into subroutine
-	if (!kGame.isDiploVictoryValid())
-		return false; // </advc.178>
+	CvGame const& kGame = GC.getGame();
 	// Check for whether we are eligible for election
 	bool bVoteEligible = false;
 	FOR_EACH_ENUM(VoteSource)
@@ -24211,11 +24198,15 @@ int CvPlayerAI::AI_calculateDiplomacyVictoryStage() const
 	int iValue = 0;
 	if(isHuman()) // Perhaps not inclined, but very capable.
 		iValue += 100;
-	else iValue += GC.getInfo(getPersonalityType()).getDiplomacyVictoryWeight();
+	else
+	{
+		iValue += //GC.getInfo(getPersonalityType()).getDiplomacyVictoryWeight();
+				iWeight; // advc.115f
+	}
 	iValue = intdiv::round(iValue * 2, 3); // Victory weight too high
 	int iVoteTarget=MIN_INT;
 	int iVotesToGo = GET_TEAM(getTeam()).AI_votesToGoForVictory(&iVoteTarget);
-	if(iVoteTarget == -1)
+	if (iVoteTarget == -1)
 		return 0;
 	FAssert(iVoteTarget > 0);
 	scaled rProgressRatio(iVoteTarget - iVotesToGo, iVoteTarget);
@@ -24316,6 +24307,109 @@ bool CvPlayerAI::AI_atVictoryStage3() const
 {	// advc.115b: Replaced DIPLO3 with DIPLO4 b/c Diplo3 often isn't close to victory
 	return AI_atVictoryStage(AI_VICTORY_SPACE3 | AI_VICTORY_CULTURE3 |
 			AI_VICTORY_MILITARY3 | AI_VICTORY_DIPLOMACY4);
+}
+
+// advc.115f: In part moved from the AI_calculate...VictoryStage functions
+void CvPlayerAI::AI_updateVictoryWeights()
+{
+	if (getPersonalityType() == NO_LEADER)
+		return;
+	EagerEnumMap<VictoryTypes,bool> abValid;
+	EagerEnumMap<VictoryTypes,short> aiWeight;
+	FOR_EACH_ENUM(Victory)
+	{
+		int iWeight;
+		abValid.set(eLoopVictory, AI_isVictoryValid(eLoopVictory, iWeight));
+		aiWeight.set(eLoopVictory, std::max<short>(0, safeIntCast<short>(iWeight)));
+	}
+	// (not short b/c operator+= doesn't handle short well)
+	int iDeadWeight = 0;
+	int iValidWeight = 0;
+	FOR_EACH_ENUM(Victory)
+	{
+		bool bValid = abValid.get(eLoopVictory);
+		short iWeight = aiWeight.get(eLoopVictory);
+		(bValid ? iValidWeight : iDeadWeight) +=
+				iWeight;
+		m_aiVictoryWeights.set(eLoopVictory,
+				bValid ? iWeight : -1);
+	}
+	if (iValidWeight <= 0 || iDeadWeight <= 0)
+		return;
+	/*	Redistribute the dead weight among the valid victories
+		(the main point of this function). */
+	FOR_EACH_ENUM(Victory)
+	{
+		if (abValid.get(eLoopVictory))
+		{
+			short iWeight = m_aiVictoryWeights.get(eLoopVictory);
+			iWeight = static_cast<short>(iWeight + (iDeadWeight * iWeight) / iValidWeight);
+			m_aiVictoryWeights.set(eLoopVictory, iWeight);
+		}
+	}
+}
+
+// advc.115f:
+bool CvPlayerAI::AI_isVictoryValid(VictoryTypes eVictory, int& iWeight) const
+{
+	iWeight = 0;
+	CvGame const& kGame = GC.getGame();
+	CvLeaderHeadInfo const& kPersonality = GC.getInfo(getPersonalityType());
+	bool const bHuman = isHuman();
+	// Let AI assume that humans assign this weight to every valid victory condition
+	int const iHumanWeight = 30;
+	CvVictoryInfo const& kVictory = GC.getInfo(eVictory);
+	bool const bCheckBBAIDefine = (!bHuman && // advc.115d
+		!kGame.isOption(GAMEOPTION_RISE_FALL)); // advc.700
+	if (kVictory.getCityCulture() > 0)
+	{	/*	(Would be cleaner to replace these 5 getters with a single one
+			that takes a VictoryTypes param.) */
+		iWeight = (bHuman ? iHumanWeight : kPersonality.getCultureVictoryWeight());
+		if (!kGame.culturalVictoryValid())
+			return false;
+		if (bCheckBBAIDefine && 
+			!GC.getDefineBOOL("BBAI_VICTORY_STRATEGY_CULTURE"))
+		{
+			return false;
+		}
+	}
+	if (eVictory == kGame.getSpaceVictory())
+	{
+		iWeight = (bHuman ? iHumanWeight : kPersonality.getSpaceVictoryWeight());
+		if (bCheckBBAIDefine &&
+			!GC.getDefineBOOL("BBAI_VICTORY_STRATEGY_SPACE"))
+		{
+			return false;
+		}
+	}
+	if (GC.getInfo(eVictory).isConquest())
+	{
+		iWeight = (bHuman ? iHumanWeight : kPersonality.getConquestVictoryWeight());
+		if (bCheckBBAIDefine &&
+			!GC.getDefineBOOL("BBAI_VICTORY_STRATEGY_CONQUEST"))
+		{
+			return false;
+		}
+	}
+	if (eVictory == kGame.getDominationVictory())
+	{
+		iWeight = (bHuman ? iHumanWeight : kPersonality.getDominationVictoryWeight());
+		if (bCheckBBAIDefine &&
+			!GC.getDefineBOOL("BBAI_VICTORY_STRATEGY_DOMINATION"))
+		{
+			return false;
+		}
+	}
+	if (kVictory.isDiploVote())
+	{
+		iWeight = (bHuman ? iHumanWeight : kPersonality.getDiplomacyVictoryWeight());
+		if (bCheckBBAIDefine &&
+			!GC.getDefineBOOL("BBAI_VICTORY_STRATEGY_DIPLOMACY"))
+		{
+			return false;
+		}
+	}
+	return kGame.isVictoryValid(eVictory);
 }
 
 
@@ -25942,8 +26036,7 @@ int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
 	} // </advc.022>
 	if (iCloseness > 0 ||
 		GET_TEAM(getTeam()).AI_hasCitiesInPrimaryArea(kRivalTeam.getID())) // K-Mod
-	{
-		// <advc.022>
+	{	// <advc.022>
 		// Humans tend to reciprocate our feelings
 		int iHumanWarProb = 70 - AI_getAttitude(eRival) * 10;
 		int iAttitudeWarProb = (kRival.isHuman() ? iHumanWarProb :
@@ -25951,10 +26044,10 @@ int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
 				100 - kRivalTeam.AI_noWarProbAdjusted(getTeam()));
 		// (BBAI military power check deleted)
 		//iValue += std::max(0, iAttitudeWarProb/2); // K-Mod
-		iValue += std::max(0, (3 * iAttitudeWarProb) / 4);
-		// </advc.022>	
-		/*  advc.022: Commented out. Defensive measures make most sense
-			around 150% power ratio; 200% is probably a lost cause. */
+		iValue += std::max(0, (std::min(3, (1 + kRival.AI_getCurrEra()))
+				* iAttitudeWarProb) / 4);
+		/*  Commented out. Defensive measures make most sense around
+			150% power ratio; 200% is probably a lost cause. */ // </advc.022>
 		/*if (iTheirPower > 2*iOurDefensivePower) {
 			//if (AI_getAttitude(kLoopPlayer.getID()) != ATTITUDE_FRIENDLY)
 			if (iAttitudeWarProb > 0) // advc.022
@@ -27376,7 +27469,7 @@ bool CvPlayerAI::AI_isAdjacentCitySite(CvPlot const& p, bool bCheckCenter) const
 bool CvPlayerAI::AI_isAwfulSite(CvCity const& kCity, bool bConquest) const
 {
 	int const iEra = GC.getGame().getCurrentEra();
-	// If the city has grown, the site has somewhat proven its usefulness.
+	// If the city has grown, the site has somewhat proved its usefulness.
 	if (kCity.getPopulation() >= (3 * iEra + 8 - (bConquest ? 2 : 0)) / 2)
 		return false;
 
@@ -28841,7 +28934,10 @@ void CvPlayerAI::AI_setHuman(bool b)
 {
 	// Some of the first-impression modifiers don't apply to human players
 	for (PlayerAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
+	{
 		it->AI_updateAttitude();
+		it->AI_updateVictoryWeights(); // advc.115b, advc.115f
+	}
 	if (b)
 		return;
 	/*	<advc.057> Enforce invariant: AI group head has maximal impassable count.

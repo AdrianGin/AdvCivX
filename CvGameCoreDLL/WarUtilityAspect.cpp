@@ -441,11 +441,15 @@ scaled WarUtilityAspect::conqAssetScore(bool bMute) const
 		Tbd.: Would better to apply this per area, i.e. no culture pressure if we
 		take all their cities in one area. Then again, we may not know about
 		all their cities in the area. */
+	int const iTheirRemainingCities = kThey.getNumCities()
+			- (int)militAnalyst().lostCities(eThey).size();
 	if (militAnalyst().getCapitulationsAccepted(eOurTeam).count(eTheirTeam) == 0 &&
-		((int)militAnalyst().lostCities(eThey).size()) < kThey.getNumCities())
+		iTheirRemainingCities > 0)
 	{
-		// Equivalent to subtracting 50% of the mean per-city score
-		r *= 1 - scaled(1, 2 * (int)ourConquestsFromThem().size());
+		/*	Mean of a quotient based just on how many cities we conquer and another
+			based on how much of them remains. Then shift that toward 1 a little. */
+		r *= (4 * (1 - (scaled(1, 1 + (int)ourConquestsFromThem().size()) +
+				scaled(iTheirRemainingCities, kThey.getNumCities())) / 2) + 1) / 5;
 		if (!bMute)
 			log("Asset score reduced to %d due to culture pressure", r.round());
 	}
@@ -473,6 +477,8 @@ scaled WarUtilityAspect::remainingCityRatio(PlayerTypes ePlayer) const
 scaled WarUtilityAspect::partnerUtilFromTech() const
 {
 	// Some overlap with the "Tech Groundbreaker" code in CvPlayerAI::AI_techValue
+	if (m_kGame.isOption(GAMEOPTION_NO_TECH_TRADING))
+		return 0;
 	// How good our and their attitude needs to be at least to allow tech trade
 	AttitudeTypes eOurAttitudeThresh = techRefuseThresh(eWe);
 	AttitudeTypes eTheirAttitudeThresh = techRefuseThresh(eThey);
@@ -516,15 +522,15 @@ scaled WarUtilityAspect::partnerUtilFromTech() const
 			(kOurTeam.AI_estimateYieldRate(eWe, YIELD_COMMERCE) + scaled::epsilon());
 	if (rTheyToUsCommerceRatio > 1)
 		rTheyToUsCommerceRatio.flipFraction();
-	scaled r = SQR(rTheyToUsCommerceRatio) * (20 + iHumanExtra);
-	int iNearFutureTrades = std::min(iWeCanOffer, iTheyCanOffer);
-	if (iNearFutureTrades > 1) // Just 1 isn't likely to result in a trade
+	scaled r = SQR(rTheyToUsCommerceRatio) * (17 + iHumanExtra);
+	scaled rNearFutureTrades = std::min(iWeCanOffer, iTheyCanOffer);
+	if (rNearFutureTrades > 1) // Just 1 isn't likely to result in a trade
 	{
-		log("Added utility for %d foreseeable trades", iNearFutureTrades);
+		log("Added utility for %d foreseeable trades", rNearFutureTrades.floor());
 		// Humans tend to make trades immediately, and avoid certain techs entirely.
 		if (kThey.isHuman())
-			iNearFutureTrades /= 2;
-		r += 4 * std::min(3, iNearFutureTrades);
+			rNearFutureTrades /= 2;
+		r += fixp(10/3.) * scaled::min(3, rNearFutureTrades);
 	}
 	if (r > 0)
 		log("Tech trade utility: %d", r.round());
@@ -536,6 +542,8 @@ scaled WarUtilityAspect::partnerUtilFromTech() const
 		log("Tech trade utility halved for distrust");
 		r /= 2;
 	}
+	if (m_kGame.isOption(GAMEOPTION_NO_TECH_BROKERING))
+		r *= fixp(2/3.);
 	return r * kWeAI.amortizationMultiplier();
 }
 
@@ -1909,6 +1917,7 @@ void HiredHand::evaluate()
 	FAssert((eSponsor == NO_PLAYER) == (iOriginalUtility <= 0));
 	scaled rUtility;
 	if (eSponsor != NO_PLAYER && iOriginalUtility > 0 &&
+		GET_PLAYER(eSponsor).isAlive() &&
 		kOurTeam.AI_getAttitude(TEAMID(eSponsor)) >= kOurPersonality.
 		/*	Between Annoyed and Pleased; has to be strictly better to allow
 			sponsorship. If it becomes strictly worse, we bail. */
@@ -2534,14 +2543,15 @@ void KingMaking::evaluate()
 	/*	As humans we are very much not OK with rivals winning the game,
 		so ATTITUDE_FURIOUS would be the smarter assumption, however, I don't want
 		a leading AI to be extremely alert about a human runner-up. */
-	AttitudeTypes const eAttitude = (kWe.isHuman() ? ATTITUDE_ANNOYED :
-			towardThem());
-	if (eAttitude >= ATTITUDE_FRIENDLY)
+	int iAttitude = (kWe.isHuman() ? ATTITUDE_ANNOYED : towardThem());
+	if (kOurTeam.isAtWar(eTheirTeam)) // When at war, bad attitude is normal.
+		iAttitude++;
+	if (iAttitude >= ATTITUDE_FRIENDLY)
 	{	/*	We don't go as far as helping a friend win
 			(only indirectly by trying to thwart the victory of a disliked civ) */
 		return;
 	}
-	scaled rAttitudeMult = fixp(0.03) + fixp(0.25) * (ATTITUDE_PLEASED - eAttitude);
+	scaled rAttitudeMult = fixp(0.03) + fixp(0.25) * (ATTITUDE_PLEASED - iAttitude);
 	scaled rCaughtUpPremium;
 	scaled rCatchUpVal = (16 * m_rGameEraAIFactor) / m_winningPresent.size();
 	rCatchUpVal.exponentiate(fixp(0.75));
@@ -2591,7 +2601,7 @@ void KingMaking::evaluate()
 		m_iU += rCaughtUpPremium.round();
 		return;
 	}
-	scaled rWeight = 4; // So that 25% loss correspond to 100 utility
+	scaled rWeight(10,3); // So that 30% loss correspond to 100 utility
 	// We're a bit less worried about helping them indirectly
 	if (rTheirLoss < 0)
 	{
@@ -2604,7 +2614,7 @@ void KingMaking::evaluate()
 	{
 		/*	Over the course of the game, we become more willing to take out rivals
 			even if several rivals are still in competition. */
-		scaled rProgressFactor = fixp(2/3.) - fixp(1/3.) * m_kGame.gameTurnProgress();
+		scaled rProgressFactor = fixp(3/4.) - fixp(1/3.) * m_kGame.gameTurnProgress();
 		FAssert(rProgressFactor > 0);
 		scaled rDiv = 1 + SQR(rProgressFactor * iWinningRivals);
 		rCompetitionMult = 1 / rDiv;
@@ -2726,7 +2736,7 @@ int Effort::preEvaluate()
 			/*	Reduced cost for long-distance war; less disturbance of Workers
 				and Settlers, and less danger of pillaging. */
 			rUtility += militAnalyst().turnsSimulated() /
-					((bAllWarsLongDist ? 8 : fixp(5.5)) +
+					((bAllWarsLongDist ? 10 : 7) +
 					// Workers not much of a concern later on
 					kWe.AI_getCurrEraFactor() / 2);
 			log("Cost for wartime economy and ravages: %d%s", rUtility.uround(),
@@ -2805,7 +2815,7 @@ int Effort::preEvaluate()
 	scaled rFutureUse = rHighestRivalPower / (rOurPower + scaled::epsilon());
 	rFutureUse.clamp(fixp(0.35), fixp(1.65));
 	/*	Division by e.g. 2.2 means survivors can be valued up to 75%; 2.75: 60%
-		(not taking account the exponentiation below) */
+		(not taking into account the exponentiation below) */
 	rFutureUse /= fixp(2.55);
 	rFutureUse.exponentiate(fixp(0.75));
 	if (!kWe.isHuman())
@@ -2814,28 +2824,15 @@ int Effort::preEvaluate()
 				// I.e. add between 3 (Gandhi) and 8 (Ragnar) percentage points
 				scaled(kOurPersonality.getBuildUnitProb(), 500));
 	}
-	{
-		bool bAnyWar = false;
-		for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
-		{
-			if (militAnalyst().isWar(eWe, it->getID()))
-			{
-				bAnyWar = true;
-				break;
-			}
-		}
-		/*	If we're at peace, units trained are apparently deemed useful by CvCityAI;
-			we still shouldn't assume that they'll _certainly_ be useful. */
-		if (!bAnyWar)
-			rFutureUse *= fixp(1.12);
-	}
 	scaled const rInvested = militAnalyst().militaryProduction(eWe);
 	scaled const rOurLostProduction = rOurLostProductionInUnits * rFutureUse +
 			rInvested *
 			/*	Total vs. limited war is already reflected by ArmamentForecast,
 				but a strong focus on military build-up is extra harmful b/c
 				even essential buildings may not get constructed then. */
-			(1 - rFutureUse) * (m_kParams.isTotal() ? fixp(1.1) : 1);
+			(1 - rFutureUse) * (m_kParams.isTotal() ? fixp(1.1) : 1) *
+			// Future use of transports is a long shot
+			(m_kParams.isNaval() ? fixp(1.2) : 1);
 	log("Production value of lost units: %d, invested production: %d,"
 			" multiplier for future use of trained units: %d percent, "
 			"adjusted production value of build-up and losses: %d",

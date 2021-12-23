@@ -173,6 +173,8 @@ public:
 	/*	iTurns: Build-up over how many turns?
 		Will be adjusted to game speed by this function! */
 	scaled estimateBuildUpRate(PlayerTypes ePlayer, int iTurns = 10) const;
+	scaled estimateDemographicGrowthRate(PlayerTypes ePlayer,
+			PlayerHistoryTypes eDemographic, int iTurns = 10) const;
 	/*	Whether this player can reach any city of eTarget with military units;
 		based on cached info. */
 	bool canReach(PlayerTypes eTarget) const;

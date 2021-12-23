@@ -8305,10 +8305,10 @@ void CvPlot::killRandomUnit(PlayerTypes eOwner, DomainTypes eDomain)
 bool CvPlot::hasDefender(bool bTestCanAttack, PlayerTypes eOwner, PlayerTypes eAttackingPlayer,
 	CvUnit const* pAttacker, bool bTestEnemy, bool bTestPotentialEnemy) const
 {
-	/*  advc: BBAI had repeated parts of getBestDefender here. To avoid that, I've
-		moved bTestAttack into getBestDefender and gave that function a "bAny" param. */
+	/*  advc: BBAI had repeated parts of getBestDefender here. To avoid that, I've moved
+		bTestAttack into getBestDefender and gave that function a "bTestAny" param. */
 	return (getBestDefender(eOwner, eAttackingPlayer, pAttacker, bTestEnemy,
-			bTestPotentialEnemy, false, bTestCanAttack, /*bAny=*/true) != NULL);
+			bTestPotentialEnemy, false, bTestCanAttack, /*bTestAny=*/true) != NULL);
 } // BETTER_BTS_AI_MOD: END
 
 // <advc.500a>

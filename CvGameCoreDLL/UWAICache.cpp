@@ -532,6 +532,8 @@ void UWAICache::updateGoldPerProduction()
 		isn't much more than a stub. */
 	m_rGoldPerProduction = std::max(goldPerProdBuildings(), goldPerProdSites());
 	m_rGoldPerProduction *= GET_PLAYER(m_eOwner).uwai().amortizationMultiplier();
+	m_rGoldPerProduction.increaseTo(goldPerProdProcess());
+	m_rGoldPerProduction.increaseTo(1); // (even if w/o a good coversion process)
 	m_rGoldPerProduction.increaseTo(goldPerProdVictory());
 	/*	Currently, this ratio is pretty much 1. Just so that any changes
 		to AI_yieldWeight or Civ4YieldInfos.xml are taken into account here. */
@@ -616,26 +618,6 @@ scaled UWAICache::goldPerProdBuildings()
 	r *= scaled(100 - kOwnerPersonality.getBuildUnitProb(), 75);
 	r.decreaseTo(1);
 	r *= rGoldPerProductionCap;
-	r.increaseTo(1); // (even if we don't have a good coversion process)
-	scaled rBestProcessConvRate;
-	FOR_EACH_ENUM(Process)
-	{
-		if (kOwner.canMaintain(eLoopProcess))
-		{
-			rBestProcessConvRate.increaseTo(per100(GC.getInfo(eLoopProcess).
-					getProductionToCommerceModifier(COMMERCE_RESEARCH)));
-			rBestProcessConvRate.increaseTo(per100(GC.getInfo(eLoopProcess).
-					getProductionToCommerceModifier(COMMERCE_GOLD)));
-		}
-	}
-	/*	If our buildings are so bad that a process is our best option - but we do
-		at least have a process - then we shouldn't necessarily wage war; focusing
-		on tech might help us more. This function is supposed to say how much we
-		value production in terms of gold, not how much we value gold or research.
-		So it would more consistent to make this adjustment, say, in WarUtilityAspect
-		::Effort. However, it's convenient to do it here b/c we've already determined
-		that (or whether) we've run out of buildings to construct. */
-	r.increaseTo(rBestProcessConvRate * fixp(1.28));
 	return r;
 }
 
@@ -689,6 +671,30 @@ scaled UWAICache::goldPerProdSites()
 	scaled r = std::min(rGoldPerProductionCap,
 			rGoldPerProductionCap * rSiteScore / iCities);
 	return r;
+}
+
+
+scaled UWAICache::goldPerProdProcess()
+{
+	scaled r;
+	FOR_EACH_ENUM(Process)
+	{
+		if (GET_PLAYER(m_eOwner).canMaintain(eLoopProcess))
+		{
+			r.increaseTo(per100(GC.getInfo(eLoopProcess).
+					getProductionToCommerceModifier(COMMERCE_RESEARCH)));
+			r.increaseTo(per100(GC.getInfo(eLoopProcess).
+					getProductionToCommerceModifier(COMMERCE_GOLD)));
+		}
+	}
+	/*	If our buildings are so bad that a process is our best option - but we do
+		at least have a process - then we shouldn't necessarily wage war; focusing
+		on tech might help us more. This function is supposed to say how much we
+		value production in terms of gold, not how much we value gold or research.
+		So it would more consistent to make this adjustment, say, in WarUtilityAspect
+		::Effort. However, it's convenient to do it here b/c we've already determined
+		whether we've run out of buildings to construct. */
+	return r * fixp(1.28);
 }
 
 

@@ -2344,20 +2344,7 @@ CivilopediaWidgetShowTypes CvGame::getWidgetShow(ImprovementTypes eImprovement) 
 	return eType;
 }
 
-VictoryTypes CvGame::getSpaceVictory() const
-{
-	VictoryTypes eVictory = NO_VICTORY;
-	FOR_EACH_ENUM(Project)
-	{
-		if (GC.getInfo(eLoopProject).isSpaceship())
-		{
-			eVictory = GC.getInfo(eLoopProject).getVictoryPrereq();
-			break;
-		}
-	}
-	FAssertMsg(eVictory != NO_VICTORY, "Invalid space victory type");
-	return eVictory;
-}
+// (advc: getSpaceVictory implementation moved to CvGame.cpp)
 
 // advc (note): Alt+Z causes the EXE to call this function
 void CvGame::nextActivePlayer(bool bForward)

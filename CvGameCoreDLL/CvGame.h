@@ -804,6 +804,7 @@ public:
 	DllExport ColorTypes getPlotHighlightColor(CvPlot* pPlot) const;
 	DllExport void cheatSpaceship() const;
 	DllExport VictoryTypes getSpaceVictory() const;
+	VictoryTypes getDominationVictory() const; // advc.115f
 	DllExport void nextActivePlayer(bool bForward);
 
 	DllExport DomainTypes getUnitDomain(UnitTypes eUnit) const; // advc.003j: Isn't and imo shouldn't be used DLL-internally
@@ -1033,13 +1034,12 @@ protected:
 
 	void uninit();
 	void setStartTurnYear(int iTurn = 0); // advc.250c
-	// <advc.051>
-	void initScenario();
-	void initFreeUnits_bulk();
-	// </advc.051>
+	void initScenario(); // advc.051
+
 	void setPlayerColors(); // advc.002i
 	void initGameHandicap(); // advc.127
 	void initFreeState();
+	void initFreeCivState(); // advc.tsl
 	/* <advc.027> */ NormalizationTarget* /* </advc.027> */ assignStartingPlots();
 	void normalizeStartingPlots(/* advc.027: */ NormalizationTarget const* pTarget = NULL);
 	void updateStartingPlotRange() const; // advc.opt

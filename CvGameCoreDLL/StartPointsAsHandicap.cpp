@@ -21,6 +21,7 @@ StartPointsAsHandicap::StartPointsAsHandicap() {
 	pointsDisplayString = NULL;
 	nCivs = nHuman = 0;
 	randPoints = false;
+	unequalDistrib = false;
 }
 
 
@@ -52,7 +53,7 @@ void StartPointsAsHandicap::setInitialItems() {
 
 	reset();
 	gatherCivs();
-	bool unequalDistrib = assignPoints();
+	unequalDistrib = assignPoints();
 	bool randomize = unequalDistrib;
 	for(int i = 0; i < nCivs; i++)
 		report += CvString::format("Points assigned to id %d: %d\n",
@@ -70,8 +71,6 @@ void StartPointsAsHandicap::setInitialItems() {
 	}
 	else for(int i = 0; i < nCivs; i++)
 		civs[i]->assignStartPoints();
-	if(unequalDistrib)
-		rearrangeStartingPlots();
 	updatePointsDisplayString(true);
 	// Report about game setup
 	//gDLL->logMsg("debug_SPaH.log", report, true, true);
@@ -275,6 +274,8 @@ void StartPointsAsHandicap::bounce(int i, int j) {
 
 void StartPointsAsHandicap::rearrangeStartingPlots() {
 
+	if(!unequalDistrib)
+		return;
 	int nAI = nCivs - nHuman;
 	if(nAI == 0)
 		return;

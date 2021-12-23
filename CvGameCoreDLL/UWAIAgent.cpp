@@ -1499,8 +1499,13 @@ void UWAI::Team::scheme()
 			in warConfidenceAllies. Less dogpiling on weak targets that way.) */
 		scaled rDiv = (bTotal ? kAgent.AI_maxWarRand() : kAgent.AI_limitedWarRand());
 		FAssert(rDiv >= 0);
-		// Let's make the AI a bit less patient, especially the peaceful types.
-		rDiv.exponentiate(fixp(0.95)); // This maps e.g. 400 to 296 and 40 to 33
+		// Let's make the AI a bit less patient
+		// Especially the peaceful types; this maps e.g. 400 to 296 and 40 to 33.
+		//rDiv.exponentiate(fixp(0.95));
+		/*	Not a good idea after all. Overall, UWAI tends to make peaceful leaders
+			rather too utilitarian with their war plans, I've come to think.
+			So let's adjust only linearly. */
+		rDiv *= fixp(0.85);
 		if (rDiv <= 0)
 			rDrive = 0;
 		else rDrive /= rDiv;
@@ -2721,25 +2726,30 @@ bool UWAI::Player::canReach(PlayerTypes eTarget) const
 	return (getCache().numReachableCities(eTarget) > 0);
 }
 
-
+/*	This player makes the prediction; the prediction is _about_ ePlayer.
+	Like CvTeamAI::AI_estimateYieldRate (and other AI code), this function
+	currently cheats by not checking whether demographics are visible.
+	Would, in any case, make more sense as a team-level function,
+	but I want to keep it together with buildUnitProb for now. */
 scaled UWAI::Player::estimateBuildUpRate(PlayerTypes ePlayer, int iTurns) const
 {
-	/*	This player makes the prediction; the prediction is _about_ ePlayer.
-		Like CvTeamAI::AI_estimateYieldRate (and other AI code), this function
-		currently cheats by not checking whether demographics are visible.
-		Would, in any case, make more sense as a team-level function,
-		but I want to keep it together with buildUnitProb for now. */
-	CvGame const& kGame = GC.getGame();
-	iTurns *= GC.getInfo(kGame.getGameSpeedType()).getTrainPercent();
+	iTurns *= GC.getInfo(GC.getGame().getGameSpeedType()).getTrainPercent();
 	iTurns /= 100;
-	if (kGame.getElapsedGameTurns() < iTurns + 1)
+	return estimateDemographicGrowthRate(ePlayer, PLAYER_HISTORY_POWER, iTurns);
+}
+
+
+scaled UWAI::Player::estimateDemographicGrowthRate(PlayerTypes ePlayer,
+	PlayerHistoryTypes eDemographic, int iTurns) const
+{
+	if (GC.getGame().getElapsedGameTurns() < iTurns + 1)
 		return 0;
-	int iGameTurn = kGame.getGameTurn();
-	int iPastPow = std::max(1, GET_PLAYER(ePlayer).getHistory(
-			PLAYER_HISTORY_POWER, iGameTurn - 1 - iTurns));
-	int iDelta = GET_PLAYER(ePlayer).getHistory(PLAYER_HISTORY_POWER, iGameTurn - 1)
-			- iPastPow;
-	return scaled::max(0, scaled(iDelta, iPastPow));
+	int iGameTurn = GC.getGame().getGameTurn();
+	int iPastValue = std::max(1, GET_PLAYER(ePlayer).getHistory(
+			eDemographic, iGameTurn - 1 - iTurns));
+	int iDelta = GET_PLAYER(ePlayer).getHistory(eDemographic, iGameTurn - 1)
+			- iPastValue;
+	return scaled::max(0, scaled(iDelta, iPastValue));
 }
 
 
