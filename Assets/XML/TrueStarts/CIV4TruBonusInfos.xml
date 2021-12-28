@@ -45,17 +45,17 @@
 			<DiscouragedCivs>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ETHIOPIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ZULU</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_INCA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<!-- Would prefer not to boost their UU, but the Celts
@@ -94,7 +94,7 @@
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
@@ -108,7 +108,7 @@
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_MONGOL</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
@@ -122,11 +122,11 @@
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_AZTEC</CivilizationType>
@@ -134,7 +134,7 @@
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_MAYA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
@@ -144,7 +144,7 @@
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_OTTOMAN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_VIKING</CivilizationType>
@@ -164,54 +164,54 @@
 			<DiscouragedCivs>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ZULU</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_MALI</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<!-- (Carthage did have access to marble, at Chemtou.) -->
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_JAPAN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_KOREA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_MONGOL</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_AZTEC</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_MAYA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_INCA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_GREECE</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_BYZANTIUM</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_ROME</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
@@ -223,47 +223,47 @@
 			<DiscouragedCivs>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_GERMANY</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_JAPAN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_KOREA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_MONGOL</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ETHIOPIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_SPAIN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_PORTUGAL</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_FRANCE</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_HOLY_ROMAN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ROME</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<!-- (Turkey has Azerbaijan near enough) -->
 				<DiscouragedCiv>
@@ -274,23 +274,23 @@
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_PERSIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_RUSSIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
@@ -318,7 +318,7 @@
 			<DiscouragedRegions>
 				<DiscouragedRegion>
 					<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedRegion>
 				<DiscouragedRegion>
 					<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
@@ -332,7 +332,7 @@
 			<DiscouragedCivs>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_CARTHAGE</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 		</TruBonusInfo>
@@ -342,7 +342,7 @@
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_KOREA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
@@ -379,19 +379,19 @@
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_AZTEC</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_MAYA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_INCA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_NATIVE_AMERICA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
@@ -407,11 +407,11 @@
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_SPAIN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_NETHERLANDS</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_ETHIOPIA</CivilizationType>
@@ -419,7 +419,7 @@
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_ZULU</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
@@ -429,11 +429,11 @@
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_AMERICA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_FRANCE</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
@@ -449,23 +449,23 @@
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_PORTUGAL</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_NETHERLANDS</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_ENGLAND</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_JAPAN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_VIKING</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
@@ -486,29 +486,29 @@
 			<DiscouragedCivs>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ZULU</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_MALI</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ETHIOPIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_OTTOMAN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_CHINA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
@@ -544,11 +544,11 @@
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_JAPAN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_KOREA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_MALI</CivilizationType>
@@ -581,11 +581,11 @@
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_MONGOL</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_OTTOMAN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
@@ -658,37 +658,37 @@
 			<DiscouragedCivs>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_SPAIN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_PORTUGAL</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ROME</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_NATIVE_AMERICA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_INDIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
@@ -698,39 +698,39 @@
 			<DiscouragedCivs>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_CARTHAGE</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ENGLAND</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_FRANCE</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_GERMANY</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_NETHERLANDS</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_VIKING</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
@@ -750,34 +750,34 @@
 			<DiscouragedRegions>
 				<DiscouragedRegion>
 					<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedRegion>
 			</DiscouragedRegions>
 			<!-- Discourage desert civs that actually imported incense -->
 			<DiscouragedCivs>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_EGYPT</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<!-- Although Somalia is not Ethiopia ...
 					 Horse could be an alternative. -->
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_ETHIOPIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
@@ -787,11 +787,11 @@
 			<DiscouragedRegions>
 				<DiscouragedRegion>
 					<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedRegion>
 				<DiscouragedRegion>
 					<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedRegion>
 			</DiscouragedRegions>
 			<!-- Neither encourage nor discourage African bush, forest elephant
@@ -799,24 +799,24 @@
 			<DiscouragedCivs>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_OTTOMAN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_BYZANTIUM</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<!-- Syrian elephants were probably not used in war. -->
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
@@ -904,39 +904,39 @@
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_EGYPT</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_FRANCE</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_NETHERLANDS</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ETHIOPIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_MALI</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
@@ -956,25 +956,25 @@
 			<DiscouragedRegions>
 				<DiscouragedRegion>
 					<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedRegion>
 			</DiscouragedRegions>
 			<DiscouragedCivs>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_AMERICA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ZULU</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_MALI</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_CARTHAGE</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<!-- The Middle East grows e.g. cumin, but not the valuable
 					 spices that got traded over long distances. Except
@@ -982,48 +982,48 @@
 					 Middle Eastern geo region). -->
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_OTTOMAN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_BYZANTIUM</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_EGYPT</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_PERSIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<!-- Kampot pepper, Cardamom Mts. -->
 					<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<!-- Chili peppers -->
 					<CivilizationType>CIVILIZATION_AZTEC</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<!-- Chili, cocoa -->
 					<CivilizationType>CIVILIZATION_MAYA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
@@ -1053,7 +1053,7 @@
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_CARTHAGE</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 		</TruBonusInfo>
@@ -1095,21 +1095,21 @@
 					 land for vineyards.) -->
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_FRANCE</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_ROME</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_SPAIN</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
+					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_CARTHAGE</CivilizationType>

@@ -1774,6 +1774,9 @@ template<typename T>
 std::pair<int,T> CvXMLLoadUtility::XMLTagPairIterator<T>::next()
 {
 	std::pair<int,T> nextPair(noPair());
+	bool const bTO_ENUM = enum_traits<T>::is_enum;
+	if (bTO_ENUM)
+		nextPair.second = (T)iNO_KEY;
 	for (; m_iSiblingIndex < m_iSiblings && nextPair.first == iNO_KEY; m_iSiblingIndex++)
 	{
 		if (m_util.SkipToNextVal() && // K-Mod: skip comments
@@ -1784,7 +1787,12 @@ std::pair<int,T> CvXMLLoadUtility::XMLTagPairIterator<T>::next()
 			if (iKey >= 0)
 			{
 				T tVal;
-				m_util.GetNextXmlVal(tVal);
+				if (bTO_ENUM) // advc: New - support for (enum,enum) pairs
+				{
+					m_util.GetNextXmlVal(m_acTextVal);
+					tVal = static_cast<T>(getGlobalEnumFromString(m_acTextVal));
+				}
+				else m_util.GetNextXmlVal(tVal);
 				nextPair = std::make_pair(iKey, tVal);
 			}
 			setToParent();
