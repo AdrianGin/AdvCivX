@@ -116,7 +116,8 @@ public:
 	void updateSeeFromSight(bool bIncrement, bool bUpdatePlotGroups);
 
 	bool canHaveBonus(BonusTypes eBonus, bool bIgnoreLatitude = false,								// Exposed to Python
-			bool bIgnoreFeature = false) const; // advc.129
+			bool bIgnoreFeature = false, // advc.129
+			bool bIgnoreCurrentBonus = false) const; // advc.tsl
 	bool canHaveImprovement(ImprovementTypes eImprovement,											// Exposed to Python
 			TeamTypes eTeam = NO_TEAM, bool bPotential = false,
 			BuildTypes eBuild = NO_BUILD, bool bAnyBuild = true) const; // kekm.9

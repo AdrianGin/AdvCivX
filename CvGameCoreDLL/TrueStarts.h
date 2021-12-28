@@ -20,6 +20,8 @@ private:
 	ArrayEnumMap2D<LeaderHeadTypes,LeaderHeadTypes,int,void*,-1> m_contemporaries;
 	ArrayEnumMap2D<PlayerTypes,CivilizationTypes,int> m_radii;
 	EagerEnumMap<LeaderHeadTypes,int,void*,-1> m_maxTimeDiff;
+	EagerEnumMap<CivilizationTypes,int> m_discouragedBonusesTotal;
+	EagerEnumMap<CivilizationTypes,int> m_encouragedBonusesTotal;
 	/*	Fitness values stored per civ-leader pair. In case that a leader
 		is valid for multiple civs. (Does the game really support that?)
 		Need those values for each player, hence the surrounding vector. */
@@ -32,22 +34,44 @@ private:
 	EagerEnumMap<LeaderHeadTypes,bool> m_leaderTaken;
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validAICivs;
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validHumanCivs;
+	std::vector<ArrayEnumMap<PlotNumTypes,scaled> > m_plotWeightsForSanitization;
 
 	void initContemporaries();
+	void setPlayerWeightsPerPlot(PlotNumTypes ePlot,
+			EagerEnumMap<PlayerTypes,scaled>& kPlayerWeights) const;
 	void calculatePlotWeights(ArrayEnumMap<PlotNumTypes,scaled>& aerWeights,
 			PlayerTypes ePlayer, CivilizationTypes eCiv = NO_CIVILIZATION) const;
 	std::auto_ptr<PlotCircleIter> getSurroundings(PlayerTypes ePlayer,
 			CivilizationTypes eCiv = NO_CIVILIZATION) const;
 	bool isBonusDiscouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
-			BonusTypes eBonus = NO_BONUS) const;
+		BonusTypes eBonus = NO_BONUS) const
+	{
+		return isTruBonusDiscouraged(getTruBonus(kPlot, eBonus), eCiv);
+	}
 	bool isBonusEncouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
-			BonusTypes eBonus = NO_BONUS) const;
+		BonusTypes eBonus = NO_BONUS) const
+	{
+		return isTruBonusEncouraged(getTruBonus(kPlot, eBonus), eCiv);
+	}
 	CvTruBonusInfo const* getTruBonus(CvPlot const& kPlot,
 			BonusTypes eBonus = NO_BONUS) const;
+	bool isTruBonusDiscouraged(CvTruBonusInfo const* pTruBonus,
+			CivilizationTypes eCiv) const;
+	bool isTruBonusEncouraged(CvTruBonusInfo const* pTruBonus,
+			CivilizationTypes eCiv) const;
 	void calculateRadius(CvPlayer const& kPlayer);
 	void updateFitnessValues();
 	int calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			LeaderHeadTypes eLeader, bool bLog = false) const;
+	scaled calcBonusFitness(CvPlot const& kPlot,
+			EagerEnumMap<PlayerTypes,scaled> const& kPlayerWeights,
+			BonusTypes eBonus = NO_BONUS, bool bLog = false) const;
+	scaled calcBonusFitness(CvPlot const& kPlot, CvPlayer const& kPlayer,
+			BonusTypes eBonus, bool bLog = false) const;
+	scaled calcBonusSwapUtil(CvPlot const& kFirstPlot, CvPlot const& kSecondPlot,
+			scaled rFirstFitness, scaled rSecondFitness, bool bLog = false) const;
+	scaled calcBonusSwapDisturbance(CvPlot const& kDest, CvPlot const& kOriginalDest,
+			BonusTypes eNewBonus, bool bLog = false) const;
 };
 
 #endif

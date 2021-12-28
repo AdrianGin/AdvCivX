@@ -37,12 +37,269 @@ TrueStarts::TrueStarts()
 		m_truBonuses.set(GC.getInfo(eLoopTruBonus).getBonus(),
 				&GC.getInfo(eLoopTruBonus));
 	}
+	FOR_EACH_ENUM(Civilization)
+	{
+		FOR_EACH_ENUM(Bonus)
+		{
+			if (isTruBonusDiscouraged(m_truBonuses.get(eLoopBonus), eLoopCivilization))
+				m_discouragedBonusesTotal.add(eLoopCivilization, 1);
+			if (isTruBonusEncouraged(m_truBonuses.get(eLoopBonus), eLoopCivilization))
+				m_encouragedBonusesTotal.add(eLoopCivilization, 1);
+		}
+	}
+	m_plotWeightsForSanitization.clear();
+	/*	Would be nicer to cache these at CvGlobals (as the Global Warming code
+		uses them too), but that's a bit annoying to implement. Also, this way,
+		I can use the names most appropriate for the True Starts option. */
+	m_eWarmForest = (FeatureTypes)GC.getDefineINT("WARM_FEATURE");
+	m_eCoolForest = (FeatureTypes)GC.getDefineINT("TEMPERATE_FEATURE");
+	/*	(Woods should be the natural vegetation of the biome represented by
+		this terrain type) */
+	m_eWoodland = (TerrainTypes)GC.getDefineINT("TEMPERATE_TERRAIN");
+	m_eSteppe = (TerrainTypes)GC.getDefineINT("DRY_TERRAIN");
+	m_eTundra = (TerrainTypes)GC.getDefineINT("COLD_TERRAIN");
+	m_eDesert = (TerrainTypes)GC.getDefineINT("BARREN_TERRAIN");
+	m_ePolarDesert = (TerrainTypes)GC.getDefineINT("FROZEN_TERRAIN");
+}
+
+namespace
+{
+	// Wrapper for convenience
+	bool canHaveBonus(CvPlot const& kPlot, BonusTypes eBonus,
+		bool bIgnoreFeature = false)
+	{
+		return kPlot.canHaveBonus(eBonus, false, bIgnoreFeature, true);
+	}
+
+	bool removingVegetationMakesBonusValid(CvPlot const& kPlot, BonusTypes eBonus)
+	{
+		return (kPlot.isFeature() &&
+				GC.getInfo(kPlot.getFeatureType()).getGrowthProbability() > 5 &&
+				canHaveBonus(kPlot, eBonus, true));
+	}
+
+	CvPlot* findValidBonusSwapDest(CvPlot& kOriginalDest, CvPlot const& kSource)
+	{
+		BonusTypes const eBonus = kSource.getBonusType();
+		if (canHaveBonus(kOriginalDest, eBonus))
+			return &kOriginalDest;
+		if (removingVegetationMakesBonusValid(kOriginalDest, eBonus))
+			return &kOriginalDest;
+		for (int iPass = 0; iPass < 2; iPass++)
+		{
+			bool const bRemoveVegetation = (iPass == 1);
+			FOR_EACH_ADJ_PLOT_VAR_RAND(kOriginalDest, mapRand())
+			{
+				if (pAdj->isWater() != kOriginalDest.isWater() || // save time
+					pAdj->getBonusType() != NO_BONUS ||
+					pAdj->isImproved()) // goody hut
+				{
+					continue;
+				}
+				bool bValid = true;
+				for (PlayerIter<CIV_ALIVE> itPlayer;
+					bValid && itPlayer.hasNext(); ++itPlayer)
+				{
+					if (itPlayer->getStartingPlot() == pAdj)
+						bValid = false;
+				}
+				if (!bValid)
+					continue;
+				if (!bRemoveVegetation ? canHaveBonus(*pAdj, eBonus) :
+					removingVegetationMakesBonusValid(*pAdj, eBonus))
+				{
+					return pAdj;
+				}
+			}
+		}
+		return NULL;
+	}
+}
+
+
+void TrueStarts::setPlayerWeightsPerPlot(PlotNumTypes ePlot,
+	EagerEnumMap<PlayerTypes,scaled>& kPlayerWeights) const
+{
+	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	{
+		kPlayerWeights.set(itPlayer->getID(),
+				m_plotWeightsForSanitization[itPlayer->getID()].get(ePlot));
+	}
 }
 
 
 void TrueStarts::sanitize()
 {
-	// Tbd.: Swap bonus resources near starting sites around
+	CvMap const& kMap = GC.getMap();
+	/*	The maps allocate memory lazily, doesn't hurt to initialize them
+		for unused players (which is convenient for indexing). */
+	m_plotWeightsForSanitization.resize(PlayerIter<>::count());
+	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	{
+		calculatePlotWeights(m_plotWeightsForSanitization[itPlayer->getID()],
+				itPlayer->getID());
+	}
+	std::vector<std::pair<scaled,PlotNumTypes> > areFitnessPerBonusPlot;
+	FOR_EACH_ENUM_RAND(PlotNum, mapRand()) // Will frequently tie at 0 fitness
+	{
+		CvPlot const& kPlot = kMap.getPlotByIndex(eLoopPlotNum);
+		if (kPlot.getBonusType() != NO_BONUS)
+		{
+			EagerEnumMap<PlayerTypes,scaled> aerPlayerWeights;
+			setPlayerWeightsPerPlot(eLoopPlotNum, aerPlayerWeights);
+			scaled rFitness = calcBonusFitness(kPlot, aerPlayerWeights);
+			areFitnessPerBonusPlot.push_back(std::make_pair(rFitness, eLoopPlotNum));
+		}
+	}
+	// Consider swapping pairs of bonus plots with subpar fitness values
+	std::sort(areFitnessPerBonusPlot.begin(), areFitnessPerBonusPlot.end());
+	{
+		bool bLog = true;
+		IFLOG
+		{
+			int iNegativeFitPlots = 0;
+			for (size_t i = 0; i < areFitnessPerBonusPlot.size(); i++)
+			{
+				if (areFitnessPerBonusPlot[i].first < 0)
+					iNegativeFitPlots++;
+			}
+			logBBAI("%d plots with negative bonus fitness value", iNegativeFitPlots);
+		}
+	}
+	std::set<CvPlot*> apSwappedPlots; // Swap each bonus resource at most once
+	/*	Yep, this variable name doesn't bode well. Perhaps the inner loop should
+		just always go through all resource plots. I think the current implementation
+		mostly saves time - by picking the best match only from among the first third
+		or so of the vector unless no valid match is found there at all. Well, this
+		also ensures that two problematic resources are dealt with in a single swap
+		whenever that's possible. Then again, calcBonusSwapUtil would probably
+		prefer such swaps even if swaps with unproblematic resources were
+		considered right away ... */
+	int iContinueInnerLoopAt = -1;
+	scaled const rNeverSwapThresh = fixp(0.4);
+	for (size_t i = 0; 3 * i < areFitnessPerBonusPlot.size() &&
+		areFitnessPerBonusPlot[i].first < 0; i++)
+	{
+		CvPlot& kFirstPlot = kMap.getPlotByIndex(areFitnessPerBonusPlot[i].second);
+		if (apSwappedPlots.count(&kFirstPlot) > 0)
+			continue;
+		scaled rMaxUtil;
+		CvPlot* pBestPlot = NULL;
+		int j;
+		for (j = std::max<int>(i + 1, iContinueInnerLoopAt);
+			areFitnessPerBonusPlot[j].first <= rNeverSwapThresh &&
+			(iContinueInnerLoopAt >= 0 ?
+			j < (int)areFitnessPerBonusPlot.size() :
+			(2 * j < (int)areFitnessPerBonusPlot.size() &&
+			(areFitnessPerBonusPlot[j].first <= 0 ||
+			3 * j < (int)areFitnessPerBonusPlot.size()))); j++)
+		{
+			CvPlot& kSecondPlot = kMap.getPlotByIndex(areFitnessPerBonusPlot[j].second);
+			if (apSwappedPlots.count(&kSecondPlot) > 0)
+				continue;
+			scaled rUtil = calcBonusSwapUtil(kFirstPlot, kSecondPlot,
+					areFitnessPerBonusPlot[i].first, areFitnessPerBonusPlot[j].first);
+			if (rUtil > rMaxUtil)
+			{
+				rMaxUtil = rUtil;
+				pBestPlot = &kSecondPlot;
+			}
+		}
+		bool bLog = true;
+		if (pBestPlot == NULL)
+		{
+			IFLOG
+			{
+				logBBAI("No bonus resource found to swap with %S (%d,%d)",
+						GC.getInfo(kFirstPlot.getBonusType()).getDescription(),
+						kFirstPlot.getX(), kFirstPlot.getY());
+				if (iContinueInnerLoopAt >= 0)
+				{
+					logBBAI("Breakdown of fitness calculation ...");
+					// Re-calc fitness value with logging enabled
+					EagerEnumMap<PlayerTypes,scaled> aerPlayerWeights;
+					setPlayerWeightsPerPlot(kFirstPlot.plotNum(), aerPlayerWeights);
+					calcBonusFitness(kFirstPlot, aerPlayerWeights, NO_BONUS, true);
+					logBBAI("\n");
+				}
+			}
+			if (iContinueInnerLoopAt < 0 && j + 1 < (int)areFitnessPerBonusPlot.size() &&
+				areFitnessPerBonusPlot[j + 1].first <= rNeverSwapThresh)
+			{
+				iContinueInnerLoopAt = j + 1;
+				IFLOG logBBAI("Checking resources not previously considered ...");
+				i--;
+			}
+			else iContinueInnerLoopAt = -1;
+			continue;
+		}
+		iContinueInnerLoopAt = -1;
+		// (Not going to consider kFirstPlot again anyway)
+		apSwappedPlots.insert(pBestPlot);
+		CvPlot& kFirstSwapPlot = *findValidBonusSwapDest(kFirstPlot, *pBestPlot);
+		CvPlot& kSecondSwapPlot = *findValidBonusSwapDest(*pBestPlot, kFirstPlot);
+		IFLOG
+		{
+			logBBAI("Swapping bonus resources %S (%d,%d) and %S (%d,%d)",
+					GC.getInfo(kFirstPlot.getBonusType()).getDescription(),
+					kFirstPlot.getX(), kFirstPlot.getY(),
+					GC.getInfo(pBestPlot->getBonusType()).getDescription(),
+					pBestPlot->getX(), pBestPlot->getY());
+			if (!canHaveBonus(kFirstSwapPlot, pBestPlot->getBonusType()))
+			{
+				logBBAI("Removing feature %S from (%d,%d)",
+						!kFirstSwapPlot.isFeature() ? L"none(!)" :
+						GC.getInfo(kFirstSwapPlot.getFeatureType()).getDescription(),
+						kFirstSwapPlot.getX(), kFirstSwapPlot.getY());
+			}
+			if (!canHaveBonus(kSecondSwapPlot, kFirstPlot.getBonusType()))
+			{
+				logBBAI("Removing feature %S from (%d,%d)", !kSecondSwapPlot.isFeature() ?
+						L"none(!)" : GC.getInfo(kSecondSwapPlot.getFeatureType()).getDescription(),
+						kSecondSwapPlot.getX(),kSecondSwapPlot.getY());
+			}
+			if (&kFirstSwapPlot != &kFirstPlot)
+			{
+				logBBAI("Moving %S to adj. destination (%d,%d)",
+						GC.getInfo(pBestPlot->getBonusType()).getDescription(),
+						kFirstSwapPlot.getX(), kFirstSwapPlot.getY());
+			}
+			if (&kSecondSwapPlot != pBestPlot)
+			{
+				logBBAI("Moving %S to adj. destination (%d,%d)",
+						GC.getInfo(kFirstPlot.getBonusType()).getDescription(),
+						kSecondSwapPlot.getX(), kSecondSwapPlot.getY());
+			}
+			// Re-calc fitness, utility values with logging enabled
+			logBBAI("Breakdown of fitness calculations ...");
+			EagerEnumMap<PlayerTypes,scaled> aerPlayerWeights;
+			setPlayerWeightsPerPlot(kFirstPlot.plotNum(), aerPlayerWeights);
+			scaled rFirstVal = calcBonusFitness(
+					kFirstPlot, aerPlayerWeights, NO_BONUS, true);
+			setPlayerWeightsPerPlot(pBestPlot->plotNum(), aerPlayerWeights);
+			scaled rSecondVal = calcBonusFitness(
+					*pBestPlot, aerPlayerWeights, NO_BONUS, true);
+			logBBAI("Breakdown of swap utility calculation ...");
+			scaled rUtil = calcBonusSwapUtil(kFirstPlot, *pBestPlot,
+					rFirstVal, rSecondVal, true);
+			logBBAI("Swap utility is %d/100\n\n", rUtil.getPercent());
+		}
+		BonusTypes eFirstOriginalBonus = kFirstPlot.getBonusType();
+		kFirstPlot.setBonusType(NO_BONUS);
+		if (!canHaveBonus(kFirstSwapPlot, pBestPlot->getBonusType()))
+		{
+			FAssert(canHaveBonus(kFirstSwapPlot, pBestPlot->getBonusType(), true));
+			kFirstSwapPlot.setFeatureType(NO_FEATURE);
+		}
+		kFirstSwapPlot.setBonusType(pBestPlot->getBonusType());
+		pBestPlot->setBonusType(NO_BONUS);
+		if (!canHaveBonus(kSecondSwapPlot, eFirstOriginalBonus))
+		{
+			FAssert(canHaveBonus(kSecondSwapPlot, eFirstOriginalBonus, true));
+			kSecondSwapPlot.setFeatureType(NO_FEATURE);
+		}
+		kSecondSwapPlot.setBonusType(eFirstOriginalBonus);
+	}
 }
 
 
@@ -114,35 +371,41 @@ void TrueStarts::initContemporaries()
 }
 
 
-bool TrueStarts::isBonusDiscouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
-	BonusTypes eBonus) const
+bool TrueStarts::isTruBonusDiscouraged(CvTruBonusInfo const* pTruBonus,
+	CivilizationTypes eCiv) const
 {
-	CvTruBonusInfo const* pTruBonus = getTruBonus(kPlot, eBonus);
 	if (pTruBonus == NULL)
 		return false;
-	CvCivilizationInfo const& kCiv = GC.getInfo(eCiv);
-	EraTypes eUntil = std::max(pTruBonus->getCivDiscouragedUntil(eCiv),
-			pTruBonus->getRegionDiscouragedUntil(kCiv.getArtStyleType()));
-	return (eUntil == NO_ERA || eUntil > GC.getGame().getStartEra());
+	CvTruCivInfo const* pTruCiv = m_truCivs.get(eCiv);
+	EraTypes aeUntil[] = {
+			pTruCiv == NULL || pTruCiv->getGeoRegion() == NO_ARTSTYLE ? (EraTypes)0 :
+			pTruBonus->getRegionDiscouragedUntil(pTruCiv->getGeoRegion()),
+			pTruBonus->getCivDiscouragedUntil(eCiv),
+	};
+	for (int i = 0; i < ARRAYSIZE(aeUntil); i++)
+	{
+		if (aeUntil[i] == NO_ERA || aeUntil[i] > GC.getGame().getStartEra())
+			return true;
+	}
+	return false;
 }
 
 
-bool TrueStarts::isBonusEncouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
-	BonusTypes eBonus) const
+bool TrueStarts::isTruBonusEncouraged(CvTruBonusInfo const* pTruBonus,
+	CivilizationTypes eCiv) const
 {
-	CvTruBonusInfo const* pTruBonus = getTruBonus(kPlot, eBonus);
 	if (pTruBonus == NULL)
 		return false;
-	CvCivilizationInfo const& kCiv = GC.getInfo(eCiv);
 	EraTypes eUntil = pTruBonus->getCivEncouragedUntil(eCiv);
 	return (eUntil == NO_ERA || eUntil > GC.getGame().getStartEra());
 }
 
 
-CvTruBonusInfo const* TrueStarts::getTruBonus(CvPlot const& kPlot, BonusTypes eBonus) const
+CvTruBonusInfo const* TrueStarts::getTruBonus(CvPlot const& kPlot,
+	BonusTypes eBonus) const
 {
 	if (eBonus == NO_BONUS)
-		eBonus = kPlot.getBonusType(); // all-seeing
+		eBonus = kPlot.getBonusType();
 	if (eBonus == NO_BONUS)
 		return NULL;
 	CvTruBonusInfo const* pTruBonus = m_truBonuses.get(eBonus);
@@ -562,26 +825,55 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		calculatePlotWeights(aerWeights, kPlayer.getID(), eCiv);
 		auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer.getID(), eCiv);
 		scaled rElevation;
-		scaled rWetness;
+		scaled rFromBonuses;
+		/*	Fairly low coefficients b/c ill-fitting bonus resources can still
+			be moved away in the end (sanitization) */
+		scaled const rBonusDiscourageFactor = -scaled(3750, std::max(1,
+				m_discouragedBonusesTotal.get(eCiv))).sqrt();
+		scaled const rBonusEncourageFactor = scaled(1100, std::max(1,
+				m_encouragedBonusesTotal.get(eCiv))).sqrt();
+		/*	For the escalating effect of these counts, it's significant
+			that the order of plot traversal is a spiral away from the center. */
+		EagerEnumMap<BonusTypes,int> aeiEncouragedCount;
+		EagerEnumMap<BonusTypes,int> aeiDiscouragedCount;
 		for (PlotCircleIter& itPlot = *pSurroundings; itPlot.hasNext(); ++itPlot)
 		{
 			scaled const rWeight = aerWeights.get(itPlot->plotNum());
 			BonusTypes const eBonus = itPlot->getBonusType();
 			if (eBonus != NO_BONUS)
 			{
-				CvTruBonusInfo const* pTruBonus = m_truBonuses.get(eBonus);
-				if (pTruBonus != NULL)
+				if (isBonusDiscouraged(*itPlot, eCiv))
 				{
-					rWeight; // tbd.
+					aeiDiscouragedCount.add(eBonus, 1);
+					scaled rVal = rWeight * rBonusDiscourageFactor *
+							// Multiple bad resources will be difficult to sanitize
+							scaled(aeiDiscouragedCount.get(eBonus)).pow(fixp(2/3.));
+					IFLOG logBBAI("Discouraging %S (dist. factor: %d percent): -%d/100 fitness",
+							GC.getInfo(eBonus).getDescription(), rWeight.getPercent(), -rVal.getPercent());
+					rFromBonuses += rVal;
+				}
+				else if (isBonusEncouraged(*itPlot, eCiv))
+				{
+					aeiEncouragedCount.add(eBonus, 1);
+					scaled rVal = rWeight * rBonusEncourageFactor /
+							// Mainly want to encourage a single instance
+							aeiEncouragedCount.get(eBonus);
+					IFLOG logBBAI("Encouraging %S (dist. factor: %d percent): +%d/100 fitness",
+							GC.getInfo(eBonus).getDescription(), rWeight.getPercent(), rVal.getPercent());
+					rFromBonuses += rVal;
 				}
 			}
 			/*	Tbd.: Calculate elevation value, wetness value, fitness,
 				something about how maritime the region is; apply weight. */
 		}
+		IFLOG if(rFromBonuses!=0) logBBAI("Total fitness from bonus resources: %d",
+				rFromBonuses.round());
+		iFitness += rFromBonuses.round();
 	}
 	IFLOG logBBAI("\n");
 	return iFitness;
 }
+
 
 void TrueStarts::calculatePlotWeights(ArrayEnumMap<PlotNumTypes,scaled>& aerWeights,
 	PlayerTypes ePlayer, CivilizationTypes eCiv) const
@@ -616,4 +908,233 @@ auto_ptr<PlotCircleIter> TrueStarts::getSurroundings(PlayerTypes ePlayer,
 			new PlotCircleIter(*GET_PLAYER(ePlayer).getStartingPlot(),
 			m_radii.get(ePlayer, eCiv == NO_CIVILIZATION ?
 			GET_PLAYER(ePlayer).getCivilizationType() : eCiv)));
+}
+
+/*	+1 means the best possible fit, -1 the worst.
+	All nonnegative values are acceptable, negative values might be worth
+	a swap (but not necessarily; that's for calcBonusSwapUtil to decide). */
+scaled TrueStarts::calcBonusFitness(CvPlot const& kPlot,
+	EagerEnumMap<PlayerTypes,scaled> const& kPlayerWeights,
+	BonusTypes eBonus, bool bLog) const
+{
+	if (eBonus == NO_BONUS)
+		eBonus = kPlot.getBonusType();
+	scaled rMinPlayerFitness;
+	scaled rTotal;
+	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	{
+		scaled rWeight = kPlayerWeights.get(itPlayer->getID());
+		if (rWeight <= 0) // save time
+			continue;
+		// Try harder to make human starts fit well
+		if (itPlayer->isHuman())
+			rWeight *= fixp(4/3.);
+		IFLOG logBBAI("Fitness weight of %S for %S (%d,%d): %d percent",
+				itPlayer->getName(), GC.getInfo(eBonus).getDescription(),
+				kPlot.getX(), kPlot.getY(), rWeight.getPercent());
+		scaled rPlayerFitness = rWeight *
+				calcBonusFitness(kPlot, *itPlayer, eBonus, bLog);
+		rTotal += rPlayerFitness;
+		rMinPlayerFitness = std::min(rPlayerFitness, rMinPlayerFitness);
+	}
+	/*	(Adjustment to the player count shouldn't be necessary:
+		Larger maps shouldn't have more overlap between starting surroundings
+		than smaller maps, and, if they do, more swapping will be appropriate.
+		Crowdedness is already taken into account by the player weights. */
+	return (rTotal + rMinPlayerFitness) / 2;
+}
+
+/*	Same scale as above if we assume that eBonus is right next to kPlayer's
+	starting plot. (Distances are the caller's job to evaluate.)
+	However, the +1 is so far only a theoretical upper limit - I don't
+	want the encouraged resources to have as strong an effect as the
+	discouraged ones. */
+scaled TrueStarts::calcBonusFitness(CvPlot const& kPlot, CvPlayer const& kPlayer,
+	BonusTypes eBonus, bool bLog) const
+{
+	scaled const rEncouragement =
+			(isBonusEncouraged(kPlot, kPlayer.getCivilizationType(), eBonus) ? fixp(0.55) :
+			(isBonusDiscouraged(kPlot, kPlayer.getCivilizationType(), eBonus) ? -1 : 0));
+	IFLOG if(rEncouragement!=0) logBBAI("Encouragement value of %S (%d,%d) near %S: %d percent",
+			GC.getInfo(eBonus).getDescription(), kPlot.getX(), kPlot.getY(),
+			kPlayer.getName(), rEncouragement.getPercent());
+	return rEncouragement;
+}
+
+namespace
+{
+	EraTypes getTechRevealEra(CvBonusInfo const& kBonus)
+	{
+		return (kBonus.getTechReveal() == NO_TECH ? NO_ERA :
+				GC.getInfo(kBonus.getTechReveal()).getEra());
+	}
+
+	int getClassUniqueRange(CvBonusInfo const& kBonus)
+	{
+		return (kBonus.getBonusClassType() == NO_BONUSCLASS ? 0 :
+				GC.getInfo(kBonus.getBonusClassType()).getUniqueRange());
+	}
+
+	/*	Counts the bonus resources within a given range, but only counts
+		adjacent bonus resources fully, others weighted by distance. */
+	scaled sameBonusInRangeScore(CvPlot const& kPlot, CvBonusInfo const& kBonus,
+		int iMaxRange, bool bBonusClass = false)
+	{
+		scaled rScore;
+		for (SquareIter itPlot(kPlot, iMaxRange, false); itPlot.hasNext(); ++itPlot)
+		{
+			if (itPlot->getBonusType() == NO_BONUS)
+				continue;
+			CvBonusInfo const& kLoopBonus = GC.getInfo(itPlot->getBonusType());
+			if (bBonusClass ?
+				(kLoopBonus.getBonusClassType() == kBonus.getBonusClassType()) :
+				(&kLoopBonus == &kBonus))
+			{
+				rScore += 1 - scaled(
+						2 * std::max(0, itPlot.currPlotDist() - 1), 3 * iMaxRange).
+						pow(fixp(1.5));
+			}
+		}
+		return rScore;
+	}
+}
+
+/*	Utility greater than 0 means that the swap is worth making all in all,
+	i.e. taking into account not just fitness values but also the overall
+	disturbance to the map, balance, increase in predictability ...
+	The specific positive value says how good the swap is (all in all).
+	0 or less means that the swap should not be made, won't generally say
+	_how_ bad it is. */
+scaled TrueStarts::calcBonusSwapUtil(
+	CvPlot const& kFirstPlot, CvPlot const& kSecondPlot,
+	scaled rFirstFitness, scaled rSecondFitness, bool bLog) const
+{
+	CvPlot const* pDestOfSecond = findValidBonusSwapDest(
+			/*	Doesn't actually change the plot - but may return it as non-const.
+				CvMap only contains non-const CvPlot instances, so such casts are safe. */
+			const_cast<CvPlot&>(kFirstPlot), kSecondPlot);
+	if (pDestOfSecond == NULL)
+	{
+		FAssert(!bLog); // I intend to log only valid swaps
+		return 0;
+	}
+	CvPlot const* pDestOfFirst = findValidBonusSwapDest(
+			const_cast<CvPlot&>(kSecondPlot), kFirstPlot);
+	if (pDestOfFirst == NULL)
+	{
+		FAssert(!bLog);
+		return 0;
+	}
+	EagerEnumMap<PlayerTypes,scaled> aerPlayerWeights;
+	setPlayerWeightsPerPlot(pDestOfSecond->plotNum(), aerPlayerWeights);
+	scaled rFirstFitnessAfterSwap = calcBonusFitness(
+			*pDestOfSecond, aerPlayerWeights, kSecondPlot.getBonusType(), bLog);
+	setPlayerWeightsPerPlot(pDestOfFirst->plotNum(), aerPlayerWeights);
+	scaled rSecondFitnessAfterSwap = calcBonusFitness(
+			*pDestOfFirst, aerPlayerWeights, kFirstPlot.getBonusType(), bLog);
+	scaled rUtil = rFirstFitnessAfterSwap + rSecondFitnessAfterSwap
+			- rFirstFitness - rSecondFitness;
+	{
+		scaled rDisturbance = fixp(1/4.) + // Base penalty - ideally don't swap anything
+				calcBonusSwapDisturbance(
+				*pDestOfFirst, kSecondPlot, kFirstPlot.getBonusType(), bLog) +
+				calcBonusSwapDisturbance(
+				*pDestOfSecond, kFirstPlot, kSecondPlot.getBonusType(), bLog);
+		IFLOG logBBAI("Subtracting %d/100 utility for disturbance of original map",
+				rDisturbance.getPercent());
+		rUtil -= rDisturbance;
+	}
+	CvBonusInfo const& kFirstBonus = GC.getInfo(kFirstPlot.getBonusType());
+	CvBonusInfo const& kSecondBonus = GC.getInfo(kSecondPlot.getBonusType());
+	{	// Try to preserve locality of bonus resource types
+		scaled rDistPenalty;
+		if (!pDestOfFirst->sameArea(*pDestOfSecond) &&
+			// Don't care if resources bleed onto small continents
+			2 * pDestOfFirst->getArea().getNumTiles() > 3 * NUM_CITY_PLOTS &&
+			2 * pDestOfSecond->getArea().getNumTiles() > 3 * NUM_CITY_PLOTS)
+		{
+			if (pDestOfFirst->getArea().getNumBonuses(kFirstPlot.getBonusType()) <= 0 &&
+				kFirstBonus.isOneArea())
+			{
+				rDistPenalty += fixp(0.25);
+			}
+			if (pDestOfSecond->getArea().getNumBonuses(kSecondPlot.getBonusType()) <= 0 &&
+				kSecondBonus.isOneArea())
+			{
+				rDistPenalty += fixp(0.25);
+			}
+		}
+		scaled rSwapDist(plotDistance(pDestOfFirst, pDestOfSecond),
+				GC.getMap().maxPlotDistance());
+		if (rSwapDist > fixp(0.2))
+			rDistPenalty += fixp(0.05);
+		IFLOG if(rDistPenalty!=0) logBBAI("Swap distance penalty: %d/100", rDistPenalty.getPercent());
+		rUtil -= rDistPenalty;
+	}
+	{
+		scaled rSameInRangeScore =
+				sameBonusInRangeScore(
+				*pDestOfFirst, kFirstBonus, kFirstBonus.getUniqueRange()) +
+				sameBonusInRangeScore(
+				*pDestOfSecond, kSecondBonus, kSecondBonus.getUniqueRange()) +
+				(sameBonusInRangeScore(
+				*pDestOfFirst, kFirstBonus, getClassUniqueRange(kFirstBonus), true) +
+				sameBonusInRangeScore(
+				*pDestOfSecond, kSecondBonus, getClassUniqueRange(kSecondBonus), true))
+				/ 2;
+		rSameInRangeScore /= 2; // weight factor
+		IFLOG if(rSameInRangeScore!=0) logBBAI("Penalty for same or similar resources nearby: %d/100",
+				rSameInRangeScore.getPercent());
+		rUtil -= rSameInRangeScore;
+	}
+	return rUtil;
+}
+
+
+scaled TrueStarts::calcBonusSwapDisturbance(CvPlot const& kDest,
+	CvPlot const& kOriginalDest, BonusTypes eNewBonus, bool bLog) const
+{
+	BonusTypes eOldBonus = kOriginalDest.getBonusType();
+	scaled rDisturbance;
+	if (&kDest != &kOriginalDest)
+		rDisturbance += fixp(0.1);
+	if (kDest.isFeature() && // just to save time
+		!canHaveBonus(kDest, eOldBonus))
+	{
+		rDisturbance += fixp(0.06);
+	}
+	IFLOG if(rDisturbance!=0)logBBAI("Disturbance from non-resource changes at (%d,%d): %d/100",
+			kDest.getX(), kDest.getY(), rDisturbance.getPercent());
+	CvBonusInfo const& kOldBonus = GC.getInfo(eOldBonus);
+	CvBonusInfo const& kNewBonus = GC.getInfo(eNewBonus);
+	/*	Note that the penalties for dissimilar resources get counted twice,
+		as this function gets called for both plots that are being swapped. */
+	{
+		EraTypes const eOldRevealEra = getTechRevealEra(kOldBonus);
+		EraTypes const eNewRevealEra = getTechRevealEra(kNewBonus);
+		EraTypes const eStartEra = GC.getGame().getStartEra();
+		scaled rFromReveal = scaled(abs(std::max(eStartEra, eOldRevealEra)
+				- std::max(eStartEra, eNewRevealEra))).sqrt() / 9;
+		IFLOG if(rFromReveal!=0) logBBAI(
+				"Disturbance from swapping revealed with unrevealed resource (%S for %S): %d/100",
+				kNewBonus.getDescription(), kOldBonus.getDescription(), rFromReveal.getPercent());
+		rDisturbance += rFromReveal;
+	}
+	if (kOldBonus.isNormalize() != kNewBonus.isNormalize())
+	{
+		scaled rFromNormalize = fixp(0.04);
+		IFLOG logBBAI(
+				"Disturbance from swapping resource suitable for normalization with one unsuitable (%S for %S): %d/100",
+				kNewBonus.getDescription(), kOldBonus.getDescription(), rFromNormalize.getPercent());
+		rDisturbance += rFromNormalize;
+	}
+	if (rDisturbance > 0)
+	{	// Disturbances near starting plots are worse
+		for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		{
+			rDisturbance *= 1 + SQR(m_plotWeightsForSanitization[itPlayer->getID()].
+					get(kDest.plotNum()));
+		}
+	}
+	return rDisturbance;
 }

@@ -2030,14 +2030,17 @@ void CvPlot::updateSeeFromSight(bool bIncrement, bool bUpdatePlotGroups)
 
 
 bool CvPlot::canHaveBonus(BonusTypes eBonus, bool bIgnoreLatitude,
-		bool bIgnoreFeature) const // advc.129
+	bool bIgnoreFeature, // advc.129
+	bool bIgnoreCurrentBonus) const // advc.tsl
 {
 	if (eBonus == NO_BONUS)
 		return true;
 
-	if (getBonusType() != NO_BONUS)
+	if (!bIgnoreCurrentBonus && // advc.tsl
+		getBonusType() != NO_BONUS)
+	{
 		return false;
-
+	}
 	if (isPeak())
 		return false;
 
