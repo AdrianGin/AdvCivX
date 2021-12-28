@@ -977,4 +977,13 @@
 	<German>Lassen Sie Spione Ihre Kultur in gegnerischen Städten verbreiten, um Ihren kulturellen Einfluss dort und im Umland zu stärken. Falls allerdings Ihre Kultur bereits vorherrschend ist, werden Sie damit - in der Regel - nicht erreichen, dass gegnerische Städte zu Ihnen überlaufen.</German>
 </TEXT>
 
+<!-- advc.031: Hopefully, this'll help players come to terms
+	 with AI city placement. -->
+<TEXT>
+	<Tag>TXT_KEY_ADVC_HINT_54</Tag>
+	<English>When placing cities, bear in mind that only the best few tiles will get worked any time soon - so those tiles matter the most. Not every city has to grow large either.</English>
+	<German>Bedenken Sie beim Platzieren von Städten, dass das Bevölkerungswachstum Zeit erfordert. Kurz- und mittelfristig kommt es nur auf die ertragreichsten Geländefelder an.</German>
+</TEXT>
+
+
 </Civ4GameText>
