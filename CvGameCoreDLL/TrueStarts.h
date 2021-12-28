@@ -14,22 +14,22 @@ public:
 	void sanitize();
 
 private:
-	ArrayEnumMap<CivilizationTypes,CvTruCivInfo*> m_truCivs;
-	ArrayEnumMap<LeaderHeadTypes,CvTruLeaderInfo*> m_truLeaders;
-	ArrayEnumMap<BonusTypes,CvTruBonusInfo*> m_truBonuses;
+	EagerEnumMap<CivilizationTypes,CvTruCivInfo*> m_truCivs;
+	EagerEnumMap<LeaderHeadTypes,CvTruLeaderInfo*> m_truLeaders;
+	EagerEnumMap<BonusTypes,CvTruBonusInfo*> m_truBonuses;
 	ArrayEnumMap2D<LeaderHeadTypes,LeaderHeadTypes,int,void*,-1> m_contemporaries;
 	ArrayEnumMap2D<PlayerTypes,CivilizationTypes,int> m_radii;
-	ArrayEnumMap<LeaderHeadTypes,int,void*,-1> m_maxTimeDiff;
+	EagerEnumMap<LeaderHeadTypes,int,void*,-1> m_maxTimeDiff;
 	/*	Fitness values stored per civ-leader pair. In case that a leader
 		is valid for multiple civs. (Does the game really support that?)
 		Need those values for each player, hence the surrounding vector. */
 	std::vector<
 		ArrayEnumMap2D<CivilizationTypes,LeaderHeadTypes,int,void*,MIN_INT>
 	> m_fitnessVals;
-	ArrayEnumMap<PlayerTypes,CivilizationTypes> m_civs;
-	ArrayEnumMap<PlayerTypes,LeaderHeadTypes> m_leaders;
-	ArrayEnumMap<CivilizationTypes,bool> m_civTaken;
-	ArrayEnumMap<LeaderHeadTypes,bool> m_leaderTaken;
+	EagerEnumMap<PlayerTypes,CivilizationTypes> m_civs;
+	EagerEnumMap<PlayerTypes,LeaderHeadTypes> m_leaders;
+	EagerEnumMap<CivilizationTypes,bool> m_civTaken;
+	EagerEnumMap<LeaderHeadTypes,bool> m_leaderTaken;
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validAICivs;
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validHumanCivs;
 
