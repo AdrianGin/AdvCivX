@@ -700,7 +700,7 @@ void CvInitCore::setMapScriptName(CvWString const& szMapScriptName)
 {
 	m_szMapScriptName = szMapScriptName;
 	refreshCustomMapOptions();
-	updatePangaea();	
+	updatePangaea();
 }
 
 bool CvInitCore::getWBMapScript() const

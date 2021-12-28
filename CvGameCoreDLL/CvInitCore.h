@@ -406,6 +406,8 @@ protected:
 	assertion). Just make sure that new data members are added in the right place.
 	And think about whether they need to by synchronized in network games. */
 BOOST_STATIC_ASSERT(sizeof(CvInitCore) ==
-		(sizeof(ArrayEnumMap<PlayerTypes,bool>) > 4 ? 444 : 420)); 
+		(sizeof(ArrayEnumMap<PlayerTypes,bool>) > 4 ? 444 : 420));
+// advc: Custom Game screen probably relies on this
+BOOST_STATIC_ASSERT(GAMEOPTION_LEAD_ANY_CIV == 7 && GAMEOPTION_ADVANCED_START == 0);
 
 #endif
