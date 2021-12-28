@@ -943,11 +943,14 @@ bool CvLeaderHeadInfo::read(CvXMLLoadUtility* pXML)
 	GetChildXmlValByName(m_iMaxGoldTradePercent, "iMaxGoldTradePercent");
 	GetChildXmlValByName(m_iMaxGoldPerTurnTradePercent, "iMaxGoldPerTurnTradePercent");
 	// BETTER_BTS_AI_MOD, Victory Strategy AI, 03/21/10, jdog5000: START
-	GetChildXmlValByName(m_iCultureVictoryWeight, "iCultureVictoryWeight", 0);
-	GetChildXmlValByName(m_iSpaceVictoryWeight, "iSpaceVictoryWeight", 0);
-	GetChildXmlValByName(m_iConquestVictoryWeight, "iConquestVictoryWeight", 0);
-	GetChildXmlValByName(m_iDominationVictoryWeight, "iDominationVictoryWeight", 0);
-	GetChildXmlValByName(m_iDiplomacyVictoryWeight, "iDiplomacyVictoryWeight", 0);
+	/*	advc: Default value changed from 0 to 30, and XML schema now also
+		optional in XML schema. Also set by advc.default, but I want this
+		to be optional even for mod-mods that don't use advc.default. */
+	GetChildXmlValByName(m_iCultureVictoryWeight, "iCultureVictoryWeight", 30);
+	GetChildXmlValByName(m_iSpaceVictoryWeight, "iSpaceVictoryWeight", 30);
+	GetChildXmlValByName(m_iConquestVictoryWeight, "iConquestVictoryWeight", 30);
+	GetChildXmlValByName(m_iDominationVictoryWeight, "iDominationVictoryWeight", 30);
+	GetChildXmlValByName(m_iDiplomacyVictoryWeight, "iDiplomacyVictoryWeight", 30);
 	// BETTER_BTS_AI_MOD: END
 	GetChildXmlValByName(m_iMaxWarRand, "iMaxWarRand");
 	GetChildXmlValByName(m_iMaxWarNearbyPowerRatio, "iMaxWarNearbyPowerRatio");
