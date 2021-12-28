@@ -10,6 +10,9 @@
 			<CivilizationType>CIVILIZATION_AMERICA</CivilizationType>
 			<iLatitudeTimes10>389</iLatitudeTimes10>
 			<iLongitudeTimes10>-770</iLongitudeTimes10>
+			<iPrecipitation>1062</iPrecipitation>
+			<!-- The original colonies weren't so diverse -->
+			<iClimateVariation>60</iClimateVariation>
 			<!-- Use this for both Americas; all the Maize growers. -->
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
@@ -23,6 +26,8 @@
 				 over and over. -->
 			<iLatitudeTimes10>245</iLatitudeTimes10>
 			<iLongitudeTimes10>400</iLongitudeTimes10>
+			<iPrecipitation>111</iPrecipitation>
+			<iClimateVariation>10</iClimateVariation>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -30,6 +35,8 @@
 			<CivilizationType>CIVILIZATION_AZTEC</CivilizationType>
 			<iLatitudeTimes10>194</iLatitudeTimes10>
 			<iLongitudeTimes10>-991</iLongitudeTimes10>
+			<iPrecipitation>851</iPrecipitation>
+			<iClimateVariation>75</iClimateVariation>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -37,6 +44,8 @@
 			<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
 			<iLatitudeTimes10>325</iLatitudeTimes10>
 			<iLongitudeTimes10>444</iLongitudeTimes10>
+			<iPrecipitation>156</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -44,6 +53,8 @@
 			<CivilizationType>CIVILIZATION_BYZANTIUM</CivilizationType>
 			<iLatitudeTimes10>410</iLatitudeTimes10>
 			<iLongitudeTimes10>290</iLongitudeTimes10>
+			<iPrecipitation>850</iPrecipitation>
+			<iClimateVariation>60</iClimateVariation>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -51,12 +62,21 @@
 			<CivilizationType>CIVILIZATION_CARTHAGE</CivilizationType>
 			<iLatitudeTimes10>369</iLatitudeTimes10>
 			<iLongitudeTimes10>103</iLongitudeTimes10>
+			<iPrecipitation>472</iPrecipitation>
+			<!-- Mediterranean and desert is quite a difference, but,
+				 at this latitude, a high variation target could also
+				 encourage jungle. -->
+			<iClimateVariation>40</iClimateVariation>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_CELT</Type>
 			<CivilizationType>CIVILIZATION_CELT</CivilizationType>
 			<iLatitudeTimes10>469</iLatitudeTimes10>
 			<iLongitudeTimes10>40</iLongitudeTimes10>
+			<!-- Dijon - which seems dry for its region, but Boudica's
+				 neck of the woods (Norfolk) is even drier. -->
+			<iPrecipitation>761</iPrecipitation>
+			<iClimateVariation>40</iClimateVariation>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -64,6 +84,11 @@
 			<CivilizationType>CIVILIZATION_CHINA</CivilizationType>
 			<iLatitudeTimes10>399</iLatitudeTimes10>
 			<iLongitudeTimes10>1164</iLongitudeTimes10>
+			<!-- Beijing; Xi'an isn't much different. -->
+			<iPrecipitation>543</iPrecipitation>
+			<!-- The Northeastern Plain is in itself not _extremely_ varied
+				 (I think?) -->
+			<iClimateVariation>70</iClimateVariation>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -71,13 +96,20 @@
 			<CivilizationType>CIVILIZATION_EGYPT</CivilizationType>
 			<iLatitudeTimes10>298</iLatitudeTimes10>
 			<iLongitudeTimes10>310</iLongitudeTimes10>
+			<!-- Thebes is extremely dry -->
+			<iPrecipitation>1</iPrecipitation>
+			<iClimateVariation>5</iClimateVariation>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_ENGLAND</Type>
 			<CivilizationType>CIVILIZATION_ENGLAND</CivilizationType>
-			<iLatitudeTimes10>515</iLatitudeTimes10>
+			<!-- Moved south by 1 degree to account for the mild climate -->
+			<iLatitudeTimes10>505</iLatitudeTimes10>
 			<iLongitudeTimes10>1</iLongitudeTimes10>
+			<iPrecipitation>615</iPrecipitation>
+			<!-- Depends on whether we include Scotland -->
+			<iClimateVariation>30</iClimateVariation>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -85,6 +117,8 @@
 			<CivilizationType>CIVILIZATION_ETHIOPIA</CivilizationType>
 			<iLatitudeTimes10>98</iLatitudeTimes10>
 			<iLongitudeTimes10>387</iLongitudeTimes10>
+			<iPrecipitation>1165</iPrecipitation>
+			<iClimateVariation>70</iClimateVariation>
 			<!-- Close enough -->
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
@@ -93,6 +127,8 @@
 			<CivilizationType>CIVILIZATION_FRANCE</CivilizationType>
 			<iLatitudeTimes10>489</iLatitudeTimes10>
 			<iLongitudeTimes10>24</iLongitudeTimes10>
+			<iPrecipitation>637</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -100,6 +136,8 @@
 			<CivilizationType>CIVILIZATION_GERMANY</CivilizationType>
 			<iLatitudeTimes10>525</iLatitudeTimes10>
 			<iLongitudeTimes10>130</iLongitudeTimes10>
+			<iPrecipitation>515</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -107,6 +145,8 @@
 			<CivilizationType>CIVILIZATION_GREECE</CivilizationType>
 			<iLatitudeTimes10>379</iLatitudeTimes10>
 			<iLongitudeTimes10>237</iLongitudeTimes10>
+			<iPrecipitation>433</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -114,6 +154,8 @@
 			<CivilizationType>CIVILIZATION_HOLY_ROMAN</CivilizationType>
 			<iLatitudeTimes10>508</iLatitudeTimes10>
 			<iLongitudeTimes10>61</iLongitudeTimes10>
+			<iPrecipitation>837</iPrecipitation>
+			<iClimateVariation>30</iClimateVariation>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -121,6 +163,8 @@
 			<CivilizationType>CIVILIZATION_INCA</CivilizationType>
 			<iLatitudeTimes10>-135</iLatitudeTimes10>
 			<iLongitudeTimes10>-720</iLongitudeTimes10>
+			<iPrecipitation>737</iPrecipitation>
+			<iClimateVariation>80</iClimateVariation>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -128,6 +172,8 @@
 			<CivilizationType>CIVILIZATION_INDIA</CivilizationType>
 			<iLatitudeTimes10>286</iLatitudeTimes10>
 			<iLongitudeTimes10>772</iLongitudeTimes10>
+			<iPrecipitation>762</iPrecipitation>
+			<iClimateVariation>85</iClimateVariation>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -135,6 +181,9 @@
 			<CivilizationType>CIVILIZATION_JAPAN</CivilizationType>
 			<iLatitudeTimes10>350</iLatitudeTimes10>
 			<iLongitudeTimes10>1358</iLongitudeTimes10>
+			<!-- Kyoto; Tokyo has even more. -->
+			<iPrecipitation>1523</iPrecipitation>
+			<iClimateVariation>40</iClimateVariation>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -142,6 +191,8 @@
 			<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
 			<iLatitudeTimes10>134</iLatitudeTimes10>
 			<iLongitudeTimes10>1038</iLongitudeTimes10>
+			<iPrecipitation>1406</iPrecipitation>
+			<iClimateVariation>20</iClimateVariation>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -149,6 +200,8 @@
 			<CivilizationType>CIVILIZATION_KOREA</CivilizationType>
 			<iLatitudeTimes10>376</iLatitudeTimes10>
 			<iLongitudeTimes10>1269</iLongitudeTimes10>
+			<iPrecipitation>1418</iPrecipitation>
+			<iClimateVariation>55</iClimateVariation>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -156,12 +209,17 @@
 			<CivilizationType>CIVILIZATION_MALI</CivilizationType>
 			<iLatitudeTimes10>168</iLatitudeTimes10>
 			<iLongitudeTimes10>30</iLongitudeTimes10>
+			<iPrecipitation>183</iPrecipitation>
+			<iClimateVariation>45</iClimateVariation>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_MAYA</Type>
 			<CivilizationType>CIVILIZATION_MAYA</CivilizationType>
 			<iLatitudeTimes10>172</iLatitudeTimes10>
 			<iLongitudeTimes10>-896</iLongitudeTimes10>
+			<!-- around Flores -->
+			<iPrecipitation>2000</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -169,6 +227,9 @@
 			<CivilizationType>CIVILIZATION_MONGOL</CivilizationType>
 			<iLatitudeTimes10>472</iLatitudeTimes10>
 			<iLongitudeTimes10>1028</iLongitudeTimes10>
+			<!-- Arvaikheer -->
+			<iPrecipitation>208</iPrecipitation>
+			<iClimateVariation>50</iClimateVariation>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -176,6 +237,9 @@
 			<CivilizationType>CIVILIZATION_NATIVE_AMERICA</CivilizationType>
 			<iLatitudeTimes10>387</iLatitudeTimes10>
 			<iLongitudeTimes10>-900</iLongitudeTimes10>
+			<!-- St. Louis -->
+			<iPrecipitation>1060</iPrecipitation>
+			<iClimateVariation>50</iClimateVariation>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -183,6 +247,8 @@
 			<CivilizationType>CIVILIZATION_NETHERLANDS</CivilizationType>
 			<iLatitudeTimes10>523</iLatitudeTimes10>
 			<iLongitudeTimes10>50</iLongitudeTimes10>
+			<iPrecipitation>838</iPrecipitation>
+			<iClimateVariation>10</iClimateVariation>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -191,6 +257,8 @@
 			<!-- Same data as for Byzantium -->
 			<iLatitudeTimes10>410</iLatitudeTimes10>
 			<iLongitudeTimes10>290</iLongitudeTimes10>
+			<iPrecipitation>850</iPrecipitation>
+			<iClimateVariation>60</iClimateVariation>
 			<!-- For a strictly post-Medieval civ like this, far-eastern
 				 resources could be acceptable from the start of the game.
 				 However, the core region is probably going to be at a too
@@ -203,6 +271,8 @@
 			<CivilizationType>CIVILIZATION_PERSIA</CivilizationType>
 			<iLatitudeTimes10>299</iLatitudeTimes10>
 			<iLongitudeTimes10>529</iLongitudeTimes10>
+			<iPrecipitation>306</iPrecipitation>
+			<iClimateVariation>60</iClimateVariation>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -210,6 +280,8 @@
 			<CivilizationType>CIVILIZATION_PORTUGAL</CivilizationType>
 			<iLatitudeTimes10>387</iLatitudeTimes10>
 			<iLongitudeTimes10>-92</iLongitudeTimes10>
+			<iPrecipitation>774</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -217,6 +289,8 @@
 			<CivilizationType>CIVILIZATION_ROME</CivilizationType>
 			<iLatitudeTimes10>419</iLatitudeTimes10>
 			<iLongitudeTimes10>125</iLongitudeTimes10>
+			<iPrecipitation>799</iPrecipitation>
+			<iClimateVariation>40</iClimateVariation>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -224,6 +298,9 @@
 			<CivilizationType>CIVILIZATION_RUSSIA</CivilizationType>
 			<iLatitudeTimes10>556</iLatitudeTimes10>
 			<iLongitudeTimes10>376</iLongitudeTimes10>
+			<iPrecipitation>713</iPrecipitation>
+			<!-- The Eastern Plain is as boring as it gets -->
+			<iClimateVariation>40</iClimateVariation>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -231,6 +308,8 @@
 			<CivilizationType>CIVILIZATION_SPAIN</CivilizationType>
 			<iLatitudeTimes10>403</iLatitudeTimes10>
 			<iLongitudeTimes10>-40</iLongitudeTimes10>
+			<iPrecipitation>423</iPrecipitation>
+			<iClimateVariation>65</iClimateVariation>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -238,6 +317,9 @@
 			<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
 			<iLatitudeTimes10>313</iLatitudeTimes10>
 			<iLongitudeTimes10>456</iLongitudeTimes10>
+			<!-- Samawah -->
+			<iPrecipitation>106</iPrecipitation>
+			<iClimateVariation>20</iClimateVariation>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -245,6 +327,8 @@
 			<CivilizationType>CIVILIZATION_VIKING</CivilizationType>
 			<iLatitudeTimes10>634</iLatitudeTimes10>
 			<iLongitudeTimes10>104</iLongitudeTimes10>
+			<iPrecipitation>841</iPrecipitation>
+			<iClimateVariation>70</iClimateVariation>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -252,6 +336,8 @@
 			<CivilizationType>CIVILIZATION_ZULU</CivilizationType>
 			<iLatitudeTimes10>-283</iLatitudeTimes10>
 			<iLongitudeTimes10>314</iLongitudeTimes10>
+			<iPrecipitation>844</iPrecipitation>
+			<iClimateVariation>70</iClimateVariation>
 		</TruCivInfo>
 	</TruCivInfos>
 </Civ4TruCivInfos>
