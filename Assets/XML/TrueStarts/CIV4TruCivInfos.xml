@@ -188,8 +188,9 @@
 		<TruCivInfo>
 			<Type>TRU_OTTOMAN</Type>
 			<CivilizationType>CIVILIZATION_OTTOMAN</CivilizationType>
-			<iLatitudeTimes10>399</iLatitudeTimes10>
-			<iLongitudeTimes10>329</iLongitudeTimes10>
+			<!-- Same data as for Byzantium -->
+			<iLatitudeTimes10>410</iLatitudeTimes10>
+			<iLongitudeTimes10>290</iLongitudeTimes10>
 			<!-- For a strictly post-Medieval civ like this, far-eastern
 				 resources could be acceptable from the start of the game.
 				 However, the core region is probably going to be at a too
