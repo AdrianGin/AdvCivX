@@ -363,8 +363,10 @@ void TrueStarts::initContemporaries()
 			{
 				iContemporaries++;
 				int iTimeDiff = aeiTimeDiffPerOther[j].first;
-				m_contemporaries.set(eFirst, aeiTimeDiffPerOther[j].second, iTimeDiff);
-				m_maxTimeDiff.set(eFirst, std::max(m_maxTimeDiff.get(eFirst), iTimeDiff));
+				m_contemporaries.set(eFirst,
+						aeiTimeDiffPerOther[j].second, iTimeDiff);
+				m_maxTimeDiff.set(eFirst,
+						std::max(m_maxTimeDiff.get(eFirst), iTimeDiff));
 			}
 		}
 	}
@@ -525,7 +527,7 @@ void TrueStarts::changeCivs()
 			eeBestFit.second != NO_LEADER)
 		{
 			{	// Recalc w/ log output
-				bool const bLog=true; // (Shouldn't toggle this one)
+				bool bLog = true;
 				IFLOG calcFitness(GET_PLAYER((PlayerTypes)ePlayer),
 						eeBestFit.first, eeBestFit.second, true);
 			}
@@ -677,7 +679,8 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 {
 	CvPlot const& kStart = *kPlayer.getStartingPlot();
 	IFLOG logBBAI("Fitness calc for %S of %S on (%d,%d)",
-			GC.getInfo(eLeader).getDescription(), GC.getInfo(eCiv).getDescription(), kStart.getX(), kStart.getY());
+			GC.getInfo(eLeader).getDescription(), GC.getInfo(eCiv).getDescription(),
+			kStart.getX(), kStart.getY());
 	CvTruCivInfo const& kTruCiv = *m_truCivs.get(eCiv);
 	int iFitness = 1000;
 	{
@@ -706,7 +709,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				(100 + (100 * iErrorMagnifier) / iMaxMagnifiedError)) / 100;
 		int iLatPenalty = (3 * iError) / 2; // weight
 		IFLOG logBBAI("Penalty for latitude %d (start at %d, civ at %d/10)",
-				iLatPenalty, iAbsStartLat, kTruCiv.get(CvTruCivInfo::LatitudeTimes10));
+				iLatPenalty, iAbsStartLat, abs(kTruCiv.get(CvTruCivInfo::LatitudeTimes10)));
 		iFitness -= iLatPenalty;
 	}
 	{
@@ -864,7 +867,8 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				}
 			}
 			/*	Tbd.: Calculate elevation value/fitness
-				and something about how maritime the region is; apply weight. */
+				and something about how maritime the region is; apply weight.
+				Check for major river if that's a preference. */
 		}
 		IFLOG if(rFromBonuses!=0) logBBAI("Total fitness from bonus resources: %d",
 				rFromBonuses.round());
@@ -877,6 +881,9 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			iFitness += iFromClimate;
 		}
 	}
+	/*	Tbd.: Space, shape preferences: based on plot distances to other starting plots
+		in the same area, area size. (Shape also reflected by weights above -> calculatePlotWeights,
+		but that's not sufficient.) */
 	CvTruLeaderInfo const* pTruLeader = m_truLeaders.get(eLeader);
 	int const iCivBias = kTruCiv.get(CvTruCivInfo::Bias);
 	int const iLeaderBias = (pTruLeader == NULL ? 0 :
