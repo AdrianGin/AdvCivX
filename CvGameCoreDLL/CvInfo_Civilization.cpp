@@ -681,14 +681,12 @@ void CvLeaderHeadInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_iMaxGoldTradePercent);
 	stream->Read(&m_iMaxGoldPerTurnTradePercent);
 	// BETTER_BTS_AI_MOD, Victory Strategy AI, 03/21/10, jdog5000: START
-	if (uiFlag > 0)
-	{
-		stream->Read(&m_iCultureVictoryWeight);
-		stream->Read(&m_iSpaceVictoryWeight);
-		stream->Read(&m_iConquestVictoryWeight);
-		stream->Read(&m_iDominationVictoryWeight);
-		stream->Read(&m_iDiplomacyVictoryWeight);
-	} // BETTER_BTS_AI_MOD: END
+	stream->Read(&m_iCultureVictoryWeight);
+	stream->Read(&m_iSpaceVictoryWeight);
+	stream->Read(&m_iConquestVictoryWeight);
+	stream->Read(&m_iDominationVictoryWeight);
+	stream->Read(&m_iDiplomacyVictoryWeight);
+	// BETTER_BTS_AI_MOD: END
 	stream->Read(&m_iMaxWarRand);
 	stream->Read(&m_iMaxWarNearbyPowerRatio);
 	stream->Read(&m_iMaxWarDistantPowerRatio);
@@ -752,9 +750,7 @@ void CvLeaderHeadInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_iVassalRefuseAttitudeThreshold);
 	stream->Read(&m_iVassalPowerModifier);
 	stream->Read(&m_iFreedomAppreciation);
-	// <advc.104>
-	if (uiFlag >= 3)
-		stream->Read(&m_iLoveOfPeace); // </advc.104>
+	stream->Read(&m_iLoveOfPeace); // advc.104
 	stream->Read((int*)&m_eFavoriteCivic);
 	stream->Read((int*)&m_eFavoriteReligion);
 	stream->ReadString(m_szArtDefineTag);
@@ -777,11 +773,8 @@ void CvLeaderHeadInfo::read(FDataStreamBase* stream)
 	m_piMemoryAttitudePercent = new int[NUM_MEMORY_TYPES];
 	// <advc.104i>
 	int iNumMemoryTypesToRead = NUM_MEMORY_TYPES;
-	if(uiFlag < 2)
-	{
-		iNumMemoryTypesToRead--;
-		m_piMemoryAttitudePercent[iNumMemoryTypesToRead] = 0;
-	}
+	iNumMemoryTypesToRead--;
+	m_piMemoryAttitudePercent[iNumMemoryTypesToRead] = 0;
 	stream->Read(iNumMemoryTypesToRead, m_piMemoryAttitudePercent); // </advc.104i>
 	SAFE_DELETE_ARRAY(m_piNoWarAttitudeProb);
 	m_piNoWarAttitudeProb = new int[NUM_ATTITUDE_TYPES];
@@ -809,9 +802,7 @@ void CvLeaderHeadInfo::read(FDataStreamBase* stream)
 void CvLeaderHeadInfo::write(FDataStreamBase* stream)
 {
 	base_t::write(stream);
-	uint uiFlag=1; // BETTER_BTS_AI_MOD, 03/21/10, jdog5000
-	uiFlag = 2; // advc.104i
-	uiFlag = 3; // advc.104 (love of peace)
+	uint uiFlag = 0;
 	stream->Write(uiFlag);
 
 	stream->Write(m_iWonderConstructRand);
