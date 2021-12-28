@@ -870,6 +870,17 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				rFromBonuses.round());
 		iFitness += rFromBonuses.round();
 	}
+	CvTruLeaderInfo const* pTruLeader = m_truLeaders.get(eLeader);
+	int const iCivBias = kTruCiv.get(CvTruCivInfo::Bias);
+	int const iLeaderBias = (pTruLeader == NULL ? 0 :
+			pTruLeader->get(CvTruLeaderInfo::Bias));
+	iFitness *= 100 + iCivBias;
+	iFitness /= 100;
+	iFitness *= 100 + iLeaderBias;
+	iFitness /= 100;
+	iFitness += iCivBias + iLeaderBias;
+	IFLOG if(iCivBias!=0) logBBAI("Bias against %S: %d percent", GC.getInfo(eCiv).getDescription(), iCivBias);
+	IFLOG if(iLeaderBias!=0) logBBAI("Bias against %S: %d percent", GC.getInfo(eLeader).getDescription(), iLeaderBias);
 	IFLOG logBBAI("\n");
 	return iFitness;
 }
