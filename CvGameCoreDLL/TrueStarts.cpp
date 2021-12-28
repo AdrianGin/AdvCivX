@@ -669,7 +669,8 @@ namespace
 {
 	scaled distWeight(CvPlot const& kStart, CvPlot const& kPlot, int iMaxDist)
 	{
-		return scaled::max(0, 1 - SQR(scaled(plotDistance(&kStart, &kPlot), iMaxDist + 1)));
+		return scaled::max(0, 1 - scaled(plotDistance(&kStart, &kPlot), iMaxDist + 1).
+				pow(fixp(1.72)));
 	}
 }
 
