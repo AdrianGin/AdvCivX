@@ -4456,9 +4456,18 @@ void CvPlayer::disband(CvCity& kCity) // advc: param was CvCity*
 
 bool CvPlayer::canReceiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit) const
 {
-	CvGoodyInfo const& kGoody = GC.getInfo(eGoody); // advc
-	// <advc.314>
 	CvGame const& kGame = GC.getGame();
+	/*	<advc> Safety measure for scenarios. Border expansion upon city placement
+		or units placed onto a hut can lead to a goody before the game is ready.
+		addGoodyMsg will crash then. Can probably only happen with manually edited
+		scenarios. */
+	if (!kGame.isFinalInitialized())
+	{
+		FErrorMsg("Goodies shouldn't be received during game setup");
+		return false;
+	} // </advc>
+	CvGoodyInfo const& kGoody = GC.getInfo(eGoody);
+	// <advc.314>
 	int const iTrainHalved = (GC.getInfo(kGame.getGameSpeedType()).
 			getTrainPercent() + 100) / 2;
 	bool bVeryEarlyGame = (100 * kGame.getGameTurn() < 20 * iTrainHalved);
