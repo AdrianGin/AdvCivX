@@ -725,8 +725,8 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				continue;
 			iOtherPlayers++;
 			CvTruCivInfo const& kLoopTruCiv = *m_truCivs.get(perPlayerVal.second);
-			int iDist = kMap.plotDistance(GET_PLAYER(perPlayerVal.first).
-					getStartingPlot(), &kStart);
+			CvPlot const& kOtherStart = *GET_PLAYER(perPlayerVal.first).getStartingPlot();
+			int iDist = kMap.plotDistance(&kOtherStart, &kStart);
 			int iMaxDist = GC.getMap().maxPlotDistance();
 			int iLoopLatitudeTimes10 = kLoopTruCiv.get(CvTruCivInfo::LatitudeTimes10);
 			int iLatitudeDiffTimes10 = abs(iCivLatitudeTimes10 - iLoopLatitudeTimes10);
@@ -747,6 +747,11 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 					iMaxLatitudeDiffTimes10);
 			int iGeoDistPercent = 100 * iGeoDist / iMaxGeoDist;
 			int iDistPercent = 100 * iDist / iMaxDist;
+			/*	(Don't need such an adjustment for geo dist - America and Eurasia
+				are pretty far apart anyway, and all other relevant places are
+				connected by land.) */
+			if (!kStart.sameArea(kOtherStart))
+				iDistPercent += (18 * (100 - iDistPercent)) / 100;
 			int iErrorPercent = abs(iDistPercent - iGeoDistPercent);
 			{
 				/*	Mean dist value at which the error is given maximal weight.
