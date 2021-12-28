@@ -35,6 +35,8 @@ private:
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validAICivs;
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validHumanCivs;
 	std::vector<ArrayEnumMap<PlotNumTypes,scaled> > m_plotWeightsForSanitization;
+	FeatureTypes m_eWarmForest, m_eCoolForest;
+	TerrainTypes m_eWoodland, m_eSteppe, m_eTundra, m_eDesert, m_ePolarDesert;
 
 	void initContemporaries();
 	void setPlayerWeightsPerPlot(PlotNumTypes ePlot,
@@ -63,6 +65,11 @@ private:
 	void updateFitnessValues();
 	int calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			LeaderHeadTypes eLeader, bool bLog = false) const;
+	int calcClimateFitness(CvPlot const& kStart,
+			ArrayEnumMap<PlotNumTypes,scaled> const& kWeights,
+			int iTargetPrecipitation, int iTargetVariation,
+			bool bLog = false) const;
+	int precipitation(CvPlot const& kPlot, bool bStart = false) const;
 	scaled calcBonusFitness(CvPlot const& kPlot,
 			EagerEnumMap<PlayerTypes,scaled> const& kPlayerWeights,
 			BonusTypes eBonus = NO_BONUS, bool bLog = false) const;

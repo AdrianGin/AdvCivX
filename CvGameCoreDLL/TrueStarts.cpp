@@ -7,7 +7,7 @@
 #include "CvMap.h"
 #include "CvArea.h"
 #include "CvGamePlay.h"
-#include "PlotRadiusIterator.h"
+#include "PlotRange.h"
 #include "BBAILog.h"
 
 using std::auto_ptr;
@@ -863,12 +863,19 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 					rFromBonuses += rVal;
 				}
 			}
-			/*	Tbd.: Calculate elevation value, wetness value, fitness,
-				something about how maritime the region is; apply weight. */
+			/*	Tbd.: Calculate elevation value/fitness
+				and something about how maritime the region is; apply weight. */
 		}
 		IFLOG if(rFromBonuses!=0) logBBAI("Total fitness from bonus resources: %d",
 				rFromBonuses.round());
 		iFitness += rFromBonuses.round();
+		{
+			int iFromClimate = calcClimateFitness(kStart, aerWeights,
+					kTruCiv.get(CvTruCivInfo::Precipitation),
+					kTruCiv.get(CvTruCivInfo::ClimateVariation), bLog);
+			IFLOG logBBAI("Fitness value from climate: %d", iFromClimate);
+			iFitness += iFromClimate;
+		}
 	}
 	CvTruLeaderInfo const* pTruLeader = m_truLeaders.get(eLeader);
 	int const iCivBias = kTruCiv.get(CvTruCivInfo::Bias);
@@ -919,6 +926,296 @@ auto_ptr<PlotCircleIter> TrueStarts::getSurroundings(PlayerTypes ePlayer,
 			new PlotCircleIter(*GET_PLAYER(ePlayer).getStartingPlot(),
 			m_radii.get(ePlayer, eCiv == NO_CIVILIZATION ?
 			GET_PLAYER(ePlayer).getCivilizationType() : eCiv)));
+}
+
+class PrecipitationRegion
+{
+	scaled m_rWeight;
+	scaled m_rPrecipitation;
+	CvPlot const* m_pCenter; // (Reference would prevent copying)
+public:
+	PrecipitationRegion(CvPlot const& kCenter, scaled rWeight, scaled rPrecipitation)
+	:	m_pCenter(&kCenter), m_rWeight(rWeight), m_rPrecipitation(rPrecipitation)
+	{ FAssert(rWeight < 2); } // Make sure the params don't get mixed up
+	scaled getWeight() const { return m_rWeight; }
+	scaled getPrecipitation() const { return m_rPrecipitation; }
+	CvPlot const& getCenter() const { return *m_pCenter; }
+};
+
+
+int TrueStarts::calcClimateFitness(CvPlot const& kStart,
+	ArrayEnumMap<PlotNumTypes,scaled> const& kWeights,
+	int iTargetPrecipitation, int iTargetVariation, bool bLog) const
+{
+	/*	Computing a weighted mean over the entire surroundings of kStart
+		doesn't work well (I've tried); it's usually a muddle. Need to look at
+		subregions with more distinct characteristics. I think that's how
+		players perceive the map, e.g. "there's a major desert." */
+	std::vector<PrecipitationRegion> aRegions;
+	int const iDistBetweenRegions = (GC.getMap().getWorldSize() < 2 ? 3 : 4);
+	for (PlotCircleIter itCenter(kStart, iDistBetweenRegions);
+		itCenter.hasNext(); ++itCenter)
+	{
+		bool const bStart = (&*itCenter == &kStart);
+		// Center the regions on a circle (i.e. on its rim), and one on kStart.
+		if (itCenter.currPlotDist() != iDistBetweenRegions && !bStart)
+			continue;
+		{
+			/*	Only consider the 8 plots on a straight orthogonal or
+				diagonal line from kStart */
+			int iDX = abs(itCenter->getX() - kStart.getX());
+			int iDY = abs(itCenter->getY() - kStart.getY());
+			if (iDX != 0 && iDY != 0 && iDX != iDY)
+				continue;
+		}
+		typedef std::list<std::pair<scaled,scaled> > RegionDataList;
+		RegionDataList arrRegionData;
+		for (CityPlotIter itPlot(*itCenter); itPlot.hasNext(); ++itPlot)
+		{
+			int iPrecipitation = precipitation(*itPlot, &*itPlot == &kStart);
+			if (iPrecipitation < 0)
+				continue;
+			arrRegionData.push_back(std::make_pair(iPrecipitation,
+					kWeights.get(itPlot->plotNum())));
+		}
+		// Discard some outliers
+		arrRegionData.sort();
+		int const iValidPlots = (int)arrRegionData.size();
+		{
+			int const iValidThresh = (NUM_CITY_PLOTS * 5) / 7;
+			int const iMaxOutliers = 2; // at each end of the list
+			int const iOutliers = std::min(iMaxOutliers,
+					(iValidPlots - iValidThresh) / 2);
+			for (int i = 0; i < iOutliers; i++)
+			{
+				arrRegionData.pop_front();
+				arrRegionData.pop_back();
+			}
+		}
+		scaled rRegionWeight;
+		scaled rRegionPrecipitation;
+		for (RegionDataList::const_iterator it = arrRegionData.begin();
+			it != arrRegionData.end(); ++it)
+		{
+			rRegionPrecipitation += it->first;
+			rRegionWeight += it->second;
+		}
+		if (iValidPlots * 2 <= (bStart ? 0 : NUM_CITY_PLOTS) || rRegionWeight <= 0)
+		{
+			if (bStart)
+			{
+				FErrorMsg("At least kStart has to be valid");
+				return 0;
+			}
+			continue;
+		}
+		rRegionPrecipitation /= iValidPlots;
+		rRegionWeight /= iValidPlots;
+		aRegions.push_back(PrecipitationRegion(
+				*itCenter, rRegionWeight, rRegionPrecipitation));
+	}
+	if (aRegions.empty())
+	{
+		FErrorMsg("At least the start region should be valid");
+		return 0;
+	}
+	IFLOG
+	{
+		logBBAI("Climate regions ...");
+		for (size_t i = 0; i < aRegions.size(); i++)
+		{
+			logBBAI("(%d,%d): %d mm, weight %d percent", aRegions[i].getCenter().getX(), aRegions[i].getCenter().getY(),
+					aRegions[i].getPrecipitation().round(), aRegions[i].getWeight().getPercent());
+		}
+	}
+	std::vector<scaled> arPrecipitationFactors;
+	// The region around kStart is always important
+	arPrecipitationFactors.push_back(aRegions[0].getPrecipitation());
+	IFLOG logBBAI("Precipitation in region around start: %d", aRegions[0].getPrecipitation().round());
+	{
+		// Let's also consider a typical region
+		std::vector<std::pair<scaled,scaled> > arrRegionData;
+		for (size_t i = 1; i < aRegions.size(); i++) // (skip region around kStart)
+		{
+			arrRegionData.push_back(std::make_pair(
+					aRegions[i].getPrecipitation(), aRegions[i].getWeight()));
+		}
+		if (!arrRegionData.empty())
+		{
+			scaled rMedianPrecipitation = stats::weightedMedian(arrRegionData);
+			arPrecipitationFactors.push_back(rMedianPrecipitation);
+			IFLOG logBBAI("Precipitation of median region: %d", rMedianPrecipitation.round());
+		}
+	}
+	/*	Lastly, see if we can find a region that reinforces the impression
+		of the region around kStart. */
+	{
+		scaled rMinError = scaled::MAX;
+		int iBestIndex = -1;
+		for (size_t i = 1; i < aRegions.size(); i++)
+		{
+			scaled rError = (1 / aRegions[i].getWeight()) * // Magnify error if weight small
+					(aRegions[i].getPrecipitation() - aRegions[0].getPrecipitation()).
+					abs();
+			if (rError < rMinError)
+			{
+				rMinError = rError;
+				iBestIndex = i;
+			}
+		}
+		if (iBestIndex > 0)
+		{
+			scaled rSimilarPrecipitation = aRegions[iBestIndex].getPrecipitation();
+			arPrecipitationFactors.push_back(rSimilarPrecipitation);
+			IFLOG logBBAI("Precipitation in region most akin to start: %d", rSimilarPrecipitation.round());
+		}
+	}
+	scaled rPrecipitation;
+	for (size_t i = 0; i < arPrecipitationFactors.size(); i++)
+		rPrecipitation += arPrecipitationFactors[i];
+	if (!arPrecipitationFactors.empty())
+		rPrecipitation /= arPrecipitationFactors.size();
+	{	// Not as varied as the real world. Exaggerate any unusual values.
+		int const iTypicalPrecipitation = 600;
+		scaled rAdjust = std::min((rPrecipitation - iTypicalPrecipitation).abs(),
+				rPrecipitation).pow(fixp(0.7));
+		if (rPrecipitation < iTypicalPrecipitation)
+			rAdjust *= -1;
+		IFLOG logBBAI("Adjusting overall precipitation by %d, to exaggerate.", rAdjust.round());
+		rPrecipitation += rAdjust;
+	}
+	IFLOG logBBAI("Overall precipitation: %d", rPrecipitation.round());
+	scaled rFitness;
+	if (iTargetPrecipitation >= 0)
+	{
+		rFitness -= (rPrecipitation - iTargetPrecipitation).abs() / 2;
+		IFLOG logBBAI("%d fitness penalty from target precipitation of %d",
+				-rFitness.round(), iTargetPrecipitation);
+		if (aRegions.size() > 1)
+		{
+			int iCloseMatches = 0;
+			int iPossibleMatches = 0;
+			for (size_t i = (aRegions.size() <= 2 ? 0 : 1); i < aRegions.size(); i++)
+			{
+				iPossibleMatches++;
+				if ((aRegions[i].getPrecipitation() - iTargetPrecipitation).abs() * 5 <
+					scaled::max(aRegions[i].getPrecipitation(), iTargetPrecipitation))
+				{
+					iCloseMatches++;
+				}
+			}
+			scaled rFromCloseMatches = 200 * std::min(scaled(iPossibleMatches, 10),
+					scaled(scaled(iCloseMatches, iPossibleMatches).sqrt()
+					- fixp(1/3.).sqrt()));
+			rFitness += rFromCloseMatches;
+			IFLOG logBBAI("Adding %d for %d close matches among %d regions",
+					rFromCloseMatches.round(), iCloseMatches, iPossibleMatches);
+		}
+	}
+	else IFLOG logBBAI("No precipitation data available");
+	if (iTargetVariation >= 0)
+	{
+		scaled rTotalError;
+		int iSamples = 0;
+		for (size_t i = 1; i < arPrecipitationFactors.size(); i++)
+		{ 
+			rTotalError += (arPrecipitationFactors[i]
+					- arPrecipitationFactors[0]).abs();
+					iSamples++;
+		}
+		if (arPrecipitationFactors.size() > 1)
+		{
+			scaled const rMedian = arPrecipitationFactors[1];
+			for (size_t i = 1; i < aRegions.size(); i++)
+			{
+				// Don't want a region full of jungle to dominate the calculation
+				scaled const rRegionPrecip = scaled::min(1250,
+						aRegions[i].getPrecipitation());
+				/*	Square error to emphasize outliers, double to somewhat match the
+					scale of the absolute errors counted above. */
+				rTotalError += 2 * SQR((rRegionPrecip - rMedian).abs()) /
+						std::max(rMedian, scaled::epsilon());
+				iSamples++;
+			}
+		}
+		scaled rMeanError = rTotalError / iSamples;
+		scaled rVariationScore = rMeanError / 380;
+		rVariationScore.decreaseTo(1);
+		scaled rFromVariation = (iTargetVariation - rVariationScore.getPercent())
+				* fixp(1.5);
+		if (rFromVariation < 0) // Too much variation is more problematic
+			rFromVariation *= fixp(1.78);
+		rFromVariation = -rFromVariation.abs();
+		rFitness += rFromVariation;
+		IFLOG logBBAI("From mismatch in climate variation: %d (score %d percent, target %d percent)",
+				rFromVariation.round(), rVariationScore.getPercent(), iTargetVariation);
+	}
+	else IFLOG logBBAI("No climate variation data available");
+	return rFitness.round();
+}
+
+// Millimeters annual, -1 if undetermined.
+int TrueStarts::precipitation(CvPlot const& kPlot, bool bStart) const
+{
+	if (kPlot.isWater() || kPlot.isPeak())
+		return -1; // Only consider flat land and hills
+	FeatureTypes const eFeature = kPlot.getFeatureType();
+	TerrainTypes const eTerrain = kPlot.getTerrainType();
+	bool bWarmForest = (eFeature == m_eWarmForest);
+	/*	Normalization removes Jungle, obscuring high-precipitation starts.
+		Compensate for that (or we'll never have starts wet enough for the Maya). */
+	if (!bWarmForest && bStart &&
+		(eTerrain == m_eWoodland || eTerrain == m_eSteppe))
+	{
+		FOR_EACH_ADJ_PLOT(kPlot)
+		{
+			if (pAdj->getFeatureType() == m_eWarmForest)
+			{
+				bWarmForest = true;
+				break;
+			}
+		}
+	}
+	if (bWarmForest)
+		return 3000 - 90 * std::min(20, kPlot.getLatitude());
+	if (eTerrain == m_eWoodland)
+	{
+		if (eFeature == m_eCoolForest)
+		{	/*	This calculation is tailored toward Japan and Korea.
+				Very wet temperate forest there. */
+			int iExtra = 0;
+			FOR_EACH_ADJ_PLOT(kPlot)
+			{
+				if (pAdj->getTerrainType() == kPlot.getTerrainType() &&
+					pAdj->getFeatureType() == kPlot.getFeatureType())
+				{
+					iExtra += 110;
+				}
+			}
+			return 850 + std::min(iExtra, 550);
+		}
+		return 750;
+	}
+	if (eTerrain != m_eDesert && eTerrain != m_ePolarDesert)
+	{
+		if (eFeature == m_eCoolForest)
+			return 500; // Taiga, forest steppe
+		return 350; // Tundra, steppe
+	}
+	// I interpret this as the northernmost taiga
+	if (eTerrain == m_ePolarDesert && m_eCoolForest)
+		return 250;
+	// (Polar) desert ...
+	int iExtra = 0;
+	FOR_EACH_ADJ_PLOT(kPlot)
+	{
+		if (pAdj->getTerrainType() == kPlot.getTerrainType() &&
+			pAdj->getFeatureType() == kPlot.getFeatureType())
+		{
+			iExtra -= 25;
+		}
+	}
+	return 200 - iExtra;
 }
 
 /*	+1 means the best possible fit, -1 the worst.
