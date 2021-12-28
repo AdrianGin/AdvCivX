@@ -3,10 +3,17 @@
 	<!-- Mostly just to be consistent with other info types. Could also be
 		 used for lookup by type string for debugging. -->
 	<ElementType name="Type" content="textOnly"/>
+	<!-- Always nice to have some means of encouraging or discouraging a
+		 a particular outcome for no particular reason. +100 is a "high"
+		 bias in favor (but not the highest possible), -100 is a
+		 maximal bias against. -->
+	<ElementType name="iBias" content="textOnly" dt:type="int"/>
 	<!-- TruCivs ... -->
 	<ElementType name="CivilizationType" content="textOnly"/>
 	<ElementType name="iLatitudeTimes10" content="textOnly" dt:type="int"/>
 	<ElementType name="iLongitudeTimes10" content="textOnly" dt:type="int"/>
+	<ElementType name="iPrecipitation" content="textOnly" dt:type="int"/>
+	<ElementType name="iClimateVariation" content="textOnly" dt:type="int"/>
 	<ElementType name="GeoRegion" content="textOnly"/>
 	<ElementType name="TruCivInfo" content="eltOnly">
 		<element type="Type"/>
@@ -29,6 +36,21 @@
 			 which are easy to look up on Wikipedia (though the minutes stated
 			 there will have to be converted to tenths of degrees through
 			 multiplication by 5/3). -->
+		<!-- Annual, in millimeters. I've mostly just used the present-day data
+			 of the capital. This translates into a preference for terrain and
+			 feature types. The ids of those types are obtained from the
+			 Global Warming definitions in GlobalDefinesAlt.xml. -->
+		<element type="iPrecipitation" minOccurs="0"/>
+		<!-- A percentage expressing how much the climate varies across the
+			 (core) territory of the civilization. Again, this results in a
+			 bias for terrain and feature types, so not all kinds variations
+			 should be equally reflected by the percentage. Large civs should
+			 tend to have higher variation values (because players will
+			 associate them with diverse biomes), but the degree of variation
+			 within smaller subareas should also matter. For example, Western
+			 Russia does not have much variation, whereas Korea is quite varied
+			 for a small country. -->
+		<element type="iClimateVariation" minOccurs="0"/>
 		<!-- To make preferences for bonus resources easier to specify.
 			 Use ARTSTYLE_... strings here to avoid having to define a new
 			 global type for the regions. Using the artstyles already assigned
@@ -37,6 +59,7 @@
 			 new artstyles (but I doubt that it would eliminate any of the
 			 existing ones). -->
 		<element type="GeoRegion" minOccurs="0"/>
+		<element type="iBias" minOccurs="0"/>
 	</ElementType>
 	<ElementType name="TruCivInfos" content="eltOnly">
 		<element type="TruCivInfo" maxOccurs="*"/>
@@ -59,6 +82,7 @@
 			 years after. Optional - the DLL treats the date as (entirely) unknown
 			 when none is stated. -->
 		<element type="iStartOfReign" minOccurs="0"/>
+		<element type="iBias" minOccurs="0"/>
 	</ElementType>
 	<ElementType name="TruLeaderInfos" content="eltOnly">
 		<element type="TruLeaderInfo" maxOccurs="*"/>

@@ -16,12 +16,18 @@ protected:
 		base_t::addElements(kElements);
 		kElements.addMandatoryInt(LatitudeTimes10, "LatitudeTimes10");
 		kElements.addMandatoryInt(LongitudeTimes10, "LongitudeTimes10");
+		kElements.addInt(Precipitation, "Precipitation", -1);
+		kElements.addInt(ClimateVariation, "ClimateVariation", -1);
+		kElements.addInt(Bias, "Bias");
 	}
 public:
 	enum IntElementTypes
 	{
 		LatitudeTimes10 = base_t::NUM_INT_ELEMENT_TYPES,
 		LongitudeTimes10,
+		Precipitation,
+		ClimateVariation,
+		Bias,
 		NUM_INT_ELEMENT_TYPES
 	};
 	int get(IntElementTypes e) const
@@ -52,11 +58,13 @@ protected:
 	{
 		base_t::addElements(kElements);
 		kElements.addInt(StartOfReign, "StartOfReign", MIN_INT);
+		kElements.addInt(Bias, "Bias");
 	}
 public:
 	enum IntElementTypes
 	{
 		StartOfReign = base_t::NUM_INT_ELEMENT_TYPES,
+		Bias,
 		NUM_INT_ELEMENT_TYPES
 	};
 	int get(IntElementTypes e) const
