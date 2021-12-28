@@ -551,10 +551,6 @@
 					<UntilEra>NO_ERA</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
-					<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
-					<UntilEra>NO_ERA</UntilEra>
-				</EncouragedCiv>
-				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_MALI</CivilizationType>
 					<UntilEra>ERA_INDUSTRIAL</UntilEra>
 				</EncouragedCiv>
@@ -751,6 +747,12 @@
 		<TruBonusInfo>
 			<Type>TRU_INCENSE</Type>
 			<BonusType>BONUS_INCENSE</BonusType>
+			<DiscouragedRegions>
+				<DiscouragedRegion>
+					<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+					<UntilEra>NO_ERA</UntilEra>
+				</DiscouragedRegion>
+			</DiscouragedRegions>
 			<!-- Discourage desert civs that actually imported incense -->
 			<DiscouragedCivs>
 				<DiscouragedCiv>
@@ -801,6 +803,19 @@
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_BYZANTIUM</CivilizationType>
+					<UntilEra>NO_ERA</UntilEra>
+				</DiscouragedCiv>
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
+					<UntilEra>NO_ERA</UntilEra>
+				</DiscouragedCiv>
+				<!-- Syrian elephants were probably not used in war. -->
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
+					<UntilEra>NO_ERA</UntilEra>
+				</DiscouragedCiv>
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
 					<UntilEra>NO_ERA</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
@@ -961,10 +976,43 @@
 					<CivilizationType>CIVILIZATION_CARTHAGE</CivilizationType>
 					<UntilEra>NO_ERA</UntilEra>
 				</DiscouragedCiv>
+				<!-- The Middle East grows e.g. cumin, but not the valuable
+					 spices that got traded over long distances. Except
+					 Ethiopia to some extent (which I'm including in the
+					 Middle Eastern geo region). -->
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_OTTOMAN</CivilizationType>
+					<UntilEra>NO_ERA</UntilEra>
+				</DiscouragedCiv>
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_BYZANTIUM</CivilizationType>
+					<UntilEra>NO_ERA</UntilEra>
+				</DiscouragedCiv>
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
+					<UntilEra>NO_ERA</UntilEra>
+				</DiscouragedCiv>
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
+					<UntilEra>NO_ERA</UntilEra>
+				</DiscouragedCiv>
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
+					<UntilEra>NO_ERA</UntilEra>
+				</DiscouragedCiv>
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_EGYPT</CivilizationType>
+					<UntilEra>NO_ERA</UntilEra>
+				</DiscouragedCiv>
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_PERSIA</CivilizationType>
+					<UntilEra>NO_ERA</UntilEra>
+				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
 				<EncouragedCiv>
-					<CivilizationType>CIVILIZATION_INDIA</CivilizationType>
+					<!-- Kampot pepper, Cardamom Mts. -->
+					<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
 					<UntilEra>NO_ERA</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
