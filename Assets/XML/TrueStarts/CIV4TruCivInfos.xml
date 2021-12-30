@@ -115,10 +115,12 @@
 		<TruCivInfo>
 			<Type>TRU_ETHIOPIA</Type>
 			<CivilizationType>CIVILIZATION_ETHIOPIA</CivilizationType>
-			<iLatitudeTimes10>98</iLatitudeTimes10>
-			<iLongitudeTimes10>387</iLongitudeTimes10>
-			<iPrecipitation>1165</iPrecipitation>
-			<iClimateVariation>70</iClimateVariation>
+			<!-- (Could use a somewhat lower value to account for Zara Yaqob's
+				 capital being in Central Ethiopia) -->
+			<iLatitudeTimes10>147</iLatitudeTimes10>
+			<iLongitudeTimes10>384</iLongitudeTimes10>
+			<iPrecipitation>652</iPrecipitation>
+			<iClimateVariation>72</iClimateVariation>
 			<!-- Close enough -->
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
