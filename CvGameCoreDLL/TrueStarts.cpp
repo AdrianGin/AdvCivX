@@ -928,7 +928,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				rOceanityWeight *= scaled::min(1, fixp(1.5) - rTargetOceanity);
 				IFLOG logBBAI("Target ratio: %d percent, weight factor %d percent (median oceanity: %d percent)",
 						(1 - rTargetOceanity).getPercent(), rOceanityWeight.getPercent(), m_rMedianOceanity.getPercent());
-				scaled rFromOceanity = (1 - rSameAreaRatio - rTargetOceanity).abs() * -200 *
+				scaled rFromOceanity = (1 - rSameAreaRatio - rTargetOceanity).abs() * -175 *
 						rOceanityWeight;
 				IFLOG logBBAI("Fitness penalty from oceanity: %d", -rFromOceanity.round());
 				iFitness += rFromOceanity.round();
