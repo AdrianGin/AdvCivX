@@ -477,6 +477,18 @@ void TrueStarts::changeCivs()
 	initContemporaries();
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 		calculateRadius(*itPlayer);
+	{
+		std::vector<scaled> arOceanity;
+		for (size_t i = 0; i < m_validAICivs.size(); i++)
+		{
+			scaled rSample = per100(m_truCivs.get(m_validAICivs[i].first)->get(
+					CvTruCivInfo::Oceanity));
+			if (rSample >= 0)
+				arOceanity.push_back(rSample);
+		}
+		if (!arOceanity.empty())
+			m_rMedianOceanity = stats::median(arOceanity);
+	}
 	updateFitnessValues();
 
 	std::vector<std::pair<int,PlayerTypes> > aiePriorityPerPlayer;
@@ -835,7 +847,8 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		ArrayEnumMap<PlotNumTypes,scaled> aerWeights;
 		calculatePlotWeights(aerWeights, kPlayer.getID(), eCiv);
 		auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer.getID(), eCiv);
-		scaled rElevation;
+		scaled rSameAreaPlots;
+		scaled rDifferentAreaPlots;
 		scaled rFromBonuses;
 		/*	Fairly low coefficients b/c ill-fitting bonus resources can still
 			be moved away in the end (sanitization) */
@@ -850,6 +863,17 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		for (PlotCircleIter& itPlot = *pSurroundings; itPlot.hasNext(); ++itPlot)
 		{
 			scaled const rWeight = aerWeights.get(itPlot->plotNum());
+			if (!itPlot->isLake())
+			{
+				if (itPlot->sameArea(kStart))
+					rSameAreaPlots += rWeight;
+				else
+				{
+					rDifferentAreaPlots += rWeight;
+					if (!itPlot->isWater()) // Count land area double
+						rDifferentAreaPlots += rWeight;
+				}
+			}
 			BonusTypes const eBonus = itPlot->getBonusType();
 			if (eBonus != NO_BONUS)
 			{
@@ -888,6 +912,37 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			IFLOG logBBAI("Fitness value from climate: %d", iFromClimate);
 			iFitness += iFromClimate;
 		}
+		{
+			scaled rTargetOceanity = per100(kTruCiv.get(CvTruCivInfo::Oceanity));
+			if (rTargetOceanity >= 0)
+			{
+				scaled rSameAreaRatio = rSameAreaPlots;
+				if (rSameAreaPlots > 0)
+					rSameAreaRatio /= rSameAreaPlots + rDifferentAreaPlots;
+				IFLOG logBBAI("Same-area plot ratio: %d percent", rSameAreaRatio.getPercent());
+				// Give typical oceanity targets less impact on fitness
+				scaled rOceanityWeight = rTargetOceanity - m_rMedianOceanity;
+				/*	Normalize; i.e. if the median is 0.25, then the weight should
+					be more sensitive for targets below the median than above. */
+				if (rOceanityWeight > 0 && m_rMedianOceanity < 1)
+					rOceanityWeight /= 1 - m_rMedianOceanity;
+				else if (m_rMedianOceanity > 0)
+					rOceanityWeight /= m_rMedianOceanity;
+				rOceanityWeight = rOceanityWeight.abs();
+				FAssert(rOceanityWeight <= 1);
+				rOceanityWeight += fixp(0.5); // dilute
+				/*	Reduce weight for high targets b/c we're unlikely to encounter
+					that much water on a Civ map */
+				rOceanityWeight *= scaled::min(1, fixp(1.5) - rTargetOceanity);
+				IFLOG logBBAI("Target ratio: %d percent, weight factor %d percent (median oceanity: %d percent)",
+						(1 - rTargetOceanity).getPercent(), rOceanityWeight.getPercent(), m_rMedianOceanity.getPercent());
+				scaled rFromOceanity = (1 - rSameAreaRatio - rTargetOceanity).abs() * -200 *
+						rOceanityWeight;
+				IFLOG logBBAI("Fitness penalty from oceanity: %d", -rFromOceanity.round());
+				iFitness += rFromOceanity.round();
+			}
+			else IFLOG logBBAI("No oceanity data available");
+		}
 	}
 	/*	Tbd.: Space, shape preferences: based on plot distances to other starting plots
 		in the same area, area size. (Shape also reflected by weights above -> calculatePlotWeights,
@@ -903,7 +958,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 	iFitness += iCivBias + iLeaderBias;
 	IFLOG if(iCivBias!=0) logBBAI("Bias against %S: %d percent", GC.getInfo(eCiv).getDescription(), iCivBias);
 	IFLOG if(iLeaderBias!=0) logBBAI("Bias against %S: %d percent", GC.getInfo(eLeader).getDescription(), iLeaderBias);
-	IFLOG logBBAI("\n");
+	IFLOG logBBAI("Bottom line: %d fitness\n\n", iFitness);
 	return iFitness;
 }
 

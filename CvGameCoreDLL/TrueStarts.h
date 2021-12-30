@@ -19,6 +19,7 @@ private:
 	EagerEnumMap<BonusTypes,CvTruBonusInfo*> m_truBonuses;
 	ArrayEnumMap2D<LeaderHeadTypes,LeaderHeadTypes,int,void*,-1> m_contemporaries;
 	ArrayEnumMap2D<PlayerTypes,CivilizationTypes,int> m_radii;
+	scaled m_rMedianOceanity;
 	EagerEnumMap<LeaderHeadTypes,int,void*,-1> m_maxTimeDiff;
 	EagerEnumMap<CivilizationTypes,int> m_discouragedBonusesTotal;
 	EagerEnumMap<CivilizationTypes,int> m_encouragedBonusesTotal;

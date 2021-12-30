@@ -18,6 +18,7 @@ protected:
 		kElements.addMandatoryInt(LongitudeTimes10, "LongitudeTimes10");
 		kElements.addInt(Precipitation, "Precipitation", -1);
 		kElements.addInt(ClimateVariation, "ClimateVariation", -1);
+		kElements.addInt(Oceanity, "Oceanity", -1);
 		kElements.addInt(Bias, "Bias");
 	}
 public:
@@ -27,6 +28,7 @@ public:
 		LongitudeTimes10,
 		Precipitation,
 		ClimateVariation,
+		Oceanity,
 		Bias,
 		NUM_INT_ELEMENT_TYPES
 	};

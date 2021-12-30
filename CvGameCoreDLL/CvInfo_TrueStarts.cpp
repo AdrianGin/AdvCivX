@@ -13,6 +13,7 @@ bool CvTruCivInfo::read(CvXMLLoadUtility* pXML)
 	FAssertBounds(minLongitude(), maxLongitude() + 1 , get(CvTruCivInfo::LongitudeTimes10));
 	FAssertBounds(-1, 20000, get(CvTruCivInfo::Precipitation));
 	FAssertBounds(-1, 100, get(CvTruCivInfo::ClimateVariation));
+	FAssertBounds(-1, 100, get(CvTruCivInfo::Oceanity));
 	{
 		CvString szTextVal;
 		pXML->GetChildXmlValByName(szTextVal, "CivilizationType");

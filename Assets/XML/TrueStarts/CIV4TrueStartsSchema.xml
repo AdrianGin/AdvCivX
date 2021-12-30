@@ -14,6 +14,7 @@
 	<ElementType name="iLongitudeTimes10" content="textOnly" dt:type="int"/>
 	<ElementType name="iPrecipitation" content="textOnly" dt:type="int"/>
 	<ElementType name="iClimateVariation" content="textOnly" dt:type="int"/>
+	<ElementType name="iOceanity" content="textOnly" dt:type="int"/>
 	<ElementType name="GeoRegion" content="textOnly"/>
 	<ElementType name="TruCivInfo" content="eltOnly">
 		<element type="Type"/>
@@ -51,6 +52,16 @@
 			 Russia does not have much variation, whereas Korea is quite varied
 			 for a small country. -->
 		<element type="iClimateVariation" minOccurs="0"/>
+		<!-- Percentage expressing how maritime the civ is. The game -mostly-
+			 aims at that ratio of sea tiles (or land tiles on different
+			 landmass than the starting tiles) among the tiles surrounding the
+			 starting tile. To choose the values, I've looked at the
+			 approximate ratios on Earth within a 550 km radius around the
+			 capitals (that surface area, conveniently, covers about 1 mio.
+			 square kilometers), then made adjustments based on the capitals'
+			 distance from the coast, length of the coastline and the civs'
+			 naval histories. -->
+		<element type="iOceanity" minOccurs="0"/>
 		<!-- To make preferences for bonus resources easier to specify.
 			 Use ARTSTYLE_... strings here to avoid having to define a new
 			 global type for the regions. Using the artstyles already assigned
