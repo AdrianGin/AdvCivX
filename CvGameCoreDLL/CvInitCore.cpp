@@ -1875,30 +1875,25 @@ void CvInitCore::read(FDataStreamBase* pStream)
 		m_abVictories = new bool[m_iNumVictories];
 		pStream->Read(m_iNumVictories, m_abVictories);
 	}
+	// <advc.tsl>
+	if (uiFlag >= 7)
+		m_abOptions.read(pStream); // </advc.tsl>
 	// <advc.enum>
-	if (uiFlag >= 6)
-		m_abOptions.read(pStream);
+	else if (uiFlag >= 6)
+		m_abOptions.read(pStream, 1);
 	else if (uiFlag >= 4)
-		m_abOptions.readArray<int>(pStream);
+		m_abOptions.readArray<int>(pStream, 1);
 	else // </advc.enum>
 	{
-		bool abOptions[NUM_GAMEOPTION_TYPES];
+		bool abOptions[NUM_GAMEOPTION_TYPES] = {};
 		// <advc.912d>
 		if (uiFlag <= 1)
 		{
 			if (uiFlag == 1)
-			{
-				pStream->Read(NUM_GAMEOPTION_TYPES - 1, abOptions);
-				abOptions[NUM_GAMEOPTION_TYPES - 1] = false;
-			}
-			else
-			{
 				pStream->Read(NUM_GAMEOPTION_TYPES - 2, abOptions);
-				abOptions[NUM_GAMEOPTION_TYPES - 2] = false;
-				abOptions[NUM_GAMEOPTION_TYPES - 1] = false;
-			}
+			else pStream->Read(NUM_GAMEOPTION_TYPES - 3, abOptions);
 		}
-		else pStream->Read(NUM_GAMEOPTION_TYPES, abOptions);
+		else pStream->Read(NUM_GAMEOPTION_TYPES - 1, abOptions);
 		FOR_EACH_ENUM(GameOption)
 			m_abOptions.set(eLoopGameOption, abOptions[eLoopGameOption]);
 	} // </advc.912d>
@@ -2011,7 +2006,8 @@ void CvInitCore::write(FDataStreamBase* pStream)
 	//uiFlag = 3; // advc: m_bPangaea
 	//uiFlag = 4; // advc.enum: m_abOptions as byte map
 	//uiFlag = 5; // advc.190c
-	uiFlag = 6; // advc.enum: new enum map save behavior
+	//uiFlag = 6; // advc.enum: new enum map save behavior
+	uiFlag = 7; // advc.tsl: Additional game option
 
 	pStream->Write(uiFlag);
 
