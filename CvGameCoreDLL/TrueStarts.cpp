@@ -130,6 +130,7 @@ void TrueStarts::setPlayerWeightsPerPlot(PlotNumTypes ePlot,
 
 void TrueStarts::sanitize()
 {
+	PROFILE_FUNC(); // advc.test: To be profiled
 	CvMap const& kMap = GC.getMap();
 	/*	The maps allocate memory lazily, doesn't hurt to initialize them
 		for unused players (which is convenient for indexing). */
@@ -421,6 +422,7 @@ CvTruBonusInfo const* TrueStarts::getTruBonus(CvPlot const& kPlot,
 
 void TrueStarts::changeCivs()
 {
+	PROFILE_FUNC(); // advc.test: To be profiled
 	m_civs.reset();
 	m_leaders.reset();
 	m_civTaken.reset();
