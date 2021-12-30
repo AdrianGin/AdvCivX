@@ -53,7 +53,7 @@
 			 for a small country. -->
 		<element type="iClimateVariation" minOccurs="0"/>
 		<!-- Percentage expressing how maritime the civ is. The game -mostly-
-			 aims at that ratio of sea tiles (or land tiles on different
+			 aims at that ratio of sea tiles (or land tiles on a different
 			 landmass than the starting tiles) among the tiles surrounding the
 			 starting tile. To choose the values, I've looked at the
 			 approximate ratios on Earth within a 550 km radius around the

@@ -596,13 +596,6 @@ void TrueStarts::changeCivs()
 		itPlayer->changeCiv(eCiv, GC.getGame().isScenario(), true);
 		itPlayer->changeLeader(eLeader, GC.getGame().isScenario());
 	}
-
-	/*	Tbd.: Check if the overall fitness values are high enough.
-		Or rather, check if we use too many civs with unusual
-		latitude values - i.e. civs near the equator. We only have a few of those,
-		don't want half of them in every game.
-		Become more tolerant as m_iAttempts increases. */
-	return;
 }
 
 
@@ -898,8 +891,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 					rFromBonuses += rVal;
 				}
 			}
-			/*	Tbd.: Calculate elevation value/fitness
-				and something about how maritime the region is; apply weight.
+			/*	Tbd.: Calculate elevation value/fitness.
 				Check for major river if that's a preference. */
 		}
 		IFLOG if(rFromBonuses!=0) logBBAI("Total fitness from bonus resources: %d",
