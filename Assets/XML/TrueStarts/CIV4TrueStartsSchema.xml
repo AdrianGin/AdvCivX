@@ -15,6 +15,7 @@
 	<ElementType name="iPrecipitation" content="textOnly" dt:type="int"/>
 	<ElementType name="iClimateVariation" content="textOnly" dt:type="int"/>
 	<ElementType name="iOceanity" content="textOnly" dt:type="int"/>
+	<ElementType name="iMajorRiverWeight" content="textOnly" dt:type="int"/>
 	<ElementType name="GeoRegion" content="textOnly"/>
 	<ElementType name="TruCivInfo" content="eltOnly">
 		<element type="Type"/>
@@ -31,8 +32,7 @@
 		<!-- Can take any values between -1800 and +1800.
 			 Negative sign for western hemisphere. -->
 		<element type="iLongitudeTimes10"/>
-		<!-- Any further elements should be optional (minOccurs 0),
-			 with a sensible default value set by the DLL. So that mods with
+		<!-- All other elements are optional (minOccurs 0). So that mods with
 			 additional civs need to define only the geo coordinates,
 			 which are easy to look up on Wikipedia (though the minutes stated
 			 there will have to be converted to tenths of degrees through
@@ -62,6 +62,14 @@
 			 distance from the coast, length of the coastline and the civs'
 			 naval histories. -->
 		<element type="iOceanity" minOccurs="0"/>
+		<!-- Percentage expressing the importance of having a major river
+			 (as in: one of the world's biggest or most prominent river systems)
+			 near the civ's starting tile. 0 means that it doesn't matter
+			 whether there's a major river. A negative percentage discourages
+			 starts near major rivers. The default value is -25. (Civs not
+			 strongly associated with a river should, ideally, have only
+			 minor rivers near their starting plots.) -->
+		<element type="iMajorRiverWeight" minOccurs="0"/>
 		<!-- To make preferences for bonus resources easier to specify.
 			 Use ARTSTYLE_... strings here to avoid having to define a new
 			 global type for the regions. Using the artstyles already assigned

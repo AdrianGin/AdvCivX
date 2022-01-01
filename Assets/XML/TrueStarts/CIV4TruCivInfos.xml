@@ -50,6 +50,7 @@
 			<iPrecipitation>156</iPrecipitation>
 			<iClimateVariation>25</iClimateVariation>
 			<iOceanity>5</iOceanity>
+			<iMajorRiverWeight>60</iMajorRiverWeight>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -97,6 +98,7 @@
 				 (I think?) -->
 			<iClimateVariation>70</iClimateVariation>
 			<iOceanity>10</iOceanity>
+			<iMajorRiverWeight>40</iMajorRiverWeight>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -108,6 +110,7 @@
 			<iPrecipitation>1</iPrecipitation>
 			<iClimateVariation>5</iClimateVariation>
 			<iOceanity>25</iOceanity>
+			<iMajorRiverWeight>100</iMajorRiverWeight>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -193,6 +196,7 @@
 			<iPrecipitation>762</iPrecipitation>
 			<iClimateVariation>85</iClimateVariation>
 			<iOceanity>5</iOceanity>
+			<iMajorRiverWeight>40</iMajorRiverWeight>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -234,6 +238,7 @@
 			<iPrecipitation>183</iPrecipitation>
 			<iClimateVariation>45</iClimateVariation>
 			<iOceanity>3</iOceanity>
+			<iMajorRiverWeight>40</iMajorRiverWeight>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_MAYA</Type>
@@ -266,6 +271,9 @@
 			<iPrecipitation>1060</iPrecipitation>
 			<iClimateVariation>50</iClimateVariation>
 			<iOceanity>4</iOceanity>
+			<!-- Mississippi
+				 (Note that the default for this element is negative) -->
+			<iMajorRiverWeight>0</iMajorRiverWeight>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -354,6 +362,7 @@
 			<iPrecipitation>106</iPrecipitation>
 			<iClimateVariation>20</iClimateVariation>
 			<iOceanity>10</iOceanity>
+			<iMajorRiverWeight>60</iMajorRiverWeight>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>

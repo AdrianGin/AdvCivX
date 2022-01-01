@@ -19,6 +19,7 @@ protected:
 		kElements.addInt(Precipitation, "Precipitation", -1);
 		kElements.addInt(ClimateVariation, "ClimateVariation", -1);
 		kElements.addInt(Oceanity, "Oceanity", -1);
+		kElements.addInt(MajorRiverWeight, "MajorRiverWeight", -25);
 		kElements.addInt(Bias, "Bias");
 	}
 public:
@@ -29,6 +30,7 @@ public:
 		Precipitation,
 		ClimateVariation,
 		Oceanity,
+		MajorRiverWeight,
 		Bias,
 		NUM_INT_ELEMENT_TYPES
 	};

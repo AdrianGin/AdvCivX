@@ -542,8 +542,30 @@ void TrueStarts::changeCivs()
 		{
 			{	// Recalc w/ log output
 				bool bLog = true;
-				IFLOG calcFitness(GET_PLAYER((PlayerTypes)ePlayer),
-						eeBestFit.first, eeBestFit.second, true);
+				IFLOG
+				{
+					calcFitness(GET_PLAYER(ePlayer),
+							eeBestFit.first, eeBestFit.second, true);
+					/*	For logging a particular leader that perhaps should've been
+						chosen instead. (Only makes sense with fixed seeds I think.) */
+					/*LeaderHeadTypes eLeader = (LeaderHeadTypes)
+							GC.getInfoTypeForString("LEADER_");
+					CivilizationTypes eLeaderCiv = NO_CIVILIZATION;
+					FOR_EACH_ENUM(Civilization)
+					{
+						if (GC.getInfo(eLoopCivilization).isLeaders(eLeader))
+						{
+							eLeaderCiv = eLoopCivilization;
+							break;
+						}
+					}
+					if (eLeaderCiv != NO_CIVILIZATION)
+					{
+						logBBAI("For comparison: Fitness eval for %S", GC.getInfo(eLeader).getDescription());
+						calcFitness(GET_PLAYER(ePlayer), eLeaderCiv, eLeader, true);
+					}
+					else FErrorMsg("No civ found for eLeader");*/
+				}
 			}
 			if (GC.getGame().isOption(GAMEOPTION_LEAD_ANY_CIV))
 			{
@@ -840,8 +862,11 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		ArrayEnumMap<PlotNumTypes,scaled> aerWeights;
 		calculatePlotWeights(aerWeights, kPlayer.getID(), eCiv);
 		auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer.getID(), eCiv);
-		scaled rSameAreaPlots;
-		scaled rDifferentAreaPlots;
+		scaled rSameAreaPlotWeights;
+		scaled rDifferentAreaPlotWeights;
+		scaled rAreaRiverScore;
+		scaled rAreaRiverWeights;
+		scaled rAreaNonRiverPlots;
 		scaled rFromBonuses;
 		/*	Fairly low coefficients b/c ill-fitting bonus resources can still
 			be moved away in the end (sanitization) */
@@ -859,12 +884,22 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			if (!itPlot->isLake())
 			{
 				if (itPlot->sameArea(kStart))
-					rSameAreaPlots += rWeight;
+				{
+					rSameAreaPlotWeights += rWeight;
+					// Decrease weight for distant plots when it comes to rivers
+					scaled rRiverWeight = SQR(rWeight);
+					rAreaRiverWeights += rRiverWeight;
+					if (itPlot->isRiver())
+					{
+						rAreaRiverScore += (itPlot->getRiverCrossingCount()
+								+ 2) * rRiverWeight; // dilute
+					}
+				}
 				else
 				{
-					rDifferentAreaPlots += rWeight;
+					rDifferentAreaPlotWeights += rWeight;
 					if (!itPlot->isWater()) // Count land area double
-						rDifferentAreaPlots += rWeight;
+						rDifferentAreaPlotWeights += rWeight;
 				}
 			}
 			BonusTypes const eBonus = itPlot->getBonusType();
@@ -905,12 +940,12 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			iFitness += iFromClimate;
 		}
 		{
-			scaled rTargetOceanity = per100(kTruCiv.get(CvTruCivInfo::Oceanity));
+			scaled const rTargetOceanity = per100(kTruCiv.get(CvTruCivInfo::Oceanity));
 			if (rTargetOceanity >= 0)
 			{
-				scaled rSameAreaRatio = rSameAreaPlots;
-				if (rSameAreaPlots > 0)
-					rSameAreaRatio /= rSameAreaPlots + rDifferentAreaPlots;
+				scaled rSameAreaRatio = rSameAreaPlotWeights;
+				if (rSameAreaPlotWeights > 0)
+					rSameAreaRatio /= rSameAreaPlotWeights + rDifferentAreaPlotWeights;
 				IFLOG logBBAI("Same-area plot ratio: %d percent", rSameAreaRatio.getPercent());
 				// Give typical oceanity targets less impact on fitness
 				scaled rOceanityWeight = rTargetOceanity - m_rMedianOceanity;
@@ -934,6 +969,39 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				iFitness += rFromOceanity.round();
 			}
 			else IFLOG logBBAI("No oceanity data available");
+		}
+		{
+			int const iMajorRiverWeight = kTruCiv.get(CvTruCivInfo::MajorRiverWeight);
+			if (iMajorRiverWeight != 0 && rAreaRiverWeights > 0)
+			{
+				scaled rMeanRiverScore = rAreaRiverScore / rAreaRiverWeights;
+				bool bNearRiver = kStart.isRiver();
+				if (!bNearRiver)
+				{
+					FOR_EACH_ADJ_PLOT(kStart)
+					{
+						if (pAdj->isRiver())
+						{
+							bNearRiver = true;
+							break;
+						}
+					}
+				}
+				if (!bNearRiver)
+				{
+					IFLOG logBBAI("No river near starting plot");
+					rMeanRiverScore /= 2;
+				}
+				IFLOG logBBAI("Mean river score per area plot: %d", rMeanRiverScore.getPercent());
+				scaled rFromRiver = (SQR(rMeanRiverScore) * fixp(1.1) - 1) * 100;
+				rFromRiver.decreaseTo(150);
+				if (rFromRiver < 0 && iMajorRiverWeight > 0)
+					rFromRiver *= fixp(1.5);
+				rFromRiver *= per100(iMajorRiverWeight);
+				IFLOG logBBAI("Fitness from major river: %d (civ weight: %d percent)",
+						rFromRiver.round(), iMajorRiverWeight);
+				iFitness += rFromRiver.round();
+			}
 		}
 	}
 	/*	Tbd.: Space, shape preferences: based on plot distances to other starting plots
