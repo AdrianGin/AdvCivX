@@ -1037,8 +1037,13 @@ int TrueStarts::calcClimateFitness(CvPlot const& kStart,
 			int iPrecipitation = precipitation(*itPlot, &*itPlot == &kStart);
 			if (iPrecipitation < 0)
 				continue;
-			arrRegionData.push_back(std::make_pair(iPrecipitation,
-					kWeights.get(itPlot->plotNum())));
+			scaled rWeight = kWeights.get(itPlot->plotNum());
+			// Extra weight for the most prominent characteristics
+			if (itPlot->getFeatureType() == m_eWarmForest)
+				rWeight *= fixp(1.5);
+			else if (itPlot->getTerrainType() == m_eDesert)
+				rWeight *= fixp(1.8);
+			arrRegionData.push_back(std::make_pair(iPrecipitation, rWeight));
 		}
 		// Discard some outliers
 		arrRegionData.sort();
