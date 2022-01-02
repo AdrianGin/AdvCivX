@@ -892,7 +892,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		scaled rDifferentAreaPlotWeights;
 		scaled rAreaRiverScore;
 		scaled rAreaRiverWeights;
-		scaled rAreaNonRiverPlots;
+		int iTemperateDesertPenalty = 0;
 		scaled rFromBonuses;
 		scaled rBonusDiscourageFactor = -scaled(3750, std::max(1,
 				m_discouragedBonusesTotal.get(eCiv))).sqrt();
@@ -926,6 +926,16 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 					{
 						rAreaRiverScore += (itPlot->getRiverCrossingCount()
 								+ 2) * rRiverWeight; // dilute
+					}
+					if (itPlot->getTerrainType() == m_eDesert)
+					{
+						if (itPlot.currPlotDist() == CITY_PLOTS_RADIUS)
+							iTemperateDesertPenalty = 65;
+						else if (iTemperateDesertPenalty == 0 &&
+							itPlot.currPlotDist() == CITY_PLOTS_RADIUS + 1)
+						{
+							iTemperateDesertPenalty = 40;
+						}
 					}
 				}
 				else
@@ -973,6 +983,22 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 					kTruCiv.get(CvTruCivInfo::ClimateVariation), bLog);
 			IFLOG logBBAI("Fitness value from climate: %d", iFromClimate);
 			iFitness += iFromClimate;
+		}
+		{
+			int const iAbsLatitudeTargetTimes10 = abs(kTruCiv.get(
+					CvTruCivInfo::LatitudeTimes10));
+			// The climate fitness val isn't good at discouraging small desert patches
+			if (iTemperateDesertPenalty > 0 &&
+				/*	With the BtS civ roster, this covers only Europe incl. Turkey
+					(but not all of Europe). */
+				iAbsLatitudeTargetTimes10 >= 409 &&
+				kTruCiv.get(CvTruCivInfo::Oceanity) >= 10)
+			{
+				if (iAbsLatitudeTargetTimes10 < 415)
+					iTemperateDesertPenalty /= 2;
+				IFLOG logBBAI("Fitness penalty of %d for desert in starting city radius", iTemperateDesertPenalty);
+				iFitness -= iTemperateDesertPenalty;
+			}
 		}
 		{
 			scaled const rTargetOceanity = per100(kTruCiv.get(CvTruCivInfo::Oceanity));
