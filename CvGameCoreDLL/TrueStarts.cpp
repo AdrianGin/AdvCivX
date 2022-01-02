@@ -736,7 +736,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 {
 	CvPlot const& kStart = *kPlayer.getStartingPlot();
 	IFLOG logBBAI("Fitness calc for %S of %S on (%d,%d)",
-			GC.getInfo(eLeader).getDescription(), GC.getInfo(eCiv).getDescription(),
+			GC.getInfo(eLeader).getDescription(), GC.getInfo(eCiv).getShortDescription(),
 			kStart.getX(), kStart.getY());
 	CvTruCivInfo const& kTruCiv = *m_truCivs.get(eCiv);
 	int iFitness = 1000;
@@ -826,7 +826,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			}
 			iAvgDistErrorPercent += iErrorPercent;
 			IFLOG logBBAI("Dist error for %S: %d percent (plot dist %d percent, geo dist %d percent)",
-					GC.getInfo(perPlayerVal.second).getDescription(), iErrorPercent, iDistPercent, iGeoDistPercent);
+					GC.getInfo(perPlayerVal.second).getShortDescription(), iErrorPercent, iDistPercent, iGeoDistPercent);
 		}
 		if (iOtherPlayers > 0)
 		{
@@ -1043,7 +1043,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 	iFitness *= 100 + iLeaderBias;
 	iFitness /= 100;
 	iFitness += iCivBias + iLeaderBias;
-	IFLOG if(iCivBias!=0) logBBAI("Bias against %S: %d percent", GC.getInfo(eCiv).getDescription(), iCivBias);
+	IFLOG if(iCivBias!=0) logBBAI("Bias against %S: %d percent", GC.getInfo(eCiv).getShortDescription(), iCivBias);
 	IFLOG if(iLeaderBias!=0) logBBAI("Bias against %S: %d percent", GC.getInfo(eLeader).getDescription(), iLeaderBias);
 	IFLOG logBBAI("Bottom line: %d fitness\n\n", iFitness);
 	return iFitness;
