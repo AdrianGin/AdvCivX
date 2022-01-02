@@ -1281,10 +1281,16 @@ int TrueStarts::calcClimateFitness(CvPlot const& kStart,
 		rPrecipitation += rAdjust;
 	}
 	IFLOG logBBAI("Overall precipitation: %d", rPrecipitation.round());
+	/*	Very unlikely to match extremely low target precipitation (at least on a
+		random map, but even the Earth scenarios aren't that dry), shouldn't
+		penalize such a mismatch much. */
+	scaled const rVeryLowPrecipThresh = scaled::min(100, rPrecipitation);
 	scaled rFitness;
 	if (iTargetPrecipitation >= 0)
 	{
-		rFitness -= (rPrecipitation - iTargetPrecipitation).abs() / 2;
+		rFitness -= (rPrecipitation - scaled::max(iTargetPrecipitation,
+				rVeryLowPrecipThresh)).abs() / 2 +
+				scaled::max(0, rVeryLowPrecipThresh - iTargetPrecipitation) / 4;
 		IFLOG logBBAI("%d fitness penalty from target precipitation of %d",
 				-rFitness.round(), iTargetPrecipitation);
 		if (aRegions.size() > 1)
@@ -1294,7 +1300,8 @@ int TrueStarts::calcClimateFitness(CvPlot const& kStart,
 			for (size_t i = (aRegions.size() <= 2 ? 0 : 1); i < aRegions.size(); i++)
 			{
 				iPossibleMatches++;
-				if ((aRegions[i].getPrecipitation() - iTargetPrecipitation).abs() * 5 <
+				if ((aRegions[i].getPrecipitation()
+					- scaled::max(iTargetPrecipitation, rVeryLowPrecipThresh)).abs() * 5 <
 					scaled::max(aRegions[i].getPrecipitation(), iTargetPrecipitation))
 				{
 					iCloseMatches++;
@@ -1317,7 +1324,7 @@ int TrueStarts::calcClimateFitness(CvPlot const& kStart,
 		{ 
 			rTotalError += (arPrecipitationFactors[i]
 					- arPrecipitationFactors[0]).abs();
-					iSamples++;
+			iSamples++;
 		}
 		if (arPrecipitationFactors.size() > 1)
 		{
@@ -1330,12 +1337,12 @@ int TrueStarts::calcClimateFitness(CvPlot const& kStart,
 				/*	Square error to emphasize outliers, double to somewhat match the
 					scale of the absolute errors counted above. */
 				rTotalError += 2 * SQR((rRegionPrecip - rMedian).abs()) /
-						std::max(rMedian, scaled::epsilon());
+						std::max(rMedian + rVeryLowPrecipThresh, scaled::epsilon());
 				iSamples++;
 			}
 		}
 		scaled rMeanError = rTotalError / iSamples;
-		scaled rVariationScore = rMeanError / 380;
+		scaled rVariationScore = rMeanError / 345;
 		rVariationScore.decreaseTo(1);
 		scaled rFromVariation = (iTargetVariation - rVariationScore.getPercent())
 				* fixp(1.5);
