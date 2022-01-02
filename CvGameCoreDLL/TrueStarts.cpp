@@ -50,7 +50,12 @@ TrueStarts::TrueStarts()
 				m_encouragedBonusesTotal.add(eLoopCivilization, 1);
 		}
 	}
-	m_plotWeightsForSanitization.clear();
+	m_radii.reset();
+	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		calculateRadius(*itPlayer);
+	m_plotWeights.reset();
+	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		calculatePlotWeights(*itPlayer);
 	/*	Would be nicer to cache these at CvGlobals (as the Global Warming code
 		uses them too), but that's a bit annoying to implement. Also, this way,
 		I can use the names most appropriate for the True Starts option. */
@@ -126,7 +131,7 @@ void TrueStarts::setPlayerWeightsPerPlot(PlotNumTypes ePlot,
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 	{
 		kPlayerWeights.set(itPlayer->getID(),
-				m_plotWeightsForSanitization[itPlayer->getID()].get(ePlot));
+				m_plotWeights.get(itPlayer->getID(), ePlot));
 	}
 }
 
@@ -134,14 +139,6 @@ void TrueStarts::setPlayerWeightsPerPlot(PlotNumTypes ePlot,
 void TrueStarts::sanitize()
 {
 	CvMap const& kMap = GC.getMap();
-	/*	The maps allocate memory lazily, doesn't hurt to initialize them
-		for unused players (which is convenient for indexing). */
-	m_plotWeightsForSanitization.resize(PlayerIter<>::count());
-	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
-	{
-		calculatePlotWeights(m_plotWeightsForSanitization[itPlayer->getID()],
-				itPlayer->getID());
-	}
 	std::vector<std::pair<scaled,PlotNumTypes> > areFitnessPerBonusPlot;
 	FOR_EACH_ENUM_RAND(PlotNum, mapRand()) // Will frequently tie at 0 fitness
 	{
@@ -428,7 +425,6 @@ void TrueStarts::changeCivs()
 	m_leaders.reset();
 	m_civTaken.reset();
 	m_leaderTaken.reset();
-	m_radii.reset();
 
 	{
 		std::vector<CivilizationTypes> aeValidHumanCivs;
@@ -471,8 +467,6 @@ void TrueStarts::changeCivs()
 	}
 	// Could do this in ctor, but I want to use the valid-civ lists above.
 	initContemporaries();
-	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
-		calculateRadius(*itPlayer);
 	{
 		std::vector<scaled> arOceanity;
 		for (size_t i = 0; i < m_validAICivs.size(); i++)
@@ -644,23 +638,23 @@ void TrueStarts::changeCivs()
 void TrueStarts::calculateRadius(CvPlayer const& kPlayer)
 {
 	CvMap const& kMap = GC.getMap();
-	scaled rBaseRadius = 6 + kMap.getWorldSize();
+	scaled rRadius = 6 + kMap.getWorldSize();
 	{
 		scaled rCrowdedness(PlayerIter<CIV_ALIVE>::count(),
 				GC.getGame().getRecommendedPlayers());
 		if (rCrowdedness > 1)
-			rBaseRadius /= rCrowdedness.sqrt();
-		else rBaseRadius += 2 / rCrowdedness - 1;
+			rRadius /= rCrowdedness.sqrt();
+		else rRadius += 2 / rCrowdedness - 1;
 	}
 	// Increase radius when there's a lot of ocean in surrounding plots
 	int iExtra = 0;
-	scaled const rTargetNonOcean = fixp(2.25) * SQR(rBaseRadius);
+	scaled const rTargetNonOcean = fixp(2.25) * SQR(rRadius);
 	CvPlot const& kStart = *kPlayer.getStartingPlot();
 	CvArea const& kStartArea = kStart.getArea();
 	do
 	{
 		int iNonOcean = 0;
-		for (PlotCircleIter itPlot(kStart, rBaseRadius.round() + iExtra);
+		for (PlotCircleIter itPlot(kStart, rRadius.round() + iExtra);
 			itPlot.hasNext(); ++itPlot)
 		{
 			if (itPlot->isArea(kStartArea) ||
@@ -675,13 +669,9 @@ void TrueStarts::calculateRadius(CvPlayer const& kPlayer)
 		if (iNonOcean >= rTargetNonOcean)
 			break;
 		iExtra++;
-	} while (iExtra < fixp(0.4) * rBaseRadius);
-	rBaseRadius += iExtra;
-	FOR_EACH_ENUM(Civilization)
-	{
-		// Tbd.: Adjust to preference for space to be defined in Civ4TruCivInfos.xml
-		m_radii.set(kPlayer.getID(), eLoopCivilization, rBaseRadius.round());
-	}
+	} while (iExtra < fixp(0.4) * rRadius);
+	rRadius += iExtra;
+	m_radii.set(kPlayer.getID(), rRadius.round());
 }
 
 
@@ -882,9 +872,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				scaled(m_leaders.numNonDefault()).sqrt()).round();
 	}
 	{	// Evaluation of surrounding plots ...
-		ArrayEnumMap<PlotNumTypes,scaled> aerWeights;
-		calculatePlotWeights(aerWeights, kPlayer.getID(), eCiv);
-		auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer.getID(), eCiv);
+		auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer.getID());
 		scaled rSameAreaPlotWeights;
 		scaled rDifferentAreaPlotWeights;
 		scaled rAreaRiverScore;
@@ -912,7 +900,8 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		EagerEnumMap<BonusTypes,int> aeiDiscouragedCount;
 		for (PlotCircleIter& itPlot = *pSurroundings; itPlot.hasNext(); ++itPlot)
 		{
-			scaled const rWeight = aerWeights.get(itPlot->plotNum());
+			scaled const rWeight = m_plotWeights.get(
+					kPlayer.getID(), itPlot->plotNum());
 			if (!itPlot->isLake())
 			{
 				if (itPlot->sameArea(kStart))
@@ -1015,7 +1004,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				rFromBonuses.round());
 		iFitness += rFromBonuses.round();
 		{
-			int iFromClimate = calcClimateFitness(kStart, aerWeights,
+			int iFromClimate = calcClimateFitness(kPlayer,
 					kTruCiv.get(CvTruCivInfo::Precipitation),
 					kTruCiv.get(CvTruCivInfo::ClimateVariation), bLog);
 			IFLOG logBBAI("Fitness value from climate: %d", iFromClimate);
@@ -1148,12 +1137,10 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 }
 
 
-void TrueStarts::calculatePlotWeights(ArrayEnumMap<PlotNumTypes,scaled>& aerWeights,
-	PlayerTypes ePlayer, CivilizationTypes eCiv) const
+void TrueStarts::calculatePlotWeights(CvPlayer const& kPlayer)
 {
-	CvPlayer const& kPlayer = GET_PLAYER(ePlayer);
 	CvPlot const& kStart = *kPlayer.getStartingPlot();
-	auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(ePlayer, eCiv);
+	auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer.getID());
 	for (PlotCircleIter& itPlot = *pSurroundings; itPlot.hasNext(); ++itPlot)
 	{
 		scaled const rDistWeight = distWeight(kStart, *itPlot, itPlot.radius());
@@ -1168,19 +1155,25 @@ void TrueStarts::calculatePlotWeights(ArrayEnumMap<PlotNumTypes,scaled>& aerWeig
 				rWeight *= 1 - scaled::max(0, rOtherDistWeight - rDistWeight);
 			}
 		}
-		// Tbd.: Adjust based on civ's shape preference and CvMap::xDistance, yDistance
-		aerWeights.set(itPlot->plotNum(), rWeight);
+		/*	Initially, I was going to call CvMap::xDistance, yDistance here and
+			adjust the weights to the civ's shape preference. However, then the
+			weights should also be recomputed (for every player-civ pair) each
+			time a civ is placed b/c the weights of neighboring civs interfere
+			with each other. This is computationally expensive enough to introduce
+			a delay of several seconds on maps with 18 civs and may make
+			super-Huge maps a very slow affair. (So I'll be using a cruder mechanism
+			for shape preferences instead.) Framework for civ-specific weights
+			deleted on 2 Jan 2021. */
+		m_plotWeights.set(kPlayer.getID(), itPlot->plotNum(), rWeight);
 	}
 }
 
 
-auto_ptr<PlotCircleIter> TrueStarts::getSurroundings(PlayerTypes ePlayer,
-	CivilizationTypes eCiv) const
+auto_ptr<PlotCircleIter> TrueStarts::getSurroundings(PlayerTypes ePlayer) const
 {
 	return auto_ptr<PlotCircleIter>(
 			new PlotCircleIter(*GET_PLAYER(ePlayer).getStartingPlot(),
-			m_radii.get(ePlayer, eCiv == NO_CIVILIZATION ?
-			GET_PLAYER(ePlayer).getCivilizationType() : eCiv)));
+			m_radii.get(ePlayer)));
 }
 
 class PrecipitationRegion
@@ -1198,10 +1191,10 @@ public:
 };
 
 
-int TrueStarts::calcClimateFitness(CvPlot const& kStart,
-	ArrayEnumMap<PlotNumTypes,scaled> const& kWeights,
-	int iTargetPrecipitation, int iTargetVariation, bool bLog) const
+int TrueStarts::calcClimateFitness(CvPlayer const& kPlayer, int iTargetPrecipitation,
+	int iTargetVariation, bool bLog) const
 {
+	CvPlot const& kStart = *kPlayer.getStartingPlot();
 	/*	Computing a weighted mean over the entire surroundings of kStart
 		doesn't work well (I've tried); it's usually a muddle. Need to look at
 		subregions with more distinct characteristics. I think that's how
@@ -1229,7 +1222,7 @@ int TrueStarts::calcClimateFitness(CvPlot const& kStart,
 			int iPrecipitation = precipitation(*itPlot, &*itPlot == &kStart);
 			if (iPrecipitation < 0)
 				continue;
-			scaled rWeight = kWeights.get(itPlot->plotNum());
+			scaled rWeight = m_plotWeights.get(kPlayer.getID(), itPlot->plotNum());
 			// Extra weight for the most prominent characteristics
 			if (itPlot->getFeatureType() == m_eWarmForest)
 				rWeight *= fixp(4/3.);
@@ -1715,8 +1708,8 @@ scaled TrueStarts::calcBonusSwapDisturbance(CvPlot const& kDest,
 	{	// Disturbances near starting plots are worse
 		for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 		{
-			rDisturbance *= 1 + SQR(m_plotWeightsForSanitization[itPlayer->getID()].
-					get(kDest.plotNum()));
+			rDisturbance *= 1 + SQR(m_plotWeights.get(itPlayer->getID(),
+					kDest.plotNum()));
 		}
 	}
 	return rDisturbance;

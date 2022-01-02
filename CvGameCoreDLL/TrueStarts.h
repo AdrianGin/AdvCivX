@@ -19,7 +19,8 @@ private:
 	EagerEnumMap<LeaderHeadTypes,CvTruLeaderInfo*> m_truLeaders;
 	EagerEnumMap<BonusTypes,CvTruBonusInfo*> m_truBonuses;
 	ArrayEnumMap2D<LeaderHeadTypes,LeaderHeadTypes,int,void*,-1> m_contemporaries;
-	ArrayEnumMap2D<PlayerTypes,CivilizationTypes,int> m_radii;
+	ArrayEnumMap<PlayerTypes,int> m_radii;
+	ArrayEnumMap2D<PlayerTypes,PlotNumTypes,scaled> m_plotWeights;
 	scaled m_rMedianOceanity;
 	EagerEnumMap<LeaderHeadTypes,int,void*,-1> m_maxTimeDiff;
 	EagerEnumMap<CivilizationTypes,int> m_discouragedBonusesTotal;
@@ -36,17 +37,14 @@ private:
 	EagerEnumMap<LeaderHeadTypes,bool> m_leaderTaken;
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validAICivs;
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validHumanCivs;
-	std::vector<ArrayEnumMap<PlotNumTypes,scaled> > m_plotWeightsForSanitization;
 	FeatureTypes m_eWarmForest, m_eCoolForest;
 	TerrainTypes m_eWoodland, m_eSteppe, m_eTundra, m_eDesert, m_ePolarDesert;
 
 	void initContemporaries();
 	void setPlayerWeightsPerPlot(PlotNumTypes ePlot,
 			EagerEnumMap<PlayerTypes,scaled>& kPlayerWeights) const;
-	void calculatePlotWeights(ArrayEnumMap<PlotNumTypes,scaled>& aerWeights,
-			PlayerTypes ePlayer, CivilizationTypes eCiv = NO_CIVILIZATION) const;
-	std::auto_ptr<PlotCircleIter> getSurroundings(PlayerTypes ePlayer,
-			CivilizationTypes eCiv = NO_CIVILIZATION) const;
+	void calculatePlotWeights(CvPlayer const& kPlayer);
+	std::auto_ptr<PlotCircleIter> getSurroundings(PlayerTypes ePlayer) const;
 	bool isBonusDiscouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
 		BonusTypes eBonus = NO_BONUS) const
 	{
@@ -67,10 +65,8 @@ private:
 	void updateFitnessValues();
 	int calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			LeaderHeadTypes eLeader, bool bLog = false) const;
-	int calcClimateFitness(CvPlot const& kStart,
-			ArrayEnumMap<PlotNumTypes,scaled> const& kWeights,
-			int iTargetPrecipitation, int iTargetVariation,
-			bool bLog = false) const;
+	int calcClimateFitness(CvPlayer const& kPlayer, int iTargetPrecipitation,
+			int iTargetVariation, bool bLog = false) const;
 	int precipitation(CvPlot const& kPlot, bool bStart = false) const;
 	scaled calcBonusFitness(CvPlot const& kPlot,
 			EagerEnumMap<PlayerTypes,scaled> const& kPlayerWeights,
