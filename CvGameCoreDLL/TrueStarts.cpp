@@ -828,16 +828,15 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			IFLOG logBBAI("Dist error for %S: %d percent (plot dist %d percent, geo dist %d percent)",
 					GC.getInfo(perPlayerVal.second).getShortDescription(), iErrorPercent, iDistPercent, iGeoDistPercent);
 		}
+		scaled rAvgDistErrorPenalty = iAvgDistErrorPercent * fixp(0.48);
 		if (iOtherPlayers > 0)
 		{
-			iAvgDistErrorPercent = (iAvgDistErrorPercent /
-					/*	Not quite an average (that would be pow(1)).
-						I do want distances to matter more as the last few
-						civs are chosen. */
-					scaled(iOtherPlayers).pow(fixp(0.77))).round();
-			IFLOG logBBAI("Subtracting %d from fitness for dist error", iAvgDistErrorPercent);
+			/*	Not quite an average (that would be pow(1)). I do want distances
+				to matter more as the last few civs are chosen. */
+			rAvgDistErrorPenalty /= scaled(iOtherPlayers).pow(fixp(0.77));
+			IFLOG logBBAI("Subtracting %d from fitness for dist error", rAvgDistErrorPenalty.round());
 		}
-		iFitness -= iAvgDistErrorPercent;
+		iFitness -= rAvgDistErrorPenalty.round();
 	}
 	int const iOurMaxTimeDiff = m_maxTimeDiff.get(eLeader);
 	if (iOurMaxTimeDiff >= 0)
