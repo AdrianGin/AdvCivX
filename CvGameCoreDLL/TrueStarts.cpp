@@ -1223,8 +1223,7 @@ int TrueStarts::calcClimateFitness(CvPlot const& kStart,
 			if (iDX != 0 && iDY != 0 && iDX != iDY)
 				continue;
 		}
-		typedef std::list<std::pair<scaled,scaled> > RegionDataList;
-		RegionDataList arrRegionData;
+		std::vector<std::pair<scaled,scaled> > arrRegionData;
 		for (CityPlotIter itPlot(*itCenter); itPlot.hasNext(); ++itPlot)
 		{
 			int iPrecipitation = precipitation(*itPlot, &*itPlot == &kStart);
@@ -1239,26 +1238,32 @@ int TrueStarts::calcClimateFitness(CvPlot const& kStart,
 			arrRegionData.push_back(std::make_pair(iPrecipitation, rWeight));
 		}
 		// Discard some outliers
-		arrRegionData.sort();
+		std::sort(arrRegionData.begin(), arrRegionData.end());
 		int const iValidPlots = (int)arrRegionData.size();
 		{
 			int const iValidThresh = (NUM_CITY_PLOTS * 5) / 7;
 			int const iMaxOutliers = 2; // at each end of the list
 			int const iOutliers = std::min(iMaxOutliers,
 					(iValidPlots - iValidThresh) / 2);
-			for (int i = 0; i < iOutliers; i++)
+			/*	(This would be easier to read with a std::list and pop_front,
+				but sorting lists is expensive. It's still kind of expensive
+				with a vector. The region data calculation is -currently-
+				the slowest part of the True Starts code. List code replaced
+				on 2 Jan 2021.) */
+			if (iOutliers > 0)
 			{
-				arrRegionData.pop_front();
-				arrRegionData.pop_back();
+				for (size_t i = 0; i + iOutliers < arrRegionData.size(); i++)
+					arrRegionData[i] = arrRegionData[i + iOutliers];
+				for (int i = 0; i < 2 * iOutliers; i++)
+					arrRegionData.pop_back();
 			}
 		}
 		scaled rRegionWeight;
 		scaled rRegionPrecipitation;
-		for (RegionDataList::const_iterator it = arrRegionData.begin();
-			it != arrRegionData.end(); ++it)
+		for (size_t i = 0; i < arrRegionData.size(); i++)
 		{
-			rRegionPrecipitation += it->first;
-			rRegionWeight += it->second;
+			rRegionPrecipitation += arrRegionData[i].first;
+			rRegionWeight += arrRegionData[i].second;
 		}
 		if (iValidPlots * 2 <= (bStart ? 0 : NUM_CITY_PLOTS) || rRegionWeight <= 0)
 		{
