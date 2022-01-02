@@ -1169,9 +1169,9 @@ int TrueStarts::calcClimateFitness(CvPlot const& kStart,
 			scaled rWeight = kWeights.get(itPlot->plotNum());
 			// Extra weight for the most prominent characteristics
 			if (itPlot->getFeatureType() == m_eWarmForest)
-				rWeight *= fixp(1.5);
+				rWeight *= fixp(4/3.);
 			else if (itPlot->getTerrainType() == m_eDesert)
-				rWeight *= fixp(1.8);
+				rWeight *= fixp(5/3.);
 			arrRegionData.push_back(std::make_pair(iPrecipitation, rWeight));
 		}
 		// Discard some outliers
@@ -1411,7 +1411,7 @@ int TrueStarts::precipitation(CvPlot const& kPlot, bool bStart) const
 			iExtra -= 25;
 		}
 	}
-	return 200 - iExtra;
+	return 200 + iExtra;
 }
 
 /*	+1 means the best possible fit, -1 the worst.
