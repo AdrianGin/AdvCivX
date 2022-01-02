@@ -15,6 +15,11 @@ bool CvTruCivInfo::read(CvXMLLoadUtility* pXML)
 	FAssertBounds(-1, 101, get(CvTruCivInfo::ClimateVariation));
 	FAssertBounds(-1, 101, get(CvTruCivInfo::Oceanity));
 	FAssertBounds(-100, 101, get(CvTruCivInfo::MajorRiverWeight));
+	// (Can't really catch issues with values in feet here)
+	FAssert(get(CvTruCivInfo::MaxElevation) < 25000 &&
+			(get(CvTruCivInfo::MaxElevation) == MIN_INT ||
+			get(CvTruCivInfo::MaxElevation) > -500));
+	FAssertBounds(-1, 101, get(CvTruCivInfo::MountainousArea));
 	{
 		CvString szTextVal;
 		pXML->GetChildXmlValByName(szTextVal, "CivilizationType");

@@ -14,6 +14,9 @@
 			<!-- The original colonies weren't so diverse -->
 			<iClimateVariation>60</iClimateVariation>
 			<iOceanity>35</iOceanity>
+			<!-- Considering only the Northeast here -->
+			<iMaxElevation>1917</iMaxElevation>
+			<iMountainousArea>25</iMountainousArea>
 			<!-- Use this for both Americas; all the Maize growers. -->
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
@@ -30,6 +33,8 @@
 			<iPrecipitation>111</iPrecipitation>
 			<iClimateVariation>10</iClimateVariation>
 			<iOceanity>30</iOceanity>
+			<iMaxElevation>3000</iMaxElevation>
+			<iMountainousArea>15</iMountainousArea>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -40,6 +45,8 @@
 			<iPrecipitation>851</iPrecipitation>
 			<iClimateVariation>75</iClimateVariation>
 			<iOceanity>10</iOceanity>
+			<iMaxElevation>5636</iMaxElevation>
+			<iMountainousArea>50</iMountainousArea>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -51,6 +58,10 @@
 			<iClimateVariation>25</iClimateVariation>
 			<iOceanity>5</iOceanity>
 			<iMajorRiverWeight>60</iMajorRiverWeight>
+			<!-- Foothills of the Zagros; The Sinjar Mts. are too far
+				 outside the Babylonian core. -->
+			<iMaxElevation>1000</iMaxElevation>
+			<iMountainousArea>5</iMountainousArea>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -61,6 +72,9 @@
 			<iPrecipitation>850</iPrecipitation>
 			<iClimateVariation>60</iClimateVariation>
 			<iOceanity>45</iOceanity>
+			<!-- Argaeus; Ararat is too far from the core. -->
+			<iMaxElevation>3917</iMaxElevation>
+			<iMountainousArea>60</iMountainousArea>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -74,6 +88,8 @@
 				 encourage jungle. -->
 			<iClimateVariation>40</iClimateVariation>
 			<iOceanity>75</iOceanity>
+			<iMaxElevation>1544</iMaxElevation>
+			<iMountainousArea>10</iMountainousArea>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_CELT</Type>
@@ -85,6 +101,9 @@
 			<iPrecipitation>761</iPrecipitation>
 			<iClimateVariation>40</iClimateVariation>
 			<iOceanity>30</iOceanity>
+			<!-- Mont Blanc -->
+			<iMaxElevation>4810</iMaxElevation>
+			<iMountainousArea>15</iMountainousArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -99,6 +118,9 @@
 			<iClimateVariation>65</iClimateVariation>
 			<iOceanity>10</iOceanity>
 			<iMajorRiverWeight>40</iMajorRiverWeight>
+			<!-- Mt. Taibai - stick to Eastern China. -->
+			<iMaxElevation>3750</iMaxElevation>
+			<iMountainousArea>50</iMountainousArea>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -111,6 +133,8 @@
 			<iClimateVariation>5</iClimateVariation>
 			<iOceanity>25</iOceanity>
 			<iMajorRiverWeight>100</iMajorRiverWeight>
+			<iMaxElevation>2629</iMaxElevation>
+			<iMountainousArea>10</iMountainousArea>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -123,6 +147,9 @@
 			<!-- Depends on whether we include Scotland -->
 			<iClimateVariation>30</iClimateVariation>
 			<iOceanity>75</iOceanity>
+			<!-- Just England proper here -->
+			<iMaxElevation>978</iMaxElevation>
+			<iMountainousArea>15</iMountainousArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -135,6 +162,8 @@
 			<iPrecipitation>652</iPrecipitation>
 			<iClimateVariation>72</iClimateVariation>
 			<iOceanity>30</iOceanity>
+			<iMaxElevation>4550</iMaxElevation>
+			<iMountainousArea>50</iMountainousArea>
 			<!-- Close enough -->
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
@@ -146,6 +175,8 @@
 			<iPrecipitation>637</iPrecipitation>
 			<iClimateVariation>25</iClimateVariation>
 			<iOceanity>30</iOceanity>
+			<iMaxElevation>4810</iMaxElevation>
+			<iMountainousArea>15</iMountainousArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -156,6 +187,8 @@
 			<iPrecipitation>515</iPrecipitation>
 			<iClimateVariation>25</iClimateVariation>
 			<iOceanity>20</iOceanity>
+			<iMaxElevation>2962</iMaxElevation>
+			<iMountainousArea>10</iMountainousArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -166,6 +199,8 @@
 			<iPrecipitation>433</iPrecipitation>
 			<iClimateVariation>25</iClimateVariation>
 			<iOceanity>80</iOceanity>
+			<iMaxElevation>2917</iMaxElevation>
+			<iMountainousArea>50</iMountainousArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -176,6 +211,8 @@
 			<iPrecipitation>837</iPrecipitation>
 			<iClimateVariation>30</iClimateVariation>
 			<iOceanity>15</iOceanity>
+			<iMaxElevation>4810</iMaxElevation>
+			<iMountainousArea>25</iMountainousArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -186,6 +223,8 @@
 			<iPrecipitation>737</iPrecipitation>
 			<iClimateVariation>80</iClimateVariation>
 			<iOceanity>10</iOceanity>
+			<iMaxElevation>6893</iMaxElevation>
+			<iMountainousArea>60</iMountainousArea>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -197,6 +236,8 @@
 			<iClimateVariation>85</iClimateVariation>
 			<iOceanity>5</iOceanity>
 			<iMajorRiverWeight>40</iMajorRiverWeight>
+			<iMaxElevation>8586</iMaxElevation>
+			<iMountainousArea>25</iMountainousArea>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -208,6 +249,8 @@
 			<iPrecipitation>1523</iPrecipitation>
 			<iClimateVariation>40</iClimateVariation>
 			<iOceanity>77</iOceanity>
+			<iMaxElevation>3776</iMaxElevation>
+			<iMountainousArea>50</iMountainousArea>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -218,6 +261,9 @@
 			<iPrecipitation>1406</iPrecipitation>
 			<iClimateVariation>20</iClimateVariation>
 			<iOceanity>18</iOceanity>
+			<!-- Not counting Central Vietnam -->
+			<iMaxElevation>1813</iMaxElevation>
+			<iMountainousArea>20</iMountainousArea>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -228,6 +274,8 @@
 			<iPrecipitation>1418</iPrecipitation>
 			<iClimateVariation>55</iClimateVariation>
 			<iOceanity>70</iOceanity>
+			<iMaxElevation>2744</iMaxElevation>
+			<iMountainousArea>35</iMountainousArea>	
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -238,6 +286,8 @@
 			<iPrecipitation>183</iPrecipitation>
 			<iClimateVariation>45</iClimateVariation>
 			<iOceanity>3</iOceanity>
+			<iMaxElevation>1155</iMaxElevation>
+			<iMountainousArea>5</iMountainousArea>
 			<iMajorRiverWeight>40</iMajorRiverWeight>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -249,6 +299,8 @@
 			<iPrecipitation>2000</iPrecipitation>
 			<iClimateVariation>25</iClimateVariation>
 			<iOceanity>18</iOceanity>
+			<iMaxElevation>4203</iMaxElevation>
+			<iMountainousArea>30</iMountainousArea>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -260,6 +312,9 @@
 			<iPrecipitation>208</iPrecipitation>
 			<iClimateVariation>50</iClimateVariation>
 			<iOceanity>0</iOceanity>
+			<!-- The Altai is too far west -->
+			<iMaxElevation>4031</iMaxElevation>
+			<iMountainousArea>30</iMountainousArea>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -274,6 +329,9 @@
 			<!-- Mississippi
 				 (Note that the default for this element is negative) -->
 			<iMajorRiverWeight>0</iMajorRiverWeight>
+			<!-- Mound Builder area only -->
+			<iMaxElevation>2037</iMaxElevation>
+			<iMountainousArea>25</iMountainousArea>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -284,6 +342,8 @@
 			<iPrecipitation>838</iPrecipitation>
 			<iClimateVariation>10</iClimateVariation>
 			<iOceanity>65</iOceanity>
+			<iMaxElevation>322</iMaxElevation>
+			<iMountainousArea>1</iMountainousArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -295,6 +355,9 @@
 			<iPrecipitation>850</iPrecipitation>
 			<iClimateVariation>60</iClimateVariation>
 			<iOceanity>45</iOceanity>
+			<!-- (see Byzantium) -->
+			<iMaxElevation>3917</iMaxElevation>
+			<iMountainousArea>65</iMountainousArea>
 			<!-- For a strictly post-Medieval civ like this, far-eastern
 				 resources could be acceptable from the start of the game.
 				 However, the core region is probably going to be at a too
@@ -310,6 +373,8 @@
 			<iPrecipitation>306</iPrecipitation>
 			<iClimateVariation>60</iClimateVariation>
 			<iOceanity>22</iOceanity>
+			<iMaxElevation>5610</iMaxElevation>
+			<iMountainousArea>50</iMountainousArea>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -320,6 +385,8 @@
 			<iPrecipitation>774</iPrecipitation>
 			<iClimateVariation>25</iClimateVariation>
 			<iOceanity>78</iOceanity>
+			<iMaxElevation>1993</iMaxElevation>
+			<iMountainousArea>30</iMountainousArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -330,6 +397,8 @@
 			<iPrecipitation>799</iPrecipitation>
 			<iClimateVariation>40</iClimateVariation>
 			<iOceanity>60</iOceanity>
+			<iMaxElevation>4810</iMaxElevation>
+			<iMountainousArea>50</iMountainousArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -341,6 +410,9 @@
 			<!-- The Eastern Plain is as boring as it gets -->
 			<iClimateVariation>40</iClimateVariation>
 			<iOceanity>5</iOceanity>
+			<!-- Only Eastern Plain here -->
+			<iMaxElevation>347</iMaxElevation>
+			<iMountainousArea>10</iMountainousArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -351,6 +423,8 @@
 			<iPrecipitation>423</iPrecipitation>
 			<iClimateVariation>65</iClimateVariation>
 			<iOceanity>30</iOceanity>
+			<iMaxElevation>3479</iMaxElevation>
+			<iMountainousArea>60</iMountainousArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -363,6 +437,8 @@
 			<iClimateVariation>20</iClimateVariation>
 			<iOceanity>10</iOceanity>
 			<iMajorRiverWeight>60</iMajorRiverWeight>
+			<iMaxElevation>800</iMaxElevation>
+			<iMountainousArea>5</iMountainousArea>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -373,6 +449,8 @@
 			<iPrecipitation>841</iPrecipitation>
 			<iClimateVariation>70</iClimateVariation>
 			<iOceanity>68</iOceanity>
+			<iMaxElevation>2469</iMaxElevation>
+			<iMountainousArea>30</iMountainousArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -383,6 +461,8 @@
 			<iPrecipitation>844</iPrecipitation>
 			<iClimateVariation>70</iClimateVariation>
 			<iOceanity>25</iOceanity>
+			<iMaxElevation>3450</iMaxElevation>
+			<iMountainousArea>30</iMountainousArea>
 		</TruCivInfo>
 	</TruCivInfos>
 </Civ4TruCivInfos>

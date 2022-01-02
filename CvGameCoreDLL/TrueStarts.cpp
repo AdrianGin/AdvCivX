@@ -130,7 +130,6 @@ void TrueStarts::setPlayerWeightsPerPlot(PlotNumTypes ePlot,
 
 void TrueStarts::sanitize()
 {
-	PROFILE_FUNC(); // advc.test: To be profiled
 	CvMap const& kMap = GC.getMap();
 	/*	The maps allocate memory lazily, doesn't hurt to initialize them
 		for unused players (which is convenient for indexing). */
@@ -422,7 +421,6 @@ CvTruBonusInfo const* TrueStarts::getTruBonus(CvPlot const& kPlot,
 
 void TrueStarts::changeCivs()
 {
-	PROFILE_FUNC(); // advc.test: To be profiled
 	m_civs.reset();
 	m_leaders.reset();
 	m_civTaken.reset();
@@ -892,6 +890,8 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		scaled rDifferentAreaPlotWeights;
 		scaled rAreaRiverScore;
 		scaled rAreaRiverWeights;
+		scaled rAreaHillScore;
+		scaled rAreaPeakScore;
 		int iTemperateDesertPenalty = 0;
 		scaled rFromBonuses;
 		scaled rBonusDiscourageFactor = -scaled(3750, std::max(1,
@@ -919,6 +919,44 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				if (itPlot->sameArea(kStart))
 				{
 					rSameAreaPlotWeights += rWeight;
+					if (itPlot->isHills())
+					{
+						rAreaHillScore += rWeight;
+						int iOrthAdj = 0;
+						FOR_EACH_ORTH_ADJ_PLOT(*itPlot)
+						{
+							if (pAdj->isHills() || pAdj->isPeak())
+							{
+								rAreaHillScore += 2 * rWeight / (3 + iOrthAdj);
+								iOrthAdj++;
+							}
+						}
+						int iDiagAdj = 0;
+						FOR_EACH_DIAG_ADJ_PLOT(*itPlot)
+						{
+							if (pAdj->isHills() || pAdj->isPeak())
+							{
+								rAreaHillScore += rWeight / (2 + iOrthAdj + iDiagAdj);
+								iDiagAdj++;
+							}
+						}
+					}
+					if (itPlot->isPeak())
+					{
+						rAreaPeakScore += rWeight;
+						FOR_EACH_ORTH_ADJ_PLOT(*itPlot)
+						{
+							if (pAdj->isPeak())
+								rAreaPeakScore += 2 * rWeight / 3;
+							if (pAdj->isHills())
+								rAreaPeakScore += rWeight / 3;
+						}
+						FOR_EACH_DIAG_ADJ_PLOT(*itPlot)
+						{
+							if (pAdj->isPeak())
+								rAreaPeakScore += rWeight / 2;
+						}
+					}
 					// Decrease weight for distant plots when it comes to rivers
 					scaled rRiverWeight = SQR(rWeight);
 					rAreaRiverWeights += rRiverWeight;
@@ -1062,6 +1100,33 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				IFLOG logBBAI("Fitness from major river: %d (civ weight: %d percent)",
 						rFromRiver.round(), iMajorRiverWeight);
 				iFitness += rFromRiver.round();
+			}
+		}
+		{
+			scaled rDiv = scaled::max(rSameAreaPlotWeights, 1);
+			rAreaHillScore /= rDiv;
+			rAreaPeakScore /= rDiv;
+			IFLOG logBBAI("Area hills and peak score: %d, %d",
+					rAreaHillScore.getPercent(), rAreaPeakScore.getPercent());
+			scaled const rTargetMountainCover = kTruCiv.get(CvTruCivInfo::MountainousArea);
+			if (rTargetMountainCover >= 0)
+			{
+				scaled rMountainCover = 100 * (rAreaHillScore / 2 + rAreaPeakScore);
+				scaled rFromMountainCover = (rMountainCover - rTargetMountainCover).
+						abs() * -2; // arbitrary weight factor
+				iFitness += rFromMountainCover.round();
+				IFLOG logBBAI("Fitness penalty from mountainous area: %d (target %d percent, have %d)",
+						rFromMountainCover.round(), rTargetMountainCover.round(), rMountainCover.round());
+			}
+			int iTargetMaxElev = kTruCiv.get(CvTruCivInfo::MaxElevation);
+			if (iTargetMaxElev > MIN_INT)
+			{
+				scaled rMaxElev = (rAreaPeakScore.getPercent() + 8) * 200;
+				scaled rFromMaxElev = (rMaxElev.sqrt() - scaled(iTargetMaxElev).sqrt()).
+						abs() * -2; // arbitrary weight factor
+				iFitness += rFromMaxElev.round();
+				IFLOG logBBAI("Fitness penalty from max. elevation: %d (target %d m, have %d m)",
+						rFromMaxElev.round(), iTargetMaxElev, rMaxElev.round());
 			}
 		}
 	}

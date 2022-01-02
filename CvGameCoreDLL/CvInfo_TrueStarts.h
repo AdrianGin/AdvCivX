@@ -20,6 +20,8 @@ protected:
 		kElements.addInt(ClimateVariation, "ClimateVariation", -1);
 		kElements.addInt(Oceanity, "Oceanity", -1);
 		kElements.addInt(MajorRiverWeight, "MajorRiverWeight", -25);
+		kElements.addInt(MaxElevation, "MaxElevation", MIN_INT);
+		kElements.addInt(MountainousArea, "MountainousArea", -1);
 		kElements.addInt(Bias, "Bias");
 	}
 public:
@@ -31,6 +33,8 @@ public:
 		ClimateVariation,
 		Oceanity,
 		MajorRiverWeight,
+		MaxElevation,
+		MountainousArea,
 		Bias,
 		NUM_INT_ELEMENT_TYPES
 	};
