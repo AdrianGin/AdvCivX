@@ -233,7 +233,7 @@ void CvGame::setInitialItems()
 	{
 		TrueStarts ts;
 		ts.changeCivs();
-		if (GC.getDefineBOOL("TRUE_STARTS_SANITIZE"))
+		if (GC.getDefineBOOL(CvGlobals::TRUE_STARTS_SANITIZE))
 			ts.sanitize();
 	}
 	GC.getLogger().logCivLeaders(); // </advc.tsl>
@@ -1085,7 +1085,7 @@ void CvGame::initScenario()
 	{
 		TrueStarts ts;
 		ts.changeCivs();
-		if (GC.getDefineBOOL("TRUE_STARTS_SANITIZE_SCENARIOS"))
+		if (GC.getDefineBOOL(CvGlobals::TRUE_STARTS_SANITIZE_SCENARIOS))
 			ts.sanitize();
 	} // </advc.tsl>
 	// <advc.030>

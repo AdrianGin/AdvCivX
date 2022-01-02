@@ -894,12 +894,19 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		scaled rAreaRiverWeights;
 		scaled rAreaNonRiverPlots;
 		scaled rFromBonuses;
-		/*	Fairly low coefficients b/c ill-fitting bonus resources can still
-			be moved away in the end (sanitization) */
-		scaled const rBonusDiscourageFactor = -scaled(3750, std::max(1,
+		scaled rBonusDiscourageFactor = -scaled(3750, std::max(1,
 				m_discouragedBonusesTotal.get(eCiv))).sqrt();
-		scaled const rBonusEncourageFactor = scaled(1100, std::max(1,
+		scaled rBonusEncourageFactor = scaled(880, std::max(1,
 				m_encouragedBonusesTotal.get(eCiv))).sqrt();
+		bool const bSanitize = (GC.getGame().isScenario() ?
+				GC.getDefineBOOL(CvGlobals::TRUE_STARTS_SANITIZE_SCENARIOS) :
+				GC.getDefineBOOL(CvGlobals::TRUE_STARTS_SANITIZE));
+		// Higher coefficients when ill-fitting resources can't be sanitized away
+		if (bSanitize)
+		{
+			rBonusDiscourageFactor *= 2;
+			rBonusEncourageFactor *= 2;
+		}
 		/*	For the escalating effect of these counts, it's significant
 			that the order of plot traversal is a spiral away from the center. */
 		EagerEnumMap<BonusTypes,int> aeiEncouragedCount;
@@ -934,11 +941,12 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				if (isBonusDiscouraged(*itPlot, eCiv))
 				{
 					aeiDiscouragedCount.add(eBonus, 1);
-					scaled rVal = rWeight * rBonusDiscourageFactor *
-							// Multiple bad resources will be difficult to sanitize
-							scaled(aeiDiscouragedCount.get(eBonus)).pow(fixp(2/3.));
-					IFLOG logBBAI("Discouraging %S (dist. factor: %d percent): -%d/100 fitness",
-							GC.getInfo(eBonus).getDescription(), rWeight.getPercent(), -rVal.getPercent());
+					scaled rVal = rWeight * rBonusDiscourageFactor;
+					if (bSanitize) // Multiple bad resources will be difficult to sanitize
+						rVal *= scaled(aeiDiscouragedCount.get(eBonus)).pow(fixp(2/3.));
+					IFLOG logBBAI("Discouraging %S at %d,%d (dist. factor: %d percent): -%d/100 fitness",
+							GC.getInfo(eBonus).getDescription(), itPlot->getX(), itPlot->getY(),
+							rWeight.getPercent(), -rVal.getPercent());
 					rFromBonuses += rVal;
 				}
 				else if (isBonusEncouraged(*itPlot, eCiv))
@@ -947,8 +955,9 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 					scaled rVal = rWeight * rBonusEncourageFactor /
 							// Mainly want to encourage a single instance
 							aeiEncouragedCount.get(eBonus);
-					IFLOG logBBAI("Encouraging %S (dist. factor: %d percent): +%d/100 fitness",
-							GC.getInfo(eBonus).getDescription(), rWeight.getPercent(), rVal.getPercent());
+					IFLOG logBBAI("Encouraging %S at %d,%d (dist. factor: %d percent): +%d/100 fitness",
+							GC.getInfo(eBonus).getDescription(), itPlot->getX(), itPlot->getY(),
+							rWeight.getPercent(), rVal.getPercent());
 					rFromBonuses += rVal;
 				}
 			}
