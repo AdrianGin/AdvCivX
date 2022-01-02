@@ -720,6 +720,13 @@ int CyGame::getTeamScore(int /*TeamTypes*/ eTeam)
 	return m_kGame.getTeamScore((TeamTypes)eTeam);
 }
 
+/*	advc: Exposed so that players can fix accidental settings
+	through the Python console */
+void CyGame::setVictoryValid(int iVictory, bool b)
+{
+	m_kGame.setVictoryValid((VictoryTypes)iVictory, b);
+}
+
 bool CyGame::isOption(int /*GameOptionTypes*/ eIndex)
 {
 	return m_kGame.isOption((GameOptionTypes)eIndex);
