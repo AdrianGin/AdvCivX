@@ -94,9 +94,9 @@
 			<iLongitudeTimes10>1164</iLongitudeTimes10>
 			<!-- Beijing; Xi'an isn't much different. -->
 			<iPrecipitation>543</iPrecipitation>
-			<!-- The Northeastern Plain is in itself not _extremely_ varied
-				 (I think?) -->
-			<iClimateVariation>70</iClimateVariation>
+			<!-- The Northeastern Plain is in itself not extremely varied.
+				 Don't want large desert or jungle too close to starting plot. -->
+			<iClimateVariation>65</iClimateVariation>
 			<iOceanity>10</iOceanity>
 			<iMajorRiverWeight>40</iMajorRiverWeight>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
