@@ -517,6 +517,12 @@ void TrueStarts::changeCivs()
 		PlayerTypes const ePlayer = aiePriorityPerPlayer[i].second;
 		if (m_leaders.get(ePlayer) != NO_LEADER)
 			continue;
+
+		bool bLog = true;
+		std::pair<CivilizationTypes,LeaderHeadTypes> ee2ndBestFit(
+				NO_CIVILIZATION, NO_LEADER);
+		int i2ndBestFitVal = MIN_INT;
+
 		std::pair<CivilizationTypes,LeaderHeadTypes> eeBestFit(
 				NO_CIVILIZATION, NO_LEADER);
 		int iBestFitVal = MIN_INT;
@@ -536,36 +542,54 @@ void TrueStarts::changeCivs()
 				iBestFitVal = std::max(iBestFitVal, iFitVal);
 				eeBestFit = validCivs[j];
 			}
+			else
+			{
+				IFLOG
+				{
+					if (iFitVal > i2ndBestFitVal &&
+						// Different leader of same civ isn't going to be interesting
+						validCivs[j].first != eeBestFit.first)
+					{
+						i2ndBestFitVal = std::max(i2ndBestFitVal, iFitVal);
+						ee2ndBestFit = validCivs[j];
+					}
+				}
+			}
 		}
 		if (eeBestFit.first != NO_CIVILIZATION &&
 			eeBestFit.second != NO_LEADER)
 		{
-			{	// Recalc w/ log output
-				bool bLog = true;
-				IFLOG
+			IFLOG // Recalc w/ log output
+			{
+				calcFitness(GET_PLAYER(ePlayer),
+						eeBestFit.first, eeBestFit.second, true);
+				// Also break down calculation for second best fit
+				if (ee2ndBestFit.first != NO_CIVILIZATION &&
+					ee2ndBestFit.second != NO_LEADER)
 				{
+					logBBAI("Best alternative to %S:", GC.getInfo(eeBestFit.first).getShortDescription());
 					calcFitness(GET_PLAYER(ePlayer),
-							eeBestFit.first, eeBestFit.second, true);
-					/*	For logging a particular leader that perhaps should've been
-						chosen instead. (Only makes sense with fixed seeds I think.) */
-					/*LeaderHeadTypes eLeader = (LeaderHeadTypes)
-							GC.getInfoTypeForString("LEADER_");
-					CivilizationTypes eLeaderCiv = NO_CIVILIZATION;
-					FOR_EACH_ENUM(Civilization)
-					{
-						if (GC.getInfo(eLoopCivilization).isLeaders(eLeader))
-						{
-							eLeaderCiv = eLoopCivilization;
-							break;
-						}
-					}
-					if (eLeaderCiv != NO_CIVILIZATION)
-					{
-						logBBAI("For comparison: Fitness eval for %S", GC.getInfo(eLeader).getDescription());
-						calcFitness(GET_PLAYER(ePlayer), eLeaderCiv, eLeader, true);
-					}
-					else FErrorMsg("No civ found for eLeader");*/
+							ee2ndBestFit.first, ee2ndBestFit.second, true);
 				}
+				/*	For logging a particular leader that perhaps should've been
+					chosen instead. (Only makes sense with fixed seeds I think.) */
+				/*LeaderHeadTypes eLeader = (LeaderHeadTypes)
+						GC.getInfoTypeForString("LEADER_");
+				CivilizationTypes eLeaderCiv = NO_CIVILIZATION;
+				FOR_EACH_ENUM(Civilization)
+				{
+					if (GC.getInfo(eLoopCivilization).isLeaders(eLeader))
+					{
+						eLeaderCiv = eLoopCivilization;
+						break;
+					}
+				}
+				if (eLeaderCiv != NO_CIVILIZATION)
+				{
+					logBBAI("For comparison: Fitness eval for %S", GC.getInfo(eLeader).getDescription());
+					calcFitness(GET_PLAYER(ePlayer), eLeaderCiv, eLeader, true);
+				}
+				else FErrorMsg("No civ found for eLeader");*/
 			}
 			if (GC.getGame().isOption(GAMEOPTION_LEAD_ANY_CIV))
 			{
