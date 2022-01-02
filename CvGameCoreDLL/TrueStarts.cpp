@@ -648,7 +648,7 @@ void TrueStarts::changeCivs()
 void TrueStarts::calculateRadius(CvPlayer const& kPlayer)
 {
 	CvMap const& kMap = GC.getMap();
-	scaled rBaseRadius = 7 + kMap.getWorldSize();
+	scaled rBaseRadius = 6 + kMap.getWorldSize();
 	{
 		scaled rCrowdedness(PlayerIter<CIV_ALIVE>::count(),
 				GC.getGame().getRecommendedPlayers());
@@ -722,8 +722,11 @@ namespace
 {
 	scaled distWeight(CvPlot const& kStart, CvPlot const& kPlot, int iMaxDist)
 	{
-		return scaled::max(0, 1 - scaled(plotDistance(&kStart, &kPlot), iMaxDist + 1).
-				pow(fixp(1.72)));
+		int iPlotDist = plotDistance(&kStart, &kPlot);
+		if (!kStart.sameArea(kPlot))
+			iPlotDist *= 2;
+		return scaled::max(0, 1 - scaled(iPlotDist, iMaxDist + 1).
+				pow(fixp(1.7)));
 	}
 }
 
