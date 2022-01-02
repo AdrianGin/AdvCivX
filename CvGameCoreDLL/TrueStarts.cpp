@@ -902,7 +902,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				GC.getDefineBOOL(CvGlobals::TRUE_STARTS_SANITIZE_SCENARIOS) :
 				GC.getDefineBOOL(CvGlobals::TRUE_STARTS_SANITIZE));
 		// Higher coefficients when ill-fitting resources can't be sanitized away
-		if (bSanitize)
+		if (!bSanitize)
 		{
 			rBonusDiscourageFactor *= 2;
 			rBonusEncourageFactor *= 2;
