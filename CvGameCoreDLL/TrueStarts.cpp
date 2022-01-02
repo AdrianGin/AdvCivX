@@ -18,6 +18,9 @@ using std::auto_ptr;
 
 TrueStarts::TrueStarts()
 {
+	// The official non-Earth scenarios set all latitude values to 0
+	m_bMapHasLatitudes = (GC.getMap().getTopLatitude() >
+			GC.getMap().getBottomLatitude());
 	FOR_EACH_ENUM(TruCiv)
 	{
 		m_truCivs.set(GC.getInfo(eLoopTruCiv).getCiv(),
@@ -427,11 +430,6 @@ void TrueStarts::changeCivs()
 	m_leaderTaken.reset();
 	m_radii.reset();
 
-	/*	The official non-Earth scenarios set all latitude values to 0.
-		Can't work with that. */
-	if (GC.getMap().getTopLatitude() <= GC.getMap().getBottomLatitude())
-		return;
-
 	{
 		std::vector<CivilizationTypes> aeValidHumanCivs;
 		std::vector<CivilizationTypes> aeValidAICivs;
@@ -738,6 +736,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			kStart.getX(), kStart.getY());
 	CvTruCivInfo const& kTruCiv = *m_truCivs.get(eCiv);
 	int iFitness = 1000;
+	if (m_bMapHasLatitudes)
 	{
 		int const iAbsStartLat = kStart.getLatitude();
 		int iAbsStartLatAdjustedTimes10 = iAbsStartLat * 10;
@@ -1445,7 +1444,10 @@ int TrueStarts::precipitation(CvPlot const& kPlot, bool bStart) const
 		}
 	}
 	if (bWarmForest)
-		return 3000 - 90 * std::min(20, kPlot.getLatitude());
+	{
+		return (!m_bMapHasLatitudes ? 2000 :
+			3000 - 90 * std::min(20, kPlot.getLatitude()));
+	}
 	if (eTerrain == m_eWoodland)
 	{
 		if (eFeature == m_eCoolForest)

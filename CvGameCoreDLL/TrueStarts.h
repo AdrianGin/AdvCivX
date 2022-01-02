@@ -14,6 +14,7 @@ public:
 	void sanitize();
 
 private:
+	bool m_bMapHasLatitudes;
 	EagerEnumMap<CivilizationTypes,CvTruCivInfo*> m_truCivs;
 	EagerEnumMap<LeaderHeadTypes,CvTruLeaderInfo*> m_truLeaders;
 	EagerEnumMap<BonusTypes,CvTruBonusInfo*> m_truBonuses;
