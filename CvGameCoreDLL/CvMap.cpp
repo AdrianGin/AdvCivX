@@ -1284,7 +1284,7 @@ byte const* CvMap::getReplayTexture() const
 void CvMap::calculateAreas()
 {
 	PROFILE("CvMap::calculateAreas"); // <advc.030>
-	if(GC.getDefineINT("PASSABLE_AREAS") > 0)
+	if (GC.getDefineBOOL(CvGlobals::PASSABLE_AREAS))
 	{
 		/*  Will recalculate from CvGame::setinitialItems once normalization is
 			through. But need preliminary areas because normalization is done

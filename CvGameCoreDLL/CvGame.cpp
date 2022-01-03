@@ -225,7 +225,7 @@ void CvGame::setInitialItems()
 	for (int i = 0; i < kMap.numPlots(); i++)
 		kMap.plotByIndex(i)->setRiverID(-1); // </advc>
 	// <advc.030> Now that ice has been placed and normalization is through
-	if(GC.getDefineBOOL("PASSABLE_AREAS"))
+	if (GC.getDefineBOOL(CvGlobals::PASSABLE_AREAS))
 		kMap.recalculateAreas(false);
 	// </advc.030>
 	// <advc.tsl>
@@ -1089,7 +1089,7 @@ void CvGame::initScenario()
 			ts.sanitize();
 	} // </advc.tsl>
 	// <advc.030>
-	if (GC.getDefineBOOL("PASSABLE_AREAS"))
+	if (GC.getDefineBOOL(CvGlobals::PASSABLE_AREAS))
 	{
 		/*  recalculateAreas can't handle preplaced cities. Or perhaps it can
 			(Barbarian cities are fine in most cases), but there's going to
