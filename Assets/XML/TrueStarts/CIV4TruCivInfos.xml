@@ -220,6 +220,8 @@
 			<CivilizationType>CIVILIZATION_INCA</CivilizationType>
 			<iLatitudeTimes10>-135</iLatitudeTimes10>
 			<iLongitudeTimes10>-720</iLongitudeTimes10>
+			<!-- Cuzco; seems that other Inca cities tend to be drier,
+				 but better not to go too low b/c we want some jungle too. -->
 			<iPrecipitation>737</iPrecipitation>
 			<iClimateVariation>80</iClimateVariation>
 			<iOceanity>10</iOceanity>
@@ -232,7 +234,9 @@
 			<CivilizationType>CIVILIZATION_INDIA</CivilizationType>
 			<iLatitudeTimes10>286</iLatitudeTimes10>
 			<iLongitudeTimes10>772</iLongitudeTimes10>
-			<iPrecipitation>762</iPrecipitation>
+			<!-- Delhi 762, across the country 1100. The south is quite far
+				 from the capital however. -->
+			<iPrecipitation>850</iPrecipitation>
 			<iClimateVariation>85</iClimateVariation>
 			<iOceanity>5</iOceanity>
 			<iMajorRiverWeight>40</iMajorRiverWeight>
@@ -245,11 +249,12 @@
 			<CivilizationType>CIVILIZATION_JAPAN</CivilizationType>
 			<iLatitudeTimes10>350</iLatitudeTimes10>
 			<iLongitudeTimes10>1358</iLongitudeTimes10>
-			<!-- 1523 in Kyoto; Tokyo even more. However, the tiles are mostly
-				 supposed to be Grassland Forest Hills, and the game
-				 can't assume that those are as wet as jungle. So we'll go
-				 with something lower. -->
-			<iPrecipitation>1250</iPrecipitation>
+			<!-- 1523 in Kyoto; Tokyo even more. Across Japan I've found
+				 figures of 1600 and 1760 for the years 2019 and 2018.
+				 However, Japan is mostly supposed to have Grassland Forests,
+				 and the game can't treat those as being as wet as Jungle.
+				 So we'll go with a lower target value. -->
+			<iPrecipitation>1330</iPrecipitation>
 			<iClimateVariation>40</iClimateVariation>
 			<iOceanity>77</iOceanity>
 			<iMaxElevation>3776</iMaxElevation>
@@ -274,7 +279,8 @@
 			<CivilizationType>CIVILIZATION_KOREA</CivilizationType>
 			<iLatitudeTimes10>376</iLatitudeTimes10>
 			<iLongitudeTimes10>1269</iLongitudeTimes10>
-			<iPrecipitation>1418</iPrecipitation>
+			<!-- Mean of Seoul and Pyongyang -->
+			<iPrecipitation>1165</iPrecipitation>
 			<iClimateVariation>55</iClimateVariation>
 			<iOceanity>70</iOceanity>
 			<iMaxElevation>2744</iMaxElevation>
@@ -423,7 +429,8 @@
 			<CivilizationType>CIVILIZATION_SPAIN</CivilizationType>
 			<iLatitudeTimes10>403</iLatitudeTimes10>
 			<iLongitudeTimes10>-40</iLongitudeTimes10>
-			<iPrecipitation>423</iPrecipitation>
+			<!-- 423 in Madrid, but 650 across the country. -->
+			<iPrecipitation>570</iPrecipitation>
 			<iClimateVariation>65</iClimateVariation>
 			<iOceanity>30</iOceanity>
 			<iMaxElevation>3479</iMaxElevation>
@@ -449,6 +456,7 @@
 			<CivilizationType>CIVILIZATION_VIKING</CivilizationType>
 			<iLatitudeTimes10>634</iLatitudeTimes10>
 			<iLongitudeTimes10>104</iLongitudeTimes10>
+			<!-- Trondheim; Oslo 802, Copenhagen 645. -->
 			<iPrecipitation>841</iPrecipitation>
 			<iClimateVariation>70</iClimateVariation>
 			<iOceanity>68</iOceanity>
