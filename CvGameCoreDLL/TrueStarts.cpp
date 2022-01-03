@@ -494,6 +494,11 @@ void TrueStarts::changeCivs()
 				}
 			}
 		}
+		if (m_validAICivs.empty())
+		{
+			FErrorMsg("No valid civs found");
+			return;
+		}
 	}
 	// Could do this in ctor, but I want to use the valid-civ lists above.
 	initContemporaries();
@@ -648,6 +653,8 @@ void TrueStarts::changeCivs()
 			much here.) */
 		updateFitnessValues();
 	}
+	bool bLog = true;
+	scaled rAvgFitness;
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 	{
 		CivilizationTypes const eCiv = m_civs.get(itPlayer->getID());
@@ -668,7 +675,9 @@ void TrueStarts::changeCivs()
 			the hardwired names in scenarios need to be changed explicitly. */
 		itPlayer->changeCiv(eCiv, GC.getGame().isScenario(), true);
 		itPlayer->changeLeader(eLeader, GC.getGame().isScenario());
+		IFLOG rAvgFitness += m_fitnessVals.at(itPlayer->getID()).get(eCiv, eLeader);
 	}
+	IFLOG logBBAI("\nAvg. fitness val: %d", (rAvgFitness / PlayerIter<CIV_ALIVE>::count()).round());
 }
 
 
@@ -849,7 +858,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 					iErrorPercent = std::max(iErrorPercent, iMaxErr + 5);
 			}
 			iAvgDistErrorPercent += iErrorPercent;
-			IFLOG logBBAI("Dist error for %S: %d percent (plot dist %d percent, geo dist %d percent)",
+			IFLOG logBBAI("Dist error for %S: %d pts. (plot dist %d percent, geo dist %d percent)",
 					GC.getInfo(perPlayerVal.second).getShortDescription(), iErrorPercent, iDistPercent, iGeoDistPercent);
 		}
 		scaled rAvgDistErrorPenalty = iAvgDistErrorPercent * fixp(0.64);
