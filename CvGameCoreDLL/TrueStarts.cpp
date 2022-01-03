@@ -595,24 +595,28 @@ void TrueStarts::changeCivs()
 							ee2ndBestFit.first, ee2ndBestFit.second, true);
 				}
 				/*	For logging a particular leader that perhaps should've been
-					chosen instead. (Only makes sense with fixed seeds I think.) */
+					chosen instead. */
 				/*LeaderHeadTypes eLeader = (LeaderHeadTypes)
 						GC.getInfoTypeForString("LEADER_");
-				CivilizationTypes eLeaderCiv = NO_CIVILIZATION;
-				FOR_EACH_ENUM(Civilization)
+				if (eeBestFit.second && ee2ndBestFit.second != eLeader &&
+					!m_leaderTaken.get(eLeader))
 				{
-					if (GC.getInfo(eLoopCivilization).isLeaders(eLeader))
+					CivilizationTypes eLeaderCiv = NO_CIVILIZATION;
+					FOR_EACH_ENUM(Civilization)
 					{
-						eLeaderCiv = eLoopCivilization;
-						break;
+						if (GC.getInfo(eLoopCivilization).isLeaders(eLeader) &&
+							!m_civTaken.get(eLoopCivilization))
+						{
+							eLeaderCiv = eLoopCivilization;
+							break;
+						}
 					}
-				}
-				if (eLeaderCiv != NO_CIVILIZATION)
-				{
-					logBBAI("For comparison: Fitness eval for %S", GC.getInfo(eLeader).getDescription());
-					calcFitness(GET_PLAYER(ePlayer), eLeaderCiv, eLeader, true);
-				}
-				else FErrorMsg("No civ found for eLeader");*/
+					if (eLeaderCiv != NO_CIVILIZATION)
+					{
+						logBBAI("For comparison: Fitness eval for %S", GC.getInfo(eLeader).getDescription());
+						calcFitness(GET_PLAYER(ePlayer), eLeaderCiv, eLeader, true);
+					}
+				}*/
 			}
 			if (GC.getGame().isOption(GAMEOPTION_LEAD_ANY_CIV))
 			{
