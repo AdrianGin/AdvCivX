@@ -27,6 +27,7 @@ private:
 	EagerEnumMap<LeaderHeadTypes,int,void*,-1> m_maxTimeDiff;
 	EagerEnumMap<CivilizationTypes,int> m_discouragedBonusesTotal;
 	EagerEnumMap<CivilizationTypes,int> m_encouragedBonusesTotal;
+	EagerEnumMap<BonusTypes,scaled> m_bonusDiscouragedRatio;
 	/*	Fitness values stored per civ-leader pair. In case that a leader
 		is valid for multiple civs. (Does the game really support that?)
 		Need those values for each player, hence the surrounding vector. */

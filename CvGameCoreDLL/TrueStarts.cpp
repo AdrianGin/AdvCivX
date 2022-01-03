@@ -70,14 +70,29 @@ TrueStarts::TrueStarts()
 		m_truBonuses.set(GC.getInfo(eLoopTruBonus).getBonus(),
 				&GC.getInfo(eLoopTruBonus));
 	}
-	FOR_EACH_ENUM(Civilization)
+	FOR_EACH_ENUM(Bonus)
 	{
-		FOR_EACH_ENUM(Bonus)
+		CvTruBonusInfo const* pTruBonus = m_truBonuses.get(eLoopBonus);
+		if (pTruBonus == NULL) // just to save time
+			continue;
+		int iEncouraged = 0;
+		FOR_EACH_ENUM(Civilization)
 		{
-			if (isTruBonusDiscouraged(m_truBonuses.get(eLoopBonus), eLoopCivilization))
-				m_discouragedBonusesTotal.add(eLoopCivilization, 1);
-			if (isTruBonusEncouraged(m_truBonuses.get(eLoopBonus), eLoopCivilization))
+			if (isTruBonusEncouraged(pTruBonus, eLoopCivilization))
+			{
 				m_encouragedBonusesTotal.add(eLoopCivilization, 1);
+				iEncouraged++;
+			}
+			if (isTruBonusDiscouraged(pTruBonus, eLoopCivilization))
+			{
+				m_discouragedBonusesTotal.add(eLoopCivilization, 1);
+				iEncouraged--;
+			}
+		}
+		if (iEncouraged < 0)
+		{
+			m_bonusDiscouragedRatio.set(eLoopBonus,
+					scaled(-iEncouraged, GC.getNumCivilizationInfos()));
 		}
 	}
 	m_radii.reset();
@@ -929,7 +944,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		scaled rFromBonuses;
 		scaled rBonusDiscourageFactor = -scaled(3750, std::max(1,
 				m_discouragedBonusesTotal.get(eCiv))).sqrt();
-		scaled rBonusEncourageFactor = scaled(880, std::max(1,
+		scaled rBonusEncourageFactor = scaled(750, std::max(1,
 				m_encouragedBonusesTotal.get(eCiv))).sqrt();
 		bool const bSanitize = (GC.getGame().isScenario() ?
 				GC.getDefineBOOL(CvGlobals::TRUE_STARTS_SANITIZE_SCENARIOS) :
@@ -1037,7 +1052,13 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 					scaled rVal = rWeight * rBonusEncourageFactor /
 							// Mainly want to encourage a single instance
 							aeiEncouragedCount.get(eBonus);
-					IFLOG logBBAI("Encouraging %S at %d,%d (dist. factor: %d percent): +%d/100 fitness",
+					/*	Extra encouragement for resources that are widely discouraged
+						(read: Corn). B/c those resources will have to go _somewhere_
+						when sanitizing, so having a civ on the map that actually
+						likes them is helpful. */
+					if (bSanitize)
+						rVal *= 1 + m_bonusDiscouragedRatio.get(eBonus);
+					IFLOG if(rVal.getPercent()!=0) logBBAI("Encouraging %S at %d,%d (dist. factor: %d percent): +%d/100 fitness",
 							GC.getInfo(eBonus).getDescription(), itPlot->getX(), itPlot->getY(),
 							rWeight.getPercent(), rVal.getPercent());
 					rFromBonuses += rVal;
