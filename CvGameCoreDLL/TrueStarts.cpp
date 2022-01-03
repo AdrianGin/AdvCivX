@@ -16,6 +16,24 @@ using std::auto_ptr;
 #define IFLOG if (gMapLogLevel > 0 && bLog && false)
 
 
+namespace
+{
+	/*	Treating peaks as continental boundaries is useful for game balance,
+		but, here, we should care more about the intuitive impression that
+		players have of the terrain surrounding the starting plot of a civ.
+		Also makes life easier when counting peaks for relief-based preferences. */
+	bool sameArea(CvPlot const& kFirst, CvPlot const& kSecond)
+	{
+		if (GC.getDefineBOOL(CvGlobals::PASSABLE_AREAS))
+		{
+			return (kFirst.getArea().getRepresentativeArea() ==
+					kSecond.getArea().getRepresentativeArea());
+		}
+		return kFirst.sameArea(kSecond);
+	}
+}
+
+
 TrueStarts::TrueStarts()
 {
 	// The official non-Earth scenarios set all latitude values to 0
@@ -650,16 +668,15 @@ void TrueStarts::calculateRadius(CvPlayer const& kPlayer)
 	int iExtra = 0;
 	scaled const rTargetNonOcean = fixp(2.25) * SQR(rRadius);
 	CvPlot const& kStart = *kPlayer.getStartingPlot();
-	CvArea const& kStartArea = kStart.getArea();
 	do
 	{
 		int iNonOcean = 0;
 		for (PlotCircleIter itPlot(kStart, rRadius.round() + iExtra);
 			itPlot.hasNext(); ++itPlot)
 		{
-			if (itPlot->isArea(kStartArea) ||
+			if (sameArea(*itPlot, kStart) ||
 				(itPlot->getTerrainType() == GC.getWATER_TERRAIN(true) &&
-				itPlot->isAdjacentToArea(kStartArea)))
+				itPlot->isAdjacentToArea(kStart.getArea())))
 			{
 				/*	Would be nice not to count plots fully that are close to
 					another starting plot (tbd.?) */
@@ -709,7 +726,7 @@ namespace
 	scaled distWeight(CvPlot const& kStart, CvPlot const& kPlot, int iMaxDist)
 	{
 		int iPlotDist = plotDistance(&kStart, &kPlot);
-		if (!kStart.sameArea(kPlot))
+		if (!kStart.sameArea(kPlot)) // (Don't use our local sameArea function here)
 			iPlotDist *= 2;
 		return scaled::max(0, 1 - scaled(iPlotDist, iMaxDist + 1).
 				pow(fixp(1.7)));
@@ -793,7 +810,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			/*	(Don't need such an adjustment for geo dist - America and Eurasia
 				are pretty far apart anyway, and all other relevant places are
 				connected by land.) */
-			if (!kStart.sameArea(kOtherStart))
+			if (!sameArea(kStart, kOtherStart))
 				iDistPercent += (18 * (100 - iDistPercent)) / 100;
 			int iErrorPercent = abs(iDistPercent - iGeoDistPercent);
 			{
@@ -904,7 +921,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 					kPlayer.getID(), itPlot->plotNum());
 			if (!itPlot->isLake())
 			{
-				if (itPlot->sameArea(kStart))
+				if (sameArea(*itPlot, kStart))
 				{
 					rSameAreaPlotWeights += rWeight;
 					if (itPlot->isHills())
@@ -929,7 +946,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 							}
 						}
 					}
-					if (itPlot->isPeak())
+					else if (itPlot->isPeak())
 					{
 						rAreaPeakScore += rWeight;
 						FOR_EACH_ORTH_ADJ_PLOT(*itPlot)
@@ -1624,7 +1641,7 @@ scaled TrueStarts::calcBonusSwapUtil(
 	CvBonusInfo const& kSecondBonus = GC.getInfo(kSecondPlot.getBonusType());
 	{	// Try to preserve locality of bonus resource types
 		scaled rDistPenalty;
-		if (!pDestOfFirst->sameArea(*pDestOfSecond) &&
+		if (!sameArea(*pDestOfFirst, *pDestOfSecond) &&
 			// Don't care if resources bleed onto small continents
 			2 * pDestOfFirst->getArea().getNumTiles() > 3 * NUM_CITY_PLOTS &&
 			2 * pDestOfSecond->getArea().getNumTiles() > 3 * NUM_CITY_PLOTS)
