@@ -95,12 +95,21 @@ TrueStarts::TrueStarts()
 					scaled(-iEncouraged, GC.getNumCivilizationInfos()));
 		}
 	}
-	m_radii.reset();
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 		calculateRadius(*itPlayer);
 	m_plotWeights.reset();
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 		calculatePlotWeights(*itPlayer);
+	{
+		std::vector<scaled> arSpaceWeights;
+		for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		{
+			SurroundingsStats& kStats = *new SurroundingsStats(*itPlayer, *this);
+			m_surrStats.set(itPlayer->getID(), &kStats);
+			arSpaceWeights.push_back(kStats.areaSpaceWeights());
+		}
+		m_rMedianSpace = stats::median(arSpaceWeights);
+	}
 	/*	Would be nicer to cache these at CvGlobals (as the Global Warming code
 		uses them too), but that's a bit annoying to implement. Also, this way,
 		I can use the names most appropriate for the True Starts option. */
@@ -114,6 +123,18 @@ TrueStarts::TrueStarts()
 	m_eDesert = (TerrainTypes)GC.getDefineINT("BARREN_TERRAIN");
 	m_ePolarDesert = (TerrainTypes)GC.getDefineINT("FROZEN_TERRAIN");
 }
+
+
+TrueStarts::~TrueStarts()
+{
+	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	{
+		SurroundingsStats* pStats = m_surrStats.get(itPlayer->getID());
+		if (pStats != NULL)
+			delete pStats;
+	}
+}
+
 
 namespace
 {
@@ -515,8 +536,7 @@ void TrueStarts::changeCivs()
 			return;
 		}
 	}
-	// Could do this in ctor, but I want to use the valid-civ lists above.
-	initContemporaries();
+	initContemporaries(); // Want to use the valid-civ lists above; hence not in ctor.
 	{
 		std::vector<scaled> arOceanityTargets;
 		for (size_t i = 0; i < m_validAICivs.size(); i++)
@@ -776,6 +796,93 @@ namespace
 	}
 }
 
+// Tallies stats about kPlayer's starting surroundings for the fitness evaluation
+TrueStarts::SurroundingsStats::SurroundingsStats(CvPlayer const& kPlayer,
+	TrueStarts const& kTruStarts) : m_iTemperateDesertPenalty(0)
+{
+	CvPlot const& kStart = *kPlayer.getStartingPlot();
+	auto_ptr<PlotCircleIter> pSurroundings = kTruStarts.getSurroundings(kPlayer);
+	for (PlotCircleIter& itPlot = *pSurroundings; itPlot.hasNext(); ++itPlot)
+	{
+		scaled const rWeight = kTruStarts.m_plotWeights.get(
+				kPlayer.getID(), itPlot->plotNum());
+		if (itPlot->isLake())
+			continue;
+		if (!sameArea(*itPlot, kStart))
+		{
+			m_rDifferentAreaPlotWeights += rWeight;
+			if (!itPlot->isWater()) // Count land area double
+				m_rDifferentAreaPlotWeights += rWeight;
+			continue;
+		}
+		{
+			scaled rSpaceWeight = rWeight.sqrt();
+			m_rAreaSpaceWeights += rSpaceWeight;
+			m_rAreaXSpaceWeights += GC.getMap().xDistance(
+					kStart.getX(), itPlot->getX());
+			m_rAreaYSpaceWeights += GC.getMap().yDistance(
+					kStart.getY(), itPlot->getY());
+		}
+		m_rAreaPlotWeights += rWeight;
+		if (itPlot->isHills())
+		{
+			m_rAreaHillScore += rWeight;
+			int iOrthAdj = 0;
+			FOR_EACH_ORTH_ADJ_PLOT(*itPlot)
+			{
+				if (pAdj->isHills() || pAdj->isPeak())
+				{
+					m_rAreaHillScore += 2 * rWeight / (3 + iOrthAdj);
+					iOrthAdj++;
+				}
+			}
+			int iDiagAdj = 0;
+			FOR_EACH_DIAG_ADJ_PLOT(*itPlot)
+			{
+				if (pAdj->isHills() || pAdj->isPeak())
+				{
+					m_rAreaHillScore += rWeight / (2 + iOrthAdj + iDiagAdj);
+					iDiagAdj++;
+				}
+			}
+		}
+		else if (itPlot->isPeak())
+		{
+			m_rAreaPeakScore += rWeight;
+			FOR_EACH_ORTH_ADJ_PLOT(*itPlot)
+			{
+				if (pAdj->isPeak())
+					m_rAreaPeakScore += 2 * rWeight / 3;
+				if (pAdj->isHills())
+					m_rAreaPeakScore += rWeight / 3;
+			}
+			FOR_EACH_DIAG_ADJ_PLOT(*itPlot)
+			{
+				if (pAdj->isPeak())
+					m_rAreaPeakScore += rWeight / 2;
+			}
+		}
+		// Decrease weight for distant plots when it comes to rivers
+		scaled rRiverWeight = SQR(rWeight);
+		m_rAreaRiverWeights += rRiverWeight;
+		if (itPlot->isRiver())
+		{
+			m_rAreaRiverScore += (itPlot->getRiverCrossingCount()
+					+ 2) * rRiverWeight; // dilute
+		}
+		if (itPlot->getTerrainType() == kTruStarts.m_eDesert)
+		{
+			if (itPlot.currPlotDist() == CITY_PLOTS_RADIUS)
+				m_iTemperateDesertPenalty = 65;
+			else if (m_iTemperateDesertPenalty == 0 &&
+				itPlot.currPlotDist() == CITY_PLOTS_RADIUS + 1)
+			{
+				m_iTemperateDesertPenalty = 40;
+			}
+		}
+	}
+}
+
 
 int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 	LeaderHeadTypes eLeader, bool bLog) const
@@ -932,18 +1039,8 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		iFitness += (iFromContemporaries /
 				scaled(m_leaders.numNonDefault()).sqrt()).round();
 	}
-	{	// Evaluation of surrounding plots ...
-		auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer.getID());
-		scaled rSameAreaPlotWeights;
-		scaled rDifferentAreaPlotWeights;
-		scaled rAreaSpaceWeights;
-		scaled rAreaXSpaceWeights;
-		scaled rAreaYSpaceWeights;
-		scaled rAreaRiverScore;
-		scaled rAreaRiverWeights;
-		scaled rAreaHillScore;
-		scaled rAreaPeakScore;
-		int iTemperateDesertPenalty = 0;
+	{
+		auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer);
 		scaled rFromBonuses;
 		scaled rBonusDiscourageFactor = -scaled(3750, std::max(1,
 				m_discouragedBonusesTotal.get(eCiv))).sqrt();
@@ -966,83 +1063,6 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		{
 			scaled const rWeight = m_plotWeights.get(
 					kPlayer.getID(), itPlot->plotNum());
-			if (!itPlot->isLake())
-			{
-				if (sameArea(*itPlot, kStart))
-				{
-					{
-						scaled rSpaceWeight = rWeight.sqrt();
-						rAreaSpaceWeights += rSpaceWeight;
-						rAreaXSpaceWeights += GC.getMap().xDistance(
-								kStart.getX(), itPlot->getX());
-						rAreaYSpaceWeights += GC.getMap().yDistance(
-								kStart.getY(), itPlot->getY());
-					}
-					rSameAreaPlotWeights += rWeight;
-					if (itPlot->isHills())
-					{
-						rAreaHillScore += rWeight;
-						int iOrthAdj = 0;
-						FOR_EACH_ORTH_ADJ_PLOT(*itPlot)
-						{
-							if (pAdj->isHills() || pAdj->isPeak())
-							{
-								rAreaHillScore += 2 * rWeight / (3 + iOrthAdj);
-								iOrthAdj++;
-							}
-						}
-						int iDiagAdj = 0;
-						FOR_EACH_DIAG_ADJ_PLOT(*itPlot)
-						{
-							if (pAdj->isHills() || pAdj->isPeak())
-							{
-								rAreaHillScore += rWeight / (2 + iOrthAdj + iDiagAdj);
-								iDiagAdj++;
-							}
-						}
-					}
-					else if (itPlot->isPeak())
-					{
-						rAreaPeakScore += rWeight;
-						FOR_EACH_ORTH_ADJ_PLOT(*itPlot)
-						{
-							if (pAdj->isPeak())
-								rAreaPeakScore += 2 * rWeight / 3;
-							if (pAdj->isHills())
-								rAreaPeakScore += rWeight / 3;
-						}
-						FOR_EACH_DIAG_ADJ_PLOT(*itPlot)
-						{
-							if (pAdj->isPeak())
-								rAreaPeakScore += rWeight / 2;
-						}
-					}
-					// Decrease weight for distant plots when it comes to rivers
-					scaled rRiverWeight = SQR(rWeight);
-					rAreaRiverWeights += rRiverWeight;
-					if (itPlot->isRiver())
-					{
-						rAreaRiverScore += (itPlot->getRiverCrossingCount()
-								+ 2) * rRiverWeight; // dilute
-					}
-					if (itPlot->getTerrainType() == m_eDesert)
-					{
-						if (itPlot.currPlotDist() == CITY_PLOTS_RADIUS)
-							iTemperateDesertPenalty = 65;
-						else if (iTemperateDesertPenalty == 0 &&
-							itPlot.currPlotDist() == CITY_PLOTS_RADIUS + 1)
-						{
-							iTemperateDesertPenalty = 40;
-						}
-					}
-				}
-				else
-				{
-					rDifferentAreaPlotWeights += rWeight;
-					if (!itPlot->isWater()) // Count land area double
-						rDifferentAreaPlotWeights += rWeight;
-				}
-			}
 			BonusTypes const eBonus = itPlot->getBonusType();
 			if (eBonus != NO_BONUS)
 			{
@@ -1075,8 +1095,6 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 					rFromBonuses += rVal;
 				}
 			}
-			/*	Tbd.: Calculate elevation value/fitness.
-				Check for major river if that's a preference. */
 		}
 		IFLOG if(rFromBonuses!=0) logBBAI("Total fitness from bonus resources: %d",
 				rFromBonuses.round());
@@ -1088,29 +1106,34 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			IFLOG logBBAI("Fitness value from climate: %d", iFromClimate);
 			iFitness += iFromClimate;
 		}
+		SurroundingsStats const& kStats = *m_surrStats.get(kPlayer.getID());
 		{
 			int const iAbsLatitudeTargetTimes10 = abs(kTruCiv.get(
 					CvTruCivInfo::LatitudeTimes10));
+			int iPenalty = kStats.temperateDesertPenalty();
 			// The climate fitness val isn't good at discouraging small desert patches
-			if (iTemperateDesertPenalty > 0 &&
+			if (iPenalty > 0 &&
 				/*	With the BtS civ roster, this covers only Europe incl. Turkey
 					(but not all of Europe). */
 				iAbsLatitudeTargetTimes10 >= 409 &&
 				kTruCiv.get(CvTruCivInfo::Oceanity) >= 10)
 			{
 				if (iAbsLatitudeTargetTimes10 < 415)
-					iTemperateDesertPenalty /= 2;
-				IFLOG logBBAI("Fitness penalty of %d for desert in starting city radius", iTemperateDesertPenalty);
-				iFitness -= iTemperateDesertPenalty;
+					iPenalty /= 2;
+				IFLOG logBBAI("Fitness penalty of %d for desert in starting city radius", iPenalty);
+				iFitness -= iPenalty;
 			}
 		}
 		{
 			scaled const rTargetOceanity = per100(kTruCiv.get(CvTruCivInfo::Oceanity));
 			if (rTargetOceanity >= 0)
 			{
-				scaled rSameAreaRatio = rSameAreaPlotWeights;
-				if (rSameAreaPlotWeights > 0)
-					rSameAreaRatio /= rSameAreaPlotWeights + rDifferentAreaPlotWeights;
+				scaled rSameAreaRatio = kStats.areaPlotWeights();
+				if (kStats.areaPlotWeights() > 0)
+				{
+					rSameAreaRatio /= kStats.areaPlotWeights() +
+							kStats.differentAreaPlotWeights();
+				}
 				IFLOG logBBAI("Same-area plot ratio: %d percent", rSameAreaRatio.getPercent());
 				// Give typical oceanity targets less impact on fitness
 				scaled rOceanityWeight = rTargetOceanity - m_rMedianOceanityTarget;
@@ -1138,9 +1161,10 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		}
 		{
 			int const iMajorRiverWeight = kTruCiv.get(CvTruCivInfo::MajorRiverWeight);
-			if (iMajorRiverWeight != 0 && rAreaRiverWeights > 0)
+			if (iMajorRiverWeight != 0 && kStats.areaRiverWeights() > 0)
 			{
-				scaled rMeanRiverScore = rAreaRiverScore / rAreaRiverWeights;
+				scaled rMeanRiverScore = kStats.areaRiverScore() /
+						kStats.areaRiverWeights();
 				bool bNearRiver = kStart.isRiver();
 				if (!bNearRiver)
 				{
@@ -1170,7 +1194,9 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			}
 		}
 		{
-			scaled rDiv = scaled::max(rSameAreaPlotWeights, 1);
+			scaled rDiv = scaled::max(kStats.areaPlotWeights(), 1);
+			scaled rAreaHillScore = kStats.areaHillScore();
+			scaled rAreaPeakScore = kStats.areaPeakScore();
 			rAreaHillScore /= rDiv;
 			rAreaPeakScore /= rDiv;
 			IFLOG logBBAI("Area hills and peak score: %d, %d",
@@ -1199,13 +1225,18 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			}
 		}
 		{
-			IFLOG logBBAI("Sum of area plot weights: %d", rAreaSpaceWeights.round());
-			IFLOG logBBAI("x, y plot weights: %d, %d", rAreaXSpaceWeights.round(), rAreaYSpaceWeights.round());
+			/*	Generally, I don't think the fitness calc should take into account
+				the overall properties of the map. E.g. if a player picks a Tropical
+				climate, they should get tropical civs - not the same civs as always.
+				The space preference is an exception: civs are perceived as small
+				or large very much in relation to the other civs on the map. */
+			scaled rSpace = kStats.areaSpaceWeights() / m_rMedianSpace;
+			IFLOG logBBAI("Expansion space %d percent", rSpace.getPercent());
+			scaled rHStretch = kStats.areaXSpaceWeights() /
+					std::max(kStats.areaYSpaceWeights(), scaled::epsilon());
+			IFLOG logBBAI("Horizontal stretch: %d percent", rHStretch.getPercent());
 		}
 	}
-	/*	Tbd.: Space, shape preferences: based on plot distances to other starting plots
-		in the same area, area size. (Shape also reflected by weights above -> calculatePlotWeights,
-		but that's not sufficient.) */
 	CvTruLeaderInfo const* pTruLeader = m_truLeaders.get(eLeader);
 	int const iCivBias = kTruCiv.get(CvTruCivInfo::Bias);
 	int const iLeaderBias = (pTruLeader == NULL ? 0 :
@@ -1225,7 +1256,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 void TrueStarts::calculatePlotWeights(CvPlayer const& kPlayer)
 {
 	CvPlot const& kStart = *kPlayer.getStartingPlot();
-	auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer.getID());
+	auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer);
 	for (PlotCircleIter& itPlot = *pSurroundings; itPlot.hasNext(); ++itPlot)
 	{
 		scaled const rDistWeight = distWeight(kStart, *itPlot, itPlot.radius());
@@ -1254,12 +1285,13 @@ void TrueStarts::calculatePlotWeights(CvPlayer const& kPlayer)
 }
 
 
-auto_ptr<PlotCircleIter> TrueStarts::getSurroundings(PlayerTypes ePlayer) const
+auto_ptr<PlotCircleIter> TrueStarts::getSurroundings(CvPlayer const& kPlayer) const
 {
 	return auto_ptr<PlotCircleIter>(
-			new PlotCircleIter(*GET_PLAYER(ePlayer).getStartingPlot(),
-			m_radii.get(ePlayer)));
+			new PlotCircleIter(*kPlayer.getStartingPlot(),
+			m_radii.get(kPlayer.getID())));
 }
+
 
 class PrecipitationRegion
 {

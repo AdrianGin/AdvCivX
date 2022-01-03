@@ -10,6 +10,7 @@ class TrueStarts
 {
 public:
 	TrueStarts();
+	~TrueStarts();
 	void changeCivs();
 	void sanitize();
 
@@ -20,8 +21,36 @@ private:
 	EagerEnumMap<LeaderHeadTypes,CvTruLeaderInfo*> m_truLeaders;
 	EagerEnumMap<BonusTypes,CvTruBonusInfo*> m_truBonuses;
 	ArrayEnumMap2D<LeaderHeadTypes,LeaderHeadTypes,int,void*,-1> m_contemporaries;
-	ArrayEnumMap<PlayerTypes,int> m_radii;
 	ArrayEnumMap2D<PlayerTypes,PlotNumTypes,scaled> m_plotWeights;
+	EagerEnumMap<PlayerTypes,int> m_radii;
+	class SurroundingsStats
+	{
+	public:
+		SurroundingsStats(CvPlayer const& kPlayer, TrueStarts const& kTruStarts);
+		int temperateDesertPenalty() const { return m_iTemperateDesertPenalty; }
+		scaled differentAreaPlotWeights() const { return m_rDifferentAreaPlotWeights; }
+		scaled areaPlotWeights() const { return m_rAreaPlotWeights; }
+		scaled areaSpaceWeights() const { return m_rAreaSpaceWeights; }
+		scaled areaXSpaceWeights() const { return m_rAreaXSpaceWeights; }
+		scaled areaYSpaceWeights() const { return m_rAreaYSpaceWeights; }
+		scaled areaRiverWeights() const { return m_rAreaRiverWeights; }
+		scaled areaRiverScore() const { return m_rAreaRiverScore; }
+		scaled areaHillScore() const { return m_rAreaHillScore; }
+		scaled areaPeakScore() const { return m_rAreaPeakScore; }
+	private:
+		int m_iTemperateDesertPenalty;
+		scaled m_rDifferentAreaPlotWeights;
+		scaled m_rAreaPlotWeights;
+		scaled m_rAreaSpaceWeights;
+		scaled m_rAreaXSpaceWeights;
+		scaled m_rAreaYSpaceWeights;
+		scaled m_rAreaRiverWeights;
+		scaled m_rAreaRiverScore;
+		scaled m_rAreaHillScore;
+		scaled m_rAreaPeakScore;
+	};
+	ArrayEnumMap<PlayerTypes,SurroundingsStats*> m_surrStats;
+	scaled m_rMedianSpace;
 	scaled m_rMedianOceanityTarget;
 	int m_iMaxMaxElevationTarget; // global max
 	EagerEnumMap<LeaderHeadTypes,int,void*,-1> m_maxTimeDiff;
@@ -47,7 +76,7 @@ private:
 	void setPlayerWeightsPerPlot(PlotNumTypes ePlot,
 			EagerEnumMap<PlayerTypes,scaled>& kPlayerWeights) const;
 	void calculatePlotWeights(CvPlayer const& kPlayer);
-	std::auto_ptr<PlotCircleIter> getSurroundings(PlayerTypes ePlayer) const;
+	std::auto_ptr<PlotCircleIter> getSurroundings(CvPlayer const& kPlayer) const;
 	bool isBonusDiscouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
 		BonusTypes eBonus = NO_BONUS) const
 	{
