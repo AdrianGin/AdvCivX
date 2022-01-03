@@ -36,9 +36,21 @@ namespace
 
 TrueStarts::TrueStarts()
 {
+	CvMap const& kMap = GC.getMap();
 	// The official non-Earth scenarios set all latitude values to 0
 	m_bMapHasLatitudes = (GC.getMap().getTopLatitude() >
-			GC.getMap().getBottomLatitude());
+			kMap.getBottomLatitude());
+	m_iMaxLatitudeDiffTimes10 = CvTruCivInfo::maxLatitude()
+			- CvTruCivInfo::minLatitude();
+	if (kMap.isWrapY())
+		m_iMaxLatitudeDiffTimes10 /= 2;
+	m_iMaxLongitudeDiffTimes10 = CvTruCivInfo::maxLongitude()
+			- CvTruCivInfo::minLongitude();
+	if (kMap.isWrapX())
+		m_iMaxLongitudeDiffTimes10 /= 2;
+	// Use the same approximation of Euclidean distance as plotDistance
+	m_iMaxGeoDist = std::max(m_iMaxLongitudeDiffTimes10, m_iMaxLatitudeDiffTimes10)
+			+ std::min(m_iMaxLongitudeDiffTimes10, m_iMaxLatitudeDiffTimes10) / 2;
 	FOR_EACH_ENUM(TruCiv)
 	{
 		m_truCivs.set(GC.getInfo(eLoopTruCiv).getCiv(),
@@ -793,22 +805,23 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			int iMaxDist = GC.getMap().maxPlotDistance();
 			int iLoopLatitudeTimes10 = kLoopTruCiv.get(CvTruCivInfo::LatitudeTimes10);
 			int iLatitudeDiffTimes10 = abs(iCivLatitudeTimes10 - iLoopLatitudeTimes10);
-			int iMaxLatitudeDiffTimes10 = CvTruCivInfo::maxLatitude()
-					- CvTruCivInfo::minLatitude();
-			if (kMap.isWrapY())
-				iLatitudeDiffTimes10 %= iMaxLatitudeDiffTimes10;
+			if (iLatitudeDiffTimes10 > m_iMaxLatitudeDiffTimes10) // wrap
+			{
+				iLatitudeDiffTimes10 = 2 * m_iMaxLatitudeDiffTimes10
+						- iLatitudeDiffTimes10;
+				FAssert(kMap.isWrapY());
+			}
 			int iLongitudeDiffTimes10 = abs(iCivLongitudeTimes10
 					- kLoopTruCiv.get(CvTruCivInfo::LongitudeTimes10));
-			int iMaxLongitudeDiffTimes10 = CvTruCivInfo::maxLongitude()
-					- CvTruCivInfo::minLongitude();
-			if (kMap.isWrapX())
-				iLongitudeDiffTimes10 %= iMaxLongitudeDiffTimes10;
-			// Let's use the same approximation of Euclidean distance as plotDistance
+			if (iLongitudeDiffTimes10 > m_iMaxLongitudeDiffTimes10)
+			{
+				iLongitudeDiffTimes10 = 2 * m_iMaxLongitudeDiffTimes10
+						- iLongitudeDiffTimes10;
+			}
 			int iGeoDist = std::max(iLongitudeDiffTimes10, iLatitudeDiffTimes10)
 					+ std::min(iLongitudeDiffTimes10, iLatitudeDiffTimes10) / 2;
-			int iMaxGeoDist = kMap.maxPlotDistance(iMaxLongitudeDiffTimes10,
-					iMaxLatitudeDiffTimes10);
-			int iGeoDistPercent = 100 * iGeoDist / iMaxGeoDist;
+			int iGeoDistPercent = 100 * iGeoDist / m_iMaxGeoDist;
+			FAssert(iGeoDistPercent <= 100);
 			int iDistPercent = 100 * iDist / iMaxDist;
 			/*	(Don't need such an adjustment for geo dist - America and Eurasia
 				are pretty far apart anyway, and all other relevant places are
@@ -826,8 +839,8 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 						abs(std::max(iDistPercent, iGeoDistPercent) - iMaxErr),
 						abs(std::min(iDistPercent, iGeoDistPercent) - iMaxErr))));
 				iErrorPercent /= iMaxErr;
-				/*	Avoid placing civs that are close together at the wrong side
-					of the equator */
+				/*	Avoid placing civs that are supposed to be close together
+					at opposing sides of the equator */
 				if (iCivLatitudeTimes10 * iLoopLatitudeTimes10 < 0)
 					iErrorPercent = std::max(iErrorPercent, iMaxErr + 5);
 			}
