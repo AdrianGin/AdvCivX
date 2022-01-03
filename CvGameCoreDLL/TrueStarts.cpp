@@ -765,7 +765,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		/*	Try to match latitudes slightly higher than the actual latitudes -
 			to bias the civ choice toward the temperate zones and subtropics. */
 		iAbsStartLatAdjustedTimes10 += (scaled(std::max(0,
-				40 - iAbsStartLat)).pow(fixp(0.4)) * 10).round();
+				40 - iAbsStartLat)).pow(fixp(0.3)) * 10).round();
 		// Temperate latitudes need to keep some distance from the Tundra
 		iAbsStartLatAdjustedTimes10 -= (scaled(std::max(0,
 				std::min(52, iAbsStartLat) - 40)).pow(fixp(0.4)) * 10).round();
@@ -848,12 +848,12 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			IFLOG logBBAI("Dist error for %S: %d percent (plot dist %d percent, geo dist %d percent)",
 					GC.getInfo(perPlayerVal.second).getShortDescription(), iErrorPercent, iDistPercent, iGeoDistPercent);
 		}
-		scaled rAvgDistErrorPenalty = iAvgDistErrorPercent * fixp(0.48);
+		scaled rAvgDistErrorPenalty = iAvgDistErrorPercent * fixp(0.64);
 		if (iOtherPlayers > 0)
 		{
 			/*	Not quite an average (that would be pow(1)). I do want distances
 				to matter more as the last few civs are chosen. */
-			rAvgDistErrorPenalty /= scaled(iOtherPlayers).pow(fixp(0.77));
+			rAvgDistErrorPenalty /= scaled(iOtherPlayers).pow(fixp(0.71));
 			IFLOG logBBAI("Subtracting %d from fitness for dist error", rAvgDistErrorPenalty.round());
 		}
 		iFitness -= rAvgDistErrorPenalty.round();
@@ -1294,7 +1294,7 @@ int TrueStarts::calcClimateFitness(CvPlayer const& kPlayer, int iTargetPrecipita
 			rRegionPrecipitation += arrRegionData[i].first;
 			rRegionWeight += arrRegionData[i].second;
 		}
-		if (iValidPlots * 2 <= (bStart ? 0 : NUM_CITY_PLOTS) || rRegionWeight <= 0)
+		if (iValidPlots * 3 < (bStart ? 0 : NUM_CITY_PLOTS) || rRegionWeight <= 0)
 		{
 			if (bStart)
 			{
