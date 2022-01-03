@@ -486,16 +486,19 @@ void TrueStarts::changeCivs()
 	// Could do this in ctor, but I want to use the valid-civ lists above.
 	initContemporaries();
 	{
-		std::vector<scaled> arOceanity;
+		std::vector<scaled> arOceanityTargets;
 		for (size_t i = 0; i < m_validAICivs.size(); i++)
 		{
-			scaled rSample = per100(m_truCivs.get(m_validAICivs[i].first)->get(
+			CvTruCivInfo const& kTruCiv = *m_truCivs.get(m_validAICivs[i].first);
+			scaled rSample = per100(kTruCiv.get(
 					CvTruCivInfo::Oceanity));
 			if (rSample >= 0)
-				arOceanity.push_back(rSample);
+				arOceanityTargets.push_back(rSample);
+			m_iMaxMaxElevationTarget = std::max(m_iMaxMaxElevationTarget,
+					kTruCiv.get(CvTruCivInfo::MaxElevation));
 		}
-		if (!arOceanity.empty())
-			m_rMedianOceanity = stats::median(arOceanity);
+		if (!arOceanityTargets.empty())
+			m_rMedianOceanityTarget = stats::median(arOceanityTargets);
 	}
 	updateFitnessValues();
 
@@ -1052,13 +1055,13 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 					rSameAreaRatio /= rSameAreaPlotWeights + rDifferentAreaPlotWeights;
 				IFLOG logBBAI("Same-area plot ratio: %d percent", rSameAreaRatio.getPercent());
 				// Give typical oceanity targets less impact on fitness
-				scaled rOceanityWeight = rTargetOceanity - m_rMedianOceanity;
+				scaled rOceanityWeight = rTargetOceanity - m_rMedianOceanityTarget;
 				/*	Normalize; i.e. if the median is 0.25, then the weight should
 					be more sensitive for targets below the median than above. */
-				if (rOceanityWeight > 0 && m_rMedianOceanity < 1)
-					rOceanityWeight /= 1 - m_rMedianOceanity;
-				else if (m_rMedianOceanity > 0)
-					rOceanityWeight /= m_rMedianOceanity;
+				if (rOceanityWeight > 0 && m_rMedianOceanityTarget < 1)
+					rOceanityWeight /= 1 - m_rMedianOceanityTarget;
+				else if (m_rMedianOceanityTarget > 0)
+					rOceanityWeight /= m_rMedianOceanityTarget;
 				rOceanityWeight = rOceanityWeight.abs();
 				FAssert(rOceanityWeight <= 1);
 				rOceanityWeight += fixp(0.5); // dilute
@@ -1066,7 +1069,8 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 					that much water on a Civ map */
 				rOceanityWeight *= scaled::min(1, fixp(1.5) - rTargetOceanity);
 				IFLOG logBBAI("Target ratio: %d percent, weight factor %d percent (median oceanity: %d percent)",
-						(1 - rTargetOceanity).getPercent(), rOceanityWeight.getPercent(), m_rMedianOceanity.getPercent());
+						(1 - rTargetOceanity).getPercent(), rOceanityWeight.getPercent(),
+						m_rMedianOceanityTarget.getPercent());
 				scaled rFromOceanity = (1 - rSameAreaRatio - rTargetOceanity).abs() * -175 *
 						rOceanityWeight;
 				IFLOG logBBAI("Fitness penalty from oceanity: %d", -rFromOceanity.round());
@@ -1127,6 +1131,8 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			if (iTargetMaxElev > MIN_INT)
 			{
 				scaled rMaxElev = (rAreaPeakScore.getPercent() + 8) * 200;
+				// Scenarios may have enormous clumps of peaks
+				rMaxElev.decreaseTo(m_iMaxMaxElevationTarget);
 				scaled rFromMaxElev = (rMaxElev.sqrt() - scaled(iTargetMaxElev).sqrt()).
 						abs() * -2; // arbitrary weight factor
 				iFitness += rFromMaxElev.round();

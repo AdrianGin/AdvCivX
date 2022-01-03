@@ -21,7 +21,8 @@ private:
 	ArrayEnumMap2D<LeaderHeadTypes,LeaderHeadTypes,int,void*,-1> m_contemporaries;
 	ArrayEnumMap<PlayerTypes,int> m_radii;
 	ArrayEnumMap2D<PlayerTypes,PlotNumTypes,scaled> m_plotWeights;
-	scaled m_rMedianOceanity;
+	scaled m_rMedianOceanityTarget;
+	int m_iMaxMaxElevationTarget; // global max
 	EagerEnumMap<LeaderHeadTypes,int,void*,-1> m_maxTimeDiff;
 	EagerEnumMap<CivilizationTypes,int> m_discouragedBonusesTotal;
 	EagerEnumMap<CivilizationTypes,int> m_encouragedBonusesTotal;
