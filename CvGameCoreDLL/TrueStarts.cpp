@@ -936,6 +936,9 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer.getID());
 		scaled rSameAreaPlotWeights;
 		scaled rDifferentAreaPlotWeights;
+		scaled rAreaSpaceWeights;
+		scaled rAreaXSpaceWeights;
+		scaled rAreaYSpaceWeights;
 		scaled rAreaRiverScore;
 		scaled rAreaRiverWeights;
 		scaled rAreaHillScore;
@@ -967,6 +970,14 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			{
 				if (sameArea(*itPlot, kStart))
 				{
+					{
+						scaled rSpaceWeight = rWeight.sqrt();
+						rAreaSpaceWeights += rSpaceWeight;
+						rAreaXSpaceWeights += GC.getMap().xDistance(
+								kStart.getX(), itPlot->getX());
+						rAreaYSpaceWeights += GC.getMap().yDistance(
+								kStart.getY(), itPlot->getY());
+					}
 					rSameAreaPlotWeights += rWeight;
 					if (itPlot->isHills())
 					{
@@ -1186,6 +1197,10 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				IFLOG logBBAI("Fitness penalty from max. elevation: %d (target %d m, have %d m)",
 						rFromMaxElev.round(), iTargetMaxElev, rMaxElev.round());
 			}
+		}
+		{
+			IFLOG logBBAI("Sum of area plot weights: %d", rAreaSpaceWeights.round());
+			IFLOG logBBAI("x, y plot weights: %d, %d", rAreaXSpaceWeights.round(), rAreaYSpaceWeights.round());
 		}
 	}
 	/*	Tbd.: Space, shape preferences: based on plot distances to other starting plots
