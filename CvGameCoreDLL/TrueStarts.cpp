@@ -876,12 +876,12 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			IFLOG logBBAI("Dist error for %S: %d pts. (plot dist %d percent, geo dist %d percent)",
 					GC.getInfo(perPlayerVal.second).getShortDescription(), iErrorPercent, iDistPercent, iGeoDistPercent);
 		}
-		scaled rAvgDistErrorPenalty = iAvgDistErrorPercent * fixp(0.64);
+		scaled rAvgDistErrorPenalty = iAvgDistErrorPercent * fixp(0.6);
 		if (iOtherPlayers > 0)
 		{
 			/*	Not quite an average (that would be pow(1)). I do want distances
 				to matter more as the last few civs are chosen. */
-			rAvgDistErrorPenalty /= scaled(iOtherPlayers).pow(fixp(0.71));
+			rAvgDistErrorPenalty /= scaled(iOtherPlayers).pow(fixp(0.7));
 			IFLOG logBBAI("Subtracting %d from fitness for dist error", rAvgDistErrorPenalty.round());
 		}
 		iFitness -= rAvgDistErrorPenalty.round();
