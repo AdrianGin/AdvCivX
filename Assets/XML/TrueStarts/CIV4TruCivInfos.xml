@@ -143,9 +143,9 @@
 			<!-- Moved south by 1 degree to account for the mild climate -->
 			<iLatitudeTimes10>505</iLatitudeTimes10>
 			<iLongitudeTimes10>1</iLongitudeTimes10>
-			<iPrecipitation>615</iPrecipitation>
-			<!-- Depends on whether we include Scotland -->
-			<iClimateVariation>30</iClimateVariation>
+			<!-- More rain and variation if we'd include Scotland -->
+			<iPrecipitation>855</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
 			<iOceanity>75</iOceanity>
 			<!-- Just England proper here -->
 			<iMaxElevation>978</iMaxElevation>
@@ -172,7 +172,7 @@
 			<CivilizationType>CIVILIZATION_FRANCE</CivilizationType>
 			<iLatitudeTimes10>489</iLatitudeTimes10>
 			<iLongitudeTimes10>24</iLongitudeTimes10>
-			<iPrecipitation>637</iPrecipitation>
+			<iPrecipitation>850</iPrecipitation>
 			<iClimateVariation>25</iClimateVariation>
 			<iOceanity>30</iOceanity>
 			<iMaxElevation>4810</iMaxElevation>
@@ -184,7 +184,7 @@
 			<CivilizationType>CIVILIZATION_GERMANY</CivilizationType>
 			<iLatitudeTimes10>525</iLatitudeTimes10>
 			<iLongitudeTimes10>130</iLongitudeTimes10>
-			<iPrecipitation>515</iPrecipitation>
+			<iPrecipitation>700</iPrecipitation>
 			<iClimateVariation>25</iClimateVariation>
 			<iOceanity>20</iOceanity>
 			<iMaxElevation>2962</iMaxElevation>
@@ -245,8 +245,11 @@
 			<CivilizationType>CIVILIZATION_JAPAN</CivilizationType>
 			<iLatitudeTimes10>350</iLatitudeTimes10>
 			<iLongitudeTimes10>1358</iLongitudeTimes10>
-			<!-- Kyoto; Tokyo has even more. -->
-			<iPrecipitation>1523</iPrecipitation>
+			<!-- 1523 in Kyoto; Tokyo even more. However, the tiles are mostly
+				 supposed to be Grassland Forest Hills, and the game
+				 can't assume that those are as wet as jungle. So we'll go
+				 with something lower. -->
+			<iPrecipitation>1250</iPrecipitation>
 			<iClimateVariation>40</iClimateVariation>
 			<iOceanity>77</iOceanity>
 			<iMaxElevation>3776</iMaxElevation>
