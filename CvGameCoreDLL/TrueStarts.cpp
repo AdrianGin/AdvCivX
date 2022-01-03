@@ -1519,18 +1519,20 @@ int TrueStarts::precipitation(CvPlot const& kPlot, bool bStart) const
 	if (eTerrain == m_eWoodland)
 	{
 		if (eFeature == m_eCoolForest)
-		{	/*	This calculation is tailored toward Japan and Korea.
+		{	/*	This calculation is tailored toward Japan.
 				Very wet temperate forest there. */
 			int iExtra = 0;
 			FOR_EACH_ADJ_PLOT(kPlot)
 			{
+				if (pAdj->isWater())
+					iExtra += 80;
 				if (pAdj->getTerrainType() == kPlot.getTerrainType() &&
 					pAdj->getFeatureType() == kPlot.getFeatureType())
 				{
-					iExtra += 110;
+					iExtra += 100;
 				}
 			}
-			return 850 + std::min(iExtra, 550);
+			return 850 + std::min(iExtra, 580);
 		}
 		return 750;
 	}
