@@ -1225,16 +1225,50 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			}
 		}
 		{
-			/*	Generally, I don't think the fitness calc should take into account
-				the overall properties of the map. E.g. if a player picks a Tropical
-				climate, they should get tropical civs - not the same civs as always.
-				The space preference is an exception: civs are perceived as small
-				or large very much in relation to the other civs on the map. */
-			scaled rSpace = kStats.areaSpaceWeights() / m_rMedianSpace;
-			IFLOG logBBAI("Expansion space %d percent", rSpace.getPercent());
-			scaled rHStretch = kStats.areaXSpaceWeights() /
-					std::max(kStats.areaYSpaceWeights(), scaled::epsilon());
-			IFLOG logBBAI("Horizontal stretch: %d percent", rHStretch.getPercent());
+			int const iHistoricalArea = kTruCiv.get(CvTruCivInfo::TotalArea);
+			if (iHistoricalArea >= 0)
+			{
+				scaled rTargetSpace = iHistoricalArea;
+				rTargetSpace.clamp(10, 5000); // So these can be pretty far apart
+				// ... but we don't want the target space multipliers to be far apart
+				rTargetSpace.exponentiate(fixp(0.215));
+				rTargetSpace += 4;
+				rTargetSpace /= fixp(8.35);
+				/*	Generally, I don't think the fitness calc should take into account
+					the overall properties of the map. E.g. if a player picks a
+					Tropical climate, they should get tropical civs - not the same civs
+					as always. The space preference is an exception: civs are perceived
+					as small or large very much in relation to other civs on the map. */
+				scaled rSpace = kStats.areaSpaceWeights() / m_rMedianSpace;
+				int iFromSpace = 20 - (((rTargetSpace - rSpace) * 100).
+						abs().pow(fixp(4/3.)) / fixp(2.25)).round();
+				IFLOG logBBAI("Fitness val from space for expansion: %d (target %d percent, have %d)",
+						iFromSpace, rTargetSpace.getPercent(), rSpace.getPercent());
+				iFitness += iFromSpace;
+			}
+			int const iHStretchPercent = kTruCiv.get(CvTruCivInfo::HStretch);
+			if (iHStretchPercent >= 0)
+			{
+				scaled rTargetHStretch = per100(iHStretchPercent);
+				scaled rHStretch = kStats.areaXSpaceWeights() /
+						std::max(kStats.areaYSpaceWeights(), scaled::epsilon());
+				int iFromShape=0;
+				if ((rHStretch - 1) * (rTargetHStretch - 1) > 0)
+				{
+					iFromShape = std::min(
+							(1 - rHStretch).abs(),
+							(1 - rTargetHStretch).abs()).getPercent();
+				}
+				else
+				{
+					iFromShape = -std::min(
+							(rHStretch - 1).abs(),
+							(rTargetHStretch - 1).abs()).getPercent();
+				}
+				IFLOG if(iFromShape!=0) logBBAI("Fitness val from shape: %d (target %d percent, have %d)",
+						iFromShape, rTargetHStretch.getPercent(), rHStretch.getPercent());
+				iFitness += iFromShape;
+			}
 		}
 	}
 	CvTruLeaderInfo const* pTruLeader = m_truLeaders.get(eLeader);

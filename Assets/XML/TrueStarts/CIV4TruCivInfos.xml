@@ -17,6 +17,12 @@
 			<!-- Considering only the Northeast here -->
 			<iMaxElevation>1917</iMaxElevation>
 			<iMountainousArea>25</iMountainousArea>
+			<!-- Present day area of US, H-stretch is really closer to 200,
+				 but that seems a bit extreme for a civ that also covers
+				 a large north-south distance. But mainly I do want there
+				 to be a western (or eastern) frontier. -->
+			<iTotalArea>9827</iTotalArea>
+			<iHStretch>175</iHStretch>
 			<!-- Use this for both Americas; all the Maize growers. -->
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
@@ -35,6 +41,9 @@
 			<iOceanity>30</iOceanity>
 			<iMaxElevation>3000</iMaxElevation>
 			<iMountainousArea>15</iMountainousArea>
+			<!-- Saudi Arabia. Saladin's sultanate had a somewhat
+				 similar area. -->
+			<iTotalArea>2150</iTotalArea>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -47,6 +56,8 @@
 			<iOceanity>10</iOceanity>
 			<iMaxElevation>5636</iMaxElevation>
 			<iMountainousArea>50</iMountainousArea>
+			<!-- Peak area -->
+			<iTotalArea>220</iTotalArea>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -62,6 +73,10 @@
 				 outside the Babylonian core. -->
 			<iMaxElevation>1000</iMaxElevation>
 			<iMountainousArea>5</iMountainousArea>
+			<!-- Iraq; Hammurabi's empire was smaller, the later empires
+				 were larger. Shape is vertically stretched, but I
+				 don't think that's important. Along a river is what matters. -->
+			<iTotalArea>438</iTotalArea>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -75,6 +90,8 @@
 			<!-- Argaeus; Ararat is too far from the core. -->
 			<iMaxElevation>3917</iMaxElevation>
 			<iMountainousArea>60</iMountainousArea>
+			<!-- My crude approximation of their 5th century territory -->
+			<iTotalArea>1500</iTotalArea>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -90,6 +107,8 @@
 			<iOceanity>75</iOceanity>
 			<iMaxElevation>1544</iMaxElevation>
 			<iMountainousArea>10</iMountainousArea>
+			<!-- Half of Tunesia. The African core was really small. -->
+			<iTotalArea>82</iTotalArea>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_CELT</Type>
@@ -104,6 +123,12 @@
 			<!-- Mont Blanc -->
 			<iMaxElevation>4810</iMaxElevation>
 			<iMountainousArea>15</iMountainousArea>
+			<!-- Don't care how much space they have. The total area was
+				 enormous, the tribes represented by the leaders in the
+				 game were tiny. If they do have space, horizontal is
+				 preferable. As a linguistic group, they were very
+				 widely spread across Europe and into Asia Minor. -->
+			<iHStretch>175</iHStretch>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -121,6 +146,10 @@
 			<!-- Mt. Taibai - stick to Eastern China. -->
 			<iMaxElevation>3750</iMaxElevation>
 			<iMountainousArea>50</iMountainousArea>
+			<!-- Present-day area; whatever, it's big one way or another.
+				 Want them to struggle with Barbarians. -->
+			<iTotalArea>9597</iTotalArea>
+			<iHStretch>133</iHStretch>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -135,6 +164,12 @@
 			<iMajorRiverWeight>100</iMajorRiverWeight>
 			<iMaxElevation>2629</iMaxElevation>
 			<iMountainousArea>10</iMountainousArea>
+			<!-- Modern Egypt -->
+			<iTotalArea>1010</iTotalArea>
+			<!-- Ideally along some river, but vertically stretched is
+				 somewhat important too. Egypt connects the tropics with
+				 the temperate zone. -->
+			<iHStretch>50</iHStretch>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -150,6 +185,8 @@
 			<!-- Just England proper here -->
 			<iMaxElevation>978</iMaxElevation>
 			<iMountainousArea>15</iMountainousArea>
+			<!-- Great Britain -->
+			<iTotalArea>209</iTotalArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -164,6 +201,10 @@
 			<iOceanity>30</iOceanity>
 			<iMaxElevation>4550</iMaxElevation>
 			<iMountainousArea>50</iMountainousArea>
+			<!-- Quite big, but not necessarily thought of as very powerful.
+				 Though not easily conquered either ... Let's at least
+				 not count the Eritrean area. -->
+			<iTotalArea>1104</iTotalArea>
 			<!-- Close enough -->
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
@@ -177,6 +218,7 @@
 			<iOceanity>30</iOceanity>
 			<iMaxElevation>4810</iMaxElevation>
 			<iMountainousArea>15</iMountainousArea>
+			<iTotalArea>641</iTotalArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -189,6 +231,9 @@
 			<iOceanity>20</iOceanity>
 			<iMaxElevation>2962</iMaxElevation>
 			<iMountainousArea>10</iMountainousArea>
+			<!-- German Empire in 1910 - with the Prussian leaders
+				 in the game ... -->
+			<iTotalArea>541</iTotalArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -201,6 +246,8 @@
 			<iOceanity>80</iOceanity>
 			<iMaxElevation>2917</iMaxElevation>
 			<iMountainousArea>50</iMountainousArea>
+			<!-- Modern Greece -->
+			<iTotalArea>132</iTotalArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -213,6 +260,8 @@
 			<iOceanity>15</iOceanity>
 			<iMaxElevation>4810</iMaxElevation>
 			<iMountainousArea>25</iMountainousArea>
+			<!-- In AD 1050 -->
+			<iTotalArea>1000</iTotalArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -227,6 +276,9 @@
 			<iOceanity>10</iOceanity>
 			<iMaxElevation>6893</iMaxElevation>
 			<iMountainousArea>60</iMountainousArea>
+			<!-- in AD 1527 -->
+			<iTotalArea>2000</iTotalArea>
+			<iHStretch>33</iHStretch>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -242,6 +294,8 @@
 			<iMajorRiverWeight>40</iMajorRiverWeight>
 			<iMaxElevation>8586</iMaxElevation>
 			<iMountainousArea>25</iMountainousArea>
+			<!-- incl. Pakistan -->
+			<iTotalArea>4169</iTotalArea>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -259,6 +313,7 @@
 			<iOceanity>77</iOceanity>
 			<iMaxElevation>3776</iMaxElevation>
 			<iMountainousArea>50</iMountainousArea>
+			<iTotalArea>378</iTotalArea>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -272,6 +327,8 @@
 			<!-- Not counting Central Vietnam -->
 			<iMaxElevation>1813</iMaxElevation>
 			<iMountainousArea>20</iMountainousArea>
+			<!-- Somewhere between Cambodia and the empire's largest extent -->
+			<iTotalArea>350</iTotalArea>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -285,6 +342,7 @@
 			<iOceanity>70</iOceanity>
 			<iMaxElevation>2744</iMaxElevation>
 			<iMountainousArea>35</iMountainousArea>	
+			<iTotalArea>223</iTotalArea>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -297,6 +355,11 @@
 			<iOceanity>3</iOceanity>
 			<iMaxElevation>1155</iMaxElevation>
 			<iMountainousArea>5</iMountainousArea>
+			<!-- AD 1350. No shape preference. Was horizontally stretched,
+				 but they did, crucially, profit from the trans-Saharan trade.
+				 Them expanding into the jungle or desert wouldn't feel wrong
+				 in the game. -->
+			<iTotalArea>1000</iTotalArea>
 			<iMajorRiverWeight>40</iMajorRiverWeight>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -310,6 +373,8 @@
 			<iOceanity>18</iOceanity>
 			<iMaxElevation>4203</iMaxElevation>
 			<iMountainousArea>30</iMountainousArea>
+			<!-- Yucatan + Guatemala + Belize -->
+			<iTotalArea>313</iTotalArea>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -324,6 +389,9 @@
 			<!-- The Altai is too far west -->
 			<iMaxElevation>4031</iMaxElevation>
 			<iMountainousArea>30</iMountainousArea>
+			<!-- Modern Mongolia -->
+			<iTotalArea>1564</iTotalArea>
+			<iHStretch>175</iHStretch>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -341,6 +409,7 @@
 			<!-- Mound Builder area only -->
 			<iMaxElevation>2037</iMaxElevation>
 			<iMountainousArea>25</iMountainousArea>
+			<!-- (No preference for space or shape) -->
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -353,6 +422,7 @@
 			<iOceanity>65</iOceanity>
 			<iMaxElevation>322</iMaxElevation>
 			<iMountainousArea>1</iMountainousArea>
+			<iTotalArea>42</iTotalArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -367,6 +437,8 @@
 			<!-- (see Byzantium) -->
 			<iMaxElevation>3917</iMaxElevation>
 			<iMountainousArea>65</iMountainousArea>
+			<!-- AD 1451 -->
+			<iTotalArea>690</iTotalArea>
 			<!-- For a strictly post-Medieval civ like this, far-eastern
 				 resources could be acceptable from the start of the game.
 				 However, the core region is probably going to be at a too
@@ -384,6 +456,8 @@
 			<iOceanity>22</iOceanity>
 			<iMaxElevation>5610</iMaxElevation>
 			<iMountainousArea>50</iMountainousArea>
+			<!-- Iran -->
+			<iTotalArea>1648</iTotalArea>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -396,6 +470,7 @@
 			<iOceanity>78</iOceanity>
 			<iMaxElevation>1993</iMaxElevation>
 			<iMountainousArea>30</iMountainousArea>
+			<iTotalArea>92</iTotalArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -408,6 +483,8 @@
 			<iOceanity>60</iOceanity>
 			<iMaxElevation>4810</iMaxElevation>
 			<iMountainousArea>50</iMountainousArea>
+			<!-- 25 BC -->
+			<iTotalArea>2750</iTotalArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -422,6 +499,9 @@
 			<!-- Only Eastern Plain here -->
 			<iMaxElevation>347</iMaxElevation>
 			<iMountainousArea>10</iMountainousArea>
+			<!-- Russian Empire -->
+			<iTotalArea>22800</iTotalArea>
+			<iHStretch>175</iHStretch>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -435,6 +515,7 @@
 			<iOceanity>30</iOceanity>
 			<iMaxElevation>3479</iMaxElevation>
 			<iMountainousArea>60</iMountainousArea>
+			<iTotalArea>506</iTotalArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -449,6 +530,8 @@
 			<iMajorRiverWeight>60</iMajorRiverWeight>
 			<iMaxElevation>800</iMaxElevation>
 			<iMountainousArea>5</iMountainousArea>
+			<!-- My generous approximation of Sumer/ Babylonia -->
+			<iTotalArea>100</iTotalArea>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -462,6 +545,7 @@
 			<iOceanity>68</iOceanity>
 			<iMaxElevation>2469</iMaxElevation>
 			<iMountainousArea>30</iMountainousArea>
+			<!-- (No space or shape preference) -->
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -474,6 +558,8 @@
 			<iOceanity>25</iOceanity>
 			<iMaxElevation>3450</iMaxElevation>
 			<iMountainousArea>30</iMountainousArea>
+			<!-- AD 1822 -->
+			<iTotalArea>207</iTotalArea>
 		</TruCivInfo>
 	</TruCivInfos>
 </Civ4TruCivInfos>

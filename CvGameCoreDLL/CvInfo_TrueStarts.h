@@ -22,6 +22,8 @@ protected:
 		kElements.addInt(MajorRiverWeight, "MajorRiverWeight", -25);
 		kElements.addInt(MaxElevation, "MaxElevation", MIN_INT);
 		kElements.addInt(MountainousArea, "MountainousArea", -1);
+		kElements.addInt(TotalArea, "TotalArea", -1);
+		kElements.addInt(HStretch, "HStretch", -1);
 		kElements.addInt(Bias, "Bias");
 	}
 public:
@@ -35,6 +37,8 @@ public:
 		MajorRiverWeight,
 		MaxElevation,
 		MountainousArea,
+		TotalArea,
+		HStretch,
 		Bias,
 		NUM_INT_ELEMENT_TYPES
 	};

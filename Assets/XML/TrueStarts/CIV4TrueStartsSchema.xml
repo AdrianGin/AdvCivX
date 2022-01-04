@@ -18,6 +18,8 @@
 	<ElementType name="iMajorRiverWeight" content="textOnly" dt:type="int"/>
 	<ElementType name="iMaxElevation" content="textOnly" dt:type="int"/>
 	<ElementType name="iMountainousArea" content="textOnly" dt:type="int"/>
+	<ElementType name="iTotalArea" content="textOnly" dt:type="int"/>
+	<ElementType name="iHStretch" content="textOnly" dt:type="int"/>
 	<ElementType name="GeoRegion" content="textOnly"/>
 	<ElementType name="TruCivInfo" content="eltOnly">
 		<element type="Type"/>
@@ -88,6 +90,32 @@
 			 (I use crude approximations based on some world map showing that
 			 info on a per-country basis.) -->
 		<element type="iMountainousArea" minOccurs="0"/>
+		<!-- In units of 1000 square kilometer. Hard to say which borders to
+			 use. Results in a (slight) bias for or against starting tiles
+			 with (somewhat) more space for expansion than the average.
+			 The specific numbers don't matter much, just the order of
+			 magnitude. For empires, the largest extent can vastly exceed
+			 the pre-imperial or core area. I've been picking modest sizes
+			 in these cases, also taking into account whether the conquered
+			 peoples are represented in the game as civs. In any case, a civ
+			 should have to do some actual conquering to become a veritable
+			 empire. However, small sizes, say, less than 250 thousand square
+			 kilometers, should be reserved for civs that are only thought of
+			 as small, including colonial empires like Portugal. -->
+		<element type="iTotalArea" minOccurs="0"/>
+		<!-- Target ratio of the horizontal to the vertical dimension of the
+			 civ's space for expansion, as a percentage. E.g. 150 means that
+			 the civ should have 50% more space for expansion in west-east
+			 direction than in north-south direction. Should not necessarily
+			 be used for civs that expanded into a particular direction as
+			 empires (e.g. Persia) because having space in that direction
+			 can mean that they'll conquer neighboring civs in just the
+			 perpendicular (counter-historical) direction. I'm also never
+			 setting a preference for civs with a small area because their
+			 shape didn't matter much historically. For large civs, like
+			 Egypt, the shape mattered more as it caused them to span multiple
+			 climate zones. -->
+		<element type="iHStretch" minOccurs="0"/>
 		<!-- To make preferences for bonus resources easier to specify.
 			 Use ARTSTYLE_... strings here to avoid having to define a new
 			 global type for the regions. Using the artstyles already assigned

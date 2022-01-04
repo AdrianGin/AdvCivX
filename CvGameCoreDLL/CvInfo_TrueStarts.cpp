@@ -20,6 +20,8 @@ bool CvTruCivInfo::read(CvXMLLoadUtility* pXML)
 			(get(CvTruCivInfo::MaxElevation) == MIN_INT ||
 			get(CvTruCivInfo::MaxElevation) > -500));
 	FAssertBounds(-1, 101, get(CvTruCivInfo::MountainousArea));
+	FAssertBounds(-1, 50000, get(CvTruCivInfo::TotalArea));
+	FAssertBounds(-1, 1000, get(CvTruCivInfo::HStretch));
 	{
 		CvString szTextVal;
 		pXML->GetChildXmlValByName(szTextVal, "CivilizationType");
