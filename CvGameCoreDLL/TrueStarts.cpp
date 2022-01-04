@@ -1609,7 +1609,7 @@ int TrueStarts::precipitation(CvPlot const& kPlot, bool bStart) const
 	if (bWarmForest)
 	{
 		return (!m_bMapHasLatitudes ? 2000 :
-			3000 - 90 * std::min(20, kPlot.getLatitude()));
+				3000 - 70 * std::min(25, kPlot.getLatitude()));
 	}
 	if (eTerrain == m_eWoodland)
 	{
@@ -1620,7 +1620,7 @@ int TrueStarts::precipitation(CvPlot const& kPlot, bool bStart) const
 			FOR_EACH_ADJ_PLOT(kPlot)
 			{
 				if (pAdj->isWater())
-					iExtra += 80;
+					iExtra += 75;
 				if (pAdj->getTerrainType() == kPlot.getTerrainType() &&
 					pAdj->getFeatureType() == kPlot.getFeatureType())
 				{
