@@ -804,6 +804,7 @@ TrueStarts::SurroundingsStats::SurroundingsStats(CvPlayer const& kPlayer,
 	TrueStarts const& kTruStarts) : m_iTemperateDesertPenalty(0)
 {
 	CvPlot const& kStart = *kPlayer.getStartingPlot();
+	bool const bSmallMap = (GC.getMap().getWorldSize() <= 2);
 	auto_ptr<PlotCircleIter> pSurroundings = kTruStarts.getSurroundings(kPlayer);
 	for (PlotCircleIter& itPlot = *pSurroundings; itPlot.hasNext(); ++itPlot)
 	{
@@ -878,11 +879,11 @@ TrueStarts::SurroundingsStats::SurroundingsStats(CvPlayer const& kPlayer,
 		if (itPlot->getTerrainType() == kTruStarts.m_eDesert)
 		{
 			if (itPlot.currPlotDist() == CITY_PLOTS_RADIUS)
-				m_iTemperateDesertPenalty = 65;
+				m_iTemperateDesertPenalty = (bSmallMap ? 65 : 95);
 			else if (m_iTemperateDesertPenalty == 0 &&
 				itPlot.currPlotDist() == CITY_PLOTS_RADIUS + 1)
 			{
-				m_iTemperateDesertPenalty = 40;
+				m_iTemperateDesertPenalty = (bSmallMap ? 40 : 65);
 			}
 		}
 	}
