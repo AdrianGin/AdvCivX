@@ -102,13 +102,16 @@ TrueStarts::TrueStarts()
 		calculatePlotWeights(*itPlayer);
 	{
 		std::vector<scaled> arSpaceWeights;
+		std::vector<scaled> arPeakScores;
 		for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 		{
 			SurroundingsStats& kStats = *new SurroundingsStats(*itPlayer, *this);
 			m_surrStats.set(itPlayer->getID(), &kStats);
 			arSpaceWeights.push_back(kStats.areaSpaceWeights());
+			arPeakScores.push_back(kStats.areaPeakScore());
 		}
 		m_rMedianSpace = stats::median(arSpaceWeights);
+		m_rMedianPeakScore = stats::median(arPeakScores);
 	}
 	/*	Would be nicer to cache these at CvGlobals (as the Global Warming code
 		uses them too), but that's a bit annoying to implement. Also, this way,
@@ -848,6 +851,8 @@ TrueStarts::SurroundingsStats::SurroundingsStats(CvPlayer const& kPlayer,
 		}
 		else if (itPlot->isPeak())
 		{
+			/*	Caveat: If this calculation is changed, then the rTypicalPeakScore
+				value in calcFitness may also need to be changed. */
 			m_rAreaPeakScore += rWeight;
 			FOR_EACH_ORTH_ADJ_PLOT(*itPlot)
 			{
@@ -1201,6 +1206,14 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			rAreaPeakScore /= rDiv;
 			IFLOG logBBAI("Area hills and peak score: %d, %d",
 					rAreaHillScore.getPercent(), rAreaPeakScore.getPercent());
+			scaled const rTypicalPeakScore = 7;
+			/*	Some scenario makers use peaks very liberally. (See also
+				the comment a few blocks below about space preferences.) */
+			if (GC.getGame().isScenario() && m_rMedianPeakScore > 2 * rTypicalPeakScore)
+			{
+				rAreaPeakScore *= (rTypicalPeakScore / m_rMedianPeakScore).pow(fixp(0.6));
+				IFLOG logBBAI("Peak score adjusted to scenario: %d", rAreaPeakScore.getPercent());
+			}
 			scaled const rTargetMountainCover = kTruCiv.get(CvTruCivInfo::MountainousArea);
 			if (rTargetMountainCover >= 0)
 			{

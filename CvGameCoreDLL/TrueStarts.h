@@ -51,6 +51,7 @@ private:
 	};
 	ArrayEnumMap<PlayerTypes,SurroundingsStats*> m_surrStats;
 	scaled m_rMedianSpace;
+	scaled m_rMedianPeakScore;
 	scaled m_rMedianOceanityTarget;
 	int m_iMaxMaxElevationTarget; // global max
 	EagerEnumMap<LeaderHeadTypes,int,void*,-1> m_maxTimeDiff;
