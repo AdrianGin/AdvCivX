@@ -605,7 +605,12 @@ void TrueStarts::changeCivs()
 					validCivs[j].first, validCivs[j].second);
 			if (iFitVal > iBestFitVal)
 			{
-				iBestFitVal = std::max(iBestFitVal, iFitVal);
+				IFLOG
+				{
+					i2ndBestFitVal = iBestFitVal;
+					ee2ndBestFit = eeBestFit;
+				}
+				iBestFitVal = iFitVal;
 				eeBestFit = validCivs[j];
 			}
 			else
@@ -616,7 +621,7 @@ void TrueStarts::changeCivs()
 						// Different leader of same civ isn't going to be interesting
 						validCivs[j].first != eeBestFit.first)
 					{
-						i2ndBestFitVal = std::max(i2ndBestFitVal, iFitVal);
+						i2ndBestFitVal = iFitVal;
 						ee2ndBestFit = validCivs[j];
 					}
 				}
@@ -715,7 +720,7 @@ void TrueStarts::changeCivs()
 		itPlayer->changeLeader(eLeader, GC.getGame().isScenario());
 		IFLOG rAvgFitness += m_fitnessVals.at(itPlayer->getID()).get(eCiv, eLeader);
 	}
-	IFLOG logBBAI("\nAvg. fitness val: %d", (rAvgFitness / PlayerIter<CIV_ALIVE>::count()).round());
+	IFLOG logBBAI("Avg. fitness val: %d\n\n", (rAvgFitness / PlayerIter<CIV_ALIVE>::count()).round());
 }
 
 
@@ -1046,7 +1051,6 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				scaled(m_leaders.numNonDefault()).sqrt()).round();
 	}
 	{
-		auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer);
 		scaled rFromBonuses;
 		scaled rBonusDiscourageFactor = -scaled(3750, std::max(1,
 				m_discouragedBonusesTotal.get(eCiv))).sqrt();
@@ -1065,6 +1069,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			that the order of plot traversal is a spiral away from the center. */
 		EagerEnumMap<BonusTypes,int> aeiEncouragedCount;
 		EagerEnumMap<BonusTypes,int> aeiDiscouragedCount;
+		auto_ptr<PlotCircleIter> pSurroundings = getSurroundings(kPlayer);
 		for (PlotCircleIter& itPlot = *pSurroundings; itPlot.hasNext(); ++itPlot)
 		{
 			scaled const rWeight = m_plotWeights.get(
@@ -1221,9 +1226,9 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				scaled rMountainCover = 100 * (rAreaHillScore / 2 + rAreaPeakScore);
 				scaled rFromMountainCover = (rMountainCover - rTargetMountainCover).
 						abs() * -2; // arbitrary weight factor
-				iFitness += rFromMountainCover.round();
 				IFLOG logBBAI("Fitness penalty from mountainous area: %d (target %d percent, have %d)",
 						rFromMountainCover.round(), rTargetMountainCover.round(), rMountainCover.round());
+				iFitness += rFromMountainCover.round();
 			}
 			int iTargetMaxElev = kTruCiv.get(CvTruCivInfo::MaxElevation);
 			if (iTargetMaxElev > MIN_INT)
@@ -1233,9 +1238,9 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				rMaxElev.decreaseTo(m_iMaxMaxElevationTarget);
 				scaled rFromMaxElev = (rMaxElev.sqrt() - scaled(iTargetMaxElev).sqrt()).
 						abs() * -2; // arbitrary weight factor
-				iFitness += rFromMaxElev.round();
 				IFLOG logBBAI("Fitness penalty from max. elevation: %d (target %d m, have %d m)",
 						rFromMaxElev.round(), iTargetMaxElev, rMaxElev.round());
+				iFitness += rFromMaxElev.round();
 			}
 		}
 		{
