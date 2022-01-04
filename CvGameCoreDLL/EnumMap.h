@@ -1380,6 +1380,7 @@ public:
 	}
 	void read(FDataStreamBase* pStream, uint uiSubtrahend = 0)
 	{
+		FAssert(!bBIT_BLOCKS || uiSubtrahend == 0);
 		bool bAnyNonDefault;
 		pStream->Read(&bAnyNonDefault);
 		if (bAnyNonDefault)

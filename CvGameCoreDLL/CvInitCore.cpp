@@ -1875,12 +1875,9 @@ void CvInitCore::read(FDataStreamBase* pStream)
 		m_abVictories = new bool[m_iNumVictories];
 		pStream->Read(m_iNumVictories, m_abVictories);
 	}
-	// <advc.tsl>
-	if (uiFlag >= 7)
-		m_abOptions.read(pStream); // </advc.tsl>
 	// <advc.enum>
-	else if (uiFlag >= 6)
-		m_abOptions.read(pStream, 1);
+	if (uiFlag >= 6)
+		m_abOptions.read(pStream);
 	else if (uiFlag >= 4)
 		m_abOptions.readArray<int>(pStream, 1);
 	else // </advc.enum>
