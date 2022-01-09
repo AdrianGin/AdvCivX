@@ -1010,7 +1010,8 @@ namespace
 
 // Tallies stats about kPlayer's starting surroundings for the fitness evaluation
 TrueStarts::SurroundingsStats::SurroundingsStats(CvPlayer const& kPlayer,
-	TrueStarts const& kTruStarts) : m_iTemperateDesertPenalty(0)
+	TrueStarts const& kTruStarts)
+:	m_iTemperateDesertPenalty(0), m_iTemperateTundraPenalty(0)
 {
 	CvPlot const& kStart = *kPlayer.getStartingPlot();
 	bool const bSmallMap = (GC.getMap().getWorldSize() <= 2);
@@ -1093,6 +1094,16 @@ TrueStarts::SurroundingsStats::SurroundingsStats(CvPlayer const& kPlayer,
 				itPlot.currPlotDist() == CITY_PLOTS_RADIUS + 1)
 			{
 				m_iTemperateDesertPenalty = (bSmallMap ? 40 : 65);
+			}
+		}
+		if (itPlot->getTerrainType() == kTruStarts.m_eTundra)
+		{
+			if (itPlot.currPlotDist() == CITY_PLOTS_RADIUS)
+				m_iTemperateTundraPenalty = (bSmallMap ? 45 : 70);
+			else if (m_iTemperateTundraPenalty == 0 &&
+				itPlot.currPlotDist() == CITY_PLOTS_RADIUS + 1)
+			{
+				m_iTemperateTundraPenalty = (bSmallMap ? 30 : 50);
 			}
 		}
 	}
@@ -1329,18 +1340,31 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		{
 			int const iAbsLatitudeTargetTimes10 = abs(kTruCiv.get(
 					CvTruCivInfo::LatitudeTimes10));
-			int iPenalty = kStats.temperateDesertPenalty();
-			// The climate fitness val isn't good at discouraging small desert patches
-			if (iPenalty > 0 &&
-				/*	With the BtS civ roster, this covers only Europe incl. Turkey
-					(but not all of Europe). */
-				iAbsLatitudeTargetTimes10 >= 409 &&
-				kTruCiv.get(CvTruCivInfo::Oceanity) >= 10)
 			{
-				if (iAbsLatitudeTargetTimes10 < 415)
-					iPenalty /= 2;
-				IFLOG logBBAI("Fitness penalty of %d for desert in starting city radius", iPenalty);
-				iFitness -= iPenalty;
+				int iPenalty = kStats.temperateDesertPenalty();
+				// Climate fitness val isn't good at discouraging small desert patches
+				if (iPenalty > 0 &&
+					/*	With the BtS civ roster, this covers only Europe incl. Turkey
+						(but not all of Europe). */
+					iAbsLatitudeTargetTimes10 >= 409 &&
+					kTruCiv.get(CvTruCivInfo::Oceanity) >= 10)
+				{
+					if (iAbsLatitudeTargetTimes10 < 415)
+						iPenalty /= 2;
+					IFLOG logBBAI("Fitness penalty of %d for desert close to starting plot", iPenalty);
+					iFitness -= iPenalty;
+				}
+			}
+			{
+				int iPenalty = kStats.temperateTundraPenalty();
+				// Climate fitness val only looks at precipitation, not temperature.
+				if (iPenalty > 0 &&
+					iAbsLatitudeTargetTimes10 <= 535 &&
+					kTruCiv.get(CvTruCivInfo::Oceanity) >= 10)
+				{
+					IFLOG logBBAI("Fitness penalty of %d for tundra close to starting plot", iPenalty);
+					iFitness -= iPenalty;
+				}
 			}
 		}
 		{

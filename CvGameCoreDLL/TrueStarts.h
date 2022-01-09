@@ -31,6 +31,7 @@ private:
 	public:
 		SurroundingsStats(CvPlayer const& kPlayer, TrueStarts const& kTruStarts);
 		int temperateDesertPenalty() const { return m_iTemperateDesertPenalty; }
+		int temperateTundraPenalty() const { return m_iTemperateTundraPenalty; }
 		scaled differentAreaPlotWeights() const { return m_rDifferentAreaPlotWeights; }
 		scaled areaPlotWeights() const { return m_rAreaPlotWeights; }
 		scaled areaSpaceWeights() const { return m_rAreaSpaceWeights; }
@@ -42,6 +43,7 @@ private:
 		scaled areaPeakScore() const { return m_rAreaPeakScore; }
 	private:
 		int m_iTemperateDesertPenalty;
+		int m_iTemperateTundraPenalty;
 		scaled m_rDifferentAreaPlotWeights;
 		scaled m_rAreaPlotWeights;
 		scaled m_rAreaSpaceWeights;
