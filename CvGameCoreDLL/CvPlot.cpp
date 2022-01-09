@@ -3527,7 +3527,7 @@ char CvPlot::calculateLatitude() const
 	if (!kMap.isWrapX() && kMap.isWrapY()) // Tilted axis
 	{
 		iCoord = getX();
-		iCoord = kMap.getGridWidth();
+		iDim = kMap.getGridWidth();
 	}
 	int const iTop = kMap.getTopLatitude();
 	int const iBottom = kMap.getBottomLatitude();
