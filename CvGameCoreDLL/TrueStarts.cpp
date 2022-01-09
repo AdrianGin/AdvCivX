@@ -977,7 +977,7 @@ void TrueStarts::calculateRadius(CvPlayer const& kPlayer)
 	}
 	// Increase radius when there's a lot of ocean in surrounding plots
 	int iExtra = 0;
-	scaled const rTargetNonOcean = fixp(2.25) * SQR(rRadius);
+	scaled const rTargetNonOcean = fixp(1.85) * SQR(rRadius);
 	CvPlot const& kStart = *kPlayer.getStartingPlot();
 	do
 	{
