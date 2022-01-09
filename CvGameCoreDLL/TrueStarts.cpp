@@ -2164,12 +2164,11 @@ scaled TrueStarts::calcBonusSwapUtil(
 				*pDestOfFirst, kFirstBonus, kFirstBonus.getUniqueRange()) +
 				sameBonusInRangeScore(
 				*pDestOfSecond, kSecondBonus, kSecondBonus.getUniqueRange()) +
-				(sameBonusInRangeScore(
+				sameBonusInRangeScore(
 				*pDestOfFirst, kFirstBonus, getClassUniqueRange(kFirstBonus), true) +
 				sameBonusInRangeScore(
-				*pDestOfSecond, kSecondBonus, getClassUniqueRange(kSecondBonus), true))
-				/ 2;
-		rSameInRangeScore /= 2; // weight factor
+				*pDestOfSecond, kSecondBonus, getClassUniqueRange(kSecondBonus), true);
+		rSameInRangeScore *= fixp(0.75); // weight factor
 		IFLOG if(rSameInRangeScore!=0) logBBAI("Penalty for same or similar resources nearby: %d/100",
 				rSameInRangeScore.getPercent());
 		rUtil -= rSameInRangeScore;
