@@ -1669,7 +1669,7 @@ class PrecipitationRegion
 public:
 	PrecipitationRegion(CvPlot const& kCenter, scaled rWeight, scaled rPrecipitation)
 	:	m_pCenter(&kCenter), m_rWeight(rWeight), m_rPrecipitation(rPrecipitation)
-	{ FAssert(rWeight < 2); } // Make sure the params don't get mixed up
+	{ FAssert(rWeight < 5); } // Make sure the params don't get mixed up
 	scaled getWeight() const { return m_rWeight; }
 	scaled getPrecipitation() const { return m_rPrecipitation; }
 	CvPlot const& getCenter() const { return *m_pCenter; }
@@ -1710,9 +1710,13 @@ int TrueStarts::calcClimateFitness(CvPlayer const& kPlayer, int iTargetPrecipita
 			scaled rWeight = m_plotWeights.get(kPlayer.getID(), itPlot->plotNum());
 			// Extra weight for the most prominent characteristics
 			if (itPlot->getFeatureType() == m_eWarmForest)
-				rWeight *= fixp(4/3.);
+				rWeight *= fixp(1.5);
+			/*	Desert needs an especially high weight b/c all-desert regions
+				don't really exist on random maps; need to treat regions
+				dominated by desert as having very low overall precipitation
+				or else the Fertile Crescent civs never get used. */
 			else if (itPlot->getTerrainType() == m_eDesert)
-				rWeight *= fixp(5/3.);
+				rWeight *= fixp(8/3.);
 			arrRegionData.push_back(std::make_pair(iPrecipitation, rWeight));
 		}
 		// Discard some outliers
@@ -1831,7 +1835,7 @@ int TrueStarts::calcClimateFitness(CvPlayer const& kPlayer, int iTargetPrecipita
 	/*	Very unlikely to match extremely low target precipitation (at least on a
 		random map, but even the Earth scenarios aren't that dry), shouldn't
 		penalize such a mismatch much. */
-	scaled const rVeryLowPrecipThresh = scaled::min(100, rPrecipitation);
+	scaled const rVeryLowPrecipThresh = scaled::min(135, rPrecipitation);
 	scaled rFitness;
 	if (iTargetPrecipitation >= 0)
 	{
@@ -1875,11 +1879,12 @@ int TrueStarts::calcClimateFitness(CvPlayer const& kPlayer, int iTargetPrecipita
 		}
 		if (arPrecipitationFactors.size() > 1)
 		{
-			scaled const rMedian = arPrecipitationFactors[1];
+			// Don't want one region full of jungle to dominate the calculation
+			scaled const rPrecipThresh = 1400;
+			scaled const rMedian = std::min(arPrecipitationFactors[1], rPrecipThresh);
 			for (size_t i = 1; i < aRegions.size(); i++)
 			{
-				// Don't want a region full of jungle to dominate the calculation
-				scaled const rRegionPrecip = scaled::min(1250,
+				scaled const rRegionPrecip = scaled::min(rPrecipThresh,
 						aRegions[i].getPrecipitation());
 				/*	Square error to emphasize outliers, double to somewhat match the
 					scale of the absolute errors counted above. */
@@ -1954,9 +1959,27 @@ int TrueStarts::precipitation(CvPlot const& kPlot, int iDistStart) const
 	}
 	if (eTerrain != m_eDesert && eTerrain != m_ePolarDesert)
 	{
+		/*	Extra precipitation for oceanic plots;
+			to get the Vikings placed more often. */
+		int iExtra = 0;
+		int iWater = 0;
+		FOR_EACH_ADJ_PLOT(kPlot)
+		{
+			if (pAdj->isWater())
+			{
+				iWater++;
+				if (iWater >= 4)
+				{
+					iExtra += 125;
+					break;
+				}
+			}
+		}
+		if (iWater > 0 && kPlot.isHills()) // "fjords"
+			iExtra += 75;
 		if (eFeature == m_eCoolForest)
-			return 500; // Taiga, forest steppe
-		return 350; // Tundra, steppe
+			return 500 + iExtra; // Taiga, forest steppe
+		return 350 + iExtra / 2; // Tundra, steppe
 	}
 	// I interpret this as the northernmost taiga
 	if (eTerrain == m_ePolarDesert && m_eCoolForest)
