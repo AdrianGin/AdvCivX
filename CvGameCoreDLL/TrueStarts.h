@@ -15,12 +15,14 @@ public:
 	void sanitize();
 
 private:
+	ClimateTypes m_eTemperateClimate;
 	bool m_bEmptyNewWorld;
 	bool m_bMapHasLatitudes;
 	int m_iMaxGeoDist, m_iMaxLatitudeDiffTimes10, m_iMaxLongitudeDiffTimes10;
 	EagerEnumMap<CivilizationTypes,CvTruCivInfo*> m_truCivs;
 	EagerEnumMap<LeaderHeadTypes,CvTruLeaderInfo*> m_truLeaders;
 	EagerEnumMap<BonusTypes,CvTruBonusInfo*> m_truBonuses;
+	EagerEnumMap<CivilizationTypes,int,void*,-1> m_absTargetLatitudeTimes10;
 	ArrayEnumMap2D<LeaderHeadTypes,LeaderHeadTypes,int,void*,-1> m_contemporaries;
 	ArrayEnumMap2D<PlayerTypes,PlotNumTypes,scaled> m_plotWeights;
 	EagerEnumMap<PlayerTypes,int> m_radii;
@@ -75,6 +77,7 @@ private:
 	TerrainTypes m_eWoodland, m_eSteppe, m_eTundra, m_eDesert, m_ePolarDesert;
 
 	void overrideScenarioOptions();
+	void initTargetLatitudes();
 	void initContemporaries();
 	void setPlayerWeightsPerPlot(PlotNumTypes ePlot,
 			EagerEnumMap<PlayerTypes,scaled>& kPlayerWeights) const;

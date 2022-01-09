@@ -4,6 +4,7 @@
 #include "TrueStarts.h"
 #include "CvInfo_TrueStarts.h"
 #include "CvInfo_Terrain.h"
+#include "CvInfo_GameOption.h"
 #include "CvMap.h"
 #include "CvArea.h"
 #include "CvGamePlay.h"
@@ -36,6 +37,7 @@ namespace
 
 TrueStarts::TrueStarts()
 {
+	m_eTemperateClimate = (ClimateTypes)GC.getInfoTypeForString("CLIMATE_TEMPERATE");
 	{
 		bool const bLog = true;
 		IFLOG // If we're testing
@@ -103,6 +105,7 @@ TrueStarts::TrueStarts()
 					scaled(-iEncouraged, GC.getNumCivilizationInfos()));
 		}
 	}
+	initTargetLatitudes();
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 		calculateRadius(*itPlayer);
 	m_plotWeights.reset();
@@ -204,6 +207,85 @@ void TrueStarts::overrideScenarioOptions()
 		SeaLevelTypes eLowLevel = (SeaLevelTypes)GC.getInfoTypeForString("SEALEVEL_LOW");
 		if (eLowLevel != NO_SEALEVEL)
 			GC.getInitCore().setSeaLevel(eLowLevel);
+	}
+}
+
+
+void TrueStarts::initTargetLatitudes()
+{
+	int const iAbsMaxLat = 90; // (don't base this on the map)
+	scaled rDesertExtentChange;
+	scaled rTundraLatChange;
+	CvMap const& kMap = GC.getMap();
+	if (m_eTemperateClimate != NO_CLIMATE && kMap.getClimate() != m_eTemperateClimate &&
+		!GC.getGame().isScenario())
+	{
+		CvClimateInfo const& kTemperate = GC.getInfo(m_eTemperateClimate);
+		CvClimateInfo const& kClimate = GC.getInfo(kMap.getClimate());
+		/*	In a world with e.g. wetter climate, we want more tropical civs,
+			so the target latitude values need to be adjusted a little.
+			The math for this is ad hoc (like all math in this class really). */
+		int const iTundraLatChangeDiffPermille = (int)(1000 *
+				kClimate.getTundraLatitudeChange()
+				- kTemperate.getTundraLatitudeChange());
+		rTundraLatChange = per1000(iTundraLatChangeDiffPermille) *
+				iAbsMaxLat;
+		if (rTundraLatChange == 0)
+		{
+			int const iDesertExtentChangeDiffPermille = (int)(1000 *
+					(kClimate.getDesertTopLatitudeChange()
+					- kClimate.getDesertBottomLatitudeChange()) -
+					(kTemperate.getDesertTopLatitudeChange()
+					- kTemperate.getDesertBottomLatitudeChange()));
+			rDesertExtentChange = per1000(iDesertExtentChangeDiffPermille) *
+					iAbsMaxLat;
+		}
+	}
+	FOR_EACH_ENUM(TruCiv)
+	{
+		CvTruCivInfo const& kTruCiv = GC.getInfo(eLoopTruCiv);
+		int iAbsLatTimes10 = abs(kTruCiv.get(CvTruCivInfo::LatitudeTimes10));
+		if (rTundraLatChange != 0)
+		{
+			scaled const rAbsLatRatio(iAbsLatTimes10, 10 * iAbsMaxLat);
+			/*	If the Tundra is larger than normal, we want the multiplier
+				to be maximal on all latitudes that allow Tundra or Snow on
+				a temperate map. That's about 1/3 of a hemisphere. */
+			scaled rMult = fixp(1.5) * rAbsLatRatio;
+			rMult.decreaseTo(1);
+			if (rTundraLatChange > 0)
+			{
+				/*	If our climate makes the Tundra smaller, then we assume that
+					the tropics get larger by a greater amount, i.e. at the expense
+					of all the higher latitudes. We want the multiplier to be 1
+					in the high latitudes (got that already) and to increase
+					toward 1.5 at the equator. */
+				rMult += (1 - rMult) * fixp(1.5);
+			}
+			iAbsLatTimes10 += (rMult * rTundraLatChange * 10).round();
+		}
+		if (rDesertExtentChange != 0)
+		{
+			// Where deserts tend to be most common
+			scaled const rPeakLatTimes10 = 3 * iAbsMaxLat; // 30% of max
+			scaled const rDiffPeak = (iAbsLatTimes10 - rPeakLatTimes10).abs();
+			/*	Would prefer sth. smoother, but this stuff makes my head swim,
+				and hardly anyone uses non-temperate climate anyway ...
+				As it is, the adjustment is 0 within 10 degrees of the peak
+				(desert civs can keep their target latitude), then jumps
+				to 100% (civs at the desert fringes shouldn't end up in the
+				middle of the desert belt) and decreases linearly from there. */
+			if (rDiffPeak > 100)
+			{
+				scaled rMult = 1 - rDiffPeak / (iAbsMaxLat * 10);
+				rMult /= 2;
+				if (iAbsLatTimes10 < rPeakLatTimes10)
+					rMult *= -1;
+				iAbsLatTimes10 += (rMult * rDesertExtentChange * 10).round();
+			}
+		}
+		m_absTargetLatitudeTimes10.set(kTruCiv.getCiv(),
+				range(iAbsLatTimes10, 0, iAbsMaxLat * 10));
 	}
 }
 
@@ -1038,7 +1120,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		iAbsStartLatAdjustedTimes10 -= (scaled(std::max(0,
 				std::min(52, iAbsStartLat) - 40)).pow(fixp(0.4)) * 10).round();
 		int iAbsLatTimes10 = range(iAbsStartLatAdjustedTimes10, 0, 900);
-		int iCivAbsLatTimes10 = abs(kTruCiv.get(CvTruCivInfo::LatitudeTimes10));
+		int iCivAbsLatTimes10 = m_absTargetLatitudeTimes10.get(eCiv);
 		int iError = iCivAbsLatTimes10 - iAbsLatTimes10;
 		bool const bStartTooWarm = (iError > 0);
 		iError = abs(iError);
@@ -1052,8 +1134,12 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				// At most double it
 				(100 + (100 * iErrorMagnifier) / iMaxMagnifiedError)) / 100;
 		int iLatPenalty = (3 * iError) / 2; // weight
-		IFLOG logBBAI("Penalty for latitude %d (start at %d, civ at %d/10)",
-				iLatPenalty, iAbsStartLat, abs(kTruCiv.get(CvTruCivInfo::LatitudeTimes10)));
+		/*	(The latitude adjustment for non-Temperate climates seems to work
+			quite well, so I don't think we should lower our confidence much here.) */
+		if (GC.getMap().getClimate() != m_eTemperateClimate)
+			iLatPenalty = (iLatPenalty * 75) / 100;
+		IFLOG logBBAI("Penalty for latitude %d (starting at %d, target: %d/10)",
+				iLatPenalty, iAbsStartLat, m_absTargetLatitudeTimes10.get(eCiv));
 		iFitness -= iLatPenalty;
 	}
 	{
