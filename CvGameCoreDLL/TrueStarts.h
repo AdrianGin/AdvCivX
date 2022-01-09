@@ -75,6 +75,7 @@ private:
 	EagerEnumMap<LeaderHeadTypes,bool> m_leaderTaken;
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validAICivs;
 	std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > m_validHumanCivs;
+	EagerEnumMap<CivilizationTypes,int> m_biasFromLeaderCount;
 	FeatureTypes m_eWarmForest, m_eCoolForest;
 	TerrainTypes m_eWoodland, m_eSteppe, m_eTundra, m_eDesert, m_ePolarDesert;
 

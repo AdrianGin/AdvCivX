@@ -645,6 +645,7 @@ void TrueStarts::changeCivs()
 	m_leaders.reset();
 	m_civTaken.reset();
 	m_leaderTaken.reset();
+	m_biasFromLeaderCount.reset();
 	{
 		CvWString szMapName = GC.getInitCore().getMapScriptName();
 		// (Only using this locally for now, but might want to use it elsewhere later.)
@@ -741,6 +742,17 @@ void TrueStarts::changeCivs()
 			PlayerIter<HUMAN>::count() > (int)aeValidHumanCivs.size())
 		{
 			bUniqueCivs = false;
+		}
+	}
+	{
+		EagerEnumMap<CivilizationTypes,int> aeiLeaderCounts;
+		for (size_t i = 0; i < m_validAICivs.size(); i++)
+			aeiLeaderCounts.add(m_validAICivs[i].first, 1);
+		FOR_EACH_ENUM(Civilization)
+		{
+			m_biasFromLeaderCount.set(eLoopCivilization,
+					(scaled(range(aeiLeaderCounts.get(eLoopCivilization) - 1, 0, 4)).
+					sqrt() * fixp(5.4)).round());
 		}
 	}
 	initContemporaries(); // Want to use the valid-civ lists above; hence not in ctor.
@@ -1522,18 +1534,24 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			}
 		}
 	}
-	CvTruLeaderInfo const* pTruLeader = m_truLeaders.get(eLeader);
-	int const iCivBias = kTruCiv.get(CvTruCivInfo::Bias);
-	int const iLeaderBias = (pTruLeader == NULL ? 0 :
-			pTruLeader->get(CvTruLeaderInfo::Bias));
-	iFitness *= 100 + iCivBias;
-	iFitness /= 100;
-	iFitness *= 100 + iLeaderBias;
-	iFitness /= 100;
-	iFitness += iCivBias + iLeaderBias;
-	IFLOG if(iCivBias!=0) logBBAI("Bias against %S: %d percent", GC.getInfo(eCiv).getShortDescription(), iCivBias);
-	IFLOG if(iLeaderBias!=0) logBBAI("Bias against %S: %d percent", GC.getInfo(eLeader).getDescription(), iLeaderBias);
-	IFLOG logBBAI("Bottom line: %d fitness\n\n", iFitness);
+	{
+		int const iBiasFromLeaderCount = m_biasFromLeaderCount.get(eCiv);
+		int iCivBias = kTruCiv.get(CvTruCivInfo::Bias);
+		iCivBias += iBiasFromLeaderCount;
+		CvTruLeaderInfo const* pTruLeader = m_truLeaders.get(eLeader);
+		int const iLeaderBias = (pTruLeader == NULL ? 0 :
+				pTruLeader->get(CvTruLeaderInfo::Bias));
+		iFitness *= 100 + iCivBias * (iFitness < 0 ? -1 : 1);
+		iFitness /= 100;
+		iFitness *= 100 + iLeaderBias * (iFitness < 0 ? -1 : 1);
+		iFitness /= 100;
+		iFitness += iCivBias + iLeaderBias;
+		IFLOG if(iCivBias!=0) logBBAI("Bias for or against %S: %d percent (%d from leader count)",
+				GC.getInfo(eCiv).getShortDescription(), iCivBias, iBiasFromLeaderCount);
+		IFLOG if(iLeaderBias!=0) logBBAI("Bias for or against %S: %d percent",
+				GC.getInfo(eLeader).getDescription(), iLeaderBias);
+		IFLOG logBBAI("Bottom line: %d fitness\n\n", iFitness);
+	}
 	return iFitness;
 }
 
