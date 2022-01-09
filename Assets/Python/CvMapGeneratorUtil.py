@@ -1229,9 +1229,14 @@ class TerrainGenerator:
 		fDiv = 5
 		# <advc.tsl> Dial the variation down, especially with the TSL option b/c temperate civs starting near the tundra look jarring.
 		fDiv += 1.5
+		iVariationHeight = self.variation.getHeight(iX, iY)
 		if self.gc.getGame().isOption(GameOptionTypes.GAMEOPTION_TRUE_STARTS):
-			fDiv += 1.8 # </advc.tsl>
-		lat += (128 - self.variation.getHeight(iX, iY))/(255.0 * fDiv)
+			fDiv += 1.8
+			# Grassland and Plains extending to high latitudes is not jarring, and need this Gulf Stream climate to get the Vikings on the map.
+			if iVariationHeight >= 175 and lat > 0.6 and lat < 0.7 and self.map.plot(iX, iY).isCoastalLand():
+				fDiv = 4.5
+		# </advc.tsl>
+		lat += (128 - iVariationHeight) / (255.0 * fDiv)
 
 		# Limit to the range [0, 1]:
 		if lat < 0:
