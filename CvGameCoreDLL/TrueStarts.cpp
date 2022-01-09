@@ -47,9 +47,15 @@ TrueStarts::TrueStarts()
 		}
 	}
 	CvMap const& kMap = GC.getMap();
-	// The official non-Earth scenarios set all latitude values to 0
-	m_bMapHasLatitudes = (GC.getMap().getTopLatitude() >
-			kMap.getBottomLatitude());
+	{
+		CvWString szMapName = GC.getInitCore().getMapScriptName();
+		// The official non-Earth scenarios set all latitude values to 0
+		m_bMapHasLatitudes =
+				(GC.getMap().getTopLatitude() > kMap.getBottomLatitude() &&
+				// These scripts largely ignore latitude
+				szMapName != CvWString("Ring") && szMapName != CvWString("Wheel") &&
+				szMapName != CvWString("Arboria") && szMapName != CvWString("Caldera"));
+	}
 	m_iMaxLatitudeDiffTimes10 = CvTruCivInfo::maxLatitude()
 			- CvTruCivInfo::minLatitude();
 	if (kMap.isWrapY())
