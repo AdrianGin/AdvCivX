@@ -56,9 +56,9 @@ CvPlot::CvPlot() // advc: Merged with the deleted reset function
 	m_pCenterUnit = NULL;
 	m_szScriptData = NULL;
 	m_szMostRecentCityName = NULL; // advc.005c
-	// <advc.opt>
+	// <advc.003s>
 	m_paAdjList = NULL;
-	m_iAdjPlots = 0; // </advc.opt>
+	m_iAdjPlots = 0; // </advc.003s>
 
 	m_iX = 0;
 	m_iY = 0;
@@ -111,7 +111,7 @@ CvPlot::~CvPlot() // advc: Merged with the deleted uninit function
 {
 	SAFE_DELETE_ARRAY(m_szScriptData);
 	SAFE_DELETE_ARRAY(m_szMostRecentCityName); // advc.005c
-	SAFE_DELETE_ARRAY(m_paAdjList); // advc.opt
+	SAFE_DELETE_ARRAY(m_paAdjList); // advc.003s
 
 	gDLL->getFeatureIFace()->destroy(m_pFeatureSymbol);
 	if(m_pPlotBuilder)
@@ -142,7 +142,7 @@ void CvPlot::updatePlotNum()
 		m_iPlotNum = (PlotNumInt)GC.getMap().plotNum(getX(), getY());
 }
 
-// advc.opt:
+// advc.003s:
 void CvPlot::initAdjList()
 {
 	std::vector<CvPlot*> apAdjList;
@@ -1690,7 +1690,7 @@ int CvPlot::seeThroughLevel() const
 
 
 void CvPlot::changeAdjacentSight(TeamTypes eTeam, int iRange, bool bIncrement,
-	CvUnit const* pUnit, bool bUpdatePlotGroups) // advc: const CvUnit*
+	CvUnit const* pUnit, bool bUpdatePlotGroups)
 {
 	PROFILE_FUNC(); // advc: See comment in canSeeDisplacementPlot
 
@@ -1704,17 +1704,17 @@ void CvPlot::changeAdjacentSight(TeamTypes eTeam, int iRange, bool bIncrement,
 	std::vector<InvisibleTypes> aeSeeInvisibleTypes;
 	if (pUnit != NULL)
 	{
-		for(int i = 0; i < pUnit->getNumSeeInvisibleTypes(); i++)
+		for (int i = 0; i < pUnit->getNumSeeInvisibleTypes(); i++)
 			aeSeeInvisibleTypes.push_back(pUnit->getSeeInvisibleType(i));
 	}
-	if(aeSeeInvisibleTypes.empty())
+	if (aeSeeInvisibleTypes.empty())
 		aeSeeInvisibleTypes.push_back(NO_INVISIBLE);
 
 	// check one extra outer ring
 	if (!bAerial)
 		iRange++;
 
-	for(size_t i = 0; i < aeSeeInvisibleTypes.size(); i++)
+	for (size_t i = 0; i < aeSeeInvisibleTypes.size(); i++)
 	{
 		for (int iDX = -iRange; iDX <= iRange; iDX++)
 		{
@@ -1724,13 +1724,13 @@ void CvPlot::changeAdjacentSight(TeamTypes eTeam, int iRange, bool bIncrement,
 				if (bAerial ||
 					shouldProcessDisplacementPlot(iDX, iDY, /*iRange - 1,*/ eFacingDirection))
 				{
-					bool outerRing = false;
+					bool bOuterRing = false;
 					if (abs(iDX) == iRange || abs(iDY) == iRange)
-						outerRing = true;
+						bOuterRing = true;
 
 					// check if anything blocking the plot
 					if (bAerial ||
-						canSeeDisplacementPlot(eTeam, iDX, iDY, iDX, iDY, true, outerRing))
+						canSeeDisplacementPlot(eTeam, iDX, iDY, iDX, iDY, true, bOuterRing))
 					{
 						CvPlot* pPlot = plotXY(getX(), getY(), iDX, iDY);
 						if (pPlot != NULL)
@@ -1744,10 +1744,10 @@ void CvPlot::changeAdjacentSight(TeamTypes eTeam, int iRange, bool bIncrement,
 
 				if (eFacingDirection != NO_DIRECTION)
 				{	// always reveal adjacent plots when using line of sight
-					if(abs(iDX) <= 1 && abs(iDY) <= 1)
+					if (abs(iDX) <= 1 && abs(iDY) <= 1)
 					{
 						CvPlot* pPlot = plotXY(getX(), getY(), iDX, iDY);
-						if (NULL != pPlot)
+						if (pPlot != NULL)
 						{
 							pPlot->changeVisibilityCount(
 									eTeam, 1, aeSeeInvisibleTypes[i], bUpdatePlotGroups,
@@ -1783,12 +1783,12 @@ bool CvPlot::canSeePlot(CvPlot const* pPlot, TeamTypes eTeam, int iRange,
 	//check if in facing direction
 	if (shouldProcessDisplacementPlot(dx, dy,/* iRange - 1,*/ eFacingDirection))
 	{
-		bool outerRing = false;
+		bool bOuterRing = false;
 		if (abs(dx) == iRange || abs(dy) == iRange)
-			outerRing = true;
+			bOuterRing = true;
 
 		//check if anything blocking the plot
-		if (canSeeDisplacementPlot(eTeam, dx, dy, dx, dy, true, outerRing))
+		if (canSeeDisplacementPlot(eTeam, dx, dy, dx, dy, true, bOuterRing))
 			return true;
 	}
 
@@ -5761,9 +5761,7 @@ void CvPlot::changeVisibilityCount(TeamTypes eTeam, int iChange,
 		initial cities were being placed and over the first few turns.
 		The problems remain unresolved. */
 	/*	advc.001: Also works around a problem with nukeExplosion replacing
-		a sight-blocking feature with fallout. To reproduce this bug (in order to
-		fix it properly), it should suffice to drop a nuke onto a fogged Forest
-		or Jungle. */
+		a sight-blocking feature with fallout. */
 	if(getVisibilityCount(eTeam) < 0)
 	{
 		FAssert(m_aiVisibilityCount.get(eTeam) >= 0);

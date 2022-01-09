@@ -1697,7 +1697,7 @@ void CvGameTextMgr::setPlotListHelpPerOwner(CvWStringBuffer& szString,
 	/*  First heading, unless rogue or a small number of units of only the active player,
 		or a single unit of any player as the center unit. */
 	else if((iTotal >= 5 || iHeadings > 1 || eCenterOwner != eActivePlayer) &&
-			perOwner[iCenterOwner][ALL].size() > 1)
+		perOwner[iCenterOwner][ALL].size() > 1)
 	{
 		appendUnitOwnerHeading(szString, eCenterOwner, (int)perOwner[eCenterOwner][ARMY].size(),
 				(int)perOwner[eCenterOwner][NAVY].size(), (int)perOwner[eCenterOwner][AIR].size(),
@@ -5905,7 +5905,7 @@ void CvGameTextMgr::parseTraits(CvWStringBuffer &szHelpString, TraitTypes eTrait
 			{
 				szHelpString.append(gDLL->getText(
 						"TXT_KEY_TRAIT_TRADE_YIELD_MODIFIERS",
-						iModifier, iYieldChar, "YIELD"));
+						iModifier, iYieldChar/*, "YIELD"*/)); // advc: wth?
 			}
 		}
 	}
@@ -5915,13 +5915,13 @@ void CvGameTextMgr::parseTraits(CvWStringBuffer &szHelpString, TraitTypes eTrait
 		{
 			szHelpString.append(gDLL->getText("TXT_KEY_TRAIT_COMMERCE_CHANGES",
 					kTrait.getCommerceChange(eCommerce),
-					GC.getInfo(eCommerce).getChar(), "COMMERCE"));
+					GC.getInfo(eCommerce).getChar()/*, "COMMERCE"*/)); // advc
 		}
 		if (kTrait.getCommerceModifier(eCommerce) != 0)
 		{
 			szHelpString.append(gDLL->getText("TXT_KEY_TRAIT_COMMERCE_MODIFIERS",
 					kTrait.getCommerceModifier(eCommerce),
-					GC.getInfo(eCommerce).getChar(), "COMMERCE"));
+					GC.getInfo(eCommerce).getChar()/*, "COMMERCE"*/)); // advc
 		}
 	}
 	// <advc.908b>

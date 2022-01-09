@@ -6990,7 +6990,7 @@ void CvCity::changeBonusYieldRateModifier(YieldTypes eYield, int iChange)
 }
 
 
-int CvCity::totalTradeModifier(CvCity const* pOtherCity) const // advc: const CvCity*
+int CvCity::totalTradeModifier(CvCity const* pOtherCity) const
 {
 	static int const iCAPITAL_TRADE_MODIFIER = GC.getDefineINT("CAPITAL_TRADE_MODIFIER"); // advc.opt
 	int iModifier = 100;

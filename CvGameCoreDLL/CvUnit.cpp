@@ -9332,9 +9332,9 @@ void CvUnit::changeKamikazePercent(int iChange)
 	}
 }
 
-DirectionTypes CvUnit::getFacingDirection(bool checkLineOfSightProperty) const
+DirectionTypes CvUnit::getFacingDirection(bool bCheckLineOfSightProperty) const
 {
-	if (checkLineOfSightProperty)
+	if (bCheckLineOfSightProperty)
 	{
 		if (m_pUnitInfo->isLineOfSight())
 			return m_eFacingDirection; //only look in facing direction

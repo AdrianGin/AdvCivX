@@ -804,7 +804,7 @@ public:
 	int getKamikazePercent() const;																			// Exposed to Python
 	void changeKamikazePercent(int iChange);
 
-	DllExport DirectionTypes getFacingDirection(bool checkLineOfSightProperty) const;
+	DllExport DirectionTypes getFacingDirection(bool bCheckLineOfSightProperty) const;
 	void setFacingDirection(DirectionTypes facingDirection);
 	void rotateFacingDirectionClockwise();
 	void rotateFacingDirectionCounterClockwise();
