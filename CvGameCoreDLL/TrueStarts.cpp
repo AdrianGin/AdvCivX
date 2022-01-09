@@ -1367,7 +1367,19 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 						when sanitizing, so having a civ on the map that actually
 						likes them is helpful. */
 					if (bSanitize)
-						rVal *= 1 + m_bonusDiscouragedRatio.get(eBonus);
+					{
+						int iAlreadyEncouraged = 0;
+						FOR_EACH_NON_DEFAULT_PAIR(m_civs, Player, CivilizationTypes)
+						{
+							if (isBonusEncouraged(*itPlot, perPlayerVal.second))
+							{
+								IFLOG logBBAI("%S already encouraged by %S", GC.getInfo(eBonus).getDescription(),
+										GC.getInfo(perPlayerVal.second).getShortDescription());
+								iAlreadyEncouraged++;
+							}
+						}
+						rVal *= 1 + (m_bonusDiscouragedRatio.get(eBonus) / (iAlreadyEncouraged + 1));
+					}
 					IFLOG if(rVal.getPercent()!=0) logBBAI("Encouraging %S at %d,%d (dist. factor: %d percent): +%d/100 fitness",
 							GC.getInfo(eBonus).getDescription(), itPlot->getX(), itPlot->getY(),
 							rWeight.getPercent(), rVal.getPercent());
