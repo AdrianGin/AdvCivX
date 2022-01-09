@@ -124,6 +124,8 @@
 			 new artstyles (but I doubt that it would eliminate any of the
 			 existing ones). -->
 		<element type="GeoRegion" minOccurs="0"/>
+		<!-- See comment above the ElementType definition. Important for
+			 balancing the civs' frequencies of appearance on the bottom line. -->
 		<element type="iBias" minOccurs="0"/>
 	</ElementType>
 	<ElementType name="TruCivInfos" content="eltOnly">

@@ -11,8 +11,8 @@
 			<iLatitudeTimes10>389</iLatitudeTimes10>
 			<iLongitudeTimes10>-770</iLongitudeTimes10>
 			<iPrecipitation>1062</iPrecipitation>
-			<!-- The original colonies weren't so diverse -->
-			<iClimateVariation>60</iClimateVariation>
+			<!-- The 13 Colonies weren't all that diverse -->
+			<iClimateVariation>45</iClimateVariation>
 			<iOceanity>35</iOceanity>
 			<!-- Considering only the Northeast here -->
 			<iMaxElevation>1917</iMaxElevation>
@@ -23,6 +23,7 @@
 				 to be a western (or eastern) frontier. -->
 			<iTotalArea>9827</iTotalArea>
 			<iHStretch>175</iHStretch>
+			<iBias>5</iBias>
 			<!-- Use this for both Americas; all the Maize growers. -->
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
@@ -34,7 +35,7 @@
 				 start civs at slightly lower latitude than this file says
 				 in order to avoid using the same few near-equatorial civs
 				 over and over. -->
-			<iLatitudeTimes10>245</iLatitudeTimes10>
+			<iLatitudeTimes10>250</iLatitudeTimes10>
 			<iLongitudeTimes10>400</iLongitudeTimes10>
 			<iPrecipitation>111</iPrecipitation>
 			<iClimateVariation>10</iClimateVariation>
@@ -44,6 +45,7 @@
 			<!-- Saudi Arabia. Saladin's sultanate had a somewhat
 				 similar area. -->
 			<iTotalArea>2150</iTotalArea>
+			<iBias>15</iBias>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -58,6 +60,7 @@
 			<iMountainousArea>50</iMountainousArea>
 			<!-- Peak area -->
 			<iTotalArea>220</iTotalArea>
+			<iBias>-3</iBias>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -72,11 +75,12 @@
 			<!-- Foothills of the Zagros; The Sinjar Mts. are too far
 				 outside the Babylonian core. -->
 			<iMaxElevation>1000</iMaxElevation>
-			<iMountainousArea>5</iMountainousArea>
+			<iMountainousArea>7</iMountainousArea>
 			<!-- Iraq; Hammurabi's empire was smaller, the later empires
 				 were larger. Shape is vertically stretched, but I
 				 don't think that's important. Along a river is what matters. -->
 			<iTotalArea>438</iTotalArea>
+			<iBias>5</iBias>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -109,6 +113,7 @@
 			<iMountainousArea>10</iMountainousArea>
 			<!-- Half of Tunesia. The African core was really small. -->
 			<iTotalArea>82</iTotalArea>
+			<iBias>-5</iBias>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_CELT</Type>
@@ -129,13 +134,18 @@
 				 preferable. As a linguistic group, they were very
 				 widely spread across Europe and into Asia Minor. -->
 			<iHStretch>175</iHStretch>
+			<iBias>-6</iBias>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_CHINA</Type>
 			<CivilizationType>CIVILIZATION_CHINA</CivilizationType>
-			<iLatitudeTimes10>399</iLatitudeTimes10>
-			<iLongitudeTimes10>1164</iLongitudeTimes10>
+			<!-- Mean of Beijing (399) and Xi'an (343) b/c the high latitude
+				 value gets China chosen over European civs too often. -->
+			<iLatitudeTimes10>371</iLatitudeTimes10>
+			<!-- Mean of Beijing (1164) and Xi'an (1089); to be consistent with
+				 the latitude averaging. -->
+			<iLongitudeTimes10>1127</iLongitudeTimes10>
 			<!-- Beijing; Xi'an isn't much different. -->
 			<iPrecipitation>543</iPrecipitation>
 			<!-- The Northeastern Plain is in itself not extremely varied.
@@ -150,6 +160,7 @@
 				 Want them to struggle with Barbarians. -->
 			<iTotalArea>9597</iTotalArea>
 			<iHStretch>133</iHStretch>
+			<iBias>-15</iBias>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -235,6 +246,7 @@
 				 in the game ... -->
 			<iTotalArea>541</iTotalArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+			<iBias>-5</iBias>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_GREECE</Type>
@@ -296,6 +308,7 @@
 			<iMountainousArea>25</iMountainousArea>
 			<!-- incl. Pakistan -->
 			<iTotalArea>4169</iTotalArea>
+			<iBias>-9</iBias>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -329,6 +342,7 @@
 			<iMountainousArea>20</iMountainousArea>
 			<!-- Somewhere between Cambodia and the empire's largest extent -->
 			<iTotalArea>350</iTotalArea>
+			<iBias>-4</iBias>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -343,6 +357,7 @@
 			<iMaxElevation>2744</iMaxElevation>
 			<iMountainousArea>35</iMountainousArea>	
 			<iTotalArea>223</iTotalArea>
+			<iBias>3</iBias>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -375,6 +390,7 @@
 			<iMountainousArea>30</iMountainousArea>
 			<!-- Yucatan + Guatemala + Belize -->
 			<iTotalArea>313</iTotalArea>
+			<iBias>-4</iBias>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -399,9 +415,12 @@
 			<CivilizationType>CIVILIZATION_NATIVE_AMERICA</CivilizationType>
 			<iLatitudeTimes10>387</iLatitudeTimes10>
 			<iLongitudeTimes10>-900</iLongitudeTimes10>
-			<!-- St. Louis -->
-			<iPrecipitation>1060</iPrecipitation>
-			<iClimateVariation>50</iClimateVariation>
+			<!-- Mean of St. Louis (1060) and Sioux Falls (707). Want to
+				 take into account the drier western Great Plains b/c the
+				 humidity of the eastern Great Plains is difficult to ascribe
+				 to Plains or Grassland tiles in the game. -->
+			<iPrecipitation>884</iPrecipitation>
+			<iClimateVariation>48</iClimateVariation>
 			<iOceanity>4</iOceanity>
 			<!-- Mississippi
 				 (Note that the default for this element is negative) -->
@@ -423,6 +442,7 @@
 			<iMaxElevation>322</iMaxElevation>
 			<iMountainousArea>1</iMountainousArea>
 			<iTotalArea>42</iTotalArea>
+			<iBias>5</iBias>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -458,6 +478,7 @@
 			<iMountainousArea>50</iMountainousArea>
 			<!-- Iran -->
 			<iTotalArea>1648</iTotalArea>
+			<iBias>-2</iBias>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -471,6 +492,7 @@
 			<iMaxElevation>1993</iMaxElevation>
 			<iMountainousArea>30</iMountainousArea>
 			<iTotalArea>92</iTotalArea>
+			<iBias>-3</iBias>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -496,8 +518,12 @@
 			<!-- The Eastern Plain is as boring as it gets -->
 			<iClimateVariation>40</iClimateVariation>
 			<iOceanity>5</iOceanity>
-			<!-- Only Eastern Plain here -->
-			<iMaxElevation>347</iMaxElevation>
+			<!-- Would prefer to consider only the Eastern Plain here
+				 (highest elevation 347 m), but such flatness rarely occurs
+				 on random maps, so let's also consider the Ural.
+				 As a compromise, halve the highest elevation there
+				 (1895 m). -->
+			<iMaxElevation>948</iMaxElevation>
 			<iMountainousArea>10</iMountainousArea>
 			<!-- Russian Empire -->
 			<iTotalArea>22800</iTotalArea>
@@ -510,12 +536,13 @@
 			<iLatitudeTimes10>403</iLatitudeTimes10>
 			<iLongitudeTimes10>-40</iLongitudeTimes10>
 			<!-- 423 in Madrid, but 650 across the country. -->
-			<iPrecipitation>570</iPrecipitation>
+			<iPrecipitation>530</iPrecipitation>
 			<iClimateVariation>65</iClimateVariation>
 			<iOceanity>30</iOceanity>
 			<iMaxElevation>3479</iMaxElevation>
 			<iMountainousArea>60</iMountainousArea>
 			<iTotalArea>506</iTotalArea>
+			<iBias>-7</iBias>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -527,25 +554,31 @@
 			<iPrecipitation>106</iPrecipitation>
 			<iClimateVariation>20</iClimateVariation>
 			<iOceanity>10</iOceanity>
-			<iMajorRiverWeight>60</iMajorRiverWeight>
+			<iMajorRiverWeight>80</iMajorRiverWeight>
 			<iMaxElevation>800</iMaxElevation>
 			<iMountainousArea>5</iMountainousArea>
 			<!-- My generous approximation of Sumer/ Babylonia -->
 			<iTotalArea>100</iTotalArea>
+			<iBias>6</iBias>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_VIKING</Type>
 			<CivilizationType>CIVILIZATION_VIKING</CivilizationType>
-			<iLatitudeTimes10>634</iLatitudeTimes10>
+			<!-- Moved south by 3 degrees to account for the Gulf stream -->
+			<iLatitudeTimes10>604</iLatitudeTimes10>
 			<iLongitudeTimes10>104</iLongitudeTimes10>
-			<!-- Trondheim; Oslo 802, Copenhagen 645. -->
-			<iPrecipitation>841</iPrecipitation>
-			<iClimateVariation>70</iClimateVariation>
-			<iOceanity>68</iOceanity>
+			<!-- Mean of Trondheim (841) and Copenhagen (645). Oslo: 802. -->
+			<iPrecipitation>743</iPrecipitation>
+			<!-- It's really only variation in precipitation at this point,
+				 and Tundra Forest isn't very different from temperate tiles
+				 in that regard. -->
+			<iClimateVariation>30</iClimateVariation>
+			<iOceanity>65</iOceanity>
 			<iMaxElevation>2469</iMaxElevation>
 			<iMountainousArea>30</iMountainousArea>
 			<!-- (No space or shape preference) -->
+			<iBias>6</iBias>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -560,6 +593,7 @@
 			<iMountainousArea>30</iMountainousArea>
 			<!-- AD 1822 -->
 			<iTotalArea>207</iTotalArea>
+			<iBias>-4</iBias>
 		</TruCivInfo>
 	</TruCivInfos>
 </Civ4TruCivInfos>

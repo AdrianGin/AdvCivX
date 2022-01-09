@@ -116,7 +116,11 @@
 			<Type>TRU_IRON</Type>
 			<BonusType>BONUS_IRON</BonusType>
 			<DiscouragedCivs>
-				<DiscouragedCiv>
+				<!-- These civs get chosen too rarely. I don't think it's that
+					 important to deny them Iron. Exploitable iron deposits
+					 did exist in Nubia and in the mountain ranges around
+					 Mesopotamia. -->
+				<!--DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_EGYPT</CivilizationType>
 					<UntilEra>ERA_RENAISSANCE</UntilEra>
 				</DiscouragedCiv>
@@ -129,12 +133,12 @@
 					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<DiscouragedCiv>
-					<CivilizationType>CIVILIZATION_AZTEC</CivilizationType>
-					<UntilEra>ERA_MODERN</UntilEra>
-				</DiscouragedCiv>
-				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_MAYA</CivilizationType>
 					<UntilEra>NONE</UntilEra>
+				</DiscouragedCiv-->
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_AZTEC</CivilizationType>
+					<UntilEra>ERA_MODERN</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
@@ -818,6 +822,16 @@
 					<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
 					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
+				<!-- These like it wet, so they might occasionally be placed
+					 near Ivory. -->
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_JAPAN</CivilizationType>
+					<UntilEra>NONE</UntilEra>
+				</DiscouragedCiv>
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_KOREA</CivilizationType>
+					<UntilEra>NONE</UntilEra>
+				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
 				<EncouragedCiv>
@@ -978,8 +992,8 @@
 				</DiscouragedCiv>
 				<!-- The Middle East grows e.g. cumin, but not the valuable
 					 spices that got traded over long distances. Except
-					 Ethiopia to some extent (which I'm including in the
-					 Middle Eastern geo region). -->
+					 Ethiopia (which I'm including in the Middle Eastern
+					 geo region). -->
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_OTTOMAN</CivilizationType>
 					<UntilEra>NONE</UntilEra>
