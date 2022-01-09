@@ -24,6 +24,7 @@
 #include "CvReplayInfo.h" // advc.106n
 #include "BarbarianWeightMap.h" // advc.304
 #include "CvDLLIniParserIFaceBase.h"
+#include <boost/algorithm/string.hpp> // advc.108b (better precompile?)
 
 
 CvMap::CvMap()
@@ -925,18 +926,29 @@ CvWString CvMap::getNonDefaultCustomMapOptionDesc(int iOption) const
 	return py.customMapOptionDescription(szMapScriptNameNarrow.c_str(), iOption, eOptionValue);
 }
 
-/*	advc.108b: Does any custom map option have (exactly) the value szOptionsValue?
+/*	advc.108b: Does any custom map option have the value szOptionsValue?
+	Checks for an exact match ignoring case unless bCheckContains is set to true
+	or bIgnoreCase to false.
 	So that the DLL can implement special treatment for particular custom map options
 	(that may or may not be present in only one particular map script). */
-bool CvMap::isCustomMapOption(char const* szOptionsValue) const
+bool CvMap::isCustomMapOption(char const* szOptionsValue, bool bCheckContains,
+	bool bIgnoreCase) const
 {
 	CvWString wsOptionsValue(szOptionsValue);
+	if (bIgnoreCase)
+	{
+		// A pain to implement with the standard library
+		boost::algorithm::to_lower(wsOptionsValue);
+	}
 	CvString szMapScriptNameNarrow(GC.getInitCore().getMapScriptName());
 	for (int iOption = 0; iOption < getNumCustomMapOptions(); iOption++)
 	{
-		if (GC.getPythonCaller()->customMapOptionDescription(
-			szMapScriptNameNarrow.c_str(), iOption, getCustomMapOption(iOption)) ==
-			wsOptionsValue)
+		CvWString wsOptionDescr = GC.getPythonCaller()->customMapOptionDescription(
+				szMapScriptNameNarrow.c_str(), iOption, getCustomMapOption(iOption));
+		if (bIgnoreCase)
+			boost::algorithm::to_lower(wsOptionDescr);
+		if (bCheckContains ? (wsOptionDescr.find(wsOptionsValue) != CvWString::npos) :
+			(wsOptionDescr == wsOptionsValue))
 		{
 			return true;
 		}

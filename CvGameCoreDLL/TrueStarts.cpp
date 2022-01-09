@@ -563,7 +563,32 @@ void TrueStarts::changeCivs()
 	m_leaders.reset();
 	m_civTaken.reset();
 	m_leaderTaken.reset();
-
+	{
+		CvWString szMapName = GC.getInitCore().getMapScriptName();
+		// (Only using this locally for now, but might want to use it elsewhere later.)
+		m_bEmptyNewWorld =
+		(
+				szMapName == CvWString("Terra") ||
+				szMapName == CvWString("Earth2") ||
+				((szMapName == CvWString("PerfectMongoose") ||
+				szMapName == CvWString("Tectonics") ||
+				szMapName == CvWString("RandomScriptMap")) &&
+				GC.getMap().isCustomMapOption("Old World", true)) ||
+				(szMapName == CvWString("NewWorlds") &&
+				/*	If someone adds options to that map, then there might be
+					multiple options with a choice named just "Yes".
+					Not supported. */
+				GC.getInitCore().getNumCustomMapOptions() <= 4 &&
+				GC.getMap().isCustomMapOption("Yes")) ||
+				(szMapName == CvWString("Totestra") &&
+				GC.getMap().isCustomMapOption("empty", true)) ||
+				(szMapName == CvWString("RandomScriptMap") &&
+				GC.getMap().isCustomMapOption("Terra")) ||
+				(szMapName == CvWString("Caldera") &&
+				GC.getMap().isCustomMapOption("Encourage"))
+		);
+	}
+	bool bUniqueCivs = true;
 	{
 		std::vector<CivilizationTypes> aeValidHumanCivs;
 		std::vector<CivilizationTypes> aeValidAICivs;
@@ -574,14 +599,36 @@ void TrueStarts::changeCivs()
 		aeValidAICivs.reserve(GC.getNumCivilizationInfos());
 		m_validHumanCivs.reserve(GC.getNumLeaderHeadInfos());
 		m_validAICivs.reserve(GC.getNumLeaderHeadInfos());
-		// Randomize to avoid persistent biases when fitness values are tied
-		FOR_EACH_ENUM_RAND(Civilization, syncRand())
+		for (int iPass = 0; iPass < 2; iPass++)
 		{
-			CvCivilizationInfo const& kLoopCiv = GC.getInfo(eLoopCivilization);
-			if (kLoopCiv.isPlayable())
-				aeValidHumanCivs.push_back(eLoopCivilization);
-			if (kLoopCiv.isAIPlayable())
-				aeValidAICivs.push_back(eLoopCivilization);
+			// Randomize to avoid persistent biases when fitness values are tied
+			FOR_EACH_ENUM_RAND(TruCiv, mapRand())
+			{
+				CvTruCivInfo const& kTruCiv = GC.getInfo(eLoopTruCiv);
+				CivilizationTypes const eCiv = kTruCiv.getCiv();
+				CvCivilizationInfo const& kLoopCiv = GC.getInfo(eCiv);
+				if (m_bEmptyNewWorld &&
+					(iPass == 0)) // May need all the civs we have on super-Huge maps
+				{
+					int iLongitudeTimes10 = kTruCiv.get(CvTruCivInfo::LongitudeTimes10);
+					int iLatitudeTimes10 = kTruCiv.get(CvTruCivInfo::LatitudeTimes10);
+					if (iLongitudeTimes10 < 300 || // Americas
+						// Future-proof for Australia
+						(iLongitudeTimes10 > 1100 && iLatitudeTimes10 < -100))
+					{
+						continue;
+					}
+				}
+				if (kLoopCiv.isPlayable())
+					aeValidHumanCivs.push_back(eCiv);
+				if (kLoopCiv.isAIPlayable())
+					aeValidAICivs.push_back(eCiv);
+			}
+			if (PlayerIter<HUMAN>::count() <= (int)aeValidHumanCivs.size() &&
+				PlayerIter<CIV_ALIVE>::count() <= (int)aeValidAICivs.size())
+			{
+				break;
+			}
 		}
 		FOR_EACH_ENUM_RAND(LeaderHead, syncRand())
 		{
@@ -602,10 +649,16 @@ void TrueStarts::changeCivs()
 				}
 			}
 		}
-		if (m_validAICivs.empty())
+		if (PlayerIter<CIV_ALIVE>::count() > (int)m_validAICivs.size() ||
+			PlayerIter<HUMAN>::count() > (int)m_validHumanCivs.size())
 		{
-			FErrorMsg("No valid civs found");
+			FErrorMsg("Too few valid leaders found");
 			return;
+		}
+		if (PlayerIter<CIV_ALIVE>::count() > (int)aeValidAICivs.size() ||
+			PlayerIter<HUMAN>::count() > (int)aeValidHumanCivs.size())
+		{
+			bUniqueCivs = false;
 		}
 	}
 	initContemporaries(); // Want to use the valid-civ lists above; hence not in ctor.
@@ -666,7 +719,7 @@ void TrueStarts::changeCivs()
 		for (size_t j = 0; j < validCivs.size(); j++)
 		{
 			if (m_leaderTaken.get(validCivs[j].second) ||
-				m_civTaken.get(validCivs[j].first))
+				(bUniqueCivs && m_civTaken.get(validCivs[j].first)))
 			{
 				continue;
 			}
