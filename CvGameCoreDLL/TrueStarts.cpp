@@ -574,16 +574,19 @@ void TrueStarts::initContemporaries()
 					iDeltaYears, eSecond));
 		}
 		std::sort(aeiTimeDiffPerOther.begin(), aeiTimeDiffPerOther.end());
-		int const iMaxContemporaries = 6;
+		/*	I had used a constant value of 6 here, but then Alexander was
+			always selected over Pericles. Some randomness should help. */
+		int const iMaxContemporaries = 4 + MapRandNum(4);
 		int iContemporaries = 0;
 		for (size_t j = 0; j < aeiTimeDiffPerOther.size(); j++)
 		{
 			/*	The iMaxContemporaries nearest leaders are considered (somewhat)
 				contemporary. If further leaders are still very close together
 				(not going to be the case with the BtS leaders), then those also
-				count as contemporary. By picking a constant number of nearest
-				leaders, a stricter notion for contemporality applies for periods
-				that the game covers in some detail, like the Classical era. */
+				count as contemporary. By picking a constant (well, apart from
+				being randomized) number of nearest leaders, a stricter notion
+				for contemporality applies for periods that the game covers in
+				some detail, like the Classical era. */
 			if (aeiTimeDiffPerOther[j].first < 25 ||
 				iContemporaries < iMaxContemporaries)
 			{
