@@ -315,10 +315,11 @@ namespace
 	CvPlot* findValidBonusSwapDest(CvPlot& kOriginalDest, CvPlot const& kSource)
 	{
 		BonusTypes const eBonus = kSource.getBonusType();
-		if (canHaveBonus(kOriginalDest, eBonus))
+		if (canHaveBonus(kOriginalDest, eBonus) ||
+			removingVegetationMakesBonusValid(kOriginalDest, eBonus))
+		{
 			return &kOriginalDest;
-		if (removingVegetationMakesBonusValid(kOriginalDest, eBonus))
-			return &kOriginalDest;
+		}
 		for (int iPass = 0; iPass < 2; iPass++)
 		{
 			bool const bRemoveVegetation = (iPass == 1);
@@ -514,14 +515,14 @@ void TrueStarts::sanitize()
 		kFirstPlot.setBonusType(NO_BONUS);
 		if (!canHaveBonus(kFirstSwapPlot, pBestPlot->getBonusType()))
 		{
-			FAssert(canHaveBonus(kFirstSwapPlot, pBestPlot->getBonusType(), true));
+			FAssert(removingVegetationMakesBonusValid(kFirstSwapPlot, pBestPlot->getBonusType()));
 			kFirstSwapPlot.setFeatureType(NO_FEATURE);
 		}
 		kFirstSwapPlot.setBonusType(pBestPlot->getBonusType());
 		pBestPlot->setBonusType(NO_BONUS);
 		if (!canHaveBonus(kSecondSwapPlot, eFirstOriginalBonus))
 		{
-			FAssert(canHaveBonus(kSecondSwapPlot, eFirstOriginalBonus, true));
+			FAssert(removingVegetationMakesBonusValid(kSecondSwapPlot, eFirstOriginalBonus));
 			kSecondSwapPlot.setFeatureType(NO_FEATURE);
 		}
 		kSecondSwapPlot.setBonusType(eFirstOriginalBonus);
