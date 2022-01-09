@@ -73,6 +73,7 @@ private:
 	FeatureTypes m_eWarmForest, m_eCoolForest;
 	TerrainTypes m_eWoodland, m_eSteppe, m_eTundra, m_eDesert, m_ePolarDesert;
 
+	void overrideScenarioOptions();
 	void initContemporaries();
 	void setPlayerWeightsPerPlot(PlotNumTypes ePlot,
 			EagerEnumMap<PlayerTypes,scaled>& kPlayerWeights) const;

@@ -326,6 +326,7 @@ public:
 	PlotNumTypes plotNum() const { return (PlotNumTypes)m_iPlotNum; } // advc.opt
 	int getLatitude() const;																																					// Exposed to Python
 	void setLatitude(int iLatitude); // advc.tsl	(exposed to Python)
+	void updateLatitude(); // advc.tsl (public for testing)
 	int getFOWIndex() const;
 
 	//int getArea() const;

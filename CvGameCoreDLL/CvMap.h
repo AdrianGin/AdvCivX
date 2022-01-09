@@ -388,6 +388,7 @@ public: // advc: made several functions const
 	{
 		return m_iBottomLatitude;
 	}
+	void setLatitudeLimits(int iTop, int iBottom); // advc.tsl
 
 	short getNextRiverID() const;																									// Exposed to Python
 	void incrementNextRiverID();																					// Exposed to Python

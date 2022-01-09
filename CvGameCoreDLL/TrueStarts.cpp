@@ -36,6 +36,14 @@ namespace
 
 TrueStarts::TrueStarts()
 {
+	{
+		bool const bLog = true;
+		IFLOG // If we're testing
+		{
+			if (GC.getGame().isScenario())
+				overrideScenarioOptions();
+		}
+	}
 	CvMap const& kMap = GC.getMap();
 	// The official non-Earth scenarios set all latitude values to 0
 	m_bMapHasLatitudes = (GC.getMap().getTopLatitude() >
@@ -135,6 +143,67 @@ TrueStarts::~TrueStarts()
 		SurroundingsStats* pStats = m_surrStats.get(itPlayer->getID());
 		if (pStats != NULL)
 			delete pStats;
+	}
+}
+
+
+void TrueStarts::overrideScenarioOptions()
+{
+	CvMap& kMap = GC.getMap();
+	bool bOverrideOptions = false;
+	/*	These latitude values and size options are more sensible in general,
+		not just for testing, but I don't want to change the WBSave files b/c
+		including them in the mod may suggest that they've been overhauled or
+		are curated content. */
+	CvWString szMapName = GC.getInitCore().getMapScriptName();
+	if (szMapName == CvWString("Earth18Civs.Civ4WorldBuilderSave") ||
+		szMapName == CvWString("Earth.Civ4WorldBuilderSave") ||
+		szMapName == CvWString("Earth_IceAge.CivBeyondSwordWBSave") ||
+		szMapName == CvWString("Earth_IceAge.Civ4WorldBuilderSave"))
+	{
+		// (-65 matches the temperate latitudes better)
+		kMap.setLatitudeLimits(90, -60);
+		bOverrideOptions = true;
+	}
+	if (szMapName == CvWString("Planet.Civ4WorldBuilderSave"))
+	{
+		kMap.setLatitudeLimits(90, -90);
+		bOverrideOptions = true;
+	}
+	if (szMapName == CvWString("Africa.Civ4WorldBuilderSave"))
+	{
+		kMap.setLatitudeLimits(37, -37);
+		bOverrideOptions = true;
+	}
+	if (szMapName == CvWString("East Asia.Civ4WorldBuilderSave"))
+	{
+		kMap.setLatitudeLimits(61, 5);
+		bOverrideOptions = true;
+	}
+	if (szMapName == CvWString("South America.Civ4WorldBuilderSave"))
+	{
+		kMap.setLatitudeLimits(-10, -57);
+		bOverrideOptions = true;
+	}
+	if (szMapName == CvWString("Europe.Civ4WorldBuilderSave") ||
+		szMapName == CvWString("Europe.CivBeyondSwordWBSave"))
+	{
+		kMap.setLatitudeLimits(65, 25);
+		bOverrideOptions = true;
+	}
+	if (szMapName == CvWString("Eastern United States.Civ4WorldBuilderSave"))
+	{
+		kMap.setLatitudeLimits(48, 25);
+		bOverrideOptions = true;
+	}
+	if (bOverrideOptions)
+	{
+		/*	These affect CvGame::getRecommendedPlayers, which we use for
+			adjustments to the crowdedness of the map. */
+		GC.getInitCore().setWorldSize(WORLDSIZE_HUGE);
+		SeaLevelTypes eLowLevel = (SeaLevelTypes)GC.getInfoTypeForString("SEALEVEL_LOW");
+		if (eLowLevel != NO_SEALEVEL)
+			GC.getInitCore().setSeaLevel(eLowLevel);
 	}
 }
 

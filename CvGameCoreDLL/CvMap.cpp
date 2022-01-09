@@ -855,6 +855,22 @@ void CvMap::changeOwnedPlots(int iChange)
 	FAssert(getOwnedPlots() >= 0);
 }
 
+// advc.tsl: (for testing)
+void CvMap::setLatitudeLimits(int iTop, int iBottom)
+{
+	if (iBottom > iTop)
+	{
+		FErrorMsg("Invalid latitude limits");
+		return;
+	}
+	if (iTop == getTopLatitude() && iBottom == getBottomLatitude())
+		return;
+	m_iTopLatitude = iTop;
+	m_iBottomLatitude = iBottom;
+	FOR_EACH_ENUM(PlotNum)
+		getPlotByIndex(eLoopPlotNum).updateLatitude();
+}
+
 
 short CvMap::getNextRiverID() const
 {

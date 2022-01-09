@@ -132,7 +132,7 @@ void CvPlot::init(int iX, int iY)
 	m_iX = safeIntCast<short>(iX);
 	m_iY = safeIntCast<short>(iY);
 	updatePlotNum(); // advc.opt
-	m_iLatitude = calculateLatitude(); // advc.tsl
+	updateLatitude(); // advc.tsl
 }
 
 // advc.opt:
@@ -3509,6 +3509,12 @@ void CvPlot::setLatitude(int iLatitude)
 		iLatitude = range(iLatitude, 0, 90);
 	}
 	m_iLatitude = safeIntCast<char>(iLatitude);
+}
+
+// advc.tsl:
+void CvPlot::updateLatitude()
+{
+	m_iLatitude = calculateLatitude();
 }
 
 
