@@ -1252,11 +1252,13 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				if (iCivLatitudeTimes10 * iLoopLatitudeTimes10 < 0)
 					iErrorPercent = std::max(iErrorPercent, iMaxErr + 5);
 			}
+			if (GET_PLAYER(perPlayerVal.first).isHuman())
+				iErrorPercent *= 2;
 			iAvgDistErrorPercent += iErrorPercent;
 			IFLOG logBBAI("Dist error for %S: %d pts. (plot dist %d percent, geo dist %d percent)",
 					GC.getInfo(perPlayerVal.second).getShortDescription(), iErrorPercent, iDistPercent, iGeoDistPercent);
 		}
-		scaled rAvgDistErrorPenalty = iAvgDistErrorPercent * fixp(0.6);
+		scaled rAvgDistErrorPenalty = iAvgDistErrorPercent * fixp(0.61);
 		if (iOtherPlayers > 0)
 		{
 			/*	Not quite an average (that would be pow(1)). I do want distances
@@ -1298,8 +1300,12 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			{
 				FAssert(iTimeDiff <= iMaxTimeDiff);
 				int iPlus = (iMaxTimeDiff - iTimeDiff) * iWeight / iMaxTimeDiff;
+				int iMult = 1;
 				if (TEAMID(perPlayerVal.first) == kPlayer.getTeam())
-					iPlus *= 2;
+					iMult += 1;
+				if (GET_PLAYER(perPlayerVal.first).isHuman())
+					iMult += 1;
+				iPlus *= iMult;
 				iPlus += iFixed;
 				if (bMutuallyContemporary)
 					iPlus += iFixed; // add a second time
