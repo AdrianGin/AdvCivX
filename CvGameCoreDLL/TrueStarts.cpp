@@ -1537,6 +1537,22 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 	{
 		int const iBiasFromLeaderCount = m_biasFromLeaderCount.get(eCiv);
 		int iCivBias = kTruCiv.get(CvTruCivInfo::Bias);
+		if (iCivBias < 0)
+		{
+			// Could use map rand - except that logging wouldn't work then.
+			std::vector<int> aiInputs;
+			aiInputs.push_back(eCiv);
+			aiInputs.push_back(kStart.getX());
+			aiInputs.push_back(kStart.getY());
+			aiInputs.push_back(GC.getGame().getInitialRandSeed().first);
+			/*	So that civs with easy-to-meet preferences at least sometimes
+				don't appear even in games with a high civ count */
+			if (scaled::hash(aiInputs) * 100 < -iCivBias)
+			{
+				IFLOG logBBAI("Negative bias randomly doubled");
+				iCivBias *= 2;
+			}
+		}
 		iCivBias += iBiasFromLeaderCount;
 		CvTruLeaderInfo const* pTruLeader = m_truLeaders.get(eLeader);
 		int const iLeaderBias = (pTruLeader == NULL ? 0 :
