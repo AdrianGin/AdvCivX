@@ -108,7 +108,7 @@ private:
 			LeaderHeadTypes eLeader, bool bLog = false) const;
 	int calcClimateFitness(CvPlayer const& kPlayer, int iTargetPrecipitation,
 			int iTargetVariation, bool bLog = false) const;
-	int precipitation(CvPlot const& kPlot, bool bStart = false) const;
+	int precipitation(CvPlot const& kPlot, int iDistStart) const;
 	scaled calcBonusFitness(CvPlot const& kPlot,
 			EagerEnumMap<PlayerTypes,scaled> const& kPlayerWeights,
 			BonusTypes eBonus = NO_BONUS, bool bLog = false) const;

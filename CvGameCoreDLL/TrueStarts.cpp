@@ -1655,7 +1655,7 @@ int TrueStarts::calcClimateFitness(CvPlayer const& kPlayer, int iTargetPrecipita
 		std::vector<std::pair<scaled,scaled> > arrRegionData;
 		for (CityPlotIter itPlot(*itCenter); itPlot.hasNext(); ++itPlot)
 		{
-			int iPrecipitation = precipitation(*itPlot, &*itPlot == &kStart);
+			int iPrecipitation = precipitation(*itPlot, plotDistance(&*itPlot, &kStart));
 			if (iPrecipitation < 0)
 				continue;
 			scaled rWeight = m_plotWeights.get(kPlayer.getID(), itPlot->plotNum());
@@ -1856,7 +1856,7 @@ int TrueStarts::calcClimateFitness(CvPlayer const& kPlayer, int iTargetPrecipita
 }
 
 // Millimeters annual, -1 if undetermined.
-int TrueStarts::precipitation(CvPlot const& kPlot, bool bStart) const
+int TrueStarts::precipitation(CvPlot const& kPlot, int iDistStart) const
 {
 	if (kPlot.isWater() || kPlot.isPeak())
 		return -1; // Only consider flat land and hills
@@ -1865,7 +1865,8 @@ int TrueStarts::precipitation(CvPlot const& kPlot, bool bStart) const
 	bool bWarmForest = (eFeature == m_eWarmForest);
 	/*	Normalization removes Jungle, obscuring high-precipitation starts.
 		Compensate for that (or we'll never have starts wet enough for the Maya). */
-	if (!bWarmForest && bStart &&
+	if (!bWarmForest &&
+		iDistStart <= CITY_PLOTS_RADIUS + 2 && // cf. CvGame::normalizeRemoveBadFeatures
 		(eTerrain == m_eWoodland || eTerrain == m_eSteppe))
 	{
 		FOR_EACH_ADJ_PLOT(kPlot)
