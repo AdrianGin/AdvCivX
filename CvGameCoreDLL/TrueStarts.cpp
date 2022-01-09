@@ -106,6 +106,18 @@ TrueStarts::TrueStarts()
 		}
 	}
 	initTargetLatitudes();
+		/*	Would be nicer to cache these at CvGlobals (as the Global Warming code
+		uses them too), but that's a bit annoying to implement. Also, this way,
+		I can use the names most appropriate for the True Starts option. */
+	m_eWarmForest = (FeatureTypes)GC.getDefineINT("WARM_FEATURE");
+	m_eCoolForest = (FeatureTypes)GC.getDefineINT("TEMPERATE_FEATURE");
+	/*	(Woods should be the natural vegetation of the biome represented by
+		this terrain type) */
+	m_eWoodland = (TerrainTypes)GC.getDefineINT("TEMPERATE_TERRAIN");
+	m_eSteppe = (TerrainTypes)GC.getDefineINT("DRY_TERRAIN");
+	m_eTundra = (TerrainTypes)GC.getDefineINT("COLD_TERRAIN");
+	m_eDesert = (TerrainTypes)GC.getDefineINT("BARREN_TERRAIN");
+	m_ePolarDesert = (TerrainTypes)GC.getDefineINT("FROZEN_TERRAIN");
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 		calculateRadius(*itPlayer);
 	m_plotWeights.reset();
@@ -124,18 +136,6 @@ TrueStarts::TrueStarts()
 		m_rMedianSpace = stats::median(arSpaceWeights);
 		m_rMedianPeakScore = stats::median(arPeakScores);
 	}
-	/*	Would be nicer to cache these at CvGlobals (as the Global Warming code
-		uses them too), but that's a bit annoying to implement. Also, this way,
-		I can use the names most appropriate for the True Starts option. */
-	m_eWarmForest = (FeatureTypes)GC.getDefineINT("WARM_FEATURE");
-	m_eCoolForest = (FeatureTypes)GC.getDefineINT("TEMPERATE_FEATURE");
-	/*	(Woods should be the natural vegetation of the biome represented by
-		this terrain type) */
-	m_eWoodland = (TerrainTypes)GC.getDefineINT("TEMPERATE_TERRAIN");
-	m_eSteppe = (TerrainTypes)GC.getDefineINT("DRY_TERRAIN");
-	m_eTundra = (TerrainTypes)GC.getDefineINT("COLD_TERRAIN");
-	m_eDesert = (TerrainTypes)GC.getDefineINT("BARREN_TERRAIN");
-	m_ePolarDesert = (TerrainTypes)GC.getDefineINT("FROZEN_TERRAIN");
 }
 
 
