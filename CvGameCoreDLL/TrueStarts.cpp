@@ -845,7 +845,8 @@ void TrueStarts::changeCivs()
 					validCivs[j].first, validCivs[j].second);
 			if (iFitVal > iBestFitVal)
 			{
-				IFLOG
+				IFLOG  // Different leader of same civ isn't going to be interesting
+				if (validCivs[j].first != eeBestFit.first)
 				{
 					i2ndBestFitVal = iBestFitVal;
 					ee2ndBestFit = eeBestFit;
@@ -858,7 +859,6 @@ void TrueStarts::changeCivs()
 				IFLOG
 				{
 					if (iFitVal > i2ndBestFitVal &&
-						// Different leader of same civ isn't going to be interesting
 						validCivs[j].first != eeBestFit.first)
 					{
 						i2ndBestFitVal = iFitVal;
