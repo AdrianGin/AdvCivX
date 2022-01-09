@@ -729,6 +729,7 @@ public:
 	{
 		return m_sorenRand.getInt(iNum, pszLog, /* advc.007: */ iData1, iData2);
 	}
+	// (map rand, sync rand)
 	std::pair<uint,uint> getInitialRandSeed() const; // advc.027b
 
 	DllExport int calculateSyncChecksum();																								// Exposed to Python

@@ -7222,6 +7222,17 @@
 		<Tag>TXT_KEY_GAME_OPTION_TRUE_STARTS_HELP</Tag>
 		<English>Players set to a "Random" civilization receive a civilization that matches their starting location. E.g. a player who starts in rocky terrain near the equator will probably receive the Inca. (Known limitation in network games: The option affects all players, not just those set to "Random".)</English>
 		<German>Spieler, für die eine "zufällige" Zivilisation eingestellt ist, erhalten eine, die zu ihrem Startort passt - z.B. die Inka bei Start in äquatornahem Gebirge. (In Netzwerk-Spielen wirkt sich diese Option leider auch auf Spieler aus, für die eine nicht-zufällige Zivilisation eingestellt wurde.)</German>
+
+	<!-- advc.001: Missing percentage sign. From CIV4GameTextInfos.xml.
+		 (This effect is unused in BtS/AdvCiv.) -->
+	<TEXT>
+		<Tag>TXT_KEY_TRAIT_TRADE_YIELD_MODIFIERS</Tag>
+		<English>[NEWLINE][SPACE][SPACE][ICON_BULLET]%D1%%%F2_yield from [ICON_TRADE]</English>
+		<French>[NEWLINE][SPACE][SPACE][ICON_BULLET]%D1%%%F2_yield avec : [ICON_TRADE]</French>
+		<German>[NEWLINE][SPACE][SPACE][ICON_BULLET]%D1%%%F2_yield durch [ICON_TRADE]</German>
+		<Italian>[NEWLINE][SPACE][SPACE][ICON_BULLET]%D1%%%F2_yield da [ICON_TRADE]</Italian>
+		<Spanish>[NEWLINE][SPACE][SPACE][ICON_BULLET]%D1%%%F2_yield por [ICON_TRADE]</Spanish>
+
 	</TEXT>
 
 </Civ4GameText>

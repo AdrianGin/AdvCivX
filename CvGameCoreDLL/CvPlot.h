@@ -28,7 +28,7 @@ public:
 	~CvPlot();
 
 	void init(int iX, int iY);
-	void initAdjList(); // advc.opt
+	void initAdjList(); // advc.003s
 	void setupGraphical();
 	void updateGraphicEra();
 
@@ -778,8 +778,7 @@ public:
 	DllExport bool checkLateEra() const;
 	void killRandomUnit(PlayerTypes eOwner, DomainTypes eDomain); // advc.300
 
-	// <advc.opt>
-	/*	advc.003s: No assertion of iAt being within array bounds; should
+	/*	<advc.003s> No assertion of iAt being within array bounds; should
 		call this only via a FOR_EACH_ADJ_PLOT macro (PlotAdjListTraversal.h). */
 	CvPlot* getAdjacentPlotUnchecked(int iAt) const
 	{
@@ -787,7 +786,7 @@ public:
 		return m_paAdjList[iAt];
 	}
 	int numAdjacentPlots() const { return m_iAdjPlots; }
-	// </advc.opt>
+	// </advc.003s>
 
 	wchar const* debugStr() const; // advc.031c
 
@@ -858,7 +857,7 @@ protected:
 	int m_iUpgradeProgress;
 	int m_iTotalCulture; // advc.opt
 
-	CvPlot** m_paAdjList; // advc.opt (a vector would take up 16 byte)
+	CvPlot** m_paAdjList; // advc.003s (a vector would take up 16 byte)
 	// <advc> m_pArea is enough - except while loading a savegame.
 	union
 	{

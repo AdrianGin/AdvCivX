@@ -1697,7 +1697,7 @@ void CvGameTextMgr::setPlotListHelpPerOwner(CvWStringBuffer& szString,
 	/*  First heading, unless rogue or a small number of units of only the active player,
 		or a single unit of any player as the center unit. */
 	else if((iTotal >= 5 || iHeadings > 1 || eCenterOwner != eActivePlayer) &&
-			perOwner[iCenterOwner][ALL].size() > 1)
+		perOwner[iCenterOwner][ALL].size() > 1)
 	{
 		appendUnitOwnerHeading(szString, eCenterOwner, (int)perOwner[eCenterOwner][ARMY].size(),
 				(int)perOwner[eCenterOwner][NAVY].size(), (int)perOwner[eCenterOwner][AIR].size(),
@@ -1721,7 +1721,7 @@ void CvGameTextMgr::setPlotListHelpPerOwner(CvWStringBuffer& szString,
 	if(!szString.isEmpty()) // No newline at the start of PlotListHelp
 		szString.append(NEWLINE);
 	int iLinesUsed = 1;
-	bool bOmitOwner = (iTotal > 1);
+	bool bOmitOwner = (iHeadings > 0);
 	if(iTotal + iHeadings + iLinesCenter <= iLineLimit)
 	{
 		setUnitHelp(szString, &kCenterUnit, false, false, false, bOmitOwner,
@@ -5905,7 +5905,7 @@ void CvGameTextMgr::parseTraits(CvWStringBuffer &szHelpString, TraitTypes eTrait
 			{
 				szHelpString.append(gDLL->getText(
 						"TXT_KEY_TRAIT_TRADE_YIELD_MODIFIERS",
-						iModifier, iYieldChar, "YIELD"));
+						iModifier, iYieldChar/*, "YIELD"*/)); // advc: wth?
 			}
 		}
 	}
@@ -5915,13 +5915,13 @@ void CvGameTextMgr::parseTraits(CvWStringBuffer &szHelpString, TraitTypes eTrait
 		{
 			szHelpString.append(gDLL->getText("TXT_KEY_TRAIT_COMMERCE_CHANGES",
 					kTrait.getCommerceChange(eCommerce),
-					GC.getInfo(eCommerce).getChar(), "COMMERCE"));
+					GC.getInfo(eCommerce).getChar()/*, "COMMERCE"*/)); // advc
 		}
 		if (kTrait.getCommerceModifier(eCommerce) != 0)
 		{
 			szHelpString.append(gDLL->getText("TXT_KEY_TRAIT_COMMERCE_MODIFIERS",
 					kTrait.getCommerceModifier(eCommerce),
-					GC.getInfo(eCommerce).getChar(), "COMMERCE"));
+					GC.getInfo(eCommerce).getChar()/*, "COMMERCE"*/)); // advc
 		}
 	}
 	// <advc.908b>
@@ -18988,103 +18988,102 @@ void CvGameTextMgr::eventGoldHelp(CvWStringBuffer& szBuffer, EventTypes eEvent, 
 
 void CvGameTextMgr::setTradeRouteHelp(CvWStringBuffer &szBuffer, int iRoute, CvCity* pCity)
 {
-	if (NULL != pCity)
+	if (pCity == NULL)
 	{
-		CvCity* pOtherCity = pCity->getTradeCity(iRoute);
-
-		if (NULL != pOtherCity)
+		FAssertMsg(pCity != NULL, "Can this actually happen?"); // advc.test
+		return;
+	}
+	CvCity const* pOtherCity = pCity->getTradeCity(iRoute);
+	if (pOtherCity == NULL)
+	{
+		FAssertMsg(pCity != NULL, "Can this actually happen?"); // advc.test
+		return;
+	}
+	szBuffer.append(pOtherCity->getName());
+	int iProfit = pCity->getBaseTradeProfit(pOtherCity);
+	{
+		szBuffer.append(NEWLINE);
+		CvWString szBaseProfit;
+		szBaseProfit.Format(L"%d.%02d", iProfit/100, iProfit%100);
+		szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_HELP_BASE", szBaseProfit.GetCString()));
+	}
+	int iTotalModifier = 100;
+	{
+		CvCivilization const& kCiv = pCity->getCivilization();
+		for (int i = 0; i < kCiv.getNumBuildings(); i++)
 		{
-			szBuffer.append(pOtherCity->getName());
-
-			int iProfit = pCity->getBaseTradeProfit(pOtherCity);
-
-			szBuffer.append(NEWLINE);
-			CvWString szBaseProfit;
-			szBaseProfit.Format(L"%d.%02d", iProfit/100, iProfit%100);
-			szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_HELP_BASE", szBaseProfit.GetCString()));
-
-			int iModifier = 100;
-			int iNewMod;
-
-			for (int iBuilding = 0; iBuilding < GC.getNumBuildingInfos(); ++iBuilding)
-			{
-				if (pCity->getNumActiveBuilding((BuildingTypes)iBuilding) > 0)
-				{
-					iNewMod = pCity->getNumActiveBuilding((BuildingTypes)iBuilding) * GC.getInfo((BuildingTypes)iBuilding).getTradeRouteModifier();
-					if (iNewMod != 0)
-					{
-						szBuffer.append(NEWLINE);
-						szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_MOD_BUILDING", GC.getInfo((BuildingTypes)iBuilding).getTextKeyWide(), iNewMod));
-						iModifier += iNewMod;
-					}
-				}
-			}
-
-			iNewMod = pCity->getPopulationTradeModifier();
-			if (iNewMod != 0)
+			BuildingTypes const eBuilding = kCiv.buildingAt(i);
+			int iActive = pCity->getNumActiveBuilding(eBuilding);
+			if (iActive <= 0)
+				continue;
+			int iModifier = iActive * GC.getInfo(eBuilding).getTradeRouteModifier();
+			if (iModifier != 0)
 			{
 				szBuffer.append(NEWLINE);
-				szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_MOD_POPULATION", iNewMod));
-				iModifier += iNewMod;
+				szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_MOD_BUILDING",
+						GC.getInfo(eBuilding).getTextKeyWide(), iModifier));
+				iTotalModifier += iModifier;
 			}
-
-			if (pCity->isConnectedToCapital())
-			{
-				iNewMod = GC.getDefineINT("CAPITAL_TRADE_MODIFIER");
-				if (iNewMod != 0)
-				{
-					szBuffer.append(NEWLINE);
-					szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_MOD_CAPITAL", iNewMod));
-					iModifier += iNewMod;
-				}
-			}
-
-			if (pOtherCity != NULL)
-			{
-				if (!pCity->sameArea(*pOtherCity))
-				{
-					iNewMod = GC.getDefineINT("OVERSEAS_TRADE_MODIFIER");
-					if (iNewMod != 0)
-					{
-						szBuffer.append(NEWLINE);
-						szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_MOD_OVERSEAS", iNewMod));
-						iModifier += iNewMod;
-					}
-				}
-
-				if (pCity->getTeam() != pOtherCity->getTeam())
-				{
-					iNewMod = pCity->getForeignTradeRouteModifier();
-					if (iNewMod != 0)
-					{
-						szBuffer.append(NEWLINE);
-						szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_MOD_FOREIGN", iNewMod));
-						iModifier += iNewMod;
-					}
-
-					iNewMod = pCity->getPeaceTradeModifier(pOtherCity->getTeam());
-					if (iNewMod != 0)
-					{
-						szBuffer.append(NEWLINE);
-						szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_MOD_PEACE", iNewMod));
-						iModifier += iNewMod;
-					}
-				}
-			}
-
-			FAssert(pCity->totalTradeModifier(pOtherCity) == iModifier);
-
-			iProfit *= iModifier;
-			iProfit /= 10000;
-
-			FAssert(iProfit == pCity->calculateTradeProfit(pOtherCity));
-
-			szBuffer.append(SEPARATOR);
-
-			szBuffer.append(NEWLINE);
-			szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_TOTAL", iProfit));
 		}
 	}
+	{
+		int iModifier = pCity->getPopulationTradeModifier();
+		if (iModifier != 0)
+		{
+			szBuffer.append(NEWLINE);
+			szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_MOD_POPULATION", iModifier));
+			iTotalModifier += iModifier;
+		}
+	}
+	if (pCity->isConnectedToCapital())
+	{
+		int iModifier = GC.getDefineINT("CAPITAL_TRADE_MODIFIER");
+		if (iModifier != 0)
+		{
+			szBuffer.append(NEWLINE);
+			szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_MOD_CAPITAL", iModifier));
+			iTotalModifier += iModifier;
+		}
+	}
+	if (!pCity->sameArea(*pOtherCity))
+	{
+		int iModifier = GC.getDefineINT("OVERSEAS_TRADE_MODIFIER");
+		if (iModifier != 0)
+		{
+			szBuffer.append(NEWLINE);
+			szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_MOD_OVERSEAS", iModifier));
+			iTotalModifier += iModifier;
+		}
+	}
+	if (pCity->getTeam() != pOtherCity->getTeam())
+	{
+		{
+			int iModifier = pCity->getForeignTradeRouteModifier();
+			if (iModifier != 0)
+			{
+				szBuffer.append(NEWLINE);
+				szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_MOD_FOREIGN",
+						iModifier));
+				iTotalModifier += iModifier;
+			}
+		}
+		{
+			int iModifier = pCity->getPeaceTradeModifier(pOtherCity->getTeam());
+			if (iModifier != 0)
+			{
+				szBuffer.append(NEWLINE);
+				szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_MOD_PEACE", iModifier));
+				iTotalModifier += iModifier;
+			}
+		}
+	}
+	FAssert(pCity->totalTradeModifier(pOtherCity) == iTotalModifier);
+	iProfit *= iTotalModifier;
+	iProfit /= 10000;
+	FAssert(iProfit == pCity->calculateTradeProfit(pOtherCity));
+	szBuffer.append(SEPARATOR);
+	szBuffer.append(NEWLINE);
+	szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_TOTAL", iProfit));
 }
 
 void CvGameTextMgr::setEspionageCostHelp(CvWStringBuffer &szBuffer,
