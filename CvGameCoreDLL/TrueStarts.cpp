@@ -1176,6 +1176,13 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				/*	Errors near the temperate-subarctic and the subtropic-tropic
 					boundaries are especially noticeable */
 				(bStartTooWarm ? abs(iAbsStartLat - 20) : abs(iAbsStartLat - 50)));
+		/*	Not so bad to place very northerly civs farther south; they'll still
+			be pretty close to Tundra terrain. */
+		if (bStartTooWarm && iAbsStartLat > 52)
+			iErrorMagnifier = -3; // minify
+		// Placing desert civs too far north is also not too bad
+		if (!bStartTooWarm && iCivAbsLatTimes10 >= 250 && iCivAbsLatTimes10 < 350)
+			iErrorMagnifier = -2;
 		iError = std::max(0, iError - iMaxMagnifiedError * 10) + // Not magnified
 				(std::min(iError, iMaxMagnifiedError * 10) * // Magnify this portion
 				// At most double it
