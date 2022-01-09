@@ -14,7 +14,7 @@
 using std::auto_ptr;
 
 // To enable, toggle 'false' to 'true' and also enable BBAI map logging.
-#define IFLOG if (gMapLogLevel > 0 && bLog && false)
+#define IFLOG if (gMapLogLevel > 0 && bLog && true)
 
 
 namespace

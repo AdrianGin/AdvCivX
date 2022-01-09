@@ -6,7 +6,7 @@
 // AI decision making logging
 
 // advc: Uncomment to enable BBAI logging
-//#define LOG_AI
+#define LOG_AI
 // Log levels:
 // 0 - None
 // 1 - Important decisions only
