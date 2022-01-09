@@ -794,11 +794,26 @@ void TrueStarts::changeCivs()
 					m_fitnessVals.at(itPlayer->getID()).
 					get(validCivs[i].first, validCivs[i].second));
 		}
-		// Starts with the most difficult player (worst fit)
+		// Prioritize the most difficult player (worst fit)
 		int iPriority = -iBestFitVal;
-		// Prioritize humans even more
+		// Prioritize humans and players near them
 		if (itPlayer->isHuman())
-			iPriority += 1000;
+			iPriority += 1000; // absolute priority
+		{
+			scaled rMinDistHuman = 1;
+			for (PlayerIter<HUMAN> itHuman; itHuman.hasNext(); ++itHuman)
+			{
+				scaled rDistHuman(plotDistance(itPlayer->getStartingPlot(),
+						itHuman->getStartingPlot()), GC.getMap().maxPlotDistance());
+				rMinDistHuman.decreaseTo(rDistHuman);
+			}
+			scaled rMult = rMinDistHuman;
+			rMult.decreaseTo(fixp(0.5));
+			if (iPriority > 0)
+				rMult = 1 - rMult;
+			rMult += 1; // dilute
+			iPriority = (iPriority * (1 + rMult)).round();
+		}
 		aiePriorityPerPlayer.push_back(std::make_pair(
 				iPriority, itPlayer->getID()));
 	}
