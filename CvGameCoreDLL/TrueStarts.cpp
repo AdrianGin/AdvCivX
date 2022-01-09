@@ -722,7 +722,7 @@ void TrueStarts::changeCivs()
 				break;
 			}
 		}
-		FOR_EACH_ENUM_RAND(LeaderHead, syncRand())
+		FOR_EACH_ENUM_RAND(LeaderHead, mapRand())
 		{
 			for (size_t i = 0; i < aeValidAICivs.size(); i++)
 			{
@@ -919,7 +919,7 @@ void TrueStarts::changeCivs()
 				}
 				if (!aeAvailableLeaders.empty())
 				{
-					eeBestFit.second = aeAvailableLeaders[SyncRandNum(
+					eeBestFit.second = aeAvailableLeaders[MapRandNum(
 							aeAvailableLeaders.size())];
 				}
 				else FErrorMsg("At least eeBestFit.second should be available");
