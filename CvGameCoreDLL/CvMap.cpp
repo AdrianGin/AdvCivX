@@ -24,7 +24,7 @@
 #include "CvReplayInfo.h" // advc.106n
 #include "BarbarianWeightMap.h" // advc.304
 #include "CvDLLIniParserIFaceBase.h"
-#include <boost/algorithm/string.hpp> // advc.108b (better precompile?)
+#include <boost/algorithm/string.hpp> // advc.108b
 
 
 CvMap::CvMap()
@@ -937,7 +937,7 @@ bool CvMap::isCustomMapOption(char const* szOptionsValue, bool bCheckContains,
 	CvWString wsOptionsValue(szOptionsValue);
 	if (bIgnoreCase)
 	{
-		// A pain to implement with the standard library
+		// A pain to implement with the (2003) standard library
 		boost::algorithm::to_lower(wsOptionsValue);
 	}
 	CvString szMapScriptNameNarrow(GC.getInitCore().getMapScriptName());

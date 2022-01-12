@@ -44,7 +44,7 @@ public:
 	};
 	int get(IntElementTypes e) const
 	{
-		return CvXMLInfo::get(static_cast<base_t::IntElementTypes>(e));
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
 	}
 	CvTruCivInfo() : m_eCiv(NO_CIVILIZATION), m_eGeoRegion(NO_ARTSTYLE) {}
 	CivilizationTypes getCiv() const { return m_eCiv; }
@@ -81,7 +81,7 @@ public:
 	};
 	int get(IntElementTypes e) const
 	{
-		return CvXMLInfo::get(static_cast<base_t::IntElementTypes>(e));
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
 	}
 	CvTruLeaderInfo() : m_eLeader(NO_LEADER) {}
 	LeaderHeadTypes getLeader() const { return m_eLeader; }
@@ -109,7 +109,7 @@ public:
 	};
 	int get(BoolElementTypes e) const
 	{
-		return CvXMLInfo::get(static_cast<base_t::BoolElementTypes>(e));
+		return base_t::get(static_cast<base_t::BoolElementTypes>(e));
 	}
 	CvTruBonusInfo() : m_eBonus(NO_BONUS) {}
 	BonusTypes getBonus() const { return m_eBonus; }

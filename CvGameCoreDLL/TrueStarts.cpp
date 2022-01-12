@@ -51,7 +51,7 @@ TrueStarts::TrueStarts()
 		CvWString szMapName = GC.getInitCore().getMapScriptName();
 		// The official non-Earth scenarios set all latitude values to 0
 		m_bMapHasLatitudes =
-				(GC.getMap().getTopLatitude() > kMap.getBottomLatitude() &&
+				(kMap.getTopLatitude() > kMap.getBottomLatitude() &&
 				// These scripts largely ignore latitude
 				szMapName != CvWString("Ring") && szMapName != CvWString("Wheel") &&
 				szMapName != CvWString("Arboria") && szMapName != CvWString("Caldera"));
@@ -112,7 +112,7 @@ TrueStarts::TrueStarts()
 		}
 	}
 	initTargetLatitudes();
-		/*	Would be nicer to cache these at CvGlobals (as the Global Warming code
+	/*	Would be nicer to cache these at CvGlobals (as the Global Warming code
 		uses them too), but that's a bit annoying to implement. Also, this way,
 		I can use the names most appropriate for the True Starts option. */
 	m_eWarmForest = (FeatureTypes)GC.getDefineINT("WARM_FEATURE");
@@ -586,7 +586,7 @@ void TrueStarts::initContemporaries()
 				(not going to be the case with the BtS leaders), then those also
 				count as contemporary. By picking a constant (well, apart from
 				being randomized) number of nearest leaders, a stricter notion
-				for contemporality applies for periods that the game covers in
+				for contemporaneity applies for periods that the game covers in
 				some detail, like the Classical era. */
 			if (aeiTimeDiffPerOther[j].first < 25 ||
 				iContemporaries < iMaxContemporaries)
@@ -1616,8 +1616,8 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				GC.getInfo(eCiv).getShortDescription(), iCivBias, iBiasFromLeaderCount);
 		IFLOG if(iLeaderBias!=0) logBBAI("Bias for or against %S: %d percent",
 				GC.getInfo(eLeader).getDescription(), iLeaderBias);
-		IFLOG logBBAI("Bottom line: %d fitness\n\n", iFitness);
 	}
+	IFLOG logBBAI("Bottom line: %d fitness\n\n", iFitness);
 	return iFitness;
 }
 
