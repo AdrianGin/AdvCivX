@@ -18,6 +18,7 @@ private:
 	ClimateTypes m_eTemperateClimate;
 	bool m_bEmptyNewWorld;
 	bool m_bMapHasLatitudes;
+	bool m_bBalancedResources;
 	int m_iMaxGeoDist, m_iMaxLatitudeDiffTimes10, m_iMaxLongitudeDiffTimes10;
 	EagerEnumMap<CivilizationTypes,CvTruCivInfo*> m_truCivs;
 	EagerEnumMap<LeaderHeadTypes,CvTruLeaderInfo*> m_truLeaders;

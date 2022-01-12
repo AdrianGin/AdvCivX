@@ -56,6 +56,7 @@ TrueStarts::TrueStarts()
 				szMapName != CvWString("Ring") && szMapName != CvWString("Wheel") &&
 				szMapName != CvWString("Arboria") && szMapName != CvWString("Caldera"));
 	}
+	m_bBalancedResources = kMap.isCustomMapOption("Balanced");
 	m_iMaxLatitudeDiffTimes10 = CvTruCivInfo::maxLatitude()
 			- CvTruCivInfo::minLatitude();
 	if (kMap.isWrapY())
@@ -370,7 +371,9 @@ void TrueStarts::sanitize()
 	FOR_EACH_ENUM_RAND(PlotNum, mapRand()) // Will frequently tie at 0 fitness
 	{
 		CvPlot const& kPlot = kMap.getPlotByIndex(eLoopPlotNum);
-		if (kPlot.getBonusType() != NO_BONUS)
+		if (kPlot.getBonusType() != NO_BONUS &&
+			(!m_bBalancedResources ||
+			GC.getInfo(kPlot.getBonusType()).getPlacementOrder() > 2))
 		{
 			EagerEnumMap<PlayerTypes,scaled> aerPlayerWeights;
 			setPlayerWeightsPerPlot(eLoopPlotNum, aerPlayerWeights);
