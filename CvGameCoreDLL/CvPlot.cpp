@@ -3119,6 +3119,20 @@ void CvPlot::removeGoody()
 	if (!isGoody())
 		return; // </advc>
 	setImprovementType(NO_IMPROVEMENT);
+	/*	<advc.001> This works around an issue w/ Debug mode: The EXE does (apparently)
+		not update the layout of plots unrevealed to the active player (AP).
+		So when a rival of the AP enters a goody hut previously revealed to the AP
+		through Debug mode (but by then hidden again), the layout doesn't get updated,
+		and when the AP (eventually) reveals the plot through exploration, the goody
+		hut graphic briefly appears before the layout gets updated. */
+	if (!isRevealed(getActiveTeam(), true) && GC.IsGraphicsInitialized() &&
+		m_pPlotBuilder != NULL)
+	{
+		/*	The only way I've found to get rid of the goody hut graphic.
+			(Doing this whenever any plot becomes unrevealed might slow down repeated
+			toggling of Debug mode. Let's only deal with the annoying hut issue.) */
+		gDLL->getPlotBuilderIFace()->destroy(m_pPlotBuilder);
+	} // </advc.001>
 }
 
 // advc: Deprecated; see comment in header.
