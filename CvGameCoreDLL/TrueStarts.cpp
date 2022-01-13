@@ -403,6 +403,7 @@ void TrueStarts::sanitize()
 			logBBAI("%d plots with negative bonus fitness value", iNegativeFitPlots);
 		}
 	}
+	int iFeaturesRemoved = 0;
 	std::set<CvPlot*> apSwappedPlots; // Swap each bonus resource at most once
 	/*	Yep, this variable name doesn't bode well. Perhaps the inner loop should
 		just always go through all resource plots. I think the current implementation
@@ -527,6 +528,7 @@ void TrueStarts::sanitize()
 		{
 			FAssert(removingVegetationMakesBonusValid(kFirstSwapPlot, pBestPlot->getBonusType()));
 			kFirstSwapPlot.setFeatureType(NO_FEATURE);
+			IFLOG iFeaturesRemoved++;
 		}
 		kFirstSwapPlot.setBonusType(pBestPlot->getBonusType());
 		pBestPlot->setBonusType(NO_BONUS);
@@ -534,8 +536,13 @@ void TrueStarts::sanitize()
 		{
 			FAssert(removingVegetationMakesBonusValid(kSecondSwapPlot, eFirstOriginalBonus));
 			kSecondSwapPlot.setFeatureType(NO_FEATURE);
+			IFLOG iFeaturesRemoved++;
 		}
 		kSecondSwapPlot.setBonusType(eFirstOriginalBonus);
+	}
+	{
+		bool bLog = true;
+		IFLOG logBBAI("Removed %d terrain features in total", iFeaturesRemoved);
 	}
 }
 
