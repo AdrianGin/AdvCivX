@@ -1687,7 +1687,7 @@ class PrecipitationRegion
 public:
 	PrecipitationRegion(CvPlot const& kCenter, scaled rWeight, scaled rPrecipitation)
 	:	m_pCenter(&kCenter), m_rWeight(rWeight), m_rPrecipitation(rPrecipitation)
-	{ FAssert(rWeight < 5); } // Make sure the params don't get mixed up
+	{ FAssert(rWeight < 20); } // Make sure the params don't get mixed up
 	scaled getWeight() const { return m_rWeight; }
 	scaled getPrecipitation() const { return m_rPrecipitation; }
 	CvPlot const& getCenter() const { return *m_pCenter; }
@@ -1728,23 +1728,22 @@ int TrueStarts::calcClimateFitness(CvPlayer const& kPlayer, int iTargetPrecipita
 			scaled rWeight = m_plotWeights.get(kPlayer.getID(), itPlot->plotNum());
 			// Extra weight for the most prominent characteristics
 			if (itPlot->getFeatureType() == m_eWarmForest)
-				rWeight *= fixp(1.5);
-			/*	Desert needs an especially high weight b/c all-desert regions
+				rWeight *= fixp(5/3.);
+			/*	Desert needs a very high weight b/c all-desert regions
 				don't really exist on random maps; need to treat regions
 				dominated by desert as having very low overall precipitation
 				or else the Fertile Crescent civs never get used. */
 			else if (itPlot->getTerrainType() == m_eDesert)
-				rWeight *= fixp(8/3.);
+				rWeight *= 10;
 			arrRegionData.push_back(std::make_pair(iPrecipitation, rWeight));
 		}
 		// Discard some outliers
 		std::sort(arrRegionData.begin(), arrRegionData.end());
-		int const iValidPlots = (int)arrRegionData.size();
 		{
 			int const iValidThresh = (NUM_CITY_PLOTS * 5) / 7;
 			int const iMaxOutliers = 2; // at each end of the list
 			int const iOutliers = std::min(iMaxOutliers,
-					(iValidPlots - iValidThresh) / 2);
+					(((int)arrRegionData.size()) - iValidThresh) / 2);
 			/*	(This would be easier to read with a std::list and pop_front,
 				but sorting lists is expensive. It's still kind of expensive
 				with a vector. The region data calculation is -currently-
@@ -1758,6 +1757,7 @@ int TrueStarts::calcClimateFitness(CvPlayer const& kPlayer, int iTargetPrecipita
 					arrRegionData.pop_back();
 			}
 		}
+		int const iValidPlots = (int)arrRegionData.size();
 		scaled rRegionWeight;
 		scaled rRegionPrecipitation;
 		for (size_t i = 0; i < arrRegionData.size(); i++)
