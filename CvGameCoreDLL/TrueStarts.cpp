@@ -1898,7 +1898,7 @@ int TrueStarts::calcClimateFitness(CvPlayer const& kPlayer, int iTargetPrecipita
 		if (arPrecipitationFactors.size() > 1)
 		{
 			// Don't want one region full of jungle to dominate the calculation
-			scaled const rPrecipThresh = 1400;
+			scaled const rPrecipThresh = 1350;
 			scaled const rMedian = std::min(arPrecipitationFactors[1], rPrecipThresh);
 			for (size_t i = 1; i < aRegions.size(); i++)
 			{
@@ -1968,10 +1968,10 @@ int TrueStarts::precipitation(CvPlot const& kPlot, int iDistStart) const
 				if (pAdj->getTerrainType() == kPlot.getTerrainType() &&
 					pAdj->getFeatureType() == kPlot.getFeatureType())
 				{
-					iExtra += 100;
+					iExtra += 95;
 				}
 			}
-			return 850 + std::min(iExtra, 580);
+			return 825 + std::min(iExtra, 550);
 		}
 		return 750;
 	}
@@ -1988,7 +1988,7 @@ int TrueStarts::precipitation(CvPlot const& kPlot, int iDistStart) const
 				iWater++;
 				if (iWater >= 4)
 				{
-					iExtra += 125;
+					iExtra += 110;
 					break;
 				}
 			}
@@ -2028,10 +2028,10 @@ int TrueStarts::precipitation(CvPlot const& kPlot, int iDistStart) const
 		if (pAdj->getTerrainType() == kPlot.getTerrainType() &&
 			pAdj->getFeatureType() == kPlot.getFeatureType())
 		{
-			iExtra -= 25;
+			iExtra -= 30;
 		}
 	}
-	return 200 + iExtra;
+	return std::max(1, 200 + iExtra);
 }
 
 /*	+1 means the best possible fit, -1 the worst.

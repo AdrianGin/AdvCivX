@@ -26,15 +26,11 @@
 				 in the game.) -->
 			<EncouragedCivs>
 				<EncouragedCiv>
-					<CivilizationType>CIVILIZATION_AMERICA</CivilizationType>
+					<CivilizationType>CIVILIZATION_ENGLAND</CivilizationType>
 					<UntilEra>ERA_FUTURE</UntilEra>
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_GERMANY</CivilizationType>
-					<UntilEra>ERA_FUTURE</UntilEra>
-				</EncouragedCiv>
-				<EncouragedCiv>
-					<CivilizationType>CIVILIZATION_ENGLAND</CivilizationType>
 					<UntilEra>ERA_FUTURE</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
@@ -59,7 +55,7 @@
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<!-- Would prefer not to boost their UU, but the Celts
-						-even both groups represented in the game - were
+						- even both groups represented in the game - were
 						 early providers of not just copper but also tin. -->
 					<CivilizationType>CIVILIZATION_CELT</CivilizationType>
 					<UntilEra>ERA_INDUSTRIAL</UntilEra>
@@ -310,7 +306,7 @@
 		</TruBonusInfo>
 		<!-- (Amounts insufficient for making a few nukes seem to be quite
 			 unusual. Would mostly just list historically small civs.
-			 Encouraging such a late resource - e.g. for America - also seemts
+			 Encouraging such a late resource - e.g. for America - also seems
 			 rather moot.) -->
 		<!--TruBonusInfo>
 			<Type>TRU_URANIUM</Type>
@@ -336,6 +332,14 @@
 			<DiscouragedCivs>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_CARTHAGE</CivilizationType>
+					<UntilEra>NONE</UntilEra>
+				</DiscouragedCiv>
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_JAPAN</CivilizationType>
+					<UntilEra>NONE</UntilEra>
+				</DiscouragedCiv>
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_KOREA</CivilizationType>
 					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
@@ -471,7 +475,20 @@
 					<CivilizationType>CIVILIZATION_VIKING</CivilizationType>
 					<UntilEra>NONE</UntilEra>
 				</EncouragedCiv>
+				<EncouragedCiv>
+					<!-- Cape Cod is where it all began -->
+					<CivilizationType>CIVILIZATION_AMERICA</CivilizationType>
+					<UntilEra>ERA_FUTURE</UntilEra>
+				</EncouragedCiv>
 			</EncouragedCivs>
+			<DiscouragedCivs>
+				<DiscouragedCiv>
+					<!-- If they do end up near a coast, at least don't give
+						 them the juiciest seafood resource. -->
+					<CivilizationType>CIVILIZATION_MONGOL</CivilizationType>
+					<UntilEra>NONE</UntilEra>
+				</DiscouragedCiv>
+			</DiscouragedCivs>
 		</TruBonusInfo>
 		<TruBonusInfo>
 			<Type>TRU_PIG</Type>
@@ -483,10 +500,10 @@
 				</DiscouragedRegion>
 			</DiscouragedRegions>
 			<!-- Never really was a thing in Africa.
-				 Islamic leaders starting with Pig is also undesriable
+				 Islamic leaders starting with Pig is also undesirable
 				 (and pigs mostly weren't a major pre-Islamic food source in
 				 those rather dry countries either - except in Anatolia, but
-				 that's still covered by Bazyntium). -->
+				 that's still covered by Byzantium). -->
 			<DiscouragedCivs>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ZULU</CivilizationType>
@@ -536,10 +553,12 @@
 			<!-- Apart from Mali, the African civs don't have the river deltas
 				 for African rice. -->
 			<DiscouragedCivs>
-				<DiscouragedCiv>
+				<!-- ... but, then, the Zulu already have so many discouraged
+					 resources. -->
+				<!--DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ZULU</CivilizationType>
 					<UntilEra>ERA_FUTURE</UntilEra>
-				</DiscouragedCiv>
+				</DiscouragedCiv-->
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_CARTHAGE</CivilizationType>
 					<UntilEra>ERA_FUTURE</UntilEra>
@@ -668,14 +687,17 @@
 					<CivilizationType>CIVILIZATION_PORTUGAL</CivilizationType>
 					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
-				<DiscouragedCiv>
+				<!-- They may have mined in the Habachtal (Austria),
+					 which is pretty close to their core. -->
+				<!--DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ROME</CivilizationType>
 					<UntilEra>NONE</UntilEra>
-				</DiscouragedCiv>
-				<DiscouragedCiv>
+				</DiscouragedCiv-->
+				<!-- Well, Egypt isn't far. -->
+				<!--DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
 					<UntilEra>NONE</UntilEra>
-				</DiscouragedCiv>
+				</DiscouragedCiv-->
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_NATIVE_AMERICA</CivilizationType>
 					<UntilEra>NONE</UntilEra>
@@ -734,6 +756,10 @@
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
+					<UntilEra>NONE</UntilEra>
+				</DiscouragedCiv>
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_NATIVE_AMERICA</CivilizationType>
 					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
@@ -798,8 +824,9 @@
 					<UntilEra>NONE</UntilEra>
 				</DiscouragedRegion>
 			</DiscouragedRegions>
-			<!-- Neither encourage nor discourage African bush, forest elephant
-				 - or mammoth. Usable for ivory, but not for warfare. -->
+			<!-- Neither encourage nor discourage African bush, forest elephant,
+				 Syrian elephant or mammoth fossils. Usable for ivory
+				 but not for warfare. -->
 			<DiscouragedCivs>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_OTTOMAN</CivilizationType>
@@ -811,15 +838,6 @@
 				</DiscouragedCiv>
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
-					<UntilEra>NONE</UntilEra>
-				</DiscouragedCiv>
-				<!-- Syrian elephants were probably not used in war. -->
-				<DiscouragedCiv>
-					<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
-					<UntilEra>NONE</UntilEra>
-				</DiscouragedCiv>
-				<DiscouragedCiv>
-					<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
 					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
 				<!-- These like it wet, so they might occasionally be placed
@@ -932,14 +950,13 @@
 					<CivilizationType>CIVILIZATION_EGYPT</CivilizationType>
 					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
-				<DiscouragedCiv>
-					<CivilizationType>CIVILIZATION_FRANCE</CivilizationType>
-					<UntilEra>NONE</UntilEra>
-				</DiscouragedCiv>
-				<DiscouragedCiv>
+				<!-- They're already not getting many hills, so perhaps no need
+					 to discourage a mineral resource that did occur in
+					 neighboring Germany and France and across the Channel. -->
+				<!--DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_NETHERLANDS</CivilizationType>
 					<UntilEra>NONE</UntilEra>
-				</DiscouragedCiv>
+				</DiscouragedCiv-->
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_ETHIOPIA</CivilizationType>
 					<UntilEra>NONE</UntilEra>
@@ -951,6 +968,12 @@
 				<DiscouragedCiv>
 					<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
 					<UntilEra>NONE</UntilEra>
+				</DiscouragedCiv>
+				<!-- Don't want Russia to have too many precious minerals too
+					 close to its starting location -->
+				<DiscouragedCiv>
+					<CivilizationType>CIVILIZATION_RUSSIA</CivilizationType>
+					<UntilEra>ERA_RENAISSANCE</UntilEra>
 				</DiscouragedCiv>
 			</DiscouragedCivs>
 			<EncouragedCivs>
@@ -1022,6 +1045,8 @@
 					<CivilizationType>CIVILIZATION_PERSIA</CivilizationType>
 					<UntilEra>NONE</UntilEra>
 				</DiscouragedCiv>
+				<!-- (Japan has several unique spices, Korea ought to have some
+					 too, I imagine.) -->
 			</DiscouragedCivs>
 			<EncouragedCivs>
 				<EncouragedCiv>

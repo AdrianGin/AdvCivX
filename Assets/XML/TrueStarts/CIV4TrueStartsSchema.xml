@@ -41,14 +41,16 @@
 			 which are easy to look up on Wikipedia (though the minutes stated
 			 there will have to be converted to tenths of degrees through
 			 multiplication by 5/3). -->
-		<!-- Annual, in millimeters. I've mostly just used the present-day data
-			 of the capital. This translates into a preference for terrain and
-			 feature types. The ids of those types are obtained from the
-			 Global Warming definitions in GlobalDefinesAlt.xml. -->
+		<!-- Annual, in millimeters. I've mostly tried to find the present-day
+			 precipitation average of the modern country or countries
+			 corresponding to the civ.
+			 This translates into a preference for terrain and feature types.
+			 The ids of those types are obtained from the Global Warming
+			 definitions in GlobalDefinesAlt.xml. -->
 		<element type="iPrecipitation" minOccurs="0"/>
 		<!-- A percentage expressing how much the climate varies across the
 			 (core) territory of the civilization. Again, this results in a
-			 bias for terrain and feature types, so not all kinds variations
+			 bias for terrain and feature types, so not all kinds of variations
 			 should be equally reflected by the percentage. Large civs should
 			 tend to have higher variation values (because players will
 			 associate them with diverse biomes), but the degree of variation
@@ -170,6 +172,9 @@
 	</ElementType>
 	<ElementType name="DiscouragedCiv" content="eltOnly">
 		<element type="CivilizationType" minOccurs="1" maxOccurs="1"/>
+		<!-- Exclusive until, i.e. when the game starts in this era or later,
+			 the discouragement is ignored. Use NONE when the bonus resource is
+			 supposed to be discouraged regardless of the start era. -->
 		<element type="UntilEra" minOccurs="1" maxOccurs="1"/>
 	</ElementType>
 	<ElementType name="DiscouragedCivs" content="eltOnly">
@@ -177,6 +182,7 @@
 	</ElementType>
 	<ElementType name="EncouragedCiv" content="eltOnly">
 		<element type="CivilizationType" minOccurs="1" maxOccurs="1"/>
+		<!-- See comment above -->
 		<element type="UntilEra" minOccurs="1" maxOccurs="1"/>
 	</ElementType>
 	<ElementType name="EncouragedCivs" content="eltOnly">
