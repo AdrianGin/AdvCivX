@@ -357,6 +357,7 @@ protected:
 	CvWString* m_aszCivPassword;
 	CvString* m_aszEmail;
 	CvString* m_aszSmtpHost;
+	size_t m_uiTotalNameLength; // advc.003k
 
 	CvWString* m_aszFlagDecal;
 	ArrayEnumMap<PlayerTypes,bool> m_abWhiteFlag;
@@ -394,6 +395,7 @@ protected:
 	void clearCustomMapOptions();
 	void refreshCustomMapOptions();
 	void updatePangaea(); // advc
+	void countNameLength(CvWString const& kName);
 
 	/*void clearVictories();
 	void refreshVictories();*/ // advc: Easier to understand w/o these
@@ -402,7 +404,7 @@ protected:
 /*  advc.003k: OK to increase the size of CvInitCore (and to update or remove this
 	assertion). Just make sure that new data members are added in the right place. */
 BOOST_STATIC_ASSERT(sizeof(CvInitCore) ==
-		(sizeof(ArrayEnumMap<PlayerTypes,bool>) > 4 ? 444 : 420));
+		(sizeof(ArrayEnumMap<PlayerTypes,bool>) > 4 ? 448 : 424));
 // advc: Custom Game screen probably relies on this
 BOOST_STATIC_ASSERT(GAMEOPTION_LEAD_ANY_CIV == 7 && GAMEOPTION_ADVANCED_START == 0);
 
