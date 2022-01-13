@@ -6313,9 +6313,9 @@ int CvUnit::getStackExperienceToGive(int iNumUnits) const
 int CvUnit::upgradePrice(UnitTypes eUnit) const
 {
 	{
-		int r = GC.getPythonCaller()->upgradePrice(*this, eUnit);
-		if (r >= 0)
-			return r;
+		int iR = GC.getPythonCaller()->upgradePrice(*this, eUnit);
+		if (iR >= 0)
+			return iR;
 	}
 	if (isBarbarian())
 		return 0;
@@ -7813,19 +7813,17 @@ int CvUnit::fortifyModifier() const
 int CvUnit::experienceNeeded() const
 {
 	{
-		int r = GC.getPythonCaller()->experienceNeeded(*this);
-		if (r >= 0)
-			return r;
+		int iR = GC.getPythonCaller()->experienceNeeded(*this);
+		if (iR >= 0)
+			return iR;
 	}
-	// K-Mod. C version of the original python code.
-	// Note: python rounds towards negative infinity, but C++ rounds towards 0.
-	// So the code needs to be slightly different to achieve the same effect.
-	int iExperienceNeeded = getLevel() * getLevel() + 1;
-
+	/*	K-Mod. C version of the original python code.
+		Note: python rounds towards negative infinity, but C++ rounds towards 0.
+		So the code needs to be slightly different to achieve the same effect. */
+	int iExperienceNeeded = SQR(getLevel()) + 1;
 	int iModifier = GET_PLAYER(getOwner()).getLevelExperienceModifier();
 	if (iModifier != 0)
-		iExperienceNeeded = (iExperienceNeeded * (100+iModifier) + 99) / 100;
-
+		iExperienceNeeded = (iExperienceNeeded * (100 + iModifier) + 99) / 100;
 	return iExperienceNeeded;
 	// K-Mod end
 }
