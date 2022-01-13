@@ -1142,7 +1142,7 @@ TrueStarts::SurroundingsStats::SurroundingsStats(CvPlayer const& kPlayer,
 		}
 		if (itPlot->getTerrainType() == kTruStarts.m_eDesert)
 		{
-			if (itPlot.currPlotDist() == CITY_PLOTS_RADIUS)
+			if (itPlot.currPlotDist() <= CITY_PLOTS_RADIUS)
 				m_iTemperateDesertPenalty = (bSmallMap ? 65 : 95);
 			else if (m_iTemperateDesertPenalty == 0 &&
 				itPlot.currPlotDist() == CITY_PLOTS_RADIUS + 1)
