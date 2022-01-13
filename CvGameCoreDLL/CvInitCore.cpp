@@ -587,6 +587,7 @@ void CvInitCore::resetPlayer(PlayerTypes eID,
 	m_aszCivPassword[eID].clear();
 	m_aszEmail[eID].clear();
 	m_aszSmtpHost[eID].clear();
+	m_uiTotalNameLength = 0; // advc.003k
 
 	m_abWhiteFlag.resetVal(eID);
 	m_aszFlagDecal[eID].clear();
@@ -1006,6 +1007,7 @@ void CvInitCore::setForceControl(ForceControlTypes eIndex, bool bOption)
 
 void CvInitCore::setActivePlayer(PlayerTypes eActivePlayer)
 {
+	m_uiTotalNameLength = 0; // advc.003k (tidier to reset this asap)
 	// <advc>
 	if (m_eActivePlayer == eActivePlayer)
 		return; // </advc>
@@ -1130,6 +1132,7 @@ void CvInitCore::setLeaderName(PlayerTypes eID, CvWString const& szLeaderName)
 		CvWString szName = szLeaderName;
 		gDLL->stripSpecialCharacters(szName);
 		m_aszLeaderName[eID] = szName;
+		countNameLength(szName); // advc.003k
 	}
 	else FAssertBounds(0, MAX_PLAYERS, eID);
 	gDLL->UI().setDirty(Score_DIRTY_BIT, true); // advc.001m
@@ -1166,6 +1169,7 @@ void CvInitCore::setCivDescription(PlayerTypes eID, CvWString const& szCivDescri
 	CvWString szName = szCivDescription;
 	gDLL->stripSpecialCharacters(szName);
 	m_aszCivDescription[eID] = szName;
+	countNameLength(szName); // advc.003k
 }
 
 CvWString const& CvInitCore::getCivDescriptionKey(PlayerTypes eID) const
@@ -1298,6 +1302,19 @@ void CvInitCore::setSmtpHost(PlayerTypes eID, CvString const& szHost)
 {
 	FAssertBounds(0, MAX_PLAYERS, eID);
 	m_aszSmtpHost[eID] = szHost;
+}
+
+// advc.003k:
+void CvInitCore::countNameLength(CvWString const& kName)
+{
+	#ifdef FASSERT_ENABLE
+	if (getActivePlayer() == NO_PLAYER && getScenario())
+	{
+		m_uiTotalNameLength += kName.length();
+		FAssertMsg(m_uiTotalNameLength < 1240, "Total length of LeaderName"
+				" and CivDesc strings might crash civ selection screen.");
+	}
+	#endif
 }
 
 void CvInitCore::setWhiteFlag(PlayerTypes eID, bool bWhiteFlag)

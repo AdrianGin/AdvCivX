@@ -3285,17 +3285,18 @@ int CvPlayer::upgradeAllPrice(UnitTypes eUpgradeUnit, UnitTypes eFromUnit) const
 	return iPrice;
 }
 
-// <advc.080> Based on upgradeAllPrice
+// advc.080: Based on upgradeAllPrice
 int CvPlayer::upgradeAllXPChange(UnitTypes eUpgradeUnit, UnitTypes eFromUnit) const
 {
-	int r = 0;
-	FOR_EACH_UNIT(u, *this)
+	int iR = 0;
+	FOR_EACH_UNIT(pUnit, *this)
 	{
-		if(u->getUnitType() == eFromUnit && u->canUpgrade(eUpgradeUnit, true))
-			r += u->upgradeXPChange(eUpgradeUnit);
+		if (pUnit->getUnitType() == eFromUnit && pUnit->canUpgrade(eUpgradeUnit, true))
+			iR += pUnit->upgradeXPChange(eUpgradeUnit);
 	}
-	return r;
-} // </advc.080>
+	return iR;
+}
+
 
 int CvPlayer::countReligionSpreadUnits(CvArea const* pArea,
 	ReligionTypes eReligion, /* BBAI: */ bool bIncludeTraining) const

@@ -361,7 +361,7 @@ void CvReplayInfo::appendSettingsMsg(CvWString& szSettings, PlayerTypes ePlayer)
 	}
 	if(iOptions > 0)
 		szSettings = szSettings.substr(0, szSettings.length() - 2) + L"\n";
-	// CvWString szModName(gDLL->getModName(false)) // I'd like the prefix to be optional
+	// CvWString szModName(::getModName()) // I'd like the prefix to be optional
 	CvWString const szKey = "TXT_KEY_REPLAY_PREFIX";
 	CvWString szModName = gDLL->getText(szKey);
 	// Don't list mod name if the tag isn't present

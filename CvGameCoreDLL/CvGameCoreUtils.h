@@ -114,6 +114,9 @@ void setListHelp(CvWString& szBuffer, wchar const* szStart, wchar const* szItem,
 void setListHelp(CvWStringBuffer& szBuffer, wchar const* szStart, wchar const* szItem,
 		wchar const* szSeparator, int& iLastListID, int iListID); // </advc>
 
+// advc: Just the folder name, no /Mods/. And as a wide string.
+CvWString getModName();
+
 // PlotUnitFunc's...  (advc: Parameters iData1, iData2 renamed)
 bool PUF_isGroupHead(CvUnit const* pUnit, int iDummy1 = -1, int iDummy2 = -1);
 bool PUF_isPlayer(CvUnit const* pUnit, int iOwner, int iForTeam = NO_TEAM);

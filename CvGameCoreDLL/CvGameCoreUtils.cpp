@@ -422,6 +422,17 @@ void setListHelp(CvWStringBuffer& szBuffer, wchar const* szStart, wchar const* s
 	iLastListID = iListID; // advc: And deleted this line from every call location
 } // </advc>
 
+// advc:
+CvWString getModName()
+{
+	CvWString szModName(gDLL->getModName(false));
+	size_t posMods = szModName.find(L"Mods");
+	if (posMods == CvWString::npos)
+		return szModName;
+	// Skip over "Mods" plus the path separator. And chop off the separator at the end.
+	return szModName.substr(posMods + 5, szModName.length() - posMods - 6);
+}
+
 
 bool PUF_isGroupHead(CvUnit const* pUnit, int iDummy1, int iDummy2)
 {
