@@ -19082,6 +19082,72 @@ void CvGameTextMgr::setTradeRouteHelp(CvWStringBuffer &szBuffer, int iRoute, CvC
 	iProfit /= 10000;
 	FAssert(iProfit == pCity->calculateTradeProfit(pOtherCity));
 	szBuffer.append(SEPARATOR);
+	/*	<advc.004> Not part of CvCity::totalTradeModifier, showing it under the
+		separator hopefully makes that clear enough. Want to show this modifier
+		somewhere (although it is unused in BtS and AdvCiv). But only for commerce;
+		I don't think profit of other yield types has any UI support. */
+	CvPlayer const& kOwner = GET_PLAYER(pCity->getOwner());
+	int const iTradeYieldModifier = kOwner.getTradeYieldModifier(YIELD_COMMERCE);
+	if (iTradeYieldModifier != 100)
+	{
+		int iTotalModifier = 0;
+		{
+			int iModifier = GC.getInfo(YIELD_COMMERCE).getTradeModifier();
+			iTotalModifier += iModifier;
+			iModifier -= 100; // 100 is normal
+			if (iModifier != 0)
+			{
+				szBuffer.append(NEWLINE);
+				szBuffer.append(CvWString::format(L"%s%d%% ",
+						iModifier > 0 ? L"+" : L"", iModifier));
+				szBuffer.append(gDLL->getText("TXT_KEY_MISC_HELP_FROM"));
+				szBuffer.append(L" ");
+				// Well, it's sth. a mod might change, for balance reasons or so.
+				CvWString szModName(::getModName());
+				szBuffer.append(szModName);
+			}
+		}
+		{
+			int iModifier = 0;
+			FOR_EACH_ENUM(Trait)
+			{
+				if (kOwner.hasTrait(eLoopTrait))
+				{
+					iModifier += GC.getInfo(eLoopTrait).
+							getTradeYieldModifier(YIELD_COMMERCE);
+				}
+			}
+			if (iModifier != 0)
+			{
+				iTotalModifier += iModifier;
+				szBuffer.append(NEWLINE);
+				szBuffer.append(CvWString::format(L"%s%d%% ",
+						iModifier > 0 ? L"+" : L"", iModifier));
+				szBuffer.append(gDLL->getText("TXT_KEY_FROM_TRAIT"));
+			}
+		}
+		{
+			int iModifier = 0;
+			FOR_EACH_ENUM(Civic)
+			{
+				if (kOwner.isCivic(eLoopCivic))
+				{
+					iModifier += GC.getInfo(eLoopCivic).
+							getTradeYieldModifier(YIELD_COMMERCE);
+				}
+			}
+			if (iModifier != 0)
+			{
+				iTotalModifier += iModifier;
+				szBuffer.append(NEWLINE);
+				szBuffer.append(gDLL->getText("TXT_KEY_MISC_HELP_YIELD_MODIFIER_CIVICS",
+						iModifier));
+			}
+		}
+		FAssert(iTotalModifier == iTradeYieldModifier);
+		iProfit *= iTradeYieldModifier;
+		iProfit /= 100;
+	} // </advc.004>
 	szBuffer.append(NEWLINE);
 	szBuffer.append(gDLL->getText("TXT_KEY_TRADE_ROUTE_TOTAL", iProfit));
 }

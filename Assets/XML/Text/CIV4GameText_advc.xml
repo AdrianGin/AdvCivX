@@ -7223,4 +7223,24 @@
 		<Spanish>[NEWLINE][SPACE][SPACE][ICON_BULLET]%D1%%%F2_yield por [ICON_TRADE]</Spanish>
 	</TEXT>
 
+	<!-- advc.004: For including the effect above in the trade route profit
+		 breakdown. Like TXT_KEY_MISC_HELP_YIELD_CIVICS
+		 (Civ4GameTextInfos.xml), just without the bullet and yield icons. -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_HELP_YIELD_MODIFIER_CIVICS</Tag>
+		<English>%D1%% from Civics</English>
+		<French>%D1%% (doctrine)</French>
+		<German>%D1%% durch Staatsformen</German>
+		<Italian>%D1%% dalle forme di governo</Italian>
+		<Spanish>%D1%% por principios</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_MISC_HELP_FROM</Tag>
+		<English>from</English>
+		<French>par</French>
+		<German>durch</German>
+		<Italian>da</Italian>
+		<Spanish>por</Spanish>
+	</TEXT>
+
 </Civ4GameText>
