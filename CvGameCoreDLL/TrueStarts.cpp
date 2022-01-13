@@ -684,7 +684,7 @@ void TrueStarts::changeCivs()
 				szMapName == CvWString("Tectonics") ||
 				szMapName == CvWString("RandomScriptMap")) &&
 				GC.getMap().isCustomMapOption("Old World", true)) ||
-				(szMapName == CvWString("NewWorlds") &&
+				(szMapName == CvWString("NewWorld") &&
 				/*	If someone adds options to that map, then there might be
 					multiple options with a choice named just "Yes".
 					Not supported. */
