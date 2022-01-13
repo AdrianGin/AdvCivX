@@ -1997,6 +1997,25 @@ int TrueStarts::precipitation(CvPlot const& kPlot, int iDistStart) const
 			iExtra += 75;
 		if (eFeature == m_eCoolForest)
 			return 500 + iExtra; // Taiga, forest steppe
+		// Treat plots likely affected by normalization as semi-arid
+		if (eTerrain == m_eSteppe && iExtra <= 0 &&
+			iDistStart <= CITY_PLOTS_RADIUS + 1) // cf. CvGame::normalizeRemoveBadTerrain
+		{
+			int iAdjDesert = 0;
+			int iAdjSteppe = 0;
+			FOR_EACH_ADJ_PLOT(kPlot)
+			{
+				if (pAdj->getTerrainType() == m_eDesert)
+					iAdjDesert++;
+				else if (pAdj->getTerrainType() == m_eSteppe &&
+					pAdj->getFeatureType() == NO_FEATURE)
+				{
+					iAdjSteppe++;
+				}
+				if (iAdjDesert > 0 && iAdjDesert * 5 + iAdjSteppe * 2 >= 9)
+					return 210;
+			}
+		}
 		return 350 + iExtra / 2; // Tundra, steppe
 	}
 	// I interpret this as the northernmost taiga
