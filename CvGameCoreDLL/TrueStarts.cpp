@@ -354,12 +354,19 @@ namespace
 
 
 void TrueStarts::setPlayerWeightsPerPlot(PlotNumTypes ePlot,
-	EagerEnumMap<PlayerTypes,scaled>& kPlayerWeights) const
+	EagerEnumMap<PlayerTypes,scaled>& kPlayerWeights, scaled rHumanMult) const
 {
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 	{
 		kPlayerWeights.set(itPlayer->getID(),
 				m_plotWeights.get(itPlayer->getID(), ePlot));
+	}
+	if (rHumanMult != 1)
+	{
+		for (PlayerIter<HUMAN> itHuman; itHuman.hasNext(); ++itHuman)
+		{
+			kPlayerWeights.multiply(itHuman->getID(), rHumanMult);
+		}
 	}
 }
 
@@ -2117,7 +2124,8 @@ scaled TrueStarts::calcBonusSwapUtil(
 		return 0;
 	}
 	EagerEnumMap<PlayerTypes,scaled> aerPlayerWeights;
-	setPlayerWeightsPerPlot(pDestOfSecond->plotNum(), aerPlayerWeights);
+	setPlayerWeightsPerPlot(pDestOfSecond->plotNum(), aerPlayerWeights,
+			2); // double weight for humans
 	scaled rFirstFitnessAfterSwap = calcBonusFitness(
 			*pDestOfSecond, aerPlayerWeights, kSecondPlot.getBonusType(), bLog);
 	setPlayerWeightsPerPlot(pDestOfFirst->plotNum(), aerPlayerWeights);

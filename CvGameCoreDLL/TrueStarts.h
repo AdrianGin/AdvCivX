@@ -84,7 +84,8 @@ private:
 	void initTargetLatitudes();
 	void initContemporaries();
 	void setPlayerWeightsPerPlot(PlotNumTypes ePlot,
-			EagerEnumMap<PlayerTypes,scaled>& kPlayerWeights) const;
+			EagerEnumMap<PlayerTypes,scaled>& kPlayerWeights,
+			scaled rHumanMult = 1) const;
 	void calculatePlotWeights(CvPlayer const& kPlayer);
 	std::auto_ptr<PlotCircleIter> getSurroundings(CvPlayer const& kPlayer) const;
 	bool isBonusDiscouraged(CvPlot const& kPlot, CivilizationTypes eCiv,
