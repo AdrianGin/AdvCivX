@@ -1143,11 +1143,11 @@ TrueStarts::SurroundingsStats::SurroundingsStats(CvPlayer const& kPlayer,
 		if (itPlot->getTerrainType() == kTruStarts.m_eDesert)
 		{
 			if (itPlot.currPlotDist() <= CITY_PLOTS_RADIUS)
-				m_iTemperateDesertPenalty = (bSmallMap ? 65 : 95);
+				m_iTemperateDesertPenalty = (bSmallMap ? 70 : 125);
 			else if (m_iTemperateDesertPenalty == 0 &&
 				itPlot.currPlotDist() == CITY_PLOTS_RADIUS + 1)
 			{
-				m_iTemperateDesertPenalty = (bSmallMap ? 40 : 65);
+				m_iTemperateDesertPenalty = (bSmallMap ? 50 : 95);
 			}
 		}
 		if (itPlot->getTerrainType() == kTruStarts.m_eTundra)
