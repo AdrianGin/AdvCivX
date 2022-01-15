@@ -405,7 +405,7 @@
 			<iPlayer>150</iPlayer>
 			<iTilesPer>512</iTilesPer>
 			<iMinLandPercent>70</iMinLandPercent>
-			<!-- advc-129: was 7 -->
+			<!-- advc.129: was 7 -->
 			<iUnique>6</iUnique>
 			<iGroupRange>0</iGroupRange>
 			<iGroupRand>0</iGroupRand>

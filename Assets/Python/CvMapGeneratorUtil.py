@@ -1359,9 +1359,17 @@ class FeatureGenerator:
 
 	def addFeatures(self):
 		"adds features to all plots as appropriate"
+		# advc.129: Shuffle the plots to avoid biases resulting from the
+		# bNoAdjacent restriction. (Based on code in HintedWorld.findValid.)
+		plots = []
 		for iX in range(self.iGridW):
 			for iY in range(self.iGridH):
-				self.addFeaturesAtPlot(iX, iY)
+				# <advc.129>
+				plots.append((iX, iY))
+		plotOrder = CvUtil.shuffle(len(plots), self.mapRand)
+		for plotIndex in plotOrder:
+			iX, iY = plots[plotIndex] # </advc.129>
+			self.addFeaturesAtPlot(iX, iY)
 
 	def getLatitudeAtPlot(self, iX, iY):
 		"returns a value in the range of 0.0 (tropical) to 1.0 (polar)"

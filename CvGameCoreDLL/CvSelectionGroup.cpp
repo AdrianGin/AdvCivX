@@ -161,7 +161,7 @@ bool CvSelectionGroup::sentryAlert(/* advc.004l: */ bool bUpdateKnownEnemies)
 			else
 			{
 				bool bKnown = false;
-				// Linear search :(
+				// Linear search
 				for(CLLNode<IDInfo>* pKnownNode = m->knownEnemies.head();
 					pKnownNode != NULL; pKnownNode = m->knownEnemies.next(pKnownNode))
 				{

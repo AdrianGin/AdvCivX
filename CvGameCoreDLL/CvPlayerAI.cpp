@@ -21594,9 +21594,9 @@ bool CvPlayerAI::AI_askHelp(PlayerTypes eHuman)
 		return false;
 	CvCityAI const* pBestCity = AI_bestRequestCity(eHuman, 1, fixp(5/3.)); // advc.ctr
 	// <advc.144> Replacing the loop below
-	TechTypes eBestTech = (!kHuman.canPossiblyTradeItem(
-			getID(), TRADE_TECHNOLOGIES) ? NO_TECH :
-			AI_bestTech(1, false, false, NO_TECH, NO_ADVISOR, eHuman));
+	TechTypes eBestTech =
+			(isAnarchy() || !kHuman.canPossiblyTradeItem(getID(), TRADE_TECHNOLOGIES) ?
+			NO_TECH : AI_bestTech(1, false, false, NO_TECH, NO_ADVISOR, eHuman));
 	// </advc.144>
 	/*int iBestValue = 0;
 	for(FOR_EACH_ENUM(Tech)) {
@@ -21712,8 +21712,9 @@ bool CvPlayerAI::AI_demandTribute(PlayerTypes eHuman, AIDemandTypes eDemand)
 		int iBestValue = 0;
 		TechTypes eBestReceiveTech = NO_TECH;
 		// <advc.144>
-		TechTypes eMostUsefulTech = AI_bestTech(1, false, false, NO_TECH, NO_ADVISOR,
-				eHuman); // </advc.144>
+		TechTypes eMostUsefulTech = (isAnarchy() ? NO_TECH:
+				AI_bestTech(1, false, false, NO_TECH, NO_ADVISOR, eHuman));
+		// </advc.144>
 		FOR_EACH_ENUM(Tech)
 		{
 			if(!kHuman.canTradeItem(getID(), TradeData(
