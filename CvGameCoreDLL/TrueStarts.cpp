@@ -306,18 +306,61 @@ namespace
 		return kPlot.canHaveBonus(eBonus, false, bIgnoreFeature, true);
 	}
 
-	bool removingVegetationMakesBonusValid(CvPlot const& kPlot, BonusTypes eBonus)
+	bool changingVegetationMakesBonusValid(CvPlot const& kPlot, BonusTypes eBonus,
+		// Optional out param. Add this vegetation feature to make eBonus valid.
+		FeatureTypes* peFeature = NULL)
 	{
-		return (kPlot.isFeature() &&
-				GC.getInfo(kPlot.getFeatureType()).getGrowthProbability() > 5 &&
-				canHaveBonus(kPlot, eBonus, true));
+		LOCAL_REF(FeatureTypes, eFeature, peFeature, NO_FEATURE);
+		if (!canHaveBonus(kPlot, eBonus, true))
+			return false;
+		if (kPlot.isFeature())
+		{
+			if (GC.getInfo(kPlot.getFeatureType()).getGrowthProbability() > 5 &&
+				// Could be the wrong type of vegetation
+				GC.getInfo(eBonus).isFeature(kPlot.getFeatureType()))
+			{
+				return true;
+			}
+			/*	Won't want to replace a non-vegetation feature. Replacing one
+				vegetation feature with another gets too complicated to implement. */
+			return false;
+		}
+		else // Consider adding vegetation
+		{
+			int iBestScore = 0;
+			FOR_EACH_ENUM(Feature)
+			{
+				if (GC.getInfo(eBonus).isFeature(eLoopFeature) &&
+					GC.getInfo(eBonus).isFeatureTerrain(kPlot.getTerrainType()) &&
+					GC.getInfo(eLoopFeature).getGrowthProbability() > 5)
+				{
+					int iScore = 0;
+					FOR_EACH_ADJ_PLOT(kPlot)
+					{
+						if (pAdj->getFeatureType() == eLoopFeature)
+						{
+							if (peFeature == NULL)
+								return true; // Don't care which is the best
+							iScore++;
+						}
+					}
+					if (iScore > iBestScore)
+					{
+						iBestScore = iScore;
+						eFeature = eLoopFeature;
+					}
+				}
+			}
+			return (eFeature != NO_FEATURE);
+		}
 	}
 
-	CvPlot* findValidBonusSwapDest(CvPlot& kOriginalDest, CvPlot const& kSource)
+	CvPlot* findValidBonusSwapDest(CvPlot& kOriginalDest, CvPlot const& kSource,
+		FeatureTypes* peFeature = NULL) // See changingVegetationMakesBonusValid
 	{
 		BonusTypes const eBonus = kSource.getBonusType();
 		if (canHaveBonus(kOriginalDest, eBonus) ||
-			removingVegetationMakesBonusValid(kOriginalDest, eBonus))
+			changingVegetationMakesBonusValid(kOriginalDest, eBonus, peFeature))
 		{
 			return &kOriginalDest;
 		}
@@ -342,13 +385,99 @@ namespace
 				if (!bValid)
 					continue;
 				if (!bRemoveVegetation ? canHaveBonus(*pAdj, eBonus) :
-					removingVegetationMakesBonusValid(*pAdj, eBonus))
+					changingVegetationMakesBonusValid(*pAdj, eBonus, peFeature))
 				{
 					return pAdj;
 				}
 			}
 		}
 		return NULL;
+	}
+
+	// Return +1 if a feature was added, -1 if it was removed, 0 if moved.
+	int changeVegetation(CvPlot& kPlot, BonusTypes eNewBonus, bool bReplace)
+	{
+		FeatureTypes const eOldFeature = kPlot.getFeatureType();
+		FeatureTypes eNewFeature;
+		#ifdef FASSERT_ENABLE
+		bool bSuccess =
+		#endif
+		changingVegetationMakesBonusValid(
+				kPlot, eNewBonus, &eNewFeature);
+		FAssert(bSuccess);
+		kPlot.setFeatureType(eNewFeature);
+		if (eNewFeature != NO_FEATURE)
+			return 1;
+		if (eOldFeature == NO_FEATURE)
+		{
+			FErrorMsg("Tried to remove feature where none present");
+			return 0;
+		}
+		if (!bReplace)
+			return -1;
+		/*	Don't want to change the map's overall vegetation density.
+			Try to restore eOldFeature on an adjacent plot. */
+		CvPlot* pBestPlot = NULL;
+		int iBestScore = -1;
+		/*	Also don't want to un-feature too many resources.
+			Prefer to move the feature to an adjacent resource,
+			ideally of a similar importance. A pretty long shot. */
+		int const iTargetOrder = GC.getInfo(eNewBonus).getPlacementOrder();
+		FOR_EACH_ADJ_PLOT_VAR_RAND(kPlot, mapRand())
+		{
+			if (pAdj->isFeature() || !pAdj->canHaveFeature(eOldFeature))
+				continue;
+			bool bValid = true;
+			for (PlayerIter<CIV_ALIVE> itPlayer;
+				bValid && itPlayer.hasNext(); ++itPlayer)
+			{
+				if (itPlayer->getStartingPlot() == pAdj)
+					bValid = false;
+			}
+			if (!bValid)
+				continue;
+			int iScore = 0;
+			if (pAdj->getBonusType() != NO_BONUS)
+			{
+				iScore += 100 - abs(iTargetOrder
+						- GC.getInfo(pAdj->getBonusType()).getPlacementOrder());
+			}
+			if (iScore > iBestScore)
+			{
+				iScore = iBestScore;
+				pBestPlot = pAdj;
+			}
+		}
+		if (pBestPlot != NULL)
+		{
+			pBestPlot->setFeatureType(eOldFeature);
+			bool bLog = true;
+			IFLOG logBBAI("Feature %S added at (%d,%d) to compensate for removed %S\n\n",
+					GC.getInfo(eOldFeature).getDescription(), pBestPlot->getX(), pBestPlot->getY(),
+					GC.getInfo(eOldFeature).getDescription());
+			return 0;
+		}
+		return -1;
+	}
+
+	void logVegetationChange(CvPlot const& kPlot, BonusTypes eBonus)
+	{
+		if (canHaveBonus(kPlot, eBonus))
+			return;
+		if (kPlot.isFeature())
+		{
+			logBBAI("Removing feature %S from (%d,%d)",
+					GC.getInfo(kPlot.getFeatureType()).getDescription(),
+					kPlot.getX(), kPlot.getY());
+		}
+		else
+		{
+			FeatureTypes eFeature;
+			changingVegetationMakesBonusValid(kPlot, eBonus, &eFeature);
+			logBBAI("Adding feature %S to (%d,%d)", eFeature == NO_FEATURE ? L"none(!)" :
+					GC.getInfo(eFeature).getDescription(),
+					kPlot.getX(), kPlot.getY());
+		}
 	}
 }
 
@@ -403,7 +532,7 @@ void TrueStarts::sanitize()
 			logBBAI("%d plots with negative bonus fitness value", iNegativeFitPlots);
 		}
 	}
-	int iFeaturesRemoved = 0;
+	int iFeaturesRemoved = 0, iFeaturesAdded = 0, iFeaturesMoved = 0;
 	std::set<CvPlot*> apSwappedPlots; // Swap each bonus resource at most once
 	/*	Yep, this variable name doesn't bode well. Perhaps the inner loop should
 		just always go through all resource plots. I think the current implementation
@@ -483,19 +612,8 @@ void TrueStarts::sanitize()
 					kFirstPlot.getX(), kFirstPlot.getY(),
 					GC.getInfo(pBestPlot->getBonusType()).getDescription(),
 					pBestPlot->getX(), pBestPlot->getY());
-			if (!canHaveBonus(kFirstSwapPlot, pBestPlot->getBonusType()))
-			{
-				logBBAI("Removing feature %S from (%d,%d)",
-						!kFirstSwapPlot.isFeature() ? L"none(!)" :
-						GC.getInfo(kFirstSwapPlot.getFeatureType()).getDescription(),
-						kFirstSwapPlot.getX(), kFirstSwapPlot.getY());
-			}
-			if (!canHaveBonus(kSecondSwapPlot, kFirstPlot.getBonusType()))
-			{
-				logBBAI("Removing feature %S from (%d,%d)", !kSecondSwapPlot.isFeature() ?
-						L"none(!)" : GC.getInfo(kSecondSwapPlot.getFeatureType()).getDescription(),
-						kSecondSwapPlot.getX(),kSecondSwapPlot.getY());
-			}
+			logVegetationChange(kFirstSwapPlot, pBestPlot->getBonusType());
+			logVegetationChange(kSecondSwapPlot, kFirstPlot.getBonusType());
 			if (&kFirstSwapPlot != &kFirstPlot)
 			{
 				logBBAI("Moving %S to adj. destination (%d,%d)",
@@ -526,23 +644,26 @@ void TrueStarts::sanitize()
 		kFirstPlot.setBonusType(NO_BONUS);
 		if (!canHaveBonus(kFirstSwapPlot, pBestPlot->getBonusType()))
 		{
-			FAssert(removingVegetationMakesBonusValid(kFirstSwapPlot, pBestPlot->getBonusType()));
-			kFirstSwapPlot.setFeatureType(NO_FEATURE);
-			IFLOG iFeaturesRemoved++;
+			int iChange = changeVegetation(kFirstSwapPlot, pBestPlot->getBonusType(),
+					iFeaturesRemoved + 1 >= iFeaturesAdded);
+			(iChange == 0 ? iFeaturesMoved :
+					(iChange < 0 ? iFeaturesRemoved : iFeaturesAdded))++;
 		}
 		kFirstSwapPlot.setBonusType(pBestPlot->getBonusType());
 		pBestPlot->setBonusType(NO_BONUS);
 		if (!canHaveBonus(kSecondSwapPlot, eFirstOriginalBonus))
 		{
-			FAssert(removingVegetationMakesBonusValid(kSecondSwapPlot, eFirstOriginalBonus));
-			kSecondSwapPlot.setFeatureType(NO_FEATURE);
-			IFLOG iFeaturesRemoved++;
+			int iChange = changeVegetation(kSecondSwapPlot, eFirstOriginalBonus,
+					iFeaturesRemoved + 1 >= iFeaturesAdded);
+			(iChange == 0 ? iFeaturesMoved :
+					(iChange < 0 ? iFeaturesRemoved : iFeaturesAdded))++;
 		}
 		kSecondSwapPlot.setBonusType(eFirstOriginalBonus);
 	}
 	{
 		bool bLog = true;
-		IFLOG logBBAI("Removed %d terrain features in total", iFeaturesRemoved);
+		IFLOG logBBAI("Removed %d terrain features in total, moved %d, added %d.\n\n",
+				iFeaturesRemoved, iFeaturesMoved, iFeaturesAdded);
 	}
 }
 
