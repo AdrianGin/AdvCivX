@@ -2077,7 +2077,7 @@ scaled TrueStarts::calcBonusFitness(CvPlot const& kPlot, CvPlayer const& kPlayer
 	BonusTypes eBonus, bool bLog) const
 {
 	scaled const rEncouragement =
-			(isBonusEncouraged(kPlot, kPlayer.getCivilizationType(), eBonus) ? fixp(0.55) :
+			(isBonusEncouraged(kPlot, kPlayer.getCivilizationType(), eBonus) ? fixp(0.4) :
 			(isBonusDiscouraged(kPlot, kPlayer.getCivilizationType(), eBonus) ? -1 : 0));
 	IFLOG if(rEncouragement!=0) logBBAI("Encouragement value of %S (%d,%d) near %S: %d percent",
 			GC.getInfo(eBonus).getDescription(), kPlot.getX(), kPlot.getY(),
