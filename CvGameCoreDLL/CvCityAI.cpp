@@ -5903,7 +5903,8 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 			}
 		}
 	} // <advc.131>
-	if (kBuilding.isNationalWonder() && isCapital() &&
+	if (iValue > 0 &&
+		kBuilding.isNationalWonder() && isCapital() &&
 		kOwner.AI_getCurrEraFactor() < fixp(3.5) &&
 		iTotalImprFreeSpecialists <= 0 &&
 		iTotalBonusYieldMod < 40 &&
@@ -5921,7 +5922,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 			if (iSlotsLeft == 2 && bAnySeaPlotYieldChange)
 				iSlotsLeft--;
 			scaled rSlotMod = scaled::min(1, scaled(iSlotsLeft + 1, 4));
-			iValue = (iValue * rSlotMod).round();
+			iValue = (iValue * rSlotMod).uround();
 			FAssert(iSlotsLeft >= 0);
 			/*  0 is also bad, but can happen if canConstruct was only checked
 				with bTestVisible=true. */

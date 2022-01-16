@@ -21710,7 +21710,7 @@ bool CvPlayerAI::AI_demandTribute(PlayerTypes eHuman, AIDemandTypes eDemand)
 		int iBestValue = 0;
 		TechTypes eBestReceiveTech = NO_TECH;
 		// <advc.144>
-		TechTypes eMostUsefulTech = (isAnarchy() ? NO_TECH:
+		TechTypes eMostUsefulTech = (isAnarchy() ? NO_TECH :
 				AI_bestTech(1, false, false, NO_TECH, NO_ADVISOR, eHuman));
 		// </advc.144>
 		FOR_EACH_ENUM(Tech)

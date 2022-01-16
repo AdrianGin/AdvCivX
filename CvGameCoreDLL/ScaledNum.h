@@ -10,7 +10,7 @@
  +	The whole TypeChoice.h header.
  +	The whole IntegerConversion.h header. Two uses of enum_traits in that header
 	can be replaced (see comment there) when porting ScaledNum into another mod.
- +	intdiv::round, fmath::round  in ArithmeticUtils.h.
+ +	intdiv::round, fmath::round in ArithmeticUtils.h.
  +	intHash in CvGameCoreUtils.h.
  +	integer_limits in IntegerTraits.h.
 	For precompiling this header, one may have to define NOMINMAX
@@ -225,13 +225,14 @@ public:
 	}
 
 	/*	Better be explicit about rounding. Since conversion to int should
-		not be extremely frequent, I recommend using 'round' in most cases. */
+		not be extremely frequent, I recommend rounding in most cases. */
 	//int getInt() const { return round(); }
 	// Cast operator - again, better to be explicit.
 	//operator int() const { return getInt(); }
 	int round() const; // Expect this to get inlined for unsigned IntType
 	/*	Only for signed IntType. Non-branching, expect this to get inlined always,
-		but only works on non-negative numbers. */
+		but only works on non-negative numbers. Asserts non-negativity, so using
+		this over round may also help uncover bugs. */
 	int uround() const;
 	int floor() const
 	{
