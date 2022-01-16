@@ -119,30 +119,51 @@ TrueStarts::TrueStarts()
 	m_eTundra = (TerrainTypes)GC.getDefineINT("COLD_TERRAIN");
 	m_eDesert = (TerrainTypes)GC.getDefineINT("BARREN_TERRAIN");
 	m_ePolarDesert = (TerrainTypes)GC.getDefineINT("FROZEN_TERRAIN");
+
 	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	{
+		if (GC.getInitCore().wasCivRandomlyChosen(itPlayer->getID()) ||
+			// Can't sync up the was-randomly-chosen info in time
+			GC.getGame().isNetworkMultiPlayer() ||
+			/*	Scenario with a fixed civ for each player - ignore that
+				(b/c otherwise True Starts would not affect such scenarios). */
+			(GC.getGame().isScenario() && !GC.getInitCore().getWBMapNoPlayers()))
+		{
+			m_truPlayers.push_back(&*itPlayer);
+			if (itPlayer->isHuman())
+				m_truHumans.push_back(&*itPlayer);
+		}
+	}
+	for (TruPlayerIter itPlayer = truPlayers(); itPlayer.hasNext(); ++itPlayer)
+	{
 		calculateRadius(*itPlayer);
+	}
 	m_plotWeights.reset();
-	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	for (TruPlayerIter itPlayer = truPlayers(); itPlayer.hasNext(); ++itPlayer)
+	{
 		calculatePlotWeights(*itPlayer);
+	}
 	{
 		std::vector<scaled> arSpaceWeights;
 		std::vector<scaled> arPeakScores;
-		for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		for (TruPlayerIter itPlayer = truPlayers(); itPlayer.hasNext(); ++itPlayer)
 		{
 			SurroundingsStats& kStats = *new SurroundingsStats(*itPlayer, *this);
 			m_surrStats.set(itPlayer->getID(), &kStats);
 			arSpaceWeights.push_back(kStats.areaSpaceWeights());
 			arPeakScores.push_back(kStats.areaPeakScore());
 		}
-		m_rMedianSpace = stats::median(arSpaceWeights);
-		m_rMedianPeakScore = stats::median(arPeakScores);
+		if (!arSpaceWeights.empty())
+			m_rMedianSpace = stats::median(arSpaceWeights);
+		if (!arPeakScores.empty())
+			m_rMedianPeakScore = stats::median(arPeakScores);
 	}
 }
 
 
 TrueStarts::~TrueStarts()
 {
-	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	for (TruPlayerIter itPlayer = truPlayers(); itPlayer.hasNext(); ++itPlayer)
 	{
 		SurroundingsStats* pStats = m_surrStats.get(itPlayer->getID());
 		if (pStats != NULL)
@@ -486,14 +507,14 @@ namespace
 void TrueStarts::setPlayerWeightsPerPlot(PlotNumTypes ePlot,
 	EagerEnumMap<PlayerTypes,scaled>& kPlayerWeights, scaled rHumanMult) const
 {
-	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	for (TruPlayerIter itPlayer = truPlayers(); itPlayer.hasNext(); ++itPlayer)
 	{
 		kPlayerWeights.set(itPlayer->getID(),
 				m_plotWeights.get(itPlayer->getID(), ePlot));
 	}
 	if (rHumanMult != 1)
 	{
-		for (PlayerIter<HUMAN> itHuman; itHuman.hasNext(); ++itHuman)
+		for (TruPlayerIter itHuman = truHumans(); itHuman.hasNext(); ++itHuman)
 		{
 			kPlayerWeights.multiply(itHuman->getID(), rHumanMult);
 		}
@@ -820,6 +841,19 @@ void TrueStarts::changeCivs()
 				GC.getMap().isCustomMapOption("Encourage"))
 		);
 	}
+	{
+		for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		{
+			if (std::find(m_truPlayers.begin(), m_truPlayers.end(), &*itPlayer) ==
+				m_truPlayers.end())
+			{
+				m_civs.set(itPlayer->getID(), itPlayer->getCivilizationType());
+				m_leaders.set(itPlayer->getID(), itPlayer->getLeaderType());
+				m_civTaken.set(itPlayer->getCivilizationType(), true);
+				m_leaderTaken.set(itPlayer->getLeaderType(), true);
+			}
+		}
+	}
 	bool bUniqueCivs = true;
 	{
 		std::vector<CivilizationTypes> aeValidHumanCivs;
@@ -838,6 +872,8 @@ void TrueStarts::changeCivs()
 			{
 				CvTruCivInfo const& kTruCiv = GC.getInfo(eLoopTruCiv);
 				CivilizationTypes const eCiv = kTruCiv.getCiv();
+				if (m_civTaken.get(eCiv))
+					continue;
 				CvCivilizationInfo const& kLoopCiv = GC.getInfo(eCiv);
 				if (m_bEmptyNewWorld &&
 					(iPass == 0)) // May need all the civs we have on super-Huge maps
@@ -856,8 +892,8 @@ void TrueStarts::changeCivs()
 				if (kLoopCiv.isAIPlayable())
 					aeValidAICivs.push_back(eCiv);
 			}
-			if (PlayerIter<HUMAN>::count() <= (int)aeValidHumanCivs.size() &&
-				PlayerIter<CIV_ALIVE>::count() <= (int)aeValidAICivs.size())
+			if (aeValidHumanCivs.size() >= m_truHumans.size() &&
+				aeValidAICivs.size() >= m_truPlayers.size())
 			{
 				break;
 			}
@@ -866,7 +902,8 @@ void TrueStarts::changeCivs()
 		{
 			for (size_t i = 0; i < aeValidAICivs.size(); i++)
 			{
-				if (GC.getInfo(aeValidAICivs[i]).isLeaders(eLoopLeaderHead))
+				if (GC.getInfo(aeValidAICivs[i]).isLeaders(eLoopLeaderHead) &&
+					!m_leaderTaken.get(eLoopLeaderHead))
 				{
 					m_validAICivs.push_back(std::make_pair(
 							aeValidAICivs[i], eLoopLeaderHead));
@@ -881,14 +918,14 @@ void TrueStarts::changeCivs()
 				}
 			}
 		}
-		if (PlayerIter<CIV_ALIVE>::count() > (int)m_validAICivs.size() ||
-			PlayerIter<HUMAN>::count() > (int)m_validHumanCivs.size())
+		if (m_validAICivs.size() < m_truPlayers.size() ||
+			m_validHumanCivs.size() < m_truHumans.size())
 		{
 			FErrorMsg("Too few valid leaders found");
 			return;
 		}
-		if (PlayerIter<CIV_ALIVE>::count() > (int)aeValidAICivs.size() ||
-			PlayerIter<HUMAN>::count() > (int)aeValidHumanCivs.size())
+		if (m_validAICivs.size() < m_truPlayers.size() ||
+			aeValidHumanCivs.size() < m_truHumans.size())
 		{
 			bUniqueCivs = false;
 		}
@@ -923,7 +960,7 @@ void TrueStarts::changeCivs()
 	updateFitnessValues();
 
 	std::vector<std::pair<int,PlayerTypes> > aiePriorityPerPlayer;
-	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	for (TruPlayerIter itPlayer = truPlayers(); itPlayer.hasNext(); ++itPlayer)
 	{
 		int iBestFitVal = MIN_INT;
 		std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > const& validCivs =
@@ -1071,14 +1108,11 @@ void TrueStarts::changeCivs()
 			// To avoid assigning alternative colors in the loop below
 			GC.getInitCore().setColor((PlayerTypes)ePlayer, NO_PLAYERCOLOR);
 		}
-		/*	Recalculate each time that we lock a player in. (Could skip the players
-			that we're already done with, but I don't think performance matters
-			much here.) */
-		updateFitnessValues();
+		updateFitnessValues(); // Recalc each time we lock a player in
 	}
 	bool bLog = true;
 	scaled rAvgFitness;
-	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	for (TruPlayerIter itPlayer = truPlayers(); itPlayer.hasNext(); ++itPlayer)
 	{
 		CivilizationTypes const eCiv = m_civs.get(itPlayer->getID());
 		LeaderHeadTypes const eLeader = m_leaders.get(itPlayer->getID());
@@ -1100,7 +1134,8 @@ void TrueStarts::changeCivs()
 		itPlayer->changeLeader(eLeader, GC.getGame().isScenario());
 		IFLOG rAvgFitness += m_fitnessVals.at(itPlayer->getID()).get(eCiv, eLeader);
 	}
-	IFLOG logBBAI("Avg. fitness val: %d\n\n", (rAvgFitness / PlayerIter<CIV_ALIVE>::count()).round());
+	IFLOG if(rAvgFitness!=0) logBBAI("Avg. fitness val: %d\n\n",
+			(rAvgFitness / m_truPlayers.size()).round());
 }
 
 
@@ -1147,19 +1182,10 @@ void TrueStarts::updateFitnessValues()
 {
 	m_fitnessVals.clear();
 	m_fitnessVals.resize(NUM_CIV_PLAYER_TYPES);
-	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	/*	(Could probably skip the players that we're already done with,
+		but I don't think performance matters much here.) */
+	for (TruPlayerIter itPlayer = truPlayers(); itPlayer.hasNext(); ++itPlayer)
 	{
-		if (!GC.getInitCore().wasCivRandomlyChosen(itPlayer->getID()) &&
-			!GC.getGame().isScenario() &&
-			// Can't sync up the was-randomly-chosen info in time
-			!GC.getGame().isNetworkMultiPlayer())
-		{
-			m_civs.set(itPlayer->getID(), itPlayer->getCivilizationType());
-			m_leaders.set(itPlayer->getID(), itPlayer->getLeaderType());
-			m_civTaken.set(itPlayer->getCivilizationType(), true);
-			m_leaderTaken.set(itPlayer->getLeaderType(), true);
-			continue;
-		}
 		std::vector<std::pair<CivilizationTypes,LeaderHeadTypes> > const& validCivs =
 				(itPlayer->isHuman() ? m_validHumanCivs : m_validAICivs);
 		for (size_t i = 0; i < validCivs.size(); i++)
@@ -1342,6 +1368,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		int const iCivLongitudeTimes10 = kTruCiv.get(CvTruCivInfo::LongitudeTimes10);
 		int iOtherPlayers = 0;
 		int iAvgDistErrorPercent = 0;
+		// Include the players with fixed civs (non-"tru" players) in this loop
 		FOR_EACH_NON_DEFAULT_PAIR(m_civs, Player, CivilizationTypes)
 		{
 			if (perPlayerVal.first == kPlayer.getID())
@@ -1416,7 +1443,8 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 		int const iFixed = 14;
 		/*	Go through all players already assigned whose leader is
 			contemporary with eLeader. We only care which leaders are in
-			the game here, not where they're located on the map. */
+			the game here, not where they're located on the map.
+			And we include players with forced leader (non-"tru" players). */
 		FOR_EACH_NON_DEFAULT_PAIR(m_leaders, Player, LeaderHeadTypes)
 		{
 			if (perPlayerVal.first == kPlayer.getID())
@@ -1511,7 +1539,11 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 						int iAlreadyEncouraged = 0;
 						FOR_EACH_NON_DEFAULT_PAIR(m_civs, Player, CivilizationTypes)
 						{
-							if (isBonusEncouraged(*itPlot, perPlayerVal.second))
+							if (isBonusEncouraged(*itPlot, perPlayerVal.second) &&
+								/*	Only "tru" players here; those with a fixed civ
+									are disregarded during sanitization. */
+								std::find(m_truPlayers.begin(), m_truPlayers.end(),
+								&GET_PLAYER(perPlayerVal.first)) != m_truPlayers.end())
 							{
 								IFLOG logBBAI("%S already encouraged by %S", GC.getInfo(eBonus).getDescription(),
 										GC.getInfo(perPlayerVal.second).getShortDescription());
@@ -1770,7 +1802,7 @@ void TrueStarts::calculatePlotWeights(CvPlayer const& kPlayer)
 		scaled const rDistWeight = distWeight(kStart, *itPlot, itPlot.radius());
 		scaled rWeight = rDistWeight;
 		// Reduce based on rival weights
-		for (PlayerIter<CIV_ALIVE> itOther; itOther.hasNext(); ++itOther)
+		for (TruPlayerIter itOther = truPlayers(); itOther.hasNext(); ++itOther)
 		{
 			if (itOther->getID() != kPlayer.getID())
 			{
@@ -2167,10 +2199,10 @@ scaled TrueStarts::calcBonusFitness(CvPlot const& kPlot,
 		eBonus = kPlot.getBonusType();
 	scaled rMinPlayerFitness;
 	scaled rTotal;
-	for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	for (TruPlayerIter itPlayer = truPlayers(); itPlayer.hasNext(); ++itPlayer)
 	{
 		scaled rWeight = kPlayerWeights.get(itPlayer->getID());
-		if (rWeight <= 0) // save time
+		if (rWeight <= 0) // Save time, don't pollute log.
 			continue;
 		// Try harder to make human starts fit well
 		if (itPlayer->isHuman())
@@ -2375,8 +2407,11 @@ scaled TrueStarts::calcBonusSwapDisturbance(CvPlot const& kDest,
 		rDisturbance += rFromNormalize;
 	}
 	if (rDisturbance > 0)
-	{	// Disturbances near starting plots are worse
-		for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	{	
+		// Disturbances near starting plots are worse
+		/*	(Would be better to include players with fixed civs here, but I don't
+			think I want to compute weights for those players just for this purpose.) */
+		for (TruPlayerIter itPlayer = truPlayers(); itPlayer.hasNext(); ++itPlayer)
 		{
 			rDisturbance *= 1 + SQR(m_plotWeights.get(itPlayer->getID(),
 					kDest.plotNum()));

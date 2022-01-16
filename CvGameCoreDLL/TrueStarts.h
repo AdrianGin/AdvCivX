@@ -20,6 +20,25 @@ private:
 	bool m_bMapHasLatitudes;
 	bool m_bBalancedResources;
 	int m_iMaxGeoDist, m_iMaxLatitudeDiffTimes10, m_iMaxLongitudeDiffTimes10;
+	std::vector<CvPlayer*> m_truPlayers;
+	std::vector<CvPlayer*> m_truHumans;
+	class TruPlayerIter // For an interface similar to AgentIterator
+	{
+	public:
+		TruPlayerIter(std::vector<CvPlayer*> const& kTruPlayers)
+		:	m_pTruPlayers(&kTruPlayers), m_pos(m_pTruPlayers->begin()) {}
+		bool hasNext() const { return (m_pos != m_pTruPlayers->end()); }
+		/*	Can't get CvPlayerAI instances out of this iterator.
+			I don't think the Player AI should have any impact on what we do here. */
+		CvPlayer& operator*() const { return **m_pos; }
+		CvPlayer* operator->() const { return *m_pos; }
+		TruPlayerIter& operator++() { ++m_pos; return *this; }
+	private:
+		std::vector<CvPlayer*> const* m_pTruPlayers;
+		std::vector<CvPlayer*>::const_iterator m_pos;
+	};
+	TruPlayerIter truPlayers() const { return TruPlayerIter(m_truPlayers); }
+	TruPlayerIter truHumans() const { return TruPlayerIter(m_truHumans); }
 	EagerEnumMap<CivilizationTypes,CvTruCivInfo*> m_truCivs;
 	EagerEnumMap<LeaderHeadTypes,CvTruLeaderInfo*> m_truLeaders;
 	EagerEnumMap<BonusTypes,CvTruBonusInfo*> m_truBonuses;
