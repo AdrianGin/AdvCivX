@@ -38,14 +38,8 @@ namespace
 TrueStarts::TrueStarts()
 {
 	m_eTemperateClimate = (ClimateTypes)GC.getInfoTypeForString("CLIMATE_TEMPERATE");
-	{
-		bool const bLog = true;
-		IFLOG // If we're testing
-		{
-			if (GC.getGame().isScenario())
-				overrideScenarioOptions();
-		}
-	}
+	if (GC.getGame().isScenario())
+		overrideScenarioOptions();
 	CvMap const& kMap = GC.getMap();
 	{
 		CvWString szMapName = GC.getInitCore().getMapScriptName();
@@ -160,6 +154,11 @@ TrueStarts::~TrueStarts()
 void TrueStarts::overrideScenarioOptions()
 {
 	CvMap& kMap = GC.getMap();
+	if ((kMap.getTopLatitude() != 90 && kMap.getTopLatitude() != 0) ||
+		(kMap.getBottomLatitude() != -90 && kMap.getBottomLatitude() != 0))
+	{	// Someone has already set custom latitude limits. Respect those.
+		return;
+	}
 	bool bOverrideOptions = false;
 	/*	These latitude values and size options are more sensible in general,
 		not just for testing, but I don't want to change the WBSave files b/c
@@ -206,7 +205,9 @@ void TrueStarts::overrideScenarioOptions()
 		kMap.setLatitudeLimits(48, 25);
 		bOverrideOptions = true;
 	}
-	if (bOverrideOptions)
+	if (bOverrideOptions &&
+		// Don't override if someone has changed the sea level in the WBSave
+		kMap.getSeaLevel() == GC.getInfoTypeForString("SEALEVEL_MEDIUM"))
 	{
 		/*	These affect CvGame::getRecommendedPlayers, which we use for
 			adjustments to the crowdedness of the map. */
