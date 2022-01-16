@@ -328,21 +328,21 @@ namespace
 		}
 		else // Consider adding vegetation
 		{
-			int iBestScore = 0;
+			int iBestScore = 1;
 			FOR_EACH_ENUM(Feature)
 			{
 				if (GC.getInfo(eBonus).isFeature(eLoopFeature) &&
 					GC.getInfo(eBonus).isFeatureTerrain(kPlot.getTerrainType()) &&
 					GC.getInfo(eLoopFeature).getGrowthProbability() > 5)
 				{
-					int iScore = 0;
+					int iScore = SyncRandNum(2); // tie-breaker
 					FOR_EACH_ADJ_PLOT(kPlot)
 					{
 						if (pAdj->getFeatureType() == eLoopFeature)
 						{
 							if (peFeature == NULL)
 								return true; // Don't care which is the best
-							iScore++;
+							iScore += 10;
 						}
 					}
 					if (iScore > iBestScore)
