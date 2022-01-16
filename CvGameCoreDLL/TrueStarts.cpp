@@ -1579,8 +1579,11 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				if (iPenalty > 0 &&
 					/*	With the BtS civ roster, this covers only Europe incl. Turkey
 						(but not all of Europe). */
-					iAbsLatitudeTargetTimes10 >= 409 &&
-					kTruCiv.get(CvTruCivInfo::Oceanity) >= 10)
+					(iAbsLatitudeTargetTimes10 >= 409 &&
+					kTruCiv.get(CvTruCivInfo::Oceanity) >= 10) ||
+					// Korea and Japan
+					(kTruCiv.get(CvTruCivInfo::Precipitation) >= 1000 &&
+					kTruCiv.get(CvTruCivInfo::Oceanity) >= 50))
 				{
 					if (iAbsLatitudeTargetTimes10 < 415)
 						iPenalty /= 2;
