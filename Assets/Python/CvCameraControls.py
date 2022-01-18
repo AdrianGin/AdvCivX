@@ -2,6 +2,7 @@
 ## Copyright Firaxis Games 2005
 ## 
 ## CvCameraControls
+# advc: Added from BtS just to correct some bugs in unused code. In case that someone ever tries to implement enhanced camera controls (e.g. akin to BlueMod for Civ4Col) based on this wrapper around CyCamera. (There might still be further bugs of course.)
 
 from CvPythonExtensions import *
 import CvUtil
@@ -16,39 +17,48 @@ class CvCameraControls:
 	ZOOM_SPEED_DEFAULT = 0.5
 	TURN_SPEED_DEFAULT = 0.5
 	PITCH_SPEED_DEFAULT = 0.5
-	CAMERA_MIN_DISTANCE_DEFAULT = gc.getDefineFLOAT("CAMERA_MIN_DISTANCE")
+	# advc: unused
+	#CAMERA_MIN_DISTANCE_DEFAULT = gc.getDefineFLOAT("CAMERA_MIN_DISTANCE")
 	
 	bLookAt = False
-	originalPositionNiPoint3 = None
-	newPositionNiPoint3 = None
-	lookAtSpeed = 0
+	# advc: 3x unused
+	#originalPositionNiPoint3 = None
+	#newPositionNiPoint3 = None
+	#lookAtSpeed = 0
+
 	# Rotate
 	bRotate = False
 	bRotateContinuous = False
 	fRotateDestination = None
-	fRotateTracking = 0.0
+	#fRotateTracking = 0.0 # advc: unused
 	rotateDirection = None
 	fRotateSpeed = 0.0
+
 	# Zoom
 	bZoom = False
 	fCurrentZoom = 0.0
 	fZoomDestination = None
 	zoomDirection = None
 	fZoomSpeed = 0.0
+
 	# Turn
 	bTurn = False
+	# advc (note): Never read, but might want to in the future.
 	fCurrentBaseTurn = 0.0
 	fTurnDestination = 0.0 # degrees
 	turnDirection = None
 	fTurnSpeed = 0.0
+
 	# Pitch
 	bPitch = False
+	# advc (note): Never read, but might want to in the future.
 	fCurrentBasePitch = 0.0
 	fPitchDestination = 0.0 # degrees
 	pitchDirection = None
 	fPitchSpeed = 0.0
 	
 	def __init__( self ):
+		# advc (note): This gets called when the singleton g_CameraControls is instantiated at the end of this file. I think this is really the only thing that gets called. CvAppInterface.py assigns some calls to the function keys when the Python console is up. That macro mechanism still works, but the calls ultimately have no effect because CvCameraControls.onUpdate is not getting called (see comment there).
 		self.resetCameraControls()
 		
 	def resetCameraControls( self ):	
@@ -80,15 +90,23 @@ class CvCameraControls:
 	def moveCameraXPlots( self, iNumPlots ):
 		' moves the camera iNumPlots on the X coord '
 		fRotateUnits = iNumPlots * self.SINGLE_PLOT_UNITS		
-		self.moveCamera( ( fRotateUnits, 0.0, 0.0 ) )
+		# advc.001: Was moveCamera, which doesn't exist.
+		self.doMoveCamera( ( fRotateUnits, 0.0, 0.0 ) )
 	
 	def moveCameraYPlots( self, iNumPlots ):
 		' moves the camera iNumPlots on the Y coord '
 		fRotateUnits = iNumPlots * self.SINGLE_PLOT_UNITS		
-		self.moveCamera( ( 0.0, fRotateUnits, 0.0 ) )
-	
-	def setCameraMovementSpeed( self, iCameraMovementSpeed = CameraMovementSpeeds.CAMERAMOVEMENTSPEED_SLOW ):
-		CyCamera().SetCameraMovementSpeed(int(CameraMovementSpeeds.CAMERAMOVEMENTSPEED_SLOW))
+		# advc.001: see above
+		self.doMoveCamera( ( 0.0, fRotateUnits, 0.0 ) )
+
+	# advc (note): I think this is the camera acceleration when movement starts or stops. I don't think the speed maximum can be changed. NORMAL and FAST don't make much of a difference, if any.
+	def setCameraMovementSpeed( self,
+			iCameraMovementSpeed = #CameraMovementSpeeds.CAMERAMOVEMENTSPEED_SLOW
+			# advc: As far as I can tell through CyCamera().GetCameraMovementSpeed, NORMAL is what BtS normally uses, so let's make that the default.
+			CameraMovementSpeeds.CAMERAMOVEMENTSPEED_NORMAL ):
+		#CyCamera().SetCameraMovementSpeed(int(CameraMovementSpeeds.CAMERAMOVEMENTSPEED_SLOW))
+		# advc.001: Don't ignore our argument
+		CyCamera().SetCameraMovementSpeed(iCameraMovementSpeed)
 	
 	def doMoveCamera( self, t_Coord ):
 		' moves the camera based on the x/y/z values in t_Coord '
@@ -283,8 +301,9 @@ class CvCameraControls:
 	def updatePitch( self, fDeltaTime ):
 		' updates the pitch based on fDeltaTime and the set Pitch Speed '
 		bAtDestination = False
-		if ( self.PitchDirection ):
-			fPitchModifer = fDeltaTime * self.fPitchSpeed
+		# <advc.001> Typos in variable names
+		if ( self.pitchDirection ):
+			fPitchModifier = fDeltaTime * self.fPitchSpeed # </advc.001>
 			if ( self.pitchDirection == "Up" ):
 				fNewPitch = CyCamera().GetBasePitch() - fPitchModifier
 			if ( self.pitchDirection == "Down" ):
@@ -354,6 +373,8 @@ class CvCameraControls:
 	
 	def onUpdate( self, fDeltaTime ):
 		' loops through UpdateMaps and returns a list of all controls that are being updated '
+		# advc (note): This is supposed to get called by CvEventManager.onUpdate, but that function seems to be obsolete. So I don't think this ever gets called. Could call it from onGameUpdate, but we don't have the fDeltaTime parameter there.
+
 		# add any new controls as a CONTROLUPDATE
 		if ( self.bLookAt or self.bRotate or self.bZoom or self.bTurn or self.bPitch ):
 			if self.bLookAt:
@@ -368,6 +389,7 @@ class CvCameraControls:
 				self.updatePitch( fDeltaTime )
 	
 	def handleInput( self, theKey ):
+		# advc (note): This gets called by CvEventManager.handleInput (but it seems that BugEventManager blocks that).
 		return
 
 g_CameraControls = CvCameraControls()

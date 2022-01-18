@@ -252,6 +252,7 @@ class CvEventManager:
 		
 	def onUpdate(self, argsList):
 		'Called every frame'
+		# advc (note): I don't think this is ever called(?).
 		fDeltaTime = argsList[0]
 		
 		# allow camera to be updated
