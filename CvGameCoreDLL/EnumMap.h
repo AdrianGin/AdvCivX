@@ -4,8 +4,9 @@
 
 class FDataStreamBase;
 
-/*	Classes that map an enum key type E to a value type V. Based on
-	Nightinggale's EnumMap class template in the "We the People" mod (WtP).
+/*	Classes that map an enum key type E to a value type V.
+	Based on Nightinggale's EnumMap class template in the "We the People" mod
+	(WtP) prior to its Jan 2021 rewrite.
 	Internally, keys and values may be represented more compactly through
 	information from the enum_traits struct. For V, a compact representation
 	can be set through an optional class template parameter CV. V can be any type
@@ -161,7 +162,7 @@ public:
 	/*	Derived classes that only allocate memory in the constructor (or use only
 		static memory) should set this to false */
 	static bool const isLazyAllocation = true;
-	/*	I've tried making endKey and ceEndKey variables, but there's is some
+	/*	I've tried making endKey and ceEndKey variables, but there is some
 		(MSVC03-specific?) problem with the order of initialization when a
 		static const enum variable is initialized through another static variable;
 		doesn't reliably get initialized that way. See also a comment about
@@ -967,7 +968,7 @@ protected:
 		return m_aValues[iPos];
 	}
 	/*	The T=V version exists only for the sake of bit arrays (bBIT_BLOCKS)
-		-- this class doesn't use. We always use CompactV=bool when V=bool. */
+		-- which this class doesn't use. We always use CompactV=bool when V=bool. */
 	template<class T>
 	void processValueChange(T, T) { BOOST_STATIC_ASSERT(false); }
 	template<>
@@ -1207,7 +1208,7 @@ template<typename E, class V,
 		static memory also implies eager allocation, obviously.
 		(The storage duration is going to be the same as that of our instance,
 		so it could, ultimately, be dynamic memory, i.e. "static" might not be
-		the best term to use here. WtP uses the term "inline memory" - which I
+		the best term to use here. WtP used the term "inline memory" - which I
 		don't think is widely used or understood.) */
 	int iMAX_STATIC_BYTES = 8>
 class ArrayEnumMap : public ArrayEnumMapBase
@@ -1360,7 +1361,7 @@ public:
 		}
 		else
 		{
-			/*	The WtP EnumMap does this in isAnyNonDefault, but I like it
+			/*	The WtP EnumMap did this in isAnyNonDefault, but I like it
 				better here; more predictable/ less unanticipated this way, and
 				most isAnyNonDefault calls occur during serialization. Indeed,
 				for calls in other contexts, it seems difficult to predict
