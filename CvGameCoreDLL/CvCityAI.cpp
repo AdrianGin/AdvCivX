@@ -5075,7 +5075,8 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 					iValue += iFoodKept / 2;*/ // BtS
 				// (We're inside a yield types loop. This would be triple counted here!)
 
-				if (kBuilding.getSeaPlotYieldChange(eLoopYield) > 0)
+				// advc.131: was >
+				if (kBuilding.getSeaPlotYieldChange(eLoopYield) != 0)
 				{
 					iRawYieldValue += kBuilding.getSeaPlotYieldChange(eLoopYield) *
 							//AI_buildingSpecialYieldChangeValue(eBuilding, eLoopYield);
@@ -5084,7 +5085,8 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 							iFoodDifference > 0 && iHappinessLevel > 0); // </K-Mod>
 					bAnySeaPlotYieldChange = true; // advc.131
 				}
-				if (kBuilding.getRiverPlotYieldChange(eLoopYield) > 0)
+				// advc.131: was >
+				if (kBuilding.getRiverPlotYieldChange(eLoopYield) != 0)
 				{
 					iRawYieldValue += kBuilding.getRiverPlotYieldChange(eLoopYield) *
 							countNumRiverPlots() * 3; // was 4
@@ -5131,7 +5133,8 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 			{
 
 				iValue += iFoodKept;
-				if (kBuilding.getSeaPlotYieldChange(YIELD_FOOD) > 0)
+				// advc.131: was >
+				if (kBuilding.getSeaPlotYieldChange(YIELD_FOOD) != 0)
 				{
 					int iTempValue = kBuilding.getSeaPlotYieldChange(YIELD_FOOD) *
 							//AI_buildingSpecialYieldChangeValue(eBuilding, YIELD_FOOD)
@@ -5144,8 +5147,8 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 					}
 					else iValue += (iTempValue * 4) / std::max(2, iFoodDifference);
 				}
-
-				if (kBuilding.getRiverPlotYieldChange(YIELD_FOOD) > 0)
+				// advc.131: was >
+				if (kBuilding.getRiverPlotYieldChange(YIELD_FOOD) != 0)
 				{
 					iValue += (kBuilding.getRiverPlotYieldChange(YIELD_FOOD) *
 							countNumRiverPlots() * 4);
@@ -5167,7 +5170,8 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 								iNumWaterPlots;
 					}
 				}
-				if (kBuilding.getRiverPlotYieldChange(YIELD_PRODUCTION) > 0)
+				// advc.131: was >
+				if (kBuilding.getRiverPlotYieldChange(YIELD_PRODUCTION) != 0)
 				{
 					iTempValue += (kBuilding.getRiverPlotYieldChange(YIELD_PRODUCTION) *
 							countNumRiverPlots() * 4);
