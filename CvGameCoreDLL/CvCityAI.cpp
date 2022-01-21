@@ -3522,7 +3522,7 @@ BuildingTypes CvCityAI::AI_bestBuildingThreshold(int iFocusFlags, int iMaxTurns,
 		}
 		// K-Mod end
 
-		int iTurnsLeft = getProductionTurnsLeft(eLoopBuilding, 0);
+		int const iTurnsLeft = getProductionTurnsLeft(eLoopBuilding, 0);
 
 		// K-Mod
 		/*	Block construction of limited buildings in bad places
@@ -3583,7 +3583,10 @@ BuildingTypes CvCityAI::AI_bestBuildingThreshold(int iFocusFlags, int iMaxTurns,
 				}
 				// Subtract some points from wonder value, just to stop us from wasting it
 				if (kBuilding.isNationalWonder())
-					iValue -= 40 + (iMaxNumWonders > 0 ? 60 * getNumNationalWonders() / iMaxNumWonders : 0);
+				{
+					iValue -= 40 + (iMaxNumWonders <= 0 ? 0 :
+							(60 * getNumNationalWonders()) / iMaxNumWonders);
+				}
 			}
 		}
 		// K-Mod end
@@ -5131,7 +5134,6 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 		{
 			if (iFocusFlags & BUILDINGFOCUS_FOOD)
 			{
-
 				iValue += iFoodKept;
 				// advc.131: was >
 				if (kBuilding.getSeaPlotYieldChange(YIELD_FOOD) != 0)
@@ -7785,7 +7787,7 @@ void CvCityAI::AI_getYieldMultipliers(int &iFoodMultiplier, int &iProductionMult
 		iFoodMultiplier = 10000 / (200 - iFoodMultiplier);
 }
 
-// advc: Made the plot param const
+
 int CvCityAI::AI_getImprovementValue(CvPlot const& kPlot, ImprovementTypes eImprovement,
 	int iFoodPriority, int iProductionPriority, int iCommercePriority, int iDesiredFoodChange,
 	int iClearFeatureValue, bool bEmphasizeIrrigation, BuildTypes* peBestBuild) const
@@ -12409,18 +12411,21 @@ void CvCityAI::AI_stealPlots()
 
 
 // original description (obsolete):
-// +1/+3/+5 plot based on base food yield (1/2/3)
-// +4 if being worked.
-// +4 if a bonus.
-// Unworked ocean ranks very lowly. Unworked lake ranks at 3. Worked lake at 7.
-// Worked bonus in ocean ranks at like 11
+/*	+1/+3/+5 plot based on base food yield (1/2/3)
+	+4 if being worked.
+	+4 if a bonus.
+	Unworked ocean ranks very lowly. Unworked lake ranks at 3. Worked lake at 7.
+	Worked bonus in ocean ranks at like 11 */
 //int CvCityAI::AI_buildingSpecialYieldChangeValue(BuildingTypes kBuilding, YieldTypes eYield) const
 
-// K-Mod. I've rewritten this function to give a lower but more consistent value.
-// The function should return roughly 4x the number of affected plots which are expected to be worked.
-// +4 if either being worked, or would be good after the bonus. (~consumption rate +4 commerce / 2 yield)
-// +2/3 if would be ok after the bonus. (~consumption rate +2 commerce / 1 yield)
-// +1 otherwise
+/*	K-Mod: I've rewritten this function to give a lower but more consistent value.
+	The function should return roughly 4x the number of affected plots which are
+	expected to be worked.
+	+4 if either being worked, or would be good after the extra yield.
+	(~consumption rate +4 commerce / 2 yield)
+	+2 to +3 if would be ok after the extra yield.
+	(~consumption rate +2 commerce / 1 yield)
+	+1 otherwise */
 int CvCityAI::AI_buildingSeaYieldChangeWeight(BuildingTypes eBuilding, bool bGrowing) const
 {
 	int iValue = 0;
