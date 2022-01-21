@@ -18,6 +18,7 @@ private:
 	ClimateTypes m_eTemperateClimate;
 	bool m_bEmptyNewWorld;
 	bool m_bMapHasLatitudes;
+	bool m_bBonusesIgnoreLatitude;
 	bool m_bBalancedResources;
 	int m_iMaxGeoDist, m_iMaxLatitudeDiffTimes10, m_iMaxLongitudeDiffTimes10;
 	std::vector<CvPlayer*> m_truPlayers;
@@ -101,6 +102,14 @@ private:
 
 	void overrideScenarioOptions();
 	void initTargetLatitudes();
+	bool canHaveBonus(CvPlot const& kPlot, BonusTypes eBonus,
+			bool bIgnoreFeature = false) const;
+	bool changingVegetationMakesBonusValid(CvPlot const& kPlot, BonusTypes eBonus,
+			FeatureTypes* peFeature = NULL) const;
+	CvPlot* findValidBonusSwapDest(CvPlot& kOriginalDest, CvPlot const& kSource,
+			FeatureTypes* peFeature = NULL) const;
+	int changeVegetation(CvPlot& kPlot, BonusTypes eNewBonus, bool bReplace) const;
+	void logVegetationChange(CvPlot const& kPlot, BonusTypes eBonus) const;
 	void initContemporaries();
 	void setPlayerWeightsPerPlot(PlotNumTypes ePlot,
 			EagerEnumMap<PlayerTypes,scaled>& kPlayerWeights,
