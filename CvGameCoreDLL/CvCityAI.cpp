@@ -7868,14 +7868,17 @@ int CvCityAI::AI_getImprovementValue(CvPlot const& kPlot, ImprovementTypes eImpr
 			rValue += kOwner.AI_bonusVal(eNonObsoleteBonus, 1) * 50;
 			rValue += 100;
 			// K-Mod end
-			/* <advc.121> Make sure the AI prefers improvements with yields over
-				Forts. Don't want to rule out Forts altogether b/c of Gems in a
-				Jungle -- w/o IW, a Fort is the only way to connect the resource. */
+			/*	<advc.121> Kludge to force the AI to prefer improvements with yields
+				over forts. Don't want to rule out forts altogether b/c of gems in a
+				jungle -- w/o IW, a fort is the only way to connect the resource. */
 			int iImprYieldChange = 0;
-			for (int i = 0; i < NUM_YIELD_TYPES; i++)
-				iImprYieldChange += GC.getInfo(eImprovement).getYieldChange(i);
+			FOR_EACH_ENUM(Yield)
+			{
+				iImprYieldChange += kPlot.calculateImprovementYieldChange(
+						eImprovement, eLoopYield, kOwner.getID());
+			}
 			if (iImprYieldChange <= 0 && kPlot.getWorkingCity() != NULL)
-				rValue /= 5;
+				rValue /= 3;
 			// </advc.121>
 		}
 		else
