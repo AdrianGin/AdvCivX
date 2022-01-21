@@ -527,10 +527,10 @@ bool CvXMLLoadUtility::GetChildXmlValByName(wchar* r, TCHAR const* szName, wchar
 	//FAssertMsg(gDLL->getXMLIFace()->NumOfChildrenByTagName(m_pFXml, szName) < 2,"More children with tag name than expected, should only be 1.");
 	// ... However, I think FXML already detects duplicate tags when enforcing the XML schema.
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
-		// skip to the next non-comment node
-		if (SkipToNextVal())
+		if (SkipToNextVal()) // skip to the next non-comment node
 		{
 			gDLL->getXMLIFace()->GetLastNodeValue(m_pFXml, r);
 			gDLL->getXMLIFace()->SetToParent(m_pFXml);
@@ -569,10 +569,10 @@ bool CvXMLLoadUtility::GetChildXmlValByName(char* r, TCHAR const* szName, char c
 	// we only continue if there are one and only one children with this tag name
 	if (iNumChildrenByTagName == 1)
 	{*/
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
-		// skip to the next non-comment node
-		if (SkipToNextVal())
+		if (SkipToNextVal()) // skip to the next non-comment node
 		{
 			// get the string value of the current xml node
 			gDLL->getXMLIFace()->GetLastNodeValue(m_pFXml, r);
@@ -610,7 +610,8 @@ bool CvXMLLoadUtility::GetChildXmlValByName(std::string& r, TCHAR const* szName,
 	// we only continue if there are one and only one children with this tag name
 	if (iNumChildrenByTagName == 1)
 	{*/
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
 		{
@@ -649,7 +650,8 @@ bool CvXMLLoadUtility::GetChildXmlValByName(std::wstring& r, TCHAR const* szName
 	// we only continue if there are one and only one children with this tag name
 	if (iNumChildrenByTagName == 1)
 	{*/
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
 		{
@@ -688,7 +690,8 @@ bool CvXMLLoadUtility::GetChildXmlValByName(int* r, TCHAR const* szName, int iDe
 	// we only continue if there are one and only one children with this tag name
 	if (iNumChildrenByTagName == 1)
 	{*/
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
 		{
@@ -733,7 +736,8 @@ bool CvXMLLoadUtility::GetChildXmlValByName(float* r, TCHAR const* szName, float
 	// we only continue if there are one and only one children with this tag name
 	if (iNumChildrenByTagName == 1)
 	{*/
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
 		{
@@ -777,7 +781,8 @@ bool CvXMLLoadUtility::GetChildXmlValByName(bool* r, TCHAR const* szName,
 	// we only continue if there are one and only one children with this tag name
 	if (iNumChildrenByTagName == 1)
 	{*/
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
 		{

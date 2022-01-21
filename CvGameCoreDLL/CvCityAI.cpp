@@ -3522,7 +3522,7 @@ BuildingTypes CvCityAI::AI_bestBuildingThreshold(int iFocusFlags, int iMaxTurns,
 		}
 		// K-Mod end
 
-		int iTurnsLeft = getProductionTurnsLeft(eLoopBuilding, 0);
+		int const iTurnsLeft = getProductionTurnsLeft(eLoopBuilding, 0);
 
 		// K-Mod
 		/*	Block construction of limited buildings in bad places
@@ -3583,7 +3583,10 @@ BuildingTypes CvCityAI::AI_bestBuildingThreshold(int iFocusFlags, int iMaxTurns,
 				}
 				// Subtract some points from wonder value, just to stop us from wasting it
 				if (kBuilding.isNationalWonder())
-					iValue -= 40 + (iMaxNumWonders > 0 ? 60 * getNumNationalWonders() / iMaxNumWonders : 0);
+				{
+					iValue -= 40 + (iMaxNumWonders <= 0 ? 0 :
+							(60 * getNumNationalWonders()) / iMaxNumWonders);
+				}
 			}
 		}
 		// K-Mod end
@@ -5075,7 +5078,8 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 					iValue += iFoodKept / 2;*/ // BtS
 				// (We're inside a yield types loop. This would be triple counted here!)
 
-				if (kBuilding.getSeaPlotYieldChange(eLoopYield) > 0)
+				// advc.131: was >
+				if (kBuilding.getSeaPlotYieldChange(eLoopYield) != 0)
 				{
 					iRawYieldValue += kBuilding.getSeaPlotYieldChange(eLoopYield) *
 							//AI_buildingSpecialYieldChangeValue(eBuilding, eLoopYield);
@@ -5084,7 +5088,8 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 							iFoodDifference > 0 && iHappinessLevel > 0); // </K-Mod>
 					bAnySeaPlotYieldChange = true; // advc.131
 				}
-				if (kBuilding.getRiverPlotYieldChange(eLoopYield) > 0)
+				// advc.131: was >
+				if (kBuilding.getRiverPlotYieldChange(eLoopYield) != 0)
 				{
 					iRawYieldValue += kBuilding.getRiverPlotYieldChange(eLoopYield) *
 							countNumRiverPlots() * 3; // was 4
@@ -5129,9 +5134,9 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 		{
 			if (iFocusFlags & BUILDINGFOCUS_FOOD)
 			{
-
 				iValue += iFoodKept;
-				if (kBuilding.getSeaPlotYieldChange(YIELD_FOOD) > 0)
+				// advc.131: was >
+				if (kBuilding.getSeaPlotYieldChange(YIELD_FOOD) != 0)
 				{
 					int iTempValue = kBuilding.getSeaPlotYieldChange(YIELD_FOOD) *
 							//AI_buildingSpecialYieldChangeValue(eBuilding, YIELD_FOOD)
@@ -5144,8 +5149,8 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 					}
 					else iValue += (iTempValue * 4) / std::max(2, iFoodDifference);
 				}
-
-				if (kBuilding.getRiverPlotYieldChange(YIELD_FOOD) > 0)
+				// advc.131: was >
+				if (kBuilding.getRiverPlotYieldChange(YIELD_FOOD) != 0)
 				{
 					iValue += (kBuilding.getRiverPlotYieldChange(YIELD_FOOD) *
 							countNumRiverPlots() * 4);
@@ -5167,7 +5172,8 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 								iNumWaterPlots;
 					}
 				}
-				if (kBuilding.getRiverPlotYieldChange(YIELD_PRODUCTION) > 0)
+				// advc.131: was >
+				if (kBuilding.getRiverPlotYieldChange(YIELD_PRODUCTION) != 0)
 				{
 					iTempValue += (kBuilding.getRiverPlotYieldChange(YIELD_PRODUCTION) *
 							countNumRiverPlots() * 4);
@@ -7781,7 +7787,7 @@ void CvCityAI::AI_getYieldMultipliers(int &iFoodMultiplier, int &iProductionMult
 		iFoodMultiplier = 10000 / (200 - iFoodMultiplier);
 }
 
-// advc: Made the plot param const
+
 int CvCityAI::AI_getImprovementValue(CvPlot const& kPlot, ImprovementTypes eImprovement,
 	int iFoodPriority, int iProductionPriority, int iCommercePriority, int iDesiredFoodChange,
 	int iClearFeatureValue, bool bEmphasizeIrrigation, BuildTypes* peBestBuild) const
@@ -7864,14 +7870,17 @@ int CvCityAI::AI_getImprovementValue(CvPlot const& kPlot, ImprovementTypes eImpr
 			rValue += kOwner.AI_bonusVal(eNonObsoleteBonus, 1) * 50;
 			rValue += 100;
 			// K-Mod end
-			/* <advc.121> Make sure the AI prefers improvements with yields over
-				Forts. Don't want to rule out Forts altogether b/c of Gems in a
-				Jungle -- w/o IW, a Fort is the only way to connect the resource. */
+			/*	<advc.121> Kludge to force the AI to prefer improvements with yields
+				over forts. Don't want to rule out forts altogether b/c of gems in a
+				jungle -- w/o IW, a fort is the only way to connect the resource. */
 			int iImprYieldChange = 0;
-			for (int i = 0; i < NUM_YIELD_TYPES; i++)
-				iImprYieldChange += GC.getInfo(eImprovement).getYieldChange(i);
+			FOR_EACH_ENUM(Yield)
+			{
+				iImprYieldChange += kPlot.calculateImprovementYieldChange(
+						eImprovement, eLoopYield, kOwner.getID());
+			}
 			if (iImprYieldChange <= 0 && kPlot.getWorkingCity() != NULL)
-				rValue /= 5;
+				rValue /= 3;
 			// </advc.121>
 		}
 		else
@@ -12402,62 +12411,76 @@ void CvCityAI::AI_stealPlots()
 
 
 // original description (obsolete):
-// +1/+3/+5 plot based on base food yield (1/2/3)
-// +4 if being worked.
-// +4 if a bonus.
-// Unworked ocean ranks very lowly. Unworked lake ranks at 3. Worked lake at 7.
-// Worked bonus in ocean ranks at like 11
+/*	+1/+3/+5 plot based on base food yield (1/2/3)
+	+4 if being worked.
+	+4 if a bonus.
+	Unworked ocean ranks very lowly. Unworked lake ranks at 3. Worked lake at 7.
+	Worked bonus in ocean ranks at like 11 */
 //int CvCityAI::AI_buildingSpecialYieldChangeValue(BuildingTypes kBuilding, YieldTypes eYield) const
 
-// K-Mod. I've rewritten this function to give a lower but more consistent value.
-// The function should return roughly 4x the number of affected plots which are expected to be worked.
-// +4 if either being worked, or would be good after the bonus. (~consumption rate +4 commerce / 2 yield)
-// +2/3 if would be ok after the bonus. (~consumption rate +2 commerce / 1 yield)
-// +1 otherwise
+/*	K-Mod: I've rewritten this function to give a lower but more consistent value.
+	The function should return roughly 4x the number of affected plots which are
+	expected to be worked.
+	+4 if either being worked, or would be good after the extra yield.
+	(~consumption rate +4 commerce / 2 yield)
+	+2 to +3 if would be ok after the extra yield.
+	(~consumption rate +2 commerce / 1 yield)
+	+1 otherwise */
 int CvCityAI::AI_buildingSeaYieldChangeWeight(BuildingTypes eBuilding, bool bGrowing) const
 {
 	int iValue = 0;
 	CvBuildingInfo const& kBuilding = GC.getInfo(eBuilding);
 
-	// only add the building's bonuses if it isn't already built - otherwise the building will be overvalued for sabortage missions.
-	bool const bBonuses = (getNumBuilding(eBuilding) <
+	/*	only add the building's yield if it isn't already built -
+		otherwise the building will be overvalued for sabotage missions. */
+	bool const bAddBuilding = (getNumBuilding(eBuilding) <
 			GC.getDefineINT(CvGlobals::CITY_MAX_NUM_BUILDINGS));
-
+	int const iCommerceValue = 4;
+	int const iProdValue = 7;
+	int const iFoodValue = 11;
+	int const iBaseValue = iFoodValue * GC.getFOOD_CONSUMPTION_PER_POPULATION();
+	// <advc.131>
+	int iDecentUnworkedLand = 0;
+	// Count plots not currently worked separately
+	int iPotentialValue = 0; // </advc.131>
 	for (WorkablePlotIter it(*this); it.hasNext(); ++it)
 	{
 		CvPlot const& kPlot = *it;
-		if (!kPlot.isWater())
-			continue;
-
-		if (kPlot.isBeingWorked())
-			iValue += 4;
-		else
+		if (kPlot.isWater())
 		{
-			const int iCommerceValue = 4;
-			const int iProdValue = 7;
-			const int iFoodValue = 11;
-
-			int iPlotValue =
-					iFoodValue * (kPlot.getYield(YIELD_FOOD) +
-					(bBonuses ? kBuilding.getSeaPlotYieldChange(YIELD_FOOD) : 0)) +
-					iProdValue * (kPlot.getYield(YIELD_PRODUCTION) +
-					(bBonuses ? kBuilding.getSeaPlotYieldChange(YIELD_PRODUCTION) : 0)) +
-					iCommerceValue * (kPlot.getYield(YIELD_COMMERCE) +
-					(bBonuses ? kBuilding.getSeaPlotYieldChange(YIELD_COMMERCE) : 0));
-
-			const int iBaseValue = iFoodValue * GC.getFOOD_CONSUMPTION_PER_POPULATION();
-
-			if (iPlotValue > iBaseValue + 3 * iCommerceValue)
+			if (kPlot.isBeingWorked())
+			{
 				iValue += 4;
-			else if (iPlotValue >= iBaseValue + 2 * iCommerceValue)
-				iValue += bGrowing ? 3 : 2;
-			else iValue += 1;
+				continue;
+			}
 		}
+		else if (kPlot.isBeingWorked())
+			continue;
+		bool bAddYield = (bAddBuilding && kPlot.isWater()); // advc.131
+		int iPlotValue =
+				iFoodValue * (kPlot.getYield(YIELD_FOOD) +
+				(bAddYield ? kBuilding.getSeaPlotYieldChange(YIELD_FOOD) : 0)) +
+				iProdValue * (kPlot.getYield(YIELD_PRODUCTION) +
+				(bAddYield ? kBuilding.getSeaPlotYieldChange(YIELD_PRODUCTION) : 0)) +
+				iCommerceValue * (kPlot.getYield(YIELD_COMMERCE) +
+				(bAddYield ? kBuilding.getSeaPlotYieldChange(YIELD_COMMERCE) : 0));
+		// <advc.131> Threshold corresponds to a flat Grassland Cottage
+		if (!kPlot.isWater() && iPlotValue >= iBaseValue + iCommerceValue)
+		{
+			iDecentUnworkedLand++;
+			continue;
+		} // </advc.131>
+		if (iPlotValue > iBaseValue + 3 * iCommerceValue)
+			iPotentialValue += 4;
+		else if (iPlotValue >= iBaseValue + 2 * iCommerceValue)
+			iPotentialValue += (bGrowing ? 3 : 2);
+		else iPotentialValue += 1;
 	}
-
-	return iValue;
+	// <advc.131>
+	iPotentialValue *= std::max(2, 10 - iDecentUnworkedLand);
+	iPotentialValue /= 10; // </advc.131>
+	return iValue + iPotentialValue;
 }
-// K-Mod end
 
 
 int CvCityAI::AI_yieldMultiplier(YieldTypes eYield) const
