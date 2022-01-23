@@ -102,7 +102,7 @@
 			<iMountainousArea>60</iMountainousArea>
 			<!-- My crude approximation of their 5th century territory -->
 			<iTotalArea>1500</iTotalArea>
-			<iBias>3</iBias>
+			<iBias>4</iBias>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -169,7 +169,7 @@
 				 Want them to struggle with Barbarians. -->
 			<iTotalArea>9597</iTotalArea>
 			<iHStretch>133</iHStretch>
-			<iBias>-18</iBias>
+			<iBias>-20</iBias>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -190,7 +190,7 @@
 				 somewhat important too. Egypt connects the tropics with
 				 the temperate zone. -->
 			<iHStretch>50</iHStretch>
-			<iBias>5</iBias>
+			<iBias>6</iBias>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -274,7 +274,6 @@
 			<iMountainousArea>50</iMountainousArea>
 			<!-- Modern Greece -->
 			<iTotalArea>132</iTotalArea>
-			<iBias>1</iBias>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -360,7 +359,7 @@
 			<iMountainousArea>20</iMountainousArea>
 			<!-- Somewhere between Cambodia and the empire's largest extent -->
 			<iTotalArea>350</iTotalArea>
-			<iBias>-12</iBias>
+			<iBias>-14</iBias>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -412,7 +411,7 @@
 			<iMountainousArea>30</iMountainousArea>
 			<!-- Yucatan + Guatemala + Belize -->
 			<iTotalArea>313</iTotalArea>
-			<iBias>-9</iBias>
+			<iBias>-10</iBias>
 			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -555,7 +554,7 @@
 			<!-- Russian Empire -->
 			<iTotalArea>22800</iTotalArea>
 			<iHStretch>175</iHStretch>
-			<iBias>-2</iBias>
+			<iBias>-5</iBias>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -570,7 +569,7 @@
 			<iMaxElevation>3479</iMaxElevation>
 			<iMountainousArea>60</iMountainousArea>
 			<iTotalArea>506</iTotalArea>
-			<iBias>-8</iBias>
+			<iBias>-9</iBias>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -621,7 +620,7 @@
 			<iMountainousArea>30</iMountainousArea>
 			<!-- AD 1822 -->
 			<iTotalArea>207</iTotalArea>
-			<iBias>-7</iBias>
+			<iBias>-8</iBias>
 		</TruCivInfo>
 	</TruCivInfos>
 </Civ4TruCivInfos>
