@@ -4139,11 +4139,8 @@ bool CvGame::canTrainNukes() const
 		for (int i = 0; i < kCiv.getNumUnits(); i++)
 		{
 			UnitTypes eUnit = kCiv.unitAt(i);
-			if (GC.getInfo(eUnit).getNukeRange() >= 0)
-			{
-				if (itPlayer->canTrain(eUnit))
-					return true;
-			}
+			if (GC.getInfo(eUnit).isNuke() && itPlayer->canTrain(eUnit))
+				return true;
 		}
 	}
 	return false;
@@ -5918,10 +5915,9 @@ bool CvGame::canConstruct(BuildingTypes eBuilding, bool bIgnoreCost, bool bTestV
 	{
 		return false;
 		// What the original code did:
-		/*for(int i = 0; i < GC.getNumUnitInfos(); i++) {
-			if (GC.getInfo((UnitTypes)i).getNukeRange() != -1)
-				return false;
-		}*/
+		/*FOR_EACH_ENUM(Unit)
+			if (GC.getInfo(eLoopUnit).isNuke())
+				return false;*/
 	}
 	{
 		SpecialBuildingTypes eSpecial = GC.getInfo(eBuilding).getSpecialBuildingType();
@@ -5955,7 +5951,7 @@ bool CvGame::canTrain(UnitTypes eUnit, bool bIgnoreCost, bool bTestVisible) cons
 	if (bTestVisible)
 		return true;
 
-	if ((isNoNukes() || !isNukesValid()) && kUnit.getNukeRange() != -1)
+	if ((isNoNukes() || !isNukesValid()) && kUnit.isNuke())
 		return false;
 
 	SpecialUnitTypes eSpecialUnit = kUnit.getSpecialUnitType();

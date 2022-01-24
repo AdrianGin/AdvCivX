@@ -228,7 +228,7 @@ void CvUnit::finalizeInit() // advc.003u: Body cut from init
 	GET_TEAM(getTeam()).changeUnitClassCount(eUnitClass, 1);
 	kOwner.changeUnitClassCount(eUnitClass, 1);
 	kOwner.changeExtraUnitCost(m_pUnitInfo->getExtraCost());
-	if (m_pUnitInfo->getNukeRange() != -1)
+	if (isNuke())
 		kOwner.changeNumNukeUnits(1);
 	if (m_pUnitInfo->isMilitarySupport())
 		kOwner.changeNumMilitaryUnits(1);
@@ -491,7 +491,7 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer)
 		return;
 	}
 
-	if (isMadeAttack() && nukeRange() != -1)
+	if (isMadeAttack() && isNuke())
 	{
 		CvPlot* pTarget = getAttackPlot();
 		if (pTarget != NULL)
@@ -538,7 +538,7 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer)
 	kOwner.changeUnitClassCount(eUnitClass, -1);
 	kOwner.changeExtraUnitCost(-m_pUnitInfo->getExtraCost());
 
-	if (m_pUnitInfo->getNukeRange() != -1)
+	if (isNuke())
 		kOwner.changeNumNukeUnits(-1);
 
 	if (m_pUnitInfo->isMilitarySupport())
@@ -3068,7 +3068,7 @@ bool CvUnit::canGift(bool bTestVisible, bool bTestTransport) /* advc: */ const
 	if (kRecipient.getID() == getOwner())
 		return false;
 	// <advc.143b>
-	if(m_pUnitInfo->getNukeRange() >= 0) // -1 for non-nukes
+	if (isNuke())
 		return false; // </advc.143b>
 	// <advc.034>
 	if(!GET_TEAM(getTeam()).canPeacefullyEnter(kRecipient.getTeam()))
@@ -7302,7 +7302,7 @@ bool CvUnit::canSiege(TeamTypes eTeam) const
 bool CvUnit::canCombat() const
 {
 	// avdc: Check m_pUnitInfo->isMilitaryProduction() instead?
-	return (baseCombatStr() > 0 || airBaseCombatStr() > 0 || nukeRange() >= 0);
+	return (baseCombatStr() > 0 || airBaseCombatStr() > 0 || isNuke());
 } // </kekm.8>
 
 

@@ -3571,7 +3571,7 @@ void CvTeam::setVassal(TeamTypes eMaster, bool bNewValue, bool bCapitulated)
 		{
 			FOR_EACH_UNIT_VAR(u, *it)
 			{
-				if(u->getUnitInfo().getNukeRange() >= 0) // non-nukes have -1
+				if (u->isNuke())
 					u->scrap();
 			}
 		}

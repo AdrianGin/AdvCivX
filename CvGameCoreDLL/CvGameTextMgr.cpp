@@ -679,7 +679,7 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szString, const CvUnit* pUnit,
 
 		if (!bShort)
 		{
-			if (pUnit->nukeRange() >= 0)
+			if (pUnit->isNuke())
 			{
 				szString.append(NEWLINE);
 				szString.append(gDLL->getText("TXT_KEY_UNIT_CAN_NUKE"));
@@ -8905,7 +8905,7 @@ void CvGameTextMgr::setBasicUnitHelp(CvWStringBuffer &szBuffer, UnitTypes eUnit,
 			}
 		}
 	}
-	if (u.getNukeRange() != -1)
+	if (u.isNuke())
 	{
 		szBuffer.append(NEWLINE);
 		szBuffer.append(gDLL->getText("TXT_KEY_UNIT_CAN_NUKE"));
@@ -9494,8 +9494,7 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szBuffer, UnitTypes eUnit,
 
 	if (pCity == NULL || !pCity->canTrain(eUnit))
 	{
-		if (pCity != NULL && GC.getGame().isNoNukes() &&
-			u.getNukeRange() >= 0)
+		if (pCity != NULL && GC.getGame().isNoNukes() && u.isNuke())
 		{
 			szBuffer.append(NEWLINE);
 			szBuffer.append(gDLL->getText("TXT_KEY_UNIT_NO_NUKES"));
@@ -9536,8 +9535,7 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szBuffer, UnitTypes eUnit,
 		}
 		{
 			bool bFirst = true;
-			if (u.getNukeRange() != -1 &&
-				(pCity == NULL || !GC.getGame().isNukesValid()))
+			if (u.isNuke() && (pCity == NULL || !GC.getGame().isNukesValid()))
 			{
 				FOR_EACH_ENUM(Project)
 				{
@@ -11699,7 +11697,7 @@ void CvGameTextMgr::buildBuildingRequiresString(CvWStringBuffer& szBuffer,
 	{
 		FOR_EACH_ENUM(Unit)
 		{
-			if (GC.getInfo(eLoopUnit).getNukeRange() != -1)
+			if (GC.getInfo(eLoopUnit).isNuke())
 			{
 				szBuffer.append(NEWLINE);
 				szBuffer.append(gDLL->getText("TXT_KEY_PROJECT_NO_NUKES"));
@@ -12054,7 +12052,7 @@ void CvGameTextMgr::setProjectHelp(CvWStringBuffer &szBuffer, ProjectTypes eProj
 		{
 			FOR_EACH_ENUM(Unit)
 			{
-				if (GC.getInfo(eLoopUnit).getNukeRange() != -1)
+				if (GC.getInfo(eLoopUnit).isNuke())
 				{
 					szBuffer.append(NEWLINE);
 					szBuffer.append(gDLL->getText("TXT_KEY_PROJECT_NO_NUKES"));

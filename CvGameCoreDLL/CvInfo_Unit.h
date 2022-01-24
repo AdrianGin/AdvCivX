@@ -92,6 +92,7 @@ public: /*  All const functions are exposed to Python except some related to art
 	int getAirUnitCap() const { return m_iAirUnitCap; }
 	int getDropRange() const { return m_iDropRange; }
 	int getNukeRange() const { return m_iNukeRange; }
+	bool isNuke() const { return (getNukeRange() >= 0); } // advc
 	int getWorkRate() const { return m_iWorkRate; }
 	int getBaseDiscover() const { return m_iBaseDiscover; }
 	int getDiscoverMultiplier() const { return m_iDiscoverMultiplier; }

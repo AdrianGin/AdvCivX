@@ -5255,7 +5255,7 @@ bool CvPlayer::canCreate(ProjectTypes eProject, bool bContinue, bool bTestVisibl
 		{
 			return false; // advc.opt
 			/*FOR_EACH_ENUM(Unit) {
-				if (GC.getInfo(eLoopUnit).getNukeRange() != -1)
+				if (GC.getInfo(eLoopUnit).isNuke())
 					return false;
 			}*/
 		}

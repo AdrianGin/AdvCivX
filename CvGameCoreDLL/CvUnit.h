@@ -343,6 +343,7 @@ public:
 	{
 		return m_pUnitInfo->getNukeRange();
 	}
+	bool isNuke() const { return m_pUnitInfo->isNuke(); } // advc
 
 	bool canBuildRoute() const;																				// Exposed to Python
 	DllExport BuildTypes getBuildType() const;																// Exposed to Python

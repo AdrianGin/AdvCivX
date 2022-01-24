@@ -1092,7 +1092,7 @@ int CvUnitAI::AI_sacrificeValue(const CvPlot* pPlot) const
 	if (getDomainType() == DOMAIN_AIR)
 	{
 		iValue = 128 * (100 + currInterceptionProbability());
-		if (getUnitInfo().getNukeRange() != -1)
+		if (isNuke())
 			iValue += 25000;
 		//iValue /= std::max(1, (1 + getUnitInfo().getProductionCost()));
 		// <K-Mod>
@@ -18804,7 +18804,7 @@ bool CvUnitAI::AI_airOffensiveCity()
 {
 	PROFILE_FUNC();
 
-	FAssert(canAirAttack() || nukeRange() >= 0);
+	FAssert(canAirAttack() || isNuke());
 
 	int iBestValue = 0;
 	CvPlot const* pBestPlot = NULL;
@@ -18848,8 +18848,10 @@ int CvUnitAI::AI_airOffenseBaseValue(CvPlot const& kPlot) // advc: param was CvP
 	iAttackAirCount += 2 * kPlot.plotCount(PUF_isUnitAIType, UNITAI_ICBM, -1, NO_PLAYER, getTeam());
 	if (at(kPlot))
 	{
-		iAttackAirCount += canAirAttack() ? -1 : 0;
-		iAttackAirCount += (nukeRange() >= 0) ? -2 : 0;
+		if (canAirAttack())
+			iAttackAirCount -= 1;
+		if (isNuke())
+			iAttackAirCount -= 2;
 	}
 	int iDefenders = kPlot.plotCount(PUF_canDefend, -1, -1, kPlot.getOwner(),
 			NO_TEAM, PUF_isDomainType, DOMAIN_LAND); // advc.001s

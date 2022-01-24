@@ -6033,14 +6033,15 @@ int CvCityAI::AI_defensiveBuildingValue(BuildingTypes eBuilding,
 	// <kekm.16> Replacing the line above.
 	// DarkLunaPhantom - "Bomb Shelters should be of much higher value, I copied and adjusted rough estimates from AI_projectValue()."
 	int iNukeDefense = -kBuilding.getNukeModifier();
-	if(iNukeDefense > 0)
+	if (iNukeDefense > 0)
 	{
 		int iNukeEvasionProbability = 0;
 		int iNukeUnitTypes = 0;
-		for(int i = 0; i < GC.getNumUnitInfos(); i++)
+		FOR_EACH_ENUM(Unit)
 		{
-			CvUnitInfo const& kLoopUnit = GC.getInfo((UnitTypes)i);
-			if(kLoopUnit.getNukeRange() >= 0)
+			CvUnitInfo const& kLoopUnit = GC.getInfo(eLoopUnit);
+			if (kLoopUnit.isNuke() &&
+				kLoopUnit.getProductionCost() > 0) // advc
 			{
 				iNukeEvasionProbability += kLoopUnit.getEvasionProbability();
 				iNukeUnitTypes++;
@@ -6350,7 +6351,7 @@ int CvCityAI::AI_projectValue(ProjectTypes eProject) /* advc: */ const
 			FOR_EACH_ENUM(Unit)
 			{
 				CvUnitInfo const& kLoopUnit = GC.getInfo(eLoopUnit);
-				if (kLoopUnit.getNukeRange() < 0 || kLoopUnit.getProductionCost() < 0)
+				if (!kLoopUnit.isNuke() || kLoopUnit.getProductionCost() < 0)
 					continue; // either not a unit, or not normally buildable
 				for (PlayerAIIter<CIV_ALIVE,KNOWN_TO> itLoopPlayer(kTeam.getID());
 					itLoopPlayer.hasNext(); ++itLoopPlayer)

@@ -555,7 +555,7 @@ void CvPlayerAI::AI_doTurnUnitsPost()
 						pLastUpgradePlot = &kUnitPlot;
 					}
 					// <advc.650>
-					if(GC.getInfo(pLoopUnit->getUnitType()).getNukeRange() >= 0)
+					if (pLoopUnit->isNuke())
 						bValid = false; // </advc.650>
 					// try to upgrade units which are in danger... but don't get obsessed
 					if (!bValid && pLastUpgradePlot != &kUnitPlot &&
@@ -11442,7 +11442,7 @@ int CvPlayerAI::AI_baseBonusUnitVal(BonusTypes eBonus, UnitTypes eUnit,
 	}
 	/*	<advc.650> Having access to at least a few nukes is very valuable.
 		The XML power values can't capture that sufficiently. */
-	else if (kUnit.getNukeRange() > 0 && getNumNukeUnits() * 2 < getNumCities())
+	else if (kUnit.isNuke() && getNumNukeUnits() * 2 < getNumCities())
 	{
 		iValue = (iValue * 3) / 2; 
 	} // </advc.650>
@@ -13354,7 +13354,7 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI,
 			break;
 
 		case UNITAI_ICBM:
-			if (u.getNukeRange() != -1)
+			if (u.isNuke())
 				bValid = true;
 			break;
 
@@ -13898,7 +13898,7 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI,
 		break;
 
 	case UNITAI_ICBM:
-		if (u.getNukeRange() != -1)
+		if (u.isNuke())
 		{
 			/*iTempValue = 40 + (u.getNukeRange() * 40);
 			if (u.getAirRange() == 0)
@@ -24725,7 +24725,7 @@ void CvPlayerAI::AI_updateStrategyHash()
 		{
 			bHasBomber = true;
 		}
-		if (kLoopUnit.getNukeRange() > 0)
+		if (kLoopUnit.isNuke())
 			iNukeCount++;
 	}
 

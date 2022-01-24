@@ -285,7 +285,7 @@ bool MilitaryBranch::canEmploy(UnitTypes eUnit) const
 void MilitaryBranch::reportUnit(UnitTypes eUnit, int iChange)
 {
 	// (Calling canEmploy could cause unitPower to be called twice)
-	if ((GC.getInfo(eUnit).getCombat() > 0 || GC.getInfo(eUnit).getNukeRange() >= 0) &&
+	if ((GC.getInfo(eUnit).getCombat() > 0 || GC.getInfo(eUnit).isNuke()) &&
 		isValidDomain(eUnit))
 	{
 		scaled rPowChange = unitPower(eUnit, false);
@@ -418,7 +418,7 @@ scaled MilitaryBranch::Army::unitPower(UnitTypes eUnit, bool bModify) const
 {
 	CvUnitInfo const& kUnit = GC.getInfo(eUnit);
 	// (Do include nukes in army)
-	/*if (kUnit.getNukeRange() >= 0)
+	/*if (kUnit.isNuke())
 		return -1;*/
 	scaled rBasePow = kUnit.getPowerValue();
 	if (bModify)
@@ -481,8 +481,8 @@ scaled MilitaryBranch::Logistics::unitPower(UnitTypes eUnit, bool bModify) const
 scaled MilitaryBranch::NuclearArsenal::unitPower(UnitTypes eUnit, bool bModify) const
 {
 	CvUnitInfo const& kUnit = GC.getInfo(eUnit);
-	if (kUnit.getNukeRange() < 0)
-		return -1; // I.e. disregard non-nuke units
+	if (!kUnit.isNuke())
+		return -1; // Disregard non-nuke units
 	scaled rBasePow = kUnit.getPowerValue();
 	/*	bModify should only be used for picking the typical unit. Make sure
 		that ICBM gets chosen over TN despite costing twice as much b/c the
