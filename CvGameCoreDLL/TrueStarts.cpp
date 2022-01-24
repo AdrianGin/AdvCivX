@@ -53,6 +53,9 @@ TrueStarts::TrueStarts()
 	m_bBonusesIgnoreLatitude = (!m_bMapHasLatitudes ||
 			GC.getPythonCaller()->isBonusIgnoreLatitude());
 	m_bBalancedResources = kMap.isCustomMapOption("Balanced");
+	/*	Don't focus on the initial human player when
+		any civ may come under human control later on */
+	m_bPrioritizeHumans = !GC.getGame().isOption(GAMEOPTION_RISE_FALL);
 	m_iMaxLatitudeDiffTimes10 = CvTruCivInfo::maxLatitude()
 			- CvTruCivInfo::minLatitude();
 	if (kMap.isWrapY())
@@ -974,10 +977,10 @@ void TrueStarts::changeCivs()
 		}
 		// Prioritize the most difficult player (worst fit)
 		int iPriority = -iBestFitVal;
-		// Prioritize humans and players near them
-		if (itPlayer->isHuman())
-			iPriority += 1000; // absolute priority
+		if (m_bPrioritizeHumans)
 		{
+			if (itPlayer->isHuman())
+				iPriority += 1000; // absolute priority
 			scaled rMinDistHuman = 1;
 			for (PlayerIter<HUMAN> itHuman; itHuman.hasNext(); ++itHuman)
 			{
@@ -1420,7 +1423,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				if (iCivLatitudeTimes10 * iLoopLatitudeTimes10 < 0)
 					iErrorPercent = std::max(iErrorPercent, iMaxErr + 5);
 			}
-			if (GET_PLAYER(perPlayerVal.first).isHuman())
+			if (GET_PLAYER(perPlayerVal.first).isHuman() && m_bPrioritizeHumans)
 				iErrorPercent *= 2;
 			iAvgDistErrorPercent += iErrorPercent;
 			IFLOG logBBAI("Dist error for %S: %d pts. (plot dist %d percent, geo dist %d percent)",
@@ -1472,7 +1475,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				int iMult = 1;
 				if (TEAMID(perPlayerVal.first) == kPlayer.getTeam())
 					iMult += 1;
-				if (GET_PLAYER(perPlayerVal.first).isHuman())
+				if (GET_PLAYER(perPlayerVal.first).isHuman() && m_bPrioritizeHumans)
 					iMult += 1;
 				iPlus *= iMult;
 				iPlus += iFixed;
@@ -2208,8 +2211,7 @@ scaled TrueStarts::calcBonusFitness(CvPlot const& kPlot,
 		scaled rWeight = kPlayerWeights.get(itPlayer->getID());
 		if (rWeight <= 0) // Save time, don't pollute log.
 			continue;
-		// Try harder to make human starts fit well
-		if (itPlayer->isHuman())
+		if (itPlayer->isHuman() && m_bPrioritizeHumans)
 			rWeight *= fixp(4/3.);
 		IFLOG logBBAI("Fitness weight of %S for %S (%d,%d): %d percent",
 				itPlayer->getName(), GC.getInfo(eBonus).getDescription(),
@@ -2309,7 +2311,7 @@ scaled TrueStarts::calcBonusSwapUtil(
 	}
 	EagerEnumMap<PlayerTypes,scaled> aerPlayerWeights;
 	setPlayerWeightsPerPlot(pDestOfSecond->plotNum(), aerPlayerWeights,
-			2); // double weight for humans
+			m_bPrioritizeHumans ? 2 : 1);
 	scaled rFirstFitnessAfterSwap = calcBonusFitness(
 			*pDestOfSecond, aerPlayerWeights, kSecondPlot.getBonusType(), bLog);
 	setPlayerWeightsPerPlot(pDestOfFirst->plotNum(), aerPlayerWeights);
