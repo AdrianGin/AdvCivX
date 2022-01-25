@@ -8065,8 +8065,7 @@ bool CvPlot::canTrain(UnitTypes eUnit, bool bContinue, bool bTestVisible,
 	// <advc.001b>
 	if (bCheckAirUnitCap &&
 		GC.getDefineBOOL(CvGlobals::CAN_TRAIN_CHECKS_AIR_UNIT_CAP) &&
-		kUnit.getAirUnitCap() > 0 &&
-		airUnitSpaceAvailable(getTeam()) < 1)
+		airUnitSpaceAvailable(getTeam()) < kUnit.getAirUnitCap())
 	{
 		return false;
 	} // </advc.001b>

@@ -2346,10 +2346,11 @@ bool CvUnit::canMoveInto(CvPlot const& kPlot, bool bAttack, bool bDeclareWar,
 		if (!kPlot.isWater() && isRevealedPlotValid(kPlot))
 		{
 			bValid = true;
-			if (m_pUnitInfo->getAirUnitCap() > 0)
+			// <advc.001b> Support AirUnitCap > 1
+			if (kPlot.airUnitSpaceAvailable(kOurTeam.getID()) <
+				m_pUnitInfo->getAirUnitCap()) // </advc.001b>
 			{
-				if (kPlot.airUnitSpaceAvailable(kOurTeam.getID()) <= 0)
-					bValid = false;
+				bValid = false;
 			}
 		}
 		if (!bValid)
@@ -3284,11 +3285,9 @@ bool CvUnit::shouldLoadOnMove(const CvPlot* pPlot) const
 		//if (!pPlot->isFriendlyCity(*this, true))
 		if (!GET_TEAM(getTeam()).isRevealedAirBase(*pPlot)) // advc
 			return true;
-		if (m_pUnitInfo->getAirUnitCap() > 0)
-		{
-			if (pPlot->airUnitSpaceAvailable(getTeam()) <= 0)
-				return true;
-		}
+		// advc.001b: Support AirUnitCap > 1
+		if (pPlot->airUnitSpaceAvailable(getTeam()) < m_pUnitInfo->getAirUnitCap())
+			return true;
 		break;
 	}
 
