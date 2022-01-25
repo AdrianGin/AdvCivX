@@ -1943,11 +1943,11 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct,
 	szBuffer.assign(szTemp);
 	CvDLLInterfaceIFaceBase& kUI = *gDLL->getInterfaceIFace(); // advc
 
-	CvUnit* pHeadSelectedUnit = kUI.getHeadSelectedUnit();
+	CvUnit const* pHeadSelectedUnit = kUI.getHeadSelectedUnit();
 	if (pHeadSelectedUnit != NULL)
 	{
 		MissionTypes eMission = (MissionTypes)kAction.getMissionType();
-		if(eMission != NO_MISSION)
+		if (eMission != NO_MISSION)
 		{
 			// advc: Moved into subroutine
 			parseActionHelp_Mission(kAction, *pHeadSelectedUnit, eMission, szBuffer);

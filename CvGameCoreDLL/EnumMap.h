@@ -6,7 +6,7 @@ class FDataStreamBase;
 
 /*	Classes that map an enum key type E to a value type V.
 	Based on Nightinggale's EnumMap class template in the "We the People" mod
-	(WtP) prior to its Jan 2021 rewrite.
+	(WtP) prior to its Jan 2022 rewrite.
 	Internally, keys and values may be represented more compactly through
 	information from the enum_traits struct. For V, a compact representation
 	can be set through an optional class template parameter CV. V can be any type
