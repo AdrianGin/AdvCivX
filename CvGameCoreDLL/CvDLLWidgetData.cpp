@@ -2034,11 +2034,18 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct,
 				}
 			}
 			CvCommandInfo const& kCommand = GC.getInfo((CommandTypes)kAction.getCommandType());
+			CommandTypes const eCommand = (CommandTypes)kAction.getCommandType();
+			CvCommandInfo const& kCommand = GC.getInfo(eCommand);
 			if (kCommand.getAll())
 				szBuffer.append(gDLL->getText("TXT_KEY_ACTION_ALL_UNITS"));
 
-			if (!CvWString(kCommand.getHelp()).empty())
-			{
+			if (!CvWString(kCommand.getHelp()).empty() &&
+				// <advc.004> Don't explain these details if we can't do it anyway
+				(kUI.getSelectionList() == NULL ||
+				kUI.getSelectionList()->canDoCommand(eCommand,
+				// If we do know any command data, it'll have to be this.
+				widgetDataStruct.m_iData2, -1)))
+			{	// </advc.004>
 				szBuffer.append(NEWLINE);
 				// <advc.004g>
 				if(kAction.getCommandType() == COMMAND_LOAD && pHeadSelectedUnit != NULL &&
