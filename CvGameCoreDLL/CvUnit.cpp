@@ -3065,7 +3065,7 @@ bool CvUnit::canGift(bool bTestVisible, bool bTestTransport) /* advc: */ const
 	if (!kPlot.isOwned())
 		return false;
 
-	CvPlayerAI const& kRecipient = GET_PLAYER(kPlot.getOwner()); // advc
+	CvPlayerAI const& kRecipient = GET_PLAYER(kPlot.getOwner());
 	if (kRecipient.getID() == getOwner())
 		return false;
 	// <advc.143b>
@@ -3074,51 +3074,54 @@ bool CvUnit::canGift(bool bTestVisible, bool bTestTransport) /* advc: */ const
 	// <advc.034>
 	if(!GET_TEAM(getTeam()).canPeacefullyEnter(kRecipient.getTeam()))
 		return false; // </advc.034>
-	if (kPlot.isVisibleEnemyUnit(kRecipient.getID()))
+	if (!bTestVisible && // advc.093
+		(kPlot.isVisibleEnemyUnit(kRecipient.getID()) ||
+		kPlot.isVisibleEnemyUnit(this)))
+	{
 		return false;
-	if (kPlot.isVisibleEnemyUnit(this))
-		return false;
-	CvUnit const* pTransport = getTransportUnit();
-	if (pTransport == NULL)
-	{
-		//if (!kPlot.isValidDomainForLocation(*this))
-		if (!isRevealedValidDomain(kPlot)) // advc
-			return false;
 	}
-	else if (bTestTransport)
 	{
-		//if (pTransport->getTeam() != kRecipient.getTeam())
-		if (!pTransport->isRevealedValidDomain(kPlot)) // advc
-			return false;
-	}
-
-	if (!bTestVisible)
-	{
-		if (GET_TEAM(kRecipient.getTeam()).isUnitClassMaxedOut(
-			getUnitClassType(), GET_TEAM(kRecipient.getTeam()).
-			getUnitClassMaking(getUnitClassType())))
+		CvUnit const* pTransport = getTransportUnit();
+		if (pTransport == NULL)
 		{
-			return false;
+			//if (!kPlot.isValidDomainForLocation(*this))
+			if (!isRevealedValidDomain(kPlot)) // advc
+				return false;
 		}
-
-		if (kRecipient.isUnitClassMaxedOut(getUnitClassType(),
-			kRecipient.getUnitClassMaking(getUnitClassType())))
+		else if (bTestTransport)
 		{
-			return false;
+			//if (pTransport->getTeam() != kRecipient.getTeam())
+			if (!pTransport->isRevealedValidDomain(kPlot)) // advc
+				return false;
 		}
-
-		if (!kRecipient.AI_acceptUnit(*this))
+	}
+	/*	advc.093: UnitClassMaking checks moved into AI_acceptUnit,
+		i.e human recipients are exempted from that. */
+	if (GET_TEAM(kRecipient.getTeam()).isUnitClassMaxedOut(getUnitClassType()) ||
+		kRecipient.isUnitClassMaxedOut(getUnitClassType()) ||
+		// <advc.001b> Enforce limit
+		kPlot.airUnitSpaceAvailable(kRecipient.getTeam()) <
+		m_pUnitInfo->getAirUnitCap()) // </advc.001b>
+	{
+		if (!bTestVisible)
 			return false;
 	}
-
 	/* <advc.123a> Disallow gifting of missionaries that don't match the
 	   (intolerant) state religion. */
-	ReligionTypes eRecipientReligion = kRecipient.getStateReligion();
-	if(eRecipientReligion != NO_RELIGION && AI_getUnitAIType() == UNITAI_MISSIONARY &&
-		kRecipient.isNoNonStateReligionSpread() &&
-		eRecipientReligion != m_pUnitInfo->getReligionType())
+	if (AI_getUnitAIType() == UNITAI_MISSIONARY &&
+		!bTestVisible && kRecipient.isNoNonStateReligionSpread())
 	{
-		return false;
+		ReligionTypes eRecipientReligion = kRecipient.getStateReligion();
+		FOR_EACH_ENUM(Religion)
+		{
+			if (m_pUnitInfo->getReligionSpreads(eLoopReligion) <= 0)
+				continue;
+			if (eRecipientReligion != NO_RELIGION &&
+				eRecipientReligion != eLoopReligion)
+			{
+				return false;
+			}
+		}
 	} // <kekm.4>
 	std::vector<CvUnit*> apCargoUnits;
 	getCargoUnits(apCargoUnits);
@@ -3127,21 +3130,23 @@ bool CvUnit::canGift(bool bTestVisible, bool bTestTransport) /* advc: */ const
 		if(!apCargoUnits[i]->canGift(false, false))
 			return false; // </kekm.4>
 	} // </advc.123a>
-
-	// advc.opt: Moved down (check all the one-liners first)
-	FOR_EACH_ENUM(Corporation)
-	{
-		if (m_pUnitInfo->getCorporationSpreads(eLoopCorporation) > 0)
-			return false;
+	if (!bTestVisible) // advc.093
+	{	// advc.opt: Moved down
+		FOR_EACH_ENUM(Corporation)
+		{
+			if (m_pUnitInfo->getCorporationSpreads(eLoopCorporation) > 0)
+				return false;
+		}
 	}
-
 	// <advc.705>
-	CvGame const& kGame = GC.getGame();
-	if(kGame.isOption(GAMEOPTION_RISE_FALL) && isHuman() &&
-		kGame.getRiseFall().isCooperationRestricted(kRecipient.getID()))
+	if (GC.getGame().isOption(GAMEOPTION_RISE_FALL) && !bTestVisible && isHuman() &&
+		GC.getGame().getRiseFall().isCooperationRestricted(kRecipient.getID()))
 	{
 		return false;
 	} // </advc.705>
+	// advc.093: Moved down - give away AI internals last.
+	if (!bTestVisible && !kRecipient.AI_acceptUnit(*this))
+		return false;
 	//return !::atWar(kRecipient.getTeam(), getTeam());
 	return true; // advc.034: OB implies no war
 }

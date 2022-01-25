@@ -2005,35 +2005,95 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct,
 				szTempBuffer.Format(L"%s%d %c", NEWLINE, iPrice, GC.getInfo(COMMERCE_GOLD).getChar());
 				szBuffer.append(szTempBuffer);
 			}
-			else if (kAction.getCommandType() == COMMAND_GIFT)
+			else if (kAction.getCommandType() == COMMAND_GIFT &&
+				pHeadSelectedUnit->getPlot().isOwned())
 			{
-				PlayerTypes eGiftPlayer = pHeadSelectedUnit->getPlot().getOwner();
-
-				if (eGiftPlayer != NO_PLAYER)
+				CvPlot const& kGiftPlot = pHeadSelectedUnit->getPlot();
+				PlayerTypes const eRecipient = kGiftPlot.getOwner();
+				CvPlayerAI const& kRecipient = GET_PLAYER(eRecipient);
+				szBuffer.append(NEWLINE);
+				szBuffer.append(gDLL->getText("TXT_KEY_ACTION_GOES_TO_CIV"));
+				szTempBuffer.Format(SETCOLR L"%s" ENDCOLR, PLAYER_TEXT_COLOR(kRecipient),
+						kRecipient.getCivilizationShortDescription());
+				szBuffer.append(szTempBuffer);
+				for (CLLNode<IDInfo> const* pNode = kUI.headSelectionListNode();
+					pNode != NULL; pNode = kUI.nextSelectionListNode(pNode))
 				{
-					szBuffer.append(NEWLINE);
-					szBuffer.append(gDLL->getText("TXT_KEY_ACTION_GOES_TO_CIV"));
-
-					szTempBuffer.Format(SETCOLR L"%s" ENDCOLR,
-							PLAYER_TEXT_COLOR(GET_PLAYER(eGiftPlayer)),
-							GET_PLAYER(eGiftPlayer).getCivilizationShortDescription());
-					szBuffer.append(szTempBuffer);
-
-					for (CLLNode<IDInfo> const* pNode = kUI.headSelectionListNode();
-						pNode != NULL; pNode = kUI.nextSelectionListNode(pNode))
+					CvUnit const& kSelectedUnit = *::getUnit(pNode->m_data);
+					// <advc.093> Check this upfront, then look into the specific reason.
+					if (kSelectedUnit.canGift())
+						continue;
+					szBuffer.append(NEWLINE); // </advc.093>
+					// <advc.705>
+					if (GC.getGame().isOption(GAMEOPTION_RISE_FALL) &&
+						GC.getGame().getRiseFall().isCooperationRestricted(eRecipient))
 					{
-						CvUnit const& kSelectedUnit = *::getUnit(pNode->m_data);
-						if (!GET_PLAYER(eGiftPlayer).AI_acceptUnit(kSelectedUnit))
+						szBuffer.append(gDLL->getText("TXT_KEY_REFUSE_GIFT_RF",
+								kRecipient.getNameKey()));
+						break;
+					} // </advc.705>
+					// <advc.093>
+					if (kGiftPlot.isVisibleEnemyUnit(eRecipient) ||
+						kGiftPlot.isVisibleEnemyUnit(pHeadSelectedUnit->getOwner()))
+					{
+						szBuffer.append(gDLL->getText("TXT_KEY_GIFT_NO_ENEMY"));
+						break;
+					} // </advc.093>
+					// <advc.123a>
+					if (kSelectedUnit.AI_getUnitAIType() == UNITAI_MISSIONARY &&
+						kRecipient.isNoNonStateReligionSpread())
+					{
+						ReligionTypes eRecipientReligion = kRecipient.
+								getStateReligion();
+						FOR_EACH_ENUM(Religion)
 						{
-							szBuffer.append(NEWLINE);
-							szBuffer.append(gDLL->getText("TXT_KEY_REFUSE_GIFT",
-									GET_PLAYER(eGiftPlayer).getNameKey()));
+							if (kSelectedUnit.getUnitInfo().
+								getReligionSpreads(eLoopReligion) <= 0)
+							{
+								continue;
+							}
+							if (eRecipientReligion != NO_RELIGION &&
+								eLoopReligion != NO_RELIGION &&
+								eRecipientReligion != eLoopReligion)
+							{
+								szBuffer.append(gDLL->getText("TXT_KEY_GIFT_NO_MISSIONARY",
+										GC.getInfo(eRecipientReligion).getChar(),
+										kRecipient.getNameKey()));
+								break;
+							}
+						}
+					} // </advc.123a>
+					// <advc.093>
+					{
+						bool bAnyCorpSpread = false;
+						FOR_EACH_ENUM(Corporation)
+						{
+							if (kSelectedUnit.getUnitInfo().getCorporationSpreads(
+								eLoopCorporation) > 0)
+							{
+								bAnyCorpSpread = true;
+								break;
+							}
+						}
+						if (bAnyCorpSpread)
+						{
+							szBuffer.append(gDLL->getText("TXT_KEY_GIFT_NO_EXECUTIVE"));
 							break;
 						}
+					} // </advc.093>
+					// (The only case that BtS had explained to the player)
+					if (!kRecipient.AI_acceptUnit(kSelectedUnit))
+					{
+						szBuffer.append(gDLL->getText("TXT_KEY_REFUSE_GIFT",
+								kRecipient.getNameKey()));
+						break;
 					}
+					// <advc.093> Catch-all answer (future-proofing)
+					szBuffer.append(gDLL->getText("TXT_KEY_MUST_REFUSE_GIFT",
+							kRecipient.getNameKey()));
+					break; // </advc.093>
 				}
 			}
-			CvCommandInfo const& kCommand = GC.getInfo((CommandTypes)kAction.getCommandType());
 			CommandTypes const eCommand = (CommandTypes)kAction.getCommandType();
 			CvCommandInfo const& kCommand = GC.getInfo(eCommand);
 			if (kCommand.getAll())

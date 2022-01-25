@@ -7243,4 +7243,48 @@
 		<Spanish>por</Spanish>
 	</TEXT>
 
+	<!-- advc.093: Based on TXT_KEY_REFUSE_GIFT in CIV4GameText_Misc1.xml -->
+	<TEXT>
+		<Tag>TXT_KEY_MUST_REFUSE_GIFT</Tag>
+		<English>[COLOR_WARNING_TEXT]%s1_Leader cannot accept the gift.[COLOR_REVERT]</English>
+		<French>[COLOR_WARNING_TEXT]%s1_Leader ne peut pas accepter ce pr&#233;sent.[COLOR_REVERT]</French>
+		<German>[COLOR_WARNING_TEXT]%s1_Leader kann die Schenkung nicht annehmen.[COLOR_REVERT]</German>
+		<Italian>[COLOR_WARNING_TEXT]%s1_Leader non puo accettare il dono[COLOR_REVERT].</Italian>
+		<Spanish>[COLOR_WARNING_TEXT]%s1_Leader no puede aceptar el regalo.[COLOR_REVERT]</Spanish>
+	</TEXT>
+	<!-- (This'll work also if the rules are tightened to disallow gifts
+		 in plots adjacent to enemy units.) -->
+	<TEXT>
+		<Tag>TXT_KEY_GIFT_NO_ENEMY</Tag>
+		<English>[COLOR_WARNING_TEXT]Cannot gift units when enemies are nearby.[COLOR_REVERT]</English>
+		<French>[COLOR_WARNING_TEXT]On ne peut pas donner des unités lorsque des ennemis sont à proximité.[COLOR_REVERT]</French>
+		<German>[COLOR_WARNING_TEXT]Einheiten können nicht in der Nähe feindlicher Einheiten verschenkt werden.[COLOR_REVERT]</German>
+		<Italian>[COLOR_WARNING_TEXT]Non si può regalare unità quando i nemici sono vicini.[COLOR_REVERT].</Italian>
+		<Spanish>[COLOR_WARNING_TEXT]No se pueden regalar unidades cuando existen enemigos cerca.[COLOR_REVERT]</Spanish>
+	</TEXT>
+	<!-- Terminology from TXT_KEY_MISSION_SPREAD_CORPORATION -->
+	<TEXT>
+		<Tag>TXT_KEY_GIFT_NO_EXECUTIVE</Tag>
+		<English>[COLOR_WARNING_TEXT]Cannot gift units that Expand Corporations.[COLOR_REVERT]</English>
+		<French>[COLOR_WARNING_TEXT]On ne peut pas donner des unités qui développent les sociétés.[COLOR_REVERT]</French>
+		<German>[COLOR_WARNING_TEXT]Einheiten zur Expansion von Kapitalgesellschaften können nicht verschenkt werden.[COLOR_REVERT]</German>
+		<Italian>[COLOR_WARNING_TEXT]Non si possono regalare unità che espandono le corporazioni.[COLOR_REVERT].</Italian>
+		<Spanish>[COLOR_WARNING_TEXT]No se pueden regalar unidades que expanden las corporaciones.[COLOR_REVERT]</Spanish>
+	</TEXT>
+	<!-- advc.123a -->
+	<TEXT>
+		<Tag>TXT_KEY_GIFT_NO_MISSIONARY</Tag>
+		<English>[COLOR_WARNING_TEXT]Only %F1_RelIcon can be spread in cities of %s2_Leader.[COLOR_REVERT]</English>
+		<French>[COLOR_WARNING_TEXT]Seul %F1_RelIcon peut être diffusé dans les villes de %s2_Leader.[COLOR_REVERT]</French>
+		<German>[COLOR_WARNING_TEXT]Nur %F1_RelIcon kann im Gebiet von %s2_Leader verbreitet werden.[COLOR_REVERT]</German>
+		<Italian>[COLOR_WARNING_TEXT]Solo %F1_RelIcon può essere diffuso nelle città di %s2_Leader.</Italian>
+		<Spanish>[COLOR_WARNING_TEXT]Sólo %F1_RelIcon puede ser difundido en las ciudades de %s2_Leader.[COLOR_REVERT]</Spanish>
+	</TEXT>
+	<!-- advc.705 -->
+	<TEXT>
+		<Tag>TXT_KEY_REFUSE_GIFT_RF</Tag>
+		<English>[COLOR_WARNING_TEXT]The R&#038;F option prevents gifts to %s1_Leader.[COLOR_REVERT]</English>
+		<German>[COLOR_WARNING_TEXT]%s1_Leader kann keine Geschenke von Ihnen annehmen.[COLOR_REVERT]</German>
+	</TEXT>
+
 </Civ4GameText>

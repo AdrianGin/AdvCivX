@@ -2091,7 +2091,14 @@ bool CvPlayerAI::AI_acceptUnit(CvUnit const& kUnit) const
 {
 	if (isHuman())
 		return true;
-
+	// <advc.093> Moved from CvUnit::canGift
+	if (isUnitClassMaxedOut(kUnit.getUnitClassType(),
+		GET_TEAM(getTeam()).getUnitClassMaking(kUnit.getUnitClassType())) ||
+		isUnitClassMaxedOut(kUnit.getUnitClassType(),
+		getUnitClassMaking(kUnit.getUnitClassType())))
+	{
+		return false;
+	} // </advc.093>
 	if (AI_isFinancialTrouble())
 	{
 		if (kUnit.AI_getUnitAIType() == UNITAI_WORKER)
