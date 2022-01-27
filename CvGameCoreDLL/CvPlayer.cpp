@@ -18815,7 +18815,7 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 		pItem->m_bHidden = false;
 
 		// Don't show peace treaties when not at war
-		if (!::atWar(getTeam(), GET_PLAYER(eOtherPlayer).getTeam()))
+		if (!::atWar(getTeam(), TEAMID(eOtherPlayer)))
 		{
 			if (pItem->m_eItemType == TRADE_PEACE_TREATY ||
 				pItem->m_eItemType == TRADE_SURRENDER)
@@ -18939,6 +18939,12 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 		{
 			if (pItem->m_eItemType == TRADE_PEACE_TREATY)
 			{
+				/*	Only manipulate peace treaties added by an earlier call to
+					updateTradeList, not those added to AI pleas and demands
+					(CvPlayerAI) by advc.104m. */
+				// I guess the EXE sets it to 0 somehow? Weird, default is -1.
+				if (pItem->m_iData <= 0)
+					return;
 				FAssert(!abPeaceTreatyFound[i]);
 				abPeaceTreatyFound[i] = true;
 			}
@@ -18961,7 +18967,7 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 			}
 		}
 	}
-	bool bPeaceTreatyNeeded = (eForcePeaceItemType != NO_TRADE_ITEM);
+	bool const bPeaceTreatyNeeded = (eForcePeaceItemType != NO_TRADE_ITEM);
 	if (!abPeaceTreatyFound[0] && !abPeaceTreatyFound[1] && !bPeaceTreatyNeeded)
 		return;
 	/*	kOurOffer and kTheirOffer are most likely not really const objects.
