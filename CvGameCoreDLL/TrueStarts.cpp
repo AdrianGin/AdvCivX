@@ -1429,7 +1429,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			IFLOG logBBAI("Dist error for %S: %d pts. (plot dist %d percent, geo dist %d percent)",
 					GC.getInfo(perPlayerVal.second).getShortDescription(), iErrorPercent, iDistPercent, iGeoDistPercent);
 		}
-		scaled rAvgDistErrorPenalty = iAvgDistErrorPercent * fixp(0.61);
+		scaled rAvgDistErrorPenalty = iAvgDistErrorPercent * fixp(0.72);
 		if (iOtherPlayers > 0)
 		{
 			/*	Not quite an average (that would be pow(1)). I do want distances
