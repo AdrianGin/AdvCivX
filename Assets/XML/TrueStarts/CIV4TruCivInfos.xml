@@ -11,8 +11,9 @@
 			<iLatitudeTimes10>389</iLatitudeTimes10>
 			<iLongitudeTimes10>-770</iLongitudeTimes10>
 			<iPrecipitation>1062</iPrecipitation>
-			<!-- The 13 Colonies weren't all that diverse -->
-			<iClimateVariation>45</iClimateVariation>
+			<!-- The 13 Colonies weren't all that diverse,
+				 especially not wrt. precipitation. -->
+			<iClimateVariation>35</iClimateVariation>
 			<iOceanity>35</iOceanity>
 			<!-- Considering only the Northeast here -->
 			<iMaxElevation>1917</iMaxElevation>
@@ -38,7 +39,7 @@
 			<iLatitudeTimes10>250</iLatitudeTimes10>
 			<iLongitudeTimes10>400</iLongitudeTimes10>
 			<iPrecipitation>111</iPrecipitation>
-			<iClimateVariation>10</iClimateVariation>
+			<iClimateVariation>15</iClimateVariation>
 			<iOceanity>30</iOceanity>
 			<!-- Leave desert rivers to the civs that need them -->
 			<iMajorRiverWeight>-40</iMajorRiverWeight>
@@ -93,7 +94,7 @@
 			<iLatitudeTimes10>410</iLatitudeTimes10>
 			<iLongitudeTimes10>290</iLongitudeTimes10>
 			<iPrecipitation>850</iPrecipitation>
-			<iClimateVariation>60</iClimateVariation>
+			<iClimateVariation>50</iClimateVariation>
 			<iOceanity>45</iOceanity>
 			<!-- Avoid occupying a desert river -->
 			<iMajorRiverWeight>-40</iMajorRiverWeight>
@@ -159,7 +160,7 @@
 			<iPrecipitation>543</iPrecipitation>
 			<!-- The Northeastern Plain is in itself not extremely varied.
 				 Don't want large desert or jungle too close to starting plot. -->
-			<iClimateVariation>61</iClimateVariation>
+			<iClimateVariation>60</iClimateVariation>
 			<iOceanity>10</iOceanity>
 			<iMajorRiverWeight>40</iMajorRiverWeight>
 			<!-- Mt. Taibai - stick to Eastern China. -->
@@ -179,7 +180,7 @@
 			<iLongitudeTimes10>310</iLongitudeTimes10>
 			<!-- Thebes is extremely dry -->
 			<iPrecipitation>1</iPrecipitation>
-			<iClimateVariation>10</iClimateVariation>
+			<iClimateVariation>15</iClimateVariation>
 			<iOceanity>25</iOceanity>
 			<iMajorRiverWeight>100</iMajorRiverWeight>
 			<iMaxElevation>2629</iMaxElevation>
@@ -188,9 +189,9 @@
 			<iTotalArea>1010</iTotalArea>
 			<!-- Ideally along some river, but vertically stretched is
 				 somewhat important too. Egypt connects the tropics with
-				 the temperate zone. -->
+				 the Mediterranean. -->
 			<iHStretch>50</iHStretch>
-			<iBias>6</iBias>
+			<iBias>4</iBias>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -339,7 +340,7 @@
 				 and the game can't treat those as being as wet as Jungle.
 				 So we'll go with a lower target value. -->
 			<iPrecipitation>1335</iPrecipitation>
-			<iClimateVariation>35</iClimateVariation>
+			<iClimateVariation>30</iClimateVariation>
 			<iOceanity>77</iOceanity>
 			<iMaxElevation>3776</iMaxElevation>
 			<iMountainousArea>50</iMountainousArea>
@@ -369,7 +370,7 @@
 			<iLongitudeTimes10>1269</iLongitudeTimes10>
 			<!-- Mean of Seoul and Pyongyang -->
 			<iPrecipitation>1165</iPrecipitation>
-			<iClimateVariation>55</iClimateVariation>
+			<iClimateVariation>50</iClimateVariation>
 			<iOceanity>70</iOceanity>
 			<iMaxElevation>2744</iMaxElevation>
 			<iMountainousArea>35</iMountainousArea>	
@@ -383,7 +384,7 @@
 			<iLatitudeTimes10>168</iLatitudeTimes10>
 			<iLongitudeTimes10>30</iLongitudeTimes10>
 			<iPrecipitation>183</iPrecipitation>
-			<iClimateVariation>45</iClimateVariation>
+			<iClimateVariation>55</iClimateVariation>
 			<iOceanity>3</iOceanity>
 			<iMaxElevation>1155</iMaxElevation>
 			<iMountainousArea>7</iMountainousArea>
@@ -444,7 +445,7 @@
 				 in the game. The western Great Plains, where Sitting Bull
 				 comes from, are drier, e.g. 707 at Sioux Falls. -->
 			<iPrecipitation>930</iPrecipitation>
-			<iClimateVariation>48</iClimateVariation>
+			<iClimateVariation>45</iClimateVariation>
 			<iOceanity>4</iOceanity>
 			<!-- Mississippi, but riverless plains works too. -->
 			<iMajorRiverWeight>5</iMajorRiverWeight>
@@ -475,7 +476,7 @@
 			<iLatitudeTimes10>410</iLatitudeTimes10>
 			<iLongitudeTimes10>290</iLongitudeTimes10>
 			<iPrecipitation>850</iPrecipitation>
-			<iClimateVariation>60</iClimateVariation>
+			<iClimateVariation>50</iClimateVariation>
 			<iOceanity>45</iOceanity>
 			<iMajorRiverWeight>-40</iMajorRiverWeight>
 			<!-- (see Byzantium) -->
@@ -498,6 +499,12 @@
 			<iPrecipitation>306</iPrecipitation>
 			<iClimateVariation>60</iClimateVariation>
 			<iOceanity>22</iOceanity>
+			<!-- We have the Karun, Amu and Syr for which Desert Floodplains
+				 work well, but the former is pretty short and the latter two
+				 are far from the core. Should really prefer a desert civ
+				 when there's a major desert river, and, in these latitudes,
+				 rivers are likely to have some desert tiles. -->
+			<iMajorRiverWeight>-35</iMajorRiverWeight>
 			<iMaxElevation>5610</iMaxElevation>
 			<iMountainousArea>50</iMountainousArea>
 			<!-- Iran -->
@@ -541,7 +548,7 @@
 			<iLongitudeTimes10>376</iLongitudeTimes10>
 			<iPrecipitation>713</iPrecipitation>
 			<!-- The Eastern Plain is as boring as it gets -->
-			<iClimateVariation>40</iClimateVariation>
+			<iClimateVariation>38</iClimateVariation>
 			<iOceanity>5</iOceanity>
 			<!-- Would prefer to consider only the Eastern Plain here
 				 (highest elevation 347 m), but such flatness rarely occurs
@@ -564,7 +571,7 @@
 			<iLongitudeTimes10>-40</iLongitudeTimes10>
 			<!-- 423 in Madrid, but 650 across the country. -->
 			<iPrecipitation>530</iPrecipitation>
-			<iClimateVariation>65</iClimateVariation>
+			<iClimateVariation>62</iClimateVariation>
 			<iOceanity>30</iOceanity>
 			<iMaxElevation>3479</iMaxElevation>
 			<iMountainousArea>60</iMountainousArea>
