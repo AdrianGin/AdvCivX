@@ -2455,8 +2455,10 @@ void CvPlayerAI::AI_updateCommerceWeights()
 		}
 	}
 	std::sort(city_countdown_list.begin(), city_countdown_list.end());
-
-	int const iGameTurn = kGame.getGameTurn();
+	int const iEndTurn = kGame.getEstimateEndTurn();
+	/*	advc.001: Seems that karadoc hadn't thought of exceeding the end turn.
+		Perhaps no real problem, but causes an assertion to fail. */
+	int const iGameTurn = std::min(iEndTurn, kGame.getGameTurn());
 	FAssert(city_countdown_list.size() == getNumCities());
 	for (size_t i = 0; i < city_countdown_list.size(); i++)
 	{
@@ -2529,7 +2531,7 @@ void CvPlayerAI::AI_updateCommerceWeights()
 			{
 				int iCultureProgress = pCity->getCultureTimes100(getID()) /
 						std::max(1, iLegendaryCulture);
-				int iTimeProgress = 100 * iGameTurn / kGame.getEstimateEndTurn();
+				int iTimeProgress = 100 * iGameTurn / iEndTurn;
 				iTimeProgress *= iTimeProgress;
 				iTimeProgress /= 100;
 
