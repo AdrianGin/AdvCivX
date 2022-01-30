@@ -9363,26 +9363,32 @@ void CvGame::read(FDataStreamBase* pStream)
 		pStream->Read(&m_initialRandSeed.uiMap);
 		pStream->Read(&m_initialRandSeed.uiSync);
 	} // </advc.027b>
+	// <advc.tsl>, advc.701: Options have been shuffled around a few times
+	bool bNewSeed = isOption((GameOptionTypes)
+			(uiFlag < 2 || uiFlag >= 17 ? 17 : 19));
+	bool bLockMods = isOption((GameOptionTypes)
+			(uiFlag >= 15 && uiFlag < 17 ? 27 : 18));
+	bool bNoVassals = isOption((GameOptionTypes)
+			(uiFlag >= 17 ? 23 : 20));
+	bool bNoEspionage = isOption((GameOptionTypes)
+			(uiFlag >= 17 ? 27 : 23));
+	bool bRiseFall = isOption((GameOptionTypes)
+			(uiFlag < 2 ? false : (uiFlag < 17 ? 17 : 19)));
+	bool bTrueStarts = isOption((GameOptionTypes)
+			(uiFlag < 15 ? false : (uiFlag < 17 ? 18 : 20)));
+	setOption(GAMEOPTION_NEW_RANDOM_SEED, bNewSeed);
+	setOption(GAMEOPTION_LOCK_MODS, bLockMods);
+	setOption(GAMEOPTION_RISE_FALL, bRiseFall);
+	setOption(GAMEOPTION_TRUE_STARTS, bTrueStarts);
+	setOption(GAMEOPTION_NO_VASSAL_STATES, bNoVassals);
+	setOption(GAMEOPTION_NO_ESPIONAGE, bNoEspionage);
+	// </advc.tsl>
 	// <advc.250b>
 	if (isOption(GAMEOPTION_SPAH))
 		m_pSpah->read(pStream); // </advc.250b>
 	// <advc.701>
-	if (uiFlag >= 2)
-	{
-		if(isOption(GAMEOPTION_RISE_FALL))
-			m_pRiseFall->read(pStream);
-	}
-	else // Options have been shuffled around
-	{
-		setOption(GAMEOPTION_NEW_RANDOM_SEED, isOption(GAMEOPTION_RISE_FALL));
-		setOption(GAMEOPTION_RISE_FALL, false);
-	} // </advc.701>
-	// <advc.tsl>
-	if (uiFlag < 15)
-	{
-		setOption(GAMEOPTION_LOCK_MODS, isOption(GAMEOPTION_TRUE_STARTS));
-		setOption(GAMEOPTION_TRUE_STARTS, false);
-	} // </advc.tsl>
+	if (isOption(GAMEOPTION_RISE_FALL))
+		m_pRiseFall->read(pStream); // </advc.701>
 	{
 		clearReplayMessageMap();
 		ReplayMessageList::_Alloc::size_type iSize;
@@ -9519,6 +9525,7 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 14; // advc.148, advc.130n, advc.130x (religion attitude)
 	//uiFlag = 15; // advc.tsl: new game option
 	uiFlag = 16; // advc.tsl: map regen counter
+	uiFlag = 17; // advc.tsl: game options moved around
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);

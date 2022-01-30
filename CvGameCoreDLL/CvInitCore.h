@@ -409,7 +409,13 @@ protected:
 	And think about whether they need to by synchronized in network games. */
 BOOST_STATIC_ASSERT(sizeof(CvInitCore) ==
 		(sizeof(ArrayEnumMap<PlayerTypes,bool>) > 4 ? 448 : 424));
-// advc: Custom Game screen probably relies on this
-BOOST_STATIC_ASSERT(GAMEOPTION_LEAD_ANY_CIV == 7 && GAMEOPTION_ADVANCED_START == 0);
+// <advc>
+BOOST_STATIC_ASSERT(
+		// Custom Game screen probably relies on these
+		GAMEOPTION_LEAD_ANY_CIV == 7 && GAMEOPTION_ADVANCED_START == 0 &&
+		// EXE relies on this for assigning the random personalities
+		GAMEOPTION_RANDOM_PERSONALITIES == 8 &&
+		// EXE explicitly sets this one to false (under unknown circumstances)
+		GAMEOPTION_LOCK_MODS == 18); // </advc>
 
 #endif

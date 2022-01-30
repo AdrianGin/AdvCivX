@@ -2,11 +2,11 @@
 <!-- edited with XMLSPY v2004 rel. 2 U (http://www.xmlspy.com) by Alex Mantzaris (Firaxis Games) -->
 <!-- Sid Meier's Civilization 4 -->
 <!-- Copyright Firaxis Games 2005 -->
-<!-- -->
-<!-- Game Option -->
+<!-- advc (caveat): Order needs to be the same as in CvEnums.h.
+	 See warnings there about options whose position mustn't be changed. -->
 <Civ4GameOptionInfos xmlns="x-schema:CIV4GameInfoSchema.xml">
 	<GameOptionInfos>
-	
+
 		<GameOptionInfo>
 			<Type>GAMEOPTION_ADVANCED_START</Type>
 			<Description>TXT_KEY_GAME_OPTION_ADVANCED_START</Description>
@@ -65,9 +65,6 @@
 			<bDefault>0</bDefault>
 			<bVisible>1</bVisible>
 		</GameOptionInfo>
-		<!-- advc: According to DarkLunaPhantom, this option has to remain
-			 in the eighth position.
-			 github.com/DarkLunaPhantom/Civ4-K-Mod/commit/908160ecea97d427cc24736fb4fb1e1b51f282f3 -->
 		<GameOptionInfo>
 			<Type>GAMEOPTION_RANDOM_PERSONALITIES</Type>
 			<Description>TXT_KEY_GAME_OPTION_RANDOM_PERSONALITIES</Description>
@@ -133,24 +130,6 @@
 			<bDefault>0</bDefault>
 			<bVisible>0</bVisible>
 		</GameOptionInfo>
-		<!-- advc.701: Taking the spot of NEW_RANDOM_SEED so that it's grouped
-			 with the other special challenge options. -->
-		<GameOptionInfo>
-			<Type>GAMEOPTION_RISE_FALL</Type>
-			<Description>TXT_KEY_GAME_OPTION_RISE_FALL</Description>
-			<Help>TXT_KEY_GAME_OPTION_RISE_FALL_HELP</Help>
-			<bDefault>0</bDefault>
-			<bVisible>1</bVisible>
-		</GameOptionInfo>
-		<!-- advc.tsl: Taking the spot of LOCK_MODS -->
-		<GameOptionInfo>
-			<Type>GAMEOPTION_TRUE_STARTS</Type>
-			<Description>TXT_KEY_GAME_OPTION_TRUE_STARTS</Description>
-			<Help>TXT_KEY_GAME_OPTION_TRUE_STARTS_HELP</Help>
-			<bDefault>0</bDefault>
-			<bVisible>1</bVisible>
-		</GameOptionInfo>
-		<!-- advc.701: Taking the spot of COMPLETE_KILLS (removed). -->
 		<GameOptionInfo>
 			<Type>GAMEOPTION_NEW_RANDOM_SEED</Type>
 			<Description>TXT_KEY_GAME_OPTION_NEW_RANDOM_SEED</Description>
@@ -159,9 +138,25 @@
 			<bVisible>1</bVisible>
 		</GameOptionInfo>
 		<GameOptionInfo>
-			<Type>GAMEOPTION_NO_VASSAL_STATES</Type>
-			<Description>TXT_KEY_GAME_OPTION_NO_VASSAL_STATES</Description>
-			<Help>TXT_KEY_GAME_OPTION_NO_VASSAL_STATES_HELP</Help>
+			<Type>GAMEOPTION_LOCK_MODS</Type>
+			<Description>TXT_KEY_GAME_OPTION_LOCK_MODS</Description>
+			<Help>TXT_KEY_GAME_OPTION_LOCK_MODS_HELP</Help>
+			<bDefault>0</bDefault>
+			<bVisible>1</bVisible>
+		</GameOptionInfo>
+		<!-- advc.701: Taking the spot of COMPLETE_KILLS (removed) -->
+		<GameOptionInfo>
+			<Type>GAMEOPTION_RISE_FALL</Type>
+			<Description>TXT_KEY_GAME_OPTION_RISE_FALL</Description>
+			<Help>TXT_KEY_GAME_OPTION_RISE_FALL_HELP</Help>
+			<bDefault>0</bDefault>
+			<bVisible>1</bVisible>
+		</GameOptionInfo>
+		<!-- advc.tsl: Taking the spot of NO_VASSAL_STATES -->
+		<GameOptionInfo>
+			<Type>GAMEOPTION_TRUE_STARTS</Type>
+			<Description>TXT_KEY_GAME_OPTION_TRUE_STARTS</Description>
+			<Help>TXT_KEY_GAME_OPTION_TRUE_STARTS_HELP</Help>
 			<bDefault>0</bDefault>
 			<bVisible>1</bVisible>
 		</GameOptionInfo>
@@ -179,12 +174,13 @@
 			<bDefault>0</bDefault>
 			<bVisible>1</bVisible>
 		</GameOptionInfo>
+		<!-- advc.tsl: Moved down, taking the spot of NO_ESPIONAGE. -->
 		<GameOptionInfo>
-			<Type>GAMEOPTION_NO_ESPIONAGE</Type>
-			<Description>TXT_KEY_GAME_OPTION_NO_ESPIONAGE</Description>
-			<Help>TXT_KEY_GAME_OPTION_NO_ESPIONAGE_HELP</Help>
+			<Type>GAMEOPTION_NO_VASSAL_STATES</Type>
+			<Description>TXT_KEY_GAME_OPTION_NO_VASSAL_STATES</Description>
+			<Help>TXT_KEY_GAME_OPTION_NO_VASSAL_STATES_HELP</Help>
 			<bDefault>0</bDefault>
-			<bVisible>0</bVisible>
+			<bVisible>1</bVisible>
 		</GameOptionInfo>
 		<GameOptionInfo>
 			<Type>GAMEOPTION_NO_CITY_RAZING</Type>
@@ -193,7 +189,7 @@
 			<bDefault>0</bDefault>
 			<bVisible>1</bVisible>
 		</GameOptionInfo>
-		<!-- advc.309: Added NO_ANIMALS and made NO_ESPIONAGE invisible. -->
+		<!-- advc.309 -->
 		<GameOptionInfo>
 			<Type>GAMEOPTION_NO_ANIMALS</Type>
 			<Description>TXT_KEY_GAME_OPTION_NO_ANIMALS</Description>
@@ -209,13 +205,13 @@
 			<bDefault>0</bDefault>
 			<bVisible>1</bVisible>
 		</GameOptionInfo>
-		<!-- advc.tsl: Moved down -->
+		<!-- advc.tsl: Moved to the end, advc.309: hidden. -->
 		<GameOptionInfo>
-			<Type>GAMEOPTION_LOCK_MODS</Type>
-			<Description>TXT_KEY_GAME_OPTION_LOCK_MODS</Description>
-			<Help>TXT_KEY_GAME_OPTION_LOCK_MODS_HELP</Help>
+			<Type>GAMEOPTION_NO_ESPIONAGE</Type>
+			<Description>TXT_KEY_GAME_OPTION_NO_ESPIONAGE</Description>
+			<Help>TXT_KEY_GAME_OPTION_NO_ESPIONAGE_HELP</Help>
 			<bDefault>0</bDefault>
-			<bVisible>1</bVisible>
+			<bVisible>0</bVisible>
 		</GameOptionInfo>
 
 	</GameOptionInfos>
