@@ -2819,8 +2819,10 @@ int AIFoundValue::adjustToCivSurroundings(int iValue, int iStealPercent) const
 		/*  advc: BtS code dealing with iDistance deleted;
 			K-Mod comment: Close cities are penalised in other ways */
 		// with that max distance, we could fit a city in the middle!
-		// advc.031: Handle expansive setting below
-		int const iTargetRange = 5;//(kSet.isExpansive() ? 6 : 5);
+		int const iTargetRange = //(kSet.isExpansive() ? 6 : 5)
+				/*	advc.031: Simply 5 unless a mod changes the city radius.
+					Handle expansive setting below. */
+				(5 + CITY_PLOTS_DIAMETER) / 2;
 		int iNearestDistance = iDistance;
 		/*	<advc.031> There can already be a city "in the middle" that iDistance
 			doesn't account for - namely when it's a foreign city. */
