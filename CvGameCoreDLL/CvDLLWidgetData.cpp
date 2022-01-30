@@ -1007,6 +1007,10 @@ bool CvDLLWidgetData::executeAction(CvWidgetDataStruct &widgetDataStruct)
 		break;
 
 	case WIDGET_DEAL_KILL:
+		/*	advc (note, known issue in multiplayer): The EXE seems to call this
+			on all players involved in the deal, weirdly. (Perhaps to ensure that
+			cancellation happens on all machines.) So the popups appear for both.
+			Don't think this can be worked around - we don't know who clicked. */
 		doDealKill(widgetDataStruct);
 		break;
 
