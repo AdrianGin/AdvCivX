@@ -8526,11 +8526,14 @@ void CvPlayer::setCombatExperience(int iExperience)
 
 		if (pBestCity != NULL)
 		{
-			int iRandOffset = SyncRandNum(GC.getNumUnitInfos());
-			FOR_EACH_ENUM(Unit)
+			/*	<advc.001> Pick a civ-specific unit type so that mods can create
+				unique Great Generals. Inspired by code by edead. */
+			CvCivilization const& kCiv = getCivilization();
+			int iRandOffset = SyncRandNum(kCiv.getNumUnits());
+			for (int i = 0; i < kCiv.getNumUnits(); i++)
 			{
-				UnitTypes eRandUnit = (UnitTypes)
-						((eLoopUnit + iRandOffset) % GC.getNumUnitInfos());
+				UnitTypes eRandUnit = kCiv.unitAt(
+						(i + iRandOffset) % kCiv.getNumUnits()); // </advc.001>
 				if (GC.getInfo(eRandUnit).getLeaderExperience() > 0 ||
 					GC.getInfo(eRandUnit).getLeaderPromotion() != NO_PROMOTION)
 				{
