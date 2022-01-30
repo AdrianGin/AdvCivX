@@ -80,13 +80,40 @@ void AIStrengthMemoryMap::write(FDataStreamBase* pStream) const
 	/*pStream->Write(m_aiMap.size());
 	if (!m_aiMap.empty())
 		pStream->Write(m_aiMap.size(), &m_aiMap[0]);*/
-	// Using PlotStrengthMap:
-	pStream->Write(m_map.size());
+	// Using PlotStrengthMap (and discarding zeros):
+#ifndef ENABLE_REPRO_TEST
+	size_t uiSize = 0;
 	for (PlotStrengthMap::const_iterator it = m_map.begin(); it != m_map.end(); ++it)
 	{
+		if (it->second != 0)
+			uiSize++;
+	}
+	pStream->Write(uiSize);
+	for (PlotStrengthMap::const_iterator it = m_map.begin(); it != m_map.end(); ++it)
+	{
+		if (it->second == 0)
+			continue;
 		pStream->Write(it->first);
 		pStream->Write(it->second);
 	}
+	// hash_map seems to have an unstable order, not reproducible after reloading.
+#else
+	std::vector<std::pair<PlotNumTypes,int> > aeiSorted;
+	for (PlotStrengthMap::const_iterator it = m_map.begin(); it != m_map.end(); ++it)
+	{
+		if (it->second != 0)
+			aeiSorted.push_back(std::make_pair(it->first, it->second));
+	}
+	std::sort(aeiSorted.begin(), aeiSorted.end());
+	REPRO_TEST_BEGIN_WRITE(CvString::format("AIStrengthMemoryMap(%d)", m_eTeam).GetCString());
+	pStream->Write(aeiSorted.size());
+	for (size_t i = 0; i < aeiSorted.size(); i++)
+	{
+		pStream->Write(aeiSorted[i].first);
+		pStream->Write(aeiSorted[i].second);
+	}
+	REPRO_TEST_END_WRITE();
+#endif
 }
 
 

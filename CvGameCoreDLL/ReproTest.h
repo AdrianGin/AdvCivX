@@ -3,14 +3,15 @@
 #ifndef REPRO_TEST_H
 #define REPRO_TEST_H
 
-/*	When ENABLE_REPRO_TEST is defined, then contacting an AI leader via right click in the
-	Foreign Advisor (see startTest call in CvDLLWidgetData.cpp) will start a
-	"reproducibility test": Quick-save; run AI Auto Play for a number of turns equal to
-	the id of the contacted player; upon auto-saving after AI Auto Play, copy all
-	synchronized savegame data to a place that doesn't get reset upon loading (namely to
-	m_pReproTest->m_aaSaveData); quick-load; run AI Auto Play for the same number of
-	turns as before; upon auto-saving, compare the synchronized data that gets written
-	to the savegame with the data kept in memory and assert that they're the same.
+/*	advc.repro: When ENABLE_REPRO_TEST is defined, then contacting an AI leader via
+	right click in the Foreign Advisor (see startTest call in CvDLLWidgetData.cpp)
+	will start a "reproducibility test": Quick-save; run AI Auto Play for a number
+	of turns equal to the id of the contacted player; upon auto-saving after AI Auto Play,
+	copy all synchronized savegame data to a place that doesn't get reset upon loading
+	(namely to m_pReproTest->m_aaSaveData); quick-load; run AI Auto Play for the
+	same number of turns as before; upon auto-saving, compare the synchronized data
+	that gets written to the savegame with the data kept in memory and assert that
+	they're the same.
 	Prerequisites: Assert (or Debug) build, AutoSaveInterval = 1 in CivilizationIV.ini.
 	May also want to enable the BBAI log (BBAILog.h) and MessageLog, maybe also RandLog
 	in CivilizationIV.ini. (See comment in ReproTest constructor about comparing logs.)

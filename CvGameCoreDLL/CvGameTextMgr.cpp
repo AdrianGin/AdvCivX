@@ -15823,6 +15823,7 @@ void CvGameTextMgr::getAttitudeString(CvWStringBuffer& szBuffer, PlayerTypes ePl
 				"TXT_KEY_MISC_ATTITUDE_WAR");
 	}
 	// <advc.004q>
+#ifndef ENABLE_REPRO_TEST
 	int iTotalCached = kPlayer.AI_getAttitudeVal(eTargetPlayer, false);
 	if (!bConstCache && bSHowHiddenAttitude && !bObscurePersonality &&
 		iTotal != iTotalCached && !kGame.isNetworkMultiPlayer() &&
@@ -15836,6 +15837,7 @@ void CvGameTextMgr::getAttitudeString(CvWStringBuffer& szBuffer, PlayerTypes ePl
 		getAttitudeString(szBuffer, ePlayer, eTargetPlayer, true);
 		return;
 	}
+#endif
 	// Attitude string - append this to szBuffer before appending the breakdown
 	szBuffer.append(NEWLINE);
 	//szBuffer.append(gDLL->getText("TXT_KEY_ATTITUDE_TOWARDS", GC.getInfo(kPlayer.AI_getAttitude(eTargetPlayer)).getTextKeyWide(), GET_PLAYER(eTargetPlayer).getNameKey()));

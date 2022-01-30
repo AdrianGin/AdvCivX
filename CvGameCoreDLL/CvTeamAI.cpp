@@ -5061,11 +5061,11 @@ void CvTeamAI::write(FDataStreamBase* pStream)
 	if (!m_aeNukeExplosions.empty())
 		pStream->Write((int)m_aeNukeExplosions.size(), (int*)&m_aeNukeExplosions[0]);
 	// </advc.650>
+	REPRO_TEST_END_WRITE();
 	m_strengthMemory.write(pStream); // advc.158
 	// <advc.104>
-	if(isEverAlive() && !isBarbarian() && !isMinorCiv())
+	if (isEverAlive() && !isBarbarian() && !isMinorCiv())
 		uwai().write(pStream); // </advc.104>
-	REPRO_TEST_END_WRITE();
 }
 
 // advc.012:
