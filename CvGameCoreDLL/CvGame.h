@@ -40,7 +40,11 @@ public:
 	DllExport void reset(HandicapTypes eHandicap, bool bConstructorCall = false);
 
 	DllExport void setInitialItems();
-	DllExport void regenerateMap();
+	DllExport void regenerateMap()
+	{	// <advc.tsl>
+		regenerateMap(false);
+	}
+	void regenerateMap(bool bAutomated); // </advc.tsl>
 	void showDawnOfMan(); // advc.004j
 	DllExport void initDiplomacy();
 	DllExport void initFreeUnits();
@@ -1010,6 +1014,7 @@ protected:
 	ReplayMessageList m_listReplayMessages;
 	CvReplayInfo* m_pReplayInfo;
 	int m_iNumSessions;
+	int m_iMapRegens; // advc.tsl
 	CvHallOfFameInfo* m_pHallOfFame; // advc.106i
 
 	BarbarianWeightMap* m_pBarbarianWeightMap; // advc.304 (serialized by CvMap)

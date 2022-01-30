@@ -57,8 +57,12 @@
 	/* getInfo function and getNumInfos function exported */ \
 	DO(PlayerColor, PLAYERCOLOR) \
 	DO(Bonus, BONUS) \
-	DO(Civilization, CIVILIZATION) \
 	DO(LeaderHead, LEADER) \
+	DO(Civilization, CIVILIZATION) \
+	/* <advc.tsl> (not exposed to Python) */ \
+	DO(TruCiv, TRUCIV) \
+	DO(TruLeader, TRULEADER) \
+	DO(TruBonus, TRUBONUS) /* </advc.tsl> */ \
 	DO(Cursor, CURSOR) \
 	/* internal only */ \
 	DO(BuildingClass, BUILDINGCLASS) \

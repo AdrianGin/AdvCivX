@@ -35,6 +35,7 @@ public:
 	DllExport void sendChangeWar(TeamTypes eRivalTeam, bool bWar);
 	DllExport void sendPing(int iX, int iY);
 	void sendFPTest(int iResult); // advc.003g
+	void sendCivLeaderSetup(CvInitCore const& kInitCore); // advc.190c
 };
 
 

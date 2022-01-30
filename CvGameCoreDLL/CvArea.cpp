@@ -49,7 +49,7 @@ void CvArea::reset(int iID, bool bWater, bool bConstructorCall)
 	m_iBarbarianCitiesEver = 0; // advc.300
 	// <advc.030>
 	m_bLake = false;
-	m_iRepresentativeAreaId = iID;
+	m_iRepresentativeArea = iID;
 	// </advc.030>
 	m_bWater = bWater;
 
@@ -82,7 +82,7 @@ void CvArea::reset(int iID, bool bWater, bool bConstructorCall)
 void CvArea::setID(int iID)
 {
 	m_iID = iID;
-	m_iRepresentativeAreaId = iID; // advc.030
+	m_iRepresentativeArea = iID; // advc.030
 }
 
 
@@ -199,7 +199,7 @@ void CvArea::updateLake(bool bCheckRepr)
 	}
 	FOR_EACH_AREA(pOther)
 	{
-		if(pOther->m_iRepresentativeAreaId == m_iRepresentativeAreaId &&
+		if(pOther->m_iRepresentativeArea == m_iRepresentativeArea &&
 			pOther->getID() != getID())
 		{
 			iTotalTiles += pOther->getNumTiles();
@@ -210,14 +210,9 @@ void CvArea::updateLake(bool bCheckRepr)
 	m_bLake = true;
 }
 
-void CvArea::setRepresentativeArea(int eArea)
+void CvArea::setRepresentativeArea(int iArea)
 {
-	m_iRepresentativeAreaId = eArea;
-}
-
-int CvArea::getRepresentativeArea() const
-{
-	return m_iRepresentativeAreaId;
+	m_iRepresentativeArea = iArea;
 }
 
 /*  Replacement for the BtS area()==area() checks. Mostly used for
@@ -233,7 +228,7 @@ bool CvArea::canBeEntered(CvArea const& kFrom, CvUnit const* u) const
 	/*  If I wanted to support canMoveAllTerrain here, then I couldn't do
 		anything more when u==NULL. So that's not supported. */
 	if(isWater() == kFrom.isWater() &&
-		(m_iRepresentativeAreaId != kFrom.m_iRepresentativeAreaId ||
+		(m_iRepresentativeArea != kFrom.m_iRepresentativeArea ||
 		(u != NULL && !u->canMoveImpassable())))
 	{
 		return false;
@@ -598,12 +593,12 @@ void CvArea::read(FDataStreamBase* pStream)
 	if(uiFlag >= 1)
 	{
 		pStream->Read(&m_bLake);
-		pStream->Read(&m_iRepresentativeAreaId);
+		pStream->Read(&m_iRepresentativeArea);
 	}
 	else
 	{
 		updateLake(false);
-		m_iRepresentativeAreaId = m_iID;
+		m_iRepresentativeArea = m_iID;
 	} // </advc.030>
 	if (uiFlag < 4)
 		m_aiUnitsPerPlayer.readArray<int>(pStream);
@@ -718,7 +713,7 @@ void CvArea::write(FDataStreamBase* pStream)
 	pStream->Write(m_bWater);
 	// <advc.030>
 	pStream->Write(m_bLake);
-	pStream->Write(m_iRepresentativeAreaId);
+	pStream->Write(m_iRepresentativeArea);
 	// </advc.030>
 	m_aiUnitsPerPlayer.write(pStream);
 	//m_aiAnimalsPerPlayer.write(pStream); // advc: removed

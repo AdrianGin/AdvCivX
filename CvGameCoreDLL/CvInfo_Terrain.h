@@ -378,7 +378,7 @@ public:
 	};
 	int get(IntElementTypes e) const
 	{
-		return CvXMLInfo::get(static_cast<base_t::IntElementTypes>(e));
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
 	}
 	// </advc.tag>
 	/*  All the const functions are exposed to Python except those dealing with sound,

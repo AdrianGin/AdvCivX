@@ -2397,6 +2397,10 @@ int AIFoundValue::evaluateGoodies(int iGoodies) const
 	remove that obstacle; makes the site difficult to evaluate. */
 int AIFoundValue::adjustToLandAreaBoundary(int iValue) const
 {
+	/*	Change advc.030 makes this check easy to implement. Can't do it
+		if that's disabled. */
+	if (!GC.getDefineBOOL(CvGlobals::PASSABLE_AREAS))
+		return iValue;
 	std::set<int> otherLandAreas;
 	bool bFoundImpassable = false;
 	int const iReprArea = kArea.getRepresentativeArea();

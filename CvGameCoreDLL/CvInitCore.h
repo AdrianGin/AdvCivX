@@ -227,7 +227,10 @@ public:
 	// // <advc.190c> (all exposed to Python via CvPlayer, CvGame)
 	bool wasCivRandomlyChosen(PlayerTypes eID) const;
 	bool wasLeaderRandomlyChosen(PlayerTypes eID) const;
-	bool isCivLeaderSetupKnown() const { return m_bCivLeaderSetupKnown; } // </advc.190c>
+	bool isCivLeaderSetupKnown() const { return m_bCivLeaderSetupKnown; }
+	// Just for network sync
+	void setCivLeaderRandomlyChosen(PlayerTypes eID, bool bRandomCiv, bool bRandomLeader);
+	// </advc.190c>
 	DllExport TeamTypes getTeam(PlayerTypes eID) const { return m_aeTeam.get(eID); }
 	DllExport void setTeam(PlayerTypes eID, TeamTypes eTeam);
 
@@ -402,7 +405,8 @@ protected:
 };
 
 /*  advc.003k: OK to increase the size of CvInitCore (and to update or remove this
-	assertion). Just make sure that new data members are added in the right place. */
+	assertion). Just make sure that new data members are added in the right place.
+	And think about whether they need to by synchronized in network games. */
 BOOST_STATIC_ASSERT(sizeof(CvInitCore) ==
 		(sizeof(ArrayEnumMap<PlayerTypes,bool>) > 4 ? 448 : 424));
 // advc: Custom Game screen probably relies on this

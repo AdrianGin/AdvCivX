@@ -66,6 +66,9 @@ CvMessageData* CvMessageData::createMessage(GameMessageTypes eType)
 	// <advc.003g>
 	case GAMEMESSAGE_FP_TEST:
 		return new CvNetFPTest(); // </advc.003g>
+	// <advc.190c>
+	case GAMEMESSAGE_CIV_LEADER_SETUP:
+		return new CvNetCivLeaderSetup(); // </advc.190c>
 	default:
 		FErrorMsg("Unknown message type");
 	}
@@ -1272,3 +1275,46 @@ void CvNetFPTest::Execute()
 {
 	GC.getGame().doFPCheck(m_iResult, m_ePlayer);
 } // </advc.003g>
+// <advc.190c>
+CvNetCivLeaderSetup::CvNetCivLeaderSetup(PlayerTypes ePlayer,
+	CvInitCore const* pInitCore)
+:	CvMessageData(GAMEMESSAGE_CIV_LEADER_SETUP),
+	m_ePlayer(ePlayer)
+{
+	if (pInitCore == NULL)
+		return;
+	FOR_EACH_ENUM(Player)
+	{
+		m_abCivChosenRandomly.set(eLoopPlayer,
+				pInitCore->wasCivRandomlyChosen(eLoopPlayer));
+		m_abLeaderChosenRandomly.set(eLoopPlayer,
+				pInitCore->wasLeaderRandomlyChosen(eLoopPlayer));
+	}
+}
+
+void CvNetCivLeaderSetup::Debug(char* szAddendum)
+{
+	sprintf(szAddendum, "CivLeaderSetup message received");
+}
+
+void CvNetCivLeaderSetup::PutInBuffer(FDataStreamBase* pStream)
+{
+	m_abCivChosenRandomly.write(pStream);
+	m_abLeaderChosenRandomly.write(pStream);
+}
+
+void CvNetCivLeaderSetup::SetFromBuffer(FDataStreamBase* pStream)
+{
+	m_abCivChosenRandomly.read(pStream);
+	m_abLeaderChosenRandomly.read(pStream);
+}
+
+void CvNetCivLeaderSetup::Execute()
+{
+	FOR_EACH_ENUM(Player)
+	{
+		GC.getInitCore().setCivLeaderRandomlyChosen(eLoopPlayer,
+				m_abCivChosenRandomly.get(eLoopPlayer),
+				m_abLeaderChosenRandomly.get(eLoopPlayer));
+	}
+} // </advc.190c>

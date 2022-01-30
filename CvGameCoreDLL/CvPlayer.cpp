@@ -698,7 +698,8 @@ void CvPlayer::resetCivTypeEffects(/* advc.003q: */ bool bInit)
 }
 
 // for switching the leaderhead of this player
-void CvPlayer::changeLeader(LeaderHeadTypes eNewLeader)
+void CvPlayer::changeLeader(LeaderHeadTypes eNewLeader,
+	bool bChangeName) // advc.tsl
 {
 	LeaderHeadTypes const eOldLeader = getLeaderType();
 
@@ -708,6 +709,13 @@ void CvPlayer::changeLeader(LeaderHeadTypes eNewLeader)
 	//clearTraitBonuses(); // Clear old traits
 	processTraits(-1); // advc.003q
 	GC.getInitCore().setLeader(getID(), eNewLeader);
+	// <advc.tsl>
+	if (bChangeName && (!isHuman() || // Preserve human custom name
+		wcscmp(getName(), GC.getLeaderHeadInfo(eOldLeader).getDescription()) == 0))
+	{
+		CvWString szEmpty; // Means that leaderhead description gets used
+		GC.getInitCore().setLeaderName(getID(), szEmpty);
+	} // </advc.tsl>
 	// addTraitBonuses(); // Add new traits
 	processTraits(1); // advc.003q
 
@@ -758,10 +766,11 @@ void CvPlayer::setIsHuman(bool bNewValue, /* advc.127c: */ bool bUpdateAI)
 // CHANGE_PLAYER: END
 // CHANGE_PLAYER, 05/09/09, jdog5000: START
 // for changing the civilization of this player
-void CvPlayer::changeCiv(CivilizationTypes eNewCiv)
+void CvPlayer::changeCiv(CivilizationTypes eNewCiv,
+	bool bChangeDescr, bool bForceColorUpdate) // advc.tsl
 {
 	CivilizationTypes eOldCiv = getCivilizationType();
-	if (eOldCiv == eNewCiv)
+	if (eOldCiv == eNewCiv /* advc.tsl: */ && !bForceColorUpdate)
 		return;
 
 	PlayerColorTypes eColor = (PlayerColorTypes)GC.getInfo(eNewCiv).getDefaultPlayerColor();
@@ -798,9 +807,33 @@ void CvPlayer::changeCiv(CivilizationTypes eNewCiv)
 	}
 
 	CvInitCore& kInitCore = GC.getInitCore();
-	kInitCore.setCiv(getID(), eNewCiv);
 	kInitCore.setColor(getID(), eColor);
+	if (eOldCiv == eNewCiv)
+		return;
+	kInitCore.setCiv(getID(), eNewCiv);
 	setCivilization(eNewCiv); // advc.003u
+	// <advc.tsl>
+	if (bChangeDescr)
+	{
+		CvWString szEmpty; // Means that civ info descriptions get used
+		bool const bHuman = isHuman(); // Preserve human custom descriptions
+		if (!bHuman || wcscmp(getCivilizationDescription(),
+			GC.getCivilizationInfo(eOldCiv).getDescription()) == 0)
+		{
+			kInitCore.setCivDescription(getID(), szEmpty);
+		}
+		if (!bHuman || wcscmp(getCivilizationShortDescription(),
+			GC.getCivilizationInfo(eOldCiv).getShortDescription()) == 0)
+		{
+			kInitCore.setCivShortDesc(getID(), szEmpty);
+		}
+		if (!bHuman || wcscmp(getCivilizationAdjective(),
+			GC.getCivilizationInfo(eOldCiv).getAdjective()) == 0)
+		{
+			kInitCore.setCivAdjective(getID(), szEmpty);
+		}
+		kInitCore.setFlagDecal(getID(), szEmpty);
+	} // </advc.tsl>
 	resetCivTypeEffects(/* advc.003q: */ false);
 	CvDLLInterfaceIFaceBase& kUI = *gDLL->getInterfaceIFace();
 	if (isAlive()) // if the player is alive and showing on scoreboard, etc

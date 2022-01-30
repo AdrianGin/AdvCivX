@@ -106,6 +106,17 @@
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
+	<!-- advc.tsl: Set this to a positive value to cause the map to be
+		 regenerated that many times whenever a new game is started.
+		 I.e. the original map doesn't count as one of the regenerated maps.
+		 Restrictions that normally prevent regeneration (civs having met
+		 through their starting units) are ignored. This parameter is intended
+		 for gathering statistics about map generation. -->
+	<Define>
+		<DefineName>AUTO_REGEN_MAP</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+
 	<!-- advc: Setting this to 1 causes the game to ignore the
 		"New Random Seed on Reload" game option. For debugging
 		savegames that have that option enabled. -->

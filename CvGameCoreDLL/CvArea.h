@@ -34,9 +34,8 @@ public:
 		return m_bLake;		
 	}
 	void updateLake(bool bCheckRepr = true);
-	void setRepresentativeArea(int eArea);
-	// Should only be needed for computing the equivalence classes
-	int getRepresentativeArea() const;
+	void setRepresentativeArea(int iArea);
+	int getRepresentativeArea() const { return m_iRepresentativeArea; }
 	bool canBeEntered(CvArea const& kFrom, CvUnit const* u = NULL) const;
 	// </advc.030>
 
@@ -211,7 +210,7 @@ protected:
 	bool m_bWater;
 	// <advc.030>
 	bool m_bLake;
-	int m_iRepresentativeAreaId; // </advc.030>
+	int m_iRepresentativeArea; // </advc.030>
 	/*	<advc.enum> (advc.030 - note: Most of these will remain unused
 		for water areas, and water areas can be quite numerous due to sea ice.
 		Array-based maps with lazy allocation should work best here.) */

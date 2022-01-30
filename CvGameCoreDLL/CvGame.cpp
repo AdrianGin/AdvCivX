@@ -22,6 +22,7 @@
 #include "CvMessageControl.h"
 #include "BarbarianWeightMap.h" // advc.304
 #include "StartingPositionIteration.h" // advc.027
+#include "TrueStarts.h" // advc.tsl
 #include "StartPointsAsHandicap.h" // advc.250b
 #include "RiseFall.h" // advc.700
 #include "CvHallOfFameInfo.h" // advc.106i
@@ -224,11 +225,35 @@ void CvGame::setInitialItems()
 	for (int i = 0; i < kMap.numPlots(); i++)
 		kMap.plotByIndex(i)->setRiverID(-1); // </advc>
 	// <advc.030> Now that ice has been placed and normalization is through
-	if(GC.getDefineBOOL("PASSABLE_AREAS"))
+	if (GC.getDefineBOOL(CvGlobals::PASSABLE_AREAS))
 		kMap.recalculateAreas(false);
 	// </advc.030>
-	// advc.tsl: Delay part of the freebies until starting sites have been assigned
-	initFreeCivState();
+	// <advc.tsl>
+	if (isOption(GAMEOPTION_TRUE_STARTS))
+	{
+		TrueStarts ts;
+		ts.changeCivs();
+		if (GC.getDefineBOOL(CvGlobals::TRUE_STARTS_SANITIZE))
+			ts.sanitize();
+	}
+	GC.getLogger().logCivLeaders(); // </advc.tsl>
+	/*	<advc.190c> Letting CvInitCore do this would be misleading b/c
+		net messages don't get delivered that early in game setup. */
+	if (isNetworkMultiPlayer())
+	{
+		CvInitCore const& kInitCore = GC.getInitCore();
+		FOR_EACH_ENUM(Player)
+		{
+			if (kInitCore.wasCivRandomlyChosen(eLoopPlayer) ||
+				kInitCore.wasLeaderRandomlyChosen(eLoopPlayer))
+			{	// We're the host
+				CvMessageControl::getInstance().sendCivLeaderSetup(kInitCore);
+				break;
+			}
+		}
+	} // </advc.190c>
+	// Delay part of the freebies until starting sites have been assigned
+	initFreeCivState(); // </advc.tsl>
 	initFreeUnits();
 	// <advc.250c>
 	if (GC.getDefineBOOL("INCREASE_START_TURN") && getStartEra() == 0)
@@ -272,10 +297,13 @@ void CvGame::setInitialItems()
 	} // </advc.250c>
 	for (PlayerAIIter<CIV_ALIVE> it; it.hasNext(); ++it)
 		it->AI_updateFoundValues();
+	// <advc.tsl>
+	if (m_iMapRegens < GC.getDefineINT("AUTO_REGEN_MAP"))
+		regenerateMap(true); // </advc.tsl>
 }
 
 
-void CvGame::regenerateMap()
+void CvGame::regenerateMap(/* advc.tsl: */ bool bAutomated)
 {
 	if (GC.getInitCore().getWBMapScript())
 		return;
@@ -339,7 +367,11 @@ void CvGame::regenerateMap()
 	setTurnSlice(0); // advc.001: Reset minutesPlayed to 0
 	CvEventReporter::getInstance().resetStatistics();
 
+	m_iMapRegens++; // advc.tsl
 	setInitialItems();
+	// <advc.tsl>
+	if (bAutomated)
+		return; // </advc.tsl>
 
 	initScoreCalculation();
 	setFinalInitialized(true);
@@ -700,6 +732,7 @@ void CvGame::reset(HandicapTypes eHandicap, bool bConstructorCall)
 	m_initialRandSeed.uiMap = m_initialRandSeed.uiSync = 0; // advc.027b
 
 	m_iNumSessions = 1;
+	m_iMapRegens = 0; // advc.tsl
 
 	m_iShrineBuildingCount = 0;
 	m_iNumCultureVictoryCities = 0;
@@ -1043,8 +1076,20 @@ void CvGame::initFreeCivState()
 void CvGame::initScenario()
 {
 	initFreeState(); // Tech from handicap
+	// <advc.tsl>
+	if (isOption(GAMEOPTION_TRUE_STARTS) &&
+		/*	Replacing fixed players should actually be OK -
+			just so long as the scenario doesn't define any cities. */
+		//GC.getInitCore().getWBMapNoPlayers()
+		getNumCities() <= 0)
+	{
+		TrueStarts ts;
+		ts.changeCivs();
+		if (GC.getDefineBOOL(CvGlobals::TRUE_STARTS_SANITIZE_SCENARIOS))
+			ts.sanitize();
+	} // </advc.tsl>
 	// <advc.030>
-	if (GC.getDefineBOOL("PASSABLE_AREAS"))
+	if (GC.getDefineBOOL(CvGlobals::PASSABLE_AREAS))
 	{
 		/*  recalculateAreas can't handle preplaced cities. Or perhaps it can
 			(Barbarian cities are fine in most cases), but there's going to
@@ -5437,7 +5482,7 @@ void CvGame::setFinalInitialized(bool bNewValue)
 	PROFILE_FUNC();
 
 	if (isFinalInitialized() == bNewValue)
-		return; // advc
+		return;
 	m_bFinalInitialized = bNewValue;
 	if (!isFinalInitialized())
 		return;
@@ -9332,6 +9377,12 @@ void CvGame::read(FDataStreamBase* pStream)
 		setOption(GAMEOPTION_NEW_RANDOM_SEED, isOption(GAMEOPTION_RISE_FALL));
 		setOption(GAMEOPTION_RISE_FALL, false);
 	} // </advc.701>
+	// <advc.tsl>
+	if (uiFlag < 15)
+	{
+		setOption(GAMEOPTION_LOCK_MODS, isOption(GAMEOPTION_TRUE_STARTS));
+		setOption(GAMEOPTION_TRUE_STARTS, false);
+	} // </advc.tsl>
 	{
 		clearReplayMessageMap();
 		ReplayMessageList::_Alloc::size_type iSize;
@@ -9347,6 +9398,9 @@ void CvGame::read(FDataStreamBase* pStream)
 	// m_pReplayInfo not saved
 
 	pStream->Read(&m_iNumSessions);
+	// <advc.tsl>
+	if (uiFlag >= 16)
+		pStream->Read(&m_iMapRegens); // </advc.tsl>
 	if (!isNetworkMultiPlayer())
 		m_iNumSessions++;
 
@@ -9462,7 +9516,9 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 11; // advc.enum: new enum map save behavior
 	//uiFlag = 12; // advc.130n: DifferentReligionThreat added to CvPlayerAI
 	//uiFlag = 13; // advc.148: RELATIONS_THRESH_WORST_ENEMY
-	uiFlag = 14; // advc.148, advc.130n, advc.130x (religion attitude)
+	//uiFlag = 14; // advc.148, advc.130n, advc.130x (religion attitude)
+	//uiFlag = 15; // advc.tsl: new game option
+	uiFlag = 16; // advc.tsl: map regen counter
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9596,6 +9652,9 @@ void CvGame::write(FDataStreamBase* pStream)
 	}
 	// m_pReplayInfo not saved
 	pStream->Write(m_iNumSessions);
+	/*	advc.tsl: Doesn't really have to be saved so far, but might become
+		useful in the future. */
+	pStream->Write(m_iMapRegens);
 	REPRO_TEST_BEGIN_WRITE("Game pt3"); // (skip replay messages, sessions)
 
 	pStream->Write(m_aPlotExtraYields.size());

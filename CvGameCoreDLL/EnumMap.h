@@ -281,9 +281,9 @@ public:
 	{
 		derived().writeArray<CompactV>(pStream);
 	}
-	void read(FDataStreamBase* pStream)
+	void read(FDataStreamBase* pStream, uint uiSubtrahend = 0)
 	{
-		derived().readArray<CompactV>(pStream);
+		derived().readArray<CompactV>(pStream, uiSubtrahend);
 	}
 	template<typename SizeType, typename ValueType>
 	void writeLazyArray(FDataStreamBase* pStream) const
@@ -296,13 +296,14 @@ public:
 		derived().writeArray<ValueType>(pStream);
 	}
 	template<typename SizeType, typename ValueType>
-	void readLazyArray(FDataStreamBase* pStream)
+	void readLazyArray(FDataStreamBase* pStream,
+		uint uiSubtrahend = 0) // (Could also get this from sz)
 	{
 		SizeType sz;
 		pStream->Read(&sz);
 		if (sz == 0)
 			return;
-		derived().readArray<ValueType>(pStream);
+		derived().readArray<ValueType>(pStream, uiSubtrahend);
 	}
 	template<class DataStream>
 	void writeLazyIntArray(DataStream* pStream) const
@@ -320,11 +321,12 @@ public:
 			writeVal(pStream, safeCast<ValueType>(derived().getUnsafe(eKey)));
 	}
 	template<typename ValueType>
-	void readArray(FDataStreamBase* pStream)
+	void readArray(FDataStreamBase* pStream, uint uiSubtrahend = 0)
 	{
 		/*	Allocating an array and calling Read(getLength(), array) might be faster,
 			might be slower. Reading one value at a time is at least easier to debug. */
-		FOR_EACH_KEY(eKey)
+		int const iLen = getLength() - (int)uiSubtrahend;
+		for (E eKey = enum_traits<E>::first; eKey < iLen; ++eKey)
 		{
 			ValueType val;
 			pStream->Read(&val);
@@ -1377,15 +1379,16 @@ public:
 			pStream->Write(false);
 		}
 	}
-	void read(FDataStreamBase* pStream)
+	void read(FDataStreamBase* pStream, uint uiSubtrahend = 0)
 	{
+		FAssert(!bBIT_BLOCKS || uiSubtrahend == 0);
 		bool bAnyNonDefault;
 		pStream->Read(&bAnyNonDefault);
 		if (bAnyNonDefault)
 		{
 			if (!isAllocated())
 				allocate();
-			pStream->Read(arraySize(), values());
+			pStream->Read(arraySize() - (int)uiSubtrahend, values());
 		}
 	}
 
@@ -1855,12 +1858,14 @@ public:
 				pInnerMap->write(pStream);
 		}
 	}
-	void read(FDataStreamBase* pStream)
+	void read(FDataStreamBase* pStream,
+		uint uiOuterSubtrahend = 0, uint uiInnerSubtrahend = 0)
 	{
 	#ifdef ENUM_MAP_EXTRA_ASSERTS
 		FAssert(!isAnyNonDefault());
 	#endif
-		FOR_EACH_OUTER_KEY(eOuterKey)
+		for (EOuter eOuterKey = enum_traits<EOuter>::first;
+			eOuterKey < getLength() - (int)uiOuterSubtrahend; ++eOuterKey)
 		{
 			bool bNonEmpty;
 			pStream->Read(&bNonEmpty);
@@ -1868,7 +1873,7 @@ public:
 			{
 				InnerEnumMap* pInnerMap = new InnerEnumMap();
 				setUnsafe(eOuterKey, pInnerMap);
-				pInnerMap->read(pStream);
+				pInnerMap->read(pStream, uiInnerSubtrahend);
 			}
 		}
 	}
@@ -1889,7 +1894,8 @@ public:
 		}
 	}
 	template<typename OuterSizeType, typename InnerSizeType, typename ValueType>
-	void readLazyArray(FDataStreamBase* pStream)
+	void readLazyArray(FDataStreamBase* pStream,
+		uint uiOuterSubtrahend = 0, uint uiInnerSubtrahend = 0)
 	{
 	#ifdef ENUM_MAP_EXTRA_ASSERTS
 		FAssert(!isAnyNonDefault());
@@ -1898,7 +1904,8 @@ public:
 		pStream->Read(&outerSz);
 		if (outerSz == 0)
 			return;
-		FOR_EACH_OUTER_KEY(eOuterKey)
+		for (EOuter eOuterKey = enum_traits<EOuter>::first;
+			eOuterKey < getLength() - (int)uiOuterSubtrahend; ++eOuterKey)
 		{
 			InnerSizeType innerSz;
 			pStream->Read(&innerSz);
@@ -1906,7 +1913,7 @@ public:
 				continue;
 			InnerEnumMap* pInnerMap = new InnerEnumMap();
 			setUnsafe(eOuterKey, pInnerMap);
-			pInnerMap->readArray<ValueType>(pStream);
+			pInnerMap->readArray<ValueType>(pStream, uiInnerSubtrahend);
 		}
 	}
 	template<typename ValueType>
@@ -1926,16 +1933,18 @@ public:
 		}
 	}
 	template<typename ValueType>
-	void readArray(FDataStreamBase* pStream)
+	void readArray(FDataStreamBase* pStream,
+		uint uiOuterSubtrahend = 0, uint uiInnerSubtrahend = 0)
 	{
 	#ifdef ENUM_MAP_EXTRA_ASSERTS
 		FAssert(!isAnyNonDefault());
 	#endif
-		FOR_EACH_OUTER_KEY(eOuterKey)
+		for (EOuter eOuterKey = enum_traits<EOuter>::first;
+			eOuterKey < getLength() - (int)uiOuterSubtrahend; ++eOuterKey)
 		{
 			// Temporary array-based map
 			ArrayEnumMap<EInner,VInner,VInner,InnerEnumMap::defaultValue> innerArray;
-			innerArray.readArray<ValueType>(pStream);
+			innerArray.readArray<ValueType>(pStream, uiInnerSubtrahend);
 			if (!innerArray.isAnyNonDefault())
 				continue;
 			InnerEnumMap* pInnerMap = new InnerEnumMap();
@@ -2118,12 +2127,12 @@ public:
 			lookup(eOuterKey).writeArray<ValueType>(pStream);
 	}
 	template<typename ValueType>
-	void readArray(FDataStreamBase* pStream)
+	void readArray(FDataStreamBase* pStream, uint uiSubtrahend = 0)
 	{
 		FOR_EACH_OUTER_KEY(eOuterKey)
 		{
 			InnerEncodableMap innerMap;
-			innerMap.readArray<ValueType>(pStream);
+			innerMap.readArray<ValueType>(pStream, uiSubtrahend);
 			set(eOuterKey, innerMap.encode());
 		}
 	}
@@ -2134,12 +2143,14 @@ public:
 			lookup(eOuterKey).writeLazyArray<SizeType,ValueType>(pStream);
 	}
 	template<typename OuterSizeType, typename InnerSizeType, typename ValueType>
-	void readLazyArray(FDataStreamBase* pStream)
+	void readLazyArray(FDataStreamBase* pStream,
+		uint uiOuterSubtrahend, uint uiInnerSubtrahend)
 	{
-		FOR_EACH_OUTER_KEY(eOuterKey)
+		for (EOuter eOuterKey = enum_traits<EOuter>::first;
+			eOuterKey < getLength() - (int)uiOuterSubtrahend; ++eOuterKey)
 		{
 			InnerEncodableMap innerMap;
-			innerMap.readLazyArray<SizeType,ValueType>(pStream);
+			innerMap.readLazyArray<SizeType,ValueType>(pStream, uiInnerSubtrahend);
 			set(eOuterKey, innerMap.encode());
 		}
 	}

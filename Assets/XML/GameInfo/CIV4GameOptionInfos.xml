@@ -142,10 +142,11 @@
 			<bDefault>0</bDefault>
 			<bVisible>1</bVisible>
 		</GameOptionInfo>
+		<!-- advc.tsl: Taking the spot of LOCK_MODS -->
 		<GameOptionInfo>
-			<Type>GAMEOPTION_LOCK_MODS</Type>
-			<Description>TXT_KEY_GAME_OPTION_LOCK_MODS</Description>
-			<Help>TXT_KEY_GAME_OPTION_LOCK_MODS_HELP</Help>
+			<Type>GAMEOPTION_TRUE_STARTS</Type>
+			<Description>TXT_KEY_GAME_OPTION_TRUE_STARTS</Description>
+			<Help>TXT_KEY_GAME_OPTION_TRUE_STARTS_HELP</Help>
 			<bDefault>0</bDefault>
 			<bVisible>1</bVisible>
 		</GameOptionInfo>
@@ -205,6 +206,14 @@
 			<Type>GAMEOPTION_NO_SLAVERY</Type>
 			<Description>TXT_KEY_GAME_OPTION_NO_SLAVERY</Description>
 			<Help>TXT_KEY_GAME_OPTION_NO_SLAVERY_HELP</Help>
+			<bDefault>0</bDefault>
+			<bVisible>1</bVisible>
+		</GameOptionInfo>
+		<!-- advc.tsl: Moved down -->
+		<GameOptionInfo>
+			<Type>GAMEOPTION_LOCK_MODS</Type>
+			<Description>TXT_KEY_GAME_OPTION_LOCK_MODS</Description>
+			<Help>TXT_KEY_GAME_OPTION_LOCK_MODS_HELP</Help>
 			<bDefault>0</bDefault>
 			<bVisible>1</bVisible>
 		</GameOptionInfo>

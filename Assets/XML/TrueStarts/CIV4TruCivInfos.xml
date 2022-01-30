@@ -1,0 +1,633 @@
+<?xml version="1.0"?>
+<!-- advc.tsl: Per-civ data for the True Starts game option.
+	 Could argue that much of this should be tied to leaders as the
+	 civilizations had different extents under different leaders,
+	 but each civ has just one city list, so ... -->
+<Civ4TruCivInfos xmlns="x-schema:CIV4TrueStartsSchema.xml">
+	<TruCivInfos>
+		<TruCivInfo>
+			<Type>TRU_AMERICA</Type>
+			<CivilizationType>CIVILIZATION_AMERICA</CivilizationType>
+			<iLatitudeTimes10>389</iLatitudeTimes10>
+			<iLongitudeTimes10>-770</iLongitudeTimes10>
+			<iPrecipitation>1062</iPrecipitation>
+			<!-- The 13 Colonies weren't all that diverse,
+				 especially not wrt. precipitation. -->
+			<iClimateVariation>35</iClimateVariation>
+			<iOceanity>35</iOceanity>
+			<!-- Considering only the Northeast here -->
+			<iMaxElevation>1917</iMaxElevation>
+			<iMountainousArea>25</iMountainousArea>
+			<!-- Present day area of US, H-stretch is really closer to 200,
+				 but that seems a bit extreme for a civ that also covers
+				 a large north-south distance. But mainly I do want there
+				 to be a western (or eastern) frontier. -->
+			<iTotalArea>9827</iTotalArea>
+			<iHStretch>175</iHStretch>
+			<iBias>7</iBias>
+			<!-- Use this for both Americas; all the Maize growers. -->
+			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_ARABIA</Type>
+			<CivilizationType>CIVILIZATION_ARABIA</CivilizationType>
+			<!-- Actually 214, but that tends to be quite close to the
+				 Jungle belt. Especially considering that the DLL tends to
+				 start civs at slightly lower latitude than this file says
+				 in order to avoid using the same few near-equatorial civs
+				 over and over. -->
+			<iLatitudeTimes10>250</iLatitudeTimes10>
+			<iLongitudeTimes10>400</iLongitudeTimes10>
+			<iPrecipitation>111</iPrecipitation>
+			<iClimateVariation>15</iClimateVariation>
+			<iOceanity>30</iOceanity>
+			<!-- Leave desert rivers to the civs that need them -->
+			<iMajorRiverWeight>-40</iMajorRiverWeight>
+			<iMaxElevation>3000</iMaxElevation>
+			<iMountainousArea>15</iMountainousArea>
+			<!-- Saudi Arabia. Saladin's sultanate had a somewhat
+				 similar area. -->
+			<iTotalArea>2150</iTotalArea>
+			<iBias>16</iBias>
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_AZTEC</Type>
+			<CivilizationType>CIVILIZATION_AZTEC</CivilizationType>
+			<iLatitudeTimes10>194</iLatitudeTimes10>
+			<iLongitudeTimes10>-991</iLongitudeTimes10>
+			<iPrecipitation>851</iPrecipitation>
+			<iClimateVariation>75</iClimateVariation>
+			<iOceanity>10</iOceanity>
+			<!-- They're lake people -->
+			<iMajorRiverWeight>-50</iMajorRiverWeight>
+			<iMaxElevation>5636</iMaxElevation>
+			<iMountainousArea>50</iMountainousArea>
+			<!-- Peak area -->
+			<iTotalArea>220</iTotalArea>
+			<iBias>-1</iBias>
+			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_BABYLON</Type>
+			<CivilizationType>CIVILIZATION_BABYLON</CivilizationType>
+			<iLatitudeTimes10>325</iLatitudeTimes10>
+			<iLongitudeTimes10>444</iLongitudeTimes10>
+			<iPrecipitation>156</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
+			<iOceanity>5</iOceanity>
+			<iMajorRiverWeight>60</iMajorRiverWeight>
+			<!-- Foothills of the Zagros; The Sinjar Mts. are too far
+				 outside the Babylonian core. -->
+			<iMaxElevation>1000</iMaxElevation>
+			<iMountainousArea>7</iMountainousArea>
+			<!-- Iraq; Hammurabi's empire was smaller, the later empires
+				 were larger. Shape is vertically stretched, but I
+				 don't think that's important. Along a river is what matters. -->
+			<iTotalArea>438</iTotalArea>
+			<iBias>9</iBias>
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_BYZANTIUM</Type>
+			<CivilizationType>CIVILIZATION_BYZANTIUM</CivilizationType>
+			<iLatitudeTimes10>410</iLatitudeTimes10>
+			<iLongitudeTimes10>290</iLongitudeTimes10>
+			<iPrecipitation>850</iPrecipitation>
+			<iClimateVariation>50</iClimateVariation>
+			<iOceanity>45</iOceanity>
+			<!-- Avoid occupying a desert river -->
+			<iMajorRiverWeight>-40</iMajorRiverWeight>
+			<!-- Argaeus; Ararat is too far from the core. -->
+			<iMaxElevation>3917</iMaxElevation>
+			<iMountainousArea>60</iMountainousArea>
+			<!-- My crude approximation of their 5th century territory -->
+			<iTotalArea>1500</iTotalArea>
+			<iBias>4</iBias>
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_CARTHAGE</Type>
+			<CivilizationType>CIVILIZATION_CARTHAGE</CivilizationType>
+			<iLatitudeTimes10>369</iLatitudeTimes10>
+			<iLongitudeTimes10>103</iLongitudeTimes10>
+			<iPrecipitation>472</iPrecipitation>
+			<!-- Mediterranean and desert is quite a difference, but,
+				 at this latitude, a high variation target could also
+				 encourage jungle. -->
+			<iClimateVariation>40</iClimateVariation>
+			<iOceanity>75</iOceanity>
+			<!-- Leave desert rivers to the civs that need them -->
+			<iMajorRiverWeight>-45</iMajorRiverWeight>
+			<iMaxElevation>1544</iMaxElevation>
+			<iMountainousArea>10</iMountainousArea>
+			<!-- Half of Tunesia. The African core was really small. -->
+			<iTotalArea>82</iTotalArea>
+			<iBias>-4</iBias>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_CELT</Type>
+			<CivilizationType>CIVILIZATION_CELT</CivilizationType>
+			<iLatitudeTimes10>469</iLatitudeTimes10>
+			<iLongitudeTimes10>40</iLongitudeTimes10>
+			<!-- Dijon - which seems dry for its region, but Boudica's
+				 neck of the woods (Norfolk) is even drier. -->
+			<iPrecipitation>761</iPrecipitation>
+			<iClimateVariation>40</iClimateVariation>
+			<iOceanity>30</iOceanity>
+			<!-- Mont Blanc -->
+			<iMaxElevation>4810</iMaxElevation>
+			<iMountainousArea>15</iMountainousArea>
+			<!-- Don't care how much space they have. The total area was
+				 enormous, the tribes represented by the leaders in the
+				 game were tiny. If they do have space, horizontal is
+				 preferable. As a linguistic group, they were very
+				 widely spread across Europe and into Asia Minor. -->
+			<iHStretch>175</iHStretch>
+			<iBias>-12</iBias>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_CHINA</Type>
+			<CivilizationType>CIVILIZATION_CHINA</CivilizationType>
+			<!-- Mean of Beijing (399) and Xi'an (343) b/c the high latitude
+				 value gets China chosen over European civs too often. -->
+			<iLatitudeTimes10>371</iLatitudeTimes10>
+			<!-- Mean of Beijing (1164) and Xi'an (1089); to be consistent with
+				 the latitude averaging. -->
+			<iLongitudeTimes10>1127</iLongitudeTimes10>
+			<!-- Beijing; Xi'an isn't much different. -->
+			<iPrecipitation>543</iPrecipitation>
+			<!-- The Northeastern Plain is in itself not extremely varied.
+				 Don't want large desert or jungle too close to starting plot. -->
+			<iClimateVariation>60</iClimateVariation>
+			<iOceanity>10</iOceanity>
+			<iMajorRiverWeight>40</iMajorRiverWeight>
+			<!-- Mt. Taibai - stick to Eastern China. -->
+			<iMaxElevation>3750</iMaxElevation>
+			<iMountainousArea>50</iMountainousArea>
+			<!-- Present-day area; whatever, it's big one way or another.
+				 Want them to struggle with Barbarians. -->
+			<iTotalArea>9597</iTotalArea>
+			<iHStretch>133</iHStretch>
+			<iBias>-20</iBias>
+			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_EGYPT</Type>
+			<CivilizationType>CIVILIZATION_EGYPT</CivilizationType>
+			<iLatitudeTimes10>298</iLatitudeTimes10>
+			<iLongitudeTimes10>310</iLongitudeTimes10>
+			<!-- Thebes is extremely dry -->
+			<iPrecipitation>1</iPrecipitation>
+			<iClimateVariation>15</iClimateVariation>
+			<iOceanity>25</iOceanity>
+			<iMajorRiverWeight>100</iMajorRiverWeight>
+			<iMaxElevation>2629</iMaxElevation>
+			<iMountainousArea>10</iMountainousArea>
+			<!-- Modern Egypt -->
+			<iTotalArea>1010</iTotalArea>
+			<!-- Ideally along some river, but vertically stretched is
+				 somewhat important too. Egypt connects the tropics with
+				 the Mediterranean. -->
+			<iHStretch>50</iHStretch>
+			<iBias>4</iBias>
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_ENGLAND</Type>
+			<CivilizationType>CIVILIZATION_ENGLAND</CivilizationType>
+			<!-- Moved south by 1 degree to account for the mild climate -->
+			<iLatitudeTimes10>505</iLatitudeTimes10>
+			<iLongitudeTimes10>1</iLongitudeTimes10>
+			<!-- More rain and variation if we'd include Scotland -->
+			<iPrecipitation>855</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
+			<iOceanity>75</iOceanity>
+			<!-- Just England proper here -->
+			<iMaxElevation>978</iMaxElevation>
+			<iMountainousArea>15</iMountainousArea>
+			<!-- Great Britain -->
+			<iTotalArea>209</iTotalArea>
+			<iBias>7</iBias>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_ETHIOPIA</Type>
+			<CivilizationType>CIVILIZATION_ETHIOPIA</CivilizationType>
+			<!-- (Could use a somewhat lower value to account for Zara Yaqob's
+				 capital being in Central Ethiopia) -->
+			<iLatitudeTimes10>147</iLatitudeTimes10>
+			<iLongitudeTimes10>384</iLongitudeTimes10>
+			<iPrecipitation>652</iPrecipitation>
+			<iClimateVariation>72</iClimateVariation>
+			<iOceanity>30</iOceanity>
+			<iMaxElevation>4550</iMaxElevation>
+			<iMountainousArea>50</iMountainousArea>
+			<!-- Quite big, but not necessarily thought of as very powerful.
+				 Though not easily conquered either ... Let's at least
+				 not count the Eritrean area. -->
+			<iTotalArea>1104</iTotalArea>
+			<iBias>-4</iBias>
+			<!-- Close enough -->
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_FRANCE</Type>
+			<CivilizationType>CIVILIZATION_FRANCE</CivilizationType>
+			<iLatitudeTimes10>489</iLatitudeTimes10>
+			<iLongitudeTimes10>24</iLongitudeTimes10>
+			<iPrecipitation>850</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
+			<iOceanity>30</iOceanity>
+			<iMaxElevation>4810</iMaxElevation>
+			<iMountainousArea>15</iMountainousArea>
+			<iTotalArea>641</iTotalArea>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_GERMANY</Type>
+			<CivilizationType>CIVILIZATION_GERMANY</CivilizationType>
+			<iLatitudeTimes10>525</iLatitudeTimes10>
+			<iLongitudeTimes10>130</iLongitudeTimes10>
+			<iPrecipitation>700</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
+			<iOceanity>20</iOceanity>
+			<iMaxElevation>2962</iMaxElevation>
+			<iMountainousArea>10</iMountainousArea>
+			<!-- German Empire in 1910 - with the Prussian leaders
+				 in the game ... -->
+			<iTotalArea>541</iTotalArea>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+			<iBias>-7</iBias>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_GREECE</Type>
+			<CivilizationType>CIVILIZATION_GREECE</CivilizationType>
+			<iLatitudeTimes10>379</iLatitudeTimes10>
+			<iLongitudeTimes10>237</iLongitudeTimes10>
+			<iPrecipitation>433</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
+			<iOceanity>80</iOceanity>
+			<!-- Leave desert rivers to the civs that need them -->
+			<iMajorRiverWeight>-50</iMajorRiverWeight>
+			<iMaxElevation>2917</iMaxElevation>
+			<iMountainousArea>50</iMountainousArea>
+			<!-- Modern Greece -->
+			<iTotalArea>132</iTotalArea>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_HOLY_ROMAN</Type>
+			<CivilizationType>CIVILIZATION_HOLY_ROMAN</CivilizationType>
+			<iLatitudeTimes10>508</iLatitudeTimes10>
+			<iLongitudeTimes10>61</iLongitudeTimes10>
+			<iPrecipitation>837</iPrecipitation>
+			<iClimateVariation>30</iClimateVariation>
+			<iOceanity>15</iOceanity>
+			<iMaxElevation>4810</iMaxElevation>
+			<iMountainousArea>25</iMountainousArea>
+			<!-- In AD 1050 -->
+			<iTotalArea>1000</iTotalArea>
+			<iBias>6</iBias>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_INCA</Type>
+			<CivilizationType>CIVILIZATION_INCA</CivilizationType>
+			<iLatitudeTimes10>-135</iLatitudeTimes10>
+			<iLongitudeTimes10>-720</iLongitudeTimes10>
+			<!-- Cuzco; seems that other Inca cities tend to be drier,
+				 but better not to go too low b/c we want some jungle too. -->
+			<iPrecipitation>737</iPrecipitation>
+			<iClimateVariation>80</iClimateVariation>
+			<iOceanity>10</iOceanity>
+			<!-- Lake civ (though the Amazon is not _that_ far) -->
+			<iMajorRiverWeight>-40</iMajorRiverWeight>
+			<iMaxElevation>6893</iMaxElevation>
+			<iMountainousArea>60</iMountainousArea>
+			<!-- in AD 1527 -->
+			<iTotalArea>2000</iTotalArea>
+			<iHStretch>33</iHStretch>
+			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_INDIA</Type>
+			<CivilizationType>CIVILIZATION_INDIA</CivilizationType>
+			<iLatitudeTimes10>286</iLatitudeTimes10>
+			<iLongitudeTimes10>772</iLongitudeTimes10>
+			<!-- Delhi 762, across the country 1100. The south is quite far
+				 from the capital however. -->
+			<iPrecipitation>850</iPrecipitation>
+			<iClimateVariation>85</iClimateVariation>
+			<iOceanity>5</iOceanity>
+			<iMajorRiverWeight>40</iMajorRiverWeight>
+			<iMaxElevation>8586</iMaxElevation>
+			<iMountainousArea>25</iMountainousArea>
+			<!-- incl. Pakistan -->
+			<iTotalArea>4169</iTotalArea>
+			<iBias>-11</iBias>
+			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_JAPAN</Type>
+			<CivilizationType>CIVILIZATION_JAPAN</CivilizationType>
+			<iLatitudeTimes10>350</iLatitudeTimes10>
+			<iLongitudeTimes10>1358</iLongitudeTimes10>
+			<!-- 1523 in Kyoto; Tokyo even more. Across Japan I've found
+				 figures of 1600 and 1760 for the years 2019 and 2018.
+				 However, Japan is mostly supposed to have Grassland Forests,
+				 and the game can't treat those as being as wet as Jungle.
+				 So we'll go with a lower target value. -->
+			<iPrecipitation>1335</iPrecipitation>
+			<iClimateVariation>30</iClimateVariation>
+			<iOceanity>77</iOceanity>
+			<iMaxElevation>3776</iMaxElevation>
+			<iMountainousArea>50</iMountainousArea>
+			<iTotalArea>378</iTotalArea>
+			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_KHMER</Type>
+			<CivilizationType>CIVILIZATION_KHMER</CivilizationType>
+			<iLatitudeTimes10>134</iLatitudeTimes10>
+			<iLongitudeTimes10>1038</iLongitudeTimes10>
+			<iPrecipitation>1406</iPrecipitation>
+			<iClimateVariation>20</iClimateVariation>
+			<iOceanity>18</iOceanity>
+			<!-- Not counting Central Vietnam -->
+			<iMaxElevation>1813</iMaxElevation>
+			<iMountainousArea>20</iMountainousArea>
+			<!-- Somewhere between Cambodia and the empire's largest extent -->
+			<iTotalArea>350</iTotalArea>
+			<iBias>-14</iBias>
+			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_KOREA</Type>
+			<CivilizationType>CIVILIZATION_KOREA</CivilizationType>
+			<iLatitudeTimes10>376</iLatitudeTimes10>
+			<iLongitudeTimes10>1269</iLongitudeTimes10>
+			<!-- Mean of Seoul and Pyongyang -->
+			<iPrecipitation>1165</iPrecipitation>
+			<iClimateVariation>50</iClimateVariation>
+			<iOceanity>70</iOceanity>
+			<iMaxElevation>2744</iMaxElevation>
+			<iMountainousArea>35</iMountainousArea>	
+			<iTotalArea>223</iTotalArea>
+			<iBias>6</iBias>
+			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_MALI</Type>
+			<CivilizationType>CIVILIZATION_MALI</CivilizationType>
+			<iLatitudeTimes10>168</iLatitudeTimes10>
+			<iLongitudeTimes10>30</iLongitudeTimes10>
+			<iPrecipitation>183</iPrecipitation>
+			<iClimateVariation>55</iClimateVariation>
+			<iOceanity>3</iOceanity>
+			<iMaxElevation>1155</iMaxElevation>
+			<iMountainousArea>7</iMountainousArea>
+			<!-- AD 1350. No shape preference. Was horizontally stretched,
+				 but they did, crucially, profit from the trans-Saharan trade.
+				 Them expanding into the jungle or desert wouldn't feel wrong
+				 in the game. -->
+			<iTotalArea>1000</iTotalArea>
+			<iMajorRiverWeight>50</iMajorRiverWeight>
+			<iBias>12</iBias>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_MAYA</Type>
+			<CivilizationType>CIVILIZATION_MAYA</CivilizationType>
+			<iLatitudeTimes10>172</iLatitudeTimes10>
+			<iLongitudeTimes10>-896</iLongitudeTimes10>
+			<!-- 2000 around Flores. Let's go a bit higher rather than set
+				 a higher negative bias. -->
+			<iPrecipitation>2270</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
+			<iOceanity>18</iOceanity>
+			<!-- No major rivers -->
+			<iMajorRiverWeight>-35</iMajorRiverWeight>
+			<iMaxElevation>4203</iMaxElevation>
+			<iMountainousArea>30</iMountainousArea>
+			<!-- Yucatan + Guatemala + Belize -->
+			<iTotalArea>313</iTotalArea>
+			<iBias>-10</iBias>
+			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_MONGOL</Type>
+			<CivilizationType>CIVILIZATION_MONGOL</CivilizationType>
+			<iLatitudeTimes10>472</iLatitudeTimes10>
+			<iLongitudeTimes10>1028</iLongitudeTimes10>
+			<!-- Arvaikheer -->
+			<iPrecipitation>208</iPrecipitation>
+			<iClimateVariation>50</iClimateVariation>
+			<iOceanity>0</iOceanity>
+			<iMajorRiverWeight>-40</iMajorRiverWeight>
+			<!-- The Altai is too far west -->
+			<iMaxElevation>4031</iMaxElevation>
+			<iMountainousArea>30</iMountainousArea>
+			<!-- Modern Mongolia -->
+			<iTotalArea>1564</iTotalArea>
+			<iHStretch>175</iHStretch>
+			<iBias>-3</iBias>
+			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_NATIVE_AMERICA</Type>
+			<CivilizationType>CIVILIZATION_NATIVE_AMERICA</CivilizationType>
+			<iLatitudeTimes10>387</iLatitudeTimes10>
+			<iLongitudeTimes10>-900</iLongitudeTimes10>
+			<!-- St. Louis (Cahokia) has 1060, which is pretty typical for
+				 the Mississippi basin. It's a bit difficult, however, to
+				 ascribe such high precipitation to Plains or Grassland tiles
+				 in the game. The western Great Plains, where Sitting Bull
+				 comes from, are drier, e.g. 707 at Sioux Falls. -->
+			<iPrecipitation>930</iPrecipitation>
+			<iClimateVariation>45</iClimateVariation>
+			<iOceanity>4</iOceanity>
+			<!-- Mississippi, but riverless plains works too. -->
+			<iMajorRiverWeight>5</iMajorRiverWeight>
+			<!-- Mound Builder area only -->
+			<iMaxElevation>2037</iMaxElevation>
+			<iMountainousArea>25</iMountainousArea>
+			<!-- (No preference for space or shape) -->
+			<GeoRegion>ARTSTYLE_SOUTH_AMERICA</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_NETHERLANDS</Type>
+			<CivilizationType>CIVILIZATION_NETHERLANDS</CivilizationType>
+			<iLatitudeTimes10>523</iLatitudeTimes10>
+			<iLongitudeTimes10>50</iLongitudeTimes10>
+			<iPrecipitation>838</iPrecipitation>
+			<iClimateVariation>12</iClimateVariation>
+			<iOceanity>65</iOceanity>
+			<iMaxElevation>322</iMaxElevation>
+			<iMountainousArea>1</iMountainousArea>
+			<iTotalArea>42</iTotalArea>
+			<iBias>20</iBias>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_OTTOMAN</Type>
+			<CivilizationType>CIVILIZATION_OTTOMAN</CivilizationType>
+			<!-- Same data as for Byzantium -->
+			<iLatitudeTimes10>410</iLatitudeTimes10>
+			<iLongitudeTimes10>290</iLongitudeTimes10>
+			<iPrecipitation>850</iPrecipitation>
+			<iClimateVariation>50</iClimateVariation>
+			<iOceanity>45</iOceanity>
+			<iMajorRiverWeight>-40</iMajorRiverWeight>
+			<!-- (see Byzantium) -->
+			<iMaxElevation>3917</iMaxElevation>
+			<iMountainousArea>65</iMountainousArea>
+			<!-- AD 1451 -->
+			<iTotalArea>690</iTotalArea>
+			<!-- For a strictly post-Medieval civ like this, far-eastern
+				 resources could be acceptable from the start of the game.
+				 However, the core region is probably going to be at a too
+				 high latitude for those anyway, so I don't think the
+				 Ottomans need to be handled separately. -->
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_PERSIA</Type>
+			<CivilizationType>CIVILIZATION_PERSIA</CivilizationType>
+			<iLatitudeTimes10>299</iLatitudeTimes10>
+			<iLongitudeTimes10>529</iLongitudeTimes10>
+			<iPrecipitation>306</iPrecipitation>
+			<iClimateVariation>60</iClimateVariation>
+			<iOceanity>22</iOceanity>
+			<!-- We have the Karun, Amu and Syr for which Desert Floodplains
+				 work well, but the former is pretty short and the latter two
+				 are far from the core. Should really prefer a desert civ
+				 when there's a major desert river, and, in these latitudes,
+				 rivers are likely to have some desert tiles. -->
+			<iMajorRiverWeight>-35</iMajorRiverWeight>
+			<iMaxElevation>5610</iMaxElevation>
+			<iMountainousArea>50</iMountainousArea>
+			<!-- Iran -->
+			<iTotalArea>1648</iTotalArea>
+			<iBias>-2</iBias>
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_PORTUGAL</Type>
+			<CivilizationType>CIVILIZATION_PORTUGAL</CivilizationType>
+			<iLatitudeTimes10>387</iLatitudeTimes10>
+			<iLongitudeTimes10>-92</iLongitudeTimes10>
+			<iPrecipitation>774</iPrecipitation>
+			<iClimateVariation>25</iClimateVariation>
+			<iOceanity>78</iOceanity>
+			<iMaxElevation>1993</iMaxElevation>
+			<iMountainousArea>30</iMountainousArea>
+			<iTotalArea>92</iTotalArea>
+			<iBias>-5</iBias>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_ROME</Type>
+			<CivilizationType>CIVILIZATION_ROME</CivilizationType>
+			<iLatitudeTimes10>419</iLatitudeTimes10>
+			<iLongitudeTimes10>125</iLongitudeTimes10>
+			<iPrecipitation>799</iPrecipitation>
+			<iClimateVariation>40</iClimateVariation>
+			<iOceanity>60</iOceanity>
+			<iMaxElevation>4810</iMaxElevation>
+			<iMountainousArea>45</iMountainousArea>
+			<!-- 25 BC -->
+			<iTotalArea>2750</iTotalArea>
+			<iBias>2</iBias>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_RUSSIA</Type>
+			<CivilizationType>CIVILIZATION_RUSSIA</CivilizationType>
+			<iLatitudeTimes10>556</iLatitudeTimes10>
+			<iLongitudeTimes10>376</iLongitudeTimes10>
+			<iPrecipitation>713</iPrecipitation>
+			<!-- The Eastern Plain is as boring as it gets -->
+			<iClimateVariation>38</iClimateVariation>
+			<iOceanity>5</iOceanity>
+			<!-- Would prefer to consider only the Eastern Plain here
+				 (highest elevation 347 m), but such flatness rarely occurs
+				 on random maps, so let's go a bit higher - but not as high
+				 as the Ural or Cauccasus.
+				 Upd.: Russia gets chosen too often now, so let's revert to
+				 the flatness rather than increase the negative iBias. -->
+			<iMaxElevation>347</iMaxElevation>
+			<iMountainousArea>10</iMountainousArea>
+			<!-- Russian Empire -->
+			<iTotalArea>22800</iTotalArea>
+			<iHStretch>175</iHStretch>
+			<iBias>-5</iBias>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_SPAIN</Type>
+			<CivilizationType>CIVILIZATION_SPAIN</CivilizationType>
+			<iLatitudeTimes10>403</iLatitudeTimes10>
+			<iLongitudeTimes10>-40</iLongitudeTimes10>
+			<!-- 423 in Madrid, but 650 across the country. -->
+			<iPrecipitation>530</iPrecipitation>
+			<iClimateVariation>62</iClimateVariation>
+			<iOceanity>30</iOceanity>
+			<iMaxElevation>3479</iMaxElevation>
+			<iMountainousArea>60</iMountainousArea>
+			<iTotalArea>506</iTotalArea>
+			<iBias>-9</iBias>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_SUMERIA</Type>
+			<CivilizationType>CIVILIZATION_SUMERIA</CivilizationType>
+			<iLatitudeTimes10>313</iLatitudeTimes10>
+			<iLongitudeTimes10>456</iLongitudeTimes10>
+			<!-- Samawah -->
+			<iPrecipitation>106</iPrecipitation>
+			<iClimateVariation>20</iClimateVariation>
+			<iOceanity>10</iOceanity>
+			<iMajorRiverWeight>80</iMajorRiverWeight>
+			<iMaxElevation>800</iMaxElevation>
+			<iMountainousArea>5</iMountainousArea>
+			<!-- My generous approximation of Sumer/ Babylonia -->
+			<iTotalArea>100</iTotalArea>
+			<iBias>12</iBias>
+			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_VIKING</Type>
+			<CivilizationType>CIVILIZATION_VIKING</CivilizationType>
+			<!-- Moved south by 3 degrees to account for the Gulf stream -->
+			<iLatitudeTimes10>604</iLatitudeTimes10>
+			<iLongitudeTimes10>104</iLongitudeTimes10>
+			<!-- Mean of Trondheim (841) and Copenhagen (645). Oslo: 802. -->
+			<iPrecipitation>743</iPrecipitation>
+			<!-- It's really only variation in precipitation at this point,
+				 and Tundra Forest isn't very different from temperate tiles
+				 in that regard. -->
+			<iClimateVariation>30</iClimateVariation>
+			<iOceanity>65</iOceanity>
+			<iMaxElevation>2469</iMaxElevation>
+			<iMountainousArea>30</iMountainousArea>
+			<!-- (No space or shape preference) -->
+			<iBias>2</iBias>
+			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
+		</TruCivInfo>
+		<TruCivInfo>
+			<Type>TRU_ZULU</Type>
+			<CivilizationType>CIVILIZATION_ZULU</CivilizationType>
+			<iLatitudeTimes10>-283</iLatitudeTimes10>
+			<iLongitudeTimes10>314</iLongitudeTimes10>
+			<iPrecipitation>844</iPrecipitation>
+			<iClimateVariation>70</iClimateVariation>
+			<iOceanity>25</iOceanity>
+			<iMaxElevation>3450</iMaxElevation>
+			<iMountainousArea>30</iMountainousArea>
+			<!-- AD 1822 -->
+			<iTotalArea>207</iTotalArea>
+			<iBias>-10</iBias>
+		</TruCivInfo>
+	</TruCivInfos>
+</Civ4TruCivInfos>

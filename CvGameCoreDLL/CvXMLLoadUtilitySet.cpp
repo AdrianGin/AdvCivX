@@ -839,17 +839,31 @@ bool CvXMLLoadUtility::LoadPostMenuGlobals()
 // <advc.003v>
 bool CvXMLLoadUtility::LoadOptionalGlobals()
 {
-	if (m->bEventsLoaded || GC.getGame().isOption(GAMEOPTION_NO_EVENTS))
-		return true;
-
-	if (!CreateFXml())
-		return false;
-
-	LoadGlobalClassInfo(GC.m_paEventInfo, "CIV4EventInfos", "Events", "Civ4EventInfos/EventInfos/EventInfo", true, &CvDLLUtilityIFaceBase::createEventInfoCacheObject);
-	LoadGlobalClassInfo(GC.m_paEventTriggerInfo, "CIV4EventTriggerInfos", "Events", "Civ4EventTriggerInfos/EventTriggerInfos/EventTriggerInfo", false, &CvDLLUtilityIFaceBase::createEventTriggerInfoCacheObject);
+	bool bFXmlCreated = false; // Perhaps better not to do this twice
+	if (!m->bEventsLoaded && GC.getGame().isOption(GAMEOPTION_NO_EVENTS))
+	{
+		if (!CreateFXml())
+			return false;
+		LoadGlobalClassInfo(GC.m_paEventInfo, "CIV4EventInfos", "Events", "Civ4EventInfos/EventInfos/EventInfo", true, &CvDLLUtilityIFaceBase::createEventInfoCacheObject);
+		LoadGlobalClassInfo(GC.m_paEventTriggerInfo, "CIV4EventTriggerInfos", "Events", "Civ4EventTriggerInfos/EventTriggerInfos/EventTriggerInfo", false, &CvDLLUtilityIFaceBase::createEventTriggerInfoCacheObject);
+		m->bEventsLoaded = true;
+		bFXmlCreated = true;
+	}
+	// <advc.tsl>
+	if (!m->bTrueStartsDataLoaded && GC.getGame().isOption(GAMEOPTION_TRUE_STARTS))
+	{
+		if (!bFXmlCreated)
+		{
+			if (!CreateFXml())
+				return false;
+		}
+		LoadGlobalClassInfo(GC.m_paTruCivInfo, "CIV4TruCivInfos", "TrueStarts", "Civ4TruCivInfos/TruCivInfos/TruCivInfo", false);
+		LoadGlobalClassInfo(GC.m_paTruLeaderInfo, "CIV4TruLeaderInfos", "TrueStarts", "Civ4TruLeaderInfos/TruLeaderInfos/TruLeaderInfo", false);
+		LoadGlobalClassInfo(GC.m_paTruBonusInfo, "CIV4TruBonusInfos", "TrueStarts", "Civ4TruBonusInfos/TruBonusInfos/TruBonusInfo", false);
+		m->bTrueStartsDataLoaded = true;
+		//bFXmlCreated = true;
+	} // </advc.tsl>
 	DestroyFXml();
-	m->bEventsLoaded = true;
-
 	return true;
 }
 
@@ -1760,6 +1774,9 @@ template<typename T>
 std::pair<int,T> CvXMLLoadUtility::XMLTagPairIterator<T>::next()
 {
 	std::pair<int,T> nextPair(noPair());
+	bool const bTO_ENUM = enum_traits<T>::is_enum;
+	if (bTO_ENUM)
+		nextPair.second = (T)iNO_KEY;
 	for (; m_iSiblingIndex < m_iSiblings && nextPair.first == iNO_KEY; m_iSiblingIndex++)
 	{
 		if (m_util.SkipToNextVal() && // K-Mod: skip comments
@@ -1770,7 +1787,12 @@ std::pair<int,T> CvXMLLoadUtility::XMLTagPairIterator<T>::next()
 			if (iKey >= 0)
 			{
 				T tVal;
-				m_util.GetNextXmlVal(tVal);
+				if (bTO_ENUM) // advc: New - support for (enum,enum) pairs
+				{
+					m_util.GetNextXmlVal(m_acTextVal);
+					tVal = static_cast<T>(getGlobalEnumFromString(m_acTextVal));
+				}
+				else m_util.GetNextXmlVal(tVal);
 				nextPair = std::make_pair(iKey, tVal);
 			}
 			setToParent();
@@ -1790,6 +1812,11 @@ template CvXMLLoadUtility::XMLTagPairIterator<bool>;
 template CvXMLLoadUtility::XMLTagPairIterator<float>;
 template CvXMLLoadUtility::XMLTagPairIterator<short>;
 template CvXMLLoadUtility::XMLTagPairIterator<char>;
+#define INSTANTIATE_XML_TAG_PAIR_ITERATOR(EnumPrefix, Dummy) \
+	template CvXMLLoadUtility::XMLTagPairIterator<EnumPrefix##Types>;
+DO_FOR_EACH_DYN_INFO_TYPE(INSTANTIATE_XML_TAG_PAIR_ITERATOR);
+DO_FOR_EACH_STATIC_INFO_TYPE(INSTANTIATE_XML_TAG_PAIR_ITERATOR);
+#undef INSTANTIATE_XML_TAG_PAIR_ITERATOR
 // </advc.003t>
 // <advc.enum>
 template<class EncodableMap>

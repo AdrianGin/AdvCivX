@@ -60,6 +60,7 @@ m_pFXml(NULL)
 	m = new Data(); // advc.003k
 	m->bAssertMandatory = true; // advc.006b
 	m->bEventsLoaded = m->bThroneRoomLoaded = false; // advc.003v
+	m->bTrueStartsDataLoaded = false; // advc.tsl
 	m_pSchemaCache = gDLL->getXMLIFace()->CreateFXmlSchemaCache();
 }
 

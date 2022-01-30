@@ -1256,4 +1256,20 @@
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
+	<!-- advc.tsl: Only relevant when playing with the True Starts game option.
+		 Set to 0 to disable the "sanitization" of starting sites,
+		 i.e. changes to bonus resources and other characteristics of tiles
+		 surrounding the starting sites. Recommended: 1 -->
+	<Define>
+		<DefineName>TRUE_STARTS_SANITIZE</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+	<!-- Same as above, but applies to scenarios instead of map scripts.
+		 Note that the True Starts option doesn't apply at all to
+		 scenarios with pre-placed cities. -->
+	<Define>
+		<DefineName>TRUE_STARTS_SANITIZE_SCENARIOS</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+
 </Civ4Defines>

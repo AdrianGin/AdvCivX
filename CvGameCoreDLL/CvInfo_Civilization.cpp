@@ -6,7 +6,7 @@
 
 CvCivilizationInfo::CvCivilizationInfo() :
 m_iDefaultPlayerColor(NO_PLAYERCOLOR),
-m_iArtStyleType(NO_ARTSTYLE),
+m_eArtStyleType(NO_ARTSTYLE),
 m_iUnitArtStyleType(NO_UNIT_ARTSTYLE),
 m_iNumCityNames(0),
 m_iNumLeaders(0),
@@ -55,11 +55,6 @@ int CvCivilizationInfo::getDerivativeCiv() const
 int CvCivilizationInfo::getDefaultPlayerColor() const
 {
 	return m_iDefaultPlayerColor;
-}
-
-int CvCivilizationInfo::getArtStyleType() const
-{
-	return m_iArtStyleType;
 }
 
 int CvCivilizationInfo::getUnitArtStyleType() const
@@ -208,7 +203,7 @@ void CvCivilizationInfo::read(FDataStreamBase* stream)
 	stream->Read(&uiFlag);
 
 	stream->Read(&m_iDefaultPlayerColor);
-	stream->Read(&m_iArtStyleType);
+	stream->Read((int*)&m_eArtStyleType);
 	stream->Read(&m_iUnitArtStyleType); // FlavorUnits by Impaler[WrG]
 	stream->Read(&m_iNumCityNames);
 	stream->Read(&m_iNumLeaders);
@@ -256,7 +251,7 @@ void CvCivilizationInfo::write(FDataStreamBase* stream)
 	stream->Write(uiFlag);
 
 	stream->Write(m_iDefaultPlayerColor);
-	stream->Write(m_iArtStyleType);
+	stream->Write(m_eArtStyleType);
 	stream->Write(m_iUnitArtStyleType);
 	stream->Write(m_iNumCityNames);
 	stream->Write(m_iNumLeaders);
@@ -293,7 +288,7 @@ bool CvCivilizationInfo::read(CvXMLLoadUtility* pXML)
 
 	pXML->GetChildXmlValByName(m_szArtDefineTag, "ArtDefineTag");
 
-	pXML->SetGlobalTypeFromChildXmlVal(m_iArtStyleType, "ArtStyleType");
+	pXML->SetGlobalTypeFromChildXmlVal((int&)m_eArtStyleType, "ArtStyleType");
 	{
 		CvString szTextVal;
 		pXML->GetChildXmlValByName(szTextVal, "UnitArtStyleType",

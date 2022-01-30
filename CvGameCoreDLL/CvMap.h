@@ -351,8 +351,12 @@ public: // advc: made several functions const
 	float getWidthCoords() const;
 	float getHeightCoords() const;
 
-	int maxPlotDistance() const;																								// Exposed to Python
-	int maxStepDistance() const;																								// Exposed to Python
+	int maxPlotDistance() const																			// Exposed to Python
+	{	// <advc.tsl>
+		return maxPlotDistance(getGridWidth(), getGridHeight());
+	}
+	int maxPlotDistance(int iGridWidth, int iGridHeight) const; // </advc.tsl>
+	int maxStepDistance() const;																		// Exposed to Python
 	// <advc.140>
 	int maxMaintenanceDistance() const
 	{
@@ -376,8 +380,15 @@ public: // advc: made several functions const
 	int getOwnedPlots() const { return m_iOwnedPlots; }														// Exposed to Python
 	void changeOwnedPlots(int iChange);
 
-	int getTopLatitude() const;																									// Exposed to Python
-	int getBottomLatitude() const;																							// Exposed to Python
+	int getTopLatitude() const																									// Exposed to Python
+	{
+		return m_iTopLatitude;
+	}
+	int getBottomLatitude() const																							// Exposed to Python
+	{
+		return m_iBottomLatitude;
+	}
+	void setLatitudeLimits(int iTop, int iBottom); // advc.tsl
 
 	short getNextRiverID() const;																									// Exposed to Python
 	void incrementNextRiverID();																					// Exposed to Python
@@ -407,7 +418,9 @@ public: // advc: made several functions const
 	int getNumCustomMapOptions() const;
 	CustomMapOptionTypes getCustomMapOption(int iOption) const;											// Exposed to Python
 	CvWString getNonDefaultCustomMapOptionDesc(int iOption) const; // advc.190b (exposed to Python)
-	bool isCustomMapOption(char const* szOptionsValue) const; // advc.108b
+	// <advc.108b>
+	bool isCustomMapOption(char const* szOptionsValue, bool bCheckContains = false,
+			bool bIgnoreCase = true) const; // </advc.108b>
 
 	int getNumBonuses(BonusTypes eIndex) const;																	// Exposed to Python
 	void changeNumBonuses(BonusTypes eIndex, int iChange);
