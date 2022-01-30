@@ -856,7 +856,7 @@ void CvMap::changeOwnedPlots(int iChange)
 	FAssert(getOwnedPlots() >= 0);
 }
 
-// advc.tsl: (for testing)
+// advc.tsl:
 void CvMap::setLatitudeLimits(int iTop, int iBottom)
 {
 	if (iBottom > iTop)

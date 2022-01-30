@@ -811,24 +811,23 @@ void CvPlayer::changeCiv(CivilizationTypes eNewCiv,
 	if (eOldCiv == eNewCiv)
 		return;
 	kInitCore.setCiv(getID(), eNewCiv);
-	setCivilization(eNewCiv); // advc.003u
 	// <advc.tsl>
 	if (bChangeDescr)
 	{
 		CvWString szEmpty; // Means that civ info descriptions get used
 		bool const bHuman = isHuman(); // Preserve human custom descriptions
 		if (!bHuman || wcscmp(getCivilizationDescription(),
-			GC.getCivilizationInfo(eOldCiv).getDescription()) == 0)
+			GC.getInfo(eOldCiv).getDescription()) == 0)
 		{
 			kInitCore.setCivDescription(getID(), szEmpty);
 		}
 		if (!bHuman || wcscmp(getCivilizationShortDescription(),
-			GC.getCivilizationInfo(eOldCiv).getShortDescription()) == 0)
+			GC.getInfo(eOldCiv).getShortDescription()) == 0)
 		{
 			kInitCore.setCivShortDesc(getID(), szEmpty);
 		}
 		if (!bHuman || wcscmp(getCivilizationAdjective(),
-			GC.getCivilizationInfo(eOldCiv).getAdjective()) == 0)
+			GC.getInfo(eOldCiv).getAdjective()) == 0)
 		{
 			kInitCore.setCivAdjective(getID(), szEmpty);
 		}
@@ -18949,7 +18948,7 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 	/*	<advc.ctr> Add PEACE_TREATY items to offers that imply a peace treaty.
 		Note that this is only done to inform the human player. There is code
 		elsewhere for signing the peace treaty upon implementation of the deal.
-		For deals that involve a human, the game will end up attemping to
+		For deals that involve a human, the game will end up attempting to
 		implement the peace treaty twice. No harm in that.
 		I don't know if updateTradeList gets called for all AI trades;
 		don't want to rely on it. */

@@ -2907,7 +2907,7 @@ int AIFoundValue::adjustToCivSurroundings(int iValue, int iStealPercent) const
 	int iDistance = /* advc.031: */ std::min(GC.getMap().maxMaintenanceDistance(),
 			::plotDistance(iX, iY, pOurNearestCity->getX(), pOurNearestCity->getY()));
 	// <advc.031> Don't discourage settling on small nearby landmasses
-	if(pCapital == NULL || pCapital->isArea(kArea) ||
+	if (pCapital == NULL || pCapital->isArea(kArea) ||
 		::plotDistance(&kPlot, pCapital->plot()) >= 10 ||
 		kArea.getNumTiles() >= NUM_CITY_PLOTS)
 	{
