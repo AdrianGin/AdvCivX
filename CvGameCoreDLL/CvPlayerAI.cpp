@@ -25981,7 +25981,7 @@ int CvPlayerAI::AI_playerCloseness(PlayerTypes eIndex, int iMaxDistance,
 	we're worried, but probably shouldn't act on it much (unless we're worried
 	about several rivals). */
 int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
-	bool bReduceWhenHopeless) const // advc.104
+	bool bReduceWhenHopeless, bool bConstCache) const // advc.104
 {
 	CvPlayerAI const& kRival = GET_PLAYER(eRival);
 	CvTeamAI const& kRivalTeam = GET_TEAM(eRival);
@@ -26024,7 +26024,8 @@ int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
 			}
 		}
 	}
-	int iCloseness = AI_playerCloseness(eRival);
+	int iCloseness = AI_playerCloseness(eRival,
+			DEFAULT_PLAYER_CLOSENESS, bConstCache); // advc.104
 	// <advc.022>
 	if (!AI_hasSharedPrimaryArea(eRival))
 	{

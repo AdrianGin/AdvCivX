@@ -614,7 +614,8 @@ public:
 			int iMaxDistance /* advc: */ = DEFAULT_PLAYER_CLOSENESS,
 			bool bConstCache = false) const; // advc.001n
 	int AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow, // advc
-			bool bReduceWhenHopeless = true) const; // advc.104
+			// advc.104:
+			bool bReduceWhenHopeless = true, bool bConstCache = false) const;
 
 	int AI_getTotalCityThreat() const;
 	int AI_getTotalFloatingDefenseNeeded() const;

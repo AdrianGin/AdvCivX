@@ -17,7 +17,11 @@ class FDataStreamBase;
 	team's leader changes - a bit messy, but a separate cache for team data
 	would come with some red tape.
 	Also handles the updating of cached values, i.e. some of UWAI's heuristics
-	are part of this class. (I think I'd prefer to move them elsewhere ...) */
+	are part of this class. (I think I'd prefer to move them elsewhere ...)
+	Note that most UWAI code outside of this class can't be assumed to be executed
+	by all participants of a network game and, therefore, must not cache any data
+	and must not (indirectly) call functions that cache data - unless they have
+	a bConstCache parameter for suppressing such caching. */
 
 // Interface of UWAICache::City for use outside of the UWAI component
 class UWAICity

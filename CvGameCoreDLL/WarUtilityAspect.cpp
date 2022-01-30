@@ -4642,7 +4642,7 @@ void ThirdPartyIntervention::evaluate()
 			the AI cheat more. Better just rely on paranoia. */
 		int iOurDefPow = kOurTeam.getDefensivePower();
 		iOurDefPow = (iOurDefPow * (1 - rOurLostPowRatio)).uround();
-		int iParanoia = kWe.AI_paranoiaRating(eThey, iOurDefPow, false);
+		int iParanoia = kWe.AI_paranoiaRating(eThey, iOurDefPow, false, true);
 		iParanoia = std::min(iParanoia, 190);
 		rInterventionProb = scaled(iParanoia - 25, 215);
 		if (rInterventionProb > 0)
