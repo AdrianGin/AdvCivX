@@ -20,7 +20,7 @@ public:
 	unsigned short get(int iNum, TCHAR const* szMsg = NULL,
 		int iData1 = MIN_INT, int iData2 = MIN_INT) // advc.128
 	{	// <advc.001n>
-		return getInt(iNum, szMsg, MIN_INT);
+		return getInt(iNum, szMsg, iData1, iData2);
 	} // New name to avoid issues in CyRandomPythonInterface
 	unsigned short getInt(int iNum, TCHAR const* szMsg,
 		int iData1, int iData2 = MIN_INT)
