@@ -18871,7 +18871,7 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 		{
 			FOR_EACH_TRADE_ITEM2(pOfferItem, kOurOffer)
 			{
-				// Don't show vassal deals if peace treaty is already on the table
+				// Don't show peace treaty if vassal deal is already on the table
 				if (CvDeal::isVassal(pOfferItem->m_eItemType))
 				{
 					pItem->m_bHidden = true;
@@ -18896,8 +18896,11 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 				break;
 			FOR_EACH_TRADE_ITEM2(pOfferItem, kOurOffer)
 			{
-				// Don't show peace deals if the other player is offering to be a vassal
-				if (CvDeal::isEndWar(pOfferItem->m_eItemType))
+				// Don't show vassal deals if peace treaty is already on the table
+				if (CvDeal::isEndWar(pOfferItem->m_eItemType) &&
+					/*	advc.ctr: Peacetime peace treaty should not hide
+						vassal deals (in multiplayer) */
+					GET_TEAM(getTeam()).isAtWar(TEAMID(eOtherPlayer)))
 				{
 					pItem->m_bHidden = true;
 					break;
@@ -18980,7 +18983,6 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 				FAssert(!abPeaceTreatyFound[i]);
 				abPeaceTreatyFound[i] = true;
 			}
-			else FAssert(!CvDeal::isEndWar(pItem->m_eItemType));
 			for (int j = 0; j < iForcePeaceSz; j++)
 			{
 				if (pItem->m_eItemType == aeForcePeace[j])
