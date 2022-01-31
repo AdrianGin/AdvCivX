@@ -13590,7 +13590,9 @@ void CvCityAI::write(FDataStreamBase* pStream)
 	pStream->Write(m_eBestBuild); // advc.opt
 	pStream->Write(GC.getNumEmphasizeInfos(), m_pbEmphasize);
 	pStream->Write(NUM_YIELD_TYPES, m_aiSpecialYieldMultiplier);
-
+	REPRO_TEST_END_WRITE();
+	// The closeness cache is prone to OOS/ reproducibility problems
+	REPRO_TEST_BEGIN_WRITE(CvString::format("CityAI(%d,%d) caches", getX(), getY()));
 	pStream->Write(/*<advc.opt>*/MAX_PLAYERS/*</advc.opt>*/, m_aiCachePlayerClosenessTurn);
 	pStream->Write(/*<advc.opt>*/MAX_PLAYERS/*</advc.opt>*/, m_aiCachePlayerClosenessDistance);
 	pStream->Write(MAX_PLAYERS, m_aiPlayerCloseness);

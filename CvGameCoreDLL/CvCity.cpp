@@ -11793,7 +11793,9 @@ void CvCity::write(FDataStreamBase* pStream)
 	}
 
 	m_orderQueue.Write(pStream);
-
+	/*	These caches are (or ought to be) reliably invalidated,
+		don't need to be in-sync at all times. */
+	REPRO_TEST_END_WRITE();
 	pStream->Write(m_iPopulationRank);
 	pStream->Write(m_bPopulationRankValid);
 	m_aiBaseYieldRank.write(pStream);
@@ -11802,7 +11804,7 @@ void CvCity::write(FDataStreamBase* pStream)
 	m_abYieldRankValid.write(pStream);
 	m_aiCommerceRank.write(pStream);
 	m_abCommerceRankValid.write(pStream);
-
+	REPRO_TEST_BEGIN_WRITE(CvString::format("City(%d,%d) pt2", getX(), getY()));
 	pStream->Write(m_aEventsOccured.size());
 	for (std::vector<EventTypes>::iterator it = m_aEventsOccured.begin();
 		it != m_aEventsOccured.end(); ++it)

@@ -6037,7 +6037,9 @@ void CvTeam::write(FDataStreamBase* pStream)
 	m_aiResearchProgress.write(pStream);
 	m_aiTechCount.write(pStream);
 	m_aiTerrainTradeCount.write(pStream);
+	REPRO_TEST_END_WRITE(); // Autosave happens before victory countdowns are updated
 	m_aiVictoryCountdown.write(pStream);
+	REPRO_TEST_BEGIN_WRITE(CvString::format("Team(%d) pt2", getID()));
 	m_abHasTech.write(pStream);
 	pStream->Write(m_iTechCount); // advc.101
 	m_abNoTradeTech.write(pStream);
