@@ -1330,22 +1330,28 @@ bool UWAI::Team::canSchemeAgainst(TeamTypes eTarget, bool bAssumeNoWarPlan,
 		{
 			if (itAlly->isDefensivePact(eTarget) &&
 				/*	(Should come up rarely, so the performance of these checks
-					shouldn't matter much. Closeness also gets cached.) */
+					shouldn't matter much. Closeness also gets cached, however,
+					we may not be in a synchronized context, so we can't
+					necessarily benefit from caching.) */
 				canSchemeAgainst(itAlly->getID(), bAssumeNoWarPlan, false))
 			{
-				int iAllyCloseness = kAgent.AI_teamCloseness(itAlly->getID());
+				int iAllyCloseness = kAgent.AI_teamCloseness(itAlly->getID(),
+						DEFAULT_PLAYER_CLOSENESS, false, true);
 				for (TeamIter<MAJOR_CIV,VASSAL_OF> itVassal(itAlly->getID());
 					itVassal.hasNext(); ++itVassal)
 				{
 					iAllyCloseness = std::max(iAllyCloseness,
-							kAgent.AI_teamCloseness(itVassal->getID()));
+							kAgent.AI_teamCloseness(itVassal->getID(),
+							DEFAULT_PLAYER_CLOSENESS, false, true));
 				}
-				int iTargetCloseness = kAgent.AI_teamCloseness(eTarget);
+				int iTargetCloseness = kAgent.AI_teamCloseness(eTarget,
+						DEFAULT_PLAYER_CLOSENESS, false, true);
 				for (TeamIter<MAJOR_CIV,VASSAL_OF> itVassal(eTarget);
 					itVassal.hasNext(); ++itVassal)
 				{
 					iTargetCloseness = std::max(iTargetCloseness,
-							kAgent.AI_teamCloseness(itVassal->getID()));
+							kAgent.AI_teamCloseness(itVassal->getID(),
+							DEFAULT_PLAYER_CLOSENESS, false, true));
 				}
 				if (2 * iAllyCloseness > 3 * iTargetCloseness)
 					return false;
