@@ -231,11 +231,11 @@ public:
 class CityPlotRandIter : public CityPlotIterator<ANY_CITY_PLOT, true>
 {
 public:
-	CityPlotRandIter(CvCity const& kCity, CvRandom& pRandom, bool bIncludeHomePlot) :
+	CityPlotRandIter(CvCity const& kCity, CvRandom& pRandom, bool bIncludeHomePlot = true) :
 		CityPlotIterator<ANY_CITY_PLOT, true>(kCity.getX(), kCity.getY(),
 		pRandom, bIncludeHomePlot) {}
 
-	CityPlotRandIter(CvPlot const& kCenter, CvRandom& pRandom, bool bIncludeHomePlot) :
+	CityPlotRandIter(CvPlot const& kCenter, CvRandom& pRandom, bool bIncludeHomePlot = true) :
 		CityPlotIterator<ANY_CITY_PLOT, true>(kCenter.getX(), kCenter.getY(),
 		pRandom, bIncludeHomePlot) {}
 

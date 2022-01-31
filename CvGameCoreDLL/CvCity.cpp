@@ -1074,7 +1074,7 @@ int CvCity::countNumRiverPlots() const
 int CvCity::findPopulationRank() const
 {
 	if (m_bPopulationRankValid)
-		return m_iPopulationRank; // advc
+		return m_iPopulationRank;
 
 	/*int iRank = 1;
 	FOR_EACH_CITY(pLoopCity, GET_PLAYER(getOwner())) {
@@ -1087,18 +1087,20 @@ int CvCity::findPopulationRank() const
 	m_iPopulationRank = iRank;*/ // BtS
 	// K-Mod. Set all ranks at the same time.
 	CvPlayer const& kPlayer = GET_PLAYER(getOwner());
-	std::vector<std::pair<int, int> > city_scores;
+	std::vector<std::pair<int,int> > aiiCityScores;
 	FOR_EACH_CITY(pLoopCity, kPlayer)
-		city_scores.push_back(std::make_pair(-pLoopCity->getPopulation(), pLoopCity->getID()));
-	// note: we are sorting by minimum of _negative_ score, and then by min cityID.
-	std::sort(city_scores.begin(), city_scores.end());
-	FAssert(city_scores.size() == kPlayer.getNumCities());
-	for (size_t i = 0; i < city_scores.size(); i++)
 	{
-		CvCity* pLoopCity = kPlayer.getCity(city_scores[i].second);
-		pLoopCity->m_iPopulationRank = i+1;
+		aiiCityScores.push_back(std::make_pair(
+				-pLoopCity->getPopulation(), pLoopCity->getID()));
+	}
+	// note: we are sorting by minimum of _negative_ score, and then by min cityID.
+	std::sort(aiiCityScores.begin(), aiiCityScores.end());
+	FAssert(aiiCityScores.size() == kPlayer.getNumCities());
+	for (size_t i = 0; i < aiiCityScores.size(); i++)
+	{
+		CvCity* pLoopCity = kPlayer.getCity(aiiCityScores[i].second);
+		pLoopCity->m_iPopulationRank = i + 1;
 		pLoopCity->m_bPopulationRankValid = true;
-		// (It's strange that this is allowed. Aren't these values protected or something?)
 	}
 	FAssert(m_bPopulationRankValid);
 	// K-Mod end

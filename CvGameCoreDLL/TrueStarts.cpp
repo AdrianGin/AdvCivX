@@ -947,7 +947,7 @@ void TrueStarts::changeCivs()
 		/*	This XML setting wasn't intended for True Starts. A weight of 0
 			is supposed to result in no bias from the leader count. We can easily
 			do that. A weight of 100% is supposed to give every leader the same
-			chance of getting chosen. We can't guarantee that, can only give use
+			chance of getting chosen. We can't guarantee that, can only use a
 			pretty strong bias in that case. */
 		scaled const rBiasStrength = fixp(4/3.) * (1 - SQR(rExtraWeight - 1));
 		FOR_EACH_ENUM(Civilization)
