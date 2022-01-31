@@ -938,11 +938,23 @@ void TrueStarts::changeCivs()
 		EagerEnumMap<CivilizationTypes,int> aeiLeaderCounts;
 		for (size_t i = 0; i < m_validAICivs.size(); i++)
 			aeiLeaderCounts.add(m_validAICivs[i].first, 1);
+		scaled rExtraWeight = per100(GC.getDefineINT(
+				"PER_EXTRA_LEADER_CIV_SELECTION_WEIGHT"));
+		/*	Players might actually set this to 1, but such a high bias
+			is not going to work well.
+			(Negative weight might work out OK, doesn't have to be supported.) */
+		rExtraWeight.decreaseTo(fixp(0.6));
+		/*	This XML setting wasn't intended for True Starts. A weight of 0
+			is supposed to result in no bias from the leader count. We can easily
+			do that. A weight of 100% is supposed to give every leader the same
+			chance of getting chosen. We can't guarantee that, can only give use
+			pretty strong bias in that case. */
+		scaled const rBiasStrength = fixp(4/3.) * (1 - SQR(rExtraWeight - 1));
 		FOR_EACH_ENUM(Civilization)
 		{
 			m_biasFromLeaderCount.set(eLoopCivilization,
 					(scaled(range(aeiLeaderCounts.get(eLoopCivilization) - 1, 0, 4)).
-					sqrt() * fixp(5.4)).round());
+					pow(rBiasStrength) * rBiasStrength * 10).round());
 		}
 	}
 	initContemporaries(); // Want to use the valid-civ lists above; hence not in ctor.
