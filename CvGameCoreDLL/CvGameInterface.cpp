@@ -2687,7 +2687,7 @@ void CvGame::handleCityScreenPlotPicked(CvCity* pCity, CvPlot* pPlot,
 				TASK_CHANGE_WORKING_PLOT, iIndex, -1, false, bAlt, bShift, bCtrl);
 	}
 	else //if (GC.getDefineINT("CITY_SCREEN_CLICK_WILL_EXIT"))
-	if (BUGOption::isEnabled("CityScreen__ClickMapToExit", false)) // advc.004t
+	if (BUGOption::isEnabled("CityScreen__ClickMapToExit", true)) // advc.004t
 		gDLL->UI().clearSelectedCities();
 }
 

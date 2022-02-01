@@ -26669,9 +26669,9 @@ bool CvPlayerAI::AI_advancedStartPlaceCity(CvPlot* pPlot)
 	pCity->AI_updateBestBuild(); //to account for culture expansion.
 
 	int iPlotsImproved = 0;
-	for (CityPlotIter it(*pPlot, false); it.hasNext(); ++it)
+	for (WorkablePlotIter it(*pCity, false); it.hasNext(); ++it)
 	{
-		if (it->getWorkingCity() == pCity && it->isImproved())
+		if (it->isImproved())
 			iPlotsImproved++;
 	}
 
