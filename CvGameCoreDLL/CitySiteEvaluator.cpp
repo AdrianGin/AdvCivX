@@ -235,7 +235,7 @@ scaled CitySiteEvaluator::evaluateWorkablePlot(CvPlot const& kPlot) const
 	int const iBestPossibleScore = (kPlot.isWater() ? 4 : 5);
 	for (CityPlotIter it(kPlot, false); it.hasNext(); ++it)
 	{
-		if (!m_kPlayer.canFound(it->getX(), it->getY()))
+		if (!m_kPlayer.canFound(*it))
 			continue;
 		int iScore = 1;
 		if (kPlot.isWater())

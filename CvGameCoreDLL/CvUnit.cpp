@@ -1783,8 +1783,8 @@ bool CvUnit::isActionRecommended(int iAction)
 		// K-Mod: was getBonusType
 		BonusTypes const eBonus = kPlot.getNonObsoleteBonusType(getTeam());
 		CvCityAI const* pWorkingCity = kPlot.AI_getWorkingCity();
-
-		// if (kPlot.getImprovementType() == NO_IMPROVEMENT) { // Disabled by K-Mod (this looks like a bug to me)
+		// Disabled by K-Mod (this looks like a bug to me)
+		// if (kPlot.getImprovementType() == NO_IMPROVEMENT) {
 		BuildTypes eBestBuild = NO_BUILD; // K-Mod. (I use this again later.)
 		if (pWorkingCity != NULL)
 		{
@@ -1829,7 +1829,6 @@ bool CvUnit::isActionRecommended(int iAction)
 					}
 				}
 			} // K-Mod end
-
 			/*if (kPlot.getImprovementType() == NO_IMPROVEMENT) {
 				if (!kPlot.isIrrigated() && kPlot.isIrrigationAvailable(true)) {
 					if (GC.getInfo(eImprovement).isCarriesIrrigation())
@@ -1854,7 +1853,6 @@ bool CvUnit::isActionRecommended(int iAction)
 			{
 				if (eBonus != NO_BONUS)
 					return true;
-
 				if (pWorkingCity != NULL)
 				{
 					if (kPlot.isRiver())
@@ -1872,9 +1870,10 @@ bool CvUnit::isActionRecommended(int iAction)
 			// K-Mod end
 			if (eFinalImprovement != NO_IMPROVEMENT)
 			{
-				if (GC.getInfo(eFinalImprovement).getRouteYieldChanges(eRoute, YIELD_FOOD) > 0 ||
-					GC.getInfo(eFinalImprovement).getRouteYieldChanges(eRoute, YIELD_PRODUCTION) > 0 ||
-					GC.getInfo(eFinalImprovement).getRouteYieldChanges(eRoute, YIELD_COMMERCE) > 0)
+				CvImprovementInfo const& kFinal = GC.getInfo(eFinalImprovement);
+				if (kFinal.getRouteYieldChanges(eRoute, YIELD_FOOD) > 0 ||
+					kFinal.getRouteYieldChanges(eRoute, YIELD_PRODUCTION) > 0 ||
+					kFinal.getRouteYieldChanges(eRoute, YIELD_COMMERCE) > 0)
 				{
 					return true;
 				}
