@@ -12937,8 +12937,10 @@ int CvCity::getMusicScriptId() const
 
 int CvCity::getSoundscapeScriptId() const
 {
-	return GC.getInfo(GET_PLAYER(getOwner()).getCurrentEra()).
-			getCitySoundscapeScriptId(getCitySizeType());
+	return	// advc.002q:
+			(!BUGOption::isEnabled("CityScreen__CitySoundScapes", true) ? -1 :
+			GC.getInfo(GET_PLAYER(getOwner()).getCurrentEra()).
+			getCitySoundscapeScriptId(getCitySizeType()));
 }
 
 

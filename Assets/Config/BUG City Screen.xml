@@ -42,6 +42,10 @@
 			<!-- advc.004t: -->
 			<option id="ClickMapToExit" key="Click Map To Exit" 
 					type="boolean" default="True"/>
+
+			<!-- advc.002q: -->
+			<option id="CitySoundScapes" key="City Soundscapes" 
+					type="boolean" default="True"/>
 			
 			<!-- FoodAssist by EmperorFool
 				 advc.004: default was False in K-Mod -->
