@@ -2249,7 +2249,8 @@ bool CvPlot::canHaveImprovement(ImprovementTypes eImprovement, TeamTypes eTeam, 
 }
 
 
-bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible) const
+bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible,
+	bool bIgnoreFoW) const // advc.181
 {
 	if (eBuild == NO_BUILD)
 		return false;
@@ -2268,14 +2269,17 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible)
 		{
 			return false;
 		}
-		if (isImproved())
+		ImprovementTypes const eOldImprov = (bIgnoreFoW ? getImprovementType() :
+				getRevealedImprovementType(TEAMID(ePlayer)));
+		if (eOldImprov != NO_IMPROVEMENT) // advc.181
+		//if (isImproved())
 		{
-			if (GC.getInfo(getImprovementType()).isPermanent())
+			if (GC.getInfo(eOldImprov).isPermanent())
 				return false;
-			if (getImprovementType() == eImprovement)
+			if (eOldImprov == eImprovement)
 				return false;
 			ImprovementTypes eFinalImprovementType = CvImprovementInfo::
-					finalUpgrade(getImprovementType());
+					finalUpgrade(eOldImprov);
 			if (eFinalImprovementType != NO_IMPROVEMENT)
 			{
 				if (eFinalImprovementType == CvImprovementInfo::finalUpgrade(eImprovement))
@@ -2301,9 +2305,13 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible)
 	RouteTypes const eRoute = GC.getInfo(eBuild).getRoute();
 	if (eRoute != NO_ROUTE)
 	{
-		if (isRoute())
+		// <advc.181>
+		RouteTypes const eOldRoute = (bIgnoreFoW ? getRouteType() :
+				getRevealedRouteType(TEAMID(ePlayer)));
+		if (eOldRoute != NO_ROUTE) // </advc.181>
+		//if (isRoute())
 		{
-			if (GC.getInfo(getRouteType()).getValue() >= GC.getInfo(eRoute).getValue())
+			if (GC.getInfo(eOldRoute).getValue() >= GC.getInfo(eRoute).getValue())
 				return false;
 		}
 		if (!bTestVisible)
@@ -5589,10 +5597,14 @@ void CvPlot::setFoundValue(PlayerTypes eIndex, short iNewValue)
 
 // advc: Cut from CvPlayer::canFound (for advc.027)
 bool CvPlot::canFound(bool bTestVisible,
-	TeamTypes eTeam) const // advc.001
+	TeamTypes eTeam) const // advc.181
 {
 	if (!canEverFound()) // advc.129d: Moved into another new function
 		return false;
+	/*	<advc.181> Info leaks and AI cheats are already addressed elsewhere,
+		but doesn't hurt to make sure. */
+	if (eTeam != NO_TEAM && !isRevealed(eTeam))
+		return false; // </advc.181>
 	
 	if (isFeature() && GC.getInfo(getFeatureType()).isNoCity())
 		return false; // (advc.opt: Moved down)
@@ -5604,7 +5616,7 @@ bool CvPlot::canFound(bool bTestVisible,
 		it.hasNext(); ++it)
 	{
 		if (it->isCity() && it->sameArea(*this) &&
-			(eTeam == NO_TEAM || it->getPlotCity()->isRevealed(eTeam))) // advc.001
+			(eTeam == NO_TEAM || it->getPlotCity()->isRevealed(eTeam))) // advc.181
 		{
 			return false;
 		}

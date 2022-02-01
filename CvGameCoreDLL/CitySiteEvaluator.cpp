@@ -367,9 +367,9 @@ AIFoundValue::AIFoundValue(CvPlot const& kPlot, CitySiteEvaluator const& kSettin
 {
 	PROFILE_FUNC();
 	if (!kPlayer.canFound(kPlot, false,
-		/*	advc.001: Don't let unit action recommendations for human settlers
+		/*	advc.181: Don't let action recommendations for human settlers
 			give away rival cities founded in the fog of war. */
-		!kPlayer.isHuman()))
+		!kPlayer.isHuman() || kSet.isAllSeeing()))
 	{
 		return;
 	}
@@ -3097,10 +3097,8 @@ bool AIFoundValue::isDeadlockedBonus(CvPlot const& kBonusPlot, int iMinRange) co
 		if (!isRevealed(kOtherSite) && !kOtherSite.isAdjacentRevealed(eTeam))
 			continue; // </advc.031>
 		//canFound usually returns very quickly
-		if (kPlayer.canFound(kOtherSite.getX(), kOtherSite.getY(),
-				/*  advc.031: Was false; whether to check visibility of cities that
-					prevent founding in kOtherSite. */
-				kSet.isAllSeeing()))
+		if (kPlayer.canFound(kOtherSite,
+			false, kSet.isAllSeeing())) // advc.181
 		{
 			bNeverFound = false;
 			if (stepDistance(&kPlot, &kOtherSite) > iMinRange ||

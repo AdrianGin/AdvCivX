@@ -243,7 +243,8 @@ public:
 	bool canGoldenAge(const CvPlot* pPlot, bool bTestVisible = false) const;								// Exposed to Python
 	bool goldenAge();
 
-	bool canBuild(CvPlot const& pPlot, BuildTypes eBuild, bool bTestVisible = false) const;					// Exposed to Python
+	bool canBuild(CvPlot const& pPlot, BuildTypes eBuild,													// Exposed to Python
+			bool bTestVisible = false, /* advc.181: */ bool bIgnoreFoW = true) const;
 	bool build(BuildTypes eBuild);
 
 	bool canPromote(PromotionTypes ePromotion,																// Exposed to Python

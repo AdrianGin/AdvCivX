@@ -122,7 +122,8 @@ public:
 			TeamTypes eTeam = NO_TEAM, bool bPotential = false,
 			BuildTypes eBuild = NO_BUILD, bool bAnyBuild = true) const; // kekm.9
 	bool canBuild(BuildTypes eBuild, PlayerTypes ePlayer = NO_PLAYER,								// Exposed to Python
-			bool bTestVisible = false) const;
+			bool bTestVisible = false,
+			bool bIgnoreFoW = true) const; // advc.181
 	int getBuildTime(BuildTypes eBuild,																// Exposed to Python
 			PlayerTypes ePlayer) const; // advc.251
 	int getBuildTurnsLeft(BuildTypes eBuild, /* advc.251: */ PlayerTypes ePlayer,

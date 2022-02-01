@@ -4930,7 +4930,7 @@ bool CvPlayer::canFound(int iX, int iY, bool bTestVisible) const
 
 
 bool CvPlayer::canFound(CvPlot const& kPlot, bool bTestVisible,
-	/* <advc.001> */ bool bIgnoreFoW) const
+	/* <advc.181> */ bool bIgnoreFoW) const
 {
 	if (!bIgnoreFoW)
 	{
@@ -4938,12 +4938,12 @@ bool CvPlayer::canFound(CvPlot const& kPlot, bool bTestVisible,
 		if (eRevealedOwner != NO_PLAYER && eRevealedOwner != getID())
 			return false;
 	}
-	else // </advc.001>
+	else // </advc.181>
 	if (kPlot.isOwned() && kPlot.getOwner() != getID())
 		return false;
 	// advc: Checks that don't depend on player moved into new function at CvPlot
 	if (!kPlot.canFound(bTestVisible,
-		bIgnoreFoW ? NO_TEAM : getTeam())) // advc.001
+		bIgnoreFoW ? NO_TEAM : getTeam())) // advc.181
 	{
 		return false;
 	}
@@ -5709,12 +5709,15 @@ void CvPlayer::processBuilding(BuildingTypes eBuilding, int iChange, CvArea& kAr
 }
 
 
-bool CvPlayer::canBuild(CvPlot const& kPlot, BuildTypes eBuild, bool bTestEra, bool bTestVisible) const
+bool CvPlayer::canBuild(CvPlot const& kPlot, BuildTypes eBuild, bool bTestEra,
+	bool bTestVisible, /* advc.181: */ bool bIgnoreFoW) const
 {
 	//PROFILE_FUNC(); // advc.003o
-	if (!kPlot.canBuild(eBuild, getID(), bTestVisible))
+	if (!kPlot.canBuild(eBuild, getID(), bTestVisible,
+		bIgnoreFoW)) // advc.181
+	{
 		return false;
-
+	}
 	if (GC.getInfo(eBuild).getTechPrereq() != NO_TECH)
 	{	// advc:
 		TechTypes ePrereqTech = GC.getInfo(eBuild).getTechPrereq();

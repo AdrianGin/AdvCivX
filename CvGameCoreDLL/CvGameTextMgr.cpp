@@ -3439,7 +3439,7 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot const& kPlot)
 	FOR_EACH_ENUM2(Build, eBuild)
 	{
 		if(kPlot.getBuildProgress(eBuild) <= 0 ||
-			!kPlot.canBuild(eBuild, eActivePlayer))
+			!kPlot.canBuild(eBuild, eActivePlayer, false, false))
 		{
 			continue;
 		}
@@ -3548,7 +3548,7 @@ void CvGameTextMgr::setPlotHealthHappyHelp(CvWStringBuffer& szBuffer, CvPlot con
 			FOR_EACH_ENUM(Build)
 			{
 				if (GC.getInfo(eLoopBuild).isFeatureRemove(kPlot.getFeatureType()) &&
-					pHeadSelectedUnit->canBuild(kPlot, eLoopBuild))
+					pHeadSelectedUnit->canBuild(kPlot, eLoopBuild, false, false))
 				{
 					bCanRemove = true;
 					break;

@@ -2397,16 +2397,16 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 	}
 	case MISSION_FOUND:
 	{
-		if (!kUnitOwner.canFound(kMissionPlot.getX(), kMissionPlot.getY()))
+		if (!kUnitOwner.canFound(kMissionPlot, /* advc.181: */ false, false))
 		{
 			for (SquareIter it(kMissionPlot, GC.getDefineINT(CvGlobals::MIN_CITY_RANGE));
 				it.hasNext(); ++it)
 			{
 				if (it->isCity() &&
-					/*	<advc.001> Don't give away rival cities in the fog of war.
+					/*	<advc.181> Don't give away rival cities in the fog of war.
 						And same-area check added. */
 					!kUnitOwner.canFound(kMissionPlot, false, false) &&
-					it->sameArea(kMissionPlot)) // </advc.001>
+					it->sameArea(kMissionPlot)) // </advc.181>
 				{
 					szBuffer.append(NEWLINE);
 					szBuffer.append(gDLL->getText("TXT_KEY_ACTION_CANNOT_FOUND",
@@ -2416,7 +2416,7 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 			}
 		}
 		// <advc.004b> Show the projected increase in city maintenance
-		if (kUnitOwner.canFound(kMissionPlot, false, false))
+		else
 		{
 			// No projection for the initial city
 			if(kUnitOwner.getNumCities() > 0)
