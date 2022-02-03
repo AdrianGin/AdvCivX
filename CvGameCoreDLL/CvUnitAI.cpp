@@ -17551,8 +17551,8 @@ bool CvUnitAI::AI_improveBonus( // K-Mod. (all that junk wasn't being used anywa
 		else if (pWorkingCity != NULL)
 		{
 			// Let "best build" handle improvement replacements near cities.
-			BuildTypes eBuild = pWorkingCity->AI_getBestBuild(plotCityXY(
-					pWorkingCity->getX(), pWorkingCity->getY(), kPlot));
+			BuildTypes eBuild = pWorkingCity->AI_getBestBuild(
+					pWorkingCity->getCityPlotIndex(kPlot));
 			if (eBuild != NO_BUILD && kOwner.doesImprovementConnectBonus(
 				GC.getInfo(eBuild).getImprovement(), eNonObsoleteBonus) &&
 				canBuild(kPlot, eBuild))

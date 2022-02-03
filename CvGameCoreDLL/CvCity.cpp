@@ -937,9 +937,8 @@ void CvCity::chooseProduction(UnitTypes eTrainUnit, BuildingTypes eConstructBuil
 	gDLL->UI().addPopup(pPopupInfo, getOwner(), false, bFront);
 }
 
-// advc: Can't inline these two b/c the plotCityXY functions are now at CvMap
 // advc.enum: Return type was int
-CityPlotTypes CvCity::getCityPlotIndex(CvPlot const& kPlot) const // advc: 1st param was pointer
+CityPlotTypes CvCity::getCityPlotIndex(CvPlot const& kPlot) const
 {
 	return GC.getMap().plotCityXY(getX(), getY(), kPlot);
 }
