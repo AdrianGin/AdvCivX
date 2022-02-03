@@ -172,7 +172,8 @@ public:
 	}
 	int const* getCityPlotX() const { return m_aiCityPlotX; }
 	int const* getCityPlotY() const { return m_aiCityPlotY; }
-	int const* CvGlobals::getCityPlotPriority() const { return m_aiCityPlotPriority; }
+	int const* getCityPlotPriority() const { return m_aiCityPlotPriority; }
+	int maxCityPlotPriority() const { return m_iMaxCityPlotPriority; } // advc
 	DirectionTypes const* getTurnLeftDirection() const { return m_aeTurnLeftDirection; }
 	DirectionTypes getTurnLeftDirection(int i) const
 	{
@@ -857,6 +858,7 @@ protected:
 	int m_aiCityPlotX[NUM_CITY_PLOTS];
 	int m_aiCityPlotY[NUM_CITY_PLOTS];
 	int m_aiCityPlotPriority[NUM_CITY_PLOTS];
+	int m_iMaxCityPlotPriority; // advc
 	CityPlotTypes m_aaeXYCityPlot[CITY_PLOTS_DIAMETER][CITY_PLOTS_DIAMETER];
 	DirectionTypes m_aeTurnLeftDirection[NUM_DIRECTION_TYPES];
 	DirectionTypes m_aeTurnRightDirection[NUM_DIRECTION_TYPES];

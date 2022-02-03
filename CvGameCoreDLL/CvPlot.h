@@ -493,7 +493,7 @@ public:
 
 	DllExport CvCity* getPlotCity() const;															// Exposed to Python
 	CvCityAI* AI_getPlotCity() const;
-	void setPlotCity(CvCity* pNewValue);
+	void setPlotCity(CvCity* pNewCity);
 	void setRuinsName(CvWString const& szName); // advc.005c
 	const wchar* getRuinsName() const; // advc.005c (NULL if none)
 	CvCity* getWorkingCity() const;																	// Exposed to Python

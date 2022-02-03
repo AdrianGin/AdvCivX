@@ -87,7 +87,9 @@ m_iNumFootstepAudioTypes(0),
 m_iActiveLandscapeID(0),
 m_iNumPlayableCivilizationInfos(0),
 m_iNumAIPlayableCivilizationInfos(0),
-// </advc>  <advc.opt>
+// </advc>
+m_iMaxCityPlotPriority(-1), // advc
+// <advc.opt>
 m_iEventMessageTime(-1),
 m_eRUINS_IMPROVEMENT(NO_IMPROVEMENT),
 m_eDEFAULT_SPECIALIST(NO_SPECIALIST)
@@ -158,7 +160,11 @@ void CvGlobals::init() // allocate
 		1, 2, 1, 2, 1, 2, 1, 2,
 		3, 4, 4, 3, 4, 4, 3, 4, 4, 3, 4, 4,
 	};
-
+	// <advc>
+	for (int i = 0; i < NUM_CITY_PLOTS; i++)
+		m_iMaxCityPlotPriority = std::max(m_iMaxCityPlotPriority, aiCityPlotPriority[i]);
+	// Need to be able to go one higher than the max
+	FAssertBounds(0, MAX_INT, m_iMaxCityPlotPriority); // </advc>
 	int aaiXYCityPlot[CITY_PLOTS_DIAMETER][CITY_PLOTS_DIAMETER] =
 	{	// advc.enum: Use some of the enumerators for illustration
 		{NO_CITYPLOT, 17, 18, 19, NO_CITYPLOT},

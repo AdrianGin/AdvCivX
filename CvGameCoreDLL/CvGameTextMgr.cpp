@@ -3562,16 +3562,14 @@ void CvGameTextMgr::setPlotHealthHappyHelp(CvWStringBuffer& szBuffer, CvPlot con
 	if (!bFound && !bCanRemove)
 	{
 		bool bOurCity = false;
-		for (CityPlotIter it(kPlot); it.hasNext(); ++it) // Look for a city
+		for (NearbyCityIter itCity(kPlot); itCity.hasNext(); ++itCity)
 		{
-			CvPlot const& kLoopPlot = *it;
-			if (kLoopPlot.isCity() &&
-				(kLoopPlot.getPlotCity()->getOwner() == kActivePlayer.getID() ||
+			if (itCity->getOwner() == kActivePlayer.getID() ||
 				(kPlot.getOwner() == kActivePlayer.getID() &&
-				kLoopPlot.getPlotCity()->isRevealed(kActiveTeam.getID(), true))))
+				itCity->isRevealed(kActiveTeam.getID(), true)))
 			{
 				bOurCity = true;
-				if (gDLL->UI().isCitySelected(kLoopPlot.getPlotCity()))
+				if (gDLL->UI().isCitySelected(&*itCity))
 				{
 					bNearSelectedCity = true;
 					break;
@@ -3640,26 +3638,26 @@ void CvGameTextMgr::setPlotHealthHappyHelp(CvWStringBuffer& szBuffer, CvPlot con
 }
 
 // Replacing code originally in CvWidgetData::parseActionHelp
-void CvGameTextMgr::setHealthHappyBuildActionHelp(CvWStringBuffer& szBuffer, CvPlot const& kPlot, BuildTypes eBuild) const
+void CvGameTextMgr::setHealthHappyBuildActionHelp(CvWStringBuffer& szBuffer,
+	CvPlot const& kPlot, BuildTypes eBuild) const
 {
 	CvBuildInfo const& kBuild = GC.getInfo(eBuild);
 	ImprovementTypes const eNewImprov = kBuild.getImprovement();
 	bool const bRemoveFeature = (kPlot.isFeature() &&
 			kBuild.isFeatureRemove(kPlot.getFeatureType()));
 	TeamTypes const eActiveTeam = getActiveTeam();
-	if (kPlot.isCityRadius() && (eNewImprov != NO_IMPROVEMENT || bRemoveFeature))
+	if (eNewImprov != NO_IMPROVEMENT || bRemoveFeature)
 	{
 		ImprovementTypes eOldImprov = kPlot.getRevealedImprovementType(eActiveTeam, true);
 		CvWString szNewItem;
 		szNewItem.Format(NEWLINE L"%c", gDLL->getSymbolID(BULLET_CHAR));
-		for (CityPlotIter it(kPlot, false); it.hasNext(); ++it)
+		for (NearbyCityIter itCity(kPlot); itCity.hasNext(); ++itCity)
 		{
-			CvCity* pCity = it->getPlotCity();
-			if (pCity == NULL || !pCity->isRevealed(eActiveTeam, true))
+			if (!itCity->isRevealed(eActiveTeam, true))
 				continue;
 			int iHappyChange, iUnhappyChange, iGoodHealthChange, iBadHealthChange,
 					iGoodHealthPercentChange, iBadHealthPercentChange;
-			pCity->goodBadHealthHappyChange(kPlot, eNewImprov == NO_IMPROVEMENT ?
+			itCity->goodBadHealthHappyChange(kPlot, eNewImprov == NO_IMPROVEMENT ?
 					eOldImprov : eNewImprov, eOldImprov, bRemoveFeature,
 					iHappyChange, iUnhappyChange, iGoodHealthChange, iBadHealthChange,
 					iGoodHealthPercentChange, iBadHealthPercentChange);
@@ -3695,7 +3693,7 @@ void CvGameTextMgr::setHealthHappyBuildActionHelp(CvWStringBuffer& szBuffer, CvP
 			if (!bFirst)
 			{
 				szBuffer.append(L" ");
-				szBuffer.append(gDLL->getText("TXT_KEY_IN_CITY", pCity->getNameKey()));
+				szBuffer.append(gDLL->getText("TXT_KEY_IN_CITY", itCity->getNameKey()));
 			}
 		}
 	}
