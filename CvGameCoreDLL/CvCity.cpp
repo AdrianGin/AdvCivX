@@ -8586,7 +8586,16 @@ void CvCity::alterSpecialistCount(SpecialistTypes eSpecialist, int iChange)
 
 	if (isCitizensAutomated())
 	{
-		changeForceSpecialistCount(eSpecialist, iChange);
+		changeForceSpecialistCount(eSpecialist, iChange +
+		/*	<advc.121> We're making sure below not to remove the specialist
+			we've just added, but afterwards we let the AI juggle the citizens;
+			so it can still happen that a human adds e.g. a 2nd scientist
+			- the 1st having been assigned by the AI - and ends up with just
+			1 scientist. Let's assume that any previously assigned specialists
+			of type eSpecialist should also be forced. */
+				(iChange <= 0 ? 0 :
+				std::max(getSpecialistCount(eSpecialist)
+				- getForceSpecialistCount(eSpecialist), 0))); // </advc.121>
 		//return;
 		/*	(K-Mod. Without the following block,
 			extra care is needed inside AI_assignWorkingPlots.) */
