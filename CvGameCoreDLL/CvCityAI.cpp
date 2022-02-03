@@ -9595,7 +9595,7 @@ bool CvCityAI::AI_removeWorstCitizen(SpecialistTypes eIgnoreSpecialist)
 		}
 	}
 
-	// check all the plots we working
+	// check all the plots we are working
 	for (WorkingPlotIter it(*this, false); it.hasNext(); ++it)
 	{
 		int iValue = AI_plotValue(*it, true, false, false, iGrowthValue);

@@ -487,14 +487,19 @@ void CvInitCore::resetGame(/* advc.enum: */ bool bBeforeRead)
 	m_szTemp.clear();
 }
 
+/*	advc (note): This seems to get used for resetting CvGlobals::m_initCore and
+	m_loadedInitCore to pSource = &CvGlobals::m_iniInitCore, i.e. (presumably)
+	to the data stored in CivilizationIV.ini.
+	Also used for resetting m_initCore to pSource = &m_loadedInitCore when
+	loading a savegame. */
 void CvInitCore::resetGame(CvInitCore* pSource, bool bClear, bool bSaveGameType)
 {
 	FAssert(pSource != NULL);
 	FAssertMsg(!bClear || !bSaveGameType, "Should not clear while trying to preserve gametype info");
 	if (bClear || pSource == NULL)
 		resetGame();
-	if(pSource == NULL)
-		return; // advc
+	if (pSource == NULL)
+		return;
 
 	// Only copy over saved data
 

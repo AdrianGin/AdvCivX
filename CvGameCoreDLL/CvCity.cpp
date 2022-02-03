@@ -8554,7 +8554,7 @@ void CvCity::setSpecialistCount(SpecialistTypes eSpecialist, int iNewValue)
 {
 	int const iOldValue = getSpecialistCount(eSpecialist);
 	if (iOldValue == iNewValue)
-		return; // advc
+		return;
 
 	m_aiSpecialistCount.set(eSpecialist, iNewValue);
 	FAssert(getSpecialistCount(eSpecialist) >= 0);
@@ -8708,7 +8708,7 @@ void CvCity::setFreeSpecialistCount(SpecialistTypes eSpecialist, int iNewValue)
 {
 	int const iOldValue = getFreeSpecialistCount(eSpecialist);
 	if (iOldValue == iNewValue)
-		return; // advc
+		return;
 
 	m_aiFreeSpecialistCount.set(eSpecialist, iNewValue);
 	FAssert(getFreeSpecialistCount(eSpecialist) >= 0);
