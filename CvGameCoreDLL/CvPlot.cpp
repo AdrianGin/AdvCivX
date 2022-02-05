@@ -6943,7 +6943,8 @@ void CvPlot::doCultureDecay()
 		if (iCulture <= 0)
 			continue;
 		int iDecayPerMill = iBaseDecayPerMill;
-		if(bInAnyRadius && !abInRadius[eLoopPlayer] &&
+		if (bInAnyRadius && !abInRadius[eLoopPlayer] &&
+			!isImpassable() && // Doesn't matter if no one can work impassable plots
 			iCulture >
 			scaled(100 - iCulturePercentThresh, iCulturePercentThresh) * iMaxRadiusCulture)
 		{
