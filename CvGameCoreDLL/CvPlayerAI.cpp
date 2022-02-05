@@ -8297,7 +8297,7 @@ int CvPlayerAI::AI_getRankDifferenceAttitude(PlayerTypes ePlayer) const
 	else
 	{
 		iBase = kPers.getBetterRankDifferenceAttitudeChange();
-		rMultiplier = scaled(-iRankDifference / iMaxRankDifference);
+		rMultiplier = scaled(-iRankDifference, iMaxRankDifference);
 	}
 	int iResult = (iBase * rMultiplier).round();
 	// Don't hate them if they're still in the first era
