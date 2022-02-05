@@ -9522,8 +9522,9 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 13; // advc.148: RELATIONS_THRESH_WORST_ENEMY
 	//uiFlag = 14; // advc.148, advc.130n, advc.130x (religion attitude)
 	//uiFlag = 15; // advc.tsl: new game option
-	uiFlag = 16; // advc.tsl: map regen counter
-	uiFlag = 17; // advc.tsl: game options moved around
+	//uiFlag = 16; // advc.tsl: map regen counter
+	//uiFlag = 17; // advc.tsl: game options moved around
+	uiFlag = 18; // advc.130c: change in rank hate calc
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9743,7 +9744,7 @@ void CvGame::onAllGameDataRead()
 	} // </advc.opt>
 	m_bAllGameDataRead = true;
 	// <advc.130n>, advc.148, advc.130x
-	if (m_uiSaveFlag < 14 ||
+	if (m_uiSaveFlag < 18 ||
 		// <advc.127> Save created during AI Auto Play
 		(m_iAIAutoPlay != 0 && !isNetworkMultiPlayer()))
 	{

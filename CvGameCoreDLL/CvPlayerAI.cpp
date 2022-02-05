@@ -202,7 +202,6 @@ void CvPlayerAI::AI_reset(bool bConstructor)
 		{
 			m_aeLastBrag[iI] = NO_UNIT;
 			m_aeLastWarn[iI] = NO_TEAM; // </advc.079>
-			m_abTheyFarAhead[iI] = m_abTheyBarelyAhead[iI] = false; // advc.130c
 		}
 		m_abFirstContact[iI] = false;
 		for (int iJ = 0; iJ < NUM_CONTACT_TYPES; iJ++)
@@ -231,8 +230,6 @@ void CvPlayerAI::AI_reset(bool bConstructor)
 			{
 				kLoopPlayer.m_aeLastBrag[getID()] = NO_UNIT;
 				kLoopPlayer.m_aeLastWarn[getID()] = NO_TEAM; // </advc.079>
-				// advc.130c:
-				kLoopPlayer.m_abTheyFarAhead[getID()] = kLoopPlayer.m_abTheyBarelyAhead[getID()] = false;
 			}
 			kLoopPlayer.m_abFirstContact[getID()] = false;
 			for (int iJ = 0; iJ < NUM_CONTACT_TYPES; iJ++)
@@ -7350,19 +7347,10 @@ void CvPlayerAI::AI_updateAttitude(PlayerTypes ePlayer, /* advc.130e: */ bool bU
 	if (!GC.getGame().isFinalInitialized() || ePlayer == getID() ||
 		!isAlive() || !kPlayer.isAlive() || !GET_TEAM(getTeam()).isHasMet(kPlayer.getTeam()))
 	{
-		m_abTheyFarAhead[ePlayer] = m_abTheyBarelyAhead[ePlayer] = false; // advc.130c
 		m_aiAttitude[ePlayer] = 0;
 		return;
 	}
 	int const iOldAttitude = m_aiAttitude[ePlayer]; // advc.001
-
-	// <advc.130c> Are they (ePlayer) 150% ahead in score?
-	CvGame const& kGame = GC.getGame();
-	int iTheirScore = kGame.getPlayerScore(ePlayer);
-	int iOurScore = kGame.getPlayerScore(getID());
-	m_abTheyFarAhead[ePlayer] = (iTheirScore * 10 > iOurScore * 15);
-	m_abTheyBarelyAhead[ePlayer] = (iTheirScore > iOurScore &&
-			iTheirScore - iOurScore < 25); // </advc.130c>
 	// <advc.sha> Now computed in subroutines
 	int iAttitude = AI_getFirstImpressionAttitude(ePlayer);
 	iAttitude += AI_getTeamSizeAttitude(ePlayer);
@@ -8259,9 +8247,7 @@ int CvPlayerAI::AI_getTeamSizeAttitude(PlayerTypes ePlayer) const
 // advc.130c:
 int CvPlayerAI::AI_getRankDifferenceAttitude(PlayerTypes ePlayer) const
 {
-	// Cached separately to avoid updating the whole cache w/e scores change
-	if (m_abTheyFarAhead[ePlayer] || // No hate if they're way ahead
-		GET_TEAM(getTeam()).isCapitulated() || GET_TEAM(ePlayer).isCapitulated() ||
+	if (GET_TEAM(getTeam()).isCapitulated() || GET_TEAM(ePlayer).isCapitulated() ||
 		getTeam() == TEAMID(ePlayer))
 	{
 		return 0;
@@ -8273,6 +8259,10 @@ int CvPlayerAI::AI_getRankDifferenceAttitude(PlayerTypes ePlayer) const
 	int iRankDifference = AI_knownRankDifference(ePlayer, rOutrankBothRatio);
 	CvLeaderHeadInfo const& kPers = GC.getInfo(getPersonalityType());
 	CvGame const& kGame = GC.getGame();
+	int const iOurScore = kGame.getPlayerScore(getID());
+	int const iTheirScore = kGame.getPlayerScore(ePlayer);
+	scaled const rTheirScoreToOurs = (iOurScore <= 0 ? 2 :
+			scaled(iTheirScore, iOurScore));
 	// Don't count minor civs, defeated civs for rank differences.
 	int const iMajorCivsAlive = PlayerIter<MAJOR_CIV>::count();
 	// This was "+ 1" in BtS, which was arguably a bug.
@@ -8280,31 +8270,52 @@ int CvPlayerAI::AI_getRankDifferenceAttitude(PlayerTypes ePlayer) const
 	int iBase = 0;
 	scaled rMultiplier;
 	// If we're ranked worse than they are:
-	if(iRankDifference > 0)
+	if (iRankDifference > 0)
 	{
+		FAssert(rTheirScoreToOurs >= 1);
 		iBase = kPers.getWorseRankDifferenceAttitudeChange();
-		/*  Want multiplier to be 1 when the rank difference is 35% of CivPlayersEverAlive,
-			and near 0 when greater than 50% of CivPlayersEverAlive. */
-		rMultiplier = 1 -
-				(2 * iRankDifference - fixp(0.35) * iMaxRankDifference).abs() /
-				iMaxRankDifference;
-		rMultiplier.increaseTo(0);
-		// Don't hate them much when both struggling to keep up
-		rMultiplier *= fixp(5/4.) - rOutrankBothRatio;
+		if (iBase != 0) // save time
+		{
+			/*  Want multiplier to be 1 when the rank difference is 35% of
+				CivPlayersEverAlive, and near 0 when greater than 50% of
+				CivPlayersEverAlive. */
+			rMultiplier = 1 -
+					(2 * iRankDifference - fixp(0.35) * iMaxRankDifference).abs() /
+					iMaxRankDifference;
+			rMultiplier.increaseTo(0);
+			// Don't hate them much when both struggling to keep up
+			rMultiplier *= fixp(5/4.) - rOutrankBothRatio;
+			// Smoothen based on score ratio
+			scaled const rPeakScoreRatio = fixp(1.22);
+			scaled rFarAheadThresh = fixp(1.7);
+			scaled rMultFromScore = (rTheirScoreToOurs > rPeakScoreRatio ?
+					(rFarAheadThresh - rTheirScoreToOurs) /
+					(rFarAheadThresh - rPeakScoreRatio) :
+					(rTheirScoreToOurs - 1) /
+					(rPeakScoreRatio - 1));
+			rMultiplier += rMultFromScore;
+			rMultiplier /= 2;
+		}
 	}
 	/*  If we're ranked better, as in BtS, the modifier is proportional
 		to the relative rank difference. */
 	else
 	{
+		FAssert(rTheirScoreToOurs <= 1);
 		iBase = kPers.getBetterRankDifferenceAttitudeChange();
-		rMultiplier = scaled(-iRankDifference, iMaxRankDifference);
+		if (iBase != 0)
+		{
+			rMultiplier = scaled(-iRankDifference, iMaxRankDifference);
+			// Make sure not to like them if they're close in score
+			rMultiplier.decreaseTo(2 * (1 - rTheirScoreToOurs));
+		}
 	}
 	int iResult = (iBase * rMultiplier).round();
-	// Don't hate them if they're still in the first era
-	if(iResult < 0 && (GET_PLAYER(ePlayer).getCurrentEra() <= kGame.getStartEra() ||
-		/*  nor if the score difference is small (otherwise attitude
+	// Don't hate them if they're still in the first era ...
+	if (iResult < 0 && (GET_PLAYER(ePlayer).getCurrentEra() <= kGame.getStartEra() ||
+		/*	... nor if the score difference is small (otherwise attitude
 			changes too frequently in the early game) */
-		m_abTheyBarelyAhead[ePlayer]))
+		iOurScore + 25 >= iTheirScore))
 	{
 		return 0;
 	}
@@ -22417,11 +22428,13 @@ void CvPlayerAI::read(FDataStreamBase* pStream)
 		}
 	} // </advc.079>
 	// <advc.130c>
-	if(uiFlag >= 13)
-		pStream->Read(MAX_CIV_PLAYERS, m_abTheyFarAhead);
-	if(uiFlag >= 14)
-		pStream->Read(MAX_CIV_PLAYERS, m_abTheyBarelyAhead);
-	// </advc.130c>
+	{
+		bool m_abDisusedCache[MAX_CIV_PLAYERS];
+		if (uiFlag >= 13 && uiFlag < 21)
+			pStream->Read(MAX_CIV_PLAYERS, m_abDisusedCache);
+		if (uiFlag >= 14 && uiFlag < 21)
+			pStream->Read(MAX_CIV_PLAYERS, m_abDisusedCache);
+	} // </advc.130c>
 	/*	K-Mod. Load the attitude cache. (In BBAI and the CAR Mod, this was not saved.
 		But there are rare situations in which it needs to be saved/read
 		to avoid OOS errors.) */
@@ -22573,7 +22586,8 @@ void CvPlayerAI::write(FDataStreamBase* pStream)
 	//uiFlag = 17; // advc.550g
 	//uiFlag = 18; // advc.130n
 	//uiFlag = 19; // advc.130n (mostly removed again)
-	uiFlag = 20; // advc.115f
+	//uiFlag = 20; // advc.115f
+	uiFlag = 21; // advc.130c (remove separate cache for score diff)
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iPeaceWeight);
@@ -22620,9 +22634,6 @@ void CvPlayerAI::write(FDataStreamBase* pStream)
 		pStream->Write(m_aeLastBrag[i]);
 		pStream->Write(m_aeLastWarn[i]);
 	} // </advc.079>
-	// <advc.130c>
-	pStream->Write(MAX_CIV_PLAYERS, m_abTheyFarAhead);
-	pStream->Write(MAX_CIV_PLAYERS, m_abTheyBarelyAhead); // </advc.130c>
 	// K-Mod. save the attitude cache. (to avoid OOS problems)
 	pStream->Write(MAX_PLAYERS, &m_aiAttitude[0]);
 	// K-Mod end

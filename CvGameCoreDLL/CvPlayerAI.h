@@ -799,9 +799,7 @@ protected:
 	int* m_aiUnitClassWeights;
 	int* m_aiUnitCombatWeights;
 	ArrayEnumMap<VictoryTypes,short> m_aiVictoryWeights; // advc.115f
-	// <advc.130c>
-	bool m_abTheyFarAhead[MAX_CIV_PLAYERS];
-	bool m_abTheyBarelyAhead[MAX_CIV_PLAYERS]; // </advc.130c>
+
 	std::map<UnitClassTypes, int> m_GreatPersonWeights; // K-Mod
 	std::map<int,int> m_neededExplorersByArea; // advc.opt
 
