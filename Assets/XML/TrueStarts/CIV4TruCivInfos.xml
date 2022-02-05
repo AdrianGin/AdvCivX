@@ -95,7 +95,7 @@
 			<iLongitudeTimes10>290</iLongitudeTimes10>
 			<iPrecipitation>850</iPrecipitation>
 			<iClimateVariation>50</iClimateVariation>
-			<iOceanity>45</iOceanity>
+			<iOceanity>40</iOceanity>
 			<!-- Avoid occupying a desert river -->
 			<iMajorRiverWeight>-40</iMajorRiverWeight>
 			<!-- Argaeus; Ararat is too far from the core. -->
@@ -431,7 +431,7 @@
 			<!-- Modern Mongolia -->
 			<iTotalArea>1564</iTotalArea>
 			<iHStretch>175</iHStretch>
-			<iBias>-3</iBias>
+			<iBias>-5</iBias>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -477,7 +477,7 @@
 			<iLongitudeTimes10>290</iLongitudeTimes10>
 			<iPrecipitation>850</iPrecipitation>
 			<iClimateVariation>50</iClimateVariation>
-			<iOceanity>45</iOceanity>
+			<iOceanity>40</iOceanity>
 			<iMajorRiverWeight>-40</iMajorRiverWeight>
 			<!-- (see Byzantium) -->
 			<iMaxElevation>3917</iMaxElevation>

@@ -1651,6 +1651,12 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 						rOceanityWeight;
 				IFLOG logBBAI("Fitness penalty from oceanity: %d", -rFromOceanity.round());
 				iFitness += rFromOceanity.round();
+				if (rTargetOceanity <= 0 && kStart.isCoastalLand(-1))
+				{
+					int iExtra = 45;
+					IFLOG logBBAI("Extra penalty of %d for continental civ starting at coast", iExtra);
+					iFitness -= iExtra;
+				}
 			}
 			else IFLOG logBBAI("No oceanity data available");
 		}
