@@ -8188,9 +8188,7 @@ int CvPlayerAI::AI_getMemoryAttitude(PlayerTypes ePlayer, MemoryTypes eMemory) c
 	if(eMemory == MEMORY_ACCEPTED_JOIN_WAR)
 	{
 		CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
-		static bool bJOIN_WAR_DIPLO_BONUS = GC.getDefineBOOL("ENABLE_JOIN_WAR_DIPLO_BONUS");
-		if(!bJOIN_WAR_DIPLO_BONUS ||
-			(kOurTeam.getNumWars() > 0 && !kOurTeam.AI_shareWar(TEAMID(ePlayer))) ||
+		if ((kOurTeam.getNumWars() > 0 && !kOurTeam.AI_shareWar(TEAMID(ePlayer))) ||
 			kOurTeam.isAtWar(TEAMID(ePlayer)))
 		{
 			return 0;

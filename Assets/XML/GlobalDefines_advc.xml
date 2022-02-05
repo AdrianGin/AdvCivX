@@ -846,15 +846,6 @@
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
-	<!-- [advc.130s] When set to 1 or higher (recommended), the relations bonus
-		 for accepting AI requests for military aid is enabled. The bonus is
-		 set to +1 for every leader in the Leaderhead XML. Set to 0 or less
-		 for no diplo bonus (BtS behavior). -->
-	<Define>
-		<DefineName>ENABLE_JOIN_WAR_DIPLO_BONUS</DefineName>
-		<iDefineIntVal>1</iDefineIntVal>
-	</Define>
-
 	<!-- [advc.130o] MADE_DEMAND_RECENT memory is increased to this number when
 		 a human player attacks an AI civ after receiving their tribute.
 		 MADE_DEMAND_RECENT memory causes the AI to reject demands and pleas,
