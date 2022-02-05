@@ -155,8 +155,10 @@ StartingPositionIteration::StartingPositionIteration() :
 		FOR_EACH_ENUM(PlotNum)
 		{
 			CvPlot const& kPlot = kMap.getPlotByIndex(eLoopPlotNum);
-			scaled rYieldVal = yieldEval.evaluateWorkablePlot(kPlot);
+			if (!kPlot.isPotentialCityWork())
+				continue;
 			// CitySiteEvaluator has many useful subroutines for this; handle it there.
+			scaled rYieldVal = yieldEval.evaluateWorkablePlot(kPlot);
 			yieldValues.set(eLoopPlotNum, rYieldVal);
 			/*if(yieldValues.get(eLoopPlotNum) > 0) // (debug) Mark nonnegative-value plots with a ruin
 				GC.getMap().getPlotByIndex(i).setImprovementType(GC.getRUINS_IMPROVEMENT());*/
