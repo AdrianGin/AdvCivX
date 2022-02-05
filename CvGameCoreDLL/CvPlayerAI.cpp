@@ -8311,12 +8311,12 @@ int CvPlayerAI::AI_getRankDifferenceAttitude(PlayerTypes ePlayer) const
 		return 0;
 	}
 	// Don't like them if we're still in the first era
-	if(iResult > 0 && (getCurrentEra() <= kGame.getStartEra() ||
+	if (iResult > 0 && (getCurrentEra() <= kGame.getStartEra() ||
 		GET_PLAYER(ePlayer).AI_atVictoryStage3()))
 	{
 		return 0;
 	}
-	if(iResult < 0 && AI_atVictoryStage3() && !GET_PLAYER(ePlayer).AI_atVictoryStage4())
+	if (iResult < 0 && AI_atVictoryStage3() && !GET_PLAYER(ePlayer).AI_atVictoryStage4())
 		return 0;
 	return iResult;
 }

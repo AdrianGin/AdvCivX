@@ -3039,11 +3039,12 @@ void CvGame::update()
 
 void CvGame::updateScore(bool bForce)
 {
+	PROFILE_FUNC(); // advc.test (Just a little worried about the attitude updates)
 	if(!isScoreDirty() && !bForce)
 		return;
 	setScoreDirty(false);
 
-	bool abPlayerScored[MAX_CIV_PLAYERS] = { false };
+	bool abPlayerScored[MAX_CIV_PLAYERS] = {};
 	std::vector<PlayerTypes> aeUpdateAttitude; // advc.001
 	for (int iI = 0; iI < MAX_CIV_PLAYERS; iI++)
 	{
@@ -3094,7 +3095,7 @@ void CvGame::updateScore(bool bForce)
 		}
 	} // </advc.001>
 
-	bool abTeamScored[MAX_CIV_TEAMS] = { false };
+	bool abTeamScored[MAX_CIV_TEAMS] = {};
 	for (int iI = 0; iI < MAX_CIV_TEAMS; iI++)
 	{
 		int iBestScore = MIN_INT;
@@ -5847,14 +5848,11 @@ void CvGame::setPlayerScore(PlayerTypes ePlayer, int iScore)
 {
 	FAssertMsg(ePlayer >= 0, "eIndex is expected to be non-negative (invalid Index)");
 	FAssertMsg(ePlayer < MAX_PLAYERS, "ePlayer is expected to be within maximum bounds (invalid Index)");
-
-	if (getPlayerScore(ePlayer) != iScore)
-	{
-		m_aiPlayerScore[ePlayer] = iScore;
-		FAssert(getPlayerScore(ePlayer) >= 0);
-
-		gDLL->getInterfaceIFace()->setDirty(Score_DIRTY_BIT, true);
-	}
+	if (getPlayerScore(ePlayer) == iScore)
+		return;
+	FAssert(iScore >= 0);
+	m_aiPlayerScore[ePlayer] = iScore;
+	gDLL->getInterfaceIFace()->setDirty(Score_DIRTY_BIT, true);
 }
 
 

@@ -840,9 +840,10 @@ protected:
 	}
 	bool AI_proposeJointWar(PlayerTypes eHuman);
 	void AI_proposeWarTrade(PlayerTypes eAIPlayer); // </advc>
-	// advc.130t:
-	int AI_rivalPactAttitude(PlayerTypes ePlayer, bool bVassalPacts) const;
-	scaled AI_expansionistHate(PlayerTypes ePlayer) const;
+
+	int AI_rivalPactAttitude(PlayerTypes ePlayer, bool bVassalPacts) const; // advc.130t
+	scaled AI_expansionistHate(PlayerTypes ePlayer) const; //advc.130w
+
 	bool AI_canBeAttackedBy(CvUnit const& u) const; // advc.315
 
 	// <advc.130p>

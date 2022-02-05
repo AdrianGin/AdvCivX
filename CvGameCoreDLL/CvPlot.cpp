@@ -6940,7 +6940,7 @@ void CvPlot::doCultureDecay()
 	FOR_EACH_ENUM(Player)
 	{
 		int iCulture = getCulture(eLoopPlayer);
-		if(iCulture <= 0)
+		if (iCulture <= 0)
 			continue;
 		int iDecayPerMill = iBaseDecayPerMill;
 		if(bInAnyRadius && !abInRadius[eLoopPlayer] &&
@@ -6952,7 +6952,7 @@ void CvPlot::doCultureDecay()
 				rExclDecay += iExclDecay;
 			if(iMinDist <= 1)
 				rExclDecay += iExclDecay;
-			if(iCulture < iMaxRadiusCulture)
+			if (iCulture < iMaxRadiusCulture)
 			{
 				// Gradually throttle decay when approaching the threshold
 				rExclDecay.mulDiv(iCulture, iMaxRadiusCulture);
