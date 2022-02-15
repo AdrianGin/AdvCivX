@@ -14,7 +14,8 @@
 			<Help>TXT_KEY_HANDICAP_SETTLER_HELP</Help>
 			<!-- advc.251: was 5 -->
 			<iFreeWinsVsBarbs>4</iFreeWinsVsBarbs>
-			<iAnimalAttackProb>25</iAnimalAttackProb>
+			<!-- advc.309: was 25 -->
+			<iAnimalAttackProb>30</iAnimalAttackProb>
 			<iStartingLocPercent>10</iStartingLocPercent>
 			<!-- advc.250c: was 150 -->
 			<iAdvancedStartPointsMod>100</iAdvancedStartPointsMod>
@@ -353,7 +354,8 @@
 			<Help>TXT_KEY_HANDICAP_WARLORD_HELP</Help>
 			<!-- advc.251: was 3 -->
 			<iFreeWinsVsBarbs>2</iFreeWinsVsBarbs>
-			<iAnimalAttackProb>75</iAnimalAttackProb>
+			<!-- advc.309: was 75 -->
+			<iAnimalAttackProb>60</iAnimalAttackProb>
 			<!-- advc.108b: was 30 -->
 			<iStartingLocPercent>35</iStartingLocPercent>
 			<!-- advc.250c: was 110 -->
@@ -483,7 +485,8 @@
 			<Help>TXT_KEY_HANDICAP_NOBLE_HELP</Help>
 			<!-- advc.251: was 2 -->
 			<iFreeWinsVsBarbs>1</iFreeWinsVsBarbs>
-			<iAnimalAttackProb>85</iAnimalAttackProb>
+			<!-- advc.309: was 85 -->
+			<iAnimalAttackProb>70</iAnimalAttackProb>
 			<!-- advc.108b: was 40 -->
 			<iStartingLocPercent>49</iStartingLocPercent>
 			<iAdvancedStartPointsMod>100</iAdvancedStartPointsMod>
@@ -609,7 +612,8 @@
 			<Help>TXT_KEY_HANDICAP_PRINCE_HELP</Help>
 			<!-- advc.251: was 1 -->
 			<iFreeWinsVsBarbs>0</iFreeWinsVsBarbs>
-			<iAnimalAttackProb>90</iAnimalAttackProb>
+			<!-- advc.309: was 90 -->
+			<iAnimalAttackProb>70</iAnimalAttackProb>
 			<!-- advc.108b: was 50 -->
 			<iStartingLocPercent>55</iStartingLocPercent>
 			<!-- advc.250c: was 95 -->
@@ -737,7 +741,8 @@
 			<Description>TXT_KEY_HANDICAP_MONARCH</Description>
 			<Help>TXT_KEY_HANDICAP_MONARCH_HELP</Help>
 			<iFreeWinsVsBarbs>0</iFreeWinsVsBarbs>
-			<iAnimalAttackProb>90</iAnimalAttackProb>
+			<!-- advc.309: was 90 -->
+			<iAnimalAttackProb>70</iAnimalAttackProb>
 			<!-- advc.108b: was 60 -->
 			<iStartingLocPercent>65</iStartingLocPercent>
 			<!-- advc.250c: was 90 -->
@@ -894,7 +899,8 @@
 			<Description>TXT_KEY_HANDICAP_EMPEROR</Description>
 			<Help>TXT_KEY_HANDICAP_EMPEROR_HELP</Help>
 			<iFreeWinsVsBarbs>0</iFreeWinsVsBarbs>
-			<iAnimalAttackProb>90</iAnimalAttackProb>
+			<!-- advc.309: was 90 -->
+			<iAnimalAttackProb>70</iAnimalAttackProb>
 			<!-- advc.108b: was 70 -->
 			<iStartingLocPercent>75</iStartingLocPercent>
 			<!-- advc.250c: was 85 -->
@@ -1052,7 +1058,8 @@
 			<Description>TXT_KEY_HANDICAP_IMMORTAL</Description>
 			<Help>TXT_KEY_HANDICAP_IMMORTAL_HELP</Help>
 			<iFreeWinsVsBarbs>0</iFreeWinsVsBarbs>
-			<iAnimalAttackProb>90</iAnimalAttackProb>
+			<!-- advc.309: was 90 -->
+			<iAnimalAttackProb>70</iAnimalAttackProb>
 			<!-- advc.108b: was 80 -->
 			<iStartingLocPercent>85</iStartingLocPercent>
 			<!-- advc.250c: was 80 -->
@@ -1218,7 +1225,8 @@
 			<Description>TXT_KEY_HANDICAP_DEITY</Description>
 			<Help>TXT_KEY_HANDICAP_DEITY_HELP</Help>
 			<iFreeWinsVsBarbs>0</iFreeWinsVsBarbs>
-			<iAnimalAttackProb>90</iAnimalAttackProb>
+			<!-- advc.309: was 90 -->
+			<iAnimalAttackProb>70</iAnimalAttackProb>
 			<!-- advc.108b: was 90 -->
 			<iStartingLocPercent>95</iStartingLocPercent>
 			<!-- advc.250c: was 75 -->
