@@ -11243,7 +11243,7 @@ int CvCityAI::AI_buildUnitProb(bool bDraft)
 	/*	<advc.109> Replacing the BBAI code above. The ECONOMY_FOCUS check is from K-Mod;
 		moved from AI_chooseProduction. */
 	else if (kOwner.AI_isDoStrategy(AI_STRATEGY_ECONOMY_FOCUS) ||
-		kOwner.getNumCities() <= 1)
+		(kOwner.getNumCities() <= 1 && isCapital()))
 	{
 		r /= 2; // </advc.109>
 		bGreatlyReduced = true; // advc.017
