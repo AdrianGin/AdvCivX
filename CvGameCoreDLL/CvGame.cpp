@@ -7905,6 +7905,9 @@ int CvGame::getBarbarianStartTurn() const
 	{
 		iStartTurn /= 2;
 	}
+	// <advc.309>
+	else if (isOption(GAMEOPTION_NO_ANIMALS))
+		iTargetElapsed = intdiv::uround(iTargetElapsed * 3, 4); // </advc.309>
 	return iStartTurn + iTargetElapsed;
 }
 
