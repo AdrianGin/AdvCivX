@@ -23736,8 +23736,13 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 	if (getCurrentEra() >= GC.getNumEraInfos() / 3 + (AI_getStrategyRand(1) % 2) ||
 		iHighCultureCount >= iVictoryCities - 1)
 	{
-		if (iHighCultureCount < getCurrentEra() + iVictoryCities - GC.getNumEraInfos())
+		if (iHighCultureCount < getCurrentEra() + iVictoryCities - GC.getNumEraInfos() ||
+			// <advc.115e> Hopeless at some point if we have very few cities
+			getNumCities() <= std::min(iVictoryCities + 1,
+			getCurrentEra() + iVictoryCities - GC.getNumEraInfos() / 2)) // </advc.115e>
+		{
 			return 1;
+		}
 		return 2;
 	}
 
