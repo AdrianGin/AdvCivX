@@ -2041,6 +2041,24 @@ void CvUnitAI::AI_workerMove(/* advc.113b: */ bool bUpdateWorkersHave)
 	getGroup()->pushMission(MISSION_SKIP);
 }
 
+// advc.300:
+namespace
+{
+	scaled barbarianAggressionChance(scaled rCitiesPerCiv, scaled rTargetCitiesPerCiv)
+	{
+		FAssert(rTargetCitiesPerCiv >= 1);
+		scaled rError = rTargetCitiesPerCiv - rCitiesPerCiv;
+		if (rError <= 0)
+			return 1;
+		/*	Chance not to act aggressively proportional to the relative square error
+			(relative to the target city count minus 1 b/c we really care how many
+			settlers have been trained). Tbd.: Shouldn't hardcode the number of
+			starting settlers like this. */
+		scaled r = 1 - fixp(2.4) * SQR(rError / (rTargetCitiesPerCiv - 1));
+		return r;
+	}
+}
+
 
 void CvUnitAI::AI_barbAttackMove()
 {
@@ -2097,16 +2115,22 @@ void CvUnitAI::AI_barbAttackMove()
 		}
 		int const iCivCitiesInArea = getArea().getNumCivCities();
 		int const iBabarianCitiesInArea = getArea().getNumCities() - iCivCitiesInArea;
+		// No longer includes Barbarian cities
 		int const iCivCities = kGame.getNumCivCities();
-		int const iCivs = kGame.countCivPlayersAlive(); // </advc.300>
+		int const iCivs = kGame.countCivPlayersAlive();
+		scaled rCitiesPerCiv(iCivCities, iCivs);
+		/*	Don't want an isolated human to deliberately curb Barbarian activity
+			by expanding slowly */
+		if (iCivsInArea > 1)
+			rCitiesPerCiv = scaled(iCivCitiesInArea, iCivsInArea);
+		else rCitiesPerCiv.mulDiv(9, 11);
+		scaled const rAggressionRoll = scaled::hash(AI_getBirthmark());
+		// </advc.300>
 		if (kGame.isOption(GAMEOPTION_RAGING_BARBARIANS) &&
-			/*  <advc.300> On slower than Normal game speed, don't start to rage
-				until 3 in 5 civs have founded a second city. */
-			((iCivsInArea > 1 ?
-			(3 * iCivCitiesInArea > 5 * iCivsInArea) :
-			(2 * iCivCities > 3 * iCivs)) ||
-			GC.getInfo(kGame.getGameSpeedType()).getBarbPercent() <= 100))
-			// </advc.300>
+			/*	advc.300: Don't rage right away. (Don't recall why I had originally
+				only wanted this on slower game speed.) */
+			(//GC.getInfo(kGame.getGameSpeedType()).getBarbPercent() < 125 ||
+			rAggressionRoll < barbarianAggressionChance(rCitiesPerCiv, fixp(1.6))))
 		{
 			if (AI_pillageRange(4))
 			{
@@ -2138,13 +2162,8 @@ void CvUnitAI::AI_barbAttackMove()
 				// BETTER_BTS_AI_MOD: END
 			}
 		}
-		/* <advc.300> Now checked per area unless there is only one civ (to avoid an
-		   isolated human civ deliberately curbing Barbarian activity in its area).
-		   Barbarian cities no longer count, but threshold lowered to 2.5. */
-		else if (iCivsInArea > 1 ?
-			(2 * iCivCitiesInArea > 5 * iCivsInArea) :
-			// The BtS condition: // </advc.300>
-			(iCivCities > iCivs * 3))
+		else if (//iCivCities > iCivs * 3
+			rAggressionRoll < barbarianAggressionChance(rCitiesPerCiv, 3)) // advc.300
 		{
 			if (AI_cityAttack(1, 15))
 			{
@@ -2181,12 +2200,8 @@ void CvUnitAI::AI_barbAttackMove()
 				// BETTER_BTS_AI_MOD: END
 			}
 		}
-		// <advc.300>
-		else if (iCivsInArea > 1 ?
-			(iCivCitiesInArea > 2 * iCivsInArea ||
-			// For areas that have only room for 2 or 3 cities
-			(iBabarianCitiesInArea <= 0 && iCivCities > 3 * iCivs)) : // </advc.300>
-			(iCivCities > iCivs * 2))
+		else if (//iCivCities > iCivs * 2
+			rAggressionRoll < barbarianAggressionChance(rCitiesPerCiv, 2)) // advc.300
 		{
 			if (AI_pillageRange(2))
 				return;
