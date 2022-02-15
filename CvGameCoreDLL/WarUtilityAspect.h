@@ -496,4 +496,16 @@ private:
 	scaled m_rLostDefPowRatio;
 };
 
+class DramaticArc : public WarUtilityAspect
+{
+public:
+	DramaticArc(WarEvalParameters const& kParams)
+	:	WarUtilityAspect(kParams) {}
+	int preEvaluate();
+	void evaluate();
+	UWAI::AspectTypes xmlID() const { return UWAI::DRAMATIC_ARC; }
+private:
+	scaled m_rTensionIncrease;
+};
+
 #endif
