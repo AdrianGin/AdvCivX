@@ -45,7 +45,7 @@
 			<!-- advc.114d: was 0 -->
 			<iBaseAttackOddsChange>2</iBaseAttackOddsChange>
 			<!-- advc.114d: was 16 -->
-			<iAttackOddsChangeRand>18</iAttackOddsChangeRand>
+			<iAttackOddsChangeRand>21</iAttackOddsChangeRand>
 			<iWorseRankDifferenceAttitudeChange>0</iWorseRankDifferenceAttitudeChange>
 			<iBetterRankDifferenceAttitudeChange>0</iBetterRankDifferenceAttitudeChange>
 			<iCloseBordersAttitudeChange>0</iCloseBordersAttitudeChange>
