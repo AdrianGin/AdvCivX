@@ -66,7 +66,7 @@
 			<iUnownedWaterTilesPerBarbarianUnit>750</iUnownedWaterTilesPerBarbarianUnit>
 			<iUnownedTilesPerBarbarianCity>160</iUnownedTilesPerBarbarianCity>
 			<!-- advc.300: was 50 -->
-			<iBarbarianCreationTurnsElapsed>55</iBarbarianCreationTurnsElapsed>
+			<iBarbarianCreationTurnsElapsed>48</iBarbarianCreationTurnsElapsed>
 			<!-- advc.300: was 55 -->
 			<iBarbarianCityCreationTurnsElapsed>60</iBarbarianCityCreationTurnsElapsed>
 			<iBarbarianCityCreationProb>4</iBarbarianCityCreationProb>
@@ -246,7 +246,7 @@
 			<iUnownedWaterTilesPerBarbarianUnit>600</iUnownedWaterTilesPerBarbarianUnit>
 			<iUnownedTilesPerBarbarianCity>150</iUnownedTilesPerBarbarianCity>
 			<!-- advc.300: was 45 -->
-			<iBarbarianCreationTurnsElapsed>50</iBarbarianCreationTurnsElapsed>
+			<iBarbarianCreationTurnsElapsed>44</iBarbarianCreationTurnsElapsed>
 			<!-- advc.300: was 50 -->
 			<iBarbarianCityCreationTurnsElapsed>55</iBarbarianCityCreationTurnsElapsed>
 			<iBarbarianCityCreationProb>5</iBarbarianCityCreationProb>
@@ -402,8 +402,7 @@
 			<iUnownedTilesPerBarbarianUnit>66</iUnownedTilesPerBarbarianUnit>
 			<iUnownedWaterTilesPerBarbarianUnit>550</iUnownedWaterTilesPerBarbarianUnit>
 			<iUnownedTilesPerBarbarianCity>140</iUnownedTilesPerBarbarianCity>
-			<!-- advc.300: was 40 -->
-			<iBarbarianCreationTurnsElapsed>45</iBarbarianCreationTurnsElapsed>
+			<iBarbarianCreationTurnsElapsed>40</iBarbarianCreationTurnsElapsed>
 			<!-- advc.300: was 45 -->
 			<iBarbarianCityCreationTurnsElapsed>50</iBarbarianCityCreationTurnsElapsed>
 			<iBarbarianCityCreationProb>5</iBarbarianCityCreationProb>
@@ -536,7 +535,7 @@
 			<iUnownedWaterTilesPerBarbarianUnit>500</iUnownedWaterTilesPerBarbarianUnit>
 			<iUnownedTilesPerBarbarianCity>130</iUnownedTilesPerBarbarianCity>
 			<!-- advc.300: was 35 -->
-			<iBarbarianCreationTurnsElapsed>40</iBarbarianCreationTurnsElapsed>
+			<iBarbarianCreationTurnsElapsed>36</iBarbarianCreationTurnsElapsed>
 			<!-- advc.300: was 40 -->
 			<iBarbarianCityCreationTurnsElapsed>45</iBarbarianCityCreationTurnsElapsed>
 			<iBarbarianCityCreationProb>6</iBarbarianCityCreationProb>
@@ -662,7 +661,7 @@
 			<iUnownedWaterTilesPerBarbarianUnit>450</iUnownedWaterTilesPerBarbarianUnit>
 			<iUnownedTilesPerBarbarianCity>120</iUnownedTilesPerBarbarianCity>
 			<!-- advc.300: was 30 -->
-			<iBarbarianCreationTurnsElapsed>35</iBarbarianCreationTurnsElapsed>
+			<iBarbarianCreationTurnsElapsed>32</iBarbarianCreationTurnsElapsed>
 			<!-- advc.300: was 35 -->
 			<iBarbarianCityCreationTurnsElapsed>40</iBarbarianCityCreationTurnsElapsed>
 			<iBarbarianCityCreationProb>6</iBarbarianCityCreationProb>
@@ -791,7 +790,7 @@
 			<iUnownedWaterTilesPerBarbarianUnit>400</iUnownedWaterTilesPerBarbarianUnit>
 			<iUnownedTilesPerBarbarianCity>110</iUnownedTilesPerBarbarianCity>
 			<!-- advc.300: was 25 -->
-			<iBarbarianCreationTurnsElapsed>30</iBarbarianCreationTurnsElapsed>
+			<iBarbarianCreationTurnsElapsed>28</iBarbarianCreationTurnsElapsed>
 			<!-- advc.300: was 30 -->
 			<iBarbarianCityCreationTurnsElapsed>35</iBarbarianCityCreationTurnsElapsed>
 			<iBarbarianCityCreationProb>7</iBarbarianCityCreationProb>
@@ -945,7 +944,7 @@
 			<iUnownedWaterTilesPerBarbarianUnit>350</iUnownedWaterTilesPerBarbarianUnit>
 			<iUnownedTilesPerBarbarianCity>100</iUnownedTilesPerBarbarianCity>
 			<!-- advc.300: was 20 -->
-			<iBarbarianCreationTurnsElapsed>25</iBarbarianCreationTurnsElapsed>
+			<iBarbarianCreationTurnsElapsed>24</iBarbarianCreationTurnsElapsed>
 			<!-- advc.300: was 25 -->
 			<iBarbarianCityCreationTurnsElapsed>30</iBarbarianCityCreationTurnsElapsed>
 			<iBarbarianCityCreationProb>7</iBarbarianCityCreationProb>
@@ -1272,7 +1271,7 @@
 			<iUnownedWaterTilesPerBarbarianUnit>250</iUnownedWaterTilesPerBarbarianUnit>
 			<iUnownedTilesPerBarbarianCity>80</iUnownedTilesPerBarbarianCity>
 			<!-- advc.300: was 10 -->
-			<iBarbarianCreationTurnsElapsed>15</iBarbarianCreationTurnsElapsed>
+			<iBarbarianCreationTurnsElapsed>16</iBarbarianCreationTurnsElapsed>
 			<!-- advc.300: was 15 -->
 			<iBarbarianCityCreationTurnsElapsed>25</iBarbarianCityCreationTurnsElapsed>
 			<iBarbarianCityCreationProb>8</iBarbarianCityCreationProb>
