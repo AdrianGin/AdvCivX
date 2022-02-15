@@ -201,7 +201,11 @@ public:
 			FAssert(u <= static_cast<uint>(INTMAX) / static_cast<uint>(SCALE));
 		#endif
 	}
-	// Construction from rational
+	/*	Construction from rational
+		Note: It's easy to accidentally call the single-arg ctor by typing
+		scaled ratio(iDen / iNum);
+		Static factory functions could avoid that, but are too unwieldy, e.g.
+		scaled ratio = scaled::rational(iDen, iNum); */
 	ScaledNum(int iNum, int iDen)
 	{
 		m_i = safeCast(mulDiv(SCALE, iNum, iDen));

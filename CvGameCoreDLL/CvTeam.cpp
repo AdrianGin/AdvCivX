@@ -719,62 +719,64 @@ void CvTeam::shareItems(TeamTypes eTeam)
 	}
 }
 
-// K-Mod. I've edited this function quite a lot. (for reasons that have been lost in the sands of time)
+/*	K-Mod. I've edited this function quite a lot.
+	(for reasons that have been lost in the sands of time) */
 void CvTeam::shareCounters(TeamTypes eTeam)
 {
 	CvTeamAI& kShareTeam = GET_TEAM(eTeam); // K-Mod
 	for (int i = 0; i < MAX_TEAMS; i++)
 	{
-		TeamTypes eLoopTeam = (TeamTypes)i; // advc
-		if (eLoopTeam != getID() && eLoopTeam != eTeam)
-		{
-			if (kShareTeam.getWarWeariness(eLoopTeam) > getWarWeariness(eLoopTeam))
-				setWarWeariness(eLoopTeam, kShareTeam.getWarWeariness(eLoopTeam));
-			//else kShareTeam.setWarWeariness(eLoopTeam, getWarWeariness(eLoopTeam));
+		TeamTypes const eLoopTeam = (TeamTypes)i;
+		if (eLoopTeam == getID() || eLoopTeam == eTeam)
+			continue;
 
-			if (kShareTeam.getStolenVisibilityTimer(eLoopTeam) > getStolenVisibilityTimer(eLoopTeam))
-				setStolenVisibilityTimer(eLoopTeam, kShareTeam.getStolenVisibilityTimer(eLoopTeam));
-			//else kShareTeam.setStolenVisibilityTimer(eLoopTeam, getStolenVisibilityTimer(eLoopTeam));
+		if (kShareTeam.getWarWeariness(eLoopTeam) > getWarWeariness(eLoopTeam))
+			setWarWeariness(eLoopTeam, kShareTeam.getWarWeariness(eLoopTeam));
+		//else kShareTeam.setWarWeariness(eLoopTeam, getWarWeariness(eLoopTeam));
 
-			if (kShareTeam.AI_getAtWarCounter(eLoopTeam) > AI().AI_getAtWarCounter(eLoopTeam))
-				AI().AI_setAtWarCounter(eLoopTeam, kShareTeam.AI_getAtWarCounter(eLoopTeam));
-			//else kShareTeam.AI_setAtWarCounter(eLoopTeam, AI_getAtWarCounter(eLoopTeam));
+		if (kShareTeam.getStolenVisibilityTimer(eLoopTeam) > getStolenVisibilityTimer(eLoopTeam))
+			setStolenVisibilityTimer(eLoopTeam, kShareTeam.getStolenVisibilityTimer(eLoopTeam));
+		//else kShareTeam.setStolenVisibilityTimer(eLoopTeam, getStolenVisibilityTimer(eLoopTeam));
 
-			if (kShareTeam.AI_getAtPeaceCounter(eLoopTeam) > AI().AI_getAtPeaceCounter(eLoopTeam))
-				AI().AI_setAtPeaceCounter(eLoopTeam, kShareTeam.AI_getAtPeaceCounter(eLoopTeam));
-			//else kShareTeam.AI_setAtPeaceCounter(eLoopTeam, AI_getAtPeaceCounter(eLoopTeam));
+		if (kShareTeam.AI_getAtWarCounter(eLoopTeam) > AI().AI_getAtWarCounter(eLoopTeam))
+			AI().AI_setAtWarCounter(eLoopTeam, kShareTeam.AI_getAtWarCounter(eLoopTeam));
+		//else kShareTeam.AI_setAtWarCounter(eLoopTeam, AI_getAtWarCounter(eLoopTeam));
 
-			if (kShareTeam.AI_getHasMetCounter(eLoopTeam) > AI().AI_getHasMetCounter(eLoopTeam))
-				AI().AI_setHasMetCounter(eLoopTeam, kShareTeam.AI_getHasMetCounter(eLoopTeam));
-			//else kShareTeam.AI_setHasMetCounter(eLoopTeam, AI_getHasMetCounter(eLoopTeam));
+		if (kShareTeam.AI_getAtPeaceCounter(eLoopTeam) > AI().AI_getAtPeaceCounter(eLoopTeam))
+			AI().AI_setAtPeaceCounter(eLoopTeam, kShareTeam.AI_getAtPeaceCounter(eLoopTeam));
+		//else kShareTeam.AI_setAtPeaceCounter(eLoopTeam, AI_getAtPeaceCounter(eLoopTeam));
 
-			if (kShareTeam.AI_getOpenBordersCounter(eLoopTeam) > AI().AI_getOpenBordersCounter(eLoopTeam))
-				AI().AI_setOpenBordersCounter(eLoopTeam, kShareTeam.AI_getOpenBordersCounter(eLoopTeam));
-			//else kShareTeam.AI_setOpenBordersCounter(eLoopTeam, AI_getOpenBordersCounter(eLoopTeam));
+		if (kShareTeam.AI_getHasMetCounter(eLoopTeam) > AI().AI_getHasMetCounter(eLoopTeam))
+			AI().AI_setHasMetCounter(eLoopTeam, kShareTeam.AI_getHasMetCounter(eLoopTeam));
+		//else kShareTeam.AI_setHasMetCounter(eLoopTeam, AI_getHasMetCounter(eLoopTeam));
 
-			if (kShareTeam.AI_getDefensivePactCounter(eLoopTeam) > AI().AI_getDefensivePactCounter(eLoopTeam))
-				AI().AI_setDefensivePactCounter(eLoopTeam, kShareTeam.AI_getDefensivePactCounter(eLoopTeam));
-			//else kShareTeam.AI_setDefensivePactCounter(eLoopTeam, AI_getDefensivePactCounter(eLoopTeam));
+		if (kShareTeam.AI_getOpenBordersCounter(eLoopTeam) > AI().AI_getOpenBordersCounter(eLoopTeam))
+			AI().AI_setOpenBordersCounter(eLoopTeam, kShareTeam.AI_getOpenBordersCounter(eLoopTeam));
+		//else kShareTeam.AI_setOpenBordersCounter(eLoopTeam, AI_getOpenBordersCounter(eLoopTeam));
 
-			if (kShareTeam.AI_getShareWarCounter(eLoopTeam) > AI().AI_getShareWarCounter(eLoopTeam))
-				AI().AI_setShareWarCounter(eLoopTeam, kShareTeam.AI_getShareWarCounter(eLoopTeam));
-			//else kShareTeam.AI_setShareWarCounter(eLoopTeam, AI_getShareWarCounter(eLoopTeam));
+		if (kShareTeam.AI_getDefensivePactCounter(eLoopTeam) > AI().AI_getDefensivePactCounter(eLoopTeam))
+			AI().AI_setDefensivePactCounter(eLoopTeam, kShareTeam.AI_getDefensivePactCounter(eLoopTeam));
+		//else kShareTeam.AI_setDefensivePactCounter(eLoopTeam, AI_getDefensivePactCounter(eLoopTeam));
 
-			if (kShareTeam.AI_getWarSuccess(eLoopTeam) > AI().AI_getWarSuccess(eLoopTeam))
-				AI().AI_setWarSuccess(eLoopTeam, kShareTeam.AI_getWarSuccess(eLoopTeam));
-			//else kShareTeam.AI_setWarSuccess(eLoopTeam, AI_getWarSuccess(eLoopTeam));
+		if (kShareTeam.AI_getShareWarCounter(eLoopTeam) > AI().AI_getShareWarCounter(eLoopTeam))
+			AI().AI_setShareWarCounter(eLoopTeam, kShareTeam.AI_getShareWarCounter(eLoopTeam));
+		//else kShareTeam.AI_setShareWarCounter(eLoopTeam, AI_getShareWarCounter(eLoopTeam));
 
-			if (kShareTeam.AI_getEnemyPeacetimeTradeValue(eLoopTeam) > AI().AI_getEnemyPeacetimeTradeValue(eLoopTeam))
-				AI().AI_setEnemyPeacetimeTradeValue(eLoopTeam, kShareTeam.AI_getEnemyPeacetimeTradeValue(eLoopTeam));
-			//else kShareTeam.AI_setEnemyPeacetimeTradeValue(eLoopTeam, AI_getEnemyPeacetimeTradeValue(eLoopTeam));
+		if (kShareTeam.AI_getWarSuccess(eLoopTeam) > AI().AI_getWarSuccess(eLoopTeam))
+			AI().AI_setWarSuccess(eLoopTeam, kShareTeam.AI_getWarSuccess(eLoopTeam));
+		//else kShareTeam.AI_setWarSuccess(eLoopTeam, AI_getWarSuccess(eLoopTeam));
 
-			if (kShareTeam.AI_getEnemyPeacetimeGrantValue(eLoopTeam) > AI().AI_getEnemyPeacetimeGrantValue(eLoopTeam))
-				AI().AI_setEnemyPeacetimeGrantValue(eLoopTeam, kShareTeam.AI_getEnemyPeacetimeGrantValue(eLoopTeam));
-			//else kShareTeam.AI_setEnemyPeacetimeGrantValue(eLoopTeam, AI_getEnemyPeacetimeGrantValue(eLoopTeam));
+		if (kShareTeam.AI_getEnemyPeacetimeTradeValue(eLoopTeam) > AI().AI_getEnemyPeacetimeTradeValue(eLoopTeam))
+			AI().AI_setEnemyPeacetimeTradeValue(eLoopTeam, kShareTeam.AI_getEnemyPeacetimeTradeValue(eLoopTeam));
+		//else kShareTeam.AI_setEnemyPeacetimeTradeValue(eLoopTeam, AI_getEnemyPeacetimeTradeValue(eLoopTeam));
 
-			kShareTeam.AI_setWarPlan(eLoopTeam, NO_WARPLAN, false);
-			// K-Mod note. presumably, the warplan is cleared under the assumption that kShareTeam is going to be removed.
-		}
+		if (kShareTeam.AI_getEnemyPeacetimeGrantValue(eLoopTeam) > AI().AI_getEnemyPeacetimeGrantValue(eLoopTeam))
+			AI().AI_setEnemyPeacetimeGrantValue(eLoopTeam, kShareTeam.AI_getEnemyPeacetimeGrantValue(eLoopTeam));
+		//else kShareTeam.AI_setEnemyPeacetimeGrantValue(eLoopTeam, AI_getEnemyPeacetimeGrantValue(eLoopTeam));
+
+		kShareTeam.AI_setWarPlan(eLoopTeam, NO_WARPLAN, false);
+		/*	K-Mod note. presumably, the warplan is cleared under the
+			assumption that kShareTeam is going to be removed. */
 	}
 
 	FOR_EACH_ENUM2(Project, eProject)
@@ -822,11 +824,14 @@ void CvTeam::shareCounters(TeamTypes eTeam)
 		//if (!isHasTech(eTech))
 		if (!isHasTech(eTech) && !kShareTeam.isHasTech(eTech))
 		{
-			// K-Mod note: it's difficult to do any combined proportionality adjustments here, because if we set
-			// the progress higher than the current cost then we'll get the tech right now before the cost is increased.
-			// We can however adjust for uneven tech costs before the teams are merged.
-			// (eg. suppose techs are more expensive for team 2; if team 2 almost has a tech - and if progress is
-			//  transfered without adjustment, team 1 will immediately get the tech even though team 2 didn't finish it.)
+			/*	K-Mod note: it's difficult to do any combined proportionality
+				adjustments here, because if we set the progress higher than
+				the current cost, then we'll get the tech right now before the cost
+				is increased. We can however adjust for uneven tech costs
+				before the teams are merged.
+				(eg. suppose techs are more expensive for team 2; if team 2
+				almost has a tech - and if progress is transfered without adjustment,
+				team 1 will immediately get the tech even though team 2 didn't finish it.) */
 
 			//if (kShareTeam.getResearchProgress(eTech) > getResearchProgress(eTech))
 			if (kShareTeam.getResearchProgress(eTech) * getResearchCost(eTech) >
@@ -849,9 +854,10 @@ void CvTeam::shareCounters(TeamTypes eTeam)
 			in CvTeam::shareItems. */
 	}
 
-	// K-Mod. Share extra moves.
-	// Note: there is no reliable way to do this. We can't tell if the bonus is from something unique- such as circumnavigation,
-	// or from something that is already taken into account - such as refrigeration.
+	/*	K-Mod. Share extra moves.
+		Note: there is no reliable way to do this. We can't tell if the bonus is
+		from something unique- such as circumnavigation, or from something
+		that is already taken into account - such as refrigeration. */
 	FOR_EACH_ENUM(Domain)
 	{
 		if (kShareTeam.getExtraMoves(eLoopDomain) > getExtraMoves(eLoopDomain))
@@ -859,8 +865,7 @@ void CvTeam::shareCounters(TeamTypes eTeam)
 			changeExtraMoves(eLoopDomain,
 					kShareTeam.getExtraMoves(eLoopDomain) - getExtraMoves(eLoopDomain));
 		}
-	}
-	// K-Mod end
+	} // K-Mod end
 }
 
 
@@ -897,13 +902,12 @@ void CvTeam::doTurn()
 	m_iPeaceOfferStage = 0; m_eOfferingPeace = NO_TEAM;
 	// </advc.134a>
 	AI().AI_doTurnPre();
-	m_abJustDeclaredWar.reset(); // advc.162
 	if (isBarbarian())
 		doBarbarianResearch(); // advc: Moved into subroutine
-
+	m_abJustDeclaredWar.reset(); // advc.162
 	for (TeamIter<CIV_ALIVE,NOT_SAME_TEAM_AS> it(getID()); it.hasNext(); ++it)
 	{
-		TeamTypes eOther = it->getID();
+		TeamTypes const eOther = it->getID();
 		if (getStolenVisibilityTimer(eOther) > 0)
 			changeStolenVisibilityTimer(eOther, -1);
 		if (getCounterespionageTurnsLeftAgainstTeam(eOther) > 0)
@@ -5164,11 +5168,13 @@ void CvTeam::doBarbarianResearch()
 			for (; it.hasNext(); ++it)
 			{
 				CvTeam const& kLoopTeam = *it;
-				if (kLoopTeam.isHasTech(eLoopTech)
-						&& kLoopTeam.isInContactWithBarbarians()) // advc.302
+				if (kLoopTeam.isHasTech(eLoopTech) &&
+					kLoopTeam.isInContactWithBarbarians()) // advc.302
+				{
 					iCount++;
+				}
 				// <advc.307>
-				if(kLoopTeam.isHasTech(eLoopTech))
+				if (kLoopTeam.isHasTech(eLoopTech))
 					iHasTech++; // </advc.307>
 			} /* advc.302: Don't stop barb research entirely even when there is
 				 no contact with any civs */
@@ -5179,13 +5185,14 @@ void CvTeam::doBarbarianResearch()
 				/*  advc.307: In the late game, count all civs as having contact with
 					barbs if at least one of them has contact. Otherwise, New World barbs
 					catch up too slowly when colonized only by one or two civs. */
-				if(bNoBarbCities)
+				if (bNoBarbCities)
 					iCount = std::max(iCount, (2 * iHasTech) / 3);
 				static int const iBARBARIAN_FREE_TECH_PERCENT = GC.getDefineINT("BARBARIAN_FREE_TECH_PERCENT"); // advc.opt
 				//changeResearchProgress(eLoopTech, (getResearchCost(eLoopTech) * ((iBARBARIAN_FREE_TECH_PERCENT * iCount) / iPossible)) / 100, getLeaderID());
-				// K-Mod. Adjust research rate for game-speed & start-era - but _not_ world-size. And fix the rounding error.
-				int iBaseCost = getResearchCost(eLoopTech, false) *
-						GC.getInfo(GC.getMap().getWorldSize()).getResearchPercent() / 100;
+				/*	K-Mod. Adjust research rate for game-speed & start-era -
+					but _not_ world-size. And fix the rounding error. */
+				int iBaseCost = (getResearchCost(eLoopTech, false) *
+						GC.getInfo(GC.getMap().getWorldSize()).getResearchPercent()) / 100;
 				changeResearchProgress(eLoopTech, std::max(1, iBaseCost *
 						iBARBARIAN_FREE_TECH_PERCENT * iCount /
 						(100 * iPossible)), kBarbPlayer.getID());

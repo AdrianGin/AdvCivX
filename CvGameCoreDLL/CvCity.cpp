@@ -949,7 +949,7 @@ CvPlot* CvCity::getCityIndexPlot(CityPlotTypes ePlot) const // advc.enum: CityPl
 }
 
 
-bool CvCity::canWork(CvPlot /* advc: */ const& kPlot) const
+bool CvCity::canWork(CvPlot const& kPlot) const
 {
 	if (kPlot.getWorkingCity() != this)
 		return false;
@@ -8862,7 +8862,7 @@ void CvCity::setWorkingPlot(CvPlot& kPlot, bool bNewValue)
 }
 
 
-void CvCity::alterWorkingPlot(CityPlotTypes ePlot) // advc.enum: CityPlotTypes
+void CvCity::alterWorkingPlot(CityPlotTypes ePlot)
 {
 	if (ePlot == CITY_HOME_PLOT)
 	{

@@ -4549,8 +4549,8 @@ bool CvPlayer::canReceiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit) 
 	// <advc.314>
 	int const iTrainHalved = (GC.getInfo(kGame.getGameSpeedType()).
 			getTrainPercent() + 100) / 2;
-	bool bVeryEarlyGame = (100 * kGame.getGameTurn() < 20 * iTrainHalved);
-	bool bVeryVeryEarlyGame = (100 * kGame.getGameTurn() < 10 * iTrainHalved);
+	bool bVeryEarlyGame = (100 * kGame.getGameTurn() < iTrainHalved * 20);
+	bool bVeryVeryEarlyGame = (100 * kGame.getGameTurn() < iTrainHalved * 10);
 	if (kGoody.getExperience() > 0)
 	{
 		if (pUnit == NULL || !pUnit->canAcquirePromotionAny() ||
@@ -4597,14 +4597,14 @@ bool CvPlayer::canReceiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit) 
 			return false;
 	}
 	// <advc.314>
-	if(bVeryEarlyGame && kGoody.getMinBarbarians() > 1)
+	if (bVeryEarlyGame && kGoody.getMinBarbarians() > 1)
 		return false;
 	/*  Moved up and added the era clause; a single free unit in the Medieval
 		era isn't going to be a problem. */
 	bool bEarlyMP = (GC.getGame().isGameMultiPlayer() &&
 			GC.getGame().getCurrentEra() < 2);
 	// No free unit from Spy when hut guarded
-	if(!kGoody.isBad() && (kGoody.getUnitClassType() != NO_UNITCLASS ||
+	if (!kGoody.isBad() && (kGoody.getUnitClassType() != NO_UNITCLASS ||
 		kGoody.getMinBarbarians() > 0) && pPlot->isVisibleEnemyUnit(getID()) &&
 		pUnit != NULL && pUnit->isSpy())
 	{
@@ -4625,12 +4625,12 @@ bool CvPlayer::canReceiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit) 
 				return false;
 			}
 		} // <advc.314> I guess a Worker with a slow WorkRate would be OK
-		if(bVeryEarlyGame && kUnit.getWorkRate() > 30)
+		if (bVeryEarlyGame && kUnit.getWorkRate() > 30)
 			return false; // </advc.314>
 		if (isOneCityChallenge() && kUnit.isFound())
 			return false;
 	} // <advc.314> Free unit and no UnitClassType given
-	else if(!kGoody.isBad() && kGoody.getMinBarbarians() > 0 &&
+	else if (!kGoody.isBad() && kGoody.getMinBarbarians() > 0 &&
 		(bEarlyMP || bVeryEarlyGame))
 	{
 		return false;
@@ -4659,23 +4659,23 @@ bool CvPlayer::canReceiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit) 
 			}
 		}
 	} // <advc.315d> No Scout from a Scout if already 2 Scouts
-	if(pUnit != NULL && pUnit->isNoBadGoodies() && AI().AI_getNumAIUnits(UNITAI_EXPLORE) >= 2)
+	if (pUnit != NULL && pUnit->isNoBadGoodies() && AI().AI_getNumAIUnits(UNITAI_EXPLORE) >= 2)
 	{
 		UnitClassTypes eUnitClass = (UnitClassTypes)kGoody.getUnitClassType();
-		if(eUnitClass != NO_UNITCLASS)
+		if (eUnitClass != NO_UNITCLASS)
 		{
 			UnitTypes eUnit = getCivilization().getUnit(eUnitClass);
-			if(eUnit != NO_UNIT && GC.getInfo(eUnit).isNoBadGoodies())
+			if (eUnit != NO_UNIT && GC.getInfo(eUnit).isNoBadGoodies())
 				return false;
 		}
 	} // </advc.315d>
 	// <advc.315e> No map reveal at the edges of a non-wrapping map
-	if(kGoody.getMapProb() > 0)
+	if (kGoody.getMapProb() > 0)
 	{
 		int const iRange = 3;
-		for(int iDX = -iRange; iDX <= iRange; iDX++)
+		for (int iDX = -iRange; iDX <= iRange; iDX++)
 		{
-			for(int iDY = -iRange; iDY <= iRange; iDY++)
+			for (int iDY = -iRange; iDY <= iRange; iDY++)
 			{
 				CvPlot* pLoopPlot = ::plotXY(pPlot->getX(), pPlot->getY(), iDX, iDY);
 				if(pLoopPlot == NULL)

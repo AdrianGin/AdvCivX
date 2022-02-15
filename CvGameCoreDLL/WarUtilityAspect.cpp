@@ -4097,7 +4097,7 @@ void Bellicosity::evaluate()
 	}
 	if (rOurMinusTheirLostPow <= 0 || rCurrentAggrPow < 1)
 		return;
-	// A good war is one that we win, and that occupies many of our eager warriors
+	// A good war is one that we win, and that occupies many of our eager warriors.
 	scaled rGloryRate = rOurMinusTheirLostPow / rCurrentAggrPow;
 	rGloryRate.decreaseTo(1);
 	log("Difference in lost power: %d; present aggressive power: %d; bellicosity: %d",

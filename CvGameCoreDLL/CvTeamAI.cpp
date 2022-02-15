@@ -411,9 +411,9 @@ AreaAITypes CvTeamAI::AI_calculateAreaAIType(CvArea const& kArea, bool bPreparin
 
 	if (isBarbarian())
 	{
-		if (kArea.getNumCities() - kArea.getCitiesPerPlayer(BARBARIAN_PLAYER) == 0 ||
-			// advc.300: Make (New World) Barbarians relatively peaceable unless outnumbered
-			kArea.getNumCivCities() < kArea.getCitiesPerPlayer(BARBARIAN_PLAYER))
+		if (kArea.getNumCities() <= kArea.getCitiesPerPlayer(BARBARIAN_PLAYER)
+			// advc.300: Relatively peaceable (New World) Barbarians until outnumbered
+			* 2)
 		{
 			return AREAAI_ASSAULT;
 		}
@@ -5647,24 +5647,24 @@ void CvTeamAI::AI_doCounter()
 	// advc (note): Attitude isn't updated here. Should be soon enough in AI_doTurnPost.
 	for (TeamIter<ALIVE> it(getID()); it.hasNext(); ++it)
 	{
-		// <advc.130k>
 		TeamTypes const eOther = it->getID();
-		if(eOther == getID())
+		if (eOther == getID())
 			continue;
 		/*  advc.001: Guard added. NO_WARPLAN should imply that the state counter
 			is at 0, rather than some arbitrary value. advc.104 relies on this. */
-		if(AI_getWarPlan(eOther) != NO_WARPLAN)
+		if (AI_getWarPlan(eOther) != NO_WARPLAN)
 			AI_changeWarPlanStateCounter(eOther, 1);
 		/*  No randomization for atWar and hasMet. These are used by the AI in
 			several places that more or less assume an exact count. */
-		if(isAtWar(eOther))
+		if (isAtWar(eOther))
 			AI_changeAtWarCounter(eOther, 1);
-		else // Better count to 1 deterministically
+		else
 		{
-			AI_changeAtPeaceCounter(eOther, AI_getAtPeaceCounter(eOther) == 0 ?
-					1 : AI_randomCounterChange());
-		} 
-		if(!isHasMet(eOther) || isBarbarian() || GET_TEAM(eOther).isBarbarian())
+			AI_changeAtPeaceCounter(eOther,  // <advc.130k>
+					// Better count to 1 deterministically
+					AI_getAtPeaceCounter(eOther) == 0 ? 1 : AI_randomCounterChange());
+		}  // </advc.130k>
+		if (!isHasMet(eOther) || isBarbarian() || GET_TEAM(eOther).isBarbarian())
 			continue;
 		AI_changeHasMetCounter(eOther, 1);
 		// <advc>

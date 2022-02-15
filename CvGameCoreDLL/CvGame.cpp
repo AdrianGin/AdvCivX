@@ -1031,17 +1031,17 @@ void CvGame::initFreeCivState()
 			{
 				for (MemberIter itMember(kTeam.getID()); itMember.hasNext(); ++itMember)
 				{
-					CvPlayer& kMember = *itMember;
 					/*  <advc.250b>, advc.250c: Always grant civ-specific tech,
 						but not tech from handicap if in Advanced Start except to
 						human civs that don't actually start Advanced (SPaH option). */
-					if (GC.getInfo(kMember.getCivilizationType()).isCivilizationFreeTechs(eLoopTech))
+					if (GC.getInfo(itMember->getCivilizationType()).
+						isCivilizationFreeTechs(eLoopTech))
 					{
 						bValid = true;
 						break;
 					}
 					// K-Mod: Give techs based on player handicap, not game handicap.
-					if (GC.getInfo(kMember.getHandicapType()).isFreeTechs(eLoopTech) &&
+					if (GC.getInfo(itMember->getHandicapType()).isFreeTechs(eLoopTech) &&
 						(!isOption(GAMEOPTION_ADVANCED_START) ||
 						(isOption(GAMEOPTION_SPAH) && kTeam.isHuman()))) // </advc.250b>
 					{
@@ -7895,8 +7895,8 @@ int CvGame::getBarbarianStartTurn() const
 	iDivisor *= std::max(1, (int)getStartEra());
 	iTargetElapsed /= iDivisor;
 	int iStartTurn = getStartTurn();
-	// Have Barbarians appear earlier in Ancient Advanced Start too
-	if(isOption(GAMEOPTION_ADVANCED_START) && getStartEra() <= 0 &&
+	// Have Barbarians appear earlier in Ancient Advanced Start
+	if (isOption(GAMEOPTION_ADVANCED_START) && getStartEra() <= 0 &&
 		// advc.250b: Earlier Barbarians only if humans start Advanced too
 		!isOption(GAMEOPTION_SPAH))
 	{

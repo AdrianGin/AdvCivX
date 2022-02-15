@@ -194,7 +194,7 @@
 			 TruBonus info refers to. -->
 		<element type="BonusType"/>
 		<!-- Applies the biases only to instances of the bonus resource
-			 that get placed on land. Using this only makes sense for
+			 that get placed on land. This only makes sense for
 			 bonus resources that can be placed on both land and water. -->
 		<element type="bLandOnly" minOccurs="0"/>
 		<element type="DiscouragedRegions" minOccurs="0" maxOccurs="*"/>

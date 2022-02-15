@@ -24,7 +24,7 @@
 				 CvCultureLevelInfo instead. -->
 			<iCulturePercent>300</iCulturePercent>
 			<iAnarchyPercent>200</iAnarchyPercent>
-			<!-- advc.300: Reduced to 300 (was 400) -->
+			<!-- advc.300: was 400 -->
 			<iBarbPercent>300</iBarbPercent>
 			<iFeatureProductionPercent>300</iFeatureProductionPercent>
 			<iUnitDiscoverPercent>300</iUnitDiscoverPercent>

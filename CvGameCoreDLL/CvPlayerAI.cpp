@@ -14578,7 +14578,8 @@ int CvPlayerAI::AI_unitCostPerMil() const
 	return std::max(0, iUnitCost-getNumCities()/2) * 1000 / std::max(1, iFunds);
 }
 
-/*	This function gives an approximate / recommended maximum on our unit spending.
+/*	This function gives an approximate / recommended maximum on our unit spending
+	(advc note - i.e. the ratio of unit cost to income, cf. AI_unitCostPerMil).
 	Note though that it isn't a hard cap. we might go as high has 20 point above
 	the "maximum"; and of course, the maximum might later go down.
 	So this should only be regarded as a guide. */
@@ -23731,8 +23732,8 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 		}
 	}
 
-	//if (getCurrentEra() >= ((GC.getNumEraInfos() / 3) + iNonsense % 2))
-	if (getCurrentEra() >= (GC.getNumEraInfos() / 3 + (AI_getStrategyRand(1) % 2)) ||
+	//if (getCurrentEra() >= GC.getNumEraInfos() / 3 + iNonsense % 2)
+	if (getCurrentEra() >= GC.getNumEraInfos() / 3 + (AI_getStrategyRand(1) % 2) ||
 		iHighCultureCount >= iVictoryCities - 1)
 	{
 		if (iHighCultureCount < getCurrentEra() + iVictoryCities - GC.getNumEraInfos())
@@ -23742,6 +23743,7 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 
 	return 1;
 }
+
 
 int CvPlayerAI::AI_calculateSpaceVictoryStage() const
 {
