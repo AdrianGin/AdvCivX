@@ -4904,7 +4904,7 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 			FOR_EACH_ADJ_PLOT(*pPlot)
 			{
 				if (!pAdj->sameArea(*pPlot) || pAdj->isImpassable() ||
-					pAdj->getNumUnits() > 0)
+					pAdj->getNumVisibleUnits(BARBARIAN_PLAYER) > 0)
 				{
 					continue;
 				}
@@ -4929,6 +4929,12 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 				}
 			}
 		}
+		/*	Letting CvUnitAI::AI_anyAttack handle this now: only one unit will attack.
+			Not sure if that's really a better solution. */
+		/*if (iBarbCount > 0)
+		{	// Give the unit a chance to run away
+			pUnit->changeMoves(-std::min(GC.getMOVE_DENOMINATOR(), pUnit->getMoves()));
+		}*/
 	}
 	if(bUpgrade && !bNoRecursion)
 		doGoody(pPlot, pUnit, eGoody); // </advc.314>

@@ -13802,7 +13802,25 @@ bool CvUnitAI::AI_anyAttack(int iRange, int iOddsThreshold, MovementFlags eFlags
 		} // </advc.033>
 		if (iEnemyDefenders < iMinStack)
 			continue;
-
+		// <advc.314> Give civ unit a chance to run away after bad hut outcome
+		if (isBarbarian() && AI_getUnitAIType() == UNITAI_ATTACK &&
+			p.getNumVisibleUnits(getOwner()) == 1 &&
+			getGameTurnCreated() >= GC.getGame().getGameTurn() &&
+			// Don't impede units produced in Barbarian cities
+			getPlot().getOwner() != getOwner())
+		{
+			bool bValid = true;
+			FOR_EACH_UNIT_IN(pEnemyUnit, p)
+			{
+				if (pEnemyUnit->isHurt()) // One attack is fair enough
+				{
+					bValid = false;
+					break;
+				}
+			}
+			if (!bValid)
+				continue;
+		} // </advc.314>
 		if (bFollow ?
 			getGroup()->canMoveOrAttackInto(p, bDeclareWar, true) :
 			generatePath(p, eFlags, true, 0, iRange))
