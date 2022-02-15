@@ -5171,7 +5171,8 @@ void CvTeam::doBarbarianResearch()
 		the barbarian tech rate.) */
 	if (iElapsed < GC.getInfo(kGame.getHandicapType()).
 		getBarbarianCreationTurnsElapsed() *
-		GC.getInfo(kGame.getGameSpeedType()).getBarbPercent() / 200)
+		// advc.300: Divisor was 200. I.e, shorten the delay a bit further.
+		GC.getInfo(kGame.getGameSpeedType()).getBarbPercent() / 250)
 	{
 		return;
 	}

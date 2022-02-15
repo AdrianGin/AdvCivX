@@ -7473,11 +7473,13 @@ void CvGame::createBarbarianCities()
 	if (getNumCivCities() < countCivPlayersAlive() * 2)
 			return;
 
-	if (getElapsedGameTurns() <= ((kGameHandicap.getBarbarianCityCreationTurnsElapsed() *
-			GC.getInfo(getGameSpeedType()).getBarbPercent()) / 100) /
-			std::max(getStartEra() + 1, 1))
+	if (getElapsedGameTurns() * (getStartEra() + 1) * 200 <=
+		kGameHandicap.getBarbarianCityCreationTurnsElapsed() *
+		// advc.300: Add 100 to dilute effect (and times 200 on the left side)
+		(GC.getInfo(getGameSpeedType()).getBarbPercent() + 100))
+	{
 		return;
-
+	}
 	/* <advc.300> Create up to two cities per turn, though at most one in an
 	   area settled by a civ. Moved the rest of createBarbarianCities (plural)
 	   into new function createBarbarianCity (singular). */
@@ -7888,8 +7890,9 @@ int CvGame::getBarbarianStartTurn() const
 {
 	int iTargetElapsed = GC.getInfo(getHandicapType()).
 		   getBarbarianCreationTurnsElapsed();
-	iTargetElapsed *= GC.getInfo(getGameSpeedType()).getBarbPercent();
-	int iDivisor = 100;
+	// Dilute impact of game speed on start turn
+	iTargetElapsed *= GC.getInfo(getGameSpeedType()).getBarbPercent() + 100;
+	int iDivisor = 200;
 	/*  This term is new. Well, not entirely, it's also applied to
 		BarbarianCityCreationTurnsElapsed. */
 	iDivisor *= std::max(1, (int)getStartEra());
