@@ -4951,6 +4951,13 @@ void CvTeamAI::read(FDataStreamBase* pStream)
 		m_aiWarSuccess.readArray<int>(pStream);
 		m_aiSharedWarSuccess.readArray<int>(pStream); // advc.130m
 	}
+	/*	<advc.130k> CvTeam keeps an accurate count now, our count is randomized.
+		Still, better than nothing when loading an old save. */
+	if (uiFlag < 8)
+	{
+		FOR_EACH_ENUM(Team)
+			m_aiTurnsAtPeace.set(eLoopTeam, m_aiAtPeaceCounter.get(eLoopTeam));
+	} // </advc.130k>
 	// <advc.130n>
 	if (uiFlag < 7)
 	{	// Discard data b/c obsolete
@@ -5037,7 +5044,8 @@ void CvTeamAI::write(FDataStreamBase* pStream)
 	//uiFlag = 4; // advc.158
 	//uiFlag = 5; // advc.650
 	//uiFlag = 6; // advc.enum: new enum map save behavior
-	uiFlag = 7; // advc.130n (Now handled w/o extra data)
+	//uiFlag = 7; // advc.130n (Now handled w/o extra data)
+	uiFlag = 8; // advc.130k: To support CvTeam::m_aiTurnsAtPeace
 	pStream->Write(uiFlag);
 
 	m_aiWarPlanStateCounter.write(pStream);

@@ -309,6 +309,16 @@ public:
 	{
 		return m_abJustDeclaredWar.get(eIndex);
 	}
+	// <advc.130k> Replacing CvTeamAI::m_aiAtPeaceCounter, which is now randomized.
+	int getTurnsAtPeace(TeamTypes eTeam) const
+	{
+		return m_aiTurnsAtPeace.get(eTeam);
+	}
+	void changeTurnsAtPeace(TeamTypes eTeam, int iChange)
+	{
+		setTurnsAtPeace(eTeam, getTurnsAtPeace(eTeam) + iChange);
+	}
+	void setTurnsAtPeace(TeamTypes eTeam, int iTurns); // </advc.130k>
 
 	bool isPermanentWarPeace(TeamTypes eIndex) const												// Exposed to Python
 	{
@@ -609,6 +619,7 @@ protected:
 	ArrayEnumMap<TeamTypes,int> m_aiEspionagePointsAgainstTeam;
 	ListEnumMap<TeamTypes,int,short> m_aiCounterespionageTurnsLeftAgainstTeam;
 	ListEnumMap<TeamTypes,int,short> m_aiCounterespionageModAgainstTeam;
+	ArrayEnumMap<TeamTypes,int,short> m_aiTurnsAtPeace; // advc.130k
 	ArrayEnumMap<PlayerTypes,int,char> m_aiTechShareCount;
 
 	CommerceChangeMap m_aiCommerceFlexibleCount;

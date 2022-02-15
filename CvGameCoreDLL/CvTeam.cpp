@@ -118,6 +118,7 @@ void CvTeam::reset(TeamTypes eID, bool bConstructorCall)
 	m_aiEspionagePointsAgainstTeam.reset();
 	m_aiCounterespionageTurnsLeftAgainstTeam.reset();
 	m_aiCounterespionageModAgainstTeam.reset();
+	m_aiTurnsAtPeace.reset(); // advc.130k
 	m_aiCommerceFlexibleCount.reset();
 	m_aiExtraMoves.reset();
 	m_aiForceTeamVoteEligibilityCount.reset();
@@ -161,6 +162,7 @@ void CvTeam::reset(TeamTypes eID, bool bConstructorCall)
 			kLoopTeam.m_aiEspionagePointsAgainstTeam.resetVal(getID());
 			kLoopTeam.m_aiCounterespionageTurnsLeftAgainstTeam.resetVal(getID());
 			kLoopTeam.m_aiCounterespionageModAgainstTeam.resetVal(getID());
+			kLoopTeam.m_aiTurnsAtPeace.resetVal(getID()); // advc.130k
 			kLoopTeam.m_aiHasMetTurn.resetVal(getID()); // advc.091
 			kLoopTeam.m_abHasSeen.resetVal(getID()); // K-Mod
 			kLoopTeam.m_abAtWar.resetVal(getID());
@@ -556,6 +558,10 @@ void CvTeam::addTeam(TeamTypes eTeam)
 		kOther.setEspionagePointsAgainstTeam(getID(),
 				kOther.getEspionagePointsAgainstTeam(getID()) +
 				kOther.getEspionagePointsAgainstTeam(eTeam));
+		// <advc.130k>
+		kOther.setTurnsAtPeace(getID(), (iOriginalTeamSize *
+				kOther.getTurnsAtPeace(getID()) + iSecondTeamSize *
+				kOther.getTurnsAtPeace(eTeam)) / getNumMembers()); // </advc.130k>
 		// <advc.003n>
 		if (kOther.isMinorCiv())
 			continue; // </advc.003n>
@@ -745,7 +751,10 @@ void CvTeam::shareCounters(TeamTypes eTeam)
 		if (kShareTeam.AI_getAtPeaceCounter(eLoopTeam) > AI().AI_getAtPeaceCounter(eLoopTeam))
 			AI().AI_setAtPeaceCounter(eLoopTeam, kShareTeam.AI_getAtPeaceCounter(eLoopTeam));
 		//else kShareTeam.AI_setAtPeaceCounter(eLoopTeam, AI_getAtPeaceCounter(eLoopTeam));
-
+		// <advc.130k>
+		if (kShareTeam.getTurnsAtPeace(eLoopTeam) > getTurnsAtPeace(eLoopTeam))
+			setTurnsAtPeace(eLoopTeam, kShareTeam.getTurnsAtPeace(eLoopTeam));
+		// </advc.130k>
 		if (kShareTeam.AI_getHasMetCounter(eLoopTeam) > AI().AI_getHasMetCounter(eLoopTeam))
 			AI().AI_setHasMetCounter(eLoopTeam, kShareTeam.AI_getHasMetCounter(eLoopTeam));
 		//else kShareTeam.AI_setHasMetCounter(eLoopTeam, AI_getHasMetCounter(eLoopTeam));
@@ -914,6 +923,9 @@ void CvTeam::doTurn()
 			changeCounterespionageTurnsLeftAgainstTeam(eOther, -1);
 		if (getCounterespionageTurnsLeftAgainstTeam(eOther) == 0)
 			setCounterespionageModAgainstTeam(eOther, 0);
+		// <advc.130k>
+		if (!isAtWar(eOther))
+			changeTurnsAtPeace(eOther, 1); // </advc.130k>
 	}
 
 	if (!GC.getGame().isOption(GAMEOPTION_NO_TECH_BROKERING))
@@ -1073,7 +1085,9 @@ void CvTeam::declareWar(TeamTypes eTarget, bool bNewDiplo, WarPlanTypes eWarPlan
 		kMembers[i]->updatePlunder(1, false);
 
 	meet(eTarget, false);
-
+	// <advc.130k>
+	setTurnsAtPeace(eTarget, 0);
+	kTarget.setTurnsAtPeace(getID(), 0); // </advc.130k>
 	// advc: AI code moved into new function
 	AI().AI_postDeclareWar(eTarget, eWarPlan);
 
@@ -3053,6 +3067,13 @@ void CvTeam::setAtWar(TeamTypes eIndex, bool bNewValue)
 		}
 	} // (Attitude cache is updated by caller)
 	// </advc.035>
+}
+
+// advc.130k:
+void CvTeam::setTurnsAtPeace(TeamTypes eTeam, int iTurns)
+{
+	m_aiTurnsAtPeace.set(eTeam, iTurns);
+	FAssert(getTurnsAtPeace(eTeam) >= 0);
 }
 
 
@@ -5689,6 +5710,9 @@ void CvTeam::read(FDataStreamBase* pStream)
 		m_aiEspionagePointsAgainstTeam.read(pStream);
 		m_aiCounterespionageTurnsLeftAgainstTeam.read(pStream);
 		m_aiCounterespionageModAgainstTeam.read(pStream);
+		// <advc.130k> (Handle old saves in CvTeamAI) 
+		if (uiFlag >= 17)
+			m_aiTurnsAtPeace.read(pStream); // </advc.130k>
 		m_aiCommerceFlexibleCount.read(pStream);
 	}
 	else
@@ -5963,7 +5987,8 @@ void CvTeam::write(FDataStreamBase* pStream)
 	//uiFlag = 13; // advc.183
 	//uiFlag = 14; // advc.650
 	//uiFlag = 15; // advc (for kekm.38)
-	uiFlag = 16; // advc.enum: new enum map save behavior
+	//uiFlag = 16; // advc.enum: new enum map save behavior
+	uiFlag = 17; // advc.130k
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iNumMembers);
@@ -6007,6 +6032,7 @@ void CvTeam::write(FDataStreamBase* pStream)
 	m_aiEspionagePointsAgainstTeam.write(pStream);
 	m_aiCounterespionageTurnsLeftAgainstTeam.write(pStream);
 	m_aiCounterespionageModAgainstTeam.write(pStream);
+	m_aiTurnsAtPeace.write(pStream); // advc.130k
 	m_aiCommerceFlexibleCount.write(pStream);
 	m_aiExtraMoves.write(pStream);
 	m_aiForceTeamVoteEligibilityCount.write(pStream);

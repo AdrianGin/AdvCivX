@@ -7036,7 +7036,9 @@ int CvCity::getPeaceTradeModifier(TeamTypes eTeam) const
 
 	static int const iFOREIGN_TRADE_FULL_CREDIT_PEACE_TURNS = GC.getDefineINT("FOREIGN_TRADE_FULL_CREDIT_PEACE_TURNS"); // advc.opt
 	static int const iFOREIGN_TRADE_MODIFIER = GC.getDefineINT("FOREIGN_TRADE_MODIFIER"); // advc.opt
-	int iPeaceTurns = std::min(iFOREIGN_TRADE_FULL_CREDIT_PEACE_TURNS, GET_TEAM(getTeam()).AI_getAtPeaceCounter(eTeam));
+	int iPeaceTurns = std::min(iFOREIGN_TRADE_FULL_CREDIT_PEACE_TURNS, GET_TEAM(getTeam()).
+			//AI_getAtPeaceCounter(eTeam)
+			getTurnsAtPeace(eTeam)); // advc.130k
 
 	if (GC.getGame().getElapsedGameTurns() <= iPeaceTurns)
 		return iFOREIGN_TRADE_MODIFIER;
