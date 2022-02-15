@@ -4834,9 +4834,9 @@ int DramaticArc::preEvaluate()
 			TeamTypes const eSecond = itSecond->getID();
 			if (itFirst->getID() != eSecond)
 			{
-				int iAtPeace = itFirst->AI_getAtPeaceCounter(eSecond);
-				// With tolerance b/c these counters aren't exact
-				if (abs(itFirst->AI_getHasMetCounter(eSecond) - iAtPeace) >= 10)
+				int iAtPeace = itFirst->getTurnsAtPeace(eSecond);
+				// With tolerance b/c the has-met counter isn't exact
+				if (abs(itFirst->AI_getHasMetCounter(eSecond) - iAtPeace) >= 8)
 					iLoopMinCounter = std::min(iLoopMinCounter, iAtPeace);
 				// (else assume that they've always been at peace)
 			}
@@ -4850,7 +4850,7 @@ int DramaticArc::preEvaluate()
 		if (kWe.AI_isDoStrategy(AI_STRATEGY_ALERT1))
 			return 0; // We're foreseeing enough tension
 		/*	A lack of late-game warfare is not usually a problem,
-			and can be due to Cold War dynamics (Defensive Pacts, nukes). */
+			and can be due to Cold War dynamics (defensive pacts, nukes). */
 		for (int i = 0; i <= m_kGame.getCurrentEra(); i++)
 		{
 			if (GC.getInfo((EraTypes)i).get(CvEraInfo::AIAgeOfGuns) ||
@@ -4902,7 +4902,7 @@ void DramaticArc::evaluate()
 		return;
 	scaled const rWeight = 16;
 	scaled rUtil = m_rTensionIncrease * (bWillBeAtWar ? 1 : -1) * rWeight;
-	if (rUtil > 0 && bWillBeAtWar) // Don't encourage phoney or unfair wars
+	if (rUtil > 0 && bWillBeAtWar) // Don't encourage phoney or unfair wars ...
 	{
 		int iTheirLostCities = (int)militAnalyst().lostCities(eThey).size();
 		if (iTheirLostCities > 2) // We should be motivated enough (if it's a fair war)
