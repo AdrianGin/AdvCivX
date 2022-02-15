@@ -4549,7 +4549,7 @@ bool CvPlayer::canReceiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit) 
 	// <advc.314>
 	int const iTrainHalved = (GC.getInfo(kGame.getGameSpeedType()).
 			getTrainPercent() + 100) / 2;
-	bool bVeryEarlyGame = (100 * kGame.getGameTurn() < iTrainHalved * 20);
+	bool bVeryEarlyGame = (100 * kGame.getGameTurn() < iTrainHalved * 16);
 	bool bVeryVeryEarlyGame = (100 * kGame.getGameTurn() < iTrainHalved * 10);
 	if (kGoody.getExperience() > 0)
 	{
@@ -4647,15 +4647,19 @@ bool CvPlayer::canReceiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit) 
 		if (getNumCities() == 0)
 			return false;
 
-		if (getNumCities() == 1)
+		//if (getNumCities() == 1) // advc.314
 		{
-			CvCity* pCity = GC.getMap().findCity(pPlot->getX(), pPlot->getY(), NO_PLAYER, getTeam());
+			CvCity const* pCity = GC.getMap().findCity(
+					// advc.314: Any nearby city is a problem
+					pPlot->getX(), pPlot->getY()/*, NO_PLAYER, getTeam()*/);
 			if (pCity != NULL)
 			{
-				if (plotDistance(pPlot->getX(), pPlot->getY(), pCity->getX(), pCity->getY()) <=
-						// advc.314 (comment):
-						8 - getNumCities()) // = 7 b/c of the NumCities==1 check
+				if (plotDistance(pPlot, pCity->plot()) <= //8 - getNumCities()
+					// advc.314: Had always been 7 b/c of the NumCities==1 check
+					8 - 2 * GET_PLAYER(pCity->getOwner()).getNumCities())
+				{
 					return false;
+				}
 			}
 		}
 	} // <advc.315d> No Scout from a Scout if already 2 Scouts
