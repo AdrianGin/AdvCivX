@@ -2114,7 +2114,6 @@ void CvUnitAI::AI_barbAttackMove()
 			}
 		}
 		int const iCivCitiesInArea = getArea().getNumCivCities();
-		int const iBabarianCitiesInArea = getArea().getNumCities() - iCivCitiesInArea;
 		// No longer includes Barbarian cities
 		int const iCivCities = kGame.getNumCivCities();
 		int const iCivs = kGame.countCivPlayersAlive();
