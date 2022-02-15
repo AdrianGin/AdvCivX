@@ -52,6 +52,16 @@ void CvGameAI::AI_initScenario()
 			c->AI_assignWorkingPlots();
 		}
 	}
+	/*	BtS seems to tolerate major civs w/o capitals (e.g. Italy in Lokolus's
+		Earth1862AD scenario), but UWAI can't work with that. */
+	for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
+	{
+		if (it->getNumCities() > 1 && !it->hasCapital())
+		{
+			FErrorMsg("Major civ player w/o a capital");
+			it->findNewCapital();
+		}
+	}
 	if (getUWAI().isEnabled() || getUWAI().isEnabled(true))
 	{
 		for (TeamAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
