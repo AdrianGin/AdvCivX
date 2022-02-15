@@ -37,7 +37,7 @@
 			<Type>ART_DEF_IMPROVEMENT_GOODY_HUT</Type>
 			<bExtraAnimations>0</bExtraAnimations>
 			<!-- advc.314: was 1.0 -->
-			<fScale>1.5</fScale>
+			<fScale>1.35</fScale>
 			<fInterfaceScale>1.0</fInterfaceScale>
 			<NIF>Art/Structures/Improvements/TribalVillage/TribalVillage.nif</NIF>
 			<KFM>Art/Structures/Improvements/TribalVillage/TribalVillage.kfm</KFM>
