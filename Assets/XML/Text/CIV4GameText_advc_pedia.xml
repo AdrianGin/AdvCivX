@@ -1117,15 +1117,15 @@
 		<Spanish>Con el acceso al [COLOR_HIGHLIGHT_TEXT]Uranio[COLOR_REVERT], las [COLOR_BUILDING_TEXT]Centrales nucleares[COLOR_REVERT] suministran energ&#237;a a las [COLOR_BUILDING_TEXT]F&#225;bricas[COLOR_REVERT].</Spanish>
 	</TEXT>
 
-	<!-- advc.912d -->
-	<TEXT>
+	<!-- advc.912d: (AdvCiv 1.05 has reverted the balance change to Granary) -->
+	<!--TEXT>
 		<Tag>TXT_KEY_BUILDING_GRANARY_STRATEGY</Tag>
 		<English>[COLOR_BUILDING_TEXT]Granaries[COLOR_REVERT] store food to help increase a city's growth rate. They add additional health if your civ has access to [COLOR_HIGHLIGHT_TEXT]Corn[COLOR_REVERT], [COLOR_HIGHLIGHT_TEXT]Wheat[COLOR_REVERT], and [COLOR_HIGHLIGHT_TEXT]Rice[COLOR_REVERT]. [BOLD]AdvCiv[\BOLD] slightly reduces the amount of [ICON_FOOD] stored - except when playing with the [COLOR_HIGHLIGHT_TEXT]No Slavery[COLOR_REVERT] option. ([LINK=CIVIC_SLAVERY]Slavery[\LINK] has a powerful synergy with [ICON_FOOD] being stored after growth.)</English>
 		<French>Les [COLOR_BUILDING_TEXT]greniers[COLOR_REVERT] stockent de la nourriture pour favoriser la croissance de la ville. Ils am&#233;liorent la sant&#233; des citoyens si votre civilisation dispose de [COLOR_HIGHLIGHT_TEXT]ma&#239;s[COLOR_REVERT], de [COLOR_HIGHLIGHT_TEXT]bl&#233;[COLOR_REVERT] et de [COLOR_HIGHLIGHT_TEXT]riz[COLOR_REVERT].</French>
 		<German>[COLOR_BUILDING_TEXT]Kornspeicher[COLOR_REVERT] beschleunigen das Bev&#246;lkerungswachstum und verbessern die Gesundheit Ihrer Zivilisation, wenn Sie &#252;ber [COLOR_HIGHLIGHT_TEXT]Mais[COLOR_REVERT], [COLOR_HIGHLIGHT_TEXT]Weizen[COLOR_REVERT] und [COLOR_HIGHLIGHT_TEXT]Reis[COLOR_REVERT] verf&#252;gen. [BOLD]AdvCiv[\BOLD] verringert den Wachstumseffekt ein wenig - außer wenn die Option [COLOR_HIGHLIGHT_TEXT]Keine Sklaverei[COLOR_REVERT] aktiviert ist. (Die Staatsform [LINK=CIVIC_SLAVERY]Sklaverei[\LINK] profitiert besonders von beschleunigtem Bevölkerungswachstum.)</German>
 		<Italian>I [COLOR_BUILDING_TEXT]granai[COLOR_REVERT] conservano il cibo per favorire la crescita della citt&#224;. Se la tua civilt&#224; ha accesso a [COLOR_HIGHLIGHT_TEXT]Granoturco[COLOR_REVERT], [COLOR_HIGHLIGHT_TEXT]Frumento[COLOR_REVERT] e [COLOR_HIGHLIGHT_TEXT]Riso[COLOR_REVERT], genereranno salute extra.</Italian>
 		<Spanish>Los [COLOR_BUILDING_TEXT]Graneros[COLOR_REVERT] almacenan alimentos, lo que ayuda a aumentar el ritmo de crecimiento de la ciudad. Suman m&#225;s salud si la civilizaci&#243;n tiene acceso al [COLOR_HIGHLIGHT_TEXT]Ma&#237;z[COLOR_REVERT], el [COLOR_HIGHLIGHT_TEXT]Trigo[COLOR_REVERT] y el [COLOR_HIGHLIGHT_TEXT]Arroz[COLOR_REVERT].</Spanish>
-	</TEXT>
+	</TEXT-->
 
 	<!-- advc.908b -->
 	<TEXT>
@@ -1347,6 +1347,12 @@
 		<Tag>TXT_KEY_CIVIC_PACIFISM_CHANGES_PEDIA</Tag>
 		<English>[BOLD]K-Mod[\BOLD] uncouples the extra cost from the difficulty level and AdvCiv sets the cost to the amount that BtS had charged on Deity difficulty (1[ICON_GOLD]/unit) - meaning that this powerful civic has become costlier on all other difficulty levels. When an AI civ uses Pacifism, only half of the extra cost is charged (as was already the case in BtS when playing on Deity difficulty - because the AI is treated as playing on Noble difficulty).</English>
 		<German>[BOLD]K-Mod[\BOLD] entkoppelt den zusätzlichen Militärunterhalt von der Schwierigkeitsstufe und AdvCiv verwendet 1[ICON_GOLD]/Einheit, was in BtS der höchsten Schwierigkeitsstufe entsprach. Das heißt, der Unterhalt auf allen niedrigeren Schwierigkeitsstufen hat sich erhöht. Pazifistische KI-Spieler zahlen nur die Hälfte - das war auf höchster Schwierigkeit auch in BtS so, weil KI-Spieler stets auf mittlerer Schwierigkeit (Adliger) spielen.</German>
+	</TEXT>
+	<!-- advc.912d -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_SLAVERY_CHANGES_PEDIA</Tag>
+		<English>[BOLD]AdvCiv[\BOLD] has reduced the amount of [ICON_PRODUCTION] per sacrificed [ICON_CITIZEN] because this civic, and especially its interaction with [LINK=BUILDING_GRANARY]Granary[\LINK], is widely regarded as too powerful.</English>
+		<German>[BOLD]AdvCiv[\BOLD] hat den [ICON_PRODUCTION]-Ertrag pro geopfertem [ICON_CITIZEN] reduziert. (Die Staatsform Sklaverei und ihre Synergie mit dem [LINK=BUILDING_GRANARY]Kornspeicher[\LINK] gilt weithin als zu spielstark.)</German>
 	</TEXT>
 
 	<!-- advc: Point out K-Mod change -->

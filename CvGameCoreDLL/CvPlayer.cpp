@@ -10184,6 +10184,8 @@ int CvPlayer::getFoodKept(BuildingTypes eBuilding) const
 {
 	CvBuildingInfo const& kBuilding = GC.getInfo(eBuilding);
 	int iFoodKept = kBuilding.getFoodKept();
+	// Reverted this in AdvCiv 1.05
+#if 0
 	if (GC.getGame().isOption(GAMEOPTION_NO_SLAVERY) &&
 		/*	Toggling this on and off during AI Auto Play
 			could lead to inconsistent data at CvCity */
@@ -10192,6 +10194,7 @@ int CvPlayer::getFoodKept(BuildingTypes eBuilding) const
 		iFoodKept *= 5;
 		iFoodKept /= 4;
 	}
+#endif
 	return iFoodKept;
 }
 

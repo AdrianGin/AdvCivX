@@ -3,14 +3,14 @@
 <!-- Sid Meier's Civilization 4 -->
 <!-- Copyright Firaxis Games 2005 -->
 <!-- -->
-<!-- Civ4HurryInfo - This structure describes the name for each multiplayer option. -->
 <Civ4HurryInfo xmlns="x-schema:CIV4GameInfoSchema.xml">
 	<HurryInfos>
 		<HurryInfo>
 			<Type>HURRY_POPULATION</Type>
 			<Description>TXT_KEY_HURRY_POPULATION</Description>
 			<iGoldPerProduction>0</iGoldPerProduction>
-			<iProductionPerPopulation>30</iProductionPerPopulation>
+			<!-- advc.912d: was 30 -->
+			<iProductionPerPopulation>24</iProductionPerPopulation>
 			<bAnger>1</bAnger>
 			<Button>Art/Interface/MainScreen/CityScreen/hurry_slavery.dds</Button>
 		</HurryInfo>

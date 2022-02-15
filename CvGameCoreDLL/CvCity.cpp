@@ -11399,8 +11399,13 @@ void CvCity::read(FDataStreamBase* pStream)
 	// <advc.912d>
 	if(uiFlag >= 4)
 		pStream->Read(&m_iPopRushHurryCount);
-	if (uiFlag < 9 && isHuman() && GC.getGame().isOption(GAMEOPTION_NO_SLAVERY))
-		m_iFoodKept = (m_iFoodKept * 5) / 4; // </advc.912d>
+	if (uiFlag < 15 &&
+		(uiFlag < 9 || // Everyone had gotten only 40% from Granary prior to version 9
+		// After version 9, players affected by No Slavery had been exempt
+		!isHuman() || !GC.getGame().isOption(GAMEOPTION_NO_SLAVERY)))
+	{	// Now everyone gets 50% again, just like in BtS.
+		m_iMaxFoodKeptPercent = (m_iMaxFoodKeptPercent * 5) / 4;
+	} // </advc.912d>
 	// <advc.004x>
 	if(uiFlag >= 2)
 	{
@@ -11618,12 +11623,13 @@ void CvCity::write(FDataStreamBase* pStream)
 	//uiFlag = 6; // advc.103
 	//uiFlag = 7; // advc.003u: m_bChooseProductionDirty
 	//uiFlag = 8; // advc.310
-	//uiFlag = 9; // advc.912d (adjust food kept)
+	//uiFlag = 9; // advc.912d (adjust food kept; NB: should've adjusted MaxFoodKept)
 	//uiFlag = 10; // advc.911a, advc.908b
 	//uiFlag = 11; // advc.201, advc.098
 	//uiFlag = 12; // advc.enum: new enum map save behavior
 	//uiFlag = 13; // advc.201: Cathedrals restored to BtS stats
-	uiFlag = 14; // advc.179, advc.exp.1, advc.exp.2
+	//uiFlag = 14; // advc.179, advc.exp.1, advc.exp.2
+	uiFlag = 15; // advc.912d: Partly reverted, adjust MaxFoodKept.
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);
