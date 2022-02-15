@@ -580,7 +580,8 @@
 			<Goodies>
 				<GoodyType>GOODY_HIGH_GOLD</GoodyType>
 				<GoodyType>GOODY_HIGH_GOLD</GoodyType>
-				<GoodyType>GOODY_HIGH_GOLD</GoodyType>
+				<!-- advc.314: was HIGH_GOLD -->
+				<GoodyType>GOODY_TECH</GoodyType>
 				<GoodyType>GOODY_LOW_GOLD</GoodyType>
 				<GoodyType>GOODY_LOW_GOLD</GoodyType>
 				<GoodyType>GOODY_LOW_GOLD</GoodyType>
@@ -707,12 +708,12 @@
 			<iAIAttitudeChangePercent>40</iAIAttitudeChangePercent>
 			<Goodies>
 				<GoodyType>GOODY_HIGH_GOLD</GoodyType>
-				<GoodyType>GOODY_HIGH_GOLD</GoodyType>
-				<GoodyType>GOODY_LOW_GOLD</GoodyType>
-				<GoodyType>GOODY_LOW_GOLD</GoodyType>
-				<GoodyType>GOODY_LOW_GOLD</GoodyType>
-				<!-- advc.314: was LOW_GOLD -->
+				<!-- advc.314: was HIGH_GOLD -->
 				<GoodyType>GOODY_TECH</GoodyType>
+				<GoodyType>GOODY_LOW_GOLD</GoodyType>
+				<GoodyType>GOODY_LOW_GOLD</GoodyType>
+				<GoodyType>GOODY_LOW_GOLD</GoodyType>
+				<GoodyType>GOODY_LOW_GOLD</GoodyType>
 				<GoodyType>GOODY_MAP</GoodyType>
 				<GoodyType>GOODY_MAP</GoodyType>
 				<GoodyType>GOODY_WARRIOR</GoodyType>
@@ -722,6 +723,8 @@
 				<GoodyType>GOODY_EXPERIENCE</GoodyType>
 				<GoodyType>GOODY_HEALING</GoodyType>
 				<GoodyType>GOODY_TECH</GoodyType>
+				<GoodyType>GOODY_TECH</GoodyType>
+				<!-- advc.314: One more -->
 				<GoodyType>GOODY_TECH</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_WEAK</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_WEAK</GoodyType>
@@ -860,7 +863,8 @@
 				<GoodyType>GOODY_BARBARIANS_WEAK</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_WEAK</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_WEAK</GoodyType>
-				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
+				<!-- advc.314: Was BARBARIANS_STRONG -->
+				<GoodyType>GOODY_BARBARIANS_WEAK</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
 			</Goodies>
 			<FreeTechs/>
@@ -996,13 +1000,14 @@
 			<!-- advc.148 -->
 			<iAIAttitudeChangePercent>60</iAIAttitudeChangePercent>
 			<Goodies>
-				<GoodyType>GOODY_HIGH_GOLD</GoodyType>
-				<GoodyType>GOODY_LOW_GOLD</GoodyType>
-				<GoodyType>GOODY_LOW_GOLD</GoodyType>
-				<GoodyType>GOODY_LOW_GOLD</GoodyType>
-				<GoodyType>GOODY_LOW_GOLD</GoodyType>
-				<!-- advc.314: was LOW_GOLD -->
+				<!-- advc.314: was HIGH_GOLD -->
 				<GoodyType>GOODY_TECH</GoodyType>
+				<!-- advc.314: One fewer -->
+				<!--GoodyType>GOODY_LOW_GOLD</GoodyType-->
+				<GoodyType>GOODY_LOW_GOLD</GoodyType>
+				<GoodyType>GOODY_LOW_GOLD</GoodyType>
+				<GoodyType>GOODY_LOW_GOLD</GoodyType>
+				<GoodyType>GOODY_LOW_GOLD</GoodyType>		
 				<GoodyType>GOODY_MAP</GoodyType>
 				<GoodyType>GOODY_MAP</GoodyType>
 				<GoodyType>GOODY_WARRIOR</GoodyType>
@@ -1016,7 +1021,8 @@
 				<GoodyType>GOODY_BARBARIANS_WEAK</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
-				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
+				<!-- advc.314: One fewer -->
+				<!--GoodyType>GOODY_BARBARIANS_STRONG</GoodyType-->
 			</Goodies>
 			<FreeTechs/>
 			<AIFreeTechs>
@@ -1178,7 +1184,8 @@
 				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
-				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
+				<!-- advc.314: One fewer -->
+				<!--GoodyType>GOODY_BARBARIANS_STRONG</GoodyType-->
 			</Goodies>
 			<FreeTechs/>
 			<AIFreeTechs>
@@ -1341,12 +1348,14 @@
 				<GoodyType>GOODY_TECH</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_WEAK</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_WEAK</GoodyType>
+				<!-- advc.314: was STRONG -->
+				<GoodyType>GOODY_BARBARIANS_WEAK</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
 				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
-				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
-				<GoodyType>GOODY_BARBARIANS_STRONG</GoodyType>
+				<!-- advc.314: One fewer -->
+				<!--GoodyType>GOODY_BARBARIANS_STRONG</GoodyType-->
 			</Goodies>
 			<FreeTechs/>
 			<AIFreeTechs>
