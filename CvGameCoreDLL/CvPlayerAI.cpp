@@ -14681,11 +14681,9 @@ int CvPlayerAI::AI_maxUnitCostPerMil(CvArea const* pArea, int iBuildProb) const
 		}
 	}
 	// <advc.110> Anticipate a decrease in funds upon declaring war
-	if (iMaxUnitSpending > 200 &&
-		(kTeam.AI_isSneakAttackPreparing() || kTeam.AI_isSneakAttackReady()))
-	{
-		iMaxUnitSpending = 200;
-	} // </advc.110>
+	if (kTeam.AI_isSneakAttackPreparing() || kTeam.AI_isSneakAttackReady())
+		iMaxUnitSpending = std::min(iMaxUnitSpending, 200 + iBuildProb);
+	// </advc.110>
 	return iMaxUnitSpending;
 }
 
