@@ -7650,12 +7650,12 @@ void CvGame::createBarbarianUnits()
 	//if (GC.getInfo(getCurrentEra()).isNoBarbUnits()) ...
 	bool bCreateBarbarians = isBarbarianCreationEra(); // advc.307 (checked later now)
 	bool bAnimals = false;
-	if (getNumCivCities() < (3 * countCivPlayersAlive()) / 2 &&
-		!isOption(GAMEOPTION_ONE_CITY_CHALLENGE) &&
-		/*  advc.300: No need to delay Barbarians (bAnimals=true) if they start
-			slowly (PEAK_PERCENT>=35). For slow game speed settings, there is
-			now a similar check in CvUnitAI::AI_barbAttackMove. */
-		barbarianPeakLandRatio() < per100(35))
+	/*  advc.300: No need to delay Barbarians (bAnimals=true) if they start slowly.
+		For slow game speed settings, there is now a similar check in
+		CvUnitAI::AI_barbAttackMove. */
+	if (barbarianPeakLandRatio() < per100(30) &&
+		getNumCivCities() * 2 < countCivPlayersAlive() * 3 &&
+		!isOption(GAMEOPTION_ONE_CITY_CHALLENGE))
 	{
 		bAnimals = true;
 	}
