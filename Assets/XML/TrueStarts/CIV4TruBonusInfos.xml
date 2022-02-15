@@ -60,11 +60,6 @@
 					<CivilizationType>CIVILIZATION_CELT</CivilizationType>
 					<UntilEra>ERA_INDUSTRIAL</UntilEra>
 				</EncouragedCiv>
-				<EncouragedCiv>
-					<!-- Or encourage Sheep instead? -->
-					<CivilizationType>CIVILIZATION_PERSIA</CivilizationType>
-					<UntilEra>ERA_MEDIEVAL</UntilEra>
-				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>
 		<TruBonusInfo>
@@ -609,6 +604,13 @@
 				<EncouragedCiv>
 					<CivilizationType>CIVILIZATION_OTTOMAN</CivilizationType>
 					<UntilEra>NONE</UntilEra>
+				</EncouragedCiv>
+				<EncouragedCiv>
+					<!-- Alt. idea: Copper until ERA_MEDIEVAL. But having
+						 Copper all the time can make their mounted UU feel
+						 a little redundant. -->
+					<CivilizationType>CIVILIZATION_PERSIA</CivilizationType>
+					<UntilEra>ERA_MEDIEVAL</UntilEra>
 				</EncouragedCiv>
 			</EncouragedCivs>
 		</TruBonusInfo>

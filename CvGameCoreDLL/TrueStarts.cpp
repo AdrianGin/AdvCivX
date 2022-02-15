@@ -1727,7 +1727,7 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 				// Scenarios may have enormous clumps of peaks
 				rMaxElev.decreaseTo(m_iMaxMaxElevationTarget);
 				scaled rFromMaxElev = (rMaxElev.sqrt() - scaled(iTargetMaxElev).sqrt()).
-						abs() * -2; // arbitrary weight factor
+						abs() * -fixp(2.4); // arbitrary weight factor
 				IFLOG logBBAI("Fitness penalty from max. elevation: %d (target %d m, have %d m)",
 						rFromMaxElev.round(), iTargetMaxElev, rMaxElev.round());
 				iFitness += rFromMaxElev.round();

@@ -85,7 +85,7 @@
 				 were larger. Shape is vertically stretched, but I
 				 don't think that's important. Along a river is what matters. -->
 			<iTotalArea>438</iTotalArea>
-			<iBias>9</iBias>
+			<iBias>7</iBias>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -160,7 +160,7 @@
 			<iPrecipitation>543</iPrecipitation>
 			<!-- The Northeastern Plain is in itself not extremely varied.
 				 Don't want large desert or jungle too close to starting plot. -->
-			<iClimateVariation>60</iClimateVariation>
+			<iClimateVariation>53</iClimateVariation>
 			<iOceanity>10</iOceanity>
 			<iMajorRiverWeight>40</iMajorRiverWeight>
 			<!-- Mt. Taibai - stick to Eastern China. -->
@@ -259,7 +259,7 @@
 				 in the game ... -->
 			<iTotalArea>541</iTotalArea>
 			<GeoRegion>ARTSTYLE_EUROPEAN</GeoRegion>
-			<iBias>-7</iBias>
+			<iBias>-9</iBias>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_GREECE</Type>
@@ -326,7 +326,7 @@
 			<iMountainousArea>25</iMountainousArea>
 			<!-- incl. Pakistan -->
 			<iTotalArea>4169</iTotalArea>
-			<iBias>-11</iBias>
+			<iBias>-15</iBias>
 			<GeoRegion>ARTSTYLE_ASIAN</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -424,7 +424,7 @@
 			<iPrecipitation>208</iPrecipitation>
 			<iClimateVariation>50</iClimateVariation>
 			<iOceanity>0</iOceanity>
-			<iMajorRiverWeight>-40</iMajorRiverWeight>
+			<iMajorRiverWeight>-50</iMajorRiverWeight>
 			<!-- The Altai is too far west -->
 			<iMaxElevation>4031</iMaxElevation>
 			<iMountainousArea>30</iMountainousArea>
@@ -627,7 +627,7 @@
 			<iMountainousArea>30</iMountainousArea>
 			<!-- AD 1822 -->
 			<iTotalArea>207</iTotalArea>
-			<iBias>-10</iBias>
+			<iBias>-13</iBias>
 		</TruCivInfo>
 	</TruCivInfos>
 </Civ4TruCivInfos>
