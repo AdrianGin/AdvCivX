@@ -7908,6 +7908,7 @@ int CvGame::getBarbarianStartTurn() const
 	// <advc.309>
 	else if (isOption(GAMEOPTION_NO_ANIMALS))
 		iTargetElapsed = intdiv::uround(iTargetElapsed * 3, 4); // </advc.309>
+	iTargetElapsed = std::max(iTargetElapsed, 9);
 	return iStartTurn + iTargetElapsed;
 }
 
