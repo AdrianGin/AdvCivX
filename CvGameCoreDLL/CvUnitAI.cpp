@@ -13017,17 +13017,17 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 
 		if (p.isRevealedGoody(getTeam()))
 			iValue += 100000;
-
-		if (!p.isRevealed(getTeam()))
+		// <advc.031d>
+		int iNearestCityDist = MAX_INT;
+		int iValFromCitySites = 0;
+		for (int i = 0; i < kOwner.AI_getNumCitySites(); i++)
 		{
-			iValue += 10000;
-			// <advc.031d>
-			for (int i = 0; i < kOwner.AI_getNumCitySites(); i++)
-			{
-				int iDist = kMap.plotDistance(&kOwner.AI_getCitySite(i), &p);
-				iValue += 1600 * std::max(0, 4 - iDist);
-			} // </advc.031d>
-		}
+			int iDist = kMap.plotDistance(&kOwner.AI_getCitySite(i), &p);
+			iNearestCityDist = std::min(iNearestCityDist, iDist);
+			iValFromCitySites += 1600 * std::max(0, 4 - iDist);
+		} // </advc.031d>
+		if (!p.isRevealed(getTeam()))
+			iValue += 10000 /* advc.031d: */ + iValFromCitySites;
 		// K-Mod. Try to meet teams that we have seen through map trading
 		if (p.getRevealedOwner(kTeam.getID()) != NO_PLAYER &&
 			!kTeam.isHasMet(p.getRevealedTeam(kTeam.getID(), false)))
@@ -13072,7 +13072,29 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 
 		if (p.isOwned())
 			iValue += 5000;
-
+		// <advc.031d> Discourage roaming too far too early
+		if (getDomainType() == DOMAIN_LAND)
+		{
+			// City sites already done; not as good an anchor as actual cities.
+			iNearestCityDist *= 2;
+			int const iDistSoftCap = (2 * (kOwner.AI_getCurrEraFactor() + 3)).uround();
+			if (iNearestCityDist > iDistSoftCap) // save time
+			{
+				FOR_EACH_CITY(pCity, kOwner)
+				{
+					iNearestCityDist = std::min(iNearestCityDist,
+							kMap.plotDistance(pCity->plot(), &p));
+					if (iNearestCityDist <= iDistSoftCap) // save time
+						break;
+				}
+				if (iNearestCityDist > iDistSoftCap)
+				{
+					scaled rMult(iDistSoftCap, iNearestCityDist);
+					rMult.exponentiate(fixp(0.5));
+					iValue = (iValue * rMult).uround();
+				}
+			}
+		} // </advc.031d>
 		if (!isHuman() && AI_getUnitAIType() == UNITAI_EXPLORE_SEA && !bAnyImpassable)
 		{
 			// <advc.plotr>
