@@ -1242,9 +1242,24 @@ TrueStarts::SurroundingsStats::SurroundingsStats(CvPlayer const& kPlayer,
 			continue;
 		if (!sameArea(*itPlot, kStart))
 		{
-			m_rDifferentAreaPlotWeights += rWeight;
 			if (!itPlot->isWater()) // Count land area double
 				m_rDifferentAreaPlotWeights += rWeight;
+			/*	Water in the high latitudes is usually less relevant for gameplay,
+				probably won't feel like playing a maritime civ. */
+			scaled rLatMult = 1;
+			if (kTruStarts.m_bMapHasLatitudes)
+			{
+				int const iMaxLat = CvTruCivInfo::maxLatitude() / 10;
+				scaled const rTemperateLat = fixp(0.58) * iMaxLat;
+				int const iAbsPlotLat = itPlot->getLatitude();
+				// Count water that's warmer than the starting plot fully
+				if (scaled::max(rTemperateLat, kStart.getLatitude()) < iAbsPlotLat)
+				{
+					rLatMult -= ((scaled::min(iAbsPlotLat, iMaxLat) - rTemperateLat)
+							/ iMaxLat).sqrt();
+				}
+			}
+			m_rDifferentAreaPlotWeights += rWeight * rLatMult;
 			continue;
 		}
 		{
