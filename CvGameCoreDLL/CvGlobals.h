@@ -564,7 +564,9 @@ public:
 		DO(POWER_CORRECTION) /* advc.104 */ \
 		DO(TRUE_STARTS_SANITIZE) /* advc.tsl */ \
 		DO(TRUE_STARTS_SANITIZE_SCENARIOS) /* advc.tsl */ \
-		DO(RF_PLAYER_HANDICAP_ADJUSTMENT) /* advc.708 */
+		DO(RF_PLAYER_HANDICAP_ADJUSTMENT) /* advc.708 */ \
+		DO(BASE_UNIT_CAPTURE_CHANCE) /* advc.010 */ \
+		DO(DOW_UNIT_CAPTURE_CHANCE) /* advc.010 */
 	#define MAKE_ENUMERATOR(VAR) VAR,
 	enum GlobalDefines
 	{

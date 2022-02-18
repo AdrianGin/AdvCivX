@@ -290,6 +290,7 @@ public:
 		return m_pUnitInfo->getSpecialUnitType();
 	}
 	UnitTypes getCaptureUnitType(CivilizationTypes eCivilization) const;									// Exposed to Python
+	int getCaptureOdds(CvUnit const& kDefender) const; // advc.010
 	UnitCombatTypes getUnitCombatType() const																// Exposed to Python
 	{
 		return m_pUnitInfo->getUnitCombatType();

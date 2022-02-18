@@ -2135,16 +2135,29 @@ bool CvPlayerAI::AI_acceptUnit(CvUnit const& kUnit) const
 bool CvPlayerAI::AI_captureUnit(UnitTypes eUnit, CvPlot const& kPlot) const
 {
 	FAssert(!isHuman());
-	if (kPlot.getTeam() == getTeam())
-		return true;
-	CvCity* pNearestCity = GC.getMap().findCity(
-			kPlot.getX(), kPlot.getY(), NO_PLAYER, getTeam());
-	if (pNearestCity != NULL)
+	if (kPlot.getTeam() != getTeam())
 	{
-		if (plotDistance(&kPlot, pNearestCity->plot()) <= /*4*/ 8) // advc.010
-			return true;
+		CvCity const* pNearestCity = GC.getMap().findCity(
+				kPlot.getX(), kPlot.getY(), NO_PLAYER, getTeam());
+		if (pNearestCity == NULL ||
+			plotDistance(&kPlot, pNearestCity->plot()) > /*4*/8) // advc.010
+		{
+			return false;
+		}
 	}
-	return false;
+	//return true;
+	// advc.010: The rest has been cut from CvUnit::kill
+	if (!kPlot.isCity() && AI_isAnyPlotDanger(kPlot))
+	{
+		//return false;
+		/*  <advc.010> If we're not clearly outnumbered, then let the enemy fight
+			over eUnit if they like. */
+		int iOurStrength = AI_localDefenceStrength(&kPlot, getTeam());
+		int iEnemyStrength = AI_localAttackStrength(&kPlot);
+		if (3 * iOurStrength < 2 * iEnemyStrength)
+			return false; // </advc.010>
+	}
+	return true;
 }
 
 

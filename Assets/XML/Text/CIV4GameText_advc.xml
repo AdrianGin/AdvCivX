@@ -7302,6 +7302,32 @@
 		<German>[COLOR_WARNING_TEXT]%s1_Leader kann keine Geschenke von Ihnen annehmen.[COLOR_REVERT]</German>
 	</TEXT>
 
+	<!-- advc.010 -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_UNIT_CAPTURE_ODDS</Tag>
+		<English>Chance to Capture %s1_DefenderDescr: %s2_Odds</English>
+		<French>Chance de capturer %s1_DefenderDescr: %s2_Odds</French>
+		<German>Chance %s1_DefenderDescr gefangen zu nehmen: %s2_Odds</German>
+		<Italian>Probabilità di catturare %s1_DefenderDescr: %s2_Odds</Italian>
+		<Spanish>Probabilidad de capturar %s1_DefenderDescr: %s2_Odds</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_MISC_UNIT_CAPTURE_ODDS_REPL</Tag>
+		<English>Chance to Capture as a %s1_CaptiveDescr: %s2_Odds</English>
+		<French>Chance de capturer comme %s1_CaptiveDescr: %s2_Odds</French>
+		<German>Chance %s1_CaptiveDescr gefangen zu nehmen: %s2_Odds</German>
+		<Italian>Probabilità di catturare come %s1_CaptiveDescr: %s2_Odds</Italian>
+		<Spanish>Probabilidad de capturar como %s1_CaptiveDescr: %s2_Odds</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_MISC_NO_DOW_UNIT_CAPTURE</Tag>
+		<English>(War Declared on this Turn)</English>
+		<French>(guerre déclarée ce tour-ci)</French>
+		<German>(Krieg diese Runde erst erklärt)</German>
+		<Italian>(guerra dichiarata in questo turno)</Italian>
+		<Spanish>(guerra declarada en este turno)</Spanish>
+	</TEXT>
+
 	<!-- advc.500c -->
 	<TEXT>
 		<Tag>TXT_KEY_TECH_NO_FEAR_FOR_SAFETY</Tag>

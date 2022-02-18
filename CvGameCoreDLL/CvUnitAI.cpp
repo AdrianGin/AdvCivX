@@ -18411,14 +18411,29 @@ bool CvUnitAI::AI_retreatToCity(bool bPrimary, bool bPrioritiseAirlift, int iMax
 		return true;
 	}
 
-	if (pCity != NULL)
+	if (pCity != NULL && pCity->getTeam() == getTeam())
 	{
-		if (pCity->getTeam() == getTeam())
+		if (bEvac && at(pCity->getPlot()) && // scorched earth
+			m_pUnitInfo->getUnitCaptureClassType() != NO_UNITCLASS)
 		{
-			getGroup()->pushMission(MISSION_SKIP, -1, -1, NO_MOVEMENT_FLAGS,
-					false, false, MISSIONAI_RETREAT);
-			return true;
-		}
+			/*	(Would be nice to check which player is about to capture the city -
+				e.g. Barbarians don't capture units - but that's not worth the
+				implementation effort.) */
+			scaled rScrapOdds = per100(GC.getDefineINT(CvGlobals::
+					BASE_UNIT_CAPTURE_CHANCE)) / 2;
+			// Be more reluctant to scrap expensive units
+			rScrapOdds *= 50; // production cost baseline
+			rScrapOdds /= kOwner.getProductionNeeded(getUnitType()) /
+					per100(GC.getInfo(GC.getGame().getGameSpeedType()).getTrainPercent());
+			if (SyncRandSuccess(rScrapOdds))
+			{
+				scrap();
+				return true;
+			}
+		} // </advc.010>
+		getGroup()->pushMission(MISSION_SKIP, -1, -1, NO_MOVEMENT_FLAGS,
+				false, false, MISSIONAI_RETREAT);
+		return true;
 	}
 
 	return false;

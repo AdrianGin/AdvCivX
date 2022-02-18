@@ -1075,9 +1075,7 @@ void CvTeam::declareWar(TeamTypes eTarget, bool bNewDiplo, WarPlanTypes eWarPlan
 
 	setAtWar(eTarget, true);
 	kTarget.setAtWar(getID(), true);
-	// <advc.162>
-	if(GC.getDefineBOOL(CvGlobals::SPEND_ALL_MOVES_ON_INVASION))
-		m_abJustDeclaredWar.set(eTarget, true); // </advc.162>
+	m_abJustDeclaredWar.set(eTarget, true); // advc.162
 	// BETTER_BTS_AI_MOD (08/21/09, jdog5000, Efficiency): START
 	GC.getMap().invalidateBorderDangerCache(eTarget);
 	GC.getMap().invalidateBorderDangerCache(getID());
@@ -5489,7 +5487,6 @@ void CvTeam::processTech(TechTypes eTech, int iChange,
 		}
 	}
 	if (kTech.isRiverTrade())
-	{
 		changeRiverTradeCount(iChange);
 	// <advc.500c>
 	if (kTech.isNoFearForSafety())

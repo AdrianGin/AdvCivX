@@ -1264,4 +1264,23 @@
 		<iDefineIntVal>1</iDefineIntVal>
 	</Define>
 
+	<!-- advc.010: Probability of capturing a unit that has a Capture Unit Class
+		 set in Civ4UnitInfos.xml, i.e. normally workers and settlers. If such a
+		 unit isn't successfully captured, it gets destroyed. Set to 100 for
+		 BtS behavior (capture always happens), recommended: 50.
+		 (In the future, this "base" probability might get adjusted dynamically,
+		 e.g. based on the distance to the territory of the capturing player;
+		 but this isn't implemented so far.) -->
+	<Define>
+		<DefineName>BASE_UNIT_CAPTURE_CHANCE</DefineName>
+		<iDefineIntVal>50</iDefineIntVal>
+	</Define>
+	<!-- Replaces the base chance above on the turn that war has been declared
+		 on a captured unit. Use 100 for BtS behavior. Recommended: 0, to
+		 discourage surprise attacks on workers. -->
+	<Define>
+		<DefineName>DOW_UNIT_CAPTURE_CHANCE</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+
 </Civ4Defines>

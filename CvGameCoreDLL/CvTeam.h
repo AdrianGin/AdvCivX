@@ -304,7 +304,8 @@ public:
 	} // </advc.134a>
 	void setAtWar(TeamTypes eIndex, bool bNewValue);
 	/*  advc.162: "Just" meaning on the current turn. Don't want to rely on
-		AI code (AI_getWarPlanStateCounter) for this. */
+		AI code (AI_getWarPlanStateCounter) for this.
+		Also used for advc.010. */
 	bool hasJustDeclaredWar(TeamTypes eIndex) const
 	{
 		return m_abJustDeclaredWar.get(eIndex);
