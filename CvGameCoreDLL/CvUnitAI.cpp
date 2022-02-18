@@ -13073,7 +13073,8 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 		if (p.isOwned())
 			iValue += 5000;
 		// <advc.031d> Discourage roaming too far too early
-		if (getDomainType() == DOMAIN_LAND)
+		if (getDomainType() == DOMAIN_LAND &&
+			getArea().getCitiesPerPlayer(getOwner()) > 0)
 		{
 			// City sites already done; not as good an anchor as actual cities.
 			iNearestCityDist *= 2;
