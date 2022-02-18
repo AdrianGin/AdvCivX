@@ -7918,9 +7918,6 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 	//	Free Techs...
 	buildFreeTechString(szBuffer, eTech, true, bPlayerContext);
 
-	// advc.500c:
-	buildNoFearForSafetyString(szBuffer, eTech, true, bPlayerContext);
-
 	//	Line of Sight Bonus across water...
 	buildLOSString(szBuffer, eTech, true, bPlayerContext);
 
@@ -8182,6 +8179,8 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 					bFirst, true, bPlayerContext);
 		}
 	}
+	// advc.500c: (Pretty minor effect, place it far down the list.)
+	buildNoFearForSafetyString(szBuffer, eTech, true, bPlayerContext);
 	/*	advc.910: Moved above SingleLineTechTreeString - so that the custom help text
 		(unused in BtS/AdvCiv btw) can't end up in the middle of cost-related info. */
 	if (!CvWString(GC.getInfo(eTech).getHelp()).empty())
