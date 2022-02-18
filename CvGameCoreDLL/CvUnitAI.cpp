@@ -780,9 +780,10 @@ bool CvUnitAI::AI_bestCityBuild(CvCityAI const& kCity, CvPlot** ppBestPlot, Buil
 			if (GET_PLAYER(getOwner()).isAutomationSafe(kPlot))
 				continue;
 			int iValue = kCity.AI_getBestBuildValue(ePlot);
+			BuildTypes const eBuild = kCity.AI_getBestBuild(ePlot);
+			AI_adjustBuildValToCaptureDanger(kPlot, eBuild, iValue); // advc.010
 			if (iValue <= iBestValue)
 				continue;
-			BuildTypes eBuild = kCity.AI_getBestBuild(ePlot);
 			if (eBuild == NO_BUILD || /* K-Mod: */ !canBuild(kPlot, eBuild))
 				continue;
 			if (iPass == 0)
@@ -873,6 +874,169 @@ bool CvUnitAI::AI_bestCityBuild(CvCityAI const& kCity, CvPlot** ppBestPlot, Buil
 			*peBestBuild = eBestBuild;
 	}
 	return (eBestBuild != NO_BUILD);
+}
+
+// advc.010:
+void CvUnitAI::AI_adjustBuildValToCaptureDanger(CvPlot const& kPlot, BuildTypes eBuild,
+	int& iBuildValue) const // in-out param
+{
+	FAssert(kPlot.getOwner() == getOwner());
+	/*	Wrote some code for this case (if-0'd out below), but so long as the
+		pathfinder doesn't avoid capture danger, the worker may well remain
+		exposed while moving to a safer plot. Worse, the AI will usually let it
+		build routes along the way, including at kPlot. Moreover, randomness
+		isn't a satisfactory solution for workers getting chased hither and
+		thither by a dangerous unit patrolling along the border. */
+	if (at(kPlot))
+		return;
+	if (iBuildValue <= 0 || isHuman() ||
+		m_pUnitInfo->getUnitCaptureClassType() == NO_UNITCLASS)
+	{
+		return;
+	}
+	CvPlayerAI const& kOwner = GET_PLAYER(getOwner());
+	// Some further checks upfront to make sure we don't waste time once it matters
+	if (kOwner.getNumCities() >=
+		GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities())
+	{
+		return;
+	}
+	int const iAreaCities = getArea().getCitiesPerPlayer(kOwner.getID());
+	if (iAreaCities <= 0 || !kOwner.hasCapital() ||
+		!kPlot.isArea(kOwner.getCapital()->getArea()))
+	{
+		return;
+	}
+	int const iSimilarAreaUnits = getArea().getNumAIUnits(
+			kOwner.getID(), AI_getUnitAIType());
+	if (iSimilarAreaUnits >= 8)
+		return;
+	if (PlayerIter<HUMAN,KNOWN_POTENTIAL_ENEMY_OF>::count(getTeam())
+		- PlayerIter<HUMAN,ENEMY_OF>::count(getTeam()) <= 0)
+	{
+		return;
+	}
+	int iBestCaptureChance;
+	PlayerTypes eDangerPlayer = AI_findCaptureDangerPlayer(kPlot, &iBestCaptureChance);
+	if (eDangerPlayer == NO_PLAYER)
+		return;
+	scaled const rFearWeight = fixp(1/3.);
+	scaled rMult = 1 - per100(iBestCaptureChance) * rFearWeight;
+	/*	(See comment at the start of the function. Would also need to uncomment
+		a line in CvSelectionGroup::doTurn to re-enable this.) */
+	#if 0
+	if (at(kPlot))
+	{
+		scaled rInertiaFactor = fixp(0.25);
+		if (eBuild != NO_BUILD)
+		{
+			scaled rBuildProgress;
+			int iProgress = kPlot.getBuildProgress(eBuild);
+			int iTotalTime = kPlot.getBuildTime(eBuild, getOwner());
+			if (iProgress > 0 && iTotalTime >= iProgress)
+				rBuildProgress = scaled(iProgress, iTotalTime);
+			rInertiaFactor += rBuildProgress / 2;
+		}
+		if (scaled::hash(kPlot.plotNum(), getOwner()) < rInertiaFactor * fixp(1.25))
+			return;
+		rMult *= 1 + rInertiaFactor;
+	}
+	#endif
+	// If we're training a similar unit, then we probably can't spare one.
+	if (getArea().getNumTrainAIUnits(kOwner.getID(), AI_getUnitAIType()) > 0)
+		rMult *= fixp(0.85);
+	rMult *= scaled::max(scaled(iSimilarAreaUnits - 1, iAreaCities), 1 - rFearWeight);
+	rMult *= kOwner.getProductionNeeded(getUnitType());
+	rMult /= per100(std::max(GC.getInfo(GC.getGame().getGameSpeedType()).
+			/*	Writing this code with the BtS Worker unit in mind, obviously,
+				which costs 60 production. If we pay more than that or less,
+				adjust rMult. */
+			getBuildPercent(), 50)) * 60;
+	rMult.clamp((1 - rFearWeight) * fixp(3/4.), 1);
+	iBuildValue = (iBuildValue * rMult).uround();
+}
+
+// advc.010:
+PlayerTypes CvUnitAI::AI_findCaptureDangerPlayer(CvPlot const& kPlot,
+	int* piBestCaptureChance) const
+{
+	LOCAL_REF(int, iBestCaptureChance, piBestCaptureChance, 0);
+	PlayerTypes eDangerPlayer = NO_PLAYER;
+	bool const bWaterUnit = (getDomainType() == DOMAIN_SEA);
+	for (SquareIter itFrom(kPlot, 2, false); itFrom.hasNext(); ++itFrom)
+	{
+		if (!itFrom->isVisible(getTeam()) || itFrom->isWater() != bWaterUnit)
+			continue;
+		/*	They can't easily attack from a plot our team owns
+			(but it's not impossible, should leave no loopholes). */
+		bool bNeedsTwoMoves = (itFrom->getTeam() == getTeam() &&
+				itFrom->getRevealedRouteType(getTeam()) == NO_ROUTE);
+		FOR_EACH_UNIT_IN(pAttacker, *itFrom)
+		{
+			CvPlayer const& kAttackPlayer = GET_PLAYER(pAttacker->getOwner());
+			CvTeam const& kAttackTeam = GET_TEAM(kAttackPlayer.getTeam());
+			if (!kAttackPlayer.isHuman() ||
+				kAttackTeam.isAtWar(getTeam()) ||
+				!kAttackTeam.canEventuallyDeclareWar(getTeam()) ||
+				GET_PLAYER(getOwner()).AI_getAttitude(kAttackPlayer.getID()) >=
+				ATTITUDE_PLEASED)
+			{
+				continue;
+			}
+			if (pAttacker->canAttack() &&
+				(!bNeedsTwoMoves || pAttacker->maxMoves() > 1) &&
+				pAttacker->generatePath(kPlot, MOVE_MAX_MOVES | MOVE_DECLARE_WAR,
+				false, NULL, 1, true))
+			{
+				/*	There could be multiple dangerous humans, but I'm too lazy
+					to write sensible code for identifying the biggest threat
+					(or for returning all dangerous players). Caller so far
+					doesn't care about the specific player anyway. */
+				eDangerPlayer = kAttackPlayer.getID();
+				iBestCaptureChance = std::min(iBestCaptureChance,
+						pAttacker->getCaptureOdds(*this));
+				if (iBestCaptureChance >=
+					GC.getDefineINT(CvGlobals::DOW_UNIT_CAPTURE_CHANCE))
+				{
+					goto danger_check_done;
+				}
+			}
+		}
+	} danger_check_done:
+	if (eDangerPlayer == NO_PLAYER)
+		return NO_PLAYER;
+	// AI units on these missions would likely deter an invader
+	MissionAITypes guardAITypes[] = {
+		MISSIONAI_DEFEND, MISSIONAI_GUARD_BONUS, MISSIONAI_PATROL
+	};
+	for (SquareIter itLoopPlot(kPlot, 1); itLoopPlot.hasNext(); ++itLoopPlot)
+	{
+		FOR_EACH_UNIT_IN(pGuard, *itLoopPlot)
+		{
+			if (pGuard->canDefend() && pGuard->canAttack() && // not clear which
+				pGuard->getOwner() == getOwner())
+			{
+				bool bValid = false;
+				for (int i = 0; i < ARRAYSIZE(guardAITypes); i++)
+				{
+					if (pGuard->getGroup()->getMissionType(0) == guardAITypes[i])
+					{
+						bValid = true;
+						break;
+					}
+				}
+				if (bValid ||
+					/*	(We could order the guard to stay in place,
+						but that gets too complicated to implement.) */
+					(itLoopPlot.currStepDist() == 0 && pGuard->hasMoved()))
+				{
+					iBestCaptureChance = 0;
+					return NO_PLAYER;
+				}
+			}
+		}
+	}
+	return eDangerPlayer;
 }
 
 
@@ -17072,9 +17236,11 @@ bool CvUnitAI::AI_improveLocalPlot(int iRange, CvCity const* pIgnoreCity, // adv
 		} */ /* K-Mod. I don't think it's a good idea to disallow improvement changes here.
 				So I'm changing it to have a cutoff value instead. */
 		iValue = pCity->AI_getBestBuildValue(ePlot);
+		BuildTypes const eBuild = pCity->AI_getBestBuild(ePlot);
+		AI_adjustBuildValToCaptureDanger(p, eBuild, iValue); // advc.010
 		if (iValue <= 1) // (advc.opt: moved up)
 			continue;
-		if (!canBuild(p, pCity->AI_getBestBuild(ePlot)))
+		if (!canBuild(p, eBuild))
 			continue;
 		if (GET_PLAYER(getOwner()).isAutomationSafe(p))
 			continue;
@@ -17100,7 +17266,7 @@ bool CvUnitAI::AI_improveLocalPlot(int iRange, CvCity const* pIgnoreCity, // adv
 				{
 					iBestValue = iValue;
 					pBestPlot = &p;
-					eBestBuild = pCity->AI_getBestBuild(ePlot);
+					eBestBuild = eBuild;
 					bChop = false; // advc.117
 				}
 			}

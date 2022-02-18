@@ -33,6 +33,11 @@ public:
 
 	bool AI_bestCityBuild(CvCityAI const& kCity, CvPlot** ppBestPlot = NULL, BuildTypes* peBestBuild = NULL,
 			CvPlot* pIgnorePlot = NULL, CvUnit* pUnit = NULL) const;
+	// <advc.010>
+	void AI_adjustBuildValToCaptureDanger(CvPlot const& kPlot, BuildTypes eBuild,
+			int& iBuildValue) const;
+	PlayerTypes AI_findCaptureDangerPlayer(CvPlot const& kPlot,
+			int* piBestCaptureChance = NULL) const; // </advc.010>
 	bool AI_isCityAIType() const;
 	// <advc>
 	bool AI_mayAttack(TeamTypes eTeam, CvPlot const& kPlot) const; // Renamed from AI_potentialEnemy

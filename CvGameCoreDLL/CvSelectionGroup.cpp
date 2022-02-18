@@ -246,7 +246,11 @@ void CvSelectionGroup::doTurn()
 	if (AI_isControlled())
 	{
 		if (getActivityType() != ACTIVITY_MISSION ||
-			(!canFight() && GET_PLAYER(getOwner()).AI_isAnyPlotDanger(getPlot(), 2)))
+			(!canFight() &&
+			(GET_PLAYER(getOwner()).AI_isAnyPlotDanger(getPlot(), 2)
+			// advc.010: (Not currently working)
+			//|| AI().AI_getHeadUnit()->AI_findCaptureDangerPlayer(getPlot()) != NO_PLAYER)
+			)))
 		{
 			setForceUpdate(true);
 			// K-Mod. (This stuff use to be part force update's job. Now it isn't.)

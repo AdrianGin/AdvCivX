@@ -93,7 +93,12 @@ bool GroupStepMetric::canStepThrough(CvPlot const& kPlot, CvSelectionGroup const
 		}
 		else if (!kGroup.canMoveThrough(kPlot,
 			// K-Mod
-			(eFlags & MOVE_DECLARE_WAR) && !kGroup.isHuman(),
+			(eFlags & MOVE_DECLARE_WAR) && (!kGroup.isHuman()
+			/*	advc.010: Hack to check whether a human player is actually
+				hovering into non-friendly territory, or whether the AI is
+				trying to anticipate a human DoW move. MAX_MOVES should
+				never be used for actual human moves. */
+			|| (eFlags & MOVE_MAX_MOVES)),
 			(eFlags & MOVE_ASSUME_VISIBLE) || !kGroup.isHuman()))
 			// K-Mod end
 		{
