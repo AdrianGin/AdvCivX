@@ -46,6 +46,7 @@ class SevoPediaTech(CvPediaScreen.CvPediaScreen):
 		self.W_CIVS = self.top.R_PEDIA_PAGE - self.X_CIVS
 		self.H_CIVS = 110
 
+		# advc.004y (note): These dimensions are for the "background" panel, which includes more than just the tech quote.
 		self.X_QUOTE_PANE = self.X_TECH_PANE
 		self.Y_QUOTE_PANE = self.Y_TECH_PANE + self.H_TECH_PANE + 10
 		self.W_QUOTE_PANE = self.top.R_PEDIA_PAGE - self.X_QUOTE_PANE
@@ -104,7 +105,7 @@ class SevoPediaTech(CvPediaScreen.CvPediaScreen):
 		self.placeUnits()
 		self.placeBuildings()
 		self.placeSpecial()
-		self.placeQuote()
+		self.placeBackground()
 
 
 
@@ -236,16 +237,33 @@ class SevoPediaTech(CvPediaScreen.CvPediaScreen):
 
 
 
-	def placeQuote(self):
+	def placeBackground(self): # advc.004y: renamed from "placeQuote"
 		screen = self.top.getScreen()
 		panelName = self.top.getNextWidgetName()
-		screen.addPanel(panelName, "", "", True, True,
-			self.X_QUOTE_PANE, self.Y_QUOTE_PANE, self.W_QUOTE_PANE, self.H_QUOTE_PANE, PanelStyles.PANEL_STYLE_BLUE50)
-		szQuote = gc.getTechInfo(self.iTech).getQuote()
-		szQuote += u"\n\n" + gc.getTechInfo(self.iTech).getCivilopedia()
-		szQuoteTextWidget = self.top.getNextWidgetName()
-		screen.addMultilineText(szQuoteTextWidget, szQuote, self.X_QUOTE_PANE + 15, self.Y_QUOTE_PANE + 15,
-		    self.W_QUOTE_PANE - (15 * 2), self.H_QUOTE_PANE - (15 * 2), WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+		screen.addPanel(panelName,
+				# advc.004y: Label added for this panel
+				localText.getText("TXT_KEY_CIVILOPEDIA_HISTORY", ()),
+				"", True, True,
+				self.X_QUOTE_PANE, self.Y_QUOTE_PANE,
+				self.W_QUOTE_PANE, self.H_QUOTE_PANE,
+				PanelStyles.PANEL_STYLE_BLUE50)
+		# <advc.004y> Show strategy help too (like for civics)
+		szText = u""
+		if len(gc.getTechInfo(self.iTech).getStrategy()) > 0:
+			szText += localText.getText("TXT_KEY_CIVILOPEDIA_STRATEGY", ())
+			szText += gc.getTechInfo(self.iTech).getStrategy()
+			szText += u"\n\n"
+			szText += localText.getText("TXT_KEY_CIVILOPEDIA_BACKGROUND", ())
+		# </advc.004y>
+		szText += gc.getTechInfo(self.iTech).getQuote()
+		szText += u"\n\n" + gc.getTechInfo(self.iTech).getCivilopedia()
+		#szQuoteTextWidget = self.top.getNextWidgetName()
+		#screen.addMultilineText(szQuoteTextWidget, szText, self.X_QUOTE_PANE + 15, self.Y_QUOTE_PANE + 15,
+		#		self.W_QUOTE_PANE - (15 * 2), self.H_QUOTE_PANE - (15 * 2),
+		#		WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+		# <advc.004y> Now that the quote isn't on top anymore, we can keep it simple:
+		screen.attachMultilineText(panelName, "Text", szText,
+				WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY) # </advc.004y>
 
 
 
