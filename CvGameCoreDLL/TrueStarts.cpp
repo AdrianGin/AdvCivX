@@ -1242,12 +1242,12 @@ TrueStarts::SurroundingsStats::SurroundingsStats(CvPlayer const& kPlayer,
 			continue;
 		if (!sameArea(*itPlot, kStart))
 		{
-			if (!itPlot->isWater()) // Count land area double
-				m_rDifferentAreaPlotWeights += rWeight;
 			/*	Water in the high latitudes is usually less relevant for gameplay,
 				probably won't feel like playing a maritime civ. */
 			scaled rLatMult = 1;
-			if (kTruStarts.m_bMapHasLatitudes)
+			if (!itPlot->isWater()) // Count land area double
+				m_rDifferentAreaPlotWeights += rWeight;
+			else if (kTruStarts.m_bMapHasLatitudes)
 			{
 				int const iMaxLat = CvTruCivInfo::maxLatitude() / 10;
 				scaled const rTemperateLat = fixp(0.58) * iMaxLat;
