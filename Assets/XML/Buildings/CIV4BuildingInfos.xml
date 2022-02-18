@@ -26424,8 +26424,7 @@
 			<MaxStartEra>ERA_CLASSICAL</MaxStartEra>
 			<!-- advc.310: Was NONE -->
 			<ObsoleteTech>TECH_CORPORATION</ObsoleteTech>
-			<!-- advc.310: Was TECH_MASONRY -->
-			<PrereqTech>TECH_ARCHERY</PrereqTech>
+			<PrereqTech>TECH_MASONRY</PrereqTech>
 			<TechTypes/>
 			<Bonus>NONE</Bonus>
 			<PrereqBonuses/>
