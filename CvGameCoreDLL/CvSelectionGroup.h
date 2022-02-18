@@ -279,7 +279,7 @@ public:
 	}
 	DllExport CLLNode<MissionData>* headMissionQueueNode() const { return m_missionQueue.head(); }
 	CLLNode<MissionData>* tailMissionQueueNode() const { return m_missionQueue.tail(); }
-	int getMissionType(int iNode) const;																														// Exposed to Python
+	MissionTypes getMissionType(int iNode) const;																														// Exposed to Python
 	int getMissionData1(int iNode) const;																														// Exposed to Python
 	int getMissionData2(int iNode) const;																														// Exposed to Python
 	// <advc.003u>

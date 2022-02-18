@@ -4364,7 +4364,7 @@ CLLNode<MissionData>* CvSelectionGroup::deleteMissionQueueNode(CLLNode<MissionDa
 }
 
 
-int CvSelectionGroup::getMissionType(int iNode) const
+MissionTypes CvSelectionGroup::getMissionType(int iNode) const
 {
 	int iCount = 0;
 	CLLNode<MissionData>* pMissionNode = headMissionQueueNode();
@@ -4375,7 +4375,7 @@ int CvSelectionGroup::getMissionType(int iNode) const
 		iCount++;
 		pMissionNode = nextMissionQueueNode(pMissionNode);
 	}
-	return -1;
+	return NO_MISSION;
 }
 
 

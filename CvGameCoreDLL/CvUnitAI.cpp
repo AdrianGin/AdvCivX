@@ -1340,7 +1340,7 @@ void CvUnitAI::AI_settleMove()
 		//int iOurDefence = getGroup()->AI_sumStrength(0); // not counting defensive bonuses
 		//int iEnemyAttack = kOwner.AI_localAttackStrength(plot(), NO_TEAM, getDomainType(), 2, true);
 		if (!getGroup()->canDefend() ||
-			100 * kOwner.AI_localAttackStrength(plot(), NO_TEAM) >
+			100 * kOwner.AI_localAttackStrength(plot()) >
 			80 * AI_getGroup()->AI_sumStrength(0))
 	// K-Mod end
 		{	// flee
@@ -1702,7 +1702,8 @@ void CvUnitAI::AI_workerMove(/* advc.113b: */ bool bUpdateWorkersHave)
 	{
 		if (kOwner.AI_isPlotThreatened(plot(), 2))
 		{
-			if (AI_retreatToCity()) // XXX maybe not do this??? could be working productively somewhere else...
+			// XXX maybe not do this??? could be working productively somewhere else...
+			if (AI_retreatToCity())
 				return;
 			bCanRetreat = false;
 		}
@@ -1711,7 +1712,7 @@ void CvUnitAI::AI_workerMove(/* advc.113b: */ bool bUpdateWorkersHave)
 	if (bCanRoute && getPlot().getOwner() == getOwner()) // XXX team???
 	{
 		BonusTypes eNonObsoleteBonus = getPlot().getNonObsoleteBonusType(getTeam());
-		if (NO_BONUS != eNonObsoleteBonus)
+		if (eNonObsoleteBonus != NO_BONUS)
 		{
 			if (!getPlot().isConnectedToCapital())
 			{
@@ -8447,7 +8448,7 @@ void CvUnitAI::AI_defenseAirMove()
 			return;
 	}
 
-	int const iEnemyOffense = GET_PLAYER(getOwner()).AI_localAttackStrength(plot(), NO_TEAM);
+	int const iEnemyOffense = GET_PLAYER(getOwner()).AI_localAttackStrength(plot());
 	int const iOurDefense = GET_PLAYER(getOwner()).AI_localDefenceStrength(plot(), getTeam());
 
 	if (iEnemyOffense > 2*iOurDefense || iOurDefense == 0)
@@ -15151,7 +15152,7 @@ namespace
 		if (city_it == city_defence_cache.end())
 		{
 			if (pCity->getPlot().isVisible(kPlayer.getTeam()))
-				iDefenceStrength = kPlayer.AI_localDefenceStrength(pCity->plot(), NO_TEAM);
+				iDefenceStrength = kPlayer.AI_localDefenceStrength(pCity->plot());
 			else
 			{
 				/*	If we don't have vision of the city, we should try to
@@ -15308,7 +15309,7 @@ bool CvUnitAI::AI_assaultSeaTransport(bool bAttackBarbs, bool bLocal,
 			else
 			{
 				iDefenceStrength = (kPlot.isVisible(kOurTeam.getID()) ?
-						kOwner.AI_localDefenceStrength(&kPlot, NO_TEAM) :
+						kOwner.AI_localDefenceStrength(&kPlot) :
 						kOurTeam.AI_strengthMemory().get(kPlot));
 			}
 			/*	Note: the amphibious attack modifier is already taken into account by
@@ -17054,7 +17055,6 @@ bool CvUnitAI::AI_improveLocalPlot(int iRange, CvCity const* pIgnoreCity, // adv
 			continue;
 		if (GET_PLAYER(getOwner()).isAutomationSafe(p))
 			continue;
-
 		int iPathTurns;
 		if (generatePath(p, NO_MOVEMENT_FLAGS, true, &iPathTurns))
 		{
@@ -17068,7 +17068,6 @@ bool CvUnitAI::AI_improveLocalPlot(int iRange, CvCity const* pIgnoreCity, // adv
 				iPathTurns++;
 			else if (iPathTurns <= 1)
 				iMaxWorkers = AI_calculatePlotWorkersNeeded(p, pCity->AI_getBestBuild(ePlot));
-
 			if (GET_PLAYER(getOwner()).AI_plotTargetMissionAIs(p, MISSIONAI_BUILD, getGroup(),
 				/*<advc.opt>*/0, iMaxWorkers/*</advc.opt>*/) < iMaxWorkers)
 			{
@@ -17117,7 +17116,7 @@ bool CvUnitAI::AI_improveLocalPlot(int iRange, CvCity const* pIgnoreCity, // adv
 				eMission = MISSION_ROUTE_TO;
 		}
 		if(!bChop) /* advc.117: betterPlotBuild will only suggest Farms or Forts
-					 or who knows what -- stick to the chopping plan */
+					 or who knows what -- stick to the chopping plan. */
 			eBestBuild = AI_betterPlotBuild(*pBestPlot, eBestBuild);
 
 		getGroup()->pushMission(eMission,

@@ -552,27 +552,24 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer)
 	kOwner.uwai().getCache().reportUnitDestroyed(getUnitType());
 
 	kOwner.AI_changeNumAIUnits(AI_getUnitAIType(), -1);
-
-	PlayerTypes eCapturingPlayer = getCapturingPlayer();
-	UnitTypes eCaptureUnitType = (eCapturingPlayer == NO_PLAYER ? NO_UNIT :
+	PlayerTypes const eCapturingPlayer = getCapturingPlayer();
+	UnitTypes const eCaptureUnitType = (eCapturingPlayer == NO_PLAYER ? NO_UNIT :
 			getCaptureUnitType(GET_PLAYER(eCapturingPlayer).getCivilizationType()));
 
 	setXY(INVALID_PLOT_COORD, INVALID_PLOT_COORD, true);
-
 	joinGroup(NULL, false, false);
-
 	CvEventReporter::getInstance().unitLost(this);
-
 	kOwner.deleteUnit(getID());
 
 	if (eCapturingPlayer != NO_PLAYER && eCaptureUnitType != NO_UNIT &&
-		!GET_PLAYER(eCapturingPlayer).isBarbarian())
+		eCapturingPlayer != BARBARIAN_PLAYER)
 	{
-		if (GET_PLAYER(eCapturingPlayer).isHuman() ||
-			GET_PLAYER(eCapturingPlayer).AI_captureUnit(eCaptureUnitType, kPlot) ||
+		CvPlayerAI& kCaptor = GET_PLAYER(eCapturingPlayer);
+		if (kCaptor.isHuman() ||
+			kCaptor.AI_captureUnit(eCaptureUnitType, kPlot) ||
 			!GC.getDefineBOOL("AI_CAN_DISBAND_UNITS"))
 		{
-			CvUnit* pCapturedUnit = GET_PLAYER(eCapturingPlayer).initUnit(
+			CvUnit* pCapturedUnit = kCaptor.initUnit(
 					eCaptureUnitType, kPlot.getX(), kPlot.getY());
 			if (pCapturedUnit != NULL)
 			{

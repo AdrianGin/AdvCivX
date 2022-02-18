@@ -434,10 +434,12 @@ public:
 	int AI_wakePlotTargetMissionAIs(CvPlot const& kPlot, MissionAITypes eMissionAI,
 			CvSelectionGroup* pSkipSelectionGroup = NULL) const;
 	// K-Mod start
-	int AI_localDefenceStrength(const CvPlot* pDefencePlot, TeamTypes eDefenceTeam, DomainTypes eDomainType = DOMAIN_LAND,
+	int AI_localDefenceStrength(const CvPlot* pDefencePlot,
+			TeamTypes eDefenceTeam = NO_TEAM, DomainTypes eDomainType = DOMAIN_LAND,
 			int iRange = 0, bool bMoveToTarget = true, bool bCheckMoves = false, bool bNoCache = false,
 			bool bPredictPromotions = false) const; // advc.139
-	int AI_localAttackStrength(const CvPlot* pTargetPlot, TeamTypes eAttackTeam, DomainTypes eDomainType = DOMAIN_LAND,
+	int AI_localAttackStrength(const CvPlot* pTargetPlot,
+			TeamTypes eAttackTeam = NO_TEAM, DomainTypes eDomainType = DOMAIN_LAND,
 			int iRange = 2, bool bUseTarget = true, bool bCheckMoves = false, bool bCheckCanAttack = false,
 			int* piAttackerCount = NULL) const; // advc.139
 	int AI_cityTargetStrengthByPath(CvCity const* pCity, CvSelectionGroup* pSkipSelectionGroup, int iMaxPathTurns) const;

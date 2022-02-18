@@ -3238,8 +3238,8 @@ bool CvTeamAI::AI_acceptSurrender(TeamTypes eSurrenderTeam) const
 					kSurrenderMember.getTeam(), DOMAIN_LAND, 2, true, false, true);
 			int iOurPower = GET_PLAYER(getLeaderID()).AI_localAttackStrength(
 					kCity.plot(), getID());
-			int iOtherPower = kSurrenderMember.AI_localAttackStrength(
-					kCity.plot(), NO_TEAM) - iOurPower;
+			int iOtherPower = kSurrenderMember.AI_localAttackStrength(kCity.plot())
+					- iOurPower;
 			// K-Mod end
 			if (iOtherPower > iOwnerPower)
 				iCitiesThreatenedByOthers++;

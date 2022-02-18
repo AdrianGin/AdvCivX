@@ -57,3 +57,6 @@
 #define FOR_EACH_ADJ_PLOT_VAR_RAND(kCenterPlot, kRand)
 #define FOR_EACH_ADJ_PLOT_RAND2(pLoopPlot, kCenterPlot, kRand)
 #define FOR_EACH_ADJ_PLOT_VAR_RAND2(pLoopPlot, kCenterPlot, kRand)
+
+#define ENUM_START(Name, PREFIX)
+#define ENUM_END(Name, PREFIX)

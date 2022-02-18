@@ -8288,9 +8288,7 @@ BuildTypes CvCityAI::AI_getBestBuild(CityPlotTypes ePlot) const // advc.enum: Ci
 {
 	// <advc.opt> Now also store the best build among all city plots
 	if(ePlot == NO_CITYPLOT)
-		return m_eBestBuild;
-	// (Tbd.: Put the part below into a separate function so that it can be inlined)
-	// </advc.opt>
+		return m_eBestBuild; // </advc.opt>
 	FAssertEnumBounds(ePlot);
 	return m_aeBestBuild[ePlot];
 }
@@ -11757,7 +11755,7 @@ void CvCityAI::AI_doPanic() // advc: Unused return type bool removed, body refac
 		return;
 	}
 	int iOurDefense = GET_PLAYER(getOwner()).AI_localDefenceStrength(plot(), getTeam());
-	int iEnemyOffense = GET_PLAYER(getOwner()).AI_localAttackStrength(plot(), NO_TEAM);
+	int iEnemyOffense = GET_PLAYER(getOwner()).AI_localAttackStrength(plot());
 	scaled rRatio(iEnemyOffense, std::max(1, iOurDefense));
 	if (rRatio <= 1)
 		return;

@@ -3494,19 +3494,19 @@ int CvPlayerAI::AI_countDangerousUnits(CvPlot const& kAttackerPlot, CvPlot const
 		if(isHuman() || !AI_cheatDangerVisibility(kAttackerPlot))
 			return 0;
 	} // </advc.128>
-	int r = 0;
+	int iR = 0;
 	TeamTypes const eOurMaster = GET_TEAM(eTeam).getMasterTeam(); // advc.opt
 	FOR_EACH_UNIT_IN(pLoopUnit, kAttackerPlot)
 	{
 		CvUnit const& kUnit = *pLoopUnit;
-		// advc.opt: Team check changed to masterTeam
+		// advc.opt: Team check changed to MasterTeam
 		if (GET_TEAM(kUnit.getOwner()).getMasterTeam() == eOurMaster)
 		{
 			if (!kUnit.alwaysInvisible() &&
 				kUnit.getInvisibleType() == NO_INVISIBLE)
 			{
-				FAssertMsg(r == 0, "Hostile units shouldn't be able to coexist in a plot");
-				return r;
+				FAssertMsg(iR == 0, "Hostile units shouldn't be able to coexist in a plot");
+				return iR;
 			}
 		}
 		if ( // <advc.104>
@@ -3545,12 +3545,12 @@ int CvPlayerAI::AI_countDangerousUnits(CvPlot const& kAttackerPlot, CvPlot const
 						continue;
 				}
 			}
-			r++;
-			if (r >= iLimit)
+			iR++;
+			if (iR >= iLimit)
 				return iLimit;
 		}
 	}
-	return r;
+	return iR;
 }
 
 // Never used ...
@@ -12665,7 +12665,7 @@ DenialTypes CvPlayerAI::AI_cityTrade(CvCityAI const& kCity, PlayerTypes eToPlaye
 	{	// Units hostile to the new owner
 		/*	Should perhaps just check isVisibleEnemyCityAttacker(eToPlayer,...);
 			doesn't seem likely that kToPlayer has defensive units nearby. */
-		int iThirdPartyAttack = kToPlayer.AI_localAttackStrength(&kCityPlot, NO_TEAM);
+		int iThirdPartyAttack = kToPlayer.AI_localAttackStrength(&kCityPlot);
 		if (iThirdPartyAttack > 0)
 		{
 			int iToPlayerDefense = kToPlayer.AI_localDefenceStrength(&kCityPlot,
@@ -15706,7 +15706,8 @@ int CvPlayerAI::AI_plotTargetMissionAIs(CvPlot const& kPlot, MissionAITypes* aeM
 }
 
 // K-Mod
-// Total defensive strength of units that can move iRange steps to reach pDefencePlot
+/*	Total defensive strength of units friendly to us
+	that can move iRange steps to reach pDefencePlot */
 /*  advc.159 (note): This is not simply the sum of the relevant combat strength values.
 	The result should only be compared with AI_localAttackStrength, AI_localDefenceStrength,
 	AI_cityTargetStrengthByPath or CvSelectionGroupAI::AI_sumStrength. */
@@ -15795,7 +15796,8 @@ int CvPlayerAI::AI_localDefenceStrength(const CvPlot* pDefencePlot, TeamTypes eD
 	return (iTotal * (75 + (iDefenders - 1))) / 75; // </advc.159>
 }
 
-/*	Total attack strength of units that can move iRange steps to reach pAttackPlot
+/*	Total attack strength of units (potentially) hostile to us
+	that can move iRange steps to reach pAttackPlot.
 	advc.159: See note above AI_localDefenceStrength */
 int CvPlayerAI::AI_localAttackStrength(const CvPlot* pTargetPlot,
 	TeamTypes eAttackTeam, DomainTypes eDomainType, int iRange, bool bUseTarget,

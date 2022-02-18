@@ -4457,7 +4457,7 @@ void CvGameTextMgr::setPlotHelpDebug_AltOnly(CvWStringBuffer& szString, CvPlot c
 
 		int iOurDefense = kOwner.AI_localDefenceStrength(&kPlot, kPlot.getTeam(), DOMAIN_LAND, 0,
 				true, false, true);
-		int iEnemyOffense = kOwner.AI_localAttackStrength(&kPlot, NO_TEAM);
+		int iEnemyOffense = kOwner.AI_localAttackStrength(&kPlot);
 		if (iEnemyOffense > 0)
 		{
 			szString.append(CvWString::format(SETCOLR L"\nDanger: %.2f (%d/%d)" ENDCOLR,
@@ -12541,7 +12541,8 @@ void CvGameTextMgr::setAngerHelp(CvWStringBuffer &szBuffer, CvCity const& kCity)
 		szBuffer.append(gDLL->getText("TXT_KEY_ANGER_ANARCHY"));
 		return;
 	}
-	if (kCity.unhappyLevel() <= 0)
+	int const iUnhappy = kCity.unhappyLevel();
+	if (iUnhappy <= 0)
 		return;
 
 	int iNewAngerPercent = 0;
@@ -12837,7 +12838,7 @@ void CvGameTextMgr::setAngerHelp(CvWStringBuffer &szBuffer, CvCity const& kCity)
 	}
 	szBuffer.append(L"-----------------------\n");
 	szBuffer.append(gDLL->getText("TXT_KEY_ANGER_TOTAL_UNHAPPY", iNewAnger));
-	FAssert(iNewAnger == kCity.unhappyLevel());
+	FAssert(iNewAnger == iUnhappy);
 }
 
 
@@ -12845,7 +12846,8 @@ void CvGameTextMgr::setHappyHelp(CvWStringBuffer &szBuffer, CvCity const& kCity)
 {
 	if (kCity.isOccupation() || GET_PLAYER(kCity.getOwner()).isAnarchy())
 		return;
-	if (kCity.happyLevel() <= 0)
+	int const iHappyLevel = kCity.happyLevel();
+	if (iHappyLevel <= 0)
 		return;
 
 	int iTotalHappy = 0;
@@ -12981,7 +12983,7 @@ void CvGameTextMgr::setHappyHelp(CvWStringBuffer &szBuffer, CvCity const& kCity)
 	}
 	szBuffer.append(L"-----------------------\n");
 	szBuffer.append(gDLL->getText("TXT_KEY_HAPPY_TOTAL_HAPPY", iTotalHappy));
-	FAssert(iTotalHappy == kCity.happyLevel());
+	FAssert(iTotalHappy == iHappyLevel);
 }
 
 // BUG - Building Additional Happiness - start

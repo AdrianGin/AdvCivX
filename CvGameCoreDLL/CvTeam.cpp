@@ -4089,12 +4089,6 @@ void CvTeam::changeTerrainTradeCount(TerrainTypes eIndex, int iChange)
 }
 
 
-int CvTeam::getRiverTradeCount() const
-{
-	return m_iRiverTradeCount;
-}
-
-
 void CvTeam::changeRiverTradeCount(int iChange)
 {
 	if (iChange == 0)

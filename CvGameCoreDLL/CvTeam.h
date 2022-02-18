@@ -432,7 +432,10 @@ public:
 	}
 	void changeTerrainTradeCount(TerrainTypes eIndex, int iChange);
 
-	int getRiverTradeCount() const;
+	int getRiverTradeCount() const
+	{
+		return m_iRiverTradeCount;
+	}
 	bool isRiverTrade() const																			// Exposed to Python
 	{
 		//return (getRiverTradeCount() > 0);
