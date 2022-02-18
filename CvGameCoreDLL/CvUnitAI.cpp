@@ -13018,7 +13018,7 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 		if (p.isRevealedGoody(getTeam()))
 			iValue += 100000;
 		// <advc.031d>
-		int iNearestCityDist = MAX_INT;
+		int iNearestCityDist = GC.getMap().maxTypicalDistance();
 		int iValFromCitySites = 0;
 		for (int i = 0; i < kOwner.AI_getNumCitySites(); i++)
 		{
@@ -13077,7 +13077,7 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 		{
 			// City sites already done; not as good an anchor as actual cities.
 			iNearestCityDist *= 2;
-			int const iDistSoftCap = (2 * (kOwner.AI_getCurrEraFactor() + 3)).uround();
+			int const iDistSoftCap = (3 * (kOwner.AI_getCurrEraFactor() + 2)).uround();
 			if (iNearestCityDist > iDistSoftCap) // save time
 			{
 				FOR_EACH_CITY(pCity, kOwner)
