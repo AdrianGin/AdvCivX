@@ -352,6 +352,10 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 	case WIDGET_HELP_FREE_TECH:
 		parseFreeTechHelp(widgetDataStruct, szBuffer);
 		break;
+	// <advc.500c>
+	case WIDGET_HELP_NO_FEAR_FOR_SAFETY:
+		GAMETEXT.buildNoFearForSafetyString(szBuffer, (TechTypes)widgetDataStruct.m_iData1);
+		break; // </advc.500c>
 
 	case WIDGET_HELP_LOS_BONUS:
 		parseLOSHelp(widgetDataStruct, szBuffer);

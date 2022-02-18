@@ -2189,6 +2189,8 @@ void CvPlayer::disbandUnit(bool bAnnounce)
 		{
 			continue;
 		}
+		/*	advc.500c (note): Even if GET_TEAM(getTeam()).getNoMilitaryAnger() is 0,
+			it still seems better not to knock the only military unit out. */
 		if (pLoopUnit->isMilitaryHappiness() &&
 			pLoopUnit->getPlot().plotCount(PUF_isMilitaryHappiness, -1, -1, getID()) <= 1)
 		{

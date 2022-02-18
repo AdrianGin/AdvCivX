@@ -10350,7 +10350,8 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 						and that we still want to grow */
 					if (getMilitaryHappinessUnits() == 0 && kOwner.getNumCities() > 2)
 					{
-						iHappinessLevel += (GC.getDefineINT(CvGlobals::NO_MILITARY_PERCENT_ANGER) *
+						iHappinessLevel += (//GC.getDefineINT(CvGlobals::NO_MILITARY_PERCENT_ANGER)
+								GET_TEAM(getTeam()).getNoMilitaryAnger() * // advc.500c
 								(iPopulation + 1)) / GC.getPERCENT_ANGER_DIVISOR();
 					}
 

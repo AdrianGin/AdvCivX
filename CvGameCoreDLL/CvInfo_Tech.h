@@ -51,6 +51,8 @@ public: // advc: All the const functions are exposed to Python except those adde
 	bool isIgnoreIrrigation() const { return m_bIgnoreIrrigation; }
 	bool isWaterWork() const { return m_bWaterWork; }
 	bool isRiverTrade() const { return m_bRiverTrade; }
+	// advc.500c:
+	bool isNoFearForSafety() const { return m_bNoFearForSafety; }
 
 	std::wstring getQuote() const;
 	const TCHAR* getSound() const;
@@ -133,6 +135,7 @@ protected:
 	bool m_bIgnoreIrrigation;
 	bool m_bWaterWork;
 	bool m_bRiverTrade;
+	bool m_bNoFearForSafety; // advc.500c
 
 	CvString m_szQuoteKey;
 	CvString m_szSound;

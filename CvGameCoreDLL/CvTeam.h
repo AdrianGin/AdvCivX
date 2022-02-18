@@ -442,6 +442,12 @@ public:
 		return true; // advc.124
 	}
 	void changeRiverTradeCount(int iChange);
+	// advc.500c:
+	int getNoMilitaryAnger() const
+	{
+		return (m_iNoFearForSafetyCount > 0 ? 0 : GC.getDefineINT(CvGlobals::
+				NO_MILITARY_PERCENT_ANGER));
+	}
 
 	int getVictoryCountdown(VictoryTypes eVictory) const													// Exposed to Python
 	{
@@ -600,6 +606,7 @@ protected:
 	int m_iMasterPower;
 	int m_iEnemyWarWearinessModifier;
 	int m_iRiverTradeCount;
+	int m_iNoFearForSafetyCount; // advc.500c
 	int m_iEspionagePointsEver;
 	// <advc.003m>
 	int m_iMajorWarEnemies; // incl. vassals
@@ -685,6 +692,7 @@ protected:
 	void updatePlotGroupBonus(TechTypes eTech, bool bAdd); // advc
 
 	void processTech(TechTypes eTech, int iChange, /* advc.121: */ bool bEndOfTurn);
+	void changeNoFearForSafetyCount(int iChange); // advc.500c
 
 	void triggerDefensivePacts(TeamTypes eTarget, bool bNewDiplo, bool bPrimary); // advc
 	void cancelDefensivePacts();

@@ -1165,6 +1165,8 @@
 			<bIrrigation>0</bIrrigation>
 			<bIgnoreIrrigation>0</bIgnoreIrrigation>
 			<bWaterWork>0</bWaterWork>
+			<!-- advc.500c -->
+			<bNoFearForSafety>1</bNoFearForSafety>
 			<iGridX>10</iGridX>
 			<iGridY>3</iGridY>
 			<DomainExtraMoves/>

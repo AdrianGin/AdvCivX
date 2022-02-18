@@ -7918,6 +7918,9 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 	//	Free Techs...
 	buildFreeTechString(szBuffer, eTech, true, bPlayerContext);
 
+	// advc.500c:
+	buildNoFearForSafetyString(szBuffer, eTech, true, bPlayerContext);
+
 	//	Line of Sight Bonus across water...
 	buildLOSString(szBuffer, eTech, true, bPlayerContext);
 
@@ -14597,6 +14600,17 @@ void CvGameTextMgr::buildFreeTechString(CvWStringBuffer &szBuffer,
 			}
 		}
 	}
+}
+
+// advc.500c:
+void CvGameTextMgr::buildNoFearForSafetyString(CvWStringBuffer &szBuffer,
+	TechTypes eTech, bool bList, bool bPlayerContext)
+{
+	if (!GC.getInfo(eTech).isNoFearForSafety())
+		return;
+	if (bList)
+		szBuffer.append(NEWLINE);
+	szBuffer.append(gDLL->getText("TXT_KEY_TECH_NO_FEAR_FOR_SAFETY"));
 }
 
 void CvGameTextMgr::buildLOSString(CvWStringBuffer &szBuffer,

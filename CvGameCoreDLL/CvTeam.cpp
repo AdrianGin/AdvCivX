@@ -96,6 +96,7 @@ void CvTeam::reset(TeamTypes eID, bool bConstructorCall)
 	m_iMasterPower = 0;
 	m_iEnemyWarWearinessModifier = 0;
 	m_iRiverTradeCount = 0;
+	m_iNoFearForSafetyCount = 0; // advc.500c
 	m_iEspionagePointsEver = 0;
 	// <advc.003m>
 	m_iMajorWarEnemies = m_iMinorWarEnemies = m_iVassalWarEnemies = 0;
@@ -5490,7 +5491,10 @@ void CvTeam::processTech(TechTypes eTech, int iChange,
 	if (kTech.isRiverTrade())
 	{
 		changeRiverTradeCount(iChange);
-	}
+	// <advc.500c>
+	if (kTech.isNoFearForSafety())
+		changeNoFearForSafetyCount(iChange); // </advc.500c>
+
 	FOR_EACH_ENUM(Building)
 	{
 		if (GC.getInfo(eLoopBuilding).getObsoleteTech() == eTech)
@@ -5580,6 +5584,27 @@ void CvTeam::processTech(TechTypes eTech, int iChange,
 		it->updateCorporation();
 }
 
+// advc.500c:
+void CvTeam::changeNoFearForSafetyCount(int iChange)
+{
+	if (iChange == 0)
+		return;
+	m_iNoFearForSafetyCount += iChange;
+	FAssertBounds(0, getNumMembers() + 1, m_iNoFearForSafetyCount);
+	for (MemberIter itMember(getID()); itMember.hasNext(); ++itMember)
+	{
+		FOR_EACH_CITY_VAR(pCity, *itMember)
+		{
+			if (pCity->getMilitaryHappinessUnits() <= 0)
+			{
+				pCity->AI_setAssignWorkDirty(true);
+				if (isActive())
+					pCity->setInfoDirty(true);
+			}
+		}
+	}
+}
+
 
 void CvTeam::cancelDefensivePacts()
 {
@@ -5641,6 +5666,9 @@ void CvTeam::read(FDataStreamBase* pStream)
 	pStream->Read(&m_iMasterPower);
 	pStream->Read(&m_iEnemyWarWearinessModifier);
 	pStream->Read(&m_iRiverTradeCount);
+	// <advc.500c> (Older saves handled after techs are loaded)
+	if (uiFlag >= 18)
+		pStream->Read(&m_iNoFearForSafetyCount); // </advc.500c>
 	pStream->Read(&m_iEspionagePointsEver);
 	// <advc.003m>
 	if(uiFlag >= 5)
@@ -5932,6 +5960,13 @@ void CvTeam::read(FDataStreamBase* pStream)
 			m_abRevealedBonuses.insert(iBonus, true);
 		}
 	}
+	// <advc.500c> (Citizen assignment gets updated by CvGame::onAllGameDataRead)
+	if (uiFlag < 18)
+	{
+		TechTypes eNationalism = (TechTypes)GC.getInfoTypeForString("TECH_NATIONALISM");
+		if (eNationalism != NO_TECH && isHasTech(eNationalism))
+			m_iNoFearForSafetyCount = 1;
+	} // </advc.500c>
 	// <advc.183> Reveal any destroyed forts (so that aircraft can't rebase to them)
 	if (uiFlag < 13 && isAlive())
 	{
@@ -5983,7 +6018,8 @@ void CvTeam::write(FDataStreamBase* pStream)
 	//uiFlag = 14; // advc.650
 	//uiFlag = 15; // advc (for kekm.38)
 	//uiFlag = 16; // advc.enum: new enum map save behavior
-	uiFlag = 17; // advc.130k
+	//uiFlag = 17; // advc.130k
+	uiFlag = 18; // advc.500c
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iNumMembers);
@@ -6009,6 +6045,7 @@ void CvTeam::write(FDataStreamBase* pStream)
 	pStream->Write(m_iMasterPower);
 	pStream->Write(m_iEnemyWarWearinessModifier);
 	pStream->Write(m_iRiverTradeCount);
+	pStream->Write(m_iNoFearForSafetyCount); // advc.500c
 	pStream->Write(m_iEspionagePointsEver);
 	// <advc.003m>
 	pStream->Write(m_iMajorWarEnemies);

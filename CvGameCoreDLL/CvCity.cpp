@@ -3389,7 +3389,10 @@ int CvCity::getNoMilitaryPercentAnger() const
 	{
 		int iAnger = 0;
 		if (getMilitaryHappinessUnits() == 0)
-			iAnger += GC.getDefineINT(CvGlobals::NO_MILITARY_PERCENT_ANGER);
+		{
+			iAnger += //GC.getDefineINT(CvGlobals::NO_MILITARY_PERCENT_ANGER);
+					GET_TEAM(getTeam()).getNoMilitaryAnger(); // advc.500c
+		}
 		return iAnger;
 	}
 	// <advc.500b>
@@ -3402,7 +3405,7 @@ int CvCity::getNoMilitaryPercentAnger() const
 	/* Currently (as per vanilla) 334, meaning 33.4% of the population get angry.
 	   The caller adds up all the anger percentages (actually permillages)
 	   before rounding, so rounding shouldn't be a concern in this function. */
-	int iMaxAnger = GC.getDefineINT(CvGlobals::NO_MILITARY_PERCENT_ANGER);
+	int iMaxAnger = GET_TEAM(getTeam()).getNoMilitaryAnger(); // advc.500c
 	return iMaxAnger - (iMaxAnger * rActualGarrStr / rTargetGarrStr).floor();
 	// </advc.500b>
 }

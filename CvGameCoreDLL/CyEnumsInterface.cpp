@@ -432,6 +432,9 @@ void CyEnumsPythonInterface()
 		.value("WIDGET_CYCLE_UNIT", WIDGET_CYCLE_UNIT) // advc.154
 		// advc.186b: (for BULL - Zoom City Details)
 		.value("WIDGET_EXAMINE_CITY", WIDGET_EXAMINE_CITY)
+		// advc.500c:
+		.value("WIDGET_HELP_NO_FEAR_FOR_SAFETY", WIDGET_HELP_NO_FEAR_FOR_SAFETY)
+
 		.value("NUM_WIDGET_TYPES", NUM_WIDGET_TYPES)
 		;
 

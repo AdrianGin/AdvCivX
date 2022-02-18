@@ -43,6 +43,8 @@
 	<ElementType name="bIrrigation" content="textOnly" dt:type="boolean"/>
 	<ElementType name="bIgnoreIrrigation" content="textOnly" dt:type="boolean"/>
 	<ElementType name="bWaterWork" content="textOnly" dt:type="boolean"/>
+	<!-- advc.500c -->
+	<ElementType name="bNoFearForSafety" content="textOnly" dt:type="int"/>
 	<ElementType name="iGridX" content="textOnly" dt:type="int"/>
 	<ElementType name="iGridY" content="textOnly" dt:type="int"/>
 	<ElementType name="DomainType" content="textOnly"/>
@@ -146,6 +148,8 @@
 		<element type="bIrrigation"/>
 		<element type="bIgnoreIrrigation"/>
 		<element type="bWaterWork"/>
+		<!-- advc.500c -->
+		<element type="bNoFearForSafety" minOccurs="0"/>
 		<element type="iGridX"/>
 		<element type="iGridY"/>
 		<element type="DomainExtraMoves"/>

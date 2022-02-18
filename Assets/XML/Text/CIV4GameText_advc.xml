@@ -7302,4 +7302,14 @@
 		<German>[COLOR_WARNING_TEXT]%s1_Leader kann keine Geschenke von Ihnen annehmen.[COLOR_REVERT]</German>
 	</TEXT>
 
+	<!-- advc.500c -->
+	<TEXT>
+		<Tag>TXT_KEY_TECH_NO_FEAR_FOR_SAFETY</Tag>
+		<English>[ICON_BULLET]No [ICON_UNHAPPY] in Cities that lack a Military Unit</English>
+		<French>[ICON_BULLET]Aucun [ICON_UNHAPPY] dans les villes qui manquent de protection militaire</French>
+		<German>[ICON_BULLET]Keine [ICON_UNHAPPY] in Städten ohne militärischen Schutz</German>
+		<Italian>[ICON_BULLET]Nessun [ICON_UNHAPPY] nelle città che mancano di difese militari</Italian>
+		<Spanish>[ICON_BULLET]Ningún [ICON_UNHAPPY] en las ciudades que carecen de protección militar</Spanish>
+	</TEXT>
+
 </Civ4GameText>

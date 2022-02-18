@@ -9530,7 +9530,8 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 15; // advc.tsl: new game option
 	//uiFlag = 16; // advc.tsl: map regen counter
 	//uiFlag = 17; // advc.tsl: game options moved around
-	uiFlag = 18; // advc.130c: change in rank hate calc
+	//uiFlag = 18; // advc.130c: change in rank hate calc
+	uiFlag = 19; // advc.500c: Update citizen assignments
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9758,6 +9759,25 @@ void CvGame::onAllGameDataRead()
 		for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
 			itPlayer->AI_updateAttitude();
 	} // </advc.130n>
+	// <advc.500c>
+	if (m_uiSaveFlag < 19)
+	{
+		TechTypes eNationalism = (TechTypes)GC.getInfoTypeForString("TECH_NATIONALISM");
+		if (eNationalism != NO_TECH)
+		{
+			for (PlayerIter<ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+			{
+				if (GET_TEAM(itPlayer->getTeam()).isHasTech(eNationalism))
+				{
+					FOR_EACH_CITY_VAR(pCity, *itPlayer)
+					{
+						if (pCity->getMilitaryHappinessUnits() <= 0)
+							pCity->AI_setAssignWorkDirty(true);
+					}
+				}
+			}
+		}
+	} // </advc.500c>
 	// <advc.172>
 	if (m_uiSaveFlag < 8)
 	{
