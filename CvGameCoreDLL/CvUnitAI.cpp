@@ -13079,7 +13079,7 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 			// City sites already done; not as good an anchor as actual cities.
 			iNearestCityDist *= 2;
 			int const iDistSoftCap = (3 * (kOwner.AI_getCurrEraFactor() + 2)).uround();
-			if (iNearestCityDist > iDistSoftCap) // save time
+			if (iNearestCityDist > iDistSoftCap && iDistSoftCap < 15) // save time
 			{
 				FOR_EACH_CITY(pCity, kOwner)
 				{
