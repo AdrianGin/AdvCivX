@@ -18418,6 +18418,8 @@ bool CvUnitAI::AI_retreatToCity(bool bPrimary, bool bPrioritiseAirlift, int iMax
 	if (pCity != NULL && pCity->getTeam() == getTeam())
 	{
 		if (bEvac && at(pCity->getPlot()) && // scorched earth
+			 // Let's not be a griefer if we'll be dead
+			kOwner.getNumCities() > 1 &&
 			m_pUnitInfo->getUnitCaptureClassType() != NO_UNITCLASS)
 		{
 			/*	(Would be nice to check which player is about to capture the city -
