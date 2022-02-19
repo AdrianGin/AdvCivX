@@ -2130,7 +2130,7 @@ void CvUnitAI::AI_barbAttackMove()
 			/*	advc.300: Don't rage right away. (Don't recall why I had originally
 				only wanted this on slower game speed.) */
 			(//GC.getInfo(kGame.getGameSpeedType()).getBarbPercent() < 125 ||
-			rAggressionRoll < barbarianAggressionChance(rCitiesPerCiv, fixp(1.6))))
+			rAggressionRoll < barbarianAggressionChance(rCitiesPerCiv, 2)))
 		{
 			if (AI_pillageRange(4))
 			{
@@ -2163,7 +2163,9 @@ void CvUnitAI::AI_barbAttackMove()
 			}
 		}
 		else if (//iCivCities > iCivs * 3
-			rAggressionRoll < barbarianAggressionChance(rCitiesPerCiv, 3)) // advc.300
+			// <advc.300>
+			rAggressionRoll < barbarianAggressionChance(rCitiesPerCiv,
+			kGame.isOption(GAMEOPTION_RAGING_BARBARIANS) ? fixp(1.6) : 3)) // </advc.300>
 		{
 			if (AI_cityAttack(1, 15))
 			{
@@ -2201,7 +2203,9 @@ void CvUnitAI::AI_barbAttackMove()
 			}
 		}
 		else if (//iCivCities > iCivs * 2
-			rAggressionRoll < barbarianAggressionChance(rCitiesPerCiv, 2)) // advc.300
+			// <advc.300>
+			rAggressionRoll < barbarianAggressionChance(rCitiesPerCiv,
+			kGame.isOption(GAMEOPTION_RAGING_BARBARIANS) ? fixp(1.25) : 2)) // </advc.300>
 		{
 			if (AI_pillageRange(2))
 				return;
