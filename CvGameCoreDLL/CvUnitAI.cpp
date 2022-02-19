@@ -2972,7 +2972,7 @@ void CvUnitAI::AI_attackCityMove()
 					iCityCapture++;
 				if (pLoopUnit->combatLimit() >= 100)
 					iNoCombatLimit++;
-				//if (iCityCaptureCount > 5 || 3*iCityCaptureCount > getGroup()->getNumUnits())
+				//if (iCityCapture > 5 || 3 * iCityCapture > kGroup.getNumUnits())
 				if ((iCityCapture >= 3 || 2 * iCityCapture > kGroup.getNumUnits()) &&
 					(iNoCombatLimit >= 6 || 3 * iNoCombatLimit > kGroup.getNumUnits()))
 				{
