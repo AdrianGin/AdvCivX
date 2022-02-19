@@ -4905,8 +4905,14 @@ void DramaticArc::evaluate()
 	if (rUtil > 0 && bWillBeAtWar) // Don't encourage phoney or unfair wars ...
 	{
 		int iTheirLostCities = (int)militAnalyst().lostCities(eThey).size();
-		if (iTheirLostCities > 2) // We should be motivated enough (if it's a fair war)
+		if (iTheirLostCities > 2 || // We should be motivated enough (if it's a fair war)
+			// I worry that the AI will go after humans too hard and too often ...
+			(kThey.isHuman() && iTheirLostCities == 1 && kThey.hasCapital() &&
+			militAnalyst().lostCities(eThey).count(kThey.getCapital()->plotNum()) > 0 &&
+			TeamIter<MAJOR_CIV,OTHER_KNOWN_TO>::count(eOurTeam) > 2))
+		{
 			return;
+		}
 		if ((iTheirLostCities == 0 && militAnalyst().conqueredCities(eWe).empty()) ||
 			(militAnalyst().lostPower(eWe, ARMY) + militAnalyst().lostPower(eThey, ARMY)) <
 			std::max(ourCache().getPowerValues()[ARMY]->power(), scaled::epsilon()) / 20)
