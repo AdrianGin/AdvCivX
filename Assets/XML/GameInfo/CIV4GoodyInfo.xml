@@ -33,8 +33,8 @@
 			<Sound>AS2D_GOODY_GOLD</Sound>
 			<!-- advc.314: was 20 / 51 / 51 -->
 			<iGold>25</iGold>
-			<iGoldRand1>26</iGoldRand1>
-			<iGoldRand2>26</iGoldRand2>
+			<iGoldRand1>31</iGoldRand1>
+			<iGoldRand2>31</iGoldRand2>
 			<iMapOffset>0</iMapOffset>
 			<iMapRange>0</iMapRange>
 			<iMapProb>0</iMapProb>
@@ -217,9 +217,9 @@
 				 progress is granted toward a random tech. Set to all three
 				 iGolds to 0 to restore BtS behavior: an entire tech that has
 				 to be flagged bGoodyTech in Civ4TechInfos.xml. -->
-			<iGold>28</iGold>
+			<iGold>23</iGold>
 			<iGoldRand1>20</iGoldRand1>
-			<iGoldRand2>21</iGoldRand2>
+			<iGoldRand2>20</iGoldRand2>
 			<iMapOffset>0</iMapOffset>
 			<iMapRange>0</iMapRange>
 			<iMapProb>0</iMapProb>
