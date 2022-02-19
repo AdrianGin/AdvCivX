@@ -5478,7 +5478,8 @@ void CvTeam::processTech(TechTypes eTech, int iChange,
 		if (kTech.isCommerceFlexible(eLoopCommerce))
 			changeCommerceFlexibleCount(eLoopCommerce, iChange);
 	}
-	if (kTech.isAnyTerrainTrade()) // advc.003t
+	if (kTech.isAnyTerrainTrade() && // advc.003t
+		!isBarbarian()) // advc.300
 	{
 		FOR_EACH_ENUM(Terrain)
 		{
@@ -5486,7 +5487,7 @@ void CvTeam::processTech(TechTypes eTech, int iChange,
 				changeTerrainTradeCount(eLoopTerrain, iChange);
 		}
 	}
-	if (kTech.isRiverTrade())
+	if (kTech.isRiverTrade() /* advc.300: */ && !isBarbarian())
 		changeRiverTradeCount(iChange);
 	// <advc.500c>
 	if (kTech.isNoFearForSafety())
