@@ -19060,8 +19060,11 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 						CvCity const* pCity = GET_PLAYER(
 								i == 0 ? getID() : eOtherPlayer).
 								getCity(pItem->m_iData);
-						if (pCity == NULL || pCity->getLiberationPlayer() == getID())
+						if (pCity == NULL || pCity->getLiberationPlayer() ==
+							(i == 0 ? eOtherPlayer : getID()))
+						{
 							continue;
+						}
 					}
 					eForcePeaceItemType = pItem->m_eItemType;
 				}
