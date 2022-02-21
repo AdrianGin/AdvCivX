@@ -3927,11 +3927,11 @@ DenialTypes CvTeamAI::AI_declareWarTrade(
 				}
 			}
 		}
-		if(eClosestWarEnemy != NO_TEAM)
+		if (eClosestWarEnemy != NO_TEAM)
 		{
 			/*  If any fighting occurred or recently declared, don't treat closeness
 				as 0. (And don't be willing to attack teams with 0 closeness.) */
-			if(iHighestCloseness <= 0 && (GET_TEAM(eClosestWarEnemy).
+			if (iHighestCloseness <= 0 && (GET_TEAM(eClosestWarEnemy).
 				AI_getWarPlan(getID()) == WARPLAN_ATTACKED_RECENT ||
 				AI_getWarPlan(eClosestWarEnemy) == WARPLAN_ATTACKED_RECENT ||
 				AI_getWarSuccess(eClosestWarEnemy) +
@@ -3941,7 +3941,7 @@ DenialTypes CvTeamAI::AI_declareWarTrade(
 			}
 			int iCloseness = AI_teamCloseness(eTarget, DEFAULT_PLAYER_CLOSENESS,
 					true, true);
-			if(iCloseness < iHighestCloseness)
+			if (iCloseness < iHighestCloseness)
 				return DENIAL_TOO_MANY_WARS;
 		}
 		return uwai().declareWarTrade(
@@ -4369,9 +4369,9 @@ void CvTeamAI::AI_setShareWarCounter(TeamTypes eIndex, int iNewValue)
 }
 
 
-void CvTeamAI::AI_changeShareWarCounter(TeamTypes eIndex, int iChange)
+void CvTeamAI::AI_changeShareWarCounter(TeamTypes eTeam, int iChange)
 {
-	AI_setShareWarCounter(eIndex, (AI_getShareWarCounter(eIndex) + iChange));
+	AI_setShareWarCounter(eTeam, AI_getShareWarCounter(eTeam) + iChange);
 }
 
 

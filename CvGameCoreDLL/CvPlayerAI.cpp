@@ -8011,7 +8011,7 @@ int CvPlayerAI::AI_getShareWarAttitude(PlayerTypes ePlayer) const
 			CvTeamAI const& t = *itEnemy;
 			/*  NB: AtWarCount is the number of teams we're at war with, whereas
 				AtWarCounter is the number of turns we've been at war. */
-			if(!t.isAtWar(eTeam) &&
+			if (!t.isAtWar(eTeam) &&
 				kOurTeam.AI_getAtWarCounter(t.getID()) >= 5 &&
 				kOurTeam.AI_getWarSuccess(t.getID()) +
 				t.AI_getWarSuccess(kOurTeam.getID()) > rWSThresh &&
@@ -8342,17 +8342,18 @@ int CvPlayerAI::AI_getRankDifferenceAttitude(PlayerTypes ePlayer) const
 		return 0;
 	return iResult;
 }
-
-int CvPlayerAI::AI_getLostWarAttitude(PlayerTypes ePlayer) const
+#if 0
+int CvPlayerAI::AI_getLostWarAttitude(PlayerTypes ePlayer) const // obsolete
 {
-	FErrorMsg("this function is obsolete");
 	if(GET_TEAM(ePlayer).AI_getWarSuccess(getTeam()) >
 		GET_TEAM(getTeam()).AI_getWarSuccess(TEAMID(ePlayer)))
 	{
 		return GC.getInfo(getPersonalityType()).getLostWarAttitudeChange();
 	}
 	return 0;
-} // END: Show Hidden Attitude Mod </advc.sha>
+}
+#endif
+// END: Show Hidden Attitude Mod </advc.sha>
 
 // advc.130c:
 int CvPlayerAI::AI_knownRankDifference(PlayerTypes eOther,
