@@ -241,9 +241,9 @@ public:
 	int AI_getTeamSizeAttitude(PlayerTypes ePlayer) const;
 	// advc.sha: One function for both BetterRank and WorseRank
 	int AI_getRankDifferenceAttitude(PlayerTypes ePlayer) const;
-	//int AI_getLowRankAttitude(PlayerTypes ePlayer) const; // advc.sha
+	/*int AI_getLowRankAttitude(PlayerTypes ePlayer) const;
 	int AI_getLostWarAttitude(PlayerTypes ePlayer) const;
-	//int AI_getKnownPlayerRank(PlayerTypes ePlayer) const; // advc.sha
+	int AI_getKnownPlayerRank(PlayerTypes ePlayer) const;*/ // advc.sha
 	// END: Show Hidden Attitude Mod
 	int AI_getExpansionistAttitude(PlayerTypes ePlayer) const; // advc.130w
 	void AI_updateIdeologyAttitude(int iChange, CvCity const& kCity); // advc.130n
