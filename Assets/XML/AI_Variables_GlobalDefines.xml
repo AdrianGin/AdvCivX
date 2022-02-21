@@ -275,9 +275,11 @@
 	<!-- by jdog5000 / karadoc -->
 	<!-- -->
 	<Define> <!-- redefine -->
-		<!-- War success value of capturing a city.  BBAI default: 25, BTS 10 -->
+		<!-- War success value of capturing a city.  BBAI: 25, BtS 10
+			 advc.130r: Reduce a little. Caveat: Should be careful about
+			 changing this value, it's used as a baseline in many places. -->
 		<DefineName>WAR_SUCCESS_CITY_CAPTURING</DefineName>
-		<iDefineIntVal>25</iDefineIntVal>
+		<iDefineIntVal>22</iDefineIntVal>
 	</Define>
 	<Define>
 		<!-- Ratio of enemy power to team power for AI to consider running TURTLE (all out defense, no offensive forays) strategy.  
