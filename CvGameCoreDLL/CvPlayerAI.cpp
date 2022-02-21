@@ -7211,19 +7211,16 @@ int CvPlayerAI::AI_refuseToTalkTurns(PlayerTypes ePlayer) const
 	CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
 	CvTeamAI const& kTheirTeam = GET_TEAM(ePlayer);
 	// advc.104: Use team average of RTT war thresh
-	int iR = kOurTeam.AI_refuseToTalkWarThreshold() *
+	scaled r = kOurTeam.AI_refuseToTalkWarThreshold() *
 			(kOurTeam.AI_isChosenWar(kTheirTeam.getID()) ? 2 : 1);
-	int iOurSuccess = 1 + kOurTeam.AI_getWarSuccess(kTheirTeam.getID());
-	int iTheirSuccess = 1 + kTheirTeam.AI_getWarSuccess(getTeam());
-	if (iTheirSuccess > iOurSuccess * 2 &&
-		/* <advc.001> */ iTheirSuccess >= GC.getWAR_SUCCESS_CITY_CAPTURING())
+	scaled rOurSuccess = kOurTeam.AI_getWarSuccess(kTheirTeam.getID());
+	scaled rTheirSuccess = kTheirTeam.AI_getWarSuccess(getTeam());
+	if (rTheirSuccess > rOurSuccess * 2 &&
+		/* advc.001: */ rTheirSuccess >= GC.getWAR_SUCCESS_CITY_CAPTURING())
 	{
-		/*  Otherwise, killing a single stray unit can be enough to lower
-			the refuse duration to three turns (ratio 5:1). </advc.001> */
-		iR *= 20 + (80 * iOurSuccess * 2) / iTheirSuccess;
-		iR /= 100;
+		r *= fixp(0.2) + fixp(0.8) * 2 * rOurSuccess / rTheirSuccess;
 	}
-	return iR;
+	return r.uround();
 }
 
 // XXX what if already at war???
@@ -7682,10 +7679,10 @@ int CvPlayerAI::AI_getWarAttitude(PlayerTypes ePlayer, /* advc.sha: */ int iPart
 		int iAttitudeChange = (GET_TEAM(getTeam()).AI_getAtWarCounter(TEAMID(ePlayer)) /
 				GC.getInfo(getPersonalityType()).getAtWarAttitudeDivisor());
 		// <advc.sha> Factor war success into WarAttitude
-		iAttitudeChange = ((-iAttitudeChange) +
+		iAttitudeChange = (((-iAttitudeChange) +
 				// Mean of time-based penalty and a penalty based on success and era
 				GET_TEAM(ePlayer).AI_getWarSuccess(getTeam()) /
-				warSuccessAttitudeDivisor()) / -2; // </advc.sha>
+				warSuccessAttitudeDivisor()) / -2).round(); // </advc.sha>
 		int iLimit = abs(GC.getInfo(getPersonalityType()).
 				getAtWarAttitudeChangeLimit()); // advc
 		iAttitude += range(iAttitudeChange, -iLimit, iLimit);
@@ -8708,8 +8705,9 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 			CvTeamAI const& kEnemy = *itEnemy; // advc (note): Could be kOurTeam
 
 			int const iPeaceTeamSuccess = GET_TEAM(ePeaceTeam).
-					AI_getWarSuccess(kEnemy.getID());
-			int const iOtherTeamSuccess = kEnemy.AI_getWarSuccess(ePeaceTeam);
+					AI_getWarSuccess(kEnemy.getID()).uround();
+			int const iOtherTeamSuccess = kEnemy.
+					AI_getWarSuccess(ePeaceTeam).uround();
 			int const iOtherTeamPower = kEnemy.getPower(true);
 			if (iPeaceTeamSuccess * iPeaceTeamPower >
 				(iOtherTeamSuccess + iSuccessScale) * iOtherTeamPower)
@@ -16229,7 +16227,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 	if (bWarPlan)
 	{
 		bWarPlan = false;
-		int iEnemyWarSuccess = 0;
+		scaled rEnemyWarSuccess;
 		for (TeamAIIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itEnemy(getTeam());
 			itEnemy.hasNext(); ++itEnemy)
 		{
@@ -16246,17 +16244,17 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 				bWarPlan = true;
 				break;
 			}
-			iEnemyWarSuccess += itEnemy->AI_getWarSuccess(getTeam());
+			rEnemyWarSuccess += itEnemy->AI_getWarSuccess(getTeam());
 		}
 		if (!bWarPlan)
 		{
-			if (iEnemyWarSuccess > std::min(iCities, 4) *
+			if (rEnemyWarSuccess > std::min(iCities, 4) *
 				GC.getWAR_SUCCESS_CITY_CAPTURING())
 			{
 				// Lots of fighting, so war is real
 				bWarPlan = true;
 			}
-			else if (iEnemyWarSuccess > std::min(iCities, 2) *
+			else if (rEnemyWarSuccess > std::min(iCities, 2) *
 				GC.getWAR_SUCCESS_CITY_CAPTURING())
 			{
 				if (kTeam.AI_getEnemyPowerPercent() > 120)

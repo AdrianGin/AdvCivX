@@ -1208,9 +1208,9 @@ int UWAI::Team::peaceThreshold(TeamTypes eTarget) const
 		r += (1 - rPrideRating) * 40 - 30;
 	}
 	r += scaled::min(15, kAgent.AI_getAtWarCounter(eTarget) +
-				scaled(2 * kAgent.AI_getWarSuccess(eTarget) +
-				4 * kTarget.AI_getWarSuccess(eTarget),
-				GC.getWAR_SUCCESS_CITY_CAPTURING()));
+				(2 * kAgent.AI_getWarSuccess(eTarget) +
+				4 * kTarget.AI_getWarSuccess(eTarget)) /
+				GC.getWAR_SUCCESS_CITY_CAPTURING());
 	int iR = r.round();
 	if (!kTarget.isHuman())
 	{
@@ -1890,10 +1890,11 @@ int UWAI::Team::endWarVal(TeamTypes eEnemy) const
 		if (kAI.AI_getMemoryCount(kHuman.getID(), MEMORY_DECLARED_WAR) > 0 &&
 			kAI.getNumCities() > 0)
 		{
-			int iWSDelta = std::max(0, kHuman.AI_getWarSuccess(kAI.getID()) -
-					kAI.AI_getWarSuccess(kHuman.getID()));
-			scaled rWSAdjustment(4 * iWSDelta,
-					(GC.getWAR_SUCCESS_CITY_CAPTURING() * kAI.getNumCities()));
+			scaled rWSDelta = scaled::max(0,
+					kHuman.AI_getWarSuccess(kAI.getID())
+					-kAI.AI_getWarSuccess(kHuman.getID()));
+			scaled rWSAdjustment = (4 * rWSDelta) /
+					(GC.getWAR_SUCCESS_CITY_CAPTURING() * kAI.getNumCities());
 			rWSAdjustment.decreaseTo(1);
 			r *= rWSAdjustment;
 		}
@@ -2789,9 +2790,11 @@ scaled UWAI::Player::confidenceFromWarSuccess(TeamTypes eTarget) const
 	FAssert(std::abs(iTurnsAtWar - kTarget.AI_getAtWarCounter(kAgent.getID())) <= 2);
 	if (iTurnsAtWar <= 0)
 		return -1;
-	int const iAgentSuccess = std::max(1, kAgent.AI_getWarSuccess(eTarget));
-	int const iTargetSuccess = std::max(1, kTarget.AI_getWarSuccess(kAgent.getID()));
-	scaled rSuccessRatio = (iAgentSuccess, iTargetSuccess);
+	scaled const rAgentSuccess = std::max(scaled::epsilon(),
+			kAgent.AI_getWarSuccess(eTarget));
+	scaled const rTargetSuccess = std::max(scaled::epsilon(),
+			kTarget.AI_getWarSuccess(kAgent.getID()));
+	scaled rSuccessRatio = rAgentSuccess / rTargetSuccess;
 	scaled const rFixedBound = fixp(0.5);
 	// Reaches rFixedBound after 20 turns
 	scaled rTimeBasedBound = (100 - fixp(2.5) * iTurnsAtWar) / 100;
@@ -2804,7 +2807,7 @@ scaled UWAI::Player::confidenceFromWarSuccess(TeamTypes eTarget) const
 		scaled rProgressFactor = 11 - kAgent.AI_getCurrEraFactor() * fixp(1.5);
 		rProgressFactor.increaseTo(3);
 		rTotalBasedBound = (100 - (rProgressFactor *
-				(iAgentSuccess + iTargetSuccess)) / iTurnsAtWar) / 100;
+				(rAgentSuccess + rTargetSuccess)) / iTurnsAtWar) / 100;
 	}
 	scaled r = rSuccessRatio;
 	r.clamp(rFixedBound, 2 - rFixedBound);

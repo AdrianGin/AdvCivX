@@ -63,7 +63,7 @@ void CvTeamAI::AI_reset(bool bConstructor)
 	m_aiOpenBordersCounter.reset();
 	m_aiDefensivePactCounter.reset();
 	m_aiShareWarCounter.reset();
-	m_aiWarSuccess.reset();
+	m_arWarSuccess.reset();
 	m_aiSharedWarSuccess.reset(); // advc.130m
 	m_aiEnemyPeacetimeTradeValue.reset();
 	m_aiEnemyPeacetimeGrantValue.reset();
@@ -80,7 +80,7 @@ void CvTeamAI::AI_reset(bool bConstructor)
 			kLoopTeam.m_aiOpenBordersCounter.set(getID(), 0);
 			kLoopTeam.m_aiDefensivePactCounter.set(getID(), 0);
 			kLoopTeam.m_aiShareWarCounter.set(getID(), 0);
-			kLoopTeam.m_aiWarSuccess.set(getID(), 0);
+			kLoopTeam.m_arWarSuccess.set(getID(), 0);
 			kLoopTeam.m_aiSharedWarSuccess.set(getID(), 0); // advc.130m
 			kLoopTeam.m_aiEnemyPeacetimeTradeValue.set(getID(), 0);
 			kLoopTeam.m_aiEnemyPeacetimeGrantValue.set(getID(), 0);
@@ -1805,7 +1805,7 @@ int CvTeamAI::AI_endWarVal(TeamTypes eTeam) const // XXX this should consider ar
 	iValue += kWarTeam.getNumCities() * 3;
 	iValue += getTotalPopulation();
 	iValue += kWarTeam.getTotalPopulation();
-	iValue += kWarTeam.AI_getWarSuccess(getID()) * 20;
+	iValue += (kWarTeam.AI_getWarSuccess(getID()) * 20).uround();
 
 	int const iOurPower = std::max(1, getPower(true));
 	int const iTheirPower = std::max(1, kWarTeam.getDefensivePower(getID()));
@@ -2586,28 +2586,25 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 			std::max(1, itMember.nextIndex())));
 	if (bWar)
 	{
-		int iTheirSuccess = std::max(10, kMasterTeam.AI_getWarSuccess(getID()));
-		int iOurSuccess = std::max(10, AI_getWarSuccess(eMasterTeam));
-		int iOthersBestSuccess = 0;
+		scaled rTheirSuccess = scaled::max(10, kMasterTeam.AI_getWarSuccess(getID()));
+		scaled rOurSuccess = scaled::max(10, AI_getWarSuccess(eMasterTeam));
+		scaled rOthersBestSuccess;
 		for (TeamAIIter<MAJOR_CIV,ENEMY_OF> it(getID()); it.hasNext(); ++it)
 		{
 			CvTeamAI const& kEnemy = *it;
 			/*  advc.112: War success of a vassal shouldn't spoil its
 				master's chances of winning another vassal. */
 			if (kEnemy.getMasterTeam() != eMasterTeam)
-			{
-				iOthersBestSuccess = std::max(iOthersBestSuccess,
-						kEnemy.AI_getWarSuccess(getID()));
-			}
+				rOthersBestSuccess.increaseTo(kEnemy.AI_getWarSuccess(getID()));
 		}
 
 		// Discourage capitulation to a team that has not done the most damage
-		if (iTheirSuccess < iOthersBestSuccess)
-			iOurSuccess += iOthersBestSuccess - iTheirSuccess;
+		if (rTheirSuccess < rOthersBestSuccess)
+			rOurSuccess += rOthersBestSuccess - rTheirSuccess;
 		// <advc.112> Instead multiply VassalPower by the inverse factor
 		//rMasterPower = (2 * rMasterPower * iTheirSuccess) / (iTheirSuccess + iOurSuccess);
-		rVassalPower *= (iTheirSuccess + iOurSuccess) /
-				(fixp(1.8) * iTheirSuccess); // Slightly reduce the coefficient
+		rVassalPower *= (rTheirSuccess + rOurSuccess) /
+				(fixp(1.8) * rTheirSuccess); // Slightly reduce the coefficient
 		// FURIOUS clause added; WorstEnemy doesn't say much when at war.
 		if (AI_getWorstEnemy() == eMasterTeam && eTowardMaster <= ATTITUDE_FURIOUS)
 			rMasterPower *= per100(90); // was 75%
@@ -2831,8 +2828,8 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 		/*  BETTER_BTS_AI_MOD, Diplomacy AI, 12/07/09, jdog5000: START
 			Scale better for small empires, particularly necessary if WAR_SUCCESS_CITY_CAPTURING > 10 */
 		// <advc> For debugger:
-		int iVassalSuccess = AI_getWarSuccess(eMasterTeam);
-		int iMasterSuccess = kMasterTeam.AI_getWarSuccess(getID());
+		scaled rVassalSuccess = AI_getWarSuccess(eMasterTeam);
+		scaled rMasterSuccess = kMasterTeam.AI_getWarSuccess(getID());
 		int iTargetDelta = std::min(getNumCities(), 4) *
 				GC.getWAR_SUCCESS_CITY_CAPTURING(); // </advc>
 		// <advc.104>
@@ -2856,7 +2853,7 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 			if (iPastWarScore < 0)
 				iTargetDelta = fmath::round(iTargetDelta * 2 / 3.0);
 		} // </advc.104o>
-		if (iVassalSuccess + iTargetDelta > iMasterSuccess)
+		if (rVassalSuccess + iTargetDelta > rMasterSuccess)
 			return DENIAL_POWER_US;
 		if(!kMasterTeam.isHuman())
 		{
@@ -2986,11 +2983,11 @@ int CvTeamAI::AI_getWarSuccessRating() const
 
 	for (TeamAIIter<FREE_MAJOR_CIV,ENEMY_OF> itEnemy(getID()); itEnemy.hasNext(); ++itEnemy)
 	{
-		int iThisTeamSuccess = AI_getWarSuccess(itEnemy->getID());
-		int iOtherTeamSuccess = itEnemy->AI_getWarSuccess(getID());
+		scaled rThisTeamSuccess = AI_getWarSuccess(itEnemy->getID());
+		scaled rOtherTeamSuccess = itEnemy->AI_getWarSuccess(getID());
 		int iOtherTeamPower = itEnemy->getPower(true);
-		iScore += (iThisTeamSuccess + iSuccessScale) * iThisTeamPower;
-		iScore -= (iOtherTeamSuccess + iSuccessScale) * iOtherTeamPower;
+		iScore += (rThisTeamSuccess + iSuccessScale).uround() * iThisTeamPower;
+		iScore -= (rOtherTeamSuccess + iSuccessScale).uround() * iOtherTeamPower;
 	}
 	iScore = range((100 * iScore) / std::max(1, iThisTeamPower * iSuccessScale * 5),
 			-99, 99);
@@ -3740,7 +3737,7 @@ int CvTeamAI::AI_declareWarTradeValLegacy(TeamTypes eWarTeam, TeamTypes eTeam) c
 	else
 	{
 		iValue *= 150;
-		iValue /= 100 + (50 * std::min(100, (100 * AI_getWarSuccess(eWarTeam)) /
+		iValue /= 100 + (50 * std::min(100, AI_getWarSuccess(eWarTeam).getPercent() /
 				(8 + getTotalPopulation(false)))) / 100;
 	}
 
@@ -3935,7 +3932,7 @@ DenialTypes CvTeamAI::AI_declareWarTrade(
 				AI_getWarPlan(getID()) == WARPLAN_ATTACKED_RECENT ||
 				AI_getWarPlan(eClosestWarEnemy) == WARPLAN_ATTACKED_RECENT ||
 				AI_getWarSuccess(eClosestWarEnemy) +
-				GET_TEAM(eClosestWarEnemy).AI_getWarSuccess(getID()) > 0))
+				GET_TEAM(eClosestWarEnemy).AI_getWarSuccess(getID()) >= 1))
 			{
 				iHighestCloseness = 1;
 			}
@@ -4375,52 +4372,52 @@ void CvTeamAI::AI_changeShareWarCounter(TeamTypes eTeam, int iChange)
 }
 
 
-void CvTeamAI::AI_setWarSuccess(TeamTypes eIndex, int iNewValue)
+void CvTeamAI::AI_setWarSuccess(TeamTypes eTeam, scaled rNewValue)
 {
-	m_aiWarSuccess.set(eIndex, iNewValue);
-	FAssert(AI_getWarSuccess(eIndex) >= 0);
+	m_arWarSuccess.set(eTeam, rNewValue);
+	FAssert(AI_getWarSuccess(eTeam) >= 0);
 }
 
 
-void CvTeamAI::AI_changeWarSuccess(TeamTypes eIndex, int iChange)
+void CvTeamAI::AI_changeWarSuccess(TeamTypes eTeam, scaled rChange)
 {
-	AI_setWarSuccess(eIndex, (AI_getWarSuccess(eIndex) + iChange));
+	AI_setWarSuccess(eTeam, AI_getWarSuccess(eTeam) + rChange);
 	// <advc.130m>
-	if(iChange <= 0 || eIndex == BARBARIAN_TEAM || isBarbarian())
+	if (rChange <= 0 || eTeam == BARBARIAN_TEAM || isBarbarian())
 		return;
 
 	for (TeamAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
 	{
 		CvTeamAI& kWarAlly = *it;
-		if(eIndex == kWarAlly.getID() || kWarAlly.getID() == getID())
+		if (eTeam == kWarAlly.getID() || kWarAlly.getID() == getID())
 			continue;
 		// Let our allies know that we've had a war success
-		if(kWarAlly.isAtWar(eIndex) && !kWarAlly.isAtWar(getID()))
-			kWarAlly.AI_reportSharedWarSuccess(iChange, getID(), eIndex);
+		if(kWarAlly.isAtWar(eTeam) && !kWarAlly.isAtWar(getID()))
+			kWarAlly.AI_reportSharedWarSuccess(rChange, getID(), eTeam);
 		/*  Let the allies of our enemy know that their ally has suffered a loss
 			from us, their shared enemy */
-		if(!kWarAlly.isAtWar(eIndex) && kWarAlly.isAtWar(getID()))
-			kWarAlly.AI_reportSharedWarSuccess(iChange, eIndex, getID());
+		if(!kWarAlly.isAtWar(eTeam) && kWarAlly.isAtWar(getID()))
+			kWarAlly.AI_reportSharedWarSuccess(rChange, eTeam, getID());
 	}
 }
 
 // advc:
-int CvTeamAI::AI_countEnemyWarSuccess() const
+scaled CvTeamAI::AI_countEnemyWarSuccess() const
 {
-	int iR = 0;
+	scaled r;
 	for (TeamAIIter<CIV_ALIVE,ENEMY_OF> itEnemy(getID());
 		itEnemy.hasNext(); ++itEnemy)
 	{
-		iR += itEnemy->AI_getWarSuccess(getID());
+		r += itEnemy->AI_getWarSuccess(getID());
 	}
-	return iR;
+	return r;
 }
 
 /*  eEnemy is a war enemy that this team and eWarAlly have in common.
 	Either eWarAlly has inflicted a war success on eEnemy or vice versa.
 	This team is being informed about the war success, and
-	iIntensity says how significant the war success was. */
-void CvTeamAI::AI_reportSharedWarSuccess(int iIntensity, TeamTypes eWarAlly,
+	rIntensity says how significant the war success was. */
+void CvTeamAI::AI_reportSharedWarSuccess(scaled rIntensity, TeamTypes eWarAlly,
 	TeamTypes eEnemy, // (doesn't currently matter)
 	// True means: don't check if this team needs the assistance
 	bool bIgnoreDistress)
@@ -4456,7 +4453,7 @@ void CvTeamAI::AI_reportSharedWarSuccess(int iIntensity, TeamTypes eWarAlly,
 	scaled rBrakeFactor = scaled::max(0, 1 - scaled(iOldValue, 5000));
 	int const iPrecision = 100; // Precision of what we'll store (in an int)
 	int iNewValue = iOldValue +
-			((rBrakeFactor * iPrecision * rDistress * iIntensity) /
+			((rBrakeFactor * iPrecision * rDistress * rIntensity) /
 			/*  Use number of cities as an indicator of how capable the war ally is
 				militarily - how difficult was this war success to accomplish, or
 				how big a sacrifice was the loss. */
@@ -4936,7 +4933,16 @@ void CvTeamAI::read(FDataStreamBase* pStream)
 		m_aiOpenBordersCounter.read(pStream);
 		m_aiDefensivePactCounter.read(pStream);
 		m_aiShareWarCounter.read(pStream);
-		m_aiWarSuccess.read(pStream);
+		if (uiFlag >= 9) // advc.130r
+			m_arWarSuccess.read(pStream);
+		// <advc.130r>
+		else
+		{
+			ArrayEnumMap<TeamTypes,int> aiWarSuccess;
+			aiWarSuccess.read(pStream);
+			FOR_EACH_ENUM(Team)
+				m_arWarSuccess.set(eLoopTeam, aiWarSuccess.get(eLoopTeam));
+		} // </advc.130r>
 		m_aiSharedWarSuccess.read(pStream); // advc.130m
 	}
 	else
@@ -4948,7 +4954,12 @@ void CvTeamAI::read(FDataStreamBase* pStream)
 		m_aiOpenBordersCounter.readArray<int>(pStream);
 		m_aiDefensivePactCounter.readArray<int>(pStream);
 		m_aiShareWarCounter.readArray<int>(pStream);
-		m_aiWarSuccess.readArray<int>(pStream);
+		// <advc.130r>
+		ArrayEnumMap<TeamTypes,int> aiWarSuccess;
+		aiWarSuccess.readArray<int>(pStream);
+		FOR_EACH_ENUM(Team)
+			m_arWarSuccess.set(eLoopTeam, aiWarSuccess.get(eLoopTeam));
+		// </advc.130r>
 		m_aiSharedWarSuccess.readArray<int>(pStream); // advc.130m
 	}
 	/*	<advc.130k> CvTeam keeps an accurate count now, our count is randomized.
@@ -5045,7 +5056,8 @@ void CvTeamAI::write(FDataStreamBase* pStream)
 	//uiFlag = 5; // advc.650
 	//uiFlag = 6; // advc.enum: new enum map save behavior
 	//uiFlag = 7; // advc.130n (Now handled w/o extra data)
-	uiFlag = 8; // advc.130k: To support CvTeam::m_aiTurnsAtPeace
+	//uiFlag = 8; // advc.130k: To support CvTeam::m_aiTurnsAtPeace
+	uiFlag = 9; // advc.130r
 	pStream->Write(uiFlag);
 
 	m_aiWarPlanStateCounter.write(pStream);
@@ -5055,7 +5067,7 @@ void CvTeamAI::write(FDataStreamBase* pStream)
 	m_aiOpenBordersCounter.write(pStream);
 	m_aiDefensivePactCounter.write(pStream);
 	m_aiShareWarCounter.write(pStream);
-	m_aiWarSuccess.write(pStream);
+	m_arWarSuccess.write(pStream);
 	m_aiSharedWarSuccess.write(pStream); // advc.130m
 	m_aiEnemyPeacetimeTradeValue.write(pStream);
 	m_aiEnemyPeacetimeGrantValue.write(pStream);
@@ -5131,7 +5143,7 @@ void CvTeamAI::AI_forgiveEnemy(TeamTypes eEnemyTeam, bool bCapitulated, bool bFr
 	bCapitulated = (bCapitulated || GET_TEAM(eEnemyTeam).isCapitulated());
 	if(bCapitulated)
 		iDelta--;
-	int iWS = GET_TEAM(eEnemyTeam).AI_getWarSuccess(getID());
+	scaled rWS = GET_TEAM(eEnemyTeam).AI_getWarSuccess(getID());
 	for (MemberAIIter itMember(getID()); itMember.hasNext(); ++itMember)
 	{
 		CvPlayerAI& kMember = *itMember;
@@ -5146,7 +5158,8 @@ void CvTeamAI::AI_forgiveEnemy(TeamTypes eEnemyTeam, bool bCapitulated, bool bFr
 			// </advc.130f>
 		} // </advc.104i>
 		// No vassal-related forgiveness when war success high
-		iDelta = std::min(0, iDelta + iWS / kMember.warSuccessAttitudeDivisor());
+		iDelta = std::min(0, iDelta +
+				(rWS / kMember.warSuccessAttitudeDivisor()).round());
 		for (MemberIter itEnemy(eEnemyTeam); itEnemy.hasNext(); ++itEnemy)
 		{
 			CvPlayer const& kEnemyMember = *itEnemy;
@@ -5156,7 +5169,7 @@ void CvTeamAI::AI_forgiveEnemy(TeamTypes eEnemyTeam, bool bCapitulated, bool bFr
 				no other forgiveness condition applies, and not (times 0) in the
 				Ancient era (attacks on Workers and Settlers). */
 			if (iLimit <= -3 && iDelta >= 0 &&
-				iWS < fixp(0.3) * AI_getCurrEraFactor() * GC.getWAR_SUCCESS_CITY_CAPTURING())
+				rWS < fixp(0.3) * AI_getCurrEraFactor() * GC.getWAR_SUCCESS_CITY_CAPTURING())
 			{
 				iDeltaLoop--;
 			}
@@ -5195,7 +5208,7 @@ void CvTeamAI::AI_thankLiberator(TeamTypes eLiberator)
 		{
 			CvPlayerAI& kLiberatorMember = *itLib;
 			int iMemory = std::max(0, 2 -
-					GET_TEAM(eLiberator).AI_getWarSuccess(getID()) / iWSDivisor);
+					(GET_TEAM(eLiberator).AI_getWarSuccess(getID()) / iWSDivisor).round());
 			kOurMember.AI_changeMemoryCount(kLiberatorMember.getID(), MEMORY_INDEPENDENCE,
 					2 * iMemory); // advc.130j: doubled
 		}
@@ -5716,10 +5729,9 @@ void CvTeamAI::AI_doCounter()
 		// </advc.130p>
 		// <advc.130r>
 		{	// Double decay rate for war success
-			int iWSOld = AI_getWarSuccess(eOther);
-			int iWSNew = (iWSOld * std::max(fixp(0.5),
-					1 - 2 * AI_getDiploDecay())).floor();
-			AI_setWarSuccess(eOther, iWSNew);
+			scaled rWSOld = AI_getWarSuccess(eOther);
+			scaled rWSNew = rWSOld * std::max(fixp(0.5), 1 - 2 * AI_getDiploDecay());
+			AI_setWarSuccess(eOther, rWSNew);
 		} // </advc.130r>
 	}
 }

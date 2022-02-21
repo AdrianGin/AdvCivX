@@ -9532,7 +9532,8 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 16; // advc.tsl: map regen counter
 	//uiFlag = 17; // advc.tsl: game options moved around
 	//uiFlag = 18; // advc.130c: change in rank hate calc
-	uiFlag = 19; // advc.500c: Update citizen assignments
+	//uiFlag = 19; // advc.500c: Update citizen assignments
+	uiFlag = 20; // advc.130r: Update war attitude
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9760,6 +9761,18 @@ void CvGame::onAllGameDataRead()
 		for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
 			itPlayer->AI_updateAttitude();
 	} // </advc.130n>
+	// <advc.130r>
+	else if (m_uiSaveFlag < 20)
+	{
+		for (TeamAIIter<MAJOR_CIV> itTeam; itTeam.hasNext(); ++itTeam)
+		{
+			for (TeamIter<MAJOR_CIV,ENEMY_OF> itEnemy(itTeam->getID());
+				itEnemy.hasNext(); ++itEnemy)
+			{
+				itTeam->AI_updateAttitude(itEnemy->getID(), false);
+			}
+		}
+	} // </advc.130r>
 	// <advc.500c>
 	if (m_uiSaveFlag < 19)
 	{

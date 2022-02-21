@@ -1733,7 +1733,7 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 			if (bEverOwned)
 			{
 				GET_TEAM(eOldOwner).AI_changeWarSuccess(itOtherEnemy->getID(),
-						-std::min(GC.getWAR_SUCCESS_CITY_CAPTURING(),
+						-scaled::min(GC.getWAR_SUCCESS_CITY_CAPTURING(),
 						GET_TEAM(eOldOwner).AI_getWarSuccess(itOtherEnemy->getID())));
 			}
 		} // </advc.123d>

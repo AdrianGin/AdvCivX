@@ -3888,13 +3888,13 @@ void CvDLLWidgetData::parseScoreboardCheatText(CvWidgetDataStruct &widgetDataStr
 						szWarplan.getCString(),
 						TEXT_COLOR((iOtherValue < iTheirValue) ?
 						"COLOR_POSITIVE_TEXT" : "COLOR_NEGATIVE_TEXT"),
-						iOtherValue, kTeam.AI_getWarSuccess(itEnemy->getID()),
+						iOtherValue, kTeam.AI_getWarSuccess(itEnemy->getID()).uround(),
 						TEXT_COLOR((iOtherValue < iTheirValue) ?
 						"COLOR_POSITIVE_TEXT" : "COLOR_NEGATIVE_TEXT"),
 						itEnemy->getName().GetCString(),
 						TEXT_COLOR((iTheirValue < iOtherValue) ?
 						"COLOR_POSITIVE_TEXT" : "COLOR_NEGATIVE_TEXT"),
-						iTheirValue, itEnemy->AI_getWarSuccess(eTeam)));
+						iTheirValue, itEnemy->AI_getWarSuccess(eTeam).uround()));
 			}
 		}
 		if (kTeam.AI_isAnyWarPlan()) // double space if had any war

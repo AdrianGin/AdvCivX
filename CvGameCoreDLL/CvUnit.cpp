@@ -8522,7 +8522,8 @@ void CvUnit::setXY(int iX, int iY, bool bGroup, bool bUpdate, bool bShow, bool b
 				/*  advc.123d: Make it only +150% for capital. (Tbd.: Check if
 					it's the original capital - but how to check?) */
 				GET_TEAM(getTeam()).AI_changeWarSuccess(pNewCity->getTeam(),
-						(pNewCity->isCapital() ? 3 : 2) * GC.getWAR_SUCCESS_CITY_CAPTURING()/2);
+						(pNewCity->isCapital() ? 3 : 2) *
+						scaled(GC.getWAR_SUCCESS_CITY_CAPTURING(), 2));
 
 				PlayerTypes eNewOwner = GET_PLAYER(getOwner()).pickConqueredCityOwner(*pNewCity);
 				if (eNewOwner != NO_PLAYER)

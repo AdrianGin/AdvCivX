@@ -242,15 +242,16 @@ public:
 	void AI_setShareWarCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeShareWarCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getWarSuccess(TeamTypes eIndex) const										 // Exposed to Python
+	// advc.130r: Use scaled for increased precision
+	scaled AI_getWarSuccess(TeamTypes eIndex) const											// Exposed to Python
 	{
-		return m_aiWarSuccess.get(eIndex);
+		return m_arWarSuccess.get(eIndex);
 	}
-	void AI_setWarSuccess(TeamTypes eIndex, int iNewValue);
-	void AI_changeWarSuccess(TeamTypes eIndex, int iChange);
-	int AI_countEnemyWarSuccess() const; // advc
+	void AI_setWarSuccess(TeamTypes eTeam, scaled rNewValue);
+	void AI_changeWarSuccess(TeamTypes eITeam, scaled rChange);
+	scaled AI_countEnemyWarSuccess() const; // advc
 	// <advc.130m>
-	void AI_reportSharedWarSuccess(int iIntensity, TeamTypes eWarAlly,
+	void AI_reportSharedWarSuccess(scaled rIntensity, TeamTypes eWarAlly,
 			TeamTypes eEnemy, bool bIgnoreDistress = false);
 	/*  The war success of our war ally against a shared enemy, plus the war success
 		of shared enemies against our war ally. This is quite different from AI_getWarSuccess,
@@ -365,7 +366,7 @@ protected:
 	ArrayEnumMap<TeamTypes,int,short> m_aiOpenBordersCounter;
 	ArrayEnumMap<TeamTypes,int,short> m_aiDefensivePactCounter;
 	ArrayEnumMap<TeamTypes,int,short> m_aiShareWarCounter;
-	ArrayEnumMap<TeamTypes,int> m_aiWarSuccess;
+	ArrayEnumMap<TeamTypes,scaled> m_arWarSuccess; // advc.130r: was V=int
 	ArrayEnumMap<TeamTypes,int> m_aiSharedWarSuccess; // advc.130m
 	ArrayEnumMap<TeamTypes,int> m_aiEnemyPeacetimeTradeValue;
 	ArrayEnumMap<TeamTypes,int> m_aiEnemyPeacetimeGrantValue;
