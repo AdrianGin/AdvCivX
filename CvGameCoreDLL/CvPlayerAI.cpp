@@ -26253,9 +26253,17 @@ int CvPlayerAI::AI_getTotalFloatingDefendersNeeded(CvArea const& kArea, // advc:
 				rEnemyCityFactor) / 3;
 	}
 	{
-		int const iEra = std::max(0, getCurrentEra() - kGame.getStartEra() / 2);
-		// advc.107: Was ...?3:2 in numerator, 3 in denominator.
-		rDefenders.mulDiv(iEra + (kGame.getMaxCityElimination() > 0 ? 5 : 4), 6);
+		scaled rEra(getCurrentEra() - kGame.getStartEra(), 2);
+		rEra.increaseTo(0);
+		// advc.107: Was ...?3:2
+		rDefenders *= rEra + (kGame.getMaxCityElimination() > 0 ? 5 : 4);
+		rDefenders /= 6; // advc.107: was 3
+		// <advc.107> Avoid delaying 2nd city too much
+		if (getCurrentEra() == kGame.getStartEra() &&
+			rEra == 0 && getNumCities() <= 1 && AI_getNumCitySites() > 0)
+		{
+			rDefenders *= fixp(0.83);
+		} // </advc.107>
 	}
 	// K-Mod end
 	if (eAreaAI == AREAAI_DEFENSIVE)
