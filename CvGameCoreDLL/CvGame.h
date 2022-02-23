@@ -1103,7 +1103,7 @@ protected:
 			bool bOnlyWithinArea = false, scaled rInertia = 0); // advc.027
 	void applyStartingLocHandicaps(/* advc.027: */ NormalizationTarget const* pStartValues);
 	template<class Agent>
-	sortByStartingLocHandicap(
+	void sortByStartingLocHandicap(
 			std::vector<std::pair<Agent*,int> > const& kStartingLocPercentPerAgent,
 			std::vector<Agent*>& kResult); // </advc.108b>
 	int getTeamClosenessScore( // <advc>

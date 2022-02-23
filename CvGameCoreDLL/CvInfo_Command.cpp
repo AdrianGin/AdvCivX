@@ -153,9 +153,9 @@ int CvActionInfo::getMissionType() const
 	case ACTIONSUBTYPE_BUILD:
 		return (MissionTypes)GC.getInfo((BuildTypes)m_iOriginalIndex).getMissionType();
 	case ACTIONSUBTYPE_RELIGION:
-		return (MissionTypes)GC.getInfo((ReligionTypes)m_iOriginalIndex).getMissionType();
+		return GC.getInfo((ReligionTypes)m_iOriginalIndex).getMissionType();
 	case ACTIONSUBTYPE_CORPORATION:
-		return (MissionTypes)GC.getInfo((CorporationTypes)m_iOriginalIndex).getMissionType();
+		return GC.getInfo((CorporationTypes)m_iOriginalIndex).getMissionType();
 	case ACTIONSUBTYPE_SPECIALIST:
 		return (MissionTypes)GC.getInfo((SpecialistTypes)m_iOriginalIndex).getMissionType();
 	case ACTIONSUBTYPE_BUILDING:

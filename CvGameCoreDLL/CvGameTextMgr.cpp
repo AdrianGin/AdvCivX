@@ -13999,10 +13999,11 @@ void CvGameTextMgr::setReligionHelp(CvWStringBuffer &szBuffer, ReligionTypes eRe
 		{
 			szBuffer.append(NEWLINE);
 			szBuffer.append(gDLL->getText("TXT_KEY_RELIGION_FOUNDED_FIRST",
-					GC.getInfo((TechTypes)kReligion.getTechPrereq()).getTextKeyWide()));
+					GC.getInfo(kReligion.getTechPrereq()).getTextKeyWide()));
 		}
 	}
-	UnitClassTypes eFreeUnitClass = (UnitClassTypes)kReligion.getFreeUnitClass(); // advc
+
+	UnitClassTypes eFreeUnitClass = kReligion.getFreeUnitClass(); // advc
 	if (eFreeUnitClass != NO_UNITCLASS)
 	{
 		UnitTypes eFreeUnit = (getActivePlayer() != NO_PLAYER ?
@@ -14057,7 +14058,7 @@ void CvGameTextMgr::setReligionHelpCity(CvWStringBuffer &szBuffer, ReligionTypes
 			if (GC.getInfo(eReligion).getTechPrereq() != NO_TECH)
 			{
 				szBuffer.append(gDLL->getText("TXT_KEY_RELIGION_FOUNDED_FIRST",
-						GC.getInfo((TechTypes)GC.getInfo(eReligion).getTechPrereq()).
+						GC.getInfo(GC.getInfo(eReligion).getTechPrereq()).
 						getTextKeyWide()));
 			}
 		}
@@ -14282,8 +14283,7 @@ void CvGameTextMgr::setCorporationHelp(CvWStringBuffer &szBuffer,
 		{
 			szBuffer.append(NEWLINE);
 			szBuffer.append(gDLL->getText("TXT_KEY_CORPORATION_FOUNDED_FIRST",
-					GC.getInfo((TechTypes)kCorporation.getTechPrereq()).
-					getTextKeyWide()));
+					GC.getInfo(kCorporation.getTechPrereq()).getTextKeyWide()));
 		}
 	}
 	szBuffer.append(NEWLINE);
@@ -14304,20 +14304,21 @@ void CvGameTextMgr::setCorporationHelp(CvWStringBuffer &szBuffer,
 		szBuffer.append(gDLL->getText("TXT_KEY_CORPORATION_BONUS_PRODUCED",
 				GC.getInfo(kCorporation.getBonusProduced()).getChar()));
 	}
-	UnitClassTypes eFreeUnitClass = (UnitClassTypes)kCorporation.getFreeUnitClass(); // advc
-	if (eFreeUnitClass != NO_UNITCLASS)
 	{
-		UnitTypes eFreeUnit = (getActivePlayer() != NO_PLAYER ? 
-				GC.getGame().getActiveCivilization()->getUnit(eFreeUnitClass) :
-				GC.getInfo(eFreeUnitClass).getDefaultUnit());
-		if (eFreeUnit != NO_UNIT)
+		UnitClassTypes const eFreeUnitClass = kCorporation.getFreeUnitClass();
+		if (eFreeUnitClass != NO_UNITCLASS)
 		{
-			szBuffer.append(NEWLINE);
-			szBuffer.append(gDLL->getText("TXT_KEY_RELIGION_FOUNDER_RECEIVES",
-					GC.getInfo(eFreeUnit).getTextKeyWide()));
+			UnitTypes eFreeUnit = (getActivePlayer() != NO_PLAYER ? 
+					GC.getGame().getActiveCivilization()->getUnit(eFreeUnitClass) :
+					GC.getInfo(eFreeUnitClass).getDefaultUnit());
+			if (eFreeUnit != NO_UNIT)
+			{
+				szBuffer.append(NEWLINE);
+				szBuffer.append(gDLL->getText("TXT_KEY_RELIGION_FOUNDER_RECEIVES",
+						GC.getInfo(eFreeUnit).getTextKeyWide()));
+			}
 		}
 	}
-
 	std::vector<CorporationTypes> aCompetingCorps;
 	bFirst = true;
 	FOR_EACH_ENUM2(Corporation, eLoopCorp)
@@ -14365,19 +14366,17 @@ void CvGameTextMgr::setCorporationHelpCity(CvWStringBuffer &szBuffer,
 				TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), kCorporation.getDescription()));
 		szBuffer.append(NEWLINE);
 
-		if (!GC.getGame().isCorporationFounded(eCorporation))
+		if (!GC.getGame().isCorporationFounded(eCorporation) &&
+			GC.getInfo(eCorporation).getTechPrereq() != NO_TECH)
 		{
-			if (GC.getInfo(eCorporation).getTechPrereq() != NO_TECH)
-			{
-				szBuffer.append(gDLL->getText("TXT_KEY_CORPORATION_FOUNDED_FIRST",
-						GC.getInfo((TechTypes)(kCorporation.getTechPrereq())).getTextKeyWide()));
-			}
+			szBuffer.append(gDLL->getText("TXT_KEY_CORPORATION_FOUNDED_FIRST",
+					GC.getInfo(kCorporation.getTechPrereq()).getTextKeyWide()));
 		}
 	}
 
 	if (!bForceCorporation)
 	{
-		if (!(pCity->isHasCorporation(eCorporation)))
+		if (!pCity->isHasCorporation(eCorporation))
 			return;
 	}
 

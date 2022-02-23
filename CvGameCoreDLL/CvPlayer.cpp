@@ -6928,7 +6928,7 @@ void CvPlayer::foundReligion(ReligionTypes eReligion, ReligionTypes eSlotReligio
 	kGame.setReligionSlotTaken(eSlotReligion, true);
 
 	bool const bStarting = (kSlotReligion.getTechPrereq() == NO_TECH ||
-			GC.getInfo((TechTypes)kSlotReligion.getTechPrereq()).getEra() < kGame.getStartEra());
+			GC.getInfo(kSlotReligion.getTechPrereq()).getEra() < kGame.getStartEra());
 
 	int iBestValue = 0;
 	CvCity* pBestCity = NULL;
@@ -6957,7 +6957,7 @@ void CvPlayer::foundReligion(ReligionTypes eReligion, ReligionTypes eSlotReligio
 	kGame.setHolyCity(eReligion, pBestCity, true);
 	if (bAward && kSlotReligion.getNumFreeUnits() > 0)
 	{
-		UnitTypes eFreeUnit = getCivilization().getUnit((UnitClassTypes)
+		UnitTypes eFreeUnit = getCivilization().getUnit(
 				GC.getInfo(eReligion).getFreeUnitClass());
 		if (eFreeUnit != NO_UNIT)
 		{
@@ -7010,8 +7010,7 @@ void CvPlayer::foundCorporation(CorporationTypes eCorporation)
 
 	CvCorporationInfo const& kCorp = GC.getInfo(eCorporation);
 	bool const bStarting = (kCorp.getTechPrereq() == NO_TECH ||
-			GC.getInfo((TechTypes)kCorp.getTechPrereq()).getEra() <
-			GC.getGame().getStartEra());
+			GC.getInfo(kCorp.getTechPrereq()).getEra() < GC.getGame().getStartEra());
 
 	int iBestValue = 0;
 	CvCity* pBestCity = NULL;

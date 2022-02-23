@@ -869,7 +869,8 @@ void CvCityAI::AI_chooseProduction()
 			bCloseToNewTech = true;
 	} // </advc.113>
 	// K-Mod 10/sep/10: iLandBonuses moved up
-	int iLandBonuses = AI_countNumImprovableBonuses(true,//kPlayer.getCurrentResearch()
+	int const iLandBonuses = AI_countNumImprovableBonuses(true,
+			//kPlayer.getCurrentResearch()
 			bCloseToNewTech ? eCurrentResearch : NO_TECH); // advc.113
 
 	bool bChooseWorker = false;

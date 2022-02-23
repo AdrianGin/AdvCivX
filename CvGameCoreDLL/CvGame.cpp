@@ -1551,7 +1551,7 @@ void CvGame::applyStartingLocHandicaps(
 	The Agent type can be either CvPlayer or CvTeam. The agents have to be
 	alive and non-Barbarian. kResult should be empty before the call. */
 template<class Agent>
-CvGame::sortByStartingLocHandicap(
+void CvGame::sortByStartingLocHandicap(
 	std::vector<std::pair<Agent*,int> > const& kStartingLocPercentPerAgent,
 	std::vector<Agent*>& kResult)
 {
@@ -7237,7 +7237,7 @@ void CvGame::doHolyCity()
 				somehow. Inspired by Mongoose SDK ReligionMod. */
 			for (TeamIter<CIV_ALIVE> itTeam; itTeam.hasNext(); ++itTeam)
 			{
-				if (!itTeam->isHasTech((TechTypes)GC.getInfo(eReligion).getTechPrereq()) ||
+				if (!itTeam->isHasTech(GC.getInfo(eReligion).getTechPrereq()) ||
 					itTeam->getNumCities() <= 0)
 				{
 					continue;
@@ -7373,7 +7373,7 @@ void CvGame::doHeadquarters()
 			{
 				// advc (note): This is as far as execution gets in AdvCiv/BtS
 				if (kCorp.getTechPrereq() == NO_TECH ||
-					!itTeam->isHasTech((TechTypes)kCorp.getTechPrereq()))
+					!itTeam->isHasTech(kCorp.getTechPrereq()))
 				{
 					continue;
 				}
@@ -10309,17 +10309,17 @@ void CvGame::changeShrineBuilding(BuildingTypes eBuilding,
 
 }
 
-bool CvGame::culturalVictoryValid() /* advc: */ const
+bool CvGame::culturalVictoryValid() const
 {
 	return (m_iNumCultureVictoryCities > 0);
 }
 
-int CvGame::culturalVictoryNumCultureCities() /* advc: */ const
+int CvGame::culturalVictoryNumCultureCities() const
 {
 	return m_iNumCultureVictoryCities;
 }
 
-CultureLevelTypes CvGame::culturalVictoryCultureLevel() /* advc: */  const
+CultureLevelTypes CvGame::culturalVictoryCultureLevel() const
 {
 	if (m_iNumCultureVictoryCities > 0)
 		return m_eCultureVictoryCultureLevel;

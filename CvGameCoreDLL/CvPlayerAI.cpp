@@ -4158,9 +4158,9 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bFreeTech, bool bAsyn
 
 	// Initial threshold
 	FAssert(techs_to_depth.size() > 1);
+	// Note: this works even if depth=0 isn't big enough.
 	int iThreshold = techs[std::min(iMaxPathLength-1,
 			(int)techs.size()-1)].first;
-	// Note: this works even if depth=0 isn't big enough.
 	// advc.550: 0.8 in K-Mod 1.46. AdvCiv had used 0.62 until version 0.99.
 	scaled const rDepthRate = fixp(2/3.);
 
@@ -4310,7 +4310,6 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bFreeTech, bool bAsyn
 							if (techs[j].first <
 								techs[tech_paths.back().second[k]].first)
 							{
-
 								// Note: we'll need to recalculate the total value.
 								tech_paths.back().second.insert(
 										tech_paths.back().second.begin()+k, j);
@@ -4873,7 +4872,8 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 
 					// TODO: multiply by average commerce multiplier?
 
-					// 4 for upgrading local to foreign. 2 for upgrading to overseas. Divide by 3 if we don't have coastal cities.
+					/*	4 for upgrading local to foreign. 2 for upgrading to overseas.
+						Divide by 3 if we don't have coastal cities. */
 					iValue += (std::min(iLocalRoutes, iNewForeignRoutes) * 16 +
 							std::min(iNewOverseasRoutes, iCityCount * 3) * 8) /
 							(iCoastalCities > 0 ? 1 : 3);
@@ -5325,7 +5325,6 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 		// </k146>
 	}
 
-
 	/* ------------------ Building Value  ------------------ */
 	bool bEnablesWonder/* advc.001n:*/=false;
 	iValue += AI_techBuildingValue(eTech, bAsync || !bRandomize, bEnablesWonder);
@@ -5617,7 +5616,7 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 			int iAvailableReligions = 0; // K-Mod
 			FOR_EACH_ENUM(Religion)
 			{
-				TechTypes eReligionTech = (TechTypes)GC.getInfo(eLoopReligion).getTechPrereq();
+				TechTypes eReligionTech = GC.getInfo(eLoopReligion).getTechPrereq();
 				/*if (kTeam.isHasTech(eReligionTech)) {
 					if (!(GC.getGame().isReligionSlotTaken((ReligionTypes)iJ)))
 						iPotentialReligions++;
@@ -5672,7 +5671,6 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 				if (AI_atVictoryStage(AI_VICTORY_CULTURE1))
 				{
 					iReligionValue += 50; // k146: was 100
-
 					if (countHolyCities() < 1)
 					{
 						//iReligionValue += 200;
@@ -5680,8 +5678,11 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 						iReligionValue += (iCityCount > 1 ? 100 : 0);
 					}
 				}
-				else iReligionValue /= 1 + countHolyCities() + (iPotentialReligions > 0 ? 1 : 0);
-
+				else
+				{
+					iReligionValue /= 1 + countHolyCities() +
+							(iPotentialReligions > 0 ? 1 : 0);
+				}
 				if (countTotalHasReligion() == 0 && iPotentialReligions == 0)
 				{
 					bool bNeighbouringReligions = false;
@@ -19076,10 +19077,9 @@ void CvPlayerAI::AI_doMilitary()
 
 void CvPlayerAI::AI_doResearch()
 {
-	FAssertMsg(!isHuman(), "isHuman did not return false as expected");
-
-	//if (getCurrentResearch() == NO_TECH)
-	if (getCurrentResearch() == NO_TECH && isResearch() && !isAnarchy()) // K-Mod
+	FAssert(!isHuman());
+	if (getCurrentResearch() == NO_TECH &&
+		isResearch() && !isAnarchy()) // K-Mod
 	{
 		AI_chooseResearch();
 		//AI_forceUpdateStrategies(); //to account for current research.
@@ -28188,10 +28188,11 @@ ReligionTypes CvPlayerAI::AI_chooseReligion()
 		//aeReligions.push_back(eLoopReligion); // BtS
 		// <advc.171>
 		int iValue = 0;
-		TechTypes eLoopTech = (TechTypes)GC.getInfo(eLoopReligion).getTechPrereq();
-		if(eLoopTech != NO_TECH)
+		TechTypes eLoopTech = GC.getInfo(eLoopReligion).getTechPrereq();
+		if (eLoopTech != NO_TECH)
 			iValue = GC.getInfo(eLoopTech).getResearchCost();
-		if(iValue < iSmallest) {
+		if (iValue < iSmallest)
+		{
 			eBestReligion = eLoopReligion;
 			iSmallest = iValue;
 		}
@@ -28382,7 +28383,7 @@ int CvPlayerAI::AI_getPlotCanalValue(CvPlot const& kPlot) const // advc: param w
 }
 
 /*	This returns approximately to the sum
-	of the percentage values of each unit
+	of the percentage values of each city
 	(there is no need to scale the output by iHappy)
 	100 * iHappy means a high value. */
 int CvPlayerAI::AI_getHappinessWeight(int iHappy, int iExtraPop, bool bPercent) const
@@ -28595,8 +28596,8 @@ bool CvPlayerAI::AI_isFirstTech(TechTypes eTech) const
 	}
 	if (GC.getGame().countKnownTechNumTeams(eTech) == 0)
 	{
-		if ((getTechFreeUnit(eTech) != NO_UNIT) ||
-			(GC.getInfo(eTech).getFirstFreeTechs() > 0))
+		if (getTechFreeUnit(eTech) != NO_UNIT ||
+			GC.getInfo(eTech).getFirstFreeTechs() > 0)
 		{
 			return true;
 		}

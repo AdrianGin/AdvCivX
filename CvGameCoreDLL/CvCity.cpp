@@ -3352,7 +3352,7 @@ bool CvCity::isHeadquarters(CorporationTypes eCorp) const
 void CvCity::setHeadquarters(CorporationTypes eCorp)
 {
 	GC.getGame().setHeadquarters(eCorp, this, /* advc.106e: */ false);
-	UnitClassTypes eFreeClass = (UnitClassTypes)GC.getInfo(eCorp).getFreeUnitClass();
+	UnitClassTypes eFreeClass = GC.getInfo(eCorp).getFreeUnitClass();
 	if (eFreeClass != NO_UNITCLASS)
 	{
 		UnitTypes eFreeUnit = getCivilization().getUnit(eFreeClass);
