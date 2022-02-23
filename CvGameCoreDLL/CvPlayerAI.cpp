@@ -4484,6 +4484,7 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 		false implies that the game state mustn't be modified - may or may not be run in-sync. */
 	bool bRandomize) const
 {
+	FAssert(iPathLength >= 1); // advc
 	PROFILE_FUNC();
 
 	//long iValue = 1; // K-Mod. (the int was overflowing in parts of the calculation)
@@ -5596,25 +5597,62 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 		// K-Mod
 		if (bFirst)
 		{
-			// 100 means very likely we will be first, -100 means very unlikely. 0 is 'unknown'.
+			/*	100 means very likely we will be first,
+				-100 means very unlikely. 0 is 'unknown'. */
 			int iRaceModifier = 0;
 			{
+			#if 0
 				int iCount = 0;
-				// count players even if we haven't met them. (we know they're out there...)
+				/*	count players even if we haven't met them.
+					(we know they're out there...) */
 				PlayerIter<CIV_ALIVE,NOT_SAME_TEAM_AS> itOther(getTeam());
 				for (; itOther.hasNext(); ++itOther)
 				{
 					if (kTeam.isHasMet(itOther->getTeam()) &&
-						(iPathLength <= 1 != itOther->canResearch(eTech)))
-					{
 						/*	if path is <= 1, count civs who can't research it.
 							if path > 1, count civs who can research it. */
+						(iPathLength <= 1 != itOther->canResearch(eTech)))
+					{
 						iCount++;
 					}
 				}
 				iRaceModifier = ((iPathLength <= 1 ? 100 : -100) * iCount) /
 						std::max(1, itOther.nextIndex());
+			#endif
+			} // K-Mod end
+			// <advc.171> Replacing the above
+			scaled rBeatUsProb;
+			int const iRivals = PlayerIter<FREE_MAJOR_CIV,NOT_SAME_TEAM_AS>::
+					count(getTeam());
+			if (iRivals > 0)
+			{
+				/*	Each rival is not actually less likely to beat us when there
+					are more in total. But I don't want the AI to be too shy about
+					entering races in large games. */
+				rBeatUsProb = 1 / (fixp(2.4) * scaled(iRivals).sqrt());
+				rBeatUsProb.exponentiate(scaled(1, iPathLength));
 			}
+			scaled rWinRaceProb = 1;
+			int iKnownRivals = 0;
+			for (PlayerIter<FREE_MAJOR_CIV,NOT_SAME_TEAM_AS> itOther(getTeam());
+				itOther.hasNext(); ++itOther)
+			{
+				if (kTeam.isHasMet(itOther->getTeam()))
+				{
+					if (itOther->canResearch(eTech))
+						rWinRaceProb *= (1 - rBeatUsProb);
+					iKnownRivals++;
+				}
+				else rWinRaceProb *= (1 - rBeatUsProb / 2);
+			}
+			scaled rRaceMod = rWinRaceProb * 2 - 1;
+			if (iRivals > 0 && !bFreeTech)
+			{
+				scaled rConfidence(iKnownRivals, iRivals);
+				rRaceMod /= 2 - rConfidence;
+			}
+			iRaceModifier = rRaceMod.getPercent();
+			// </advc.171>
 			FAssert(iRaceModifier >= -100 && iRaceModifier <= 100);
 		// K-Mod end
 			// <kekm.36>
