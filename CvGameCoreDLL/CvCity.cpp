@@ -1581,7 +1581,11 @@ int CvCity::getFoodTurnsLeft() const
 		return std::min(-1, -iTurnsLeft);
 	} // </advc.189>
 	int iFoodLeft = growthThreshold() - getFood();
-	int iTurnsLeft = intdiv::uceil(iFoodLeft, iFoodDiff);
+	/*	<advc> Simplified. I think negative iFoodLeft can happen through
+		a random event. */
+	if (iFoodLeft < 0)
+		return 1;
+	int iTurnsLeft = intdiv::uceil(iFoodLeft, iFoodDiff); // </advc>
 	return std::max(1, iTurnsLeft);
 }
 
