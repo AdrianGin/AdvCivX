@@ -2237,7 +2237,8 @@
 			<Help/>
 			<Strategy>TXT_KEY_TECH_SAILING_STRATEGY</Strategy>
 			<Advisor>ADVISOR_GROWTH</Advisor>
-			<iAIWeight>0</iAIWeight>
+			<!-- advc.131b -->
+			<iAIWeight>-100</iAIWeight>
 			<iAITradeModifier>0</iAITradeModifier>
 			<iCost>100</iCost>
 			<iAdvancedStartCost>100</iAdvancedStartCost>
