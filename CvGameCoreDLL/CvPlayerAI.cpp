@@ -3823,6 +3823,8 @@ struct PairSecondEq : public std::binary_function<std::pair<A, B>,std::pair<A, B
 private:
 	B _target;
 };
+// advc.550g: No longer used
+#ifdef USE_OLD_TECH_STUFF
 template <typename A, typename B>
 struct PairFirstLess : public std::binary_function<std::pair<A, B>,std::pair<A, B>,bool>
 {
@@ -3831,6 +3833,16 @@ struct PairFirstLess : public std::binary_function<std::pair<A, B>,std::pair<A, 
 		return o1.first < o2.first;
 	}
 }; // </k146>
+#endif
+// advc.550g:
+template <typename A, typename B>
+struct PairFirstGreater : public std::binary_function<std::pair<A, B>,std::pair<A, B>,bool>
+{
+	bool operator()(const std::pair<A, B>& o1, const std::pair<A, B>& o2)
+	{
+		return o1.first > o2.first;
+	}
+};
 
 // edited by K-Mod and BBAI (05/14/10, jdog5000)
 TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bFreeTech, bool bAsync, TechTypes eIgnoreTech, AdvisorTypes eIgnoreAdvisor,
@@ -4346,7 +4358,7 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bFreeTech, bool bAsyn
 			std::max_element(tech_paths.begin(), tech_paths.end(), PairFirstLess<int,std::vector<int> >());
 	if (best_path_it == tech_paths.end())*/
 	// <advc.550g> Need the whole thing sorted
-	std::sort(tech_paths.begin(), tech_paths.end(), PairFirstLess<int,std::vector<int> >());
+	std::sort(tech_paths.begin(), tech_paths.end(), PairFirstGreater<int,std::vector<int> >());
 	if (tech_paths.empty()) // </advc.550g>
 	{
 		FErrorMsg("Failed to create a tech path");
