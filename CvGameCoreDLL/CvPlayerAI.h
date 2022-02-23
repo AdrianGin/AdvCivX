@@ -189,6 +189,10 @@ public:
 	// BETTER_BTS_AI_MOD: END
 	// k146:
 	int AI_techProjectValue(TechTypes eTech, int iPathLength, bool &bEnablesProjectWonder) const;
+	// <advc>
+	int AI_techReligionValue(TechTypes eTech, int iPathLength,
+			int iRaceModifier, int iCityTarget,
+			CvRandom& kRand, int& iRandomMax, bool bRandomize) const; // </advc>
 	int AI_cultureVictoryTechValue(TechTypes eTech) const;
 
 	void AI_chooseFreeTech(/* advc.121: */ bool bEndOfTurn = false);
