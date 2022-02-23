@@ -17587,14 +17587,40 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 	} */ /*	Disabled by K-Mod. This evaluation isn't accurate enough to be useful -
 			but it does sometimes cause civs to switch
 			to organized religion when they don't have a religion... */
-
-	FOR_EACH_ENUM(Specialist)
 	{
-		if (!kCivic.isSpecialistValid(eLoopSpecialist))
-			continue;
-		// K-Mod todo: the current code sucks. Fix it.
-		int iTempValue = iCities * (AI_atVictoryStage(AI_VICTORY_CULTURE3) ? 10 : 1) + 6;
-		iValue += iTempValue / 3; // advc.131: Was /2. (And yes, it's terrible.)
+		int iTempValue = 0; // advc: Moved up to reduce rounding error
+		int iMaxCultureChange = 0;
+		FOR_EACH_ENUM(Specialist)
+		{
+			if (!kCivic.isSpecialistValid(eLoopSpecialist))
+				continue;
+			// K-Mod todo: the current code sucks. Fix it.
+			//iTempValue += iCities * (AI_atVictoryStage(AI_VICTORY_CULTURE3) ? 10 : 1) + 6;
+			/*	<advc.131> For a start, let's take care just of the border pop benefit
+				and Culture victory. */
+			iMaxCultureChange = std::max(iMaxCultureChange,
+					GC.getInfo(eLoopSpecialist).getCommerceChange(COMMERCE_CULTURE));
+			iTempValue += iCities + 5; // This part is still terrible
+		}
+		if (iMaxCultureChange > 0)
+		{
+			if (!AI_isEasyCulture())
+			{
+				FOR_EACH_CITYAI(pCity, *this)
+				{
+					if (pCity->AI_needsCultureToWorkFullRadius())
+						iTempValue += 5;
+				}
+				iTempValue += 4 * std::min(AI_totalUnitAIs(UNITAI_SETTLE),
+						AI_getNumCitySites());
+			}
+			if (AI_atVictoryStage(AI_VICTORY_CULTURE3))
+			{
+				iTempValue += 5 * kGame.culturalVictoryNumCultureCities() *
+						iMaxCultureChange;
+			}
+		}
+		iValue += intdiv::uround(iTempValue, /*2*/3); // </advc.131>
 	}
 
 	/*	K-Mod. When aiming for a diplomatic victory,
