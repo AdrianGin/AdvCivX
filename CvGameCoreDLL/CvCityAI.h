@@ -142,6 +142,7 @@ public:
 	int AI_specialYieldMultiplier(YieldTypes eYield) const;
 	int AI_getCultureWeight() const { return m_iCultureWeight; } // K-Mod
 	void AI_setCultureWeight(int iWeight) { m_iCultureWeight = iWeight; } // K-Mod
+	bool AI_needsCultureToWorkFullRadius() const; // advc
 
 	int AI_countNumBonuses(BonusTypes eBonus, bool bIncludeOurs, bool bIncludeNeutral,
 			int iOtherCultureThreshold, bool bLand = true, bool bWater = true) const;

@@ -844,15 +844,13 @@ void CvCityAI::AI_chooseProduction()
 		}
 	}
 
-	if (getPopulation() > 5 && getCommerceRate(COMMERCE_CULTURE) == 0)
+	if (getPopulation() > 5 && AI_needsCultureToWorkFullRadius() &&
+		!kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE))
 	{
-		if (!kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE))
+		if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE, 30))
 		{
-			if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE, 30))
-			{
-				if (gCityLogLevel >= 2) logBBAI("      City %S uses zero culture build", getName().GetCString());
-				return;
-			}
+			if (gCityLogLevel >= 2) logBBAI("      City %S uses zero culture build", getName().GetCString());
+			return;
 		}
 	}
 
@@ -1303,7 +1301,7 @@ void CvCityAI::AI_chooseProduction()
 		}
 	}
 
-	if	(!bLandWar && !bAssault && getCommerceRate(COMMERCE_CULTURE) == 0)
+	if	(!bLandWar && !bAssault && AI_needsCultureToWorkFullRadius())
 	{
 		if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE,
 			bAggressiveAI ? 10 : 20, 0, bAggressiveAI ? 33 : 50))
@@ -2585,7 +2583,7 @@ void CvCityAI::AI_chooseProduction()
 	}
 
 
-	if (getCommerceRateTimes100(COMMERCE_CULTURE) == 0)
+	if (AI_needsCultureToWorkFullRadius())
 	{
 		if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE, 30))
 			return;
@@ -5273,8 +5271,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 						(but not wonders / special buildings) */
 					if (iTempValue > 0 && !bLimitedWonder &&
 						kBuilding.getProductionCost() > 0 &&
-						getCultureLevel() <= 1 &&
-						getCommerceRateTimes100(COMMERCE_CULTURE) < 100)
+						AI_needsCultureToWorkFullRadius())
 					{
 						iPriorityFactor += 25;
 						//iTempValue += 16;
@@ -5754,7 +5751,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 							COMMERCE_ESPIONAGE) * 3;
 				}
 				//if ((getCommerceRate(COMMERCE_CULTURE) == 0) && (AI_calculateTargetCulturePerTurn() == 1))
-				if (getCommerceRate(COMMERCE_CULTURE) == 0 && iTempValue >= 3)
+				if (iTempValue >= 3 && AI_needsCultureToWorkFullRadius())
 					iTempValue += 7;
 				// K-Mod, this stuff was moved from below
 				iTempValue += ((kBuilding.getCommerceModifier(COMMERCE_CULTURE) *
@@ -11798,7 +11795,7 @@ void CvCityAI::AI_buildGovernorChooseProduction()
 			AI_buildingValue(eBestBuilding);
 
 	// pop borders
-	if (getCultureLevel() <= 1 && getCommerceRate(COMMERCE_CULTURE) == 0)
+	if (AI_needsCultureToWorkFullRadius())
 	{
 		if (eBestBuilding != NO_BUILDING && AI_countGoodTiles(true, false) > 0)
 		{
@@ -12670,6 +12667,13 @@ void CvCityAI::AI_updateSpecialYieldMultiplier()
 int CvCityAI::AI_specialYieldMultiplier(YieldTypes eYield) const
 {
 	return m_aiSpecialYieldMultiplier[eYield];
+}
+
+// advc: Similar code had been used (somewhat inconsistently) in several places
+bool CvCityAI::AI_needsCultureToWorkFullRadius() const
+{
+	return (!isDisorder() && getCommerceRate(COMMERCE_CULTURE) <= 0 &&
+			getCultureLevel() + 1 <= CITY_PLOTS_RADIUS);
 }
 
 

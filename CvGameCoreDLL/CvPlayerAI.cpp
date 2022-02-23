@@ -2721,6 +2721,61 @@ short CvPlayerAI::AI_foundValue(int iX, int iY, int iMinRivalRange, bool bStarti
 	return eval.evaluate(iX, iY);
 }
 
+// advc: Based on code moved from K-Mod's CvFoundSettings
+bool CvPlayerAI::AI_isEasyCulture(bool* pbFromTrait) const
+{
+	LOCAL_REF(bool, bFromTrait, pbFromTrait, false);
+	// Have to check this first in case that pbFromTrait!=NULL
+	FOR_EACH_ENUM(Trait)
+	{
+		if (!hasTrait(eLoopTrait))
+			continue;
+		if (GC.getInfo(eLoopTrait).getCommerceChange(COMMERCE_CULTURE) > 0 ||
+			// <advc.908b>
+			(GC.getNumCultureLevelInfos() >= 2 &&
+			GC.getGame().freeCityCultureFromTrait(eLoopTrait) >=
+			GC.getGame().getCultureThreshold((CultureLevelTypes)2)))
+			// </advc.908b>
+		{
+			bFromTrait = true;
+			return true;
+		}
+	}
+	if (getAdvancedStartPoints() > 0)
+		return true;
+	if (isMajorCiv() && !hasCapital())
+		return true;
+	// Easy culture: culture process, free culture or easy artists
+	FOR_EACH_ENUM(Process)
+	{
+		CvProcessInfo const& kLoopProcess = GC.getInfo(eLoopProcess);
+		if (GET_TEAM(getTeam()).isHasTech(kLoopProcess.getTechPrereq()) &&
+			kLoopProcess.getProductionToCommerceModifier(COMMERCE_CULTURE) > 0)
+		{
+			return true;
+		}
+	}
+	FOR_EACH_ENUM(Building)
+	{
+		if (isBuildingFree(eLoopBuilding) &&
+			GC.getInfo(eLoopBuilding).getObsoleteSafeCommerceChange(COMMERCE_CULTURE) +
+			GC.getInfo(eLoopBuilding).getCommerceChange(COMMERCE_CULTURE) > 0)
+		{
+			return true;
+		}
+	}
+	FOR_EACH_ENUM(Specialist)
+	{
+		if (isSpecialistValid(eLoopSpecialist) &&
+			specialistCommerce(eLoopSpecialist, COMMERCE_CULTURE) > 0)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
 bool CvPlayerAI::AI_isAreaAlone(CvArea const& kArea) const
 {
 	// <advc.131> Don't cheat with visibility early on (hurts more than it helps)

@@ -45,23 +45,19 @@ CitySiteEvaluator::CitySiteEvaluator(CvPlayerAI const& kPlayer, int iMinRivalRan
 		// advc.001: Make sure that personality isn't used for human or StartingLoc
 		if (!kPlayer.isHuman() || m_bDebug)
 			pPersonality = &GC.getInfo(kPlayer.getPersonalityType());
+		bool bEasyCultureFromTrait = false;
+		m_bEasyCulture = kPlayer.AI_isEasyCulture(&bEasyCultureFromTrait);
+		if (bEasyCultureFromTrait && pPersonality != NULL &&
+			pPersonality->getBasePeaceWeight() <= 5)
+		{
+			m_bAmbitious = true;
+		}
 		FOR_EACH_ENUM(Trait)
 		{
 			if (!kPlayer.hasTrait(eLoopTrait))
 				continue;
 
 			CvTraitInfo const& kLoopTrait = GC.getInfo(eLoopTrait);
-			if (kLoopTrait.getCommerceChange(COMMERCE_CULTURE) > 0 ||
-				// <advc.908b>
-				(GC.getNumCultureLevelInfos() >= 2 &&
-				GC.getGame().freeCityCultureFromTrait(eLoopTrait) >=
-				GC.getGame().getCultureThreshold((CultureLevelTypes)2)))
-				// </advc.908b>
-			{
-				m_bEasyCulture = true;
-				if (pPersonality != NULL && pPersonality->getBasePeaceWeight() <= 5)
-					m_bAmbitious = true;
-			}
 			if (kLoopTrait.getExtraYieldThreshold(YIELD_COMMERCE) > 0)
 				m_bExtraYieldThresh = true;
 			// <advc.908a>
@@ -117,44 +113,6 @@ CitySiteEvaluator::CitySiteEvaluator(CvPlayerAI const& kPlayer, int iMinRivalRan
 				if (GC.getInfo(eUniqueBuilding).isWater())
 				{
 					m_bSeafaring = true;
-					break;
-				}
-			}
-		}
-		// Easy culture: culture process, free culture or easy artists
-		if (!m_bEasyCulture)
-		{
-			FOR_EACH_ENUM(Process)
-			{
-				CvProcessInfo const& kLoopProcess = GC.getInfo(eLoopProcess);
-				if (GET_TEAM(kPlayer.getTeam()).isHasTech(kLoopProcess.getTechPrereq()) &&
-					kLoopProcess.getProductionToCommerceModifier(COMMERCE_CULTURE) > 0)
-				{
-					m_bEasyCulture = true;
-					break;
-				}
-			}
-		}
-		if (!m_bEasyCulture)
-		{
-			FOR_EACH_ENUM(Building)
-			{
-				if (kPlayer.isBuildingFree(eLoopBuilding) && GC.getInfo(eLoopBuilding).
-					getObsoleteSafeCommerceChange(COMMERCE_CULTURE) > 0)
-				{
-					m_bEasyCulture = true;
-					break;
-				}
-			}
-		}
-		if (!m_bEasyCulture)
-		{
-			FOR_EACH_ENUM(Specialist)
-			{
-				if (kPlayer.isSpecialistValid(eLoopSpecialist) &&
-					kPlayer.specialistCommerce(eLoopSpecialist, COMMERCE_CULTURE) > 0)
-				{
-					m_bEasyCulture = true;
 					break;
 				}
 			}
