@@ -2743,7 +2743,7 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 			the vassal feels. (Originally more based on what chances the vassal
 			still has to win the game). */
 		int iAttitudeModifier = -2;
-		int iLosingWars = 0;
+		int iLosingWarModifier = 0;
 		for (TeamAIIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itThreat(getID());
 			itThreat.hasNext(); ++itThreat)
 		{
@@ -2753,14 +2753,24 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 			{
 				continue;
 			}
+			bool const bMasterAtWar = kMasterTeam.isAtWar(kThreat.getID());
 			// Immediate threat from ongoing wars
-			WarPlanTypes eWarPlan = AI_getWarPlan(kThreat.getID());
-			if (kThreat.getID() != eMasterTeam && (eWarPlan == WARPLAN_ATTACKED_RECENT ||
-				eWarPlan == WARPLAN_ATTACKED || AI_getWarSuccessRating() <= -30))
+			if (isAtWar(kThreat.getID()))
 			{
-				iLosingWars++;
+				WarPlanTypes eWarPlan = AI_getWarPlan(kThreat.getID());
+				if (kThreat.getID() != eMasterTeam &&
+					(eWarPlan == WARPLAN_ATTACKED_RECENT ||
+					eWarPlan == WARPLAN_ATTACKED ||
+					AI_getWarSuccessRating() <= -30))
+				{
+					/*	Ensuring that kMaster doesn't drop out of the war
+						ought to be worth something */
+					iLosingWarModifier += (bMasterAtWar ? 2 : 4);
+				}
 				continue;
 			}
+			if (bMasterAtWar)
+				continue;
 			// Threat from future wars. kMasterTeam can contribute to this.
 			AttitudeTypes eTowardUs = NO_ATTITUDE;
 			if (kThreat.isHuman()) // Assume that human likes or hates us back
@@ -2781,13 +2791,12 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 		/*  In large games, there tend to be alternative targets for dangerous civs
 			to attack. */
 		iAttitudeModifier = (7 * iAttitudeModifier) / kGame.countCivPlayersAlive();
-		if(iLosingWars > 0)
-			iAttitudeModifier += 4;
-		// No matter how much we like kMasterTeam, when we can safely go it alone, we do.
-		// Master might not like it (and need sth. to prevent oscillation)
-		if(isAVassal()) // (should perhaps check master's NoWarProb at Pleased)
+		iAttitudeModifier += std::min(iLosingWarModifier, 5);
+		/*	No matter how much we like kMasterTeam, when we can safely go it alone,
+			we do. Master might not like it (and need sth. to prevent oscillation). */
+		if (isAVassal()) // (should perhaps check master's NoWarProb at Pleased)
 			iAttitudeModifier += 3;
-		if(iAttitudeModifier <= 2 &&
+		if (iAttitudeModifier <= 2 &&
 			4 * rVassalPower > 3 * rAveragePower &&
 			4 * rVassalPower > 3 * rMedianPow &&
 			// Exception: stick to our colonial master
