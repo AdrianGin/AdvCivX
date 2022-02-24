@@ -4220,7 +4220,7 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bFreeTech, bool bAsyn
 	// Create a list of possible tech paths.
 	std::vector<std::pair<int,std::vector<int> > > tech_paths; // (total_value, path)
 	// Note: paths are a vector of indices referring to `techs`.
-	/*  Paths are in reverse order, for convinience in constructing them.
+	/*  Paths are in reverse order, for convenience in constructing them.
 		(ie. the first tech to research is at the end of the list.) */
 
 	// Initial threshold
@@ -17602,7 +17602,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 				continue;
 			// K-Mod todo: the current code sucks. Fix it.
 			//iTempValue += iCities * (AI_atVictoryStage(AI_VICTORY_CULTURE3) ? 10 : 1) + 6;
-			/*	<advc.131> For a start, let's take care just of the border pop benefit
+			/*	<advc.192> For a start, let's take care just of the border pop benefit
 				and Culture victory. */
 			iMaxCultureChange = std::max(iMaxCultureChange,
 					GC.getInfo(eLoopSpecialist).getCommerceChange(COMMERCE_CULTURE));
@@ -17626,7 +17626,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 						iMaxCultureChange;
 			}
 		}
-		iValue += intdiv::uround(iTempValue, /*2*/3); // </advc.131>
+		iValue += intdiv::uround(iTempValue, /*2*/3); // </advc.192>
 	}
 
 	/*	K-Mod. When aiming for a diplomatic victory,
