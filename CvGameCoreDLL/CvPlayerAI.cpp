@@ -5313,7 +5313,10 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bFreeTech, bool bAsyn
 	for (int end_depth = 0; end_depth < iMaxPathLength; ++end_depth)
 	{
 		// Note: at depth == 0, there are no prereqs, so we only need to consider the best option.
-		for (int i = (end_depth == 0? iMaxPathLength-1 : techs_to_depth[end_depth]); i < techs_to_depth[end_depth+1]; ++i)
+		// f1rpo: But not like this ...
+		for (int i = (/*end_depth == 0? iMaxPathLength-1 :*/techs_to_depth[end_depth]);
+			// ... like that, i.e. we can _stop_ at iMaxPathLength-1.
+			i < (end_depth == 0 ? iMaxPathLength : techs_to_depth[end_depth+1]); ++i)
 		{
 			if (techs[i].first < iThreshold)
 				break; // Note: the techs are sorted, so if we're below the threshold, we're done.
