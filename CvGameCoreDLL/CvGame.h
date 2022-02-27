@@ -72,6 +72,7 @@ public:
 
 	DllExport void updateColoredPlots();
 	DllExport void updateBlockadedPlots();
+	bool updateNukeAreaOfEffect(CvPlot const* pPlot = NULL) const; // advc.653
 
 	void updatePlotGroups();
 	void updateBuildingCommerce();
