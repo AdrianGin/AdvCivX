@@ -411,9 +411,9 @@ AreaAITypes CvTeamAI::AI_calculateAreaAIType(CvArea const& kArea, bool bPreparin
 
 	if (isBarbarian())
 	{
-		if (kArea.getNumCities() <= kArea.getCitiesPerPlayer(BARBARIAN_PLAYER)
+		if (//kArea.getNumCities() == kArea.getCitiesPerPlayer(BARBARIAN_PLAYER)
 			// advc.300: Relatively peaceable (New World) Barbarians until outnumbered
-			* 2)
+			kArea.getTotalPopulation() <= kArea.getPopulationPerPlayer(BARBARIAN_PLAYER) * 2)
 		{
 			return AREAAI_ASSAULT;
 		}
