@@ -428,6 +428,8 @@
 			<iDomesticGreatGeneralRateModifier>0</iDomesticGreatGeneralRateModifier>
 			<iStateReligionGreatPeopleRateModifier>0</iStateReligionGreatPeopleRateModifier>
 			<iDistanceMaintenanceModifier>0</iDistanceMaintenanceModifier>
+			<!-- advc.912g -->
+			<iColonyMaintenanceModifier>-100</iColonyMaintenanceModifier>
 			<!-- K-Mod: was 0 -->
 			<iNumCitiesMaintenanceModifier>-25</iNumCitiesMaintenanceModifier>
 			<iCorporationMaintenanceModifier>0</iCorporationMaintenanceModifier>

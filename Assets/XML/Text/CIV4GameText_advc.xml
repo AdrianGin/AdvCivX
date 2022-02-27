@@ -7338,4 +7338,24 @@
 		<Spanish>[ICON_BULLET]Ningún [ICON_UNHAPPY] en las ciudades que carecen de protección militar</Spanish>
 	</TEXT>
 
+	<!-- advc.912g: Based on TXT_KEY_CIVIC_DISTANCE_MAINT[_MOD] in
+		 Civ4GameTextInfos.xml and TXT_KEY_MISC_COLONY_MAINT_FLOAT in
+		 CIV4GameText_BTS.xml. -->
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_COLONY_MAINT</Tag>
+		<English>[ICON_BULLET]No Colonial Expenses</English>
+		<French>[ICON_BULLET]Aucun d&#233;penses coloniales</French>
+		<German>[ICON_BULLET]Keine Kolonialausgaben</German>
+		<Italian>[ICON_BULLET]Nessuna spese per le colonie</Italian>
+		<Spanish>[ICON_BULLET]Sin gastos coloniales</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_CIVIC_COLONYE_MAINT_MOD</Tag>
+		<English>[ICON_BULLET]%D1_Mod%% Colonial Expenses</English>
+		<French>[ICON_BULLET]%D1_Mod%% d&#233;penses coloniales</French>
+		<German>[ICON_BULLET]%D1_Mod%% Kolonialausgaben</German>
+		<Italian>[ICON_BULLET]%D1_Mod%% spese per le colonie</Italian>
+		<Spanish>[ICON_BULLET]%D1_Mod%% gastos coloniales</Spanish>
+	</TEXT>
+
 </Civ4GameText>

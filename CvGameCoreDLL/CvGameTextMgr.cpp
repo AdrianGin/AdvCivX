@@ -7218,7 +7218,22 @@ void CvGameTextMgr::parseCivicInfo(CvWStringBuffer &szHelpText, CivicTypes eCivi
 					kCivic.getCorporationMaintenanceModifier()));
 		}
 	}
-
+	// <advc.912g>
+	if (kCivic.getColonyMaintenanceModifier() != 0)
+	{
+		if (kCivic.getColonyMaintenanceModifier() <= -100)
+		{
+			szHelpText.append(NEWLINE);
+			szHelpText.append(gDLL->getText("TXT_KEY_CIVIC_COLONY_MAINT"));
+		}
+		else
+		{
+			szHelpText.append(NEWLINE);
+			szHelpText.append(gDLL->getText(
+					"TXT_KEY_CIVIC_COLONY_MAINT_MOD",
+					kCivic.getColonyMaintenanceModifier()));
+		}
+	} // </advc.912g>
 	//	Extra Health
 	if (kCivic.getExtraHealth() != 0)
 	{

@@ -373,6 +373,7 @@ void CvPlayer::reset(PlayerTypes eID, bool bConstructorCall)
 	m_iExpInBorderModifier = 0;
 	m_iBuildingOnlyHealthyCount = 0;
 	m_iDistanceMaintenanceModifier = 0;
+	m_iColonyMaintenanceModifier = 0; // advc.912g
 	m_iNumCitiesMaintenanceModifier = 0;
 	m_iCorporationMaintenanceModifier = 0;
 	m_iTotalMaintenance = 0;
@@ -7973,6 +7974,16 @@ void CvPlayer::changeDistanceMaintenanceModifier(int iChange)
 	}
 }
 
+// advc.912g:
+void CvPlayer::changeColonyMaintenanceModifier(int iChange)
+{
+	if (iChange != 0)
+	{
+		m_iColonyMaintenanceModifier += iChange;
+		updateMaintenance();
+	}
+}
+
 
 void CvPlayer::changeNumCitiesMaintenanceModifier(int iChange)
 {
@@ -13834,6 +13845,8 @@ void CvPlayer::processCivics(CivicTypes eCivic, int iChange)
 	changeDomesticGreatGeneralRateModifier(GC.getInfo(eCivic).getDomesticGreatGeneralRateModifier() * iChange);
 	changeStateReligionGreatPeopleRateModifier(GC.getInfo(eCivic).getStateReligionGreatPeopleRateModifier() * iChange);
 	changeDistanceMaintenanceModifier(GC.getInfo(eCivic).getDistanceMaintenanceModifier() * iChange);
+	// advc.912g:
+	changeColonyMaintenanceModifier(GC.getInfo(eCivic).getColonyMaintenanceModifier() * iChange);
 	changeNumCitiesMaintenanceModifier(GC.getInfo(eCivic).getNumCitiesMaintenanceModifier() * iChange);
 	changeCorporationMaintenanceModifier(GC.getInfo(eCivic).getCorporationMaintenanceModifier() * iChange);
 	changeExtraHealth(GC.getInfo(eCivic).getExtraHealth() * iChange);
@@ -14044,6 +14057,9 @@ void CvPlayer::read(FDataStreamBase* pStream)
 	pStream->Read(&m_iExpInBorderModifier);
 	pStream->Read(&m_iBuildingOnlyHealthyCount);
 	pStream->Read(&m_iDistanceMaintenanceModifier);
+	// <advc.912g>
+	if (uiFlag >= 20)
+		pStream->Read(&m_iColonyMaintenanceModifier); // </advc.912g>
 	pStream->Read(&m_iNumCitiesMaintenanceModifier);
 	pStream->Read(&m_iCorporationMaintenanceModifier);
 	pStream->Read(&m_iTotalMaintenance);
@@ -14271,6 +14287,18 @@ void CvPlayer::read(FDataStreamBase* pStream)
 	// <advc> Future-proofing
 	if (isBarbarian())
 		m_abLoyalMember.setAll(false); // </advc>
+	// <advc.912g>
+	if (uiFlag < 20)
+	{
+		FOR_EACH_ENUM(Civic)
+		{
+			if (isCivic(eLoopCivic))
+			{
+				changeColonyMaintenanceModifier(GC.getInfo(eLoopCivic).
+						getColonyMaintenanceModifier());
+			}
+		}
+	} // </advc.912g>
 	m_groupCycle.Read(pStream);
 	m_researchQueue.Read(pStream);
 
@@ -14572,7 +14600,8 @@ void CvPlayer::write(FDataStreamBase* pStream)
 	//uiFlag = 16; // advc.enum: new enum map save behavior
 	//uiFlag = 17; // advc.157
 	//uiFlag = 18; // advc.251 (city maintenance changed in handicap XML)
-	uiFlag = 19; // advc.708
+	//uiFlag = 19; // advc.708
+	uiFlag = 20; // advc.912g
 	pStream->Write(uiFlag);
 
 	// <advc.027>
@@ -14643,6 +14672,7 @@ void CvPlayer::write(FDataStreamBase* pStream)
 	pStream->Write(m_iExpInBorderModifier);
 	pStream->Write(m_iBuildingOnlyHealthyCount);
 	pStream->Write(m_iDistanceMaintenanceModifier);
+	pStream->Write(m_iColonyMaintenanceModifier); // advc.912g
 	pStream->Write(m_iNumCitiesMaintenanceModifier);
 	pStream->Write(m_iCorporationMaintenanceModifier);
 	pStream->Write(m_iTotalMaintenance);

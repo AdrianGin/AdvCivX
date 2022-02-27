@@ -680,7 +680,10 @@ public:
 
 	int getDistanceMaintenanceModifier() const { return m_iDistanceMaintenanceModifier; }							// Exposed to Python
 	void changeDistanceMaintenanceModifier(int iChange);
-
+	// <advc.912g>
+	int getColonyMaintenanceModifier() const { return m_iColonyMaintenanceModifier; }
+	void changeColonyMaintenanceModifier(int iChange);
+	// </advc.912g>
 	int getNumCitiesMaintenanceModifier() const { return m_iNumCitiesMaintenanceModifier; }							// Exposed to Python
 	void changeNumCitiesMaintenanceModifier(int iChange);
 
@@ -1516,6 +1519,7 @@ protected:  // <advc.210>
 	int m_iExpInBorderModifier;
 	int m_iBuildingOnlyHealthyCount;
 	int m_iDistanceMaintenanceModifier;
+	int m_iColonyMaintenanceModifier; // advc.912g
 	int m_iNumCitiesMaintenanceModifier;
 	int m_iCorporationMaintenanceModifier;
 	int m_iTotalMaintenance;

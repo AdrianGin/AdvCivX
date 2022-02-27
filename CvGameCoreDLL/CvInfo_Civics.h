@@ -15,7 +15,7 @@
 class CvCivicInfo : public CvInfoBase
 {
 	typedef CvInfoBase base_t;
-public: // The const functions are exposed to Python except those (to be) added by AdvCiv
+public: // The const functions are exposed to Python except those added by AdvCiv
 	CvCivicInfo();
 	~CvCivicInfo();
 
@@ -29,6 +29,8 @@ public: // The const functions are exposed to Python except those (to be) added 
 	int getDomesticGreatGeneralRateModifier() const { return m_iDomesticGreatGeneralRateModifier; }
 	int getStateReligionGreatPeopleRateModifier() const { return m_iStateReligionGreatPeopleRateModifier; }
 	int getDistanceMaintenanceModifier() const { return m_iDistanceMaintenanceModifier; }
+	// advc.912g:
+	int getColonyMaintenanceModifier() const { return m_iColonyMaintenanceModifier; }
 	int getNumCitiesMaintenanceModifier() const { return m_iNumCitiesMaintenanceModifier; }
 	int getCorporationMaintenanceModifier() const { return m_iCorporationMaintenanceModifier; }
 	int getExtraHealth() const { return m_iExtraHealth; }
@@ -113,6 +115,7 @@ protected:
 	int m_iDomesticGreatGeneralRateModifier;
 	int m_iStateReligionGreatPeopleRateModifier;
 	int m_iDistanceMaintenanceModifier;
+	int m_iColonyMaintenanceModifier; // advc.912g
 	int m_iNumCitiesMaintenanceModifier;
 	int m_iCorporationMaintenanceModifier;
 	int m_iExtraHealth;

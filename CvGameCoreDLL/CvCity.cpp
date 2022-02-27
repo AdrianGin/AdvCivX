@@ -13021,7 +13021,7 @@ int CvCity::initialPopulation()
 
 // advc.004b, advc.104: Parameters added
 int CvCity::calculateDistanceMaintenanceTimes100(CvPlot const& kCityPlot,
-	PlayerTypes eOwner, int iPopulation)
+	PlayerTypes eOwner, int iPopulation, bool bNoPlayerModifiers)
 {
 	if(iPopulation < 0)
 		iPopulation = initialPopulation();
@@ -13045,20 +13045,20 @@ int CvCity::calculateDistanceMaintenanceTimes100(CvPlot const& kCityPlot,
 			GC.getDefineINT(CvGlobals::MAX_DISTANCE_CITY_MAINTENANCE) *	
 			// K-Mod: Moved the search for maintenance distance to a separate function
 			calculateMaintenanceDistance(&kCityPlot, eOwner);
-	// unaltered bts code
 	{
 		iTempMaintenance *= (iPopulation + 7);
 		iTempMaintenance /= 10;
-
-		iTempMaintenance *= std::max(0, (GET_PLAYER(eOwner).getDistanceMaintenanceModifier() + 100));
-		iTempMaintenance /= 100;
-
+		if (!bNoPlayerModifiers) // advc
+		{
+			iTempMaintenance *= std::max(0, GET_PLAYER(eOwner).
+					getDistanceMaintenanceModifier() + 100);
+			iTempMaintenance /= 100;
+			iTempMaintenance *= GC.getInfo(GET_PLAYER(eOwner).
+					getHandicapType()).getDistanceMaintenancePercent();
+			iTempMaintenance /= 100;
+		}
 		iTempMaintenance *= GC.getInfo(GC.getMap().getWorldSize()).getDistanceMaintenancePercent();
 		iTempMaintenance /= 100;
-
-		iTempMaintenance *= GC.getInfo(GET_PLAYER(eOwner).getHandicapType()).getDistanceMaintenancePercent();
-		iTempMaintenance /= 100;
-
 		iTempMaintenance /= GC.getMap().maxTypicalDistance(); // advc.140: was maxPlotDistance
 	}
 	/*iWorstCityMaintenance = std::max(iWorstCityMaintenance, iTempMaintenance);
@@ -13169,25 +13169,22 @@ int CvCity::calculateColonyMaintenanceTimes100(CvPlot const& kCityPlot,
 	//iMaintenance = std::min(iMaintenance, (GC.getInfo(getHandicapType()).getMaxColonyMaintenance() * calculateDistanceMaintenanceTimes100()) / 100);
 	/*  K-Mod, 17/dec/10: Changed colony maintenance cap to not include
 		distance maintenance modifiers (such as state property) */
-	int iMaintenanceCap = 100 * GC.getDefineINT(CvGlobals::MAX_DISTANCE_CITY_MAINTENANCE) *
-			calculateMaintenanceDistance(&kCityPlot, eOwner);
-
-	iMaintenanceCap *= (iPopulation + 7);
-	iMaintenanceCap /= 10;
-
-	iMaintenanceCap *= GC.getInfo(GC.getMap().getWorldSize()).getDistanceMaintenancePercent();
-	iMaintenanceCap /= 100;
-
-	iMaintenanceCap *= GC.getInfo(eOwnerHandicap).getDistanceMaintenancePercent();
-	iMaintenanceCap /= 100;
-
-	iMaintenanceCap /= GC.getMap().maxTypicalDistance(); // advc.140: was maxPlotDistance
-
+	// advc: Let's do that without duplicating code
+	int iMaintenanceCap = GC.getDefineINT(CvGlobals::MAX_DISTANCE_CITY_MAINTENANCE) *
+			calculateDistanceMaintenanceTimes100(kCityPlot, eOwner, iPopulation,
+			true); // advc
 	iMaintenanceCap *= GC.getInfo(eOwnerHandicap).getMaxColonyMaintenance();
 	iMaintenanceCap /= 100;
-
+	// <advc.912g>
+	iMaintenanceCap *= std::max(0, GET_PLAYER(eOwner).
+			getColonyMaintenanceModifier() + 100);
+	iMaintenanceCap /= 100;
+	// </advc.912g>
 	iMaintenance = std::min(iMaintenance, iMaintenanceCap);
-	// K-Mod end
+	/*	<advc.exp.3> Alt. idea to the civic-based modifier: High colony maintenance
+		only in faraway cities (overall proportional to square of maintenance dist). */
+	/*iMaintenance *= calculateMaintenanceDistance(&kCityPlot, eOwner);
+	iMaintenance /= GC.getMap().maxMaintenanceDistance();*/ // </advc.exp.3>
 	FAssert(iMaintenance >= 0);
 	return iMaintenance;
 }

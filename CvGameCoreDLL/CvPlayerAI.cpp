@@ -16620,6 +16620,24 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 		iValue -= iTemp * kCivic.getDistanceMaintenanceModifier() / 10000;
 	}
 	// K-Mod end
+	// <advc.912g>
+	if (kCivic.getColonyMaintenanceModifier() != 0)
+	{
+		PROFILE("civicValue: ColonyMaintenance");
+		int iTemp = 0;
+		FOR_EACH_CITY(pLoopCity, *this)
+		{
+			iTemp += pLoopCity->calculateColonyMaintenanceTimes100() *
+					(pLoopCity->getMaintenanceModifier() + 100) / 100;
+		}
+		iTemp *= 100;
+		iTemp /= std::max(1, getColonyMaintenanceModifier() + 100);
+
+		iTemp *= iMaintenanceFactor;
+		iTemp /= 100;
+
+		iValue -= iTemp * kCivic.getColonyMaintenanceModifier() / 10000;
+	} // </advc.912g>
 
 	/*iValue += ((kCivic.getWorkerSpeedModifier() * AI_getNumAIUnits(UNITAI_WORKER)) / 15);
 	iValue += ((kCivic.getImprovementUpgradeRateModifier() * iCities) / 50);

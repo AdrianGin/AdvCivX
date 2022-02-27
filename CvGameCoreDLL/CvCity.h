@@ -424,7 +424,8 @@ public:
 	// </advc.104>
 	// <advc.004b> A projection for cities yet to be founded
 	static int calculateDistanceMaintenanceTimes100(CvPlot const& kCityPlot,
-			PlayerTypes eOwner, int iPopulation = -1);
+			PlayerTypes eOwner, int iPopulation = -1,
+			bool bNoPlayerModifiers = false);
 	static int calculateNumCitiesMaintenanceTimes100(CvPlot const& kCityPlot,
 			PlayerTypes eOwner, int iPopulation = -1, int iExtraCities = 0);
 	static int calculateColonyMaintenanceTimes100(CvPlot const& kCityPlot,
