@@ -5456,13 +5456,21 @@
 	<!-- kekm.7 (advc): From CIV4GameText_BTS.xml. Was "Cannot Nuke Friendly
 		 Territory or Units" - that's still true, but units don't prevent
 		 players from firing nukes, which is what matters in this context.
-		 And "friendly" isn't the right term. Strictly speaking, unclaimed
-		 territory is also allowed, but I think it's OK to omit that here. -->
+		 FIS translations left unchanged. -->
 	<TEXT>
 		<Tag>TXT_KEY_CANT_NUKE_FRIENDS</Tag>
-		<English>[COLOR_WARNING_TEXT]Must strike only enemy territory[COLOR_REVERT]</English>
+		<English>[COLOR_WARNING_TEXT]Cannot Strike Neutral Territory[COLOR_REVERT]</English>
 		<French>[COLOR_WARNING_TEXT]Impossible de lancer le missile nucl&#233;aire sur des unit&#233;s ou un territoire amis[COLOR_REVERT]</French>
-		<German>[COLOR_WARNING_TEXT]Nur feindliches Gebiet darf getroffen werden[COLOR_REVERT]</German>
+		<German>[COLOR_WARNING_TEXT]Neutrales Gebiet darf nicht getroffen werden[COLOR_REVERT]</German>
+		<Italian>[COLOR_WARNING_TEXT]Impossibile colpire con armi nucleari il territorio e le unit&#224; amiche[COLOR_REVERT]</Italian>
+		<Spanish>[COLOR_WARNING_TEXT]No se pueden hacer bombardeos nucleares contra los territorios o unidades amigos[COLOR_REVERT]</Spanish>
+	</TEXT>
+	<!-- Also can't nuke own team's units and cities now -->
+	<TEXT>
+		<Tag>TXT_KEY_CANT_NUKE_OWN_TEAM</Tag>
+		<English>[COLOR_WARNING_TEXT]Cannot Strike Own Units and Cities[COLOR_REVERT]</English>
+		<French>[COLOR_WARNING_TEXT]Impossible de lancer le missile nucl&#233;aire sur des unit&#233;s ou un territoire amis[COLOR_REVERT]</French>
+		<German>[COLOR_WARNING_TEXT]Eigene Einheiten und Städte dürfen nicht getroffen werden[COLOR_REVERT]</German>
 		<Italian>[COLOR_WARNING_TEXT]Impossibile colpire con armi nucleari il territorio e le unit&#224; amiche[COLOR_REVERT]</Italian>
 		<Spanish>[COLOR_WARNING_TEXT]No se pueden hacer bombardeos nucleares contra los territorios o unidades amigos[COLOR_REVERT]</Spanish>
 	</TEXT>

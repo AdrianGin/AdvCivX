@@ -3697,14 +3697,22 @@ bool CvUnit::airlift(int iX, int iY)
 // advc (comment): Says whether eTeam is a victim of this (nuke) unit if it nukes pPlot
 bool CvUnit::isNukeVictim(const CvPlot* pPlot, TeamTypes eTeam) const
 {
-	if(!GET_TEAM(eTeam).isAlive() || eTeam == getTeam())
+	// kekm.7 (advc): Not OK to nuke our own cities or units
+	if (!GET_TEAM(eTeam).isAlive()/* || eTeam == getTeam()*/)
 		return false;
 
 	for (SquareIter it(*pPlot, nukeRange()); it.hasNext(); ++it)
 	{
 		CvPlot const& kLoopPlot	= *it;
-		if (kLoopPlot.getTeam() == eTeam)
+		if (kLoopPlot.getTeam() == eTeam &&
+			// kekm.7 (advc): OK to nuke our own land
+			(eTeam != getTeam() || kLoopPlot.isCity()))
+		{
 			return true;
+		}
+		// <kekm.7> (advc): Not OK to nuke our own units
+		if (eTeam == getTeam() && kLoopPlot.plotCheck(NULL, -1, -1, NO_PLAYER, getTeam()))
+			return true; // </kekm.7>
 		if (kLoopPlot.plotCheck(PUF_isCombatTeam, eTeam, getTeam()) != NULL &&
 			isEnemy(eTeam)) // kekm.7
 		{

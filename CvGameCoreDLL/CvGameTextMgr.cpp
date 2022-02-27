@@ -20371,7 +20371,10 @@ void CvGameTextMgr::getNukePlotHelp(CvPlot const& kPlot,
 		TeamTypes const eVictimTeam = it->getID();
 		if (kHeadSelectedUnit.isNukeVictim(&kPlot, eVictimTeam) &&
 			!kHeadSelectedUnit.isEnemy(eVictimTeam))
-		{	// advc.130q: No newline
+		{	// <kekm.7> (advc)
+			if (eVictimTeam == kHeadSelectedUnit.getTeam())
+				szHelp.append(gDLL->getText("TXT_KEY_CANT_NUKE_OWN_TEAM"));
+			else // </kekm.7>
 			szHelp.append(gDLL->getText("TXT_KEY_CANT_NUKE_FRIENDS"));
 			break;
 		}
@@ -20391,7 +20394,7 @@ void CvGameTextMgr::getNukePlotHelp(CvPlot const& kPlot,
 					GET_TEAM(eInterceptTeam).getName().c_str(), iInterceptChance));
 		}
 	} // </advc.650>
-	szHelp += NEWLINE; // advc.130q
+	szHelp += NEWLINE; // kekm.7
 }
 
 /*	advc.004c: (Beginning based on getNukePlotHelp; the defense damage part is akin
