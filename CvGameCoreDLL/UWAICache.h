@@ -55,7 +55,7 @@ public:
 
 	UWAICache();
 	~UWAICache();
-	/*	CvPlayer is a class that gets reset and reused when returning to the main menu
+	/*	CvPlayer is a class that gets reset and reused when returning to the opening menu
 		or loading a savegame (see a comment above the CvTeam constructor in CvTeam.h
 		for details), and UWAICache follows a similar pattern:
 		+	When saving a game, write is called.
@@ -64,7 +64,7 @@ public:
 		+	The destructor ensures that all memory is deallocated before exiting Civ 4.
 		+	uninit frees memory when the cache owner is defeated (for performance).
 		+	init resets the data (and does some other things) when a new game is started.
-		+	Nothing is done upon returning to the main menu.
+		+	Nothing is done upon returning to the opening menu.
 		+	The reset function is named "clear" and is also used before cache updates. */
 	void init(PlayerTypes eOwner);
 	void uninit();

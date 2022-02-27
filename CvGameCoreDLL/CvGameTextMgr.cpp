@@ -9960,7 +9960,7 @@ void CvGameTextMgr::setBuildingHelpActual(CvWStringBuffer &szBuffer,
 	if(eBuildingClass == NO_BUILDINGCLASS)
 		return;
 	CvBuildingClassInfo const& kBuildingClass = GC.getInfo(eBuildingClass);
-	/*  ePlayer is NO_PLAYER if Civilopedia accessed from main menu.
+	/*  ePlayer is NO_PLAYER if Civilopedia accessed from opening menu.
 		(bCivilopediaText is true when help text for a Civilpedia article is being
 		composed; false for Civilopedia hover text and all non-Civilopedia texts.) */
 	CvPlayer const* pPlayer = (ePlayer == NO_PLAYER ? NULL : &GET_PLAYER(ePlayer));
@@ -10152,7 +10152,7 @@ void CvGameTextMgr::setBuildingHelpActual(CvWStringBuffer &szBuffer,
 	}
 
 	if (bCivilopediaText ||
-		ePlayer == NO_PLAYER) // advc: Civilopedia from main menu
+		ePlayer == NO_PLAYER) // advc: Civilopedia from opening menu
 	{	// advc: Already done higher up
 		/*setYieldChangeHelp(szBuffer, L"", L"", L"", kBuilding.getYieldModifierArray(), true, bCivilopediaText);
 		setCommerceChangeHelp(szBuffer, L"", L"", L"", kBuilding.getCommerceModifierArray(), true, bCivilopediaText);*/
@@ -11980,7 +11980,7 @@ void CvGameTextMgr::setProjectHelp(CvWStringBuffer &szBuffer, ProjectTypes eProj
 		szBuffer.append(szTempBuffer);
 	}
 	if (!bCivilopediaText &&
-		ePlayer != NO_PLAYER) // advc.004w: Civilopedia from main menu
+		ePlayer != NO_PLAYER) // advc.004w: Civilopedia from opening menu
 	{
 		int iMaking = GET_TEAM(ePlayer).getProjectMaking(eProject); // advc.004w
 		if (kProject.isWorldProject())
@@ -13395,7 +13395,7 @@ void CvGameTextMgr::setBonusTradeHelp(CvWStringBuffer &szBuffer, BonusTypes eBon
 		szBuffer.append(CvWString::format( SETCOLR L"%s" ENDCOLR,
 				TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),
 				GC.getInfo(eBonus).getDescription()));
-		// advc.004w: Don't omit the basic effect in main menu Civilopedia hovers
+		// advc.004w: Don't omit the basic effect in opening menu Civilopedia hovers
 		//if (NO_PLAYER != eActivePlayer)
 
 		/*	K-Mod. Bonuses now display "(Obsolete)" instead of
@@ -13615,7 +13615,7 @@ void CvGameTextMgr::setBonusExtraHelp(CvWStringBuffer &szBuffer, BonusTypes eBon
 	CvGame const& kGame = GC.getGame();
 	CivilizationTypes const eCivilization = kGame.getActiveCivilizationType();
 	PlayerTypes const eActivePlayer = getActivePlayer();
-	// NULL when in main menu Civilopedia
+	// NULL when in opening-menu Civilopedia
 	CvPlayerAI const* pActivePlayer = NULL;
 	int iCurrentEra = 0;
 	if(eActivePlayer != NO_PLAYER)

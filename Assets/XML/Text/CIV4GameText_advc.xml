@@ -4650,15 +4650,49 @@
 		<Italian>[COLOR_PLAYER_GRAY]Contenuti di BtS[COLOR_REVERT]</Italian>
 		<Spanish>[COLOR_PLAYER_GRAY]Contenido de BtS[COLOR_REVERT]</Spanish>
 	</TEXT>
-	<!-- Originally in CIV4GameText_Misc1.xml. "Game menu" doesn't translate
-		 well; just "menu" will have to do. -->
-	<TEXT>
-		<Tag>TXT_KEY_MAIN_MENU</Tag>
-		<English>Open Game Menu</English>
-		<French>Ouvrir le menu</French>
-		<German>Men&#252; &#246;ffnen</German>
-		<Italian>Apri il menu</Italian>
-		<Spanish>Abrir men&#250;</Spanish>
+	<!-- From CIV4GameTextInfos.xml. Call that the "opening menu",
+		 like in TXT_KEY_OPENING_MENU. -->
+	<TEXT> <!-- redefine -->
+		<Tag>TXT_KEY_POPUP_EXIT_TO_MAIN_MENU</Tag>
+		<English>Exit to Opening Menu</English>
+		<French>Retour au menu de lancement</French>
+		<German>Zur&#252;ck zum Anfangsmen&#252;</German>
+		<Italian>Vai al menu d'apertura</Italian>
+		<Spanish>Salir al men&#250; inicial</Spanish>
+	</TEXT>
+	<!-- From CIV4GameText_Misc1.xml -->
+	<TEXT> <!-- redefine -->
+		<Tag>TXT_KEY_EXTENDED_GAME_NO_MENU</Tag>
+		<English>(Exit to Opening Menu)</English>
+		<French>(Retour au menu de lancement)</French>
+		<German>(Zur&#252;ck zum Anfangsmen&#252;)</German>
+		<Italian>(Vai al menu d'apertura)</Italian>
+		<Spanish>(Salir al men&#250; inicial)</Spanish>
+	</TEXT>
+	<!-- From CIV4GameText_Misc1.xml (x3) -->
+	<TEXT> <!-- redefine -->
+		<Tag>TXT_KEY_MAIN_MENU_FORCED_DISCONNECT_INGAME</Tag>
+		<English>Someone else has logged in using this account.  Exiting to opening menu...</English>
+		<French>Quelqu'un s'est connect&#233; en utilisant votre compte. Retour au menu de lancement...</French>
+		<German>Es ist bereits jemand auf diesem Account eingeloggt. Zur&#252;ck zum Anfangsmen&#252; ...</German>
+		<Italian>Qualcun altro ha effettuato il login usando questo account. Ritorno al menu d'apertura...</Italian>
+		<Spanish>Otra persona ha iniciado sesi&#243;n con esta cuenta.  Saliendo al men&#250; inicial...</Spanish>
+	</TEXT>
+	<TEXT> <!-- redefine -->
+		<Tag>TXT_KEY_PITBOSS_DISCONNECT</Tag>
+		<English>We have lost our connection to the PitBoss!  Exiting to opening menu...</English>
+		<French>Nous avons perdu notre connexion au PitBoss ! D&#233;connexion du menu de lancement...</French>
+		<German>Wir haben die Verbindung zum PitBoss verloren. Zur&#252;ck zum Anfangsmen&#252; ...</German>
+		<Italian>Abbiamo perso la connessione a PitBoss!  Ritorno al menu d'apertura...</Italian>
+		<Spanish>Se ha perdido la conexi&#243;n con el Pitboss.  Saliendo al men&#250; inicial...</Spanish>
+	</TEXT>
+	<TEXT> <!-- redefine -->
+		<Tag>TXT_KEY_POPUP_KICKED</Tag>
+		<English>We are being kicked from the game!  Exiting to opening menu...</English>
+		<French>Nous sommes exclus de la partie ! D&#233;connexion du menu de lancement...</French>
+		<German>Wir werden aus dem Spiel geworfen! Zur&#252;ck zum Anfangsmen&#252; ...</German>
+		<Italian>Siamo stati cacciati dal gioco! Ritorno al menu d'apertura...</Italian>
+		<Spanish>Te est&#225;n expulsando de la partida.  Saliendo al men&#250; inicial...</Spanish>
 	</TEXT>
 	<!-- From CIV4GameTextInfos.xml -->
 	<TEXT>

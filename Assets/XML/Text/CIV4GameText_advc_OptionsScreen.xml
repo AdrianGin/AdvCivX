@@ -44,7 +44,7 @@
 		 Romance-language translations just copied from there. -->
 	<TEXT>
 		<Tag>TXT_KEY_OPTIONS_NEED_TO_RELOAD</Tag>
-		<English>Need to load a savegame, exit to main menu or restart for changes to take effect.</English>
+		<English>Need to load a savegame, exit to opening menu or restart for changes to take effect.</English>
 		<French>Le programme doit &#234;tre relanc&#233; pour que les modifications soient prises en consid&#233;ration.</French>
 		<German>Neustart, Rückkehr ins Hauptmenü oder Laden eines Spielstands erforderlich, damit die Änderung wirksam wird.</German>
 		<Italian>Il programma deve essere riavviato prima che i cambiamenti abbiano effetto</Italian>
@@ -203,7 +203,7 @@
 		<Spanish>Establece las opciones de la ficha actual con los valores predeterminados de BtS y guarda esa configuración en el perfil activo (%s1_ProfileName).</Spanish>
 	</TEXT>
 	<!-- Reassure the user that changes won't be lost. Notes: The profile can be
-		 saved before exiting if the main menu background is changed, when
+		 saved before exiting if the opening menu background is changed, when
 		 "create profile" is clicked or (see above) upon a reset.
 		 Not all data is stored in the profile; e.g. fullscreen/windowed mode
 		 is saved in CivilizationIV.ini. -->
@@ -276,11 +276,8 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_OPTIONS_SCREEN_OPENING_MENU_HELP</Tag>
-		<English>Background scene and music for the main menu</English>
-		<French>Background scene and music for the main menu</French>
-		<German>Kulisse und Musik im Hauptmenü</German>
-		<Italian>Background scene and music for the main menu</Italian>
-		<Spanish>Background scene and music for the main menu</Spanish>
+		<English>Background scene and music for the opening menu</English>
+		<German>Kulisse und Musik im Anfangsmenü</German>
 	</TEXT>
 
 	<!-- Player and graphics options: Some from CIV4GameText_Misc1.xml, others

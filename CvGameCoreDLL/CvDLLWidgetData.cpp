@@ -68,7 +68,7 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 		}
 	} // </advc.085>
 	/*	advc: (Note - Better not to assume that this is valid, widgets might perhaps
-		get triggered while returning to main menu or sth. like that.) */
+		get triggered while returning to opening menu or sth. like that.) */
 	PlayerTypes const eActivePlayer = getActivePlayer();
 	switch (widgetDataStruct.m_eWidgetType)
 	{

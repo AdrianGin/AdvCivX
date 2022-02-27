@@ -23,7 +23,7 @@ CvDLLButtonPopup* CvDLLButtonPopup::m_pInst = NULL;
 namespace
 {
 	/*	K-Mod: In the original code, arbitrary integers are used
-		to express the options of the in-game main menu. */
+		to express the options of the main menu. */
 	enum MainMenuOptions
 	{
 		MM_EXIT_TO_DESKTOP,
@@ -538,7 +538,7 @@ void CvDLLButtonPopup::OnOkClicked(CvPopup* pPopup, PopupReturn *pPopupReturn, C
 		}
 		else if (pPopupReturn->getButtonClicked() == 1)
 		{
-			// exit to main menu
+			// exit to opening menu
 			if (kGame.isNetworkMultiPlayer() && kGame.canDoControl(CONTROL_RETIRE) &&
 				kGame.countHumanPlayersAlive() > 1)
 			{

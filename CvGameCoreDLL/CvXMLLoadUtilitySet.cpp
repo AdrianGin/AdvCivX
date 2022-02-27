@@ -635,8 +635,8 @@ bool CvXMLLoadUtility::LoadBasicInfos()
 	return true;
 }
 
-/*  Globals which must be loaded before the main menus.
-	Don't put anything in here unless it has to be loaded before the main menus;
+/*  Globals which must be loaded before the opening menus.
+	Don't put anything in here unless it has to be loaded before the opening menus;
 	instead try to load things in LoadPostMenuGlobals(). */
 bool CvXMLLoadUtility::LoadPreMenuGlobals()
 {
@@ -752,7 +752,7 @@ bool CvXMLLoadUtility::LoadPreMenuGlobals()
 	return true;
 }
 
-/*  Loads global XML data which isn't needed for the main menus.
+/*  Loads global XML data which isn't needed for the opening menus.
 	This data is loaded as a second stage when the game is launched. */
 bool CvXMLLoadUtility::LoadPostMenuGlobals()
 {

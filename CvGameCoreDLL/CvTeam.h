@@ -38,7 +38,7 @@ public:
 		+	When Civ 4 is launched, constructors are called.
 		+	When Civ 4 is exited, destructors are called.
 		+	When starting a new game, init is called.
-		+	When returning to the main menu, reset is called.
+		+	When returning to the opening menu, reset is called.
 		+	When saving a game, write is called.
 		+	When loading a saved game, read is called.
 		read, init and the constructor use reset to clear the data.

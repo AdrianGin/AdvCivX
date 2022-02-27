@@ -53,7 +53,7 @@ void CvInitCore::init(GameMode eMode)
 
 void CvInitCore::uninit()
 {
-	// <advc.003w> So that memory doesn't remain allocated after exit to main menu
+	// <advc.003w> So that memory doesn't remain allocated after exit to opening menu
 	if (GC.IsGraphicsInitialized())
 	{
 		for (int i = 0; i < MAX_CIV_PLAYERS; i++)
