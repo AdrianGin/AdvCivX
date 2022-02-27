@@ -956,7 +956,7 @@ void CvGame::selectionListGameNetMessage(int eMessage, int iData2, int iData3, i
 			if (iData2 == MISSION_MOVE_TO && !(eFlags & MOVE_DECLARE_WAR))
 			{
 				CvPlot* pPlot = GC.getMap().plot(iData3, iData4);
-				FAssert(pPlot);
+				FAssert(pPlot != NULL);
 				pSelectedUnitNode = gDLL->UI().headSelectionListNode();
 				while (pSelectedUnitNode != NULL)
 				{
@@ -975,7 +975,7 @@ void CvGame::selectionListGameNetMessage(int eMessage, int iData2, int iData3, i
 							!pPlot->isVisibleEnemyUnit(pSelectedUnit))
 						{ // </advc.001>
 							CvPopupInfo* pInfo = new CvPopupInfo(BUTTONPOPUP_DECLAREWARMOVE);
-							if (NULL != pInfo)
+							if (pInfo != NULL)
 							{
 								pInfo->setData1(eRivalTeam);
 								pInfo->setData2(pPlot->getX());
@@ -2150,7 +2150,7 @@ void CvGame::applyFlyoutMenu(const CvFlyoutMenuData& kItem)
 	}
 }
 
-CvPlot* CvGame::getNewHighlightPlot() const  // advc: refactored
+CvPlot* CvGame::getNewHighlightPlot() const
 {
 	if (gDLL->GetWorldBuilderMode())
 		return GC.getPythonCaller()->WBGetHighlightPlot();
@@ -2160,11 +2160,10 @@ CvPlot* CvGame::getNewHighlightPlot() const  // advc: refactored
 }
 
 
-ColorTypes CvGame::getPlotHighlightColor(CvPlot* pPlot) const  // advc: refactored
+ColorTypes CvGame::getPlotHighlightColor(CvPlot* pPlot) const
 {
 	if (pPlot == NULL)
 		return NO_COLOR;
-
 	ColorTypes const eDefaultColor = GC.getColorType("GREEN");
 	if (gDLL->GetWorldBuilderMode())
 		return eDefaultColor;

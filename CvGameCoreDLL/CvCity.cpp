@@ -4782,7 +4782,7 @@ int CvCity::calculateColonyMaintenance() const
 int CvCity::calculateColonyMaintenanceTimes100(PlayerTypes eOwner) const
 {
 	// advc.004b: BtS code moved into new static function
-	return calculateColonyMaintenanceTimes100(*plot(),
+	return calculateColonyMaintenanceTimes100(getPlot(),
 			eOwner == NO_PLAYER ? getOwner() : eOwner,
 			getPopulation());
 }

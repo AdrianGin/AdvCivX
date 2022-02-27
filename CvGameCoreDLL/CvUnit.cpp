@@ -3694,7 +3694,7 @@ bool CvUnit::airlift(int iX, int iY)
 	return true;
 }
 
-
+// advc (comment): Says whether eTeam is a victim of this (nuke) unit if it nukes pPlot
 bool CvUnit::isNukeVictim(const CvPlot* pPlot, TeamTypes eTeam) const
 {
 	if(!GET_TEAM(eTeam).isAlive() || eTeam == getTeam())
@@ -3728,12 +3728,12 @@ bool CvUnit::canNukeAt(CvPlot const& kFrom, int iX, int iY) const
 		return false;
 
 	CvPlot* pTargetPlot = GC.getMap().plot(iX, iY);
-	for (TeamIter<MAJOR_CIV> it; it.hasNext(); ++it)
+	for (TeamIter<MAJOR_CIV> itTeam; itTeam.hasNext(); ++itTeam)
 	{
-		if (isNukeVictim(pTargetPlot, it->getID()))
+		if (isNukeVictim(pTargetPlot, itTeam->getID()) &&
+			!isEnemy(itTeam->getID(), kFrom))
 		{
-			if (!isEnemy(it->getID(), kFrom))
-				return false;
+			return false;
 		}
 	}
 

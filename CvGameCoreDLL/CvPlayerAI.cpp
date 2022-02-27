@@ -16535,19 +16535,14 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 		I don't know what it is meant to be a percentage of. It's roughly between 56 and 167. */
 	int const iWarmongerFactor = 25000 / std::max(100,
 			100 + GC.getInfo(getPersonalityType()).getMaxWarRand());
-
 	// <K-Mod>
-	int iMaintenanceFactor =  AI_commerceWeight(COMMERCE_GOLD) *
+	int const iMaintenanceFactor =  AI_commerceWeight(COMMERCE_GOLD) *
 			std::max(0, calculateInflationRate() + 100) / 100; // </K-Mod>
 
-	int iValue = iCities * 6;
-
-	iValue += GC.getInfo(eCivic).getAIWeight() * iCities;
-
+	int iValue = iCities * (6 + kCivic.getAIWeight());
 	// K-Mod: civic anger is counted somewhere else
 	//iValue += (getCivicPercentAnger(eCivic) / 10);
-
-	iValue -= GC.getInfo(eCivic).getAnarchyLength() * iCities;
+	iValue -= kCivic.getAnarchyLength() * iCities;
 
 	//iValue += -(getSingleCivicUpkeep(eCivic, true)*80)/100;
 	// K-Mod. (note. upkeep modifiers are included in getSingleCivicUpkeep.)
@@ -16592,7 +16587,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 		FOR_EACH_CITY(pLoopCity, *this)
 		{
 			iTemp += pLoopCity->calculateNumCitiesMaintenanceTimes100() *
-				(pLoopCity->getMaintenanceModifier() + 100) / 100;
+					(pLoopCity->getMaintenanceModifier() + 100) / 100;
 		}
 		iTemp *= 100;
 		iTemp /= std::max(1, getNumCitiesMaintenanceModifier() + 100);
@@ -16609,7 +16604,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 		FOR_EACH_CITY(pLoopCity, *this)
 		{
 			iTemp += pLoopCity->calculateDistanceMaintenanceTimes100() *
-				(pLoopCity->getMaintenanceModifier() + 100) / 100;
+					(pLoopCity->getMaintenanceModifier() + 100) / 100;
 		}
 		iTemp *= 100;
 		iTemp /= std::max(1, getDistanceMaintenanceModifier() + 100);
@@ -17691,7 +17686,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 		}
 	}
 
-	/* if (AI_atVictoryStage(AI_VICTORY_CULTURE2) && GC.getInfo(eCivic).isNoNonStateReligionSpread())
+	/* if (AI_atVictoryStage(AI_VICTORY_CULTURE2) && kCivic.isNoNonStateReligionSpread())
 		iValue /= 10;*/ // what the lol...
 
 	return iValue;
