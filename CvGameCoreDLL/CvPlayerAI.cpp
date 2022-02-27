@@ -17407,7 +17407,11 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 				case YIELD_PRODUCTION:
 					/*	For production, we inflate the value a little to account
 						for the fact that it may help us win wonder races. */
-					iTemp /= 80;
+					//iTemp /= 80;
+					/*	advc.131: ^That sounds reasonable, but having a city with
+						very high production also risks running out of high-value
+						production orders. */
+					iTemp /= 100;
 					break;
 				case YIELD_COMMERCE:
 					/*	For commerce, the multiplier is compounded by
