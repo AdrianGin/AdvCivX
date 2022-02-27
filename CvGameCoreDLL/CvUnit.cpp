@@ -1886,7 +1886,6 @@ void CvUnit::updateFoundingBorder(bool bForceClear) const
 	if(BUGOption::isEnabled("MainInterface__FoundingYields", false) && iMode == 1)
 		return; // BtS behavior
 	gDLL->getEngineIFace()->clearAreaBorderPlots(AREA_BORDER_LAYER_FOUNDING_BORDER);
-	gDLL->UI().setDirty(ColoredPlots_DIRTY_BIT, true);
 	if(bForceClear || iMode <= 0 || !isFound())
 		return;
 	FOR_EACH_UNIT_IN(pUnit, *getGroup())
@@ -1906,15 +1905,13 @@ void CvUnit::updateFoundingBorder(bool bForceClear) const
 	}
 	ColorTypes eColor = GC.getInfo(GET_PLAYER(getOwner()).
 			getPlayerColor()).getColorTypePrimary();
-	NiColorA const& color = GC.getInfo(eColor).getColor();
-	for(int i = 0; i < GC.getMap().numPlots(); i++)
+	NiColorA const& kColor = GC.getInfo(eColor).getColor();
+	for (PlotCircleIter itPlot(*pCenter, iMode == 1 ? 1 : CITY_PLOTS_RADIUS);
+		itPlot.hasNext(); ++itPlot)
+
 	{
-		CvPlot const& kPlot = GC.getMap().getPlotByIndex(i);
-		if(::plotDistance(pCenter, &kPlot) <= (iMode == 1 ? 1 : CITY_PLOTS_RADIUS))
-		{
-			gDLL->getEngineIFace()->fillAreaBorderPlot(kPlot.getX(), kPlot.getY(),
-					color, AREA_BORDER_LAYER_FOUNDING_BORDER);
-		}
+		gDLL->getEngineIFace()->fillAreaBorderPlot(itPlot->getX(), itPlot->getY(),
+				kColor, AREA_BORDER_LAYER_FOUNDING_BORDER);
 	}
 }
 
