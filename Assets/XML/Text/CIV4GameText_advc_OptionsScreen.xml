@@ -10,7 +10,7 @@
 		 really fit under "Controls". "UI"? I'm happy with German "Bedienung".
 		 Note that the tab names are also used in the OPTIONS_SCREEN_RESET
 		 texts in this file. -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_OPTIONS_GAME</Tag>
 		<English>Controls</English>
 		<French>Jeu</French>
@@ -123,7 +123,7 @@
 	
 	<!-- From CIV4GameTextInfos.xml. The translations were too long (repeating
 		 "volume" every time); no changes in English. -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_OPTIONS_MUSICVOLUME</Tag>
 		<English>Music</English>
 		<French>Musique</French>
@@ -131,7 +131,7 @@
 		<Italian>Musica</Italian>
 		<Spanish>M&#250;sica</Spanish>
 	</TEXT>
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_OPTIONS_EFFECTSVOLUME</Tag>
 		<English>Sound Effects</English>
 		<French>Effets sonores</French>
@@ -139,7 +139,7 @@
 		<Italian>Effetti sonori</Italian>
 		<Spanish>Efectos de sonido</Spanish>
 	</TEXT>
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_OPTIONS_SPEECHVOLUME</Tag>
 		<English>Speech</English>
 		<French>Voix</French>
@@ -147,7 +147,7 @@
 		<Italian>Parlato</Italian>
 		<Spanish>Habla</Spanish>
 	</TEXT>
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_OPTIONS_AMBIENCEVOLUME</Tag>
 		<English>Ambience</English>
 		<French>Ambiance</French>
@@ -155,7 +155,7 @@
 		<Italian>Ambientale</Italian>
 		<Spanish>Sonido ambiental</Spanish>
 	</TEXT>
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_OPTIONS_INTERFACEVOLUME</Tag>
 		<English>Interface</English>
 		<French>Interface</French>
@@ -256,7 +256,7 @@
 		<Spanish>Rendering quality and texture resolution in Globe View</Spanish>
 	</TEXT>
 	<!-- Capitalization removed -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_GRAPHICOPTION_NO_MOVIES_HELP</Tag>
 		<English>Skips wonder, religion and victory movies.</English>
 		<French>Passe les films Merveille, Religion et Victoire.</French>
@@ -269,19 +269,18 @@
 	<TEXT>
 		<Tag>TXT_KEY_OPTIONS_SCREEN_MOVIE_QUALITY_HELP</Tag>
 		<English>Rendering quality of wonder, religion and victory movies</English>
-		<French>Rendering quality of wonder, religion and victory movies</French>
 		<German>Darstellungsqualität der Wunder-, Religions- und Siegfilme</German>
-		<Italian>Rendering quality of wonder, religion and victory movies</Italian>
-		<Spanish>Rendering quality of wonder, religion and victory movies</Spanish>
 	</TEXT>
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_OPTIONS_SCREEN_OPENING_MENU_HELP</Tag>
 		<English>Background scene and music for the opening menu</English>
 		<German>Kulisse und Musik im Anfangsmenü</German>
 	</TEXT>
 
 	<!-- Player and graphics options: Some from CIV4GameText_Misc1.xml, others
-		 from CIV4GameTextInfos.xml. -->
+		 from CIV4GameTextInfos.xml. Let's place a single tag ... -->
+		 <!-- redefine -->
+		 <!-- ... to cover all of these. -->
 	<!-- Minor change to German -->
 	<TEXT>
 		<Tag>TXT_KEY_PLAYER_OPTION_WAIT_AT_END_OF_TURN</Tag>

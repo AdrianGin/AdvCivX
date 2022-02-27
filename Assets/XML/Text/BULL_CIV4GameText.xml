@@ -7,7 +7,7 @@
 <Civ4GameText xmlns="http://www.firaxis.com">
 
 <!-- City Bar Hover -->
-	
+
 	<!-- Food Assist -->
 	<!-- advc.189: Handled through (less verbose) text in Civ4GameText_advc.xml -->
 	<!--TEXT>
