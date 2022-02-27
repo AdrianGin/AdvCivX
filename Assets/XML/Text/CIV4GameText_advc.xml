@@ -1114,34 +1114,6 @@
 		<Italian>Diminuisce il ritmo %s1_CmrcType del %d2_Mod%%</Italian>
 		<Spanish>Disminuir ritmo de %s1_CmrcType en un %d2_Mod%%</Spanish>
 	</TEXT>
-
-	<!-- advc.004g: The other terrain names are in
-		 CIV4GameTextInfos_Objects.xml. Previously used the same TXT_KEY as
-		 shelf ice, which was confusing, and everyone calls it "snow" anyway. -->
-	<TEXT>
-		<Tag>TXT_KEY_TERRAIN_SNOW</Tag>
-		<English>Snow</English>
-		<French>
-			<Text>Neige</Text>
-			<Gender>Female</Gender>
-			<Plural>0</Plural>
-		</French>
-		<German>
-			<Text>Schnee</Text>
-			<Gender>Male</Gender>
-			<Plural>0</Plural>
-		</German>
-		<Italian>
-			<Text>Neve</Text>
-			<Gender>Female</Gender>
-			<Plural>0</Plural>
-		</Italian>
-		<Spanish>
-			<Text>Nieve</Text>
-			<Gender>Female</Gender>
-			<Plural>0</Plural>
-		</Spanish>
-	</TEXT>
 	
 	<!-- advc.004g: Originally in Civ4GameTextInfos.xml. Plural "peoples"
 		 sounds better. "close" together dropped (for brevity). -->
