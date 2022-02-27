@@ -222,7 +222,7 @@ void CvCivicInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_iDomesticGreatGeneralRateModifier);
 	stream->Read(&m_iStateReligionGreatPeopleRateModifier);
 	stream->Read(&m_iDistanceMaintenanceModifier);
-	stream->Read(&m_iColonyMaintenanceModifier); // advc.exmp.3
+	stream->Read(&m_iColonyMaintenanceModifier); // advc.912g
 	stream->Read(&m_iNumCitiesMaintenanceModifier);
 	stream->Read(&m_iCorporationMaintenanceModifier);
 	stream->Read(&m_iExtraHealth);
