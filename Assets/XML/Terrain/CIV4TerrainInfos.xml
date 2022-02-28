@@ -596,8 +596,7 @@
 		</TerrainInfo>
 		<TerrainInfo>
 			<Type>TERRAIN_SNOW</Type>
-			<!-- advc.004g: Was ..._ICE. Snow gets its own name. -->
-			<Description>TXT_KEY_TERRAIN_SNOW</Description>
+			<Description>TXT_KEY_TERRAIN_ICE</Description>
 			<Civilopedia>TXT_KEY_TERRAIN_ICE_PEDIA</Civilopedia>
 			<ArtDefineTag>ART_DEF_TERRAIN_SNOW</ArtDefineTag>
 			<Yields/>
