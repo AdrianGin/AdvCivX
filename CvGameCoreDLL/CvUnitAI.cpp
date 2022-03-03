@@ -13698,8 +13698,19 @@ bool CvUnitAI::AI_bombardCity()
 		if (gUnitLogLevel > 2) logBBAI("      Stack skipping bombard of %S with compare %d, starting odds %d, bombard turns %d, threshold %d", pBombardCity->getName().GetCString(), iComparison, iAttackOdds, iBombardTurns, iThreshold);
 		return false;
 	}
-	getGroup()->pushMission(MISSION_BOMBARD,  // <K-Mod>
-			-1, -1, NO_MOVEMENT_FLAGS, false, false,
+	// <advc.004c>
+	CvUnit* pBombardUnit = AI_getGroup()->AI_bestUnitForMission(MISSION_BOMBARD);
+	if (pBombardUnit == NULL)
+	{
+		FErrorMsg("canBombard but no bombard unit found");
+		return false;
+	}
+	// (Not sure if other types of groups would manage to reunite)
+	if (AI_getUnitAIType() == UNITAI_ATTACK_CITY)
+		pBombardUnit->joinGroup(NULL);
+	pBombardUnit-> // </advc.004c>
+			getGroup()->pushMission(MISSION_BOMBARD,
+			/* <K-Mod> */ -1, -1, NO_MOVEMENT_FLAGS, false, false,
 			MISSIONAI_ASSAULT, pBombardCity->plot()); // </K-Mod>
 	return true;
 }
