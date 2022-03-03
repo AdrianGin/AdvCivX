@@ -28,7 +28,7 @@ public:
 	~CvPlot();
 
 	void init(int iX, int iY);
-	void initAdjList(); // advc.opt
+	void initAdjList(); // advc.003s
 	void setupGraphical();
 	void updateGraphicEra();
 
@@ -116,12 +116,14 @@ public:
 	void updateSeeFromSight(bool bIncrement, bool bUpdatePlotGroups);
 
 	bool canHaveBonus(BonusTypes eBonus, bool bIgnoreLatitude = false,								// Exposed to Python
-			bool bIgnoreFeature = false) const; // advc.129
+			bool bIgnoreFeature = false, // advc.129
+			bool bIgnoreCurrentBonus = false) const; // advc.tsl
 	bool canHaveImprovement(ImprovementTypes eImprovement,											// Exposed to Python
 			TeamTypes eTeam = NO_TEAM, bool bPotential = false,
 			BuildTypes eBuild = NO_BUILD, bool bAnyBuild = true) const; // kekm.9
 	bool canBuild(BuildTypes eBuild, PlayerTypes ePlayer = NO_PLAYER,								// Exposed to Python
-			bool bTestVisible = false) const;
+			bool bTestVisible = false,
+			bool bIgnoreFoW = true) const; // advc.181
 	int getBuildTime(BuildTypes eBuild,																// Exposed to Python
 			PlayerTypes ePlayer) const; // advc.251
 	int getBuildTurnsLeft(BuildTypes eBuild, /* advc.251: */ PlayerTypes ePlayer,
@@ -325,6 +327,7 @@ public:
 	PlotNumTypes plotNum() const { return (PlotNumTypes)m_iPlotNum; } // advc.opt
 	int getLatitude() const;																																					// Exposed to Python
 	void setLatitude(int iLatitude); // advc.tsl	(exposed to Python)
+	void updateLatitude(); // advc.tsl (public for testing)
 	int getFOWIndex() const;
 
 	//int getArea() const;
@@ -490,7 +493,7 @@ public:
 
 	DllExport CvCity* getPlotCity() const;															// Exposed to Python
 	CvCityAI* AI_getPlotCity() const;
-	void setPlotCity(CvCity* pNewValue);
+	void setPlotCity(CvCity* pNewCity);
 	void setRuinsName(CvWString const& szName); // advc.005c
 	const wchar* getRuinsName() const; // advc.005c (NULL if none)
 	CvCity* getWorkingCity() const;																	// Exposed to Python
@@ -776,8 +779,7 @@ public:
 	DllExport bool checkLateEra() const;
 	void killRandomUnit(PlayerTypes eOwner, DomainTypes eDomain); // advc.300
 
-	// <advc.opt>
-	/*	advc.003s: No assertion of iAt being within array bounds; should
+	/*	<advc.003s> No assertion of iAt being within array bounds; should
 		call this only via a FOR_EACH_ADJ_PLOT macro (PlotAdjListTraversal.h). */
 	CvPlot* getAdjacentPlotUnchecked(int iAt) const
 	{
@@ -785,7 +787,7 @@ public:
 		return m_paAdjList[iAt];
 	}
 	int numAdjacentPlots() const { return m_iAdjPlots; }
-	// </advc.opt>
+	// </advc.003s>
 
 	wchar const* debugStr() const; // advc.031c
 
@@ -856,7 +858,7 @@ protected:
 	int m_iUpgradeProgress;
 	int m_iTotalCulture; // advc.opt
 
-	CvPlot** m_paAdjList; // advc.opt (a vector would take up 16 byte)
+	CvPlot** m_paAdjList; // advc.003s (a vector would take up 16 byte)
 	// <advc> m_pArea is enough - except while loading a savegame.
 	union
 	{

@@ -134,6 +134,8 @@ class BugCityScreenOptionsTab(BugOptionsTab.BugOptionsTab):
 		self.addLabel(screen, panel, "Misc", "Miscellaneous:")
 		# advc.004t: New option
 		self.addCheckbox(screen, panel, "CityScreen__ClickMapToExit")
+		# advc.002q: New option
+		self.addCheckbox(screen, panel, "CityScreen__CitySoundScapes")
 		# advc.004: Moved up
 		self.addTextDropdown(screen, panel, panel, "CityScreen__Specialists", True)
 		#self.addCheckbox(screen, panel, "MiscHover__RemoveSpecialist")

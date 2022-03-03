@@ -243,7 +243,8 @@ public:
 	bool canGoldenAge(const CvPlot* pPlot, bool bTestVisible = false) const;								// Exposed to Python
 	bool goldenAge();
 
-	bool canBuild(CvPlot const& pPlot, BuildTypes eBuild, bool bTestVisible = false) const;					// Exposed to Python
+	bool canBuild(CvPlot const& pPlot, BuildTypes eBuild,													// Exposed to Python
+			bool bTestVisible = false, /* advc.181: */ bool bIgnoreFoW = true) const;
 	bool build(BuildTypes eBuild);
 
 	bool canPromote(PromotionTypes ePromotion,																// Exposed to Python
@@ -289,6 +290,7 @@ public:
 		return m_pUnitInfo->getSpecialUnitType();
 	}
 	UnitTypes getCaptureUnitType(CivilizationTypes eCivilization) const;									// Exposed to Python
+	int getCaptureOdds(CvUnit const& kDefender) const; // advc.010
 	UnitCombatTypes getUnitCombatType() const																// Exposed to Python
 	{
 		return m_pUnitInfo->getUnitCombatType();
@@ -343,6 +345,7 @@ public:
 	{
 		return m_pUnitInfo->getNukeRange();
 	}
+	bool isNuke() const { return m_pUnitInfo->isNuke(); } // advc
 
 	bool canBuildRoute() const;																				// Exposed to Python
 	DllExport BuildTypes getBuildType() const;																// Exposed to Python
@@ -804,7 +807,7 @@ public:
 	int getKamikazePercent() const;																			// Exposed to Python
 	void changeKamikazePercent(int iChange);
 
-	DllExport DirectionTypes getFacingDirection(bool checkLineOfSightProperty) const;
+	DllExport DirectionTypes getFacingDirection(bool bCheckLineOfSightProperty) const;
 	void setFacingDirection(DirectionTypes facingDirection);
 	void rotateFacingDirectionClockwise();
 	void rotateFacingDirectionCounterClockwise();

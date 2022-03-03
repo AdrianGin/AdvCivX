@@ -679,6 +679,8 @@
 	<ElementType name="iDomesticGreatGeneralRateModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iStateReligionGreatPeopleRateModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iDistanceMaintenanceModifier" content="textOnly" dt:type="int"/>
+	<!-- advc.912g -->
+	<ElementType name="iColonyMaintenanceModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iNumCitiesMaintenanceModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iCorporationMaintenanceModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iExtraHealth" content="textOnly" dt:type="int"/>
@@ -822,6 +824,8 @@
 		<element type="iDomesticGreatGeneralRateModifier"/>
 		<element type="iStateReligionGreatPeopleRateModifier"/>
 		<element type="iDistanceMaintenanceModifier"/>
+		<!-- advc.912g -->
+		<element type="iColonyMaintenanceModifier" minOccurs="0"/>
 		<element type="iNumCitiesMaintenanceModifier"/>
 		<element type="iCorporationMaintenanceModifier"/>
 		<element type="iExtraHealth"/>

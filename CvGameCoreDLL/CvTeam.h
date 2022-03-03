@@ -38,7 +38,7 @@ public:
 		+	When Civ 4 is launched, constructors are called.
 		+	When Civ 4 is exited, destructors are called.
 		+	When starting a new game, init is called.
-		+	When returning to the main menu, reset is called.
+		+	When returning to the opening menu, reset is called.
 		+	When saving a game, write is called.
 		+	When loading a saved game, read is called.
 		read, init and the constructor use reset to clear the data.
@@ -304,11 +304,22 @@ public:
 	} // </advc.134a>
 	void setAtWar(TeamTypes eIndex, bool bNewValue);
 	/*  advc.162: "Just" meaning on the current turn. Don't want to rely on
-		AI code (AI_getWarPlanStateCounter) for this. */
+		AI code (AI_getWarPlanStateCounter) for this.
+		Also used for advc.010. */
 	bool hasJustDeclaredWar(TeamTypes eIndex) const
 	{
 		return m_abJustDeclaredWar.get(eIndex);
 	}
+	// <advc.130k> Replacing CvTeamAI::m_aiAtPeaceCounter, which is now randomized.
+	int getTurnsAtPeace(TeamTypes eTeam) const
+	{
+		return m_aiTurnsAtPeace.get(eTeam);
+	}
+	void changeTurnsAtPeace(TeamTypes eTeam, int iChange)
+	{
+		setTurnsAtPeace(eTeam, getTurnsAtPeace(eTeam) + iChange);
+	}
+	void setTurnsAtPeace(TeamTypes eTeam, int iTurns); // </advc.130k>
 
 	bool isPermanentWarPeace(TeamTypes eIndex) const												// Exposed to Python
 	{
@@ -422,13 +433,22 @@ public:
 	}
 	void changeTerrainTradeCount(TerrainTypes eIndex, int iChange);
 
-	int getRiverTradeCount() const;
+	int getRiverTradeCount() const
+	{
+		return m_iRiverTradeCount;
+	}
 	bool isRiverTrade() const																			// Exposed to Python
 	{
 		//return (getRiverTradeCount() > 0);
 		return true; // advc.124
 	}
 	void changeRiverTradeCount(int iChange);
+	// advc.500c:
+	int getNoMilitaryAnger() const
+	{
+		return (m_iNoFearForSafetyCount > 0 ? 0 : GC.getDefineINT(CvGlobals::
+				NO_MILITARY_PERCENT_ANGER));
+	}
 
 	int getVictoryCountdown(VictoryTypes eVictory) const													// Exposed to Python
 	{
@@ -587,6 +607,7 @@ protected:
 	int m_iMasterPower;
 	int m_iEnemyWarWearinessModifier;
 	int m_iRiverTradeCount;
+	int m_iNoFearForSafetyCount; // advc.500c
 	int m_iEspionagePointsEver;
 	// <advc.003m>
 	int m_iMajorWarEnemies; // incl. vassals
@@ -609,6 +630,7 @@ protected:
 	ArrayEnumMap<TeamTypes,int> m_aiEspionagePointsAgainstTeam;
 	ListEnumMap<TeamTypes,int,short> m_aiCounterespionageTurnsLeftAgainstTeam;
 	ListEnumMap<TeamTypes,int,short> m_aiCounterespionageModAgainstTeam;
+	ArrayEnumMap<TeamTypes,int,short> m_aiTurnsAtPeace; // advc.130k
 	ArrayEnumMap<PlayerTypes,int,char> m_aiTechShareCount;
 
 	CommerceChangeMap m_aiCommerceFlexibleCount;
@@ -671,6 +693,7 @@ protected:
 	void updatePlotGroupBonus(TechTypes eTech, bool bAdd); // advc
 
 	void processTech(TechTypes eTech, int iChange, /* advc.121: */ bool bEndOfTurn);
+	void changeNoFearForSafetyCount(int iChange); // advc.500c
 
 	void triggerDefensivePacts(TeamTypes eTarget, bool bNewDiplo, bool bPrimary); // advc
 	void cancelDefensivePacts();

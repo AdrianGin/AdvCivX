@@ -248,7 +248,10 @@ class AIAutoPlay :
 		'keypress handler'
 		eventType,key,mx,my,px,py = argsList
 		# <advc.001>
-		if not self.customEM.isCheatsEnabled():
+		if not self.customEM.isCheatsEnabled() or (
+				game.getActivePlayer() != PlayerTypes.NO_PLAYER and
+				# Enabling AI Auto Play during Advanced Start isn't supported
+				gc.getPlayer(game.getActivePlayer()).getAdvancedStartPoints() > 0):
 			return # </advc.001>
 		# Get it?  Shift ... control ... to the AI
 		if eventType != 6 or not self.customEM.bShift or not self.customEM.bCtrl:

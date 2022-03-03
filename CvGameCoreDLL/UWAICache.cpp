@@ -1371,9 +1371,9 @@ void UWAICache::reportWarEnding(TeamTypes eEnemy,
 			bForceFailure = true;
 	}
 	// Evaluate war success
-	int iOurSuccess = GET_TEAM(m_eOwner).AI_getWarSuccess(eEnemy);
-	int iTheirSuccess = GET_TEAM(eEnemy).AI_getWarSuccess(TEAMID(m_eOwner));
-	if (iOurSuccess + iTheirSuccess < GC.getWAR_SUCCESS_CITY_CAPTURING() &&
+	scaled rOurSuccess = GET_TEAM(m_eOwner).AI_getWarSuccess(eEnemy);
+	scaled rTheirSuccess = GET_TEAM(eEnemy).AI_getWarSuccess(TEAMID(m_eOwner));
+	if (rOurSuccess + rTheirSuccess < GC.getWAR_SUCCESS_CITY_CAPTURING() &&
 		!bForceFailure && !bForceSuccess)
 	{
 		return;
@@ -1382,9 +1382,9 @@ void UWAICache::reportWarEnding(TeamTypes eEnemy,
 	scaled const rOurTechEra = GET_PLAYER(m_eOwner).AI_getCurrEraFactor();
 	scaled const rSuccessThresh = GC.getWAR_SUCCESS_CITY_CAPTURING() *
 			rOurTechEra * fixp(0.7);
-	scaled rSuccessRatio(iOurSuccess, std::max(1, iTheirSuccess));
-	if ((rSuccessRatio > 1 && iOurSuccess < rSuccessThresh) ||
-		(rSuccessRatio < 1 && iTheirSuccess < rSuccessThresh))
+	scaled rSuccessRatio = rOurSuccess / std::max(scaled::epsilon(), rTheirSuccess);
+	if ((rSuccessRatio > 1 && rOurSuccess < rSuccessThresh) ||
+		(rSuccessRatio < 1 && rTheirSuccess < rSuccessThresh))
 	{
 		rSuccessRatio = 1;
 	}

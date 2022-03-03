@@ -624,7 +624,15 @@ class CvTechChooser:
 
 		j = 0
 		k = 0
-
+		# <advc.500c>
+		# No Fear for Safety
+		if ( gc.getTechInfo(i).isNoFearForSafety() ):
+			screen.addDDSGFCAt("FearForSafety" + str(i), szTechRecord,
+					gc.getMissionInfo(MissionTypes.MISSION_FORTIFY).getButton(),
+					iX + fX, iY + Y_ROW, TEXTURE_SIZE, TEXTURE_SIZE,
+					WidgetTypes.WIDGET_HELP_NO_FEAR_FOR_SAFETY, i, -1, False )
+			fX += X_INCREMENT
+		# </advc.550c>
 		# Line of Sight bonus...
 		if ( gc.getTechInfo(i).isExtraWaterSeeFrom() ):
 			szLOSButton = self.getNextWidgetName("LOS")

@@ -22,6 +22,7 @@
 #include "CvMessageControl.h"
 #include "BarbarianWeightMap.h" // advc.304
 #include "StartingPositionIteration.h" // advc.027
+#include "TrueStarts.h" // advc.tsl
 #include "StartPointsAsHandicap.h" // advc.250b
 #include "RiseFall.h" // advc.700
 #include "CvHallOfFameInfo.h" // advc.106i
@@ -224,11 +225,35 @@ void CvGame::setInitialItems()
 	for (int i = 0; i < kMap.numPlots(); i++)
 		kMap.plotByIndex(i)->setRiverID(-1); // </advc>
 	// <advc.030> Now that ice has been placed and normalization is through
-	if(GC.getDefineBOOL("PASSABLE_AREAS"))
+	if (GC.getDefineBOOL(CvGlobals::PASSABLE_AREAS))
 		kMap.recalculateAreas(false);
 	// </advc.030>
-	// advc.tsl: Delay part of the freebies until starting sites have been assigned
-	initFreeCivState();
+	// <advc.tsl>
+	if (isOption(GAMEOPTION_TRUE_STARTS))
+	{
+		TrueStarts ts;
+		ts.changeCivs();
+		if (GC.getDefineBOOL(CvGlobals::TRUE_STARTS_SANITIZE))
+			ts.sanitize();
+	}
+	GC.getLogger().logCivLeaders(); // </advc.tsl>
+	/*	<advc.190c> Letting CvInitCore do this would be misleading b/c
+		net messages don't get delivered that early in game setup. */
+	if (isNetworkMultiPlayer())
+	{
+		CvInitCore const& kInitCore = GC.getInitCore();
+		FOR_EACH_ENUM(Player)
+		{
+			if (kInitCore.wasCivRandomlyChosen(eLoopPlayer) ||
+				kInitCore.wasLeaderRandomlyChosen(eLoopPlayer))
+			{	// We're the host
+				CvMessageControl::getInstance().sendCivLeaderSetup(kInitCore);
+				break;
+			}
+		}
+	} // </advc.190c>
+	// Delay part of the freebies until starting sites have been assigned
+	initFreeCivState(); // </advc.tsl>
 	initFreeUnits();
 	// <advc.250c>
 	if (GC.getDefineBOOL("INCREASE_START_TURN") && getStartEra() == 0)
@@ -272,10 +297,13 @@ void CvGame::setInitialItems()
 	} // </advc.250c>
 	for (PlayerAIIter<CIV_ALIVE> it; it.hasNext(); ++it)
 		it->AI_updateFoundValues();
+	// <advc.tsl>
+	if (m_iMapRegens < GC.getDefineINT("AUTO_REGEN_MAP"))
+		regenerateMap(true); // </advc.tsl>
 }
 
 
-void CvGame::regenerateMap()
+void CvGame::regenerateMap(/* advc.tsl: */ bool bAutomated)
 {
 	if (GC.getInitCore().getWBMapScript())
 		return;
@@ -339,7 +367,11 @@ void CvGame::regenerateMap()
 	setTurnSlice(0); // advc.001: Reset minutesPlayed to 0
 	CvEventReporter::getInstance().resetStatistics();
 
+	m_iMapRegens++; // advc.tsl
 	setInitialItems();
+	// <advc.tsl>
+	if (bAutomated)
+		return; // </advc.tsl>
 
 	initScoreCalculation();
 	setFinalInitialized(true);
@@ -700,6 +732,7 @@ void CvGame::reset(HandicapTypes eHandicap, bool bConstructorCall)
 	m_initialRandSeed.uiMap = m_initialRandSeed.uiSync = 0; // advc.027b
 
 	m_iNumSessions = 1;
+	m_iMapRegens = 0; // advc.tsl
 
 	m_iShrineBuildingCount = 0;
 	m_iNumCultureVictoryCities = 0;
@@ -998,17 +1031,17 @@ void CvGame::initFreeCivState()
 			{
 				for (MemberIter itMember(kTeam.getID()); itMember.hasNext(); ++itMember)
 				{
-					CvPlayer& kMember = *itMember;
 					/*  <advc.250b>, advc.250c: Always grant civ-specific tech,
 						but not tech from handicap if in Advanced Start except to
 						human civs that don't actually start Advanced (SPaH option). */
-					if (GC.getInfo(kMember.getCivilizationType()).isCivilizationFreeTechs(eLoopTech))
+					if (GC.getInfo(itMember->getCivilizationType()).
+						isCivilizationFreeTechs(eLoopTech))
 					{
 						bValid = true;
 						break;
 					}
 					// K-Mod: Give techs based on player handicap, not game handicap.
-					if (GC.getInfo(kMember.getHandicapType()).isFreeTechs(eLoopTech) &&
+					if (GC.getInfo(itMember->getHandicapType()).isFreeTechs(eLoopTech) &&
 						(!isOption(GAMEOPTION_ADVANCED_START) ||
 						(isOption(GAMEOPTION_SPAH) && kTeam.isHuman()))) // </advc.250b>
 					{
@@ -1043,8 +1076,20 @@ void CvGame::initFreeCivState()
 void CvGame::initScenario()
 {
 	initFreeState(); // Tech from handicap
+	// <advc.tsl>
+	if (isOption(GAMEOPTION_TRUE_STARTS) &&
+		/*	Replacing fixed players should actually be OK -
+			just so long as the scenario doesn't define any cities. */
+		//GC.getInitCore().getWBMapNoPlayers()
+		getNumCities() <= 0)
+	{
+		TrueStarts ts;
+		ts.changeCivs();
+		if (GC.getDefineBOOL(CvGlobals::TRUE_STARTS_SANITIZE_SCENARIOS))
+			ts.sanitize();
+	} // </advc.tsl>
 	// <advc.030>
-	if (GC.getDefineBOOL("PASSABLE_AREAS"))
+	if (GC.getDefineBOOL(CvGlobals::PASSABLE_AREAS))
 	{
 		/*  recalculateAreas can't handle preplaced cities. Or perhaps it can
 			(Barbarian cities are fine in most cases), but there's going to
@@ -1506,7 +1551,7 @@ void CvGame::applyStartingLocHandicaps(
 	The Agent type can be either CvPlayer or CvTeam. The agents have to be
 	alive and non-Barbarian. kResult should be empty before the call. */
 template<class Agent>
-CvGame::sortByStartingLocHandicap(
+void CvGame::sortByStartingLocHandicap(
 	std::vector<std::pair<Agent*,int> > const& kStartingLocPercentPerAgent,
 	std::vector<Agent*>& kResult)
 {
@@ -2994,11 +3039,12 @@ void CvGame::update()
 
 void CvGame::updateScore(bool bForce)
 {
+	PROFILE_FUNC(); // advc.test (Just a little worried about the attitude updates)
 	if(!isScoreDirty() && !bForce)
 		return;
 	setScoreDirty(false);
 
-	bool abPlayerScored[MAX_CIV_PLAYERS] = { false };
+	bool abPlayerScored[MAX_CIV_PLAYERS] = {};
 	std::vector<PlayerTypes> aeUpdateAttitude; // advc.001
 	for (int iI = 0; iI < MAX_CIV_PLAYERS; iI++)
 	{
@@ -3049,7 +3095,7 @@ void CvGame::updateScore(bool bForce)
 		}
 	} // </advc.001>
 
-	bool abTeamScored[MAX_CIV_TEAMS] = { false };
+	bool abTeamScored[MAX_CIV_TEAMS] = {};
 	for (int iI = 0; iI < MAX_CIV_TEAMS; iI++)
 	{
 		int iBestScore = MIN_INT;
@@ -4139,11 +4185,8 @@ bool CvGame::canTrainNukes() const
 		for (int i = 0; i < kCiv.getNumUnits(); i++)
 		{
 			UnitTypes eUnit = kCiv.unitAt(i);
-			if (GC.getInfo(eUnit).getNukeRange() >= 0)
-			{
-				if (itPlayer->canTrain(eUnit))
-					return true;
-			}
+			if (GC.getInfo(eUnit).isNuke() && itPlayer->canTrain(eUnit))
+				return true;
 		}
 	}
 	return false;
@@ -5440,7 +5483,7 @@ void CvGame::setFinalInitialized(bool bNewValue)
 	PROFILE_FUNC();
 
 	if (isFinalInitialized() == bNewValue)
-		return; // advc
+		return;
 	m_bFinalInitialized = bNewValue;
 	if (!isFinalInitialized())
 		return;
@@ -5805,14 +5848,11 @@ void CvGame::setPlayerScore(PlayerTypes ePlayer, int iScore)
 {
 	FAssertMsg(ePlayer >= 0, "eIndex is expected to be non-negative (invalid Index)");
 	FAssertMsg(ePlayer < MAX_PLAYERS, "ePlayer is expected to be within maximum bounds (invalid Index)");
-
-	if (getPlayerScore(ePlayer) != iScore)
-	{
-		m_aiPlayerScore[ePlayer] = iScore;
-		FAssert(getPlayerScore(ePlayer) >= 0);
-
-		gDLL->getInterfaceIFace()->setDirty(Score_DIRTY_BIT, true);
-	}
+	if (getPlayerScore(ePlayer) == iScore)
+		return;
+	FAssert(iScore >= 0);
+	m_aiPlayerScore[ePlayer] = iScore;
+	gDLL->getInterfaceIFace()->setDirty(Score_DIRTY_BIT, true);
 }
 
 
@@ -5918,10 +5958,9 @@ bool CvGame::canConstruct(BuildingTypes eBuilding, bool bIgnoreCost, bool bTestV
 	{
 		return false;
 		// What the original code did:
-		/*for(int i = 0; i < GC.getNumUnitInfos(); i++) {
-			if (GC.getInfo((UnitTypes)i).getNukeRange() != -1)
-				return false;
-		}*/
+		/*FOR_EACH_ENUM(Unit)
+			if (GC.getInfo(eLoopUnit).isNuke())
+				return false;*/
 	}
 	{
 		SpecialBuildingTypes eSpecial = GC.getInfo(eBuilding).getSpecialBuildingType();
@@ -5955,7 +5994,7 @@ bool CvGame::canTrain(UnitTypes eUnit, bool bIgnoreCost, bool bTestVisible) cons
 	if (bTestVisible)
 		return true;
 
-	if ((isNoNukes() || !isNukesValid()) && kUnit.getNukeRange() != -1)
+	if ((isNoNukes() || !isNukesValid()) && kUnit.isNuke())
 		return false;
 
 	SpecialUnitTypes eSpecialUnit = kUnit.getSpecialUnitType();
@@ -7198,7 +7237,7 @@ void CvGame::doHolyCity()
 				somehow. Inspired by Mongoose SDK ReligionMod. */
 			for (TeamIter<CIV_ALIVE> itTeam; itTeam.hasNext(); ++itTeam)
 			{
-				if (!itTeam->isHasTech((TechTypes)GC.getInfo(eReligion).getTechPrereq()) ||
+				if (!itTeam->isHasTech(GC.getInfo(eReligion).getTechPrereq()) ||
 					itTeam->getNumCities() <= 0)
 				{
 					continue;
@@ -7334,7 +7373,7 @@ void CvGame::doHeadquarters()
 			{
 				// advc (note): This is as far as execution gets in AdvCiv/BtS
 				if (kCorp.getTechPrereq() == NO_TECH ||
-					!itTeam->isHasTech((TechTypes)kCorp.getTechPrereq()))
+					!itTeam->isHasTech(kCorp.getTechPrereq()))
 				{
 					continue;
 				}
@@ -7434,11 +7473,13 @@ void CvGame::createBarbarianCities()
 	if (getNumCivCities() < countCivPlayersAlive() * 2)
 			return;
 
-	if (getElapsedGameTurns() <= ((kGameHandicap.getBarbarianCityCreationTurnsElapsed() *
-			GC.getInfo(getGameSpeedType()).getBarbPercent()) / 100) /
-			std::max(getStartEra() + 1, 1))
+	if (getElapsedGameTurns() * (getStartEra() + 1) * 200 <=
+		kGameHandicap.getBarbarianCityCreationTurnsElapsed() *
+		// advc.300: Add 100 to dilute effect (and times 200 on the left side)
+		(GC.getInfo(getGameSpeedType()).getBarbPercent() + 100))
+	{
 		return;
-
+	}
 	/* <advc.300> Create up to two cities per turn, though at most one in an
 	   area settled by a civ. Moved the rest of createBarbarianCities (plural)
 	   into new function createBarbarianCity (singular). */
@@ -7611,12 +7652,12 @@ void CvGame::createBarbarianUnits()
 	//if (GC.getInfo(getCurrentEra()).isNoBarbUnits()) ...
 	bool bCreateBarbarians = isBarbarianCreationEra(); // advc.307 (checked later now)
 	bool bAnimals = false;
-	if (getNumCivCities() < (3 * countCivPlayersAlive()) / 2 &&
-		!isOption(GAMEOPTION_ONE_CITY_CHALLENGE) &&
-		/*  advc.300: No need to delay Barbarians (bAnimals=true) if they start
-			slowly (PEAK_PERCENT>=35). For slow game speed settings, there is
-			now a similar check in CvUnitAI::AI_barbAttackMove. */
-		barbarianPeakLandRatio() < per100(35))
+	/*  advc.300: No need to delay Barbarians (bAnimals=true) if they start slowly.
+		For slow game speed settings, there is now a similar check in
+		CvUnitAI::AI_barbAttackMove. */
+	if (barbarianPeakLandRatio() < per100(30) &&
+		getNumCivCities() * 2 < countCivPlayersAlive() * 3 &&
+		!isOption(GAMEOPTION_ONE_CITY_CHALLENGE))
 	{
 		bAnimals = true;
 	}
@@ -7849,20 +7890,25 @@ int CvGame::getBarbarianStartTurn() const
 {
 	int iTargetElapsed = GC.getInfo(getHandicapType()).
 		   getBarbarianCreationTurnsElapsed();
-	iTargetElapsed *= GC.getInfo(getGameSpeedType()).getBarbPercent();
-	int iDivisor = 100;
+	// Dilute impact of game speed on start turn
+	iTargetElapsed *= GC.getInfo(getGameSpeedType()).getBarbPercent() + 100;
+	int iDivisor = 200;
 	/*  This term is new. Well, not entirely, it's also applied to
 		BarbarianCityCreationTurnsElapsed. */
 	iDivisor *= std::max(1, (int)getStartEra());
 	iTargetElapsed /= iDivisor;
 	int iStartTurn = getStartTurn();
-	// Have Barbarians appear earlier in Ancient Advanced Start too
-	if(isOption(GAMEOPTION_ADVANCED_START) && getStartEra() <= 0 &&
+	// Have Barbarians appear earlier in Ancient Advanced Start
+	if (isOption(GAMEOPTION_ADVANCED_START) && getStartEra() <= 0 &&
 		// advc.250b: Earlier Barbarians only if humans start Advanced too
 		!isOption(GAMEOPTION_SPAH))
 	{
 		iStartTurn /= 2;
 	}
+	// <advc.309>
+	else if (isOption(GAMEOPTION_NO_ANIMALS))
+		iTargetElapsed = intdiv::uround(iTargetElapsed * 3, 4); // </advc.309>
+	iTargetElapsed = std::max(iTargetElapsed, 9);
 	return iStartTurn + iTargetElapsed;
 }
 
@@ -9322,20 +9368,32 @@ void CvGame::read(FDataStreamBase* pStream)
 		pStream->Read(&m_initialRandSeed.uiMap);
 		pStream->Read(&m_initialRandSeed.uiSync);
 	} // </advc.027b>
+	// <advc.tsl>, advc.701: Options have been shuffled around a few times
+	bool bNewSeed = isOption((GameOptionTypes)
+			(uiFlag < 2 || uiFlag >= 17 ? 17 : 19));
+	bool bLockMods = isOption((GameOptionTypes)
+			(uiFlag >= 15 && uiFlag < 17 ? 27 : 18));
+	bool bNoVassals = isOption((GameOptionTypes)
+			(uiFlag >= 17 ? 23 : 20));
+	bool bNoEspionage = isOption((GameOptionTypes)
+			(uiFlag >= 17 ? 27 : 23));
+	bool bRiseFall = isOption((GameOptionTypes)
+			(uiFlag < 2 ? false : (uiFlag < 17 ? 17 : 19)));
+	bool bTrueStarts = isOption((GameOptionTypes)
+			(uiFlag < 15 ? false : (uiFlag < 17 ? 18 : 20)));
+	setOption(GAMEOPTION_NEW_RANDOM_SEED, bNewSeed);
+	setOption(GAMEOPTION_LOCK_MODS, bLockMods);
+	setOption(GAMEOPTION_RISE_FALL, bRiseFall);
+	setOption(GAMEOPTION_TRUE_STARTS, bTrueStarts);
+	setOption(GAMEOPTION_NO_VASSAL_STATES, bNoVassals);
+	setOption(GAMEOPTION_NO_ESPIONAGE, bNoEspionage);
+	// </advc.tsl>
 	// <advc.250b>
 	if (isOption(GAMEOPTION_SPAH))
 		m_pSpah->read(pStream); // </advc.250b>
 	// <advc.701>
-	if (uiFlag >= 2)
-	{
-		if(isOption(GAMEOPTION_RISE_FALL))
-			m_pRiseFall->read(pStream);
-	}
-	else // Options have been shuffled around
-	{
-		setOption(GAMEOPTION_NEW_RANDOM_SEED, isOption(GAMEOPTION_RISE_FALL));
-		setOption(GAMEOPTION_RISE_FALL, false);
-	} // </advc.701>
+	if (isOption(GAMEOPTION_RISE_FALL))
+		m_pRiseFall->read(pStream); // </advc.701>
 	{
 		clearReplayMessageMap();
 		ReplayMessageList::_Alloc::size_type iSize;
@@ -9351,6 +9409,9 @@ void CvGame::read(FDataStreamBase* pStream)
 	// m_pReplayInfo not saved
 
 	pStream->Read(&m_iNumSessions);
+	// <advc.tsl>
+	if (uiFlag >= 16)
+		pStream->Read(&m_iMapRegens); // </advc.tsl>
 	if (!isNetworkMultiPlayer())
 		m_iNumSessions++;
 
@@ -9466,7 +9527,13 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 11; // advc.enum: new enum map save behavior
 	//uiFlag = 12; // advc.130n: DifferentReligionThreat added to CvPlayerAI
 	//uiFlag = 13; // advc.148: RELATIONS_THRESH_WORST_ENEMY
-	uiFlag = 14; // advc.148, advc.130n, advc.130x (religion attitude)
+	//uiFlag = 14; // advc.148, advc.130n, advc.130x (religion attitude)
+	//uiFlag = 15; // advc.tsl: new game option
+	//uiFlag = 16; // advc.tsl: map regen counter
+	//uiFlag = 17; // advc.tsl: game options moved around
+	//uiFlag = 18; // advc.130c: change in rank hate calc
+	//uiFlag = 19; // advc.500c: Update citizen assignments
+	uiFlag = 20; // advc.130r: Update war attitude
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9600,6 +9667,9 @@ void CvGame::write(FDataStreamBase* pStream)
 	}
 	// m_pReplayInfo not saved
 	pStream->Write(m_iNumSessions);
+	/*	advc.tsl: Doesn't really have to be saved so far, but might become
+		useful in the future. */
+	pStream->Write(m_iMapRegens);
 	REPRO_TEST_BEGIN_WRITE("Game pt3"); // (skip replay messages, sessions)
 
 	pStream->Write(m_aPlotExtraYields.size());
@@ -9661,6 +9731,15 @@ void CvGame::onAllGameDataRead()
 		m_iCivTeamsEverAlive = countCivTeamsEverAlive();
 	// </advc.opt>
 	GC.getAgents().gameStart(true); // advc.agent
+	// <advc.250a> Cf. CvInitCore::read
+	if (m_uiSaveFlag <= 1)
+	{
+		if (getHandicapType() >= GC.getNumHandicapInfos())
+		{
+			setHandicapType(GET_PLAYER(getActivePlayer()).getHandicapType());
+			initGameHandicap();
+		}
+	} // </advc.250a>
 	// <advc.003m>
 	for (TeamIter<> it; it.hasNext(); ++it)
 	{
@@ -9683,7 +9762,7 @@ void CvGame::onAllGameDataRead()
 	} // </advc.opt>
 	m_bAllGameDataRead = true;
 	// <advc.130n>, advc.148, advc.130x
-	if (m_uiSaveFlag < 14 ||
+	if (m_uiSaveFlag < 18 ||
 		// <advc.127> Save created during AI Auto Play
 		(m_iAIAutoPlay != 0 && !isNetworkMultiPlayer()))
 	{
@@ -9691,6 +9770,37 @@ void CvGame::onAllGameDataRead()
 		for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
 			itPlayer->AI_updateAttitude();
 	} // </advc.130n>
+	// <advc.130r>
+	else if (m_uiSaveFlag < 20)
+	{
+		for (TeamAIIter<MAJOR_CIV> itTeam; itTeam.hasNext(); ++itTeam)
+		{
+			for (TeamIter<MAJOR_CIV,ENEMY_OF> itEnemy(itTeam->getID());
+				itEnemy.hasNext(); ++itEnemy)
+			{
+				itTeam->AI_updateAttitude(itEnemy->getID(), false);
+			}
+		}
+	} // </advc.130r>
+	// <advc.500c>
+	if (m_uiSaveFlag < 19)
+	{
+		TechTypes eNationalism = (TechTypes)GC.getInfoTypeForString("TECH_NATIONALISM");
+		if (eNationalism != NO_TECH)
+		{
+			for (PlayerIter<ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+			{
+				if (GET_TEAM(itPlayer->getTeam()).isHasTech(eNationalism))
+				{
+					FOR_EACH_CITY_VAR(pCity, *itPlayer)
+					{
+						if (pCity->getMilitaryHappinessUnits() <= 0)
+							pCity->AI_setAssignWorkDirty(true);
+					}
+				}
+			}
+		}
+	} // </advc.500c>
 	// <advc.172>
 	if (m_uiSaveFlag < 8)
 	{
@@ -10208,17 +10318,17 @@ void CvGame::changeShrineBuilding(BuildingTypes eBuilding,
 
 }
 
-bool CvGame::culturalVictoryValid() /* advc: */ const
+bool CvGame::culturalVictoryValid() const
 {
 	return (m_iNumCultureVictoryCities > 0);
 }
 
-int CvGame::culturalVictoryNumCultureCities() /* advc: */ const
+int CvGame::culturalVictoryNumCultureCities() const
 {
 	return m_iNumCultureVictoryCities;
 }
 
-CultureLevelTypes CvGame::culturalVictoryCultureLevel() /* advc: */  const
+CultureLevelTypes CvGame::culturalVictoryCultureLevel() const
 {
 	if (m_iNumCultureVictoryCities > 0)
 		return m_eCultureVictoryCultureLevel;

@@ -261,7 +261,7 @@ void CvGame::updateColoredPlots()
 				{
 					CvPlot* pBestPlot = NULL;
 					if (kRecommendUnit.AI_bestCityBuild(*pCity, &pBestPlot) &&
-						pCity->AI_getBestBuildValue(plotCityXY(pCity->getX(), pCity->getY(), *pBestPlot)) > 1)
+						pCity->AI_getBestBuildValue(pCity->getCityPlotIndex(*pBestPlot)) > 1)
 					{
 						FAssert(pBestPlot != NULL);
 						kEngine.addColoredPlot(pBestPlot->getX(), pBestPlot->getY(),
@@ -269,7 +269,7 @@ void CvGame::updateColoredPlots()
 								PLOT_STYLE_CIRCLE, PLOT_LANDSCAPE_LAYER_RECOMMENDED_PLOTS);
 						CvPlot* pNextBestPlot = NULL;
 						if (kRecommendUnit.AI_bestCityBuild(*pCity, &pNextBestPlot, NULL, pBestPlot) &&
-							pCity->AI_getBestBuildValue(plotCityXY(pCity->getX(), pCity->getY(), *pNextBestPlot)) > 1)
+							pCity->AI_getBestBuildValue(pCity->getCityPlotIndex(*pNextBestPlot)) > 1)
 						{
 							FAssert(pNextBestPlot != NULL);
 							kEngine.addColoredPlot(pNextBestPlot->getX(), pNextBestPlot->getY(),
@@ -956,7 +956,7 @@ void CvGame::selectionListGameNetMessage(int eMessage, int iData2, int iData3, i
 			if (iData2 == MISSION_MOVE_TO && !(eFlags & MOVE_DECLARE_WAR))
 			{
 				CvPlot* pPlot = GC.getMap().plot(iData3, iData4);
-				FAssert(pPlot);
+				FAssert(pPlot != NULL);
 				pSelectedUnitNode = gDLL->UI().headSelectionListNode();
 				while (pSelectedUnitNode != NULL)
 				{
@@ -975,7 +975,7 @@ void CvGame::selectionListGameNetMessage(int eMessage, int iData2, int iData3, i
 							!pPlot->isVisibleEnemyUnit(pSelectedUnit))
 						{ // </advc.001>
 							CvPopupInfo* pInfo = new CvPopupInfo(BUTTONPOPUP_DECLAREWARMOVE);
-							if (NULL != pInfo)
+							if (pInfo != NULL)
 							{
 								pInfo->setData1(eRivalTeam);
 								pInfo->setData2(pPlot->getX());
@@ -987,6 +987,13 @@ void CvGame::selectionListGameNetMessage(int eMessage, int iData2, int iData3, i
 							return;
 						}
 					}
+					// <advc.653> Disallow nuke attack through right-click
+					if (pSelectedUnit->isNuke() &&
+						gDLL->UI().getInterfaceMode() != INTERFACEMODE_NUKE &&
+						!pSelectedUnit->canMoveInto(*pPlot))
+					{
+						return;
+					} // </advc.653>
 					pSelectedUnitNode = gDLL->UI().nextSelectionListNode(pSelectedUnitNode);
 				}
 			} // <advc.011b>
@@ -2150,21 +2157,21 @@ void CvGame::applyFlyoutMenu(const CvFlyoutMenuData& kItem)
 	}
 }
 
-CvPlot* CvGame::getNewHighlightPlot() const  // advc: refactored
+CvPlot* CvGame::getNewHighlightPlot() const
 {
 	if (gDLL->GetWorldBuilderMode())
 		return GC.getPythonCaller()->WBGetHighlightPlot();
 	if (GC.getInfo(gDLL->UI().getInterfaceMode()).getHighlightPlot())
 		return gDLL->UI().getMouseOverPlot();
+	updateNukeAreaOfEffect(); // advc.653
 	return NULL;
 }
 
 
-ColorTypes CvGame::getPlotHighlightColor(CvPlot* pPlot) const  // advc: refactored
+ColorTypes CvGame::getPlotHighlightColor(CvPlot* pPlot) const
 {
 	if (pPlot == NULL)
 		return NO_COLOR;
-
 	ColorTypes const eDefaultColor = GC.getColorType("GREEN");
 	if (gDLL->GetWorldBuilderMode())
 		return eDefaultColor;
@@ -2187,12 +2194,34 @@ ColorTypes CvGame::getPlotHighlightColor(CvPlot* pPlot) const  // advc: refactor
 	case INTERFACEMODE_SAVE_PLOT_NIFS:
 		return eNegativeColor;
 	}
-	if (gDLL->UI().getSelectionList()->canDoInterfaceModeAt(
-		gDLL->UI().getInterfaceMode(), pPlot))
-	{
+	bool bCanDoMode = gDLL->UI().getSelectionList()->
+			canDoInterfaceModeAt(gDLL->UI().getInterfaceMode(), pPlot);
+	// <advc.653>
+	if (updateNukeAreaOfEffect(bCanDoMode ? pPlot : NULL))
+		return NO_COLOR; // </advc.653>
+	if (bCanDoMode)
 		return eDefaultColor;
-	}
 	return eNegativeColor;
+}
+
+// advc.653: (Returns true if plots have been colored)
+bool CvGame::updateNukeAreaOfEffect(CvPlot const* pCenter) const
+{
+	CvUnit const* pNuke = gDLL->UI().getHeadSelectedUnit();
+	if (pNuke == NULL || !pNuke->isNuke())
+		return false;
+	gDLL->getEngineIFace()->clearAreaBorderPlots(AREA_BORDER_LAYER_NUKE);
+	if (pCenter == NULL || gDLL->UI().getInterfaceMode() != INTERFACEMODE_NUKE)
+		return false;
+	if (!pNuke->canNukeAt(pNuke->getPlot(), pCenter->getX(), pCenter->getY()))
+		return false;
+	NiColorA const& kColor = GC.getInfo(GC.getColorType("YELLOW")).getColor();
+	for (SquareIter itPlot(*pCenter, pNuke->nukeRange()); itPlot.hasNext(); ++itPlot)
+	{
+		gDLL->getEngineIFace()->fillAreaBorderPlot(itPlot->getX(), itPlot->getY(),
+				kColor, AREA_BORDER_LAYER_NUKE);
+	}
+	return true;
 }
 
 void CvGame::loadBuildQueue(const CvString& strItem) const
@@ -2687,7 +2716,7 @@ void CvGame::handleCityScreenPlotPicked(CvCity* pCity, CvPlot* pPlot,
 				TASK_CHANGE_WORKING_PLOT, iIndex, -1, false, bAlt, bShift, bCtrl);
 	}
 	else //if (GC.getDefineINT("CITY_SCREEN_CLICK_WILL_EXIT"))
-	if (BUGOption::isEnabled("CityScreen__ClickMapToExit", false)) // advc.004t
+	if (BUGOption::isEnabled("CityScreen__ClickMapToExit", true)) // advc.004t
 		gDLL->UI().clearSelectedCities();
 }
 

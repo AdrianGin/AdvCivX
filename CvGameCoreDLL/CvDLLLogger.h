@@ -19,6 +19,7 @@ public:
 	void logCombat(CvUnit const& kAttacker, CvUnit const& kDefender);
 	void logUnitStuck(CvUnit const& kUnit);
 	void logMapStats(bool bAfterNormalization = false); // advc.mapstat
+	void logCivLeaders(); // advc.tsl
 
 private:
 	bool m_bEnabled;

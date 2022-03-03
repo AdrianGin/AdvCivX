@@ -383,6 +383,48 @@ bool CvXMLInfo::read(CvXMLLoadUtility* pXML)
 
 	ElementList elements;
 	addElements(elements);
+	#ifdef FASSERT_ENABLE
+	// Check for accidental duplicates among element IDs and names ...
+	/*	Hack to avoid checking more than one instance per derived class
+		(to save time): */
+	static std::set<std::string> aTypePrefixesChecked;
+	std::string sTypePrefix = (getType() == NULL ? "" : getType());
+	size_t uiSepPos = sTypePrefix.find("_");
+	if (uiSepPos != std::string::npos)
+	{
+		sTypePrefix = sTypePrefix.substr(0, uiSepPos);
+		if (aTypePrefixesChecked.count(sTypePrefix) <= 0)
+		{
+			aTypePrefixesChecked.insert(sTypePrefix);
+			{
+				std::set<int> aElementIDs;
+				std::set<std::string> aElementNames;
+				for (int i = 0; i < elements.numIntElements(); i++)
+				{
+					int iID = elements.intElementAt(i).getID();
+					std::string sName = elements.intElementAt(i).getName();
+					FAssert(aElementIDs.count(iID) == 0);
+					aElementIDs.insert(iID);
+					FAssert(aElementNames.count(sName) == 0);
+					aElementNames.insert(sName);
+				}
+			}
+			{
+				std::set<int> aElementIDs;
+				std::set<std::string> aElementNames;
+				for (int i = 0; i < elements.numBoolElements(); i++)
+				{
+					int iID = elements.boolElementAt(i).getID();
+					std::string sName = elements.boolElementAt(i).getName();
+					FAssert(aElementIDs.count(iID) == 0);
+					aElementIDs.insert(iID);
+					FAssert(aElementNames.count(sName) == 0);
+					aElementNames.insert(sName);
+				}
+			}
+		}
+	}
+	#endif
 	m_aiData.resize(elements.numIntElements());
 	for (int i = 0; i < elements.numIntElements(); i++)
 	{

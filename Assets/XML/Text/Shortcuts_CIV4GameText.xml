@@ -38,11 +38,11 @@
 		<Italian>Schermata cittadina</Italian>
 		<Spanish>Pantalla de Ciudad</Spanish>
 	</TEXT>
-	<!-- advc.004y: "Main Interface" added b/c City Screen also lists
+	<!-- advc.004y: "Main Screen" added b/c City Screen also lists
 		 mouse commands -->
 	<TEXT>
 		<Tag>TXT_KEY_SHORTCUTS_MOUSE</Tag>
-		<English>Mouse (Main Interface)</English>
+		<English>Mouse (Main Screen)</English>
 		<French>Souris</French>
 		<German>Maus (Hauptbildschirm)</German>
 		<Italian>Mouse</Italian>

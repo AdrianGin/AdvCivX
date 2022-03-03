@@ -12,7 +12,6 @@
 from CvPythonExtensions import *
 import CvUtil
 import CvMapGeneratorUtil
-from CvMapGeneratorUtil import FractalWorld
 from CvMapGeneratorUtil import TerrainGenerator
 from CvMapGeneratorUtil import FeatureGenerator
 

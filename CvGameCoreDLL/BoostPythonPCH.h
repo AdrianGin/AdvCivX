@@ -18,6 +18,12 @@ namespace boost
 		class reference_existing_object;
 	}
 	class noncopyable {}; // advc.003e
+	// <advc> Might want to use these at some point
+	template<typename T>
+	struct shared_ptr { T t; shared_ptr(T*) {}; T& operator*() { return t; } };
+	template<typename T>
+	struct scoped_ptr { T t; scoped_ptr(T*) {}; T& operator*() { return t; } };
+	// </advc>
 }
 #define BOOST_STATIC_ASSERT(expr)
 class PyObject;

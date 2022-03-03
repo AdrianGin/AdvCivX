@@ -462,7 +462,7 @@ void CityTradeAlert::check()
 							//GC.getGame().getGameTurn() - pCity->getGameTurnAcquired() > 1 &&
 							// Don't report possible liberation right after making peace
 							/*(!bLiberate || GET_TEAM(kPlayer.getTeam()).
-							AI_getAtPeaceCounter(kAlertPlayer.getTeam()) > 1)*/
+							getTurnsAtPeace(kAlertPlayer.getTeam()) > 1)*/
 							//^Try a different tack.
 							(!bLiberate || pCity->getPreviousOwner() != kPlayer.getID()))
 						{

@@ -172,7 +172,8 @@ public:
 	}
 	int const* getCityPlotX() const { return m_aiCityPlotX; }
 	int const* getCityPlotY() const { return m_aiCityPlotY; }
-	int const* CvGlobals::getCityPlotPriority() const { return m_aiCityPlotPriority; }
+	int const* getCityPlotPriority() const { return m_aiCityPlotPriority; }
+	int maxCityPlotPriority() const { return m_iMaxCityPlotPriority; } // advc
 	DirectionTypes const* getTurnLeftDirection() const { return m_aeTurnLeftDirection; }
 	DirectionTypes getTurnLeftDirection(int i) const
 	{
@@ -422,8 +423,8 @@ public:
 	void setDefineSTRING(char const* szName, char const* szValue, bool bUpdateCache = false);
 	// advc.opt:
 #pragma region GlobalDefines
-	/*  Access cached integer GlobalDefines through enum values
-		(not exposed to Python - though that might be nice). */
+	/*  Access cached integer GlobalDefines through enum values. Not exposed to Python
+		as Python isn't that fast anyway, can just use getDefineINT(char const*). */
 	#define DO_FOR_EACH_GLOBAL_DEFINE(DO) \
 		DO(EXTRA_YIELD) /* K-Mod */ \
 		DO(CITY_RADIUS_DECAY) /* advc.130s */ \
@@ -465,6 +466,7 @@ public:
 		DO(UNIT_PRODUCTION_DECAY_TIME) \
 		DO(UNIT_PRODUCTION_DECAY_PERCENT) \
 		/* </advc.094> */ \
+		DO(PASSABLE_AREAS) /* advc.030 */ \
 		/* <advc.opt> */ \
 		DO(DIPLOMACY_VALUE_REMAINDER) \
 		DO(PEACE_TREATY_LENGTH) \
@@ -560,7 +562,11 @@ public:
 		DO(LFB_USESLIDINGSCALE) DO(LFB_ADJUSTNUMERATOR) DO(LFB_ADJUSTDENOMINATOR) \
 		DO(LFB_USECOMBATODDS) /* BETTER_BTS_AI_MOD: END */ \
 		DO(POWER_CORRECTION) /* advc.104 */ \
-		DO(RF_PLAYER_HANDICAP_ADJUSTMENT) /* advc.708 */
+		DO(TRUE_STARTS_SANITIZE) /* advc.tsl */ \
+		DO(TRUE_STARTS_SANITIZE_SCENARIOS) /* advc.tsl */ \
+		DO(RF_PLAYER_HANDICAP_ADJUSTMENT) /* advc.708 */ \
+		DO(BASE_UNIT_CAPTURE_CHANCE) /* advc.010 */ \
+		DO(DOW_UNIT_CAPTURE_CHANCE) /* advc.010 */
 	#define MAKE_ENUMERATOR(VAR) VAR,
 	enum GlobalDefines
 	{
@@ -576,7 +582,7 @@ public:
 	{
 		return (getDefineINT(eVarName) > 0);
 	}
-	// Keep these as wrappers; too many call locations to change or DllExport.
+	// Keep these as wrappers; too many call locations to change, or DllExport.
 	// These are all exposed to Python
 	int getMOVE_DENOMINATOR() const { return getDefineINT(MOVE_DENOMINATOR); }
 	int getFOOD_CONSUMPTION_PER_POPULATION() const { return getDefineINT(FOOD_CONSUMPTION_PER_POPULATION); }
@@ -611,9 +617,9 @@ public:
 	void setDEFAULT_SPECIALIST(int iVal);
 	TerrainTypes getWATER_TERRAIN(bool bShallow) const
 	{
-		TerrainTypes r = m_aeWATER_TERRAIN[bShallow];
-		FAssertMsg(r != NO_TERRAIN, "WATER_TERRAIN accessed before CvXMLLoadUtility::SetPostGlobalsGlobalDefines");
-		return r;
+		TerrainTypes eTerrain = m_aeWATER_TERRAIN[bShallow];
+		FAssertMsg(eTerrain != NO_TERRAIN, "WATER_TERRAIN accessed before CvXMLLoadUtility::SetPostGlobalsGlobalDefines");
+		return eTerrain;
 	}
 	void setWATER_TERRAIN(bool bShallow, int iValue);
 	// </advc.opt>
@@ -854,6 +860,7 @@ protected:
 	int m_aiCityPlotX[NUM_CITY_PLOTS];
 	int m_aiCityPlotY[NUM_CITY_PLOTS];
 	int m_aiCityPlotPriority[NUM_CITY_PLOTS];
+	int m_iMaxCityPlotPriority; // advc
 	CityPlotTypes m_aaeXYCityPlot[CITY_PLOTS_DIAMETER][CITY_PLOTS_DIAMETER];
 	DirectionTypes m_aeTurnLeftDirection[NUM_DIRECTION_TYPES];
 	DirectionTypes m_aeTurnRightDirection[NUM_DIRECTION_TYPES];

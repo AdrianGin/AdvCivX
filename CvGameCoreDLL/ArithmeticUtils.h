@@ -96,6 +96,48 @@ namespace stats // Seems too generic, but what else to name it?
 			return kSamples[iMedian];
 		return (kSamples[iMedian] + kSamples[iMedian - 1]) / 2;
 	}
+	/*	The weighted median is the value that comes closest to splitting the
+		sums of the weights to its left and right in half when the sequence is
+		sorted by value. If two values are tied for the most even split,
+		the median is their mean. */
+	template<typename V, typename W> // Value type, fractional weight type
+	V weightedMedian(std::vector<std::pair<V,W> >& kSamples, bool bSorted = false)
+	{
+		FAssert(!kSamples.empty());
+		if (!bSorted) // sort by value
+			std::sort(kSamples.begin(), kSamples.end());
+		W wTotal = 0;
+		for (size_t i = 0; i < kSamples.size(); i++)
+			wTotal += kSamples[i].second;
+		FAssert(wTotal > 0);
+		W wPartialSum = 0;
+		for (int i = 0; i < (int)kSamples.size(); i++)
+		{
+			W const wSampleWeight = kSamples[i].second;
+			// Counting the current weight half for the moment
+			W const wPartialSumTimes2 = wPartialSum * 2 + wSampleWeight;
+			if (wPartialSumTimes2 >= wTotal)
+			{
+				// No value to the right can beat the i'th, but the (i-1)'th might
+				if (i > 0)
+				{
+					/*	Check whether the previous partial sum is closer to
+						1/2 of the total. */
+					W wCurrError = wPartialSumTimes2 - wTotal;
+					W wPrevError = wTotal - (2 * wPartialSum - kSamples[i - 1].second);
+					FAssert(wPrevError > 0);
+					if (wCurrError > wPrevError)
+						return kSamples[i - 1].first;
+					else if (wCurrError == wPrevError)
+						return (kSamples[i].first + kSamples[i - 1].first) / 2;
+				}
+				return kSamples[i].first;
+			}
+			wPartialSum += wSampleWeight;
+		}
+		FErrorMsg("Partial sum inconsistent with total");
+		return kSamples[0].first;
+	}
 	template<typename T>
 	T max(std::vector<T> const& kSamples)
 	{

@@ -68,7 +68,7 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 		}
 	} // </advc.085>
 	/*	advc: (Note - Better not to assume that this is valid, widgets might perhaps
-		get triggered while returning to main menu or sth. like that.) */
+		get triggered while returning to opening menu or sth. like that.) */
 	PlayerTypes const eActivePlayer = getActivePlayer();
 	switch (widgetDataStruct.m_eWidgetType)
 	{
@@ -352,6 +352,10 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 	case WIDGET_HELP_FREE_TECH:
 		parseFreeTechHelp(widgetDataStruct, szBuffer);
 		break;
+	// <advc.500c>
+	case WIDGET_HELP_NO_FEAR_FOR_SAFETY:
+		GAMETEXT.buildNoFearForSafetyString(szBuffer, (TechTypes)widgetDataStruct.m_iData1);
+		break; // </advc.500c>
 
 	case WIDGET_HELP_LOS_BONUS:
 		parseLOSHelp(widgetDataStruct, szBuffer);
@@ -1007,6 +1011,10 @@ bool CvDLLWidgetData::executeAction(CvWidgetDataStruct &widgetDataStruct)
 		break;
 
 	case WIDGET_DEAL_KILL:
+		/*	advc (note, known issue in multiplayer): The EXE seems to call this
+			on all players involved in the deal, weirdly. (Perhaps to ensure that
+			cancellation happens on all machines.) So the popups appear for both.
+			Don't think this can be worked around - we don't know who clicked. */
 		doDealKill(widgetDataStruct);
 		break;
 
@@ -1943,11 +1951,11 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct,
 	szBuffer.assign(szTemp);
 	CvDLLInterfaceIFaceBase& kUI = *gDLL->getInterfaceIFace(); // advc
 
-	CvUnit* pHeadSelectedUnit = kUI.getHeadSelectedUnit();
+	CvUnit const* pHeadSelectedUnit = kUI.getHeadSelectedUnit();
 	if (pHeadSelectedUnit != NULL)
 	{
 		MissionTypes eMission = (MissionTypes)kAction.getMissionType();
-		if(eMission != NO_MISSION)
+		if (eMission != NO_MISSION)
 		{
 			// advc: Moved into subroutine
 			parseActionHelp_Mission(kAction, *pHeadSelectedUnit, eMission, szBuffer);
@@ -2005,40 +2013,107 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct,
 				szTempBuffer.Format(L"%s%d %c", NEWLINE, iPrice, GC.getInfo(COMMERCE_GOLD).getChar());
 				szBuffer.append(szTempBuffer);
 			}
-			else if (kAction.getCommandType() == COMMAND_GIFT)
+			else if (kAction.getCommandType() == COMMAND_GIFT &&
+				pHeadSelectedUnit->getPlot().isOwned())
 			{
-				PlayerTypes eGiftPlayer = pHeadSelectedUnit->getPlot().getOwner();
-
-				if (eGiftPlayer != NO_PLAYER)
+				CvPlot const& kGiftPlot = pHeadSelectedUnit->getPlot();
+				PlayerTypes const eRecipient = kGiftPlot.getOwner();
+				CvPlayerAI const& kRecipient = GET_PLAYER(eRecipient);
+				szBuffer.append(NEWLINE);
+				szBuffer.append(gDLL->getText("TXT_KEY_ACTION_GOES_TO_CIV"));
+				szTempBuffer.Format(SETCOLR L"%s" ENDCOLR, PLAYER_TEXT_COLOR(kRecipient),
+						kRecipient.getCivilizationShortDescription());
+				szBuffer.append(szTempBuffer);
+				for (CLLNode<IDInfo> const* pNode = kUI.headSelectionListNode();
+					pNode != NULL; pNode = kUI.nextSelectionListNode(pNode))
 				{
-					szBuffer.append(NEWLINE);
-					szBuffer.append(gDLL->getText("TXT_KEY_ACTION_GOES_TO_CIV"));
-
-					szTempBuffer.Format(SETCOLR L"%s" ENDCOLR,
-							PLAYER_TEXT_COLOR(GET_PLAYER(eGiftPlayer)),
-							GET_PLAYER(eGiftPlayer).getCivilizationShortDescription());
-					szBuffer.append(szTempBuffer);
-
-					for (CLLNode<IDInfo> const* pNode = kUI.headSelectionListNode();
-						pNode != NULL; pNode = kUI.nextSelectionListNode(pNode))
+					CvUnit const& kSelectedUnit = *::getUnit(pNode->m_data);
+					// <advc.093> Check this upfront, then look into the specific reason.
+					if (kSelectedUnit.canGift())
+						continue;
+					szBuffer.append(NEWLINE); // </advc.093>
+					// <advc.705>
+					if (GC.getGame().isOption(GAMEOPTION_RISE_FALL) &&
+						GC.getGame().getRiseFall().isCooperationRestricted(eRecipient))
 					{
-						CvUnit const& kSelectedUnit = *::getUnit(pNode->m_data);
-						if (!GET_PLAYER(eGiftPlayer).AI_acceptUnit(kSelectedUnit))
+						szBuffer.append(gDLL->getText("TXT_KEY_REFUSE_GIFT_RF",
+								kRecipient.getNameKey()));
+						break;
+					} // </advc.705>
+					// <advc.093>
+					if (kGiftPlot.isVisibleEnemyUnit(eRecipient) ||
+						kGiftPlot.isVisibleEnemyUnit(pHeadSelectedUnit->getOwner()))
+					{
+						szBuffer.append(gDLL->getText("TXT_KEY_GIFT_NO_ENEMY"));
+						break;
+					} // </advc.093>
+					// <advc.123a>
+					if (kSelectedUnit.AI_getUnitAIType() == UNITAI_MISSIONARY &&
+						kRecipient.isNoNonStateReligionSpread())
+					{
+						ReligionTypes eRecipientReligion = kRecipient.
+								getStateReligion();
+						FOR_EACH_ENUM(Religion)
 						{
-							szBuffer.append(NEWLINE);
-							szBuffer.append(gDLL->getText("TXT_KEY_REFUSE_GIFT",
-									GET_PLAYER(eGiftPlayer).getNameKey()));
+							if (kSelectedUnit.getUnitInfo().
+								getReligionSpreads(eLoopReligion) <= 0)
+							{
+								continue;
+							}
+							if (eRecipientReligion != NO_RELIGION &&
+								eLoopReligion != NO_RELIGION &&
+								eRecipientReligion != eLoopReligion)
+							{
+								szBuffer.append(gDLL->getText("TXT_KEY_GIFT_NO_MISSIONARY",
+										GC.getInfo(eRecipientReligion).getChar(),
+										kRecipient.getNameKey()));
+								break;
+							}
+						}
+					} // </advc.123a>
+					// <advc.093>
+					{
+						bool bAnyCorpSpread = false;
+						FOR_EACH_ENUM(Corporation)
+						{
+							if (kSelectedUnit.getUnitInfo().getCorporationSpreads(
+								eLoopCorporation) > 0)
+							{
+								bAnyCorpSpread = true;
+								break;
+							}
+						}
+						if (bAnyCorpSpread)
+						{
+							szBuffer.append(gDLL->getText("TXT_KEY_GIFT_NO_EXECUTIVE"));
 							break;
 						}
+					} // </advc.093>
+					// (The only case that BtS had explained to the player)
+					if (!kRecipient.AI_acceptUnit(kSelectedUnit))
+					{
+						szBuffer.append(gDLL->getText("TXT_KEY_REFUSE_GIFT",
+								kRecipient.getNameKey()));
+						break;
 					}
+					// <advc.093> Catch-all answer (future-proofing)
+					szBuffer.append(gDLL->getText("TXT_KEY_MUST_REFUSE_GIFT",
+							kRecipient.getNameKey()));
+					break; // </advc.093>
 				}
 			}
-			CvCommandInfo const& kCommand = GC.getInfo((CommandTypes)kAction.getCommandType());
+			CommandTypes const eCommand = (CommandTypes)kAction.getCommandType();
+			CvCommandInfo const& kCommand = GC.getInfo(eCommand);
 			if (kCommand.getAll())
 				szBuffer.append(gDLL->getText("TXT_KEY_ACTION_ALL_UNITS"));
 
-			if (!CvWString(kCommand.getHelp()).empty())
-			{
+			if (!CvWString(kCommand.getHelp()).empty() &&
+				// <advc.004> Don't explain these details if we can't do it anyway
+				(kUI.getSelectionList() == NULL ||
+				kUI.getSelectionList()->canDoCommand(eCommand,
+				// If we do know any command data, it'll have to be this.
+				widgetDataStruct.m_iData2, -1)))
+			{	// </advc.004>
 				szBuffer.append(NEWLINE);
 				// <advc.004g>
 				if(kAction.getCommandType() == COMMAND_LOAD && pHeadSelectedUnit != NULL &&
@@ -2326,16 +2401,16 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 	}
 	case MISSION_FOUND:
 	{
-		if (!kUnitOwner.canFound(kMissionPlot.getX(), kMissionPlot.getY()))
+		if (!kUnitOwner.canFound(kMissionPlot, /* advc.181: */ false, false))
 		{
 			for (SquareIter it(kMissionPlot, GC.getDefineINT(CvGlobals::MIN_CITY_RANGE));
 				it.hasNext(); ++it)
 			{
 				if (it->isCity() &&
-					/*	<advc.001> Don't give away rival cities in the fog of war.
+					/*	<advc.181> Don't give away rival cities in the fog of war.
 						And same-area check added. */
 					!kUnitOwner.canFound(kMissionPlot, false, false) &&
-					it->sameArea(kMissionPlot)) // </advc.001>
+					it->sameArea(kMissionPlot)) // </advc.181>
 				{
 					szBuffer.append(NEWLINE);
 					szBuffer.append(gDLL->getText("TXT_KEY_ACTION_CANNOT_FOUND",
@@ -2345,7 +2420,7 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 			}
 		}
 		// <advc.004b> Show the projected increase in city maintenance
-		if (kUnitOwner.canFound(kMissionPlot, false, false))
+		else
 		{
 			// No projection for the initial city
 			if(kUnitOwner.getNumCities() > 0)
@@ -3813,13 +3888,13 @@ void CvDLLWidgetData::parseScoreboardCheatText(CvWidgetDataStruct &widgetDataStr
 						szWarplan.getCString(),
 						TEXT_COLOR((iOtherValue < iTheirValue) ?
 						"COLOR_POSITIVE_TEXT" : "COLOR_NEGATIVE_TEXT"),
-						iOtherValue, kTeam.AI_getWarSuccess(itEnemy->getID()),
+						iOtherValue, kTeam.AI_getWarSuccess(itEnemy->getID()).uround(),
 						TEXT_COLOR((iOtherValue < iTheirValue) ?
 						"COLOR_POSITIVE_TEXT" : "COLOR_NEGATIVE_TEXT"),
 						itEnemy->getName().GetCString(),
 						TEXT_COLOR((iTheirValue < iOtherValue) ?
 						"COLOR_POSITIVE_TEXT" : "COLOR_NEGATIVE_TEXT"),
-						iTheirValue, itEnemy->AI_getWarSuccess(eTeam)));
+						iTheirValue, itEnemy->AI_getWarSuccess(eTeam).uround()));
 			}
 		}
 		if (kTeam.AI_isAnyWarPlan()) // double space if had any war

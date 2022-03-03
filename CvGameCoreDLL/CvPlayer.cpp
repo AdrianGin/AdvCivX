@@ -373,6 +373,7 @@ void CvPlayer::reset(PlayerTypes eID, bool bConstructorCall)
 	m_iExpInBorderModifier = 0;
 	m_iBuildingOnlyHealthyCount = 0;
 	m_iDistanceMaintenanceModifier = 0;
+	m_iColonyMaintenanceModifier = 0; // advc.912g
 	m_iNumCitiesMaintenanceModifier = 0;
 	m_iCorporationMaintenanceModifier = 0;
 	m_iTotalMaintenance = 0;
@@ -698,7 +699,8 @@ void CvPlayer::resetCivTypeEffects(/* advc.003q: */ bool bInit)
 }
 
 // for switching the leaderhead of this player
-void CvPlayer::changeLeader(LeaderHeadTypes eNewLeader)
+void CvPlayer::changeLeader(LeaderHeadTypes eNewLeader,
+	bool bChangeName) // advc.tsl
 {
 	LeaderHeadTypes const eOldLeader = getLeaderType();
 
@@ -708,6 +710,13 @@ void CvPlayer::changeLeader(LeaderHeadTypes eNewLeader)
 	//clearTraitBonuses(); // Clear old traits
 	processTraits(-1); // advc.003q
 	GC.getInitCore().setLeader(getID(), eNewLeader);
+	// <advc.tsl>
+	if (bChangeName && (!isHuman() || // Preserve human custom name
+		wcscmp(getName(), GC.getLeaderHeadInfo(eOldLeader).getDescription()) == 0))
+	{
+		CvWString szEmpty; // Means that leaderhead description gets used
+		GC.getInitCore().setLeaderName(getID(), szEmpty);
+	} // </advc.tsl>
 	// addTraitBonuses(); // Add new traits
 	processTraits(1); // advc.003q
 
@@ -758,10 +767,11 @@ void CvPlayer::setIsHuman(bool bNewValue, /* advc.127c: */ bool bUpdateAI)
 // CHANGE_PLAYER: END
 // CHANGE_PLAYER, 05/09/09, jdog5000: START
 // for changing the civilization of this player
-void CvPlayer::changeCiv(CivilizationTypes eNewCiv)
+void CvPlayer::changeCiv(CivilizationTypes eNewCiv,
+	bool bChangeDescr, bool bForceColorUpdate) // advc.tsl
 {
 	CivilizationTypes eOldCiv = getCivilizationType();
-	if (eOldCiv == eNewCiv)
+	if (eOldCiv == eNewCiv /* advc.tsl: */ && !bForceColorUpdate)
 		return;
 
 	PlayerColorTypes eColor = (PlayerColorTypes)GC.getInfo(eNewCiv).getDefaultPlayerColor();
@@ -798,9 +808,32 @@ void CvPlayer::changeCiv(CivilizationTypes eNewCiv)
 	}
 
 	CvInitCore& kInitCore = GC.getInitCore();
-	kInitCore.setCiv(getID(), eNewCiv);
 	kInitCore.setColor(getID(), eColor);
-	setCivilization(eNewCiv); // advc.003u
+	if (eOldCiv == eNewCiv)
+		return;
+	kInitCore.setCiv(getID(), eNewCiv);
+	// <advc.tsl>
+	if (bChangeDescr)
+	{
+		CvWString szEmpty; // Means that civ info descriptions get used
+		bool const bHuman = isHuman(); // Preserve human custom descriptions
+		if (!bHuman || wcscmp(getCivilizationDescription(),
+			GC.getInfo(eOldCiv).getDescription()) == 0)
+		{
+			kInitCore.setCivDescription(getID(), szEmpty);
+		}
+		if (!bHuman || wcscmp(getCivilizationShortDescription(),
+			GC.getInfo(eOldCiv).getShortDescription()) == 0)
+		{
+			kInitCore.setCivShortDesc(getID(), szEmpty);
+		}
+		if (!bHuman || wcscmp(getCivilizationAdjective(),
+			GC.getInfo(eOldCiv).getAdjective()) == 0)
+		{
+			kInitCore.setCivAdjective(getID(), szEmpty);
+		}
+		kInitCore.setFlagDecal(getID(), szEmpty);
+	} // </advc.tsl>
 	resetCivTypeEffects(/* advc.003q: */ false);
 	CvDLLInterfaceIFaceBase& kUI = *gDLL->getInterfaceIFace();
 	if (isAlive()) // if the player is alive and showing on scoreboard, etc
@@ -1276,7 +1309,8 @@ CvPlot* CvPlayer::findStartingPlot(
 		}
 	}
 	//int iBestArea = -1;
-	// kekm.35: "This function is adjusted to work with a list of possible starting areas instead of a single one."
+	/*	kekm.35: "This function is adjusted to work with a list of
+		possible starting areas instead of a single one." */
 	std::vector<std::pair<int,int> > areasByValue;
 	bool bNew = false;
 	if (getStartingPlot() != NULL)
@@ -1295,6 +1329,23 @@ CvPlot* CvPlayer::findStartingPlot(
 		areasByValue = findStartingAreas( // kekm.35
 				pbAreaFoundByMapScript); // advc.027
 	}
+	// <advc.opt> Compute this upfront for kekm.35
+	int const iStartingRange = GC.getDefineINT("ADVANCED_START_SIGHT_RANGE");
+	EagerEnumMap<PlotNumTypes,bool> abPlotTaken;
+	FOR_EACH_ENUM(PlotNum)
+	{
+		CvPlot const& kPlot = GC.getMap().getPlotByIndex(eLoopPlotNum);
+		for (PlayerIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		{
+			if (itPlayer->getStartingPlot() != NULL &&
+				plotDistance(itPlayer->getStartingPlot(), &kPlot) <=
+				iStartingRange + 1) // (+2 in Kek-Mod)
+			{
+				abPlotTaken.set(eLoopPlotNum, true);
+				break;
+			}
+		}
+	} // </advc.opt>
 	/*  <advc.140> Cut and pasted from CvMap::maxPlotDistance. I've changed that
 		function, but I think the original formula might be needed here.
 		I'm not sure I understand the purpose of this outer loop. */
@@ -1304,17 +1355,19 @@ CvPlot* CvPlayer::findStartingPlot(
 			((m.isWrapY()) ? (m.getGridHeight() / 2) :
 			(m.getGridHeight() - 1))));
 	for(int iPass = 0; iPass < iMaxPlotDist; iPass++)*/ // </advc.140>
-	/*  <kekm.35> "First pass avoids starting locations that have very little food
+	/*  <kekm.35> "Earlier passes avoid starting locations that have low yields
 		(before normalization) to avoid starting on the edge of very bad terrain." */
-	int const iStartingRange = GC.getDefineINT("ADVANCED_START_SIGHT_RANGE");
 	CvMap const& kMap = GC.getMap();
-	int const iMaxPass = 1;
+	int const iMaxPass = 4;
 	for (int iPass = 0; iPass <= iMaxPass; iPass++)
 	{
-		for (size_t j = 0; j < areasByValue.size(); j++)
-		{ // </kekm.35>
+		FAssertMsg(iPass * 2 <= iMaxPass, "trouble finding starting plot with decent yields"); // advc
+		/*	"First try to find a starting location in the best area,
+			then second best, etc." */
+		for (size_t j = 0; j < areasByValue.size(); j++) // </kekm.35>
+		{
 			CvPlot *pBestPlot = NULL;
-			int iBestValue = iMaxPass - iPass; // advc: was 0 flat
+			int iBestValue = (iPass <= 0 ? 1 : 0); // advc: was 0 flat
 			for (int i = 0; i < kMap.numPlots(); i++)
 			{
 				CvPlot* pLoopPlot = kMap.plotByIndex(i);
@@ -1322,23 +1375,48 @@ CvPlot* CvPlayer::findStartingPlot(
 				// <kekm.35>
 				if (pLoopPlot->getArea().getID() != areasByValue[j].first)
 					continue;
-				if (iPass == 0) // "Avoid very bad terrain in the first pass."
+				// "Avoid locations with low yields in the advanced start sized area."
+				scaled rLandYield;
+				scaled rWaterYield;
+				int iLandPlots = 0;
+				int iWaterPlots = 0;
+				for (PlotCircleIter it(*pLoopPlot, iStartingRange); it.hasNext(); ++it)
 				{
-					int iTotalFood = 0;
-					int iLandPlots = 0;
-					for (PlotCircleIter it(*pLoopPlot, iStartingRange); it.hasNext(); ++it)
+					scaled& rYield = (it->isWater() ? rWaterYield : rLandYield);
+					int& iPlots = (it->isWater() ? iWaterPlots : iLandPlots);
+					iPlots++;
+					if (!abPlotTaken.get(it->plotNum()) && it->isPotentialCityWork())
 					{
-						CvPlot const& kCheckPlot = *it;
-						if (!kCheckPlot.isWater())
+						FOR_EACH_ENUM(Yield)
 						{
-							iLandPlots++;
-							iTotalFood += kCheckPlot.calculateBestNatureYield(
-									YIELD_FOOD, NO_TEAM);
+							/*	advc: Kek-Mod had used eTeam=getTeam(), I suppose
+								for a pessimistic yield count, but I want the
+								starting plots to be independent of player knowledge. */
+							rYield += it->calculateNatureYield(eLoopYield);
 						}
 					}
-					if (iTotalFood < std::max(1, iLandPlots) / 2)
-						continue;
-				} // </kekm.35>
+				}
+				scaled rMeanLandYield;
+				if (iLandPlots > 0)
+					rMeanLandYield = rLandYield / iLandPlots;
+				scaled rMeanYield;
+				{
+					int iTotalPlots = iLandPlots + iWaterPlots;
+					if (iTotalPlots > 0)
+						rMeanYield = (rLandYield + rWaterYield) / iTotalPlots;
+				}
+				scaled rYieldThresh;
+				// advc: Make this part more adjustable
+				{
+					scaled const rMaxThresh = 2;
+					scaled rStep = rMaxThresh;
+					if (iMaxPass > 0)
+						rStep /= iMaxPass;
+					rYieldThresh = rMaxThresh - iPass * rStep;
+				}
+				if (std::min(rMeanLandYield, rMeanYield) < rYieldThresh)
+					continue;
+				// </kekm.35>
 				//the distance factor is now done inside foundValue
 				int iValue = pLoopPlot->getFoundValue(getID(),
 					/*	advc.027: Replacing the randomization below, which is crude
@@ -1358,8 +1436,9 @@ CvPlot* CvPlayer::findStartingPlot(
 			}
 			if (pBestPlot != NULL)
 				return pBestPlot;
-		} // kekm.35: end of areas_by_value loop
-		FAssertMsg(iPass != 0, "CvPlayer::findStartingPlot - could not find starting plot in first pass.");
+		} // kekm.35: end of areasByValue loop
+		// advc: Replaced with an assertion at the start of the loop
+		//FAssertMsg(iPass != 0, "CvPlayer::findStartingPlot - could not find starting plot in first pass.");
 	}
 
 	FErrorMsg("Could not find starting plot.");
@@ -1655,7 +1734,7 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 			if (bEverOwned)
 			{
 				GET_TEAM(eOldOwner).AI_changeWarSuccess(itOtherEnemy->getID(),
-						-std::min(GC.getWAR_SUCCESS_CITY_CAPTURING(),
+						-scaled::min(GC.getWAR_SUCCESS_CITY_CAPTURING(),
 						GET_TEAM(eOldOwner).AI_getWarSuccess(itOtherEnemy->getID())));
 			}
 		} // </advc.123d>
@@ -2111,6 +2190,8 @@ void CvPlayer::disbandUnit(bool bAnnounce)
 		{
 			continue;
 		}
+		/*	advc.500c (note): Even if GET_TEAM(getTeam()).getNoMilitaryAnger() is 0,
+			it still seems better not to knock the only military unit out. */
 		if (pLoopUnit->isMilitaryHappiness() &&
 			pLoopUnit->getPlot().plotCount(PUF_isMilitaryHappiness, -1, -1, getID()) <= 1)
 		{
@@ -2698,7 +2779,7 @@ TCHAR const* CvPlayer::getUnitButton(UnitTypes eUnit) const
 
 /*  advc (comment): Contains the entire sequence of an AI turn, and is called
 	when a human player ends his/her turn. */
-void CvPlayer::doTurn()  // advc: style changes
+void CvPlayer::doTurn()
 {
 	PROFILE_FUNC();
 
@@ -3252,17 +3333,18 @@ int CvPlayer::upgradeAllPrice(UnitTypes eUpgradeUnit, UnitTypes eFromUnit) const
 	return iPrice;
 }
 
-// <advc.080> Based on upgradeAllPrice
+// advc.080: Based on upgradeAllPrice
 int CvPlayer::upgradeAllXPChange(UnitTypes eUpgradeUnit, UnitTypes eFromUnit) const
 {
-	int r = 0;
-	FOR_EACH_UNIT(u, *this)
+	int iR = 0;
+	FOR_EACH_UNIT(pUnit, *this)
 	{
-		if(u->getUnitType() == eFromUnit && u->canUpgrade(eUpgradeUnit, true))
-			r += u->upgradeXPChange(eUpgradeUnit);
+		if (pUnit->getUnitType() == eFromUnit && pUnit->canUpgrade(eUpgradeUnit, true))
+			iR += pUnit->upgradeXPChange(eUpgradeUnit);
 	}
-	return r;
-} // </advc.080>
+	return iR;
+}
+
 
 int CvPlayer::countReligionSpreadUnits(CvArea const* pArea,
 	ReligionTypes eReligion, /* BBAI: */ bool bIncludeTraining) const
@@ -4456,13 +4538,22 @@ void CvPlayer::disband(CvCity& kCity) // advc: param was CvCity*
 
 bool CvPlayer::canReceiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit) const
 {
-	CvGoodyInfo const& kGoody = GC.getInfo(eGoody); // advc
-	// <advc.314>
 	CvGame const& kGame = GC.getGame();
+	/*	<advc> Safety measure for scenarios. Border expansion upon city placement
+		or units placed onto a hut can lead to a goody before the game is ready.
+		addGoodyMsg will crash then. Can probably only happen with manually edited
+		scenarios. */
+	if (!kGame.isFinalInitialized())
+	{
+		FErrorMsg("Goodies shouldn't be received during game setup");
+		return false;
+	} // </advc>
+	CvGoodyInfo const& kGoody = GC.getInfo(eGoody);
+	// <advc.314>
 	int const iTrainHalved = (GC.getInfo(kGame.getGameSpeedType()).
 			getTrainPercent() + 100) / 2;
-	bool bVeryEarlyGame = (100 * kGame.getGameTurn() < 20 * iTrainHalved);
-	bool bVeryVeryEarlyGame = (100 * kGame.getGameTurn() < 10 * iTrainHalved);
+	bool bVeryEarlyGame = (100 * kGame.getGameTurn() < iTrainHalved * 16);
+	bool bVeryVeryEarlyGame = (100 * kGame.getGameTurn() < iTrainHalved * 10);
 	if (kGoody.getExperience() > 0)
 	{
 		if (pUnit == NULL || !pUnit->canAcquirePromotionAny() ||
@@ -4509,14 +4600,14 @@ bool CvPlayer::canReceiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit) 
 			return false;
 	}
 	// <advc.314>
-	if(bVeryEarlyGame && kGoody.getMinBarbarians() > 1)
+	if (bVeryEarlyGame && kGoody.getMinBarbarians() > 1)
 		return false;
 	/*  Moved up and added the era clause; a single free unit in the Medieval
 		era isn't going to be a problem. */
 	bool bEarlyMP = (GC.getGame().isGameMultiPlayer() &&
 			GC.getGame().getCurrentEra() < 2);
 	// No free unit from Spy when hut guarded
-	if(!kGoody.isBad() && (kGoody.getUnitClassType() != NO_UNITCLASS ||
+	if (!kGoody.isBad() && (kGoody.getUnitClassType() != NO_UNITCLASS ||
 		kGoody.getMinBarbarians() > 0) && pPlot->isVisibleEnemyUnit(getID()) &&
 		pUnit != NULL && pUnit->isSpy())
 	{
@@ -4537,12 +4628,12 @@ bool CvPlayer::canReceiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit) 
 				return false;
 			}
 		} // <advc.314> I guess a Worker with a slow WorkRate would be OK
-		if(bVeryEarlyGame && kUnit.getWorkRate() > 30)
+		if (bVeryEarlyGame && kUnit.getWorkRate() > 30)
 			return false; // </advc.314>
 		if (isOneCityChallenge() && kUnit.isFound())
 			return false;
 	} // <advc.314> Free unit and no UnitClassType given
-	else if(!kGoody.isBad() && kGoody.getMinBarbarians() > 0 &&
+	else if (!kGoody.isBad() && kGoody.getMinBarbarians() > 0 &&
 		(bEarlyMP || bVeryEarlyGame))
 	{
 		return false;
@@ -4559,35 +4650,39 @@ bool CvPlayer::canReceiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit) 
 		if (getNumCities() == 0)
 			return false;
 
-		if (getNumCities() == 1)
+		//if (getNumCities() == 1) // advc.314
 		{
-			CvCity* pCity = GC.getMap().findCity(pPlot->getX(), pPlot->getY(), NO_PLAYER, getTeam());
+			CvCity const* pCity = GC.getMap().findCity(
+					// advc.314: Any nearby city is a problem
+					pPlot->getX(), pPlot->getY()/*, NO_PLAYER, getTeam()*/);
 			if (pCity != NULL)
 			{
-				if (plotDistance(pPlot->getX(), pPlot->getY(), pCity->getX(), pCity->getY()) <=
-						// advc.314 (comment):
-						8 - getNumCities()) // = 7 b/c of the NumCities==1 check
+				if (plotDistance(pPlot, pCity->plot()) <= //8 - getNumCities()
+					// advc.314: Had always been 7 b/c of the NumCities==1 check
+					8 - 2 * GET_PLAYER(pCity->getOwner()).getNumCities())
+				{
 					return false;
+				}
 			}
 		}
 	} // <advc.315d> No Scout from a Scout if already 2 Scouts
-	if(pUnit != NULL && pUnit->isNoBadGoodies() && AI().AI_getNumAIUnits(UNITAI_EXPLORE) >= 2)
+	if (pUnit != NULL && pUnit->isNoBadGoodies() && AI().AI_getNumAIUnits(UNITAI_EXPLORE) >= 2)
 	{
 		UnitClassTypes eUnitClass = (UnitClassTypes)kGoody.getUnitClassType();
-		if(eUnitClass != NO_UNITCLASS)
+		if (eUnitClass != NO_UNITCLASS)
 		{
 			UnitTypes eUnit = getCivilization().getUnit(eUnitClass);
-			if(eUnit != NO_UNIT && GC.getInfo(eUnit).isNoBadGoodies())
+			if (eUnit != NO_UNIT && GC.getInfo(eUnit).isNoBadGoodies())
 				return false;
 		}
 	} // </advc.315d>
 	// <advc.315e> No map reveal at the edges of a non-wrapping map
-	if(kGoody.getMapProb() > 0)
+	if (kGoody.getMapProb() > 0)
 	{
 		int const iRange = 3;
-		for(int iDX = -iRange; iDX <= iRange; iDX++)
+		for (int iDX = -iRange; iDX <= iRange; iDX++)
 		{
-			for(int iDY = -iRange; iDY <= iRange; iDY++)
+			for (int iDY = -iRange; iDY <= iRange; iDY++)
 			{
 				CvPlot* pLoopPlot = ::plotXY(pPlot->getX(), pPlot->getY(), iDX, iDY);
 				if(pLoopPlot == NULL)
@@ -4812,7 +4907,7 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 			FOR_EACH_ADJ_PLOT(*pPlot)
 			{
 				if (!pAdj->sameArea(*pPlot) || pAdj->isImpassable() ||
-					pAdj->getNumUnits() > 0)
+					pAdj->getNumVisibleUnits(BARBARIAN_PLAYER) > 0)
 				{
 					continue;
 				}
@@ -4837,6 +4932,12 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit,
 				}
 			}
 		}
+		/*	Letting CvUnitAI::AI_anyAttack handle this now: only one unit will attack.
+			Not sure if that's really a better solution. */
+		/*if (iBarbCount > 0)
+		{	// Give the unit a chance to run away
+			pUnit->changeMoves(-std::min(GC.getMOVE_DENOMINATOR(), pUnit->getMoves()));
+		}*/
 	}
 	if(bUpgrade && !bNoRecursion)
 		doGoody(pPlot, pUnit, eGoody); // </advc.314>
@@ -4888,7 +4989,7 @@ bool CvPlayer::canFound(int iX, int iY, bool bTestVisible) const
 
 
 bool CvPlayer::canFound(CvPlot const& kPlot, bool bTestVisible,
-	/* <advc.001> */ bool bIgnoreFoW) const
+	/* <advc.181> */ bool bIgnoreFoW) const
 {
 	if (!bIgnoreFoW)
 	{
@@ -4896,12 +4997,12 @@ bool CvPlayer::canFound(CvPlot const& kPlot, bool bTestVisible,
 		if (eRevealedOwner != NO_PLAYER && eRevealedOwner != getID())
 			return false;
 	}
-	else // </advc.001>
+	else // </advc.181>
 	if (kPlot.isOwned() && kPlot.getOwner() != getID())
 		return false;
 	// advc: Checks that don't depend on player moved into new function at CvPlot
 	if (!kPlot.canFound(bTestVisible,
-		bIgnoreFoW ? NO_TEAM : getTeam())) // advc.001
+		bIgnoreFoW ? NO_TEAM : getTeam())) // advc.181
 	{
 		return false;
 	}
@@ -5245,7 +5346,7 @@ bool CvPlayer::canCreate(ProjectTypes eProject, bool bContinue, bool bTestVisibl
 		{
 			return false; // advc.opt
 			/*FOR_EACH_ENUM(Unit) {
-				if (GC.getInfo(eLoopUnit).getNukeRange() != -1)
+				if (GC.getInfo(eLoopUnit).isNuke())
 					return false;
 			}*/
 		}
@@ -5667,12 +5768,15 @@ void CvPlayer::processBuilding(BuildingTypes eBuilding, int iChange, CvArea& kAr
 }
 
 
-bool CvPlayer::canBuild(CvPlot const& kPlot, BuildTypes eBuild, bool bTestEra, bool bTestVisible) const
+bool CvPlayer::canBuild(CvPlot const& kPlot, BuildTypes eBuild, bool bTestEra,
+	bool bTestVisible, /* advc.181: */ bool bIgnoreFoW) const
 {
 	//PROFILE_FUNC(); // advc.003o
-	if (!kPlot.canBuild(eBuild, getID(), bTestVisible))
+	if (!kPlot.canBuild(eBuild, getID(), bTestVisible,
+		bIgnoreFoW)) // advc.181
+	{
 		return false;
-
+	}
 	if (GC.getInfo(eBuild).getTechPrereq() != NO_TECH)
 	{	// advc:
 		TechTypes ePrereqTech = GC.getInfo(eBuild).getTechPrereq();
@@ -6334,8 +6438,7 @@ TechTypes CvPlayer::getDiscoveryTech(UnitTypes eUnit) const
 
 
 bool CvPlayer::canResearch(TechTypes eTech, bool bTrade,
-	bool bFree, // K-Mod (advc.004x: disused)
-	bool bCouldResearchAgain) const // advc.126
+	bool bFree) const // K-Mod (advc.004x: disused)
 {
 	if (GC.getPythonCaller()->canResearchOverride(getID(), eTech, bTrade))
 		return true;
@@ -6349,7 +6452,7 @@ bool CvPlayer::canResearch(TechTypes eTech, bool bTrade,
 		return false;
 	}*/
 
-	if (GET_TEAM(getTeam()).isHasTech(eTech) /* advc.126: */ && !bCouldResearchAgain)
+	if (GET_TEAM(getTeam()).isHasTech(eTech))
 		return false;
 
 	bool bFoundPossible = false;
@@ -6359,9 +6462,7 @@ bool CvPlayer::canResearch(TechTypes eTech, bool bTrade,
 		TechTypes const ePrereq = GC.getInfo(eTech).getPrereqOrTechs(i);
 		FAssert(ePrereq != eTech); // advc
 		bFoundPossible = true;
-		if (GET_TEAM(getTeam()).isHasTech(ePrereq) &&
-			// advc.126: Don't check recursively (for execution speed concerns)
-			(bCouldResearchAgain || canResearch(ePrereq, false, true, true)))
+		if (GET_TEAM(getTeam()).isHasTech(ePrereq))
 		{
 			if (!bTrade || GC.getGame().isOption(GAMEOPTION_NO_TECH_BROKERING) ||
 				!GET_TEAM(getTeam()).isNoTradeTech(ePrereq))
@@ -6378,12 +6479,8 @@ bool CvPlayer::canResearch(TechTypes eTech, bool bTrade,
 	for (int i = 0; i < GC.getInfo(eTech).getNumAndTechPrereqs(); i++)
 	{
 		TechTypes const ePrereq = GC.getInfo(eTech).getPrereqAndTechs(i);
-		if (!GET_TEAM(getTeam()).isHasTech(ePrereq) ||
-			// advc.126:
-			(bCouldResearchAgain && !canResearch(ePrereq, false, true, true)))
-		{
+		if (!GET_TEAM(getTeam()).isHasTech(ePrereq))
 			return false;
-		}
 		if (bTrade && !GC.getGame().isOption(GAMEOPTION_NO_TECH_BROKERING) &&
 			GET_TEAM(getTeam()).isNoTradeTech(ePrereq))
 		{
@@ -6825,7 +6922,7 @@ void CvPlayer::foundReligion(ReligionTypes eReligion, ReligionTypes eSlotReligio
 	kGame.setReligionSlotTaken(eSlotReligion, true);
 
 	bool const bStarting = (kSlotReligion.getTechPrereq() == NO_TECH ||
-			GC.getInfo((TechTypes)kSlotReligion.getTechPrereq()).getEra() < kGame.getStartEra());
+			GC.getInfo(kSlotReligion.getTechPrereq()).getEra() < kGame.getStartEra());
 
 	int iBestValue = 0;
 	CvCity* pBestCity = NULL;
@@ -6854,7 +6951,7 @@ void CvPlayer::foundReligion(ReligionTypes eReligion, ReligionTypes eSlotReligio
 	kGame.setHolyCity(eReligion, pBestCity, true);
 	if (bAward && kSlotReligion.getNumFreeUnits() > 0)
 	{
-		UnitTypes eFreeUnit = getCivilization().getUnit((UnitClassTypes)
+		UnitTypes eFreeUnit = getCivilization().getUnit(
 				GC.getInfo(eReligion).getFreeUnitClass());
 		if (eFreeUnit != NO_UNIT)
 		{
@@ -6907,8 +7004,7 @@ void CvPlayer::foundCorporation(CorporationTypes eCorporation)
 
 	CvCorporationInfo const& kCorp = GC.getInfo(eCorporation);
 	bool const bStarting = (kCorp.getTechPrereq() == NO_TECH ||
-			GC.getInfo((TechTypes)kCorp.getTechPrereq()).getEra() <
-			GC.getGame().getStartEra());
+			GC.getInfo(kCorp.getTechPrereq()).getEra() < GC.getGame().getStartEra());
 
 	int iBestValue = 0;
 	CvCity* pBestCity = NULL;
@@ -7871,6 +7967,16 @@ void CvPlayer::changeDistanceMaintenanceModifier(int iChange)
 	}
 }
 
+// advc.912g:
+void CvPlayer::changeColonyMaintenanceModifier(int iChange)
+{
+	if (iChange != 0)
+	{
+		m_iColonyMaintenanceModifier += iChange;
+		updateMaintenance();
+	}
+}
+
 
 void CvPlayer::changeNumCitiesMaintenanceModifier(int iChange)
 {
@@ -8484,11 +8590,14 @@ void CvPlayer::setCombatExperience(int iExperience)
 
 		if (pBestCity != NULL)
 		{
-			int iRandOffset = SyncRandNum(GC.getNumUnitInfos());
-			FOR_EACH_ENUM(Unit)
+			/*	<advc.001> Pick a civ-specific unit type so that mods can create
+				unique Great Generals. Inspired by code by edead. */
+			CvCivilization const& kCiv = getCivilization();
+			int iRandOffset = SyncRandNum(kCiv.getNumUnits());
+			for (int i = 0; i < kCiv.getNumUnits(); i++)
 			{
-				UnitTypes eRandUnit = (UnitTypes)
-						((eLoopUnit + iRandOffset) % GC.getNumUnitInfos());
+				UnitTypes eRandUnit = kCiv.unitAt(
+						(i + iRandOffset) % kCiv.getNumUnits()); // </advc.001>
 				if (GC.getInfo(eRandUnit).getLeaderExperience() > 0 ||
 					GC.getInfo(eRandUnit).getLeaderPromotion() != NO_PROMOTION)
 				{
@@ -10090,6 +10199,8 @@ int CvPlayer::getFoodKept(BuildingTypes eBuilding) const
 {
 	CvBuildingInfo const& kBuilding = GC.getInfo(eBuilding);
 	int iFoodKept = kBuilding.getFoodKept();
+	// Reverted this in AdvCiv 1.05
+#if 0
 	if (GC.getGame().isOption(GAMEOPTION_NO_SLAVERY) &&
 		/*	Toggling this on and off during AI Auto Play
 			could lead to inconsistent data at CvCity */
@@ -10098,6 +10209,7 @@ int CvPlayer::getFoodKept(BuildingTypes eBuilding) const
 		iFoodKept *= 5;
 		iFoodKept /= 4;
 	}
+#endif
 	return iFoodKept;
 }
 
@@ -12831,19 +12943,22 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 
 		if (bAdd) // Add Improvement to the plot
 		{
-			if (getAdvancedStartPoints() >= iCost && pPlot->isFeature())
+			if (getAdvancedStartPoints() >= iCost)
 			{
-				FOR_EACH_ENUM(Build)
+				if (pPlot->isFeature())
 				{
-					ImprovementTypes eLoopImprovement = GC.getInfo(eLoopBuild).
-							getImprovement();
-					if (eImprovement != eLoopImprovement)
-						continue;
-					if (GC.getInfo(eLoopBuild).isFeatureRemove(pPlot->getFeatureType()) &&
-						canBuild(*pPlot, eLoopBuild))
+					FOR_EACH_ENUM(Build)
 					{
-						pPlot->setFeatureType(NO_FEATURE);
-						break;
+						ImprovementTypes eLoopImprovement = GC.getInfo(eLoopBuild).
+								getImprovement();
+						if (eImprovement != eLoopImprovement)
+							continue;
+						if (GC.getInfo(eLoopBuild).isFeatureRemove(pPlot->getFeatureType()) &&
+							canBuild(*pPlot, eLoopBuild))
+						{
+							pPlot->setFeatureType(NO_FEATURE);
+							break;
+						}
 					}
 				}
 				pPlot->setImprovementType(eImprovement);
@@ -13078,7 +13193,7 @@ int CvPlayer::getAdvancedStartCityCost(bool bAdd, CvPlot const* pPlot) const
 		// Need valid plot to found on if adding
 		if (bAdd)
 		{
-			if (!canFound(pPlot->getX(), pPlot->getY(), false))
+			if (!canFound(*pPlot))
 				return -1;
 		}
 		// Need your own city present to remove
@@ -13726,6 +13841,8 @@ void CvPlayer::processCivics(CivicTypes eCivic, int iChange)
 	changeDomesticGreatGeneralRateModifier(GC.getInfo(eCivic).getDomesticGreatGeneralRateModifier() * iChange);
 	changeStateReligionGreatPeopleRateModifier(GC.getInfo(eCivic).getStateReligionGreatPeopleRateModifier() * iChange);
 	changeDistanceMaintenanceModifier(GC.getInfo(eCivic).getDistanceMaintenanceModifier() * iChange);
+	// advc.912g:
+	changeColonyMaintenanceModifier(GC.getInfo(eCivic).getColonyMaintenanceModifier() * iChange);
 	changeNumCitiesMaintenanceModifier(GC.getInfo(eCivic).getNumCitiesMaintenanceModifier() * iChange);
 	changeCorporationMaintenanceModifier(GC.getInfo(eCivic).getCorporationMaintenanceModifier() * iChange);
 	changeExtraHealth(GC.getInfo(eCivic).getExtraHealth() * iChange);
@@ -13936,6 +14053,9 @@ void CvPlayer::read(FDataStreamBase* pStream)
 	pStream->Read(&m_iExpInBorderModifier);
 	pStream->Read(&m_iBuildingOnlyHealthyCount);
 	pStream->Read(&m_iDistanceMaintenanceModifier);
+	// <advc.912g>
+	if (uiFlag >= 20)
+		pStream->Read(&m_iColonyMaintenanceModifier); // </advc.912g>
 	pStream->Read(&m_iNumCitiesMaintenanceModifier);
 	pStream->Read(&m_iCorporationMaintenanceModifier);
 	pStream->Read(&m_iTotalMaintenance);
@@ -14163,6 +14283,18 @@ void CvPlayer::read(FDataStreamBase* pStream)
 	// <advc> Future-proofing
 	if (isBarbarian())
 		m_abLoyalMember.setAll(false); // </advc>
+	// <advc.912g>
+	if (uiFlag < 20)
+	{
+		FOR_EACH_ENUM(Civic)
+		{
+			if (isCivic(eLoopCivic))
+			{
+				changeColonyMaintenanceModifier(GC.getInfo(eLoopCivic).
+						getColonyMaintenanceModifier());
+			}
+		}
+	} // </advc.912g>
 	m_groupCycle.Read(pStream);
 	m_researchQueue.Read(pStream);
 
@@ -14464,7 +14596,8 @@ void CvPlayer::write(FDataStreamBase* pStream)
 	//uiFlag = 16; // advc.enum: new enum map save behavior
 	//uiFlag = 17; // advc.157
 	//uiFlag = 18; // advc.251 (city maintenance changed in handicap XML)
-	uiFlag = 19; // advc.708
+	//uiFlag = 19; // advc.708
+	uiFlag = 20; // advc.912g
 	pStream->Write(uiFlag);
 
 	// <advc.027>
@@ -14535,6 +14668,7 @@ void CvPlayer::write(FDataStreamBase* pStream)
 	pStream->Write(m_iExpInBorderModifier);
 	pStream->Write(m_iBuildingOnlyHealthyCount);
 	pStream->Write(m_iDistanceMaintenanceModifier);
+	pStream->Write(m_iColonyMaintenanceModifier); // advc.912g
 	pStream->Write(m_iNumCitiesMaintenanceModifier);
 	pStream->Write(m_iCorporationMaintenanceModifier);
 	pStream->Write(m_iTotalMaintenance);
@@ -15784,6 +15918,10 @@ void CvPlayer::applyEvent(EventTypes eEvent, int iEventTriggeredId, bool bUpdate
 	{
 			GET_TEAM(getTeam()).changeEspionagePointsAgainstTeam(
 					TEAMID(pTriggeredData->m_eOtherPlayer), kEvent.getEspionagePoints());
+			// <advc.001>
+			if (kEvent.getEspionagePoints() > 0)
+				GET_TEAM(getTeam()).changeEspionagePointsEver(kEvent.getEspionagePoints());
+			// </advc.001>
 	}
 
 	if (kEvent.getTechPercent() != 0)
@@ -18757,9 +18895,11 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 	CLinkList<TradeData> const& kOurOffer, CLinkList<TradeData> const& kTheirOffer) const
 {
 	/*	<advc> The diplo screen may apparently refuse to add items when the
-		net IDs aren't properly set (even in single-player mode). */
-	FAssert(!isHuman() || getNetID() >= 0);
-	FAssert(!GET_PLAYER(eOtherPlayer).isHuman() || GET_PLAYER(eOtherPlayer).getNetID() >= 0);
+		net IDs aren't properly set (even in single-player mode).
+		(Seems that, in Hot Seat games, IDs are -1 except for the active player.) */
+	FAssert(!isHuman() || getNetID() >= 0 || GC.getGame().isHotSeat());
+	FAssert(!GET_PLAYER(eOtherPlayer).isHuman() ||
+			GET_PLAYER(eOtherPlayer).getNetID() >= 0 || GC.getGame().isHotSeat());
 	// </advc>
 	/*	<advc.ctr> None of the adjustments below (incl. the ones already present
 		in BtS) should be made when reviewing current deals. How to tell?
@@ -18805,7 +18945,7 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 		pItem->m_bHidden = false;
 
 		// Don't show peace treaties when not at war
-		if (!::atWar(getTeam(), GET_PLAYER(eOtherPlayer).getTeam()))
+		if (!::atWar(getTeam(), TEAMID(eOtherPlayer)))
 		{
 			if (pItem->m_eItemType == TRADE_PEACE_TREATY ||
 				pItem->m_eItemType == TRADE_SURRENDER)
@@ -18829,7 +18969,7 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 		{
 			FOR_EACH_TRADE_ITEM2(pOfferItem, kOurOffer)
 			{
-				// Don't show vassal deals if peace treaty is already on the table
+				// Don't show peace treaty if vassal deal is already on the table
 				if (CvDeal::isVassal(pOfferItem->m_eItemType))
 				{
 					pItem->m_bHidden = true;
@@ -18854,8 +18994,11 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 				break;
 			FOR_EACH_TRADE_ITEM2(pOfferItem, kOurOffer)
 			{
-				// Don't show peace deals if the other player is offering to be a vassal
-				if (CvDeal::isEndWar(pOfferItem->m_eItemType))
+				// Don't show vassal deals if peace treaty is already on the table
+				if (CvDeal::isEndWar(pOfferItem->m_eItemType) &&
+					/*	advc.ctr: Peacetime peace treaty should not hide
+						vassal deals (in multiplayer) */
+					GET_TEAM(getTeam()).isAtWar(TEAMID(eOtherPlayer)))
 				{
 					pItem->m_bHidden = true;
 					break;
@@ -18906,7 +19049,7 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 	/*	<advc.ctr> Add PEACE_TREATY items to offers that imply a peace treaty.
 		Note that this is only done to inform the human player. There is code
 		elsewhere for signing the peace treaty upon implementation of the deal.
-		For deals that involve a human, the game will end up attemping to
+		For deals that involve a human, the game will end up attempting to
 		implement the peace treaty twice. No harm in that.
 		I don't know if updateTradeList gets called for all AI trades;
 		don't want to rely on it. */
@@ -18929,10 +19072,15 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 		{
 			if (pItem->m_eItemType == TRADE_PEACE_TREATY)
 			{
+				/*	Only manipulate peace treaties added by an earlier call to
+					updateTradeList, not those added to AI pleas and demands
+					(CvPlayerAI) by advc.104m. */
+				// I guess the EXE sets it to 0 somehow? Weird, default is -1.
+				if (pItem->m_iData <= 0)
+					return;
 				FAssert(!abPeaceTreatyFound[i]);
 				abPeaceTreatyFound[i] = true;
 			}
-			else FAssert(!CvDeal::isEndWar(pItem->m_eItemType));
 			for (int j = 0; j < iForcePeaceSz; j++)
 			{
 				if (pItem->m_eItemType == aeForcePeace[j])
@@ -18943,15 +19091,18 @@ void CvPlayer::updateTradeList(PlayerTypes eOtherPlayer, CLinkList<TradeData>& k
 						CvCity const* pCity = GET_PLAYER(
 								i == 0 ? getID() : eOtherPlayer).
 								getCity(pItem->m_iData);
-						if (pCity == NULL || pCity->getLiberationPlayer() == getID())
+						if (pCity == NULL || pCity->getLiberationPlayer() ==
+							(i == 0 ? eOtherPlayer : getID()))
+						{
 							continue;
+						}
 					}
 					eForcePeaceItemType = pItem->m_eItemType;
 				}
 			}
 		}
 	}
-	bool bPeaceTreatyNeeded = (eForcePeaceItemType != NO_TRADE_ITEM);
+	bool const bPeaceTreatyNeeded = (eForcePeaceItemType != NO_TRADE_ITEM);
 	if (!abPeaceTreatyFound[0] && !abPeaceTreatyFound[1] && !bPeaceTreatyNeeded)
 		return;
 	/*	kOurOffer and kTheirOffer are most likely not really const objects.

@@ -487,6 +487,11 @@ void CvCity::doTurn()
 	doReligion();
 	doGreatPeople();
 	doMeltdown();
+	/*	advc.004: Just so that human players don't get confused when inspecting
+		an AI city. Will get updated at the start of the next turn anyway
+		(CvPlayer::doTurn). Important not to update before doProduction as that
+		would make production turns difficult to anticipate. */
+	AI().AI_assignWorkingPlots();
 
 	updateEspionageVisibility(true);
 
@@ -937,9 +942,8 @@ void CvCity::chooseProduction(UnitTypes eTrainUnit, BuildingTypes eConstructBuil
 	gDLL->UI().addPopup(pPopupInfo, getOwner(), false, bFront);
 }
 
-// advc: Can't inline these two b/c the plotCityXY functions are now at CvMap
 // advc.enum: Return type was int
-CityPlotTypes CvCity::getCityPlotIndex(CvPlot const& kPlot) const // advc: 1st param was pointer
+CityPlotTypes CvCity::getCityPlotIndex(CvPlot const& kPlot) const
 {
 	return GC.getMap().plotCityXY(getX(), getY(), kPlot);
 }
@@ -950,7 +954,7 @@ CvPlot* CvCity::getCityIndexPlot(CityPlotTypes ePlot) const // advc.enum: CityPl
 }
 
 
-bool CvCity::canWork(CvPlot /* advc: */ const& kPlot) const
+bool CvCity::canWork(CvPlot const& kPlot) const
 {
 	if (kPlot.getWorkingCity() != this)
 		return false;
@@ -1074,7 +1078,7 @@ int CvCity::countNumRiverPlots() const
 int CvCity::findPopulationRank() const
 {
 	if (m_bPopulationRankValid)
-		return m_iPopulationRank; // advc
+		return m_iPopulationRank;
 
 	/*int iRank = 1;
 	FOR_EACH_CITY(pLoopCity, GET_PLAYER(getOwner())) {
@@ -1087,18 +1091,20 @@ int CvCity::findPopulationRank() const
 	m_iPopulationRank = iRank;*/ // BtS
 	// K-Mod. Set all ranks at the same time.
 	CvPlayer const& kPlayer = GET_PLAYER(getOwner());
-	std::vector<std::pair<int, int> > city_scores;
+	std::vector<std::pair<int,int> > aiiCityScores;
 	FOR_EACH_CITY(pLoopCity, kPlayer)
-		city_scores.push_back(std::make_pair(-pLoopCity->getPopulation(), pLoopCity->getID()));
-	// note: we are sorting by minimum of _negative_ score, and then by min cityID.
-	std::sort(city_scores.begin(), city_scores.end());
-	FAssert(city_scores.size() == kPlayer.getNumCities());
-	for (size_t i = 0; i < city_scores.size(); i++)
 	{
-		CvCity* pLoopCity = kPlayer.getCity(city_scores[i].second);
-		pLoopCity->m_iPopulationRank = i+1;
+		aiiCityScores.push_back(std::make_pair(
+				-pLoopCity->getPopulation(), pLoopCity->getID()));
+	}
+	// note: we are sorting by minimum of _negative_ score, and then by min cityID.
+	std::sort(aiiCityScores.begin(), aiiCityScores.end());
+	FAssert(aiiCityScores.size() == kPlayer.getNumCities());
+	for (size_t i = 0; i < aiiCityScores.size(); i++)
+	{
+		CvCity* pLoopCity = kPlayer.getCity(aiiCityScores[i].second);
+		pLoopCity->m_iPopulationRank = i + 1;
 		pLoopCity->m_bPopulationRankValid = true;
-		// (It's strange that this is allowed. Aren't these values protected or something?)
 	}
 	FAssert(m_bPopulationRankValid);
 	// K-Mod end
@@ -1580,7 +1586,11 @@ int CvCity::getFoodTurnsLeft() const
 		return std::min(-1, -iTurnsLeft);
 	} // </advc.189>
 	int iFoodLeft = growthThreshold() - getFood();
-	int iTurnsLeft = intdiv::uceil(iFoodLeft, iFoodDiff);
+	/*	<advc> Simplified. I think negative iFoodLeft can happen through
+		a random event. */
+	if (iFoodLeft < 0)
+		return 1;
+	int iTurnsLeft = intdiv::uceil(iFoodLeft, iFoodDiff); // </advc>
 	return std::max(1, iTurnsLeft);
 }
 
@@ -3347,7 +3357,7 @@ bool CvCity::isHeadquarters(CorporationTypes eCorp) const
 void CvCity::setHeadquarters(CorporationTypes eCorp)
 {
 	GC.getGame().setHeadquarters(eCorp, this, /* advc.106e: */ false);
-	UnitClassTypes eFreeClass = (UnitClassTypes)GC.getInfo(eCorp).getFreeUnitClass();
+	UnitClassTypes eFreeClass = GC.getInfo(eCorp).getFreeUnitClass();
 	if (eFreeClass != NO_UNITCLASS)
 	{
 		UnitTypes eFreeUnit = getCivilization().getUnit(eFreeClass);
@@ -3388,7 +3398,10 @@ int CvCity::getNoMilitaryPercentAnger() const
 	{
 		int iAnger = 0;
 		if (getMilitaryHappinessUnits() == 0)
-			iAnger += GC.getDefineINT(CvGlobals::NO_MILITARY_PERCENT_ANGER);
+		{
+			iAnger += //GC.getDefineINT(CvGlobals::NO_MILITARY_PERCENT_ANGER);
+					GET_TEAM(getTeam()).getNoMilitaryAnger(); // advc.500c
+		}
 		return iAnger;
 	}
 	// <advc.500b>
@@ -3401,7 +3414,7 @@ int CvCity::getNoMilitaryPercentAnger() const
 	/* Currently (as per vanilla) 334, meaning 33.4% of the population get angry.
 	   The caller adds up all the anger percentages (actually permillages)
 	   before rounding, so rounding shouldn't be a concern in this function. */
-	int iMaxAnger = GC.getDefineINT(CvGlobals::NO_MILITARY_PERCENT_ANGER);
+	int iMaxAnger = GET_TEAM(getTeam()).getNoMilitaryAnger(); // advc.500c
 	return iMaxAnger - (iMaxAnger * rActualGarrStr / rTargetGarrStr).floor();
 	// </advc.500b>
 }
@@ -4439,9 +4452,9 @@ void CvCity::setPopulation(int iNewValue)
 	int const iOldPopulation = getPopulation();
 	if (iOldPopulation == iNewValue)
 		return;
-
 	m_iPopulation = iNewValue;
 	FAssert(getPopulation() >= 0);
+
 	GET_PLAYER(getOwner()).invalidatePopulationRankCache();
 	if (getPopulation() > getHighestPopulation())
 		setHighestPopulation(getPopulation());
@@ -4455,7 +4468,7 @@ void CvCity::setPopulation(int iNewValue)
 		getArea().changePower(getOwner(), -GC.getGame().getPopulationPower(iOldPopulation));
 	if (getPopulation() > 0)
 		getArea().changePower(getOwner(), GC.getGame().getPopulationPower(getPopulation()));
-
+	// advc (note): For unused iPopulationChangeDivisor (YieldInfo) I think
 	getPlot().updateYield();
 
 	updateMaintenance();
@@ -4774,7 +4787,7 @@ int CvCity::calculateColonyMaintenance() const
 int CvCity::calculateColonyMaintenanceTimes100(PlayerTypes eOwner) const
 {
 	// advc.004b: BtS code moved into new static function
-	return calculateColonyMaintenanceTimes100(*plot(),
+	return calculateColonyMaintenanceTimes100(getPlot(),
 			eOwner == NO_PLAYER ? getOwner() : eOwner,
 			getPopulation());
 }
@@ -6990,7 +7003,7 @@ void CvCity::changeBonusYieldRateModifier(YieldTypes eYield, int iChange)
 }
 
 
-int CvCity::totalTradeModifier(CvCity const* pOtherCity) const // advc: const CvCity*
+int CvCity::totalTradeModifier(CvCity const* pOtherCity) const
 {
 	static int const iCAPITAL_TRADE_MODIFIER = GC.getDefineINT("CAPITAL_TRADE_MODIFIER"); // advc.opt
 	int iModifier = 100;
@@ -7035,7 +7048,9 @@ int CvCity::getPeaceTradeModifier(TeamTypes eTeam) const
 
 	static int const iFOREIGN_TRADE_FULL_CREDIT_PEACE_TURNS = GC.getDefineINT("FOREIGN_TRADE_FULL_CREDIT_PEACE_TURNS"); // advc.opt
 	static int const iFOREIGN_TRADE_MODIFIER = GC.getDefineINT("FOREIGN_TRADE_MODIFIER"); // advc.opt
-	int iPeaceTurns = std::min(iFOREIGN_TRADE_FULL_CREDIT_PEACE_TURNS, GET_TEAM(getTeam()).AI_getAtPeaceCounter(eTeam));
+	int iPeaceTurns = std::min(iFOREIGN_TRADE_FULL_CREDIT_PEACE_TURNS, GET_TEAM(getTeam()).
+			//AI_getAtPeaceCounter(eTeam)
+			getTurnsAtPeace(eTeam)); // advc.130k
 
 	if (GC.getGame().getElapsedGameTurns() <= iPeaceTurns)
 		return iFOREIGN_TRADE_MODIFIER;
@@ -8552,7 +8567,7 @@ void CvCity::setSpecialistCount(SpecialistTypes eSpecialist, int iNewValue)
 {
 	int const iOldValue = getSpecialistCount(eSpecialist);
 	if (iOldValue == iNewValue)
-		return; // advc
+		return;
 
 	m_aiSpecialistCount.set(eSpecialist, iNewValue);
 	FAssert(getSpecialistCount(eSpecialist) >= 0);
@@ -8584,7 +8599,16 @@ void CvCity::alterSpecialistCount(SpecialistTypes eSpecialist, int iChange)
 
 	if (isCitizensAutomated())
 	{
-		changeForceSpecialistCount(eSpecialist, iChange);
+		changeForceSpecialistCount(eSpecialist, iChange +
+		/*	<advc.121> We're making sure below not to remove the specialist
+			we've just added, but afterwards we let the AI juggle the citizens;
+			so it can still happen that a human adds e.g. a 2nd scientist
+			- the 1st having been assigned by the AI - and ends up with just
+			1 scientist. Let's assume that any previously assigned specialists
+			of type eSpecialist should also be forced. */
+				(iChange <= 0 ? 0 :
+				std::max(getSpecialistCount(eSpecialist)
+				- getForceSpecialistCount(eSpecialist), 0))); // </advc.121>
 		//return;
 		/*	(K-Mod. Without the following block,
 			extra care is needed inside AI_assignWorkingPlots.) */
@@ -8697,7 +8721,7 @@ void CvCity::setFreeSpecialistCount(SpecialistTypes eSpecialist, int iNewValue)
 {
 	int const iOldValue = getFreeSpecialistCount(eSpecialist);
 	if (iOldValue == iNewValue)
-		return; // advc
+		return;
 
 	m_aiFreeSpecialistCount.set(eSpecialist, iNewValue);
 	FAssert(getFreeSpecialistCount(eSpecialist) >= 0);
@@ -8852,7 +8876,7 @@ void CvCity::setWorkingPlot(CvPlot& kPlot, bool bNewValue)
 }
 
 
-void CvCity::alterWorkingPlot(CityPlotTypes ePlot) // advc.enum: CityPlotTypes
+void CvCity::alterWorkingPlot(CityPlotTypes ePlot)
 {
 	if (ePlot == CITY_HOME_PLOT)
 	{
@@ -11389,8 +11413,13 @@ void CvCity::read(FDataStreamBase* pStream)
 	// <advc.912d>
 	if(uiFlag >= 4)
 		pStream->Read(&m_iPopRushHurryCount);
-	if (uiFlag < 9 && isHuman() && GC.getGame().isOption(GAMEOPTION_NO_SLAVERY))
-		m_iFoodKept = (m_iFoodKept * 5) / 4; // </advc.912d>
+	if (uiFlag < 15 &&
+		(uiFlag < 9 || // Everyone had gotten only 40% from Granary prior to version 9
+		// After version 9, players affected by No Slavery had been exempt
+		!isHuman() || !GC.getGame().isOption(GAMEOPTION_NO_SLAVERY)))
+	{	// Now everyone gets 50% again, just like in BtS.
+		m_iMaxFoodKeptPercent = (m_iMaxFoodKeptPercent * 5) / 4;
+	} // </advc.912d>
 	// <advc.004x>
 	if(uiFlag >= 2)
 	{
@@ -11608,12 +11637,13 @@ void CvCity::write(FDataStreamBase* pStream)
 	//uiFlag = 6; // advc.103
 	//uiFlag = 7; // advc.003u: m_bChooseProductionDirty
 	//uiFlag = 8; // advc.310
-	//uiFlag = 9; // advc.912d (adjust food kept)
+	//uiFlag = 9; // advc.912d (adjust food kept; NB: should've adjusted MaxFoodKept)
 	//uiFlag = 10; // advc.911a, advc.908b
 	//uiFlag = 11; // advc.201, advc.098
 	//uiFlag = 12; // advc.enum: new enum map save behavior
 	//uiFlag = 13; // advc.201: Cathedrals restored to BtS stats
-	uiFlag = 14; // advc.179, advc.exp.1, advc.exp.2
+	//uiFlag = 14; // advc.179, advc.exp.1, advc.exp.2
+	uiFlag = 15; // advc.912d: Partly reverted, adjust MaxFoodKept.
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);
@@ -11791,7 +11821,9 @@ void CvCity::write(FDataStreamBase* pStream)
 	}
 
 	m_orderQueue.Write(pStream);
-
+	/*	These caches are (or ought to be) reliably invalidated,
+		don't need to be in-sync at all times. */
+	REPRO_TEST_END_WRITE();
 	pStream->Write(m_iPopulationRank);
 	pStream->Write(m_bPopulationRankValid);
 	m_aiBaseYieldRank.write(pStream);
@@ -11800,7 +11832,7 @@ void CvCity::write(FDataStreamBase* pStream)
 	m_abYieldRankValid.write(pStream);
 	m_aiCommerceRank.write(pStream);
 	m_abCommerceRankValid.write(pStream);
-
+	REPRO_TEST_BEGIN_WRITE(CvString::format("City(%d,%d) pt2", getX(), getY()));
 	pStream->Write(m_aEventsOccured.size());
 	for (std::vector<EventTypes>::iterator it = m_aEventsOccured.begin();
 		it != m_aEventsOccured.end(); ++it)
@@ -12933,8 +12965,10 @@ int CvCity::getMusicScriptId() const
 
 int CvCity::getSoundscapeScriptId() const
 {
-	return GC.getInfo(GET_PLAYER(getOwner()).getCurrentEra()).
-			getCitySoundscapeScriptId(getCitySizeType());
+	return	// advc.002q:
+			(!BUGOption::isEnabled("CityScreen__CitySoundScapes", true) ? -1 :
+			GC.getInfo(GET_PLAYER(getOwner()).getCurrentEra()).
+			getCitySoundscapeScriptId(getCitySizeType()));
 }
 
 
@@ -12992,7 +13026,7 @@ int CvCity::initialPopulation()
 
 // advc.004b, advc.104: Parameters added
 int CvCity::calculateDistanceMaintenanceTimes100(CvPlot const& kCityPlot,
-	PlayerTypes eOwner, int iPopulation)
+	PlayerTypes eOwner, int iPopulation, bool bNoPlayerModifiers)
 {
 	if(iPopulation < 0)
 		iPopulation = initialPopulation();
@@ -13016,20 +13050,20 @@ int CvCity::calculateDistanceMaintenanceTimes100(CvPlot const& kCityPlot,
 			GC.getDefineINT(CvGlobals::MAX_DISTANCE_CITY_MAINTENANCE) *	
 			// K-Mod: Moved the search for maintenance distance to a separate function
 			calculateMaintenanceDistance(&kCityPlot, eOwner);
-	// unaltered bts code
 	{
 		iTempMaintenance *= (iPopulation + 7);
 		iTempMaintenance /= 10;
-
-		iTempMaintenance *= std::max(0, (GET_PLAYER(eOwner).getDistanceMaintenanceModifier() + 100));
-		iTempMaintenance /= 100;
-
+		if (!bNoPlayerModifiers) // advc
+		{
+			iTempMaintenance *= std::max(0, GET_PLAYER(eOwner).
+					getDistanceMaintenanceModifier() + 100);
+			iTempMaintenance /= 100;
+			iTempMaintenance *= GC.getInfo(GET_PLAYER(eOwner).
+					getHandicapType()).getDistanceMaintenancePercent();
+			iTempMaintenance /= 100;
+		}
 		iTempMaintenance *= GC.getInfo(GC.getMap().getWorldSize()).getDistanceMaintenancePercent();
 		iTempMaintenance /= 100;
-
-		iTempMaintenance *= GC.getInfo(GET_PLAYER(eOwner).getHandicapType()).getDistanceMaintenancePercent();
-		iTempMaintenance /= 100;
-
 		iTempMaintenance /= GC.getMap().maxTypicalDistance(); // advc.140: was maxPlotDistance
 	}
 	/*iWorstCityMaintenance = std::max(iWorstCityMaintenance, iTempMaintenance);
@@ -13140,25 +13174,22 @@ int CvCity::calculateColonyMaintenanceTimes100(CvPlot const& kCityPlot,
 	//iMaintenance = std::min(iMaintenance, (GC.getInfo(getHandicapType()).getMaxColonyMaintenance() * calculateDistanceMaintenanceTimes100()) / 100);
 	/*  K-Mod, 17/dec/10: Changed colony maintenance cap to not include
 		distance maintenance modifiers (such as state property) */
-	int iMaintenanceCap = 100 * GC.getDefineINT(CvGlobals::MAX_DISTANCE_CITY_MAINTENANCE) *
-			calculateMaintenanceDistance(&kCityPlot, eOwner);
-
-	iMaintenanceCap *= (iPopulation + 7);
-	iMaintenanceCap /= 10;
-
-	iMaintenanceCap *= GC.getInfo(GC.getMap().getWorldSize()).getDistanceMaintenancePercent();
-	iMaintenanceCap /= 100;
-
-	iMaintenanceCap *= GC.getInfo(eOwnerHandicap).getDistanceMaintenancePercent();
-	iMaintenanceCap /= 100;
-
-	iMaintenanceCap /= GC.getMap().maxTypicalDistance(); // advc.140: was maxPlotDistance
-
+	// advc: Let's do that without duplicating code
+	int iMaintenanceCap = GC.getDefineINT(CvGlobals::MAX_DISTANCE_CITY_MAINTENANCE) *
+			calculateDistanceMaintenanceTimes100(kCityPlot, eOwner, iPopulation,
+			true); // advc
 	iMaintenanceCap *= GC.getInfo(eOwnerHandicap).getMaxColonyMaintenance();
 	iMaintenanceCap /= 100;
-
+	// <advc.912g>
+	iMaintenanceCap *= std::max(0, GET_PLAYER(eOwner).
+			getColonyMaintenanceModifier() + 100);
+	iMaintenanceCap /= 100;
+	// </advc.912g>
 	iMaintenance = std::min(iMaintenance, iMaintenanceCap);
-	// K-Mod end
+	/*	<advc.exp.3> Alt. idea to the civic-based modifier: High colony maintenance
+		only in faraway cities (overall proportional to square of maintenance dist). */
+	/*iMaintenance *= calculateMaintenanceDistance(&kCityPlot, eOwner);
+	iMaintenance /= GC.getMap().maxMaintenanceDistance();*/ // </advc.exp.3>
 	FAssert(iMaintenance >= 0);
 	return iMaintenance;
 }

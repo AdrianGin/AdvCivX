@@ -188,7 +188,7 @@ bool CvXMLLoadUtility::GetXmlVal(bool& r, bool bDefault)
 bool CvXMLLoadUtility::GetNextXmlVal(std::string& r, char const* szDefault)
 {
 	assignDefault(r, szDefault);
-	// if we can set the current xml node to it's next sibling
+	// if we can set the current xml node to its next sibling
 	if (gDLL->getXMLIFace()->NextSibling(m_pFXml))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
@@ -207,7 +207,7 @@ bool CvXMLLoadUtility::GetNextXmlVal(std::string& r, char const* szDefault)
 bool CvXMLLoadUtility::GetNextXmlVal(std::wstring& r, wchar const* szDefault)
 {
 	assignDefault(r, szDefault);
-	// if we can set the current xml node to it's next sibling
+	// if we can set the current xml node to its next sibling
 	if (gDLL->getXMLIFace()->NextSibling(m_pFXml))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
@@ -226,7 +226,7 @@ bool CvXMLLoadUtility::GetNextXmlVal(std::wstring& r, wchar const* szDefault)
 bool CvXMLLoadUtility::GetNextXmlVal(char* r, char const* szDefault)
 {
 	assignDefault(r, szDefault);
-	// if we can set the current xml node to it's next sibling
+	// if we can set the current xml node to its next sibling
 	if (gDLL->getXMLIFace()->NextSibling(m_pFXml))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
@@ -246,7 +246,7 @@ bool CvXMLLoadUtility::GetNextXmlVal(char* r, char const* szDefault)
 bool CvXMLLoadUtility::GetNextXmlVal(wchar* r, wchar const* szDefault)
 {
 	assignDefault(r, szDefault);
-	// if we can set the current xml node to it's next sibling
+	// if we can set the current xml node to its next sibling
 	if (gDLL->getXMLIFace()->NextSibling(m_pFXml))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
@@ -266,7 +266,7 @@ bool CvXMLLoadUtility::GetNextXmlVal(wchar* r, wchar const* szDefault)
 bool CvXMLLoadUtility::GetNextXmlVal(int& r, int iDefault)
 {
 	assignDefault(r, iDefault);
-	// if we can set the current xml node to it's next sibling
+	// if we can set the current xml node to its next sibling
 	if (gDLL->getXMLIFace()->NextSibling(m_pFXml))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
@@ -319,7 +319,7 @@ bool CvXMLLoadUtility::GetNextXmlVal(char& r, char iDefault)
 bool CvXMLLoadUtility::GetNextXmlVal(float& r, float fDefault)
 {
 	assignDefault(r, fDefault);
-	// if we can set the current xml node to it's next sibling
+	// if we can set the current xml node to its next sibling
 	if (gDLL->getXMLIFace()->NextSibling(m_pFXml))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
@@ -335,7 +335,7 @@ bool CvXMLLoadUtility::GetNextXmlVal(float& r, float fDefault)
 bool CvXMLLoadUtility::GetNextXmlVal(bool& r, bool bDefault)
 {
 	assignDefault(r, bDefault);
-	// if we can set the current xml node to it's next sibling
+	// if we can set the current xml node to its next sibling
 	if (gDLL->getXMLIFace()->NextSibling(m_pFXml))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
@@ -346,6 +346,33 @@ bool CvXMLLoadUtility::GetNextXmlVal(bool& r, bool bDefault)
 	}
 	return false; // no more sibling nodes
 }
+
+// <advc.enum>
+template<typename T>
+bool CvXMLLoadUtility::GetNextXmlVal(T& r, T tDefault)
+{
+	assignDefault(r, tDefault);
+	if (gDLL->getXMLIFace()->NextSibling(m_pFXml))
+	{
+		if (SkipToNextVal())
+		{
+			int iTmp = r;
+			bool bResult = SafeGetLastNodeValue(m_pFXml,
+					iTmp, static_cast<int>(tDefault));
+			r = static_cast<T>(iTmp);
+			return bResult;
+		}
+		FErrorMsg("Unable to find the next non-comment node");
+		return false;
+	}
+	return false;
+}
+#define INSTANTIATE_GET_NEXT_XML_VAL(EnumPrefix, Dummy) \
+	template bool CvXMLLoadUtility::GetNextXmlVal<EnumPrefix##Types>(EnumPrefix##Types&, EnumPrefix##Types);
+DO_FOR_EACH_DYN_INFO_TYPE(INSTANTIATE_GET_NEXT_XML_VAL);
+DO_FOR_EACH_STATIC_INFO_TYPE(INSTANTIATE_GET_NEXT_XML_VAL);
+#undef INSTANTIATE_GET_NEXT_XML_VAL
+// </advc.enum>
 
 /*  Overloaded function that sets the current XML node to its
 	first non-comment child node and then sets r to that node's value. */
@@ -500,10 +527,10 @@ bool CvXMLLoadUtility::GetChildXmlValByName(wchar* r, TCHAR const* szName, wchar
 	//FAssertMsg(gDLL->getXMLIFace()->NumOfChildrenByTagName(m_pFXml, szName) < 2,"More children with tag name than expected, should only be 1.");
 	// ... However, I think FXML already detects duplicate tags when enforcing the XML schema.
 
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
-		// skip to the next non-comment node
-		if (SkipToNextVal())
+		if (SkipToNextVal()) // skip to the next non-comment node
 		{
 			gDLL->getXMLIFace()->GetLastNodeValue(m_pFXml, r);
 			gDLL->getXMLIFace()->SetToParent(m_pFXml);
@@ -542,10 +569,10 @@ bool CvXMLLoadUtility::GetChildXmlValByName(char* r, TCHAR const* szName, char c
 	// we only continue if there are one and only one children with this tag name
 	if (iNumChildrenByTagName == 1)
 	{*/
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
-		// skip to the next non-comment node
-		if (SkipToNextVal())
+		if (SkipToNextVal()) // skip to the next non-comment node
 		{
 			// get the string value of the current xml node
 			gDLL->getXMLIFace()->GetLastNodeValue(m_pFXml, r);
@@ -583,7 +610,8 @@ bool CvXMLLoadUtility::GetChildXmlValByName(std::string& r, TCHAR const* szName,
 	// we only continue if there are one and only one children with this tag name
 	if (iNumChildrenByTagName == 1)
 	{*/
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
 		{
@@ -622,7 +650,8 @@ bool CvXMLLoadUtility::GetChildXmlValByName(std::wstring& r, TCHAR const* szName
 	// we only continue if there are one and only one children with this tag name
 	if (iNumChildrenByTagName == 1)
 	{*/
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
 		{
@@ -661,7 +690,8 @@ bool CvXMLLoadUtility::GetChildXmlValByName(int* r, TCHAR const* szName, int iDe
 	// we only continue if there are one and only one children with this tag name
 	if (iNumChildrenByTagName == 1)
 	{*/
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
 		{
@@ -706,7 +736,8 @@ bool CvXMLLoadUtility::GetChildXmlValByName(float* r, TCHAR const* szName, float
 	// we only continue if there are one and only one children with this tag name
 	if (iNumChildrenByTagName == 1)
 	{*/
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
 		{
@@ -750,7 +781,8 @@ bool CvXMLLoadUtility::GetChildXmlValByName(bool* r, TCHAR const* szName,
 	// we only continue if there are one and only one children with this tag name
 	if (iNumChildrenByTagName == 1)
 	{*/
-	if (gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
+	if (SkipToNextVal() && // advc.001
+		gDLL->getXMLIFace()->SetToChildByTagName(m_pFXml, szName))
 	{
 		if (SkipToNextVal()) // skip to the next non-comment node
 		{

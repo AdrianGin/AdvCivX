@@ -40,7 +40,11 @@ public:
 	DllExport void reset(HandicapTypes eHandicap, bool bConstructorCall = false);
 
 	DllExport void setInitialItems();
-	DllExport void regenerateMap();
+	DllExport void regenerateMap()
+	{	// <advc.tsl>
+		regenerateMap(false);
+	}
+	void regenerateMap(bool bAutomated); // </advc.tsl>
 	void showDawnOfMan(); // advc.004j
 	DllExport void initDiplomacy();
 	DllExport void initFreeUnits();
@@ -68,6 +72,7 @@ public:
 
 	DllExport void updateColoredPlots();
 	DllExport void updateBlockadedPlots();
+	bool updateNukeAreaOfEffect(CvPlot const* pPlot = NULL) const; // advc.653
 
 	void updatePlotGroups();
 	void updateBuildingCommerce();
@@ -621,7 +626,7 @@ public:
 	{
 		return GC.getInitCore().getVictory(eIndex);
 	}
-	void setVictoryValid(VictoryTypes eVict, bool bValid);
+	void setVictoryValid(VictoryTypes eVict, bool bValid); // (advc: Exposed to Python)
 
 	bool isSpecialUnitValid(SpecialUnitTypes eIndex) const;														// Exposed to Python
 	void makeSpecialUnitValid(SpecialUnitTypes eIndex);													// Exposed to Python
@@ -725,6 +730,7 @@ public:
 	{
 		return m_sorenRand.getInt(iNum, pszLog, /* advc.007: */ iData1, iData2);
 	}
+	// (map rand, sync rand)
 	std::pair<uint,uint> getInitialRandSeed() const; // advc.027b
 
 	DllExport int calculateSyncChecksum();																								// Exposed to Python
@@ -1009,6 +1015,7 @@ protected:
 	ReplayMessageList m_listReplayMessages;
 	CvReplayInfo* m_pReplayInfo;
 	int m_iNumSessions;
+	int m_iMapRegens; // advc.tsl
 	CvHallOfFameInfo* m_pHallOfFame; // advc.106i
 
 	BarbarianWeightMap* m_pBarbarianWeightMap; // advc.304 (serialized by CvMap)
@@ -1097,7 +1104,7 @@ protected:
 			bool bOnlyWithinArea = false, scaled rInertia = 0); // advc.027
 	void applyStartingLocHandicaps(/* advc.027: */ NormalizationTarget const* pStartValues);
 	template<class Agent>
-	sortByStartingLocHandicap(
+	void sortByStartingLocHandicap(
 			std::vector<std::pair<Agent*,int> > const& kStartingLocPercentPerAgent,
 			std::vector<Agent*>& kResult); // </advc.108b>
 	int getTeamClosenessScore( // <advc>

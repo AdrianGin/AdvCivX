@@ -712,8 +712,7 @@
 			<Type>UNIT_SETTLER</Type>
 			<UniqueNames/>
 			<Special>NONE</Special>
-			<!-- advc.010: was UNICLASS_WORKER -->
-			<Capture>NONE</Capture>
+			<Capture>UNITCLASS_WORKER</Capture>
 			<Combat>NONE</Combat>
 			<Domain>DOMAIN_LAND</Domain>
 			<DefaultUnitAI>UNITAI_SETTLE</DefaultUnitAI>
@@ -892,8 +891,7 @@
 			<Type>UNIT_WORKER</Type>
 			<UniqueNames/>
 			<Special>NONE</Special>
-			<!-- advc.010: was UNITCLASS_WORKER -->
-			<Capture>NONE</Capture>
+			<Capture>UNITCLASS_WORKER</Capture>
 			<Combat>NONE</Combat>
 			<Domain>DOMAIN_LAND</Domain>
 			<DefaultUnitAI>UNITAI_WORKER</DefaultUnitAI>
@@ -1146,8 +1144,7 @@
 			<Type>UNIT_INDIAN_FAST_WORKER</Type>
 			<UniqueNames/>
 			<Special>NONE</Special>
-			<!-- advc.010: was UNITCLASS_WORKER -->
-			<Capture>NONE</Capture>
+			<Capture>UNITCLASS_WORKER</Capture>
 			<Combat>NONE</Combat>
 			<Domain>DOMAIN_LAND</Domain>
 			<DefaultUnitAI>UNITAI_WORKER</DefaultUnitAI>

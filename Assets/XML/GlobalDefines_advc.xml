@@ -630,10 +630,10 @@
 		 the peak percentage. Setting BARB_PEAK_PERCENT to 0 results in BtS
 		 behavior, with B maximal when Barbarians first appear and then
 		 decreasing as the civs expand.
-		 Recommended: 56 -->
+		 Recommended: 54 -->
     <Define>
         <DefineName>BARB_PEAK_PERCENT</DefineName>
-        <iDefineIntVal>56</iDefineIntVal>
+        <iDefineIntVal>54</iDefineIntVal>
     </Define>
 	<!-- Used instead of the value above when the Raging Barbarians option
 		 is enabled. Recommended: Somewhat higher, say 7 points, than
@@ -846,15 +846,6 @@
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
-	<!-- [advc.130s] When set to 1 or higher (recommended), the relations bonus
-		 for accepting AI requests for military aid is enabled. The bonus is
-		 set to +1 for every leader in the Leaderhead XML. Set to 0 or less
-		 for no diplo bonus (BtS behavior). -->
-	<Define>
-		<DefineName>ENABLE_JOIN_WAR_DIPLO_BONUS</DefineName>
-		<iDefineIntVal>1</iDefineIntVal>
-	</Define>
-
 	<!-- [advc.130o] MADE_DEMAND_RECENT memory is increased to this number when
 		 a human player attacks an AI civ after receiving their tribute.
 		 MADE_DEMAND_RECENT memory causes the AI to reject demands and pleas,
@@ -1004,13 +995,13 @@
 
 	<!-- advc.550d: This modifier is applied to tech costs when playing
 		 with the "No Tech Trading" option. The effect of the modifier is
-		 reduced in the early and late game. Recommended: -30, meaning that
-		 tech costs are taken times 100% - 30% = 70%. This multiplier gets
+		 reduced in the early and late game. Recommended: -23, meaning that
+		 tech costs are taken times 100% - 23% = 77%. This multiplier gets
 		 further adjusted to the tech era and map size. Use 0 for BtS
 		 behavior (tech costs unaffected by the "No Tech Trading" option). -->
 	<Define>
 		<DefineName>TECH_COST_NOTRADE_MODIFIER</DefineName>
-		<iDefineIntVal>-30</iDefineIntVal>
+		<iDefineIntVal>-23</iDefineIntVal>
 	</Define>
 
 	<!-- [advc.034] The number of turns with Open Borders after making peace
@@ -1208,7 +1199,7 @@
 		<iDefineIntVal>31</iDefineIntVal>
 	</Define>
 
-	<!-- advc.190c: This concerns the probability distribution for civs and
+	<!-- advc.191: This concerns the probability distribution for civs and
 		 leaders when both are set to "Random" during game setup and
 		 "Unrestricted Leaders" isn't checked. Use 0 for BtS behavior, meaning
 		 that the civ (e.g. Rome) gets chosen uniformly at random and then
@@ -1218,6 +1209,7 @@
 		 100, specifically, gives every leader the same probability on the
 		 bottom line. A negative value (not recommended, not tested) makes
 		 civs with multiple leaders less likely to be chosen.
+		 advc.tsl: Also affects the True Starts game option.
 		 Recommended: 20, meaning that e.g. Rome is 1.2 times as likely
 		 to be chosen than Mali and America is 1.4 times as likely as Mali. -->
 	<Define>
@@ -1253,6 +1245,41 @@
 	</Define>
 	<Define> <!-- redefine -->
 		<DefineName>NUKE_UNIT_DAMAGE_RAND_2</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+
+	<!-- advc.tsl: Only relevant when playing with the True Starts game option.
+		 Set to 0 to disable the "sanitization" of starting sites,
+		 i.e. changes to bonus resources and other characteristics of tiles
+		 surrounding the starting sites. Recommended: 1 -->
+	<Define>
+		<DefineName>TRUE_STARTS_SANITIZE</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+	<!-- Same as above, but applies to scenarios instead of map scripts.
+		 Note that the True Starts option doesn't apply at all to
+		 scenarios with pre-placed cities. -->
+	<Define>
+		<DefineName>TRUE_STARTS_SANITIZE_SCENARIOS</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+
+	<!-- advc.010: Probability of capturing a unit that has a Capture Unit Class
+		 set in Civ4UnitInfos.xml, i.e. normally workers and settlers. If such a
+		 unit isn't successfully captured, it gets destroyed. Set to 100 for
+		 BtS behavior (capture always happens), recommended: 50.
+		 (In the future, this "base" probability might get adjusted dynamically,
+		 e.g. based on the distance to the territory of the capturing player;
+		 but this isn't implemented so far.) -->
+	<Define>
+		<DefineName>BASE_UNIT_CAPTURE_CHANCE</DefineName>
+		<iDefineIntVal>50</iDefineIntVal>
+	</Define>
+	<!-- Replaces the base chance above on the turn that war has been declared
+		 on a captured unit. Use 100 for BtS behavior. Recommended: 0, to
+		 discourage surprise attacks on workers. -->
+	<Define>
+		<DefineName>DOW_UNIT_CAPTURE_CHANCE</DefineName>
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 

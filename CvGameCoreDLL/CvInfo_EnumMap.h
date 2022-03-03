@@ -38,11 +38,11 @@
 #define DEF_INFO_ENUM_MAP(TagName, EnumPrefix, ValueType, CompactValueType, InfoMapTempl) \
 	DEF_INFO_ENUM_MAP_DEFAULT(TagName, EnumPrefix, ValueType, CompactValueType, InfoMapTempl, 0)
 // Will want to use the default compact value type when mapping to enum values
-#define DEF_INFO_ENUM2ENUM_MAP_DEFAULT(TagName, EnumPrefix, ValueType, InfoMapTempl, iDefault) \
-	DEF_INFO_ENUM_MAP_HELPER(TagName, EnumPrefix, ValueType, void*, \
+#define DEF_INFO_ENUM2ENUM_MAP_DEFAULT(TagName, EnumPrefix, ValuePrefix, InfoMapTempl, iDefault) \
+	DEF_INFO_ENUM_MAP_HELPER(TagName, EnumPrefix, ValuePrefix##Types, void*, \
 	InfoMapTempl, iDefault, get, int)
-#define DEF_INFO_ENUM2ENUM_MAP(TagName, EnumPrefix, ValueType, InfoMapTempl) \
-	DEF_INFO_ENUM_MAP_DEFAULT(TagName, EnumPrefix, ValueType, void*, InfoMapTempl, 0)
+#define DEF_INFO_ENUM2ENUM_MAP(TagName, EnumPrefix, ValuePrefix, InfoMapTempl) \
+	DEF_INFO_ENUM_MAP_DEFAULT(TagName, EnumPrefix, ValuePrefix##Types, void*, InfoMapTempl, 0)
 // Separate macros just so that the getter functions get named "is..."
 #define DEF_INFO_ENUM_MAP_BOOL_DEFAULT(TagName, EnumPrefix, InfoMapTempl, iDefault) \
 	DEF_INFO_ENUM_MAP_HELPER(TagName, EnumPrefix, bool, void*, \

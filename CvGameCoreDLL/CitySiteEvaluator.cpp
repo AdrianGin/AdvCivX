@@ -45,23 +45,19 @@ CitySiteEvaluator::CitySiteEvaluator(CvPlayerAI const& kPlayer, int iMinRivalRan
 		// advc.001: Make sure that personality isn't used for human or StartingLoc
 		if (!kPlayer.isHuman() || m_bDebug)
 			pPersonality = &GC.getInfo(kPlayer.getPersonalityType());
+		bool bEasyCultureFromTrait = false;
+		m_bEasyCulture = kPlayer.AI_isEasyCulture(&bEasyCultureFromTrait);
+		if (bEasyCultureFromTrait && pPersonality != NULL &&
+			pPersonality->getBasePeaceWeight() <= 5)
+		{
+			m_bAmbitious = true;
+		}
 		FOR_EACH_ENUM(Trait)
 		{
 			if (!kPlayer.hasTrait(eLoopTrait))
 				continue;
 
 			CvTraitInfo const& kLoopTrait = GC.getInfo(eLoopTrait);
-			if (kLoopTrait.getCommerceChange(COMMERCE_CULTURE) > 0 ||
-				// <advc.908b>
-				(GC.getNumCultureLevelInfos() >= 2 &&
-				GC.getGame().freeCityCultureFromTrait(eLoopTrait) >=
-				GC.getGame().getCultureThreshold((CultureLevelTypes)2)))
-				// </advc.908b>
-			{
-				m_bEasyCulture = true;
-				if (pPersonality != NULL && pPersonality->getBasePeaceWeight() <= 5)
-					m_bAmbitious = true;
-			}
 			if (kLoopTrait.getExtraYieldThreshold(YIELD_COMMERCE) > 0)
 				m_bExtraYieldThresh = true;
 			// <advc.908a>
@@ -117,44 +113,6 @@ CitySiteEvaluator::CitySiteEvaluator(CvPlayerAI const& kPlayer, int iMinRivalRan
 				if (GC.getInfo(eUniqueBuilding).isWater())
 				{
 					m_bSeafaring = true;
-					break;
-				}
-			}
-		}
-		// Easy culture: culture process, free culture or easy artists
-		if (!m_bEasyCulture)
-		{
-			FOR_EACH_ENUM(Process)
-			{
-				CvProcessInfo const& kLoopProcess = GC.getInfo(eLoopProcess);
-				if (GET_TEAM(kPlayer.getTeam()).isHasTech(kLoopProcess.getTechPrereq()) &&
-					kLoopProcess.getProductionToCommerceModifier(COMMERCE_CULTURE) > 0)
-				{
-					m_bEasyCulture = true;
-					break;
-				}
-			}
-		}
-		if (!m_bEasyCulture)
-		{
-			FOR_EACH_ENUM(Building)
-			{
-				if (kPlayer.isBuildingFree(eLoopBuilding) && GC.getInfo(eLoopBuilding).
-					getObsoleteSafeCommerceChange(COMMERCE_CULTURE) > 0)
-				{
-					m_bEasyCulture = true;
-					break;
-				}
-			}
-		}
-		if (!m_bEasyCulture)
-		{
-			FOR_EACH_ENUM(Specialist)
-			{
-				if (kPlayer.isSpecialistValid(eLoopSpecialist) &&
-					kPlayer.specialistCommerce(eLoopSpecialist, COMMERCE_CULTURE) > 0)
-				{
-					m_bEasyCulture = true;
 					break;
 				}
 			}
@@ -235,7 +193,7 @@ scaled CitySiteEvaluator::evaluateWorkablePlot(CvPlot const& kPlot) const
 	int const iBestPossibleScore = (kPlot.isWater() ? 4 : 5);
 	for (CityPlotIter it(kPlot, false); it.hasNext(); ++it)
 	{
-		if (!m_kPlayer.canFound(it->getX(), it->getY()))
+		if (!m_kPlayer.canFound(*it))
 			continue;
 		int iScore = 1;
 		if (kPlot.isWater())
@@ -367,9 +325,9 @@ AIFoundValue::AIFoundValue(CvPlot const& kPlot, CitySiteEvaluator const& kSettin
 {
 	PROFILE_FUNC();
 	if (!kPlayer.canFound(kPlot, false,
-		/*	advc.001: Don't let unit action recommendations for human settlers
+		/*	advc.181: Don't let action recommendations for human settlers
 			give away rival cities founded in the fog of war. */
-		!kPlayer.isHuman()))
+		!kPlayer.isHuman() || kSet.isAllSeeing()))
 	{
 		return;
 	}
@@ -1473,13 +1431,14 @@ ImprovementTypes AIFoundValue::getBonusImprovement(BonusTypes eBonus, CvPlot con
 bool AIFoundValue::isNearTech(TechTypes eTech) const
 {
 	return (eTech == NO_TECH || kTeam.isHasTech(eTech) ||
-		kPlayer.getCurrentResearch() == eTech ||
-		/*  <advc.108> With our first city, we can wait a bit a longer for the proper tech.
-			(Not when starting in a later era though; research starts out slow then.) */
-		(iCities <= 0 && eEra >= GC.getInfo(eTech).getEra() && kGame.getStartEra() <= 0) ||
-		// </advc.108>
-		// The HasTech and CurrentResearch checks are redundant, I think, but faster.
-		kPlayer.canResearch(eTech, false, false, true));
+			kPlayer.getCurrentResearch() == eTech ||
+			/*  <advc.108> With our first city, we can wait a bit a longer for the
+				proper tech. (Not when starting in a later era though; research
+				starts out slow then.) */
+			(iCities <= 0 && eEra >= GC.getInfo(eTech).getEra() &&
+			kGame.getStartEra() <= 0) || // </advc.108>
+			/*	(The HasTech and CurrentResearch checks are redundant, I think,
+				but faster.) */ kPlayer.canResearch(eTech));
 }
 
 // (not much pre-AdvCiv code left)
@@ -2397,6 +2356,10 @@ int AIFoundValue::evaluateGoodies(int iGoodies) const
 	remove that obstacle; makes the site difficult to evaluate. */
 int AIFoundValue::adjustToLandAreaBoundary(int iValue) const
 {
+	/*	Change advc.030 makes this check easy to implement. Can't do it
+		if that's disabled. */
+	if (!GC.getDefineBOOL(CvGlobals::PASSABLE_AREAS))
+		return iValue;
 	std::set<int> otherLandAreas;
 	bool bFoundImpassable = false;
 	int const iReprArea = kArea.getRepresentativeArea();
@@ -2815,8 +2778,10 @@ int AIFoundValue::adjustToCivSurroundings(int iValue, int iStealPercent) const
 		/*  advc: BtS code dealing with iDistance deleted;
 			K-Mod comment: Close cities are penalised in other ways */
 		// with that max distance, we could fit a city in the middle!
-		// advc.031: Handle expansive setting below
-		int const iTargetRange = 5;//(kSet.isExpansive() ? 6 : 5);
+		int const iTargetRange = //(kSet.isExpansive() ? 6 : 5)
+				/*	advc.031: Simply 5 unless a mod changes the city radius.
+					Handle expansive setting below. */
+				(5 + CITY_PLOTS_DIAMETER) / 2;
 		int iNearestDistance = iDistance;
 		/*	<advc.031> There can already be a city "in the middle" that iDistance
 			doesn't account for - namely when it's a foreign city. */
@@ -2901,7 +2866,7 @@ int AIFoundValue::adjustToCivSurroundings(int iValue, int iStealPercent) const
 	int iDistance = /* advc.031: */ std::min(GC.getMap().maxMaintenanceDistance(),
 			::plotDistance(iX, iY, pOurNearestCity->getX(), pOurNearestCity->getY()));
 	// <advc.031> Don't discourage settling on small nearby landmasses
-	if(pCapital == NULL || pCapital->isArea(kArea) ||
+	if (pCapital == NULL || pCapital->isArea(kArea) ||
 		::plotDistance(&kPlot, pCapital->plot()) >= 10 ||
 		kArea.getNumTiles() >= NUM_CITY_PLOTS)
 	{
@@ -3091,10 +3056,8 @@ bool AIFoundValue::isDeadlockedBonus(CvPlot const& kBonusPlot, int iMinRange) co
 		if (!isRevealed(kOtherSite) && !kOtherSite.isAdjacentRevealed(eTeam))
 			continue; // </advc.031>
 		//canFound usually returns very quickly
-		if (kPlayer.canFound(kOtherSite.getX(), kOtherSite.getY(),
-				/*  advc.031: Was false; whether to check visibility of cities that
-					prevent founding in kOtherSite. */
-				kSet.isAllSeeing()))
+		if (kPlayer.canFound(kOtherSite,
+			false, kSet.isAllSeeing())) // advc.181
 		{
 			bNeverFound = false;
 			if (stepDistance(&kPlot, &kOtherSite) > iMinRange ||

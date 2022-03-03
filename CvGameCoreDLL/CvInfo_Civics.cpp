@@ -16,6 +16,7 @@ m_iGreatGeneralRateModifier(0),
 m_iDomesticGreatGeneralRateModifier(0),
 m_iStateReligionGreatPeopleRateModifier(0),
 m_iDistanceMaintenanceModifier(0),
+m_iColonyMaintenanceModifier(0), // advc.912g
 m_iNumCitiesMaintenanceModifier(0),
 m_iCorporationMaintenanceModifier(0),
 m_iExtraHealth(0),
@@ -221,6 +222,7 @@ void CvCivicInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_iDomesticGreatGeneralRateModifier);
 	stream->Read(&m_iStateReligionGreatPeopleRateModifier);
 	stream->Read(&m_iDistanceMaintenanceModifier);
+	stream->Read(&m_iColonyMaintenanceModifier); // advc.912g
 	stream->Read(&m_iNumCitiesMaintenanceModifier);
 	stream->Read(&m_iCorporationMaintenanceModifier);
 	stream->Read(&m_iExtraHealth);
@@ -326,6 +328,7 @@ void CvCivicInfo::write(FDataStreamBase* stream)
 	stream->Write(m_iDomesticGreatGeneralRateModifier);
 	stream->Write(m_iStateReligionGreatPeopleRateModifier);
 	stream->Write(m_iDistanceMaintenanceModifier);
+	stream->Write(m_iColonyMaintenanceModifier); // advc.912g
 	stream->Write(m_iNumCitiesMaintenanceModifier);
 	stream->Write(m_iCorporationMaintenanceModifier);
 	stream->Write(m_iExtraHealth);
@@ -401,6 +404,8 @@ bool CvCivicInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_iDomesticGreatGeneralRateModifier, "iDomesticGreatGeneralRateModifier");
 	pXML->GetChildXmlValByName(&m_iStateReligionGreatPeopleRateModifier, "iStateReligionGreatPeopleRateModifier");
 	pXML->GetChildXmlValByName(&m_iDistanceMaintenanceModifier, "iDistanceMaintenanceModifier");
+	// advc.912g:
+	pXML->GetChildXmlValByName(&m_iColonyMaintenanceModifier, "iColonyMaintenanceModifier", 0);
 	pXML->GetChildXmlValByName(&m_iNumCitiesMaintenanceModifier, "iNumCitiesMaintenanceModifier");
 	pXML->GetChildXmlValByName(&m_iCorporationMaintenanceModifier, "iCorporationMaintenanceModifier");
 	pXML->GetChildXmlValByName(&m_iExtraHealth, "iExtraHealth");

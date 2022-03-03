@@ -84,6 +84,18 @@
 		<English>If checked, the city screen can be exited by left-clicking on a tile outside the city radius. (Otherwise, the city screen can still be exited via the middle mouse button, double-click outside the city radius, right-click on the city center tile, left-click on the mini-map, Esc, Enter and Space.)</English>
 		<German>Schlieﬂt den Stadtbildschirm bei einem Linksklick auf ein Feld auﬂerhalb des Stadtradius. (Der Stadtbildschirm kann in jedem Fall auf folgenden Wegen geschlossen werden: Mittlere Maustaste, Doppelklick auﬂerhalb des Stadtradius, Rechtsklick aufs Stadtfeld, Linksklick auf die Mini-Karte rechts unten, Esc, Eingabe und Leertaste.)</German>
 	</TEXT>
+
+	<!-- advc.002q: -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__CITYSOUNDSCAPES_TEXT</Tag>
+		<English>City Soundscapes</English>
+		<German>Stadt-Ger‰usche</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__CITYSOUNDSCAPES_HOVER</Tag>
+		<English>If checked, the music pauses while the city screen is open and urban sounds are played instead (as in BtS). If unchecked, the music continues and no urban sounds are played. However, the change in camera distance will affect the music volume. You may want to experiment with the [COLOR_HIGHLIGHT_TEXT]Default Distance[COLOR_REVERT] option and [COLOR_HIGHLIGHT_TEXT]Field of View[COLOR_REVERT] slider on the "Map" tab to get the volume right. Toggling this option doesn't take effect while the city screen is open.</English>
+		<German>Erlaubt es, die Alltags-Ger‰usche abzuschalten, die normalerweise auf dem Stadtbildschirm abgespielt werden. Stattdessen l‰uft dann die Musik weiter. Allerdings wirkt sich der Kamera-Abstand auf die Musik-Lautst‰rke aus; siehe dazu auch die Optionen [COLOR_HIGHLIGHT_TEXT]Standard-Abstand[COLOR_REVERT] und [COLOR_HIGHLIGHT_TEXT]Sichtfeld[COLOR_REVERT] unter dem Reiter "Karte". Das Ein- und Ausschalten von Stadt-Ger‰uschen wirkt sich erst beim n‰chsten ÷ffnen des Stadtbildschirms aus (also nicht bei bereits offenem Stadtbildschirm).</German>
+	</TEXT>
 	
 	<!-- advc.004: "Detailed food info" sounds a bit grand (as does "Food
 		 Assist") -->

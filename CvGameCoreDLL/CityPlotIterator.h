@@ -231,11 +231,11 @@ public:
 class CityPlotRandIter : public CityPlotIterator<ANY_CITY_PLOT, true>
 {
 public:
-	CityPlotRandIter(CvCity const& kCity, CvRandom& pRandom, bool bIncludeHomePlot) :
+	CityPlotRandIter(CvCity const& kCity, CvRandom& pRandom, bool bIncludeHomePlot = true) :
 		CityPlotIterator<ANY_CITY_PLOT, true>(kCity.getX(), kCity.getY(),
 		pRandom, bIncludeHomePlot) {}
 
-	CityPlotRandIter(CvPlot const& kCenter, CvRandom& pRandom, bool bIncludeHomePlot) :
+	CityPlotRandIter(CvPlot const& kCenter, CvRandom& pRandom, bool bIncludeHomePlot = true) :
 		CityPlotIterator<ANY_CITY_PLOT, true>(kCenter.getX(), kCenter.getY(),
 		pRandom, bIncludeHomePlot) {}
 
@@ -244,6 +244,79 @@ public:
 		computeNext();
 		return *this;
 	}
+};
+
+/*	Goes through all CvCity instances on the map that have a given CvPlot
+	in their radius. (This does not imply that the cities are currently able
+	to work the plot.) Uses a CityPlotIter internally b/c relevant cities
+	can only exist within a city radius around the given plot. */
+class NearbyCityIter
+{
+public:
+	NearbyCityIter(CvPlot const& kPlot)
+	:	m_kCityPlots(*new CityPlotIter(kPlot)),
+		m_pNext(NULL)
+	{
+		if (kPlot.isCityRadius()) // save time
+			computeNext();
+	}
+
+	~NearbyCityIter() { delete &m_kCityPlots; }
+
+	bool hasNext() const
+	{
+		return (m_pNext != NULL);
+	}
+
+	NearbyCityIter& operator++()
+	{
+		computeNext();
+		return *this;
+	}
+
+	CvCity& operator*() const
+	{
+		return *m_pNext;
+	}
+
+	CvCity* operator->() const
+	{
+		return m_pNext;
+	}
+
+	// Priority value of the current city for working the center plot
+	int cityPlotPriority() const
+	{
+		/*	This is the city plot index of the current city's plot as seen
+			from a (hypothetical) city in the center. Should really be the
+			city plot index of the center as seen from the current city,
+			but it doesn't matter b/c city plot priorities are symmetrical.
+			The BtS code (at the call locations) had also relied on that. */
+		CityPlotTypes eCityPlot = m_kCityPlots.currID();
+		FAssertEnumBounds(eCityPlot);
+		return GC.getCityPlotPriority()[eCityPlot];
+	}
+
+private:
+	void computeNext()
+	{
+		if (!m_kCityPlots.hasNext())
+		{
+			m_pNext = NULL;
+			return;
+		}
+		CvPlot& kCityPlot = *m_kCityPlots;
+		++m_kCityPlots;
+		m_pNext = kCityPlot.getPlotCity();
+		if (m_pNext == NULL)
+		{
+			computeNext();
+			return;
+		}
+	}
+
+   CityPlotIter& m_kCityPlots;
+   CvCity* m_pNext;
 };
 
 #endif

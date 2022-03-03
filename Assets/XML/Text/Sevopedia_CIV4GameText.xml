@@ -81,7 +81,7 @@
 		<Spanish>Principio y religión favoritos</Spanish>
 	</TEXT>
 	<!-- advc.004y: To replace TXT_KEY_PEDIA_CATEGORY_IMPROVEMENT.
-		 I've kept the FrItSp translations from there. -->
+		 I've kept the FIS translations from there. -->
 	<TEXT>
 		<Tag>TXT_KEY_PEDIA_IMPROVEMENT_YIELD</Tag>
 		<English>Improvement Yields</English>
@@ -92,7 +92,7 @@
 	</TEXT>
 	<!-- advc.004y: From CIV4GameTextInfos.xml. Only English and German
 		 changed. -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_PEDIA_BONUS_YIELDS</Tag>
 		<English>Bonus Resources</English>
 		<French>Rendement bonus</French>
@@ -102,7 +102,7 @@
 	</TEXT>
 		<!-- advc.004y: Originally in CIV4GameTextInfos.xml. Only removed the
 		 parentheses and "Total"; more comprehensible this way. -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_BUILDING_REQ_BUILDINGS_NOCITY</Tag>
 		<English>[COLOR_WARNING_TEXT]Requires %s1_Name: %d2[COLOR_REVERT]</English>
 		<French>[COLOR_WARNING_TEXT]Requiert : %s1_Name (%d2)[COLOR_REVERT]</French>
@@ -111,7 +111,7 @@
 		<Spanish>[COLOR_WARNING_TEXT]Requiere %s1_Name: %d2[COLOR_REVERT]</Spanish>
 	</TEXT>
 	<!-- Same with a range. Add "depending on map size"? -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_BUILDING_REQ_BUILDINGS_NOCITY_RANGE</Tag>
 		<English>[COLOR_WARNING_TEXT]Requires %s1_Name: %d2-%d3[COLOR_REVERT]</English>
 		<French>[COLOR_WARNING_TEXT]Requiert : %s1_Name (%d2-%d3)[COLOR_REVERT]</French>
@@ -141,7 +141,7 @@
 		 CIV4GameText_BTS.xml. I think they're only used for Civilopedia and
 		 Sevopedia. No change in the Romance languages because both use the
 		 same term (and I can't think of a better one). -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_CIVILOPEDIA_HISTORY</Tag>
 		<English>Background</English>
 		<French>Histoire</French>
@@ -149,7 +149,7 @@
 		<Italian>Storia</Italian>
 		<Spanish>Historia</Spanish>
 	</TEXT>
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_CIVILOPEDIA_BACKGROUND</Tag>
 		<English>[BOLD]History:[\BOLD][NEWLINE]</English>
 		<French>[BOLD]Histoire :[\BOLD][NEWLINE]</French>

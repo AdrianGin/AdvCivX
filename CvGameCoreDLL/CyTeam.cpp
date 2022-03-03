@@ -1022,7 +1022,7 @@ int CyTeam::AI_getAtPeaceCounter(int /*TeamTypes*/ eTeam) const
 
 int CyTeam::AI_getWarSuccess(int /*TeamTypes*/ eIndex) const
 {
-	return m_pTeam ? m_pTeam->AI_getWarSuccess((TeamTypes)eIndex) : -1;
+	return m_pTeam ? m_pTeam->AI_getWarSuccess((TeamTypes)eIndex).uround() : -1;
 }
 
 // advc.152:

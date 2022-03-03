@@ -17,7 +17,11 @@ class FDataStreamBase;
 	team's leader changes - a bit messy, but a separate cache for team data
 	would come with some red tape.
 	Also handles the updating of cached values, i.e. some of UWAI's heuristics
-	are part of this class. (I think I'd prefer to move them elsewhere ...) */
+	are part of this class. (I think I'd prefer to move them elsewhere ...)
+	Note that most UWAI code outside of this class can't be assumed to be executed
+	by all participants of a network game and, therefore, must not cache any data
+	and must not (indirectly) call functions that cache data - unless they have
+	a bConstCache parameter for suppressing such caching. */
 
 // Interface of UWAICache::City for use outside of the UWAI component
 class UWAICity
@@ -51,7 +55,7 @@ public:
 
 	UWAICache();
 	~UWAICache();
-	/*	CvPlayer is a class that gets reset and reused when returning to the main menu
+	/*	CvPlayer is a class that gets reset and reused when returning to the opening menu
 		or loading a savegame (see a comment above the CvTeam constructor in CvTeam.h
 		for details), and UWAICache follows a similar pattern:
 		+	When saving a game, write is called.
@@ -60,7 +64,7 @@ public:
 		+	The destructor ensures that all memory is deallocated before exiting Civ 4.
 		+	uninit frees memory when the cache owner is defeated (for performance).
 		+	init resets the data (and does some other things) when a new game is started.
-		+	Nothing is done upon returning to the main menu.
+		+	Nothing is done upon returning to the opening menu.
 		+	The reset function is named "clear" and is also used before cache updates. */
 	void init(PlayerTypes eOwner);
 	void uninit();

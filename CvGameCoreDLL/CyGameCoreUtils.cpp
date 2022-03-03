@@ -93,8 +93,12 @@ int cyPlotCityXYFromInt(int iDX, int iDY)
 
 int cyPlotCityXYFromCity(CyCity* pCity, CyPlot* pPlot)
 {
-	CvCity const& kCity = *pCity->getCity(); // advc: plotCityXY(CvCity*,CvPlot*) no longer exists
-	return plotCityXY(kCity.getX(), kCity.getY(), *pPlot->getPlot());
+	// <advc> plotCityXY(CvCity*,CvPlot*) no longer exists
+	CvCity const* pCvCity = pCity->getCity();
+	CvPlot const* pCvPlot = pPlot->getPlot();
+	if (pCvCity == NULL || pCvPlot == NULL)
+		return NO_CITYPLOT;
+	return pCvCity->getCityPlotIndex(*pCvPlot); // </advc>
 }
 
 CardinalDirectionTypes cyGetOppositeCardinalDirection(CardinalDirectionTypes eCardDirection)

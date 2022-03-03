@@ -98,7 +98,9 @@
 		</UnitClassInfo>
 		<UnitClassInfo>
 			<Type>UNITCLASS_EXECUTIVE_2</Type>
-			<Description>CHANGED_TXT_KEY_UNIT_EXECUTIVE_2</Description>
+			<!-- advc.001: Was CHANGED_TXT_KEY_UNIT_EXECUTIVE_2, which doesn't
+				 exist. (Only used for debugging anyway I think.) -->
+			<Description>TXT_KEY_UNIT_EXECUTIVE_2</Description>
 			<iMaxGlobalInstances>-1</iMaxGlobalInstances>
 			<iMaxTeamInstances>-1</iMaxTeamInstances>
 			<iMaxPlayerInstances>5</iMaxPlayerInstances>

@@ -38,7 +38,7 @@
 	<!-- advc.004, advc.002g: Some extra info added (incl. restart) -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__OPTIONSBUTTON_HOVER</Tag>
-		<English>When checked, a button for opening the BUG Menu is displayed in the upper left corner of the main interface, next to the Event Log button (restart required). The BUG Menu can always be accessed from the Game Menu [ESC], the Player Options screen [CTRL+O] and directly via [CTRL-ALT+O].</English>
+		<English>When checked, a button for opening the BUG Menu is displayed in the upper left corner of the main screen, next to the Event Log button (restart required). The BUG Menu can always be accessed from the Main Menu [ESC], the Player Options screen [CTRL+O] and directly via [CTRL-ALT+O].</English>
 		<German>Zeigt (nach dem nächsten Neustart) eine Schaltfläche zum Öffnen des BUG-Menüs in der oberen linken Ecke des Hauptbildschirms an (neben der Ereignis-Log-Schaltfläche). Das BUG-Menü lässt sich in jedem Fall vom Spielmenü [ESC] und Spieleroptionsmenü [STRG+O] aus aufrufen, und direkt per [CTRL+ALT+O].</German>
 		<Italian>Quando è selezionato, mostra il bottone della schermata opzioni del BUG.</Italian>
 		<Spanish>Permite mostrar el botón de opciones BUG en la pantalla.</Spanish>
@@ -57,7 +57,7 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__AUTOOPENEVENTLOG_HOVER</Tag>
-		<English>When checked, the Event Log is opened at the start of a turn if the number of new messages to display exceeds a limit. Major events (e.g. declarations of war) are still announced on the main interface. Regardless of the limit, the Event Log is opened whenever an AI leader contacts the player. This option depends on the "Minimize Popups" option (STRG + O); without Minimize Popups, the Event Log is never opened.</English>
+		<English>When checked, the Event Log is opened at the start of a turn if the number of new messages to display exceeds a limit. Major events (e.g. declarations of war) are still announced on the main screen. Regardless of the limit, the Event Log is opened whenever an AI leader contacts the player. This option depends on the "Minimize Popups" option (STRG + O); without Minimize Popups, the Event Log is never opened.</English>
 		<German>Öffnet zu Beginn des Zuges das Ereignis-Log, wenn die Anzahl der neuen Nachrichten einen Grenzwert überschreitet. Nur wichtige Ereignisse (z.B. Kriegserklärungen) werden zusätzlich auf dem Hauptbildschirm angezeigt. Unabhängig von der Anzahl der Nachrichten, öffnet sich das Ereignis-Log außerdem bei jeder Kontaktaufnahme durch einen KI-Spieler. Wichtig: Die Option "Popups minimieren" (STRG + O) ist eine Voraussetzung für das automatische Öffnen des Ereignis-Logs.</German>
 	</TEXT>
 	<TEXT>
@@ -150,7 +150,7 @@
 		 "or, if a city is currently selected, the Great Person progress of that city," but I guess that's not important enough. -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__GPBAR_HOVER</Tag>
-		<English>When checked, displays a progress bar at the top of the main interface that shows when the next Great Person (except Great General) will be born and in which city.</English>
+		<English>When checked, displays a progress bar at the top of the main screen that shows when the next Great Person (except Great General) will be born and in which city.</English>
 		<French>En activant, montre la barre de progrès et la ville du prochain Personnage Illustre.</French>
 		<German>Platziert am oberen Rand des Hauptbildschirms einen Fortschrittsbalken, der anzeigt, wann die nächste große Persönlichkeit (außer Generäle) erscheinen wird und in welcher Stadt.</German>
 		<Italian>Quando è selezionato, mostra il progresso e la città del prossimo Grande Personaggio.</Italian>
@@ -199,7 +199,7 @@
 	<!-- advc.004: Minor changes -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__COMBAT_COUNTER_HOVER</Tag>
-		<English>When checked, displays a progress bar on top of the main interface that shows how much combat experience is needed for the next Great General.</English>
+		<English>When checked, displays a progress bar on top of the main screen that shows how much combat experience is needed for the next Great General.</English>
 		<French>En activant, montre l'Expérience au Combat nécessaire pour le prochain Général Illustre.</French>
 		<German>Platziert am oberen Rand des Hauptbildschirms einen Fortschrittsbalken, der die Gefechtserfahrung anzeigt, die für den nächsten großen General benötigt wird.</German>
 		<Italian>Quando è selezionato, mostra la barra di avanzamento per il prossimo Grande Generale.</Italian>
@@ -231,7 +231,7 @@
 	<!-- advc.004: Mention right-click -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__MINMAX_COMMERCE_HOVER</Tag>
-		<English>When checked, a second pair of +/- buttons is displayed on the main interface for each type of commerce. These extra buttons set the respective commerce rate to 100% (+) or 0% (-). Regardless of this option, a right-click on the normal +/- buttons also sets the rate to 100%/0%.</English>
+		<English>When checked, a second pair of +/- buttons is displayed on the main screen for each type of commerce. These extra buttons set the respective commerce rate to 100% (+) or 0% (-). Regardless of this option, a right-click on the normal +/- buttons also sets the rate to 100%/0%.</English>
 		<German>Zeigt ein zweites Paar "+/-"-Schaltflächen für jeden Anteilsregler an, die den Anteil auf 100% beziehungsweise 0% setzen. Auch ohne diese Option lassen sich die Anteile durch einen Rechtsklick auf die gewöhnlichen "+/-"-Schaltflächen auf 100%/0% setzen.</German>
 		<Italian>Quando è selezionato, mostra una seconda coppia di bottoni +/- per ogni tipo di commercio che impostano il valore rispettivamente al 100% ed allo 0%.</Italian>
 		<Spanish>Muestra un segundo par de botones +/- buttons que permiten fijar la producción a 100% y 0% respectivamente.</Spanish>
@@ -250,7 +250,7 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__HIDE_ESPSLIDER_HOVER</Tag>
-		<English>Remove the espionage slider from the main interface if the slider position is 0. The slider can then still be accessed through the Espionage screen or the City screen.</English>
+		<English>Remove the espionage slider from the main screen if the slider position is 0. The slider can then still be accessed through the Espionage screen or the City screen.</English>
 		<French>Retirez la réglette d'espionnage de l'écran principal si la position de la réglette est 0. Vous pouvez toujours y accéder via l'écran Espionnage ou l'écran Ville.</French>
 		<German>Entfernt den Spionageregler vom Hauptbildschirm, wenn er auf 0 steht. Der Regler ist dann immer noch auf dem Spionagebildschirm und dem Stadtbildschirm verfügbar.</German>
 		<Italian>Rimuovere la barra di spionaggio dalla schermata principale se la sua posizione è 0. La barra può essere raggiunta attraverso la schermata Espionaggio o la schermata Città.</Italian>
@@ -401,7 +401,7 @@
 	<!-- advc.004: English rewritten, German revised. -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__PROGRESSBARSTICKMARKS_HOVER</Tag>
-		<English>When checked, progress bars on the main interface and city screen show tick marks that project the current per-turn progress rate into the future.</English>
+		<English>When checked, progress bars on the main screen and city screen show tick marks that project the current per-turn progress rate into the future.</English>
 		<German>Zeigt Teilstriche auf den Fortschrittsbalken im Haupt- und Stadtbildschirm an, die die voraussichtlichen Fortschritte in zukünftigen Runden markieren.</German>
 		<Italian>Visualizza sulle barre di avanzamento selezionate dei trattini che mostrano il progresso stimato per i turni successivi.</Italian>
 		<Spanish>Muestra líneas en las barras de progreso seleccionadas que muestran el progreso estimado en turnos futuros.</Spanish>

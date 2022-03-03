@@ -13,6 +13,7 @@
 #include "CvInfo_Terrain.h"
 #include "CvInfo_Command.h"
 #include "CvInfo_Civics.h"
+#include "CvInfo_TrueStarts.h" // advc.tsl
 #include "CvInfo_Misc.h"
 // Note: CvPopupInfo, CvReplayInfo and CvHallOfFameInfo don't belong here; contain no XML data.
 

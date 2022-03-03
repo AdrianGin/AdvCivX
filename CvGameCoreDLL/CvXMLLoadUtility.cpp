@@ -60,13 +60,14 @@ m_pFXml(NULL)
 	m = new Data(); // advc.003k
 	m->bAssertMandatory = true; // advc.006b
 	m->bEventsLoaded = m->bThroneRoomLoaded = false; // advc.003v
+	m->bTrueStartsDataLoaded = false; // advc.tsl
 	m_pSchemaCache = gDLL->getXMLIFace()->CreateFXmlSchemaCache();
 }
 
 
 CvXMLLoadUtility::~CvXMLLoadUtility()
 {
-	/*	advc (note): The EXE only seems to call this when exiting from the main menu.
+	/*	advc (note): The EXE only seems to call this when exiting from the opening menu.
 		But possibly deleting it twice seems worse than never, so I'm not going to
 		delete CvGlobals::m_pXMLLoadUtility in CvDLLButtonPopup::OnOkClicked . */
 	gDLL->getXMLIFace()->DestroyFXmlSchemaCache(m_pSchemaCache);

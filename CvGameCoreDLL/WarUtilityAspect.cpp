@@ -4097,7 +4097,7 @@ void Bellicosity::evaluate()
 	}
 	if (rOurMinusTheirLostPow <= 0 || rCurrentAggrPow < 1)
 		return;
-	// A good war is one that we win, and that occupies many of our eager warriors
+	// A good war is one that we win, and that occupies many of our eager warriors.
 	scaled rGloryRate = rOurMinusTheirLostPow / rCurrentAggrPow;
 	rGloryRate.decreaseTo(1);
 	log("Difference in lost power: %d; present aggressive power: %d; bellicosity: %d",
@@ -4642,7 +4642,7 @@ void ThirdPartyIntervention::evaluate()
 			the AI cheat more. Better just rely on paranoia. */
 		int iOurDefPow = kOurTeam.getDefensivePower();
 		iOurDefPow = (iOurDefPow * (1 - rOurLostPowRatio)).uround();
-		int iParanoia = kWe.AI_paranoiaRating(eThey, iOurDefPow, false);
+		int iParanoia = kWe.AI_paranoiaRating(eThey, iOurDefPow, false, true);
 		iParanoia = std::min(iParanoia, 190);
 		rInterventionProb = scaled(iParanoia - 25, 215);
 		if (rInterventionProb > 0)
@@ -4806,4 +4806,122 @@ void ThirdPartyIntervention::evaluate()
 	if (rCost < fixp(0.5))
 		log("(Not a relevant threat: %s)", m_kReport.leaderName(eThey));
 	else m_iU -= rCost.uround();
+}
+
+
+int DramaticArc::preEvaluate()
+{
+	m_rTensionIncrease = 0;
+	if (kOurTeam.isAVassal())
+		return 0;
+	scaled const rSpeedMult = 2 / per100(m_kSpeed.getVictoryDelayPercent() +
+			m_kSpeed.getTrainPercent());
+	int const iElapsedTurns = m_kGame.getElapsedGameTurns();
+	if (iElapsedTurns * rSpeedMult < 25) // (Even when starting in a later era)
+		return 0;
+	int const iOtherKnown = TeamIter<FREE_MAJOR_CIV,OTHER_KNOWN_TO>::count(eOurTeam);
+	if (iOtherKnown <= 0)
+		return 0;
+	int const iMaxPeaceCounter = 100;
+	std::vector<int> aiPeaceCounters;
+	for (TeamAIIter<FREE_MAJOR_CIV,KNOWN_TO> itFirst(eOurTeam);
+		itFirst.hasNext(); ++itFirst)
+	{
+		int iLoopMinCounter = iElapsedTurns;
+		for (TeamIter<MAJOR_CIV,KNOWN_TO> itSecond(eOurTeam);
+			itSecond.hasNext(); ++itSecond)
+		{
+			TeamTypes const eSecond = itSecond->getID();
+			if (itFirst->getID() != eSecond)
+			{
+				int iAtPeace = itFirst->getTurnsAtPeace(eSecond);
+				// With tolerance b/c the has-met counter isn't exact
+				if (abs(itFirst->AI_getHasMetCounter(eSecond) - iAtPeace) >= 8)
+					iLoopMinCounter = std::min(iLoopMinCounter, iAtPeace);
+				// (else assume that they've always been at peace)
+			}
+		}
+		aiPeaceCounters.push_back(std::min(iMaxPeaceCounter, iLoopMinCounter));
+	}
+	int const iMinPeaceCounter = stats::min(aiPeaceCounters);
+	scaled rTension;
+	if (iMinPeaceCounter > 0) // No wars ongoing
+	{
+		if (kWe.AI_isDoStrategy(AI_STRATEGY_ALERT1))
+			return 0; // We're foreseeing enough tension
+		/*	A lack of late-game warfare is not usually a problem,
+			and can be due to Cold War dynamics (defensive pacts, nukes). */
+		for (int i = 0; i <= m_kGame.getCurrentEra(); i++)
+		{
+			if (GC.getInfo((EraTypes)i).get(CvEraInfo::AIAgeOfGuns) ||
+				GC.getInfo((EraTypes)i).get(CvEraInfo::AIAtomicAge))
+			{
+				return 0;
+			}
+		}
+		rTension = 1 - scaled(iMinPeaceCounter, iMaxPeaceCounter) * rSpeedMult;
+		rTension.increaseTo(0);
+		rTension /= 2; // Less than 0.5 when there are no wars
+	}
+	else
+	{
+		// Mean of the per-team minima
+		int const iMeanPeaceCounter = stats::mean(aiPeaceCounters);
+		rTension = 1 - scaled(iMeanPeaceCounter, iMaxPeaceCounter) * rSpeedMult;
+		rTension.increaseTo(0);
+		// There is at least one war, so let's not go below 0.5.
+		rTension += 1;
+		rTension /= 2;
+	}
+	scaled rTensionTarget = m_kGame.gameTurnProgress() * fixp(10/3.);
+	rTensionTarget.decreaseTo(fixp(2/3.));
+	if (rTension.approxEquals(rTensionTarget, fixp(0.1)))
+		return 0;
+	m_rTensionIncrease = (rTensionTarget - rTension) *
+			scaled(iOtherKnown).sqrt() / 2;
+	m_rTensionIncrease.clamp(-1, 1);
+	log("Seeking to adjust tension (overall warfare) by %d percent",
+			m_rTensionIncrease.getPercent());
+	return 0;
+}
+
+
+void DramaticArc::evaluate()
+{
+	if (m_rTensionIncrease == 0) // Often the case, save time.
+		return;
+	bool const bWillBeAtWar = militAnalyst().isWar(eWe, eThey);
+	if (bWillBeAtWar == kOurTeam.isAtWar(eTheirTeam))
+		return;
+	if (kTheirTeam.isAVassal()) // Only care about wars between free civs
+		return;
+	/*	We're already doing our part. And don't prolong wars either just b/c there's
+		already too little going on. The end of a war is an interesting event
+		in itself, and let's see what will develop in the aftermath. */
+	if (m_rTensionIncrease > 0 && kOurTeam.getNumWars() > 0)
+		return;
+	scaled const rWeight = 16;
+	scaled rUtil = m_rTensionIncrease * (bWillBeAtWar ? 1 : -1) * rWeight;
+	if (rUtil > 0 && bWillBeAtWar) // Don't encourage phoney or unfair wars ...
+	{
+		int iTheirLostCities = (int)militAnalyst().lostCities(eThey).size();
+		if (iTheirLostCities > 2 || // We should be motivated enough (if it's a fair war)
+			// I worry that the AI will go after humans too hard and too often ...
+			(kThey.isHuman() && iTheirLostCities == 1 && kThey.hasCapital() &&
+			militAnalyst().lostCities(eThey).count(kThey.getCapital()->plotNum()) > 0 &&
+			TeamIter<MAJOR_CIV,OTHER_KNOWN_TO>::count(eOurTeam) > 2))
+		{
+			return;
+		}
+		if ((iTheirLostCities == 0 && militAnalyst().conqueredCities(eWe).empty()) ||
+			(militAnalyst().lostPower(eWe, ARMY) + militAnalyst().lostPower(eThey, ARMY)) <
+			std::max(ourCache().getPowerValues()[ARMY]->power(), scaled::epsilon()) / 20)
+		{
+			//log("Too little action expected - not a good way to increase tension");
+			return;
+		}
+	}
+	// Tension in team games is jumpy, don't try too hard to steer it.
+	rUtil /= scaled(kOurTeam.getNumMembers() + kTheirTeam.getNumMembers(), 2);
+	m_iU += rUtil.round();
 }

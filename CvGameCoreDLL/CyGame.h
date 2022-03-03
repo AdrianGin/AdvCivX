@@ -187,6 +187,7 @@ public:
 	int /*TeamTypes*/ getRankTeam(int iRank);
 	int getTeamRank(int /*TeamTypes*/ iIndex);
 	int getTeamScore(int /*TeamTypes*/ iIndex);
+	void setVictoryValid(int /*VictoryTypes*/ iVictory, bool bValid); // advc
 	bool isOption(int /*GameOptionTypes*/ eIndex);
 	void setOption(int /*GameOptionTypes*/ eIndex, bool bEnabled);
 	bool isMPOption(int /*MultiplayerOptionTypes*/ eIndex);

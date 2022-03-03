@@ -36,8 +36,8 @@ struct choose_type { typedef T1 type; };
 template<typename T1, typename T2>
 struct choose_type<false,T1,T2> { typedef T2 type; };
 
-/*	Replacement for std::common_type. I need it only for integer types with 4 bytes or fewer
-	(specifically for advc.fract). Chooses signed over unsigned.
+/*	Replacement for std::common_type. I need it only for integer types with 4 bytes
+	or fewer (specifically for advc.fract). Chooses signed over unsigned.
 	If both are signed or both unsigned, the larger type is chosen.
 	Usage example: typename choose_int_type<short,uint>::type
 	(will resolve to short) */

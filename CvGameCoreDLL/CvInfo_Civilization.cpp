@@ -6,7 +6,7 @@
 
 CvCivilizationInfo::CvCivilizationInfo() :
 m_iDefaultPlayerColor(NO_PLAYERCOLOR),
-m_iArtStyleType(NO_ARTSTYLE),
+m_eArtStyleType(NO_ARTSTYLE),
 m_iUnitArtStyleType(NO_UNIT_ARTSTYLE),
 m_iNumCityNames(0),
 m_iNumLeaders(0),
@@ -55,11 +55,6 @@ int CvCivilizationInfo::getDerivativeCiv() const
 int CvCivilizationInfo::getDefaultPlayerColor() const
 {
 	return m_iDefaultPlayerColor;
-}
-
-int CvCivilizationInfo::getArtStyleType() const
-{
-	return m_iArtStyleType;
 }
 
 int CvCivilizationInfo::getUnitArtStyleType() const
@@ -208,7 +203,7 @@ void CvCivilizationInfo::read(FDataStreamBase* stream)
 	stream->Read(&uiFlag);
 
 	stream->Read(&m_iDefaultPlayerColor);
-	stream->Read(&m_iArtStyleType);
+	stream->Read((int*)&m_eArtStyleType);
 	stream->Read(&m_iUnitArtStyleType); // FlavorUnits by Impaler[WrG]
 	stream->Read(&m_iNumCityNames);
 	stream->Read(&m_iNumLeaders);
@@ -256,7 +251,7 @@ void CvCivilizationInfo::write(FDataStreamBase* stream)
 	stream->Write(uiFlag);
 
 	stream->Write(m_iDefaultPlayerColor);
-	stream->Write(m_iArtStyleType);
+	stream->Write(m_eArtStyleType);
 	stream->Write(m_iUnitArtStyleType);
 	stream->Write(m_iNumCityNames);
 	stream->Write(m_iNumLeaders);
@@ -293,7 +288,7 @@ bool CvCivilizationInfo::read(CvXMLLoadUtility* pXML)
 
 	pXML->GetChildXmlValByName(m_szArtDefineTag, "ArtDefineTag");
 
-	pXML->SetGlobalTypeFromChildXmlVal(m_iArtStyleType, "ArtStyleType");
+	pXML->SetGlobalTypeFromChildXmlVal((int&)m_eArtStyleType, "ArtStyleType");
 	{
 		CvString szTextVal;
 		pXML->GetChildXmlValByName(szTextVal, "UnitArtStyleType",
@@ -681,14 +676,12 @@ void CvLeaderHeadInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_iMaxGoldTradePercent);
 	stream->Read(&m_iMaxGoldPerTurnTradePercent);
 	// BETTER_BTS_AI_MOD, Victory Strategy AI, 03/21/10, jdog5000: START
-	if (uiFlag > 0)
-	{
-		stream->Read(&m_iCultureVictoryWeight);
-		stream->Read(&m_iSpaceVictoryWeight);
-		stream->Read(&m_iConquestVictoryWeight);
-		stream->Read(&m_iDominationVictoryWeight);
-		stream->Read(&m_iDiplomacyVictoryWeight);
-	} // BETTER_BTS_AI_MOD: END
+	stream->Read(&m_iCultureVictoryWeight);
+	stream->Read(&m_iSpaceVictoryWeight);
+	stream->Read(&m_iConquestVictoryWeight);
+	stream->Read(&m_iDominationVictoryWeight);
+	stream->Read(&m_iDiplomacyVictoryWeight);
+	// BETTER_BTS_AI_MOD: END
 	stream->Read(&m_iMaxWarRand);
 	stream->Read(&m_iMaxWarNearbyPowerRatio);
 	stream->Read(&m_iMaxWarDistantPowerRatio);
@@ -752,9 +745,7 @@ void CvLeaderHeadInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_iVassalRefuseAttitudeThreshold);
 	stream->Read(&m_iVassalPowerModifier);
 	stream->Read(&m_iFreedomAppreciation);
-	// <advc.104>
-	if (uiFlag >= 3)
-		stream->Read(&m_iLoveOfPeace); // </advc.104>
+	stream->Read(&m_iLoveOfPeace); // advc.104
 	stream->Read((int*)&m_eFavoriteCivic);
 	stream->Read((int*)&m_eFavoriteReligion);
 	stream->ReadString(m_szArtDefineTag);
@@ -777,11 +768,8 @@ void CvLeaderHeadInfo::read(FDataStreamBase* stream)
 	m_piMemoryAttitudePercent = new int[NUM_MEMORY_TYPES];
 	// <advc.104i>
 	int iNumMemoryTypesToRead = NUM_MEMORY_TYPES;
-	if(uiFlag < 2)
-	{
-		iNumMemoryTypesToRead--;
-		m_piMemoryAttitudePercent[iNumMemoryTypesToRead] = 0;
-	}
+	iNumMemoryTypesToRead--;
+	m_piMemoryAttitudePercent[iNumMemoryTypesToRead] = 0;
 	stream->Read(iNumMemoryTypesToRead, m_piMemoryAttitudePercent); // </advc.104i>
 	SAFE_DELETE_ARRAY(m_piNoWarAttitudeProb);
 	m_piNoWarAttitudeProb = new int[NUM_ATTITUDE_TYPES];
@@ -809,9 +797,7 @@ void CvLeaderHeadInfo::read(FDataStreamBase* stream)
 void CvLeaderHeadInfo::write(FDataStreamBase* stream)
 {
 	base_t::write(stream);
-	uint uiFlag=1; // BETTER_BTS_AI_MOD, 03/21/10, jdog5000
-	uiFlag = 2; // advc.104i
-	uiFlag = 3; // advc.104 (love of peace)
+	uint uiFlag = 0;
 	stream->Write(uiFlag);
 
 	stream->Write(m_iWonderConstructRand);
@@ -943,11 +929,14 @@ bool CvLeaderHeadInfo::read(CvXMLLoadUtility* pXML)
 	GetChildXmlValByName(m_iMaxGoldTradePercent, "iMaxGoldTradePercent");
 	GetChildXmlValByName(m_iMaxGoldPerTurnTradePercent, "iMaxGoldPerTurnTradePercent");
 	// BETTER_BTS_AI_MOD, Victory Strategy AI, 03/21/10, jdog5000: START
-	GetChildXmlValByName(m_iCultureVictoryWeight, "iCultureVictoryWeight", 0);
-	GetChildXmlValByName(m_iSpaceVictoryWeight, "iSpaceVictoryWeight", 0);
-	GetChildXmlValByName(m_iConquestVictoryWeight, "iConquestVictoryWeight", 0);
-	GetChildXmlValByName(m_iDominationVictoryWeight, "iDominationVictoryWeight", 0);
-	GetChildXmlValByName(m_iDiplomacyVictoryWeight, "iDiplomacyVictoryWeight", 0);
+	/*	advc: Default value changed from 0 to 30, and XML schema now also
+		optional in XML schema. Also set by advc.default, but I want this
+		to be optional even for mod-mods that don't use advc.default. */
+	GetChildXmlValByName(m_iCultureVictoryWeight, "iCultureVictoryWeight", 30);
+	GetChildXmlValByName(m_iSpaceVictoryWeight, "iSpaceVictoryWeight", 30);
+	GetChildXmlValByName(m_iConquestVictoryWeight, "iConquestVictoryWeight", 30);
+	GetChildXmlValByName(m_iDominationVictoryWeight, "iDominationVictoryWeight", 30);
+	GetChildXmlValByName(m_iDiplomacyVictoryWeight, "iDiplomacyVictoryWeight", 30);
 	// BETTER_BTS_AI_MOD: END
 	GetChildXmlValByName(m_iMaxWarRand, "iMaxWarRand");
 	GetChildXmlValByName(m_iMaxWarNearbyPowerRatio, "iMaxWarNearbyPowerRatio");

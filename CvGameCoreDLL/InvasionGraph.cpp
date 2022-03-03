@@ -2329,9 +2329,10 @@ scaled InvasionGraph::willingness(PlayerTypes eAggressor, PlayerTypes eTarget) c
 {
 	if (m_kMA.evaluationParams().getSponsor() != eAggressor)
 		return 1;
-	scaled r(GET_TEAM(eAggressor).AI_getWarSuccess(TEAMID(eTarget)) +
-			GET_TEAM(eTarget).AI_getWarSuccess(TEAMID(eAggressor)),
-			std::max(GET_TEAM(eAggressor).getNumCities() * 4, 1));
+	scaled r =
+			(GET_TEAM(eAggressor).AI_getWarSuccess(TEAMID(eTarget)) +
+			GET_TEAM(eTarget).AI_getWarSuccess(TEAMID(eAggressor))) /
+			std::max(GET_TEAM(eAggressor).getNumCities() * 4, 1);
 	r.clamp(fixp(0.5), 1);
 	return r;
 }
