@@ -1961,6 +1961,24 @@ void CvInitCore::read(FDataStreamBase* pStream)
 		m_aeColor.readArray<int>(pStream);
 		m_aeArtStyle.readArray<int>(pStream);
 	}
+	/*	<advc.250a> Looks like I hadn't taken care of save compatibility
+		when I did away with the "King" handicap. Game handicap will have to be
+		handled by CvGame. */
+	if (uiFlag <= 1)
+	{
+		FOR_EACH_ENUM(Player)
+		{
+			if (getHandicap(eLoopPlayer) >= GC.getNumHandicapInfos())
+			{
+				FErrorMsg("Invalid handicap ID loaded");
+				HandicapTypes eReplacement = (HandicapTypes)
+						GC.getInfoTypeForString("HANDICAP_EMPEROR");
+				if (eReplacement == NO_HANDICAP)
+					eReplacement = (HandicapTypes)(GC.getNumHandicapInfos() - 1);
+				setHandicap(eLoopPlayer, eReplacement);
+			}
+		}
+	} // </advc.250a>
 	// <advc.190c>
 	if (uiFlag >= 5)
 	{

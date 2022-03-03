@@ -9731,6 +9731,15 @@ void CvGame::onAllGameDataRead()
 		m_iCivTeamsEverAlive = countCivTeamsEverAlive();
 	// </advc.opt>
 	GC.getAgents().gameStart(true); // advc.agent
+	// <advc.250a> Cf. CvInitCore::read
+	if (m_uiSaveFlag <= 1)
+	{
+		if (getHandicapType() >= GC.getNumHandicapInfos())
+		{
+			setHandicapType(GET_PLAYER(getActivePlayer()).getHandicapType());
+			initGameHandicap();
+		}
+	} // </advc.250a>
 	// <advc.003m>
 	for (TeamIter<> it; it.hasNext(); ++it)
 	{
