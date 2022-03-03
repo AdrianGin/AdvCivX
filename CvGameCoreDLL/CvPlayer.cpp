@@ -12943,19 +12943,22 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 
 		if (bAdd) // Add Improvement to the plot
 		{
-			if (getAdvancedStartPoints() >= iCost && pPlot->isFeature())
+			if (getAdvancedStartPoints() >= iCost)
 			{
-				FOR_EACH_ENUM(Build)
+				if (pPlot->isFeature())
 				{
-					ImprovementTypes eLoopImprovement = GC.getInfo(eLoopBuild).
-							getImprovement();
-					if (eImprovement != eLoopImprovement)
-						continue;
-					if (GC.getInfo(eLoopBuild).isFeatureRemove(pPlot->getFeatureType()) &&
-						canBuild(*pPlot, eLoopBuild))
+					FOR_EACH_ENUM(Build)
 					{
-						pPlot->setFeatureType(NO_FEATURE);
-						break;
+						ImprovementTypes eLoopImprovement = GC.getInfo(eLoopBuild).
+								getImprovement();
+						if (eImprovement != eLoopImprovement)
+							continue;
+						if (GC.getInfo(eLoopBuild).isFeatureRemove(pPlot->getFeatureType()) &&
+							canBuild(*pPlot, eLoopBuild))
+						{
+							pPlot->setFeatureType(NO_FEATURE);
+							break;
+						}
 					}
 				}
 				pPlot->setImprovementType(eImprovement);
