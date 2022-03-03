@@ -3023,6 +3023,8 @@ void CvUnitAI::AI_attackCityMove()
 	/*	K-Mod. This is used to prevent the AI from oscillating
 		between moving to attack moving to pillage. */
 	bool bTargetTooStrong = false;
+	// advc.114c: Moved up. Target strength ratio for city attack.
+	int iAttackRatio = -1;
 
 	int iStepDistToTarget = MAX_INT;
 	// K-Mod note.: I've rearranged some parts of the code below, sometimes without comment.
@@ -3054,7 +3056,7 @@ void CvUnitAI::AI_attackCityMove()
 				reduce effective defence by 50% */
 		}
 
-		int iAttackRatio = GC.getDefineINT(CvGlobals::BBAI_ATTACK_CITY_STACK_RATIO);
+		iAttackRatio = GC.getDefineINT(CvGlobals::BBAI_ATTACK_CITY_STACK_RATIO);
 		int iAttackRatioSkipBombard = GC.getDefineINT(CvGlobals::BBAI_SKIP_BOMBARD_MIN_STACK_RATIO);
 		iStepDistToTarget = stepDistance(pTargetCity->plot(), plot());
 		// K-Mod - I'm going to scale the attack ratio based on our war strategy
@@ -3063,8 +3065,14 @@ void CvUnitAI::AI_attackCityMove()
 		else
 		{
 			int iAdjustment = 5;
+			int iExtraAdjustBombard = 0; // advc.114c
 			if (GET_TEAM(getTeam()).AI_getWarPlan(pTargetCity->getTeam()) == WARPLAN_LIMITED)
+			{
 				iAdjustment += 10;
+				/*	advc.114c: Shouldn't be too unwilling to sacrifice siege units
+					when fighting a limited war. Not crucial to conquer more. */
+				iExtraAdjustBombard -= 5;
+			}
 			if (kOwner.AI_isDoStrategy(AI_STRATEGY_CRUSH))
 				iAdjustment -= 10;
 			if (iAdjustment >= 0 && pTargetCity == getArea().AI_getTargetCity(getOwner()))
@@ -3075,7 +3083,7 @@ void CvUnitAI::AI_attackCityMove()
 			if (iStepDistToTarget <= 1 && pTargetCity->isOccupation())
 				iAdjustment += range(111 - (iAttackRatio + iAdjustment), -10, 0); // k146
 			iAttackRatio += iAdjustment;
-			iAttackRatioSkipBombard += iAdjustment;
+			iAttackRatioSkipBombard += iAdjustment + /* advc.114c: */ iExtraAdjustBombard;
 			FAssert(iAttackRatioSkipBombard >= iAttackRatio);
 			FAssert(iAttackRatio >= 100);
 		} // K-Mod end
@@ -3262,8 +3270,17 @@ void CvUnitAI::AI_attackCityMove()
 		return;
 
 	// K-Mod - replacing some stuff I moved / removed from the BBAI code
-	if (pTargetCity != NULL && bTargetTooStrong && iStepDistToTarget <= (bReadyToAttack ? 3 : 2))
+	if (pTargetCity != NULL && bTargetTooStrong &&
+		iStepDistToTarget <= (bReadyToAttack ? 3 : 2))
 	{
+		/*	<advc.114c> Attrition warfare is miserable for both sides,
+			rather take our chances if they're not terrible. */
+		if (getGroup()->getNumUnits() > 3 + kOwner.AI_getCurrEraFactor() / 2 &&
+			iAttackRatio > 100)
+		{
+			if (AI_stackAttackCity((iAttackRatio + 100) / 2))
+				return;
+		} // </advc.114c>
 		// Pillage around enemy city
 		if (generatePath(pTargetCity->getPlot(), eMoveFlags, true, 0, 5))
 		{
