@@ -269,7 +269,8 @@ int CvTeamAI::AI_estimateTotalYieldRate(YieldTypes eYield) const
 		CvPlayerAI const& kMember = *it;
 		int iSubTotal = 0;
 		int iBase = 0;
-		for (int j = 0; j < iSampleSize; j++)
+		// advc.004s: Out-of-bounds accesses no longer allowed
+		for (int j = 0; j < std::min(iSampleSize, iTurn); j++)
 		{
 			int iSample = 0;
 			switch (eYield)
