@@ -15918,6 +15918,10 @@ void CvPlayer::applyEvent(EventTypes eEvent, int iEventTriggeredId, bool bUpdate
 	{
 			GET_TEAM(getTeam()).changeEspionagePointsAgainstTeam(
 					TEAMID(pTriggeredData->m_eOtherPlayer), kEvent.getEspionagePoints());
+			// <advc.001>
+			if (kEvent.getEspionagePoints() > 0)
+				GET_TEAM(getTeam()).changeEspionagePointsEver(kEvent.getEspionagePoints());
+			// </advc.001>
 	}
 
 	if (kEvent.getTechPercent() != 0)

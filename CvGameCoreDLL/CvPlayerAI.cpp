@@ -2710,6 +2710,12 @@ int CvPlayerAI::AI_calculateEspionageWeight() const
 		iWeight *= 100 + 2*getCommercePercent(COMMERCE_ESPIONAGE);
 		iWeight /= 110;
 	}
+	// <advc.test>
+	if (iWeight < 0)
+	{
+		iWeight = 0;
+		FErrorMsg("Negative espionage weight");
+	} // </advc.test>
 	return iWeight;
 }
 
