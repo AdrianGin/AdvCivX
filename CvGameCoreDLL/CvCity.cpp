@@ -487,6 +487,11 @@ void CvCity::doTurn()
 	doReligion();
 	doGreatPeople();
 	doMeltdown();
+	/*	advc.004: Just so that human players don't get confused when inspecting
+		an AI city. Will get updated at the start of the next turn anyway
+		(CvPlayer::doTurn). Important not to update before doProduction as that
+		would make production turns difficult to anticipate. */
+	AI().AI_assignWorkingPlots();
 
 	updateEspionageVisibility(true);
 
