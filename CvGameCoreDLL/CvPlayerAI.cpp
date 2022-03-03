@@ -27806,7 +27806,7 @@ bool CvPlayerAI::AI_isAwfulSite(CvCity const& kCity, bool bConquest) const
 {
 	int const iEra = GC.getGame().getCurrentEra();
 	// If the city has grown, the site has somewhat proved its usefulness.
-	if (kCity.getPopulation() >= (3 * iEra + 8 - (bConquest ? 2 : 0)) / 2)
+	if (kCity.getPopulation() * 2 >= 3 * iEra + 7 - (bConquest ? 2 : 0))
 		return false;
 
 	scaled rDecentPlots = 0;
@@ -27848,10 +27848,10 @@ bool CvPlayerAI::AI_isAwfulSite(CvCity const& kCity, bool bConquest) const
 		if(bCountCoast && p.isWater() && p.isAdjacentToLand())
 			rDecentPlots += fixp(0.4);
 	}
-	int iThresh = 7;
+	scaled rThresh(20, 3);
 	if (bConquest && kCity.getPopulation() >= iEra + 4)
-		iThresh--;
-	return (rDecentPlots < iThresh);
+		rThresh--;
+	return (rDecentPlots < rThresh);
 }
 
 // advc.104:
