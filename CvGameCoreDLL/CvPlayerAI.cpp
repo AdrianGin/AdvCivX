@@ -6987,7 +6987,7 @@ int CvPlayerAI::AI_techReligionValue(TechTypes eTech, int iPathLength,
 		if (eReligionTech == eTech &&
 			!GC.getGame().isReligionSlotTaken(eLoopReligion))
 		{
-			int iRoll = 225; // advc.171: Was 400 in BtS, 150 in K-Mod 1.46.
+			int iRoll = 200; // advc.171: Was 400 in BtS, 150 in K-Mod 1.46.
 			if (!GC.getGame().isOption(GAMEOPTION_PICK_RELIGION) &&
 				eFavoriteReligion != NO_RELIGION)
 			{
