@@ -3286,7 +3286,7 @@ void CvUnitAI::AI_attackCityMove()
 
 	/*	one more thing. Sometimes a single step can cause the AI to change its target city;
 		and when it changes the target - and so sometimes they can get stuck in a loop where
-		they step towards their target, change their mind, step back to pillage something, ... repeat.
+		they step towards their target, change their mind, step back to pillage something, ...
 		Here I've made a kludge to break that cycle: */
 	if (AI_getGroup()->AI_getMissionAIType() == MISSIONAI_PILLAGE)
 	{
@@ -21588,11 +21588,14 @@ bool CvUnitAI::AI_stackAttackCity(int iPowerThreshold)
 				{
 					// basic threshold calculation.
 					CvCity* pCity = p.getPlotCity();
-					// This automatic threshold calculation is used by AI_follow; and so we can't assume this unit is the head of the group.
-					// ... But I think it's fair to assume that if our group has any bombard, it the head unit will have it.
+					/*	This automatic threshold calculation is used by AI_follow;
+						and so we can't assume this unit is the head of the group.
+						... But I think it's fair to assume that, if our group
+						has any bombard, the head unit will have it. */
 					if (getGroup()->getHeadUnit()->bombardRate() > 0)
 					{
-						// if we can bombard, then we should do a rough calculation to give us a 'skip bombard' threshold.
+						/*	if we can bombard, then we should do a rough calculation
+							to give us a 'skip bombard' threshold. */
 						iPowerThreshold = ((GC.getMAX_CITY_DEFENSE_DAMAGE() - pCity->getDefenseDamage()) *
 								GC.getDefineINT(CvGlobals::BBAI_SKIP_BOMBARD_BASE_STACK_RATIO) +
 								pCity->getDefenseDamage() * GC.getDefineINT(CvGlobals::BBAI_SKIP_BOMBARD_MIN_STACK_RATIO)) /
@@ -21609,7 +21612,8 @@ bool CvUnitAI::AI_stackAttackCity(int iPowerThreshold)
 					pCityPlot = &p;
 			}
 		}
-		break; // there can only be one city. (advc: b/c the search range is 1)
+		// there can only be one city. advc (tbd.): Not true if MIN_CITY_RANGE==1.
+		break;
 	}
 
 	if (pCityPlot != NULL)

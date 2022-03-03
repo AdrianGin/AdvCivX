@@ -4452,9 +4452,9 @@ void CvCity::setPopulation(int iNewValue)
 	int const iOldPopulation = getPopulation();
 	if (iOldPopulation == iNewValue)
 		return;
-
 	m_iPopulation = iNewValue;
 	FAssert(getPopulation() >= 0);
+
 	GET_PLAYER(getOwner()).invalidatePopulationRankCache();
 	if (getPopulation() > getHighestPopulation())
 		setHighestPopulation(getPopulation());
@@ -4468,7 +4468,7 @@ void CvCity::setPopulation(int iNewValue)
 		getArea().changePower(getOwner(), -GC.getGame().getPopulationPower(iOldPopulation));
 	if (getPopulation() > 0)
 		getArea().changePower(getOwner(), GC.getGame().getPopulationPower(getPopulation()));
-
+	// advc (note): For unused iPopulationChangeDivisor (YieldInfo) I think
 	getPlot().updateYield();
 
 	updateMaintenance();

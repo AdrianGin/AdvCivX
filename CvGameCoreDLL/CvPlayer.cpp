@@ -2779,7 +2779,7 @@ TCHAR const* CvPlayer::getUnitButton(UnitTypes eUnit) const
 
 /*  advc (comment): Contains the entire sequence of an AI turn, and is called
 	when a human player ends his/her turn. */
-void CvPlayer::doTurn()  // advc: style changes
+void CvPlayer::doTurn()
 {
 	PROFILE_FUNC();
 
