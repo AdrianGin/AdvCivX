@@ -6438,8 +6438,7 @@ TechTypes CvPlayer::getDiscoveryTech(UnitTypes eUnit) const
 
 
 bool CvPlayer::canResearch(TechTypes eTech, bool bTrade,
-	bool bFree, // K-Mod (advc.004x: disused)
-	bool bCouldResearchAgain) const // advc.126
+	bool bFree) const // K-Mod (advc.004x: disused)
 {
 	if (GC.getPythonCaller()->canResearchOverride(getID(), eTech, bTrade))
 		return true;
@@ -6453,7 +6452,7 @@ bool CvPlayer::canResearch(TechTypes eTech, bool bTrade,
 		return false;
 	}*/
 
-	if (GET_TEAM(getTeam()).isHasTech(eTech) /* advc.126: */ && !bCouldResearchAgain)
+	if (GET_TEAM(getTeam()).isHasTech(eTech))
 		return false;
 
 	bool bFoundPossible = false;
@@ -6463,9 +6462,7 @@ bool CvPlayer::canResearch(TechTypes eTech, bool bTrade,
 		TechTypes const ePrereq = GC.getInfo(eTech).getPrereqOrTechs(i);
 		FAssert(ePrereq != eTech); // advc
 		bFoundPossible = true;
-		if (GET_TEAM(getTeam()).isHasTech(ePrereq) &&
-			// advc.126: Don't check recursively (for execution speed concerns)
-			(bCouldResearchAgain || canResearch(ePrereq, false, true, true)))
+		if (GET_TEAM(getTeam()).isHasTech(ePrereq))
 		{
 			if (!bTrade || GC.getGame().isOption(GAMEOPTION_NO_TECH_BROKERING) ||
 				!GET_TEAM(getTeam()).isNoTradeTech(ePrereq))
@@ -6482,12 +6479,8 @@ bool CvPlayer::canResearch(TechTypes eTech, bool bTrade,
 	for (int i = 0; i < GC.getInfo(eTech).getNumAndTechPrereqs(); i++)
 	{
 		TechTypes const ePrereq = GC.getInfo(eTech).getPrereqAndTechs(i);
-		if (!GET_TEAM(getTeam()).isHasTech(ePrereq) ||
-			// advc.126:
-			(bCouldResearchAgain && !canResearch(ePrereq, false, true, true)))
-		{
+		if (!GET_TEAM(getTeam()).isHasTech(ePrereq))
 			return false;
-		}
 		if (bTrade && !GC.getGame().isOption(GAMEOPTION_NO_TECH_BROKERING) &&
 			GET_TEAM(getTeam()).isNoTradeTech(ePrereq))
 		{

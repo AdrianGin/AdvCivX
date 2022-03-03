@@ -1431,13 +1431,14 @@ ImprovementTypes AIFoundValue::getBonusImprovement(BonusTypes eBonus, CvPlot con
 bool AIFoundValue::isNearTech(TechTypes eTech) const
 {
 	return (eTech == NO_TECH || kTeam.isHasTech(eTech) ||
-		kPlayer.getCurrentResearch() == eTech ||
-		/*  <advc.108> With our first city, we can wait a bit a longer for the proper tech.
-			(Not when starting in a later era though; research starts out slow then.) */
-		(iCities <= 0 && eEra >= GC.getInfo(eTech).getEra() && kGame.getStartEra() <= 0) ||
-		// </advc.108>
-		// The HasTech and CurrentResearch checks are redundant, I think, but faster.
-		kPlayer.canResearch(eTech, false, false, true));
+			kPlayer.getCurrentResearch() == eTech ||
+			/*  <advc.108> With our first city, we can wait a bit a longer for the
+				proper tech. (Not when starting in a later era though; research
+				starts out slow then.) */
+			(iCities <= 0 && eEra >= GC.getInfo(eTech).getEra() &&
+			kGame.getStartEra() <= 0) || // </advc.108>
+			/*	(The HasTech and CurrentResearch checks are redundant, I think,
+				but faster.) */ kPlayer.canResearch(eTech));
 }
 
 // (not much pre-AdvCiv code left)
