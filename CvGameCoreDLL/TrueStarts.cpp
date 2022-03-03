@@ -49,6 +49,10 @@ TrueStarts::TrueStarts()
 				// These scripts largely ignore latitude
 				szMapName != CvWString("Ring") && szMapName != CvWString("Wheel") &&
 				szMapName != CvWString("Arboria") && szMapName != CvWString("Caldera"));
+		// Scenario makers tend to use peaks very liberally
+		m_bAdjustPeakScore = (GC.getGame().isScenario() ||
+				// This earth-like script also places lots of peaks
+				szMapName == CvWString("Tectonics"));
 	}
 	m_bBonusesIgnoreLatitude = (!m_bMapHasLatitudes ||
 			GC.getPythonCaller()->isBonusIgnoreLatitude());
@@ -1718,12 +1722,10 @@ int TrueStarts::calcFitness(CvPlayer const& kPlayer, CivilizationTypes eCiv,
 			IFLOG logBBAI("Area hills and peak score: %d, %d",
 					rAreaHillScore.getPercent(), rAreaPeakScore.getPercent());
 			scaled const rTypicalPeakScore = 7;
-			/*	Some scenario makers use peaks very liberally. (See also
-				the comment a few blocks below about space preferences.) */
-			if (GC.getGame().isScenario() && m_rMedianPeakScore > 2 * rTypicalPeakScore)
+			if (m_bAdjustPeakScore && m_rMedianPeakScore > 2 * rTypicalPeakScore)
 			{
 				rAreaPeakScore *= (rTypicalPeakScore / m_rMedianPeakScore).pow(fixp(0.6));
-				IFLOG logBBAI("Peak score adjusted to scenario: %d", rAreaPeakScore.getPercent());
+				IFLOG logBBAI("Peak score adjusted to map: %d", rAreaPeakScore.getPercent());
 			}
 			scaled const rTargetMountainCover = kTruCiv.get(CvTruCivInfo::MountainousArea);
 			if (rTargetMountainCover >= 0)

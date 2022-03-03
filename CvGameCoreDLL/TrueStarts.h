@@ -20,6 +20,7 @@ private:
 	bool m_bMapHasLatitudes;
 	bool m_bBonusesIgnoreLatitude;
 	bool m_bBalancedResources;
+	bool m_bAdjustPeakScore;
 	bool m_bPrioritizeHumans;
 	int m_iMaxGeoDist, m_iMaxLatitudeDiffTimes10, m_iMaxLongitudeDiffTimes10;
 	std::vector<CvPlayer*> m_truPlayers;
