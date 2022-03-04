@@ -1494,7 +1494,8 @@ class BonusBalancer:
 		self.map = CyMap()
 		
 		self.resourcesToBalance = ('BONUS_ALUMINUM', 'BONUS_COAL', 'BONUS_COPPER', 'BONUS_HORSE', 'BONUS_IRON', 'BONUS_OIL', 'BONUS_URANIUM')
-		self.resourcesToEliminate = ('BONUS_MARBLE', )
+		# advc.108c: Don't eliminate Marble
+		self.resourcesToEliminate = ()#('BONUS_MARBLE', )
 		
 	def isSkipBonus(self, iBonusType):
 		type_string = self.gc.getBonusInfo(iBonusType).getType()
@@ -1539,9 +1540,14 @@ class BonusBalancer:
 				plots = [] # build a list of the plots near the starting plot
 				for dx in range(-5,6):
 					for dy in range(-5,6):
+						# <advc.108c> Skip the inner ring at least
+						if abs(dx) <= 1 or abs(dy) <= 1:
+							continue # </advc.108c>
 						x,y = startx+dx, starty+dy
 						pLoopPlot = self.map.plot(x,y)
-						if not pLoopPlot.isNone():
+						if (pLoopPlot
+								# advc.108c: Oil on water is hardly fair
+								and not pLoopPlot.isWater()):
 							plots.append(pLoopPlot)
 				
 				resources_placed = []
@@ -1553,7 +1559,11 @@ class BonusBalancer:
 					for bonus in range(self.gc.getNumBonusInfos()):
 						type_string = self.gc.getBonusInfo(bonus).getType()
 						if (type_string not in resources_placed) and (type_string in self.resourcesToBalance):
-							for (pLoopPlot) in plots:
+							#for (pLoopPlot) in plots:
+							# <advc.108c> Randomize placement
+							iOffset = self.gc.getGame().getMapRand().get(len(plots), "BonusBalancer")
+							for j in range(0, len(plots)):
+								pLoopPlot = plots[(j + iOffset) % len(plots)] # </advc.108c>
 								if (pLoopPlot.canHaveBonus(bonus, True)):
 									if self.isBonusValid(bonus, pLoopPlot, bIgnoreUniqueRange, bIgnoreOneArea, bIgnoreAdjacent):
 										pLoopPlot.setBonusType(bonus)

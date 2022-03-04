@@ -539,7 +539,7 @@ void TrueStarts::sanitize()
 		CvPlot const& kPlot = kMap.getPlotByIndex(eLoopPlotNum);
 		if (kPlot.getBonusType() != NO_BONUS &&
 			(!m_bBalancedResources ||
-			GC.getInfo(kPlot.getBonusType()).getPlacementOrder() > 2))
+			!GC.getMap().isBonusBalanced(kPlot.getBonusType())))
 		{
 			EagerEnumMap<PlayerTypes,scaled> aerPlayerWeights;
 			setPlayerWeightsPerPlot(eLoopPlotNum, aerPlayerWeights);

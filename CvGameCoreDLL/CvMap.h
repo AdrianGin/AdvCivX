@@ -522,6 +522,10 @@ public: // advc: made several functions const
 			bool bWrapX, bool bWrapY, WorldSizeTypes eWorldSize,
 			ClimateTypes eClimate, SeaLevelTypes eSeaLevel,
 			int iNumCustomMapOptions, CustomMapOptionTypes* eCustomMapOptions);
+	// <advc.108c>
+	void setBonusBalanced(BonusTypes eBonus) { m_aebBalancedBonuses.set(eBonus, true); }
+	bool isBonusBalanced(BonusTypes eBonus) const { return m_aebBalancedBonuses.get(eBonus); }
+	// </advc.108c>
 	void updateReplayTexture(); // advc.106n
 	byte const* getReplayTexture() const; // advc.106n
 	/*	<advc.002a> Set through BUG options, but I worry that accessing those
@@ -570,6 +574,7 @@ protected:
 		before XML is loaded.) */
 	ArrayEnumMap<BonusTypes,int,PlotNumInt> m_aiNumBonus;
 	ArrayEnumMap<BonusTypes,int,PlotNumInt> m_aiNumBonusOnLand;
+	ListEnumMap<BonusTypes,bool> m_aebBalancedBonuses; // advc.108c
 	// </advc.enum>
 	CvPlot* m_pMapPlots;
 	std::map<Shelf::Id,Shelf*> m_shelves; // advc.300

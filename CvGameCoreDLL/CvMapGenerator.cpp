@@ -562,6 +562,8 @@ void CvMapGenerator::addBonuses()
 					addUniqueBonusType(eLoopBonus);
 				else addNonUniqueBonusType(eLoopBonus);
 			}
+			// advc.108c: Remember that this bonus gets handled by the map script
+			else GC.getMap().setBonusBalanced(eLoopBonus);
 		}
 	}
 }

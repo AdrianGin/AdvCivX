@@ -159,6 +159,7 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 
 	m_aiNumBonus.reset();
 	m_aiNumBonusOnLand.reset();
+	m_aebBalancedBonuses.reset(); // advc.108c
 
 	m_areas.removeAll();
 }
@@ -1185,6 +1186,9 @@ void CvMap::read(FDataStreamBase* pStream)
 		m_aiNumBonus.readArray<int>(pStream);
 		m_aiNumBonusOnLand.readArray<int>(pStream);
 	}
+	// <advc.108c>
+	if (uiFlag >= 6)
+		m_aebBalancedBonuses.read(pStream); // </advc.108c>
 	// <advc.304>
 	if (uiFlag >= 5)
 		GC.getGame().getBarbarianWeightMap().getActivityMap().read(pStream);
@@ -1241,7 +1245,8 @@ void CvMap::write(FDataStreamBase* pStream)
 	//uiFlag = 2; // advc.opt: CvPlot::m_bAnyIsthmus
 	//uiFlag = 3; // advc.opt: m_ePlots
 	//uiFlag = 4; // advc.enum: new enum map save behavior
-	uiFlag = 5; // advc.304: Barbarian weight map
+	//uiFlag = 5; // advc.304: Barbarian weight map
+	uiFlag = 6; // advc.108c
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iGridWidth);
@@ -1259,6 +1264,9 @@ void CvMap::write(FDataStreamBase* pStream)
 	FAssertMsg((0 < GC.getNumBonusInfos()), "GC.getNumBonusInfos() is not greater than zero but an array is being allocated");
 	m_aiNumBonus.write(pStream);
 	m_aiNumBonusOnLand.write(pStream);
+	/*	advc.108c (Player might save on turn 0, then reload and regenerate the map.
+		Therefore this info needs to be saved.) */
+	m_aebBalancedBonuses.write(pStream);
 	/*	advc.304: Serialize this for CvGame b/c the map size isn't known
 		when CvGame gets deserialized. (kludge) */
 	GC.getGame().getBarbarianWeightMap().getActivityMap().write(pStream);
