@@ -930,7 +930,9 @@ CvWString CvMap::getNonDefaultCustomMapOptionDesc(int iOption) const
 	Checks for an exact match ignoring case unless bCheckContains is set to true
 	or bIgnoreCase to false.
 	So that the DLL can implement special treatment for particular custom map options
-	(that may or may not be present in only one particular map script). */
+	(that may or may not be present in only one particular map script).
+	Translations will have to be handled by the caller (by generating szOptionsValue
+	through gDLL->getText). */
 bool CvMap::isCustomMapOption(char const* szOptionsValue, bool bCheckContains,
 	bool bIgnoreCase) const
 {
@@ -954,6 +956,15 @@ bool CvMap::isCustomMapOption(char const* szOptionsValue, bool bCheckContains,
 		}
 	}
 	return false;
+}
+
+/*	For convenience, especially when working with translated strings
+	(which use wide characters). */
+bool CvMap::isCustomMapOption(CvWString szOptionsValue, bool bCheckContains,
+	bool bIgnoreCase) const
+{
+	CvString szNarrow(szOptionsValue);
+	return isCustomMapOption(szNarrow.c_str());
 }
 
 

@@ -420,7 +420,9 @@ public: // advc: made several functions const
 	CvWString getNonDefaultCustomMapOptionDesc(int iOption) const; // advc.190b (exposed to Python)
 	// <advc.108b>
 	bool isCustomMapOption(char const* szOptionsValue, bool bCheckContains = false,
-			bool bIgnoreCase = true) const; // </advc.108b>
+			bool bIgnoreCase = true) const;
+	bool isCustomMapOption(CvWString szOptionsValue, bool bCheckContains = false,
+		bool bIgnoreCase = true) const; // </advc.108b>
 
 	int getNumBonuses(BonusTypes eIndex) const;																	// Exposed to Python
 	void changeNumBonuses(BonusTypes eIndex, int iChange);

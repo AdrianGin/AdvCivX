@@ -1254,20 +1254,6 @@ CvWString CvPythonCaller::customMapOptionDescription(char const* szMapScriptName
 	FAssert(m_bLastCallSuccessful || GC.getInitCore().getSavedGame());
 	return szResult;
 }
-// advc.108:
-bool CvPythonCaller::isAnyCustomMapOptionSetTo(CvWString szTranslatedDesc) const
-{
-	CvString szMapScriptNameNarrow(GC.getInitCore().getMapScriptName());
-	for (int i = 0; i < GC.getMap().getNumCustomMapOptions(); i++)
-	{
-		CustomMapOptionTypes eOptionValue = GC.getInitCore().getCustomMapOption(i);
-		CvWString szOptionDescr(customMapOptionDescription(
-				szMapScriptNameNarrow.c_str(), i, eOptionValue));
-		if (szOptionDescr == szTranslatedDesc)
-			return true;
-	}
-	return false;
-}
 
 void CvPythonCaller::mapGridDimensions(WorldSizeTypes eWorldSize, int& iWidth, int& iHeight) const
 {

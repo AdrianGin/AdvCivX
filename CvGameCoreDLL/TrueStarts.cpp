@@ -56,7 +56,7 @@ TrueStarts::TrueStarts()
 	}
 	m_bBonusesIgnoreLatitude = (!m_bMapHasLatitudes ||
 			GC.getPythonCaller()->isBonusIgnoreLatitude());
-	m_bBalancedResources = kMap.isCustomMapOption("Balanced");
+	m_bBalancedResources = kMap.isCustomMapOption(gDLL->getText("TXT_KEY_MAP_BALANCED"));
 	/*	Don't focus on the initial human player when
 		any civ may come under human control later on */
 	m_bPrioritizeHumans = !GC.getGame().isOption(GAMEOPTION_RISE_FALL);
@@ -834,6 +834,7 @@ void TrueStarts::changeCivs()
 				((szMapName == CvWString("PerfectMongoose") ||
 				szMapName == CvWString("Tectonics") ||
 				szMapName == CvWString("RandomScriptMap")) &&
+				// This will only work when playing in English
 				GC.getMap().isCustomMapOption("Old World", true)) ||
 				(szMapName == CvWString("NewWorld") &&
 				/*	If someone adds options to that map, then there might be
