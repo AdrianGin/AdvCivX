@@ -49,9 +49,15 @@ def getGridSize(argsList):
 		WorldSizeTypes.WORLDSIZE_LARGE:		(-4, -2),
 		WorldSizeTypes.WORLDSIZE_HUGE:		(-5, -3)
 	}
+	# Low sea level doesn't have as much impact on this map. Adjust the grid size in order to compensate.
+	seaChange = CyGlobalContext().getSeaLevelInfo(CyMap().getSeaLevel()).getSeaLevelChange()
+	wMod = sizeModifiers[iWorldSize][0]
+	hMod = sizeModifiers[iWorldSize][1]
+	if seaChange < 0:
+		wMod //= 2
+		hMod //= 2
 	wi = CyGlobalContext().getWorldInfo(iWorldSize)
-	return (sizeModifiers[iWorldSize][0] + wi.getGridWidth(), sizeModifiers[iWorldSize][1] + wi.getGridHeight())
-# </advc.165>
+	return (wMod + wi.getGridWidth(), hMod + wi.getGridHeight())
 
 def getDescription():
 	return "TXT_KEY_MAP_SCRIPT_PANGAEA_DESCR"
@@ -228,8 +234,15 @@ class PangaeaMultilayeredFractal(CvMapGeneratorUtil.MultilayeredFractal):
 		
 		# Sea Level adjustment (from user input), limited to value of 5%.
 		sea = self.gc.getSeaLevelInfo(self.map.getSeaLevel()).getSeaLevelChange()
-		sea = min(sea, 5)
-		sea = max(sea, -5)
+		#sea = min(sea, 5)
+		#sea = max(sea, -5)
+		# <advc.165> A hard limit makes it dificult to adjust the grid size.
+		if sea < 0:
+			sea = (sea * 5) / 8
+		# I don't think High sea level is problematic. Based on tests, actually
+		# needs to be reinforced, I guess b/c the normal sea level is so low.
+		elif sea > 0:
+			sea = (sea * 3) / 2 # </advc.165>
 
 		# The following regions are specific to Pangaea.py
 		mainWestLon = 0.2
