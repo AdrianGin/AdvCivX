@@ -78,22 +78,22 @@ import Popup as PyPopup
 from CvMapGeneratorUtil import TerrainGenerator
 from CvMapGeneratorUtil import FeatureGenerator
 
-# <advc.165>
+# advc.165:
 def getGridSize(argsList):
 	[iWorldSize] = argsList
 	if iWorldSize < 0:
 		return ()
 	sizeModifiers = {
-		WorldSizeTypes.WORLDSIZE_DUEL:		(1, -1),
-		WorldSizeTypes.WORLDSIZE_TINY:		(0, -1),
-		WorldSizeTypes.WORLDSIZE_SMALL:		(0, -1),
-		WorldSizeTypes.WORLDSIZE_STANDARD:	(-1,-1),
-		WorldSizeTypes.WORLDSIZE_LARGE:		(-2, 0),
-		WorldSizeTypes.WORLDSIZE_HUGE:		(-1,-1)
+		# NB: The smallest two sizes have highly unpredictable land-sea ratios
+		WorldSizeTypes.WORLDSIZE_DUEL:		(-1,-1),
+		WorldSizeTypes.WORLDSIZE_TINY:		(-1,-1),
+		WorldSizeTypes.WORLDSIZE_SMALL:		(-2,-1),
+		WorldSizeTypes.WORLDSIZE_STANDARD:	(-2,-1),
+		WorldSizeTypes.WORLDSIZE_LARGE:		(-2,-1),
+		WorldSizeTypes.WORLDSIZE_HUGE:		(-2,-2)
 	}
 	wi = CyGlobalContext().getWorldInfo(iWorldSize)
 	return (sizeModifiers[iWorldSize][0] + wi.getGridWidth(), sizeModifiers[iWorldSize][1] + wi.getGridHeight())
-# </advc.165>
 
 def getDescription():
 	return "TXT_KEY_MAP_SCRIPT_TECTONICS_DESCR"

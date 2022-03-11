@@ -19,18 +19,35 @@ from CvMapGeneratorUtil import BonusBalancer
 
 balancer = BonusBalancer()
 
-# <advc.165>
+'''
+def getGridSize(argsList):
+	# Reduce grid sizes by one level.
+	grid_sizes = {
+		WorldSizeTypes.WORLDSIZE_DUEL:		(8,5),
+		WorldSizeTypes.WORLDSIZE_TINY:		(10,6),
+		WorldSizeTypes.WORLDSIZE_SMALL:		(13,8),
+		WorldSizeTypes.WORLDSIZE_STANDARD:	(16,10),
+		WorldSizeTypes.WORLDSIZE_LARGE:		(21,13),
+		WorldSizeTypes.WORLDSIZE_HUGE:		(26,16)
+	}
+
+	if (argsList[0] == -1): # (-1,) is passed to function on loads
+		return []
+	[eWorldSize] = argsList
+	return grid_sizes[eWorldSize]
+'''
+# advc.165: Adjust, don't overwrite the defaults.
 def getGridSize(argsList):
 	[iWorldSize] = argsList
 	if iWorldSize < 0:
 		return ()
 	sizeModifiers = {
-		WorldSizeTypes.WORLDSIZE_DUEL:		(0, 1),
-		WorldSizeTypes.WORLDSIZE_TINY:		(0, 1),
-		WorldSizeTypes.WORLDSIZE_SMALL:		(0, 1),
-		WorldSizeTypes.WORLDSIZE_STANDARD:	(0, 1),
-		WorldSizeTypes.WORLDSIZE_LARGE:		(1, 1),
-		WorldSizeTypes.WORLDSIZE_HUGE:		(2, 2)
+		WorldSizeTypes.WORLDSIZE_DUEL:		(-1, -1),
+		WorldSizeTypes.WORLDSIZE_TINY:		(-2, -1),
+		WorldSizeTypes.WORLDSIZE_SMALL:		(-2, -2),
+		WorldSizeTypes.WORLDSIZE_STANDARD:	(-3, -2),
+		WorldSizeTypes.WORLDSIZE_LARGE:		(-4, -2),
+		WorldSizeTypes.WORLDSIZE_HUGE:		(-5, -3)
 	}
 	wi = CyGlobalContext().getWorldInfo(iWorldSize)
 	return (sizeModifiers[iWorldSize][0] + wi.getGridWidth(), sizeModifiers[iWorldSize][1] + wi.getGridHeight())
@@ -131,22 +148,6 @@ def addBonusType(argsList):
 def isAdvancedMap():
 	"This map should show up in simple mode"
 	return 0
-
-def getGridSize(argsList):
-	# Reduce grid sizes by one level.
-	grid_sizes = {
-		WorldSizeTypes.WORLDSIZE_DUEL:		(8,5),
-		WorldSizeTypes.WORLDSIZE_TINY:		(10,6),
-		WorldSizeTypes.WORLDSIZE_SMALL:		(13,8),
-		WorldSizeTypes.WORLDSIZE_STANDARD:	(16,10),
-		WorldSizeTypes.WORLDSIZE_LARGE:		(21,13),
-		WorldSizeTypes.WORLDSIZE_HUGE:		(26,16)
-	}
-
-	if (argsList[0] == -1): # (-1,) is passed to function on loads
-		return []
-	[eWorldSize] = argsList
-	return grid_sizes[eWorldSize]
 
 def beforeGeneration():
 	# Detect whether this game is primarily a team game or not. (1v1 treated as a team game!)

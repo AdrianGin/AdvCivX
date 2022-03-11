@@ -54,7 +54,7 @@
 			<!-- advc.140: was 30 -->
 			<iWarWearinessModifier>20</iWarWearinessModifier>
 			<!-- advc.137: was 13 -->
-			<iGridWidth>12</iGridWidth>
+			<iGridWidth>11</iGridWidth>
 			<iGridHeight>8</iGridHeight>
 			<iTerrainGrainChange>-1</iTerrainGrainChange>
 			<iFeatureGrainChange>-1</iFeatureGrainChange>
@@ -84,8 +84,9 @@
 			<iMaxConscriptModifier>0</iMaxConscriptModifier>
 			<!-- advc.140: was 10 -->
 			<iWarWearinessModifier>12</iWarWearinessModifier>
-			<iGridWidth>16</iGridWidth>
-			<iGridHeight>10</iGridHeight>
+			<!-- advc.137: was 16x10 -->
+			<iGridWidth>15</iGridWidth>
+			<iGridHeight>11</iGridHeight>
 			<iTerrainGrainChange>0</iTerrainGrainChange>
 			<iFeatureGrainChange>0</iFeatureGrainChange>
 			<!-- advc.910: was 120 -->
@@ -120,8 +121,9 @@
 			<iMaxConscriptModifier>15</iMaxConscriptModifier>
 			<!-- advc.140: was -10 -->
 			<iWarWearinessModifier>0</iWarWearinessModifier>
-			<iGridWidth>21</iGridWidth>
-			<iGridHeight>13</iGridHeight>
+			<!-- advc.137: was 21x13 -->
+			<iGridWidth>19</iGridWidth>
+			<iGridHeight>14</iGridHeight>
 			<iTerrainGrainChange>0</iTerrainGrainChange>
 			<iFeatureGrainChange>0</iFeatureGrainChange>
 			<!-- advc.910: was 130 -->
@@ -152,8 +154,8 @@
 			<iMaxConscriptModifier>30</iMaxConscriptModifier>
 			<!-- advc.140: was -30 -->
 			<iWarWearinessModifier>-13</iWarWearinessModifier>
-			<!-- advc.137: was 26 -->
-			<iGridWidth>25</iGridWidth>
+			<!-- advc.137: was 26x16 -->
+			<iGridWidth>23</iGridWidth>
 			<iGridHeight>16</iGridHeight>
 			<iTerrainGrainChange>1</iTerrainGrainChange>
 			<iFeatureGrainChange>1</iFeatureGrainChange>
@@ -186,8 +188,8 @@
 			<iMaxConscriptModifier>45</iMaxConscriptModifier>
 			<!-- advc.140: was -50 -->
 			<iWarWearinessModifier>-25</iWarWearinessModifier>
-			<!-- advc.137: was 32 -->
-			<iGridWidth>31</iGridWidth>
+			<!-- advc.137: was 32x20 -->
+			<iGridWidth>29</iGridWidth>
 			<iGridHeight>20</iGridHeight>
 			<iTerrainGrainChange>1</iTerrainGrainChange>
 			<iFeatureGrainChange>1</iFeatureGrainChange>
@@ -204,33 +206,30 @@
 			<!-- advc.250c: was 120 -->
 			<iAdvancedStartPointsMod>100</iAdvancedStartPointsMod>
 		</WorldInfo>
-		<!-- advc.test: From vincentz's 34-civs micro mod. For testing
-			 MAX_CIV_PLAYERS > 18. I haven't made any adjustments except
-			 increase iDefaultPlayers to the highest number that I think
-			 this map size can accommodate at Low sea level. -->
+		<!-- advc.test: For testing MAX_CIV_PLAYERS > 18 -->
 		<!--WorldInfo>
-			<Type>WORLDSIZE_GIANT</Type>
-			<Description>Giant</Description>
+			<Type>WORLDSIZE_XXL</Type>
+			<Description>XXL</Description>
 			<Help>No help text available</Help>
-			<iDefaultPlayers>36</iDefaultPlayers>
+			<iDefaultPlayers>23</iDefaultPlayers>
 			<iUnitNameModifier>0</iUnitNameModifier>
 			<iTargetNumCities>6</iTargetNumCities>
 			<iNumFreeBuildingBonuses>7</iNumFreeBuildingBonuses>
-			<iBuildingClassPrereqModifier>100</iBuildingClassPrereqModifier>
-			<iMaxConscriptModifier>75</iMaxConscriptModifier>
-			<iWarWearinessModifier>-50</iWarWearinessModifier>
-			<iGridWidth>40</iGridWidth>
+			<iBuildingClassPrereqModifier>75</iBuildingClassPrereqModifier>
+			<iMaxConscriptModifier>50</iMaxConscriptModifier>
+			<iWarWearinessModifier>-25</iWarWearinessModifier>
+			<iGridWidth>34</iGridWidth>
 			<iGridHeight>25</iGridHeight>
-			<iTerrainGrainChange>2</iTerrainGrainChange>
-			<iFeatureGrainChange>2</iFeatureGrainChange>
-			<iResearchPercent>150</iResearchPercent>
+			<iTerrainGrainChange>1</iTerrainGrainChange>
+			<iFeatureGrainChange>1</iFeatureGrainChange>
+			<iResearchPercent>164</iResearchPercent>
 			<iTradeProfitPercent>30</iTradeProfitPercent>
 			<iDistanceMaintenancePercent>100</iDistanceMaintenancePercent>
 			<iNumCitiesMaintenancePercent>20</iNumCitiesMaintenancePercent>
-			<iColonyMaintenancePercent>30</iColonyMaintenancePercent>
-			<iCorporationMaintenancePercent>50</iCorporationMaintenancePercent>
+			<iColonyMaintenancePercent>27</iColonyMaintenancePercent>
+			<iCorporationMaintenancePercent>45</iCorporationMaintenancePercent>
 			<iNumCitiesAnarchyPercent>6</iNumCitiesAnarchyPercent>
-			<iAdvancedStartPointsMod>120</iAdvancedStartPointsMod>
+			<iAdvancedStartPointsMod>100</iAdvancedStartPointsMod>
 		</WorldInfo-->
 		
 	</WorldInfos>

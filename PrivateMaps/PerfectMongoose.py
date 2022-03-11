@@ -386,8 +386,9 @@ class MapConstants:
 		#Height and Width of main climate and height maps. This does not
 		#reflect the resulting map size. Both dimensions( + 1 if wrapping in
 		#that dimension = False) must be evenly divisible by self.hmMaxGrain
-		self.hmWidth  = 144
-		self.hmHeight = 97
+		# advc.137: Increased both by 16
+		self.hmWidth  = 160
+		self.hmHeight = 113
 
 		#Size of largest map increment to begin midpoint displacement. Must
 		#be a power of 2.
