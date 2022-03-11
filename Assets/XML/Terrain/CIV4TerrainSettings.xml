@@ -27,7 +27,8 @@
 			<fZScale>1.0</fZScale>
 			<bTerrainShader>1</bTerrainShader>
 			<bUseLightmap>0</bUseLightmap>
-			<fPeakScale>0.44</fPeakScale>
+			<!-- advc.002j: was 0.44 -->
+			<fPeakScale>0.33</fPeakScale>
 			<fHillScale>0.13</fHillScale>
 		</LandscapeInfo>
 	</LandscapeInfos>
