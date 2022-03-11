@@ -81,8 +81,15 @@ class ExplicitFractal:
 
 
 class FractalWorld:
-	def __init__(self, fracXExp=CyFractal.FracVals.DEFAULT_FRAC_X_EXP,
-				 fracYExp=CyFractal.FracVals.DEFAULT_FRAC_Y_EXP):
+	def __init__(self,
+				 # <advc.137> Don't use those defaults b/c they're hardcoded in the EXE
+				 # (as 7 and 6 respectively).
+				 # Instead, let the DLL decide. Note that Oasis and RandomScriptMap
+				 # still use the EXE's defaults. Well, the DLL will check for those
+				 # defaults and may overwrite them, so it doesn't ultimately matter.
+				 fracXExp=-1,#CyFractal.FracVals.DEFAULT_FRAC_X_EXP
+				 fracYExp=-1):#CyFractal.FracVals.DEFAULT_FRAC_Y_EXP
+				 # </advc.137>
 		self.gc = CyGlobalContext()
 		self.map = self.gc.getMap()
 		self.iNumPlotsX = self.map.getGridWidth()
@@ -315,8 +322,11 @@ class FractalWorld:
 cardinal_directions = (1,0), (0,1), (-1,0), (0, -1)
 	
 class HintedWorld(FractalWorld):
-	def __init__(self, w=16, h=8, fracXExp=CyFractal.FracVals.DEFAULT_FRAC_X_EXP, 
+	def __init__(self, w=16, h=8,
+				 # advc.137 (note): Changing these to -1 would break Inland_Sea
+				 fracXExp=CyFractal.FracVals.DEFAULT_FRAC_X_EXP,
 				 fracYExp=CyFractal.FracVals.DEFAULT_FRAC_Y_EXP):
+				 # </advc.137>
 		FractalWorld.__init__(self, fracXExp, fracYExp)
 		
 		self.plotsPerBlockX = self.iNumPlotsX/w
@@ -731,8 +741,11 @@ controlling function and must be customized for each applicable map script.
 # Use GeneratePlotsByRegion to organize your fractal layers.
 
 class MultilayeredFractal:
-	def __init__(self, fracXExp=CyFractal.FracVals.DEFAULT_FRAC_X_EXP, 
-				 fracYExp=CyFractal.FracVals.DEFAULT_FRAC_Y_EXP):
+	def __init__(self,
+				 # <advc.137>
+				 fracXExp=-1,#CyFractal.FracVals.DEFAULT_FRAC_X_EXP
+				 fracYExp=-1):#CyFractal.FracVals.DEFAULT_FRAC_Y_EXP
+				 # </advc.137>
 		self.gc = CyGlobalContext()
 		self.map = self.gc.getMap()
 		self.iW = self.map.getGridWidth()
