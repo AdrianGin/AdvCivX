@@ -213,8 +213,10 @@ class voronoiMap:
 		# plateSize is a random number which gives the probability of growing a plate
 		self.plateSize = [0] * (self.numContinents + self.numSeaPlates)
 		self.altitudeVariation = 2
-		self.peakAltitude = 12
-		self.hillAltitude = 9
+		# advc.021a: was 12
+		self.peakAltitude = 15
+		# advc.021a: was 9
+		self.hillAltitude = 10
 		self.landAltitude = 6
 		for x in range(self.mapWidth):
 			for y in range(self.mapHeight):
@@ -509,6 +511,10 @@ class voronoiMap:
 					else:
 						self.plotTypes[i] = PlotTypes.PLOT_HILLS
 				elif (height > self.landAltitude):
+					# <advc.021a>
+					if self.dice.get(100, "Random hill") < height:
+						self.plotTypes[i] = PlotTypes.PLOT_HILLS
+					# </advc.021a>
 					self.plotTypes[i] = PlotTypes.PLOT_LAND
 				else:
 					self.plotTypes[i] = PlotTypes.PLOT_OCEAN

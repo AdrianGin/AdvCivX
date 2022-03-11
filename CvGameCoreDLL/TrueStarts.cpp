@@ -51,7 +51,9 @@ TrueStarts::TrueStarts()
 				szMapName != CvWString("Arboria") && szMapName != CvWString("Caldera"));
 		// Scenario makers tend to use peaks very liberally
 		m_bAdjustPeakScore = (GC.getGame().isScenario() ||
-				// This earth-like script also places lots of peaks
+				/*	This earth-like script also places lots of peaks.
+					(advc.021a: Not that many anymore, but it varies quite a bit.
+					In any case, adjusting the scoring won't hurt.) */
 				szMapName == CvWString("Tectonics"));
 	}
 	m_bBonusesIgnoreLatitude = (!m_bMapHasLatitudes ||
