@@ -17978,8 +17978,6 @@ bool CvPlayer::canDefyResolution(VoteSourceTypes eVoteSource,
 void CvPlayer::setDefiedResolution(VoteSourceTypes eVoteSource,
 	VoteSelectionSubData const& kData)
 {
-	FAssertMsg(canDefyResolution(eVoteSource, kData),
-			"OK to fail when a team member defies a resolution"); // kekm.25
 	// cities get unhappiness
 	FOR_EACH_CITY_VAR(pLoopCity, *this)
 	{

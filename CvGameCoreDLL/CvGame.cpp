@@ -10753,7 +10753,9 @@ void CvGame::doVoteResults()
 					for (PlayerIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
 					{
 						if (getPlayerVote(itPlayer->getID(), pVoteTriggered->getID()) ==
-							PLAYER_VOTE_NEVER)
+							PLAYER_VOTE_NEVER &&
+							// kekm.25/advc: May e.g. have become a vassal
+							itPlayer->canDefyResolution(eVoteSource, subdata))
 						{
 							bPassed = false;
 							itPlayer->setDefiedResolution(eVoteSource, subdata);
