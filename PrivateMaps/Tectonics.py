@@ -1435,7 +1435,7 @@ class riversFromSea:
 		else:
 			maxNumber /= 2
 		# Moved down; guaranteeing at least 1 river sounds prudent
-		riversNumber = 1 + maxNumber
+		riversNumber = int(1 + maxNumber)
 		# </advc.021a>
 		self.coasts = self.collateCoasts()
 		coastsNumber = len(self.coasts)
