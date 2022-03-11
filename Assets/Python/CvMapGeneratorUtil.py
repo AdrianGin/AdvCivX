@@ -257,7 +257,7 @@ class FractalWorld:
 		bSparseEquator = (CyGame().isOption(GameOptionTypes.GAMEOPTION_TRUE_STARTS) and
 				# Better not mess with maps that have strange latitude settings
 				self.map.getTopLatitude() == -self.map.getBottomLatitude() and
-				self.map.getTopLatitude() == 90)
+				self.map.getTopLatitude() <= 90 and self.map.getTopLatitude() >= 80)
 		if bSparseEquator:
 			sparseEquatorFractal = ExplicitFractal(self.continentsFrac, self.map)
 			sparseEquatorFractal.decreaseNearMiddle(self.map.isWrapX() or not self.map.isWrapY(), 0.15)

@@ -134,11 +134,14 @@ def getWrapY():
 def getTopLatitude():
 	if (6 == CyMap().getCustomMapOption(0)): # advc.021a: was 5==...
 		return 65
-	return 90
+	#return 90
+	CyPythonMgr().allowDefaultImpl() # advc.129
+
 def getBottomLatitude():
 	if (6 == CyMap().getCustomMapOption(0)): # advc.021a: was 5==...
 		return 25
-	return -90
+	#return -90
+	CyPythonMgr().allowDefaultImpl() # advc.129
 	
 def getCustomMapOptionDescAt(argsList):
 	iOption = argsList[0]
