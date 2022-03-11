@@ -139,7 +139,7 @@ public:
 	// <advc.004>
 	CvWString customMapOptionDescription(char const* szMapScriptName, int iOption,
 			CustomMapOptionTypes eOptionValue) const; // </advc.004>
-	void mapGridDimensions(WorldSizeTypes eWorldSize, int& iWidth, int& iHeight) const;
+	bool mapGridDimensions(WorldSizeTypes eWorldSize, int& iWidth, int& iHeight) const;
 	void mapLatitudeExtremes(int& iTop, int& iBottom) const;
 	void mapWraps(bool& bWrapX, bool& bWrapY) const;
 	bool generateRandomMap() const;

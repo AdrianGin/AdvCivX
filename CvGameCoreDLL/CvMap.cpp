@@ -106,7 +106,18 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 		if (eWorldSize != NO_WORLDSIZE)
 		{
 			// check map script for grid size override
-			GC.getPythonCaller()->mapGridDimensions(eWorldSize, m_iGridWidth, m_iGridHeight);
+			if (!GC.getPythonCaller()->mapGridDimensions(eWorldSize,
+				m_iGridWidth, m_iGridHeight) &&
+				// <advc.137> Undo aspect ratio changes for Continents
+				!GC.getInitCore().getScenario() &&
+				GC.getInitCore().getMapScriptName() == CvWString("Continents"))
+			{
+				scaled rModAspectRatio(GC.getInfo(getWorldSize()).getGridWidth(),
+						GC.getInfo(getWorldSize()).getGridHeight());
+				scaled rHStretch = fixp(1.6) / rModAspectRatio;
+				m_iGridWidth = (m_iGridWidth * rHStretch).uround();
+				m_iGridHeight = (m_iGridHeight / rHStretch).uround();
+			} // </advc.137>
 		}
 
 		// convert to plot dimensions

@@ -1255,7 +1255,7 @@ CvWString CvPythonCaller::customMapOptionDescription(char const* szMapScriptName
 	return szResult;
 }
 
-void CvPythonCaller::mapGridDimensions(WorldSizeTypes eWorldSize, int& iWidth, int& iHeight) const
+bool CvPythonCaller::mapGridDimensions(WorldSizeTypes eWorldSize, int& iWidth, int& iHeight) const
 {
 	std::vector<int> iiReturn;
 	CyArgsList argsList;
@@ -1263,10 +1263,11 @@ void CvPythonCaller::mapGridDimensions(WorldSizeTypes eWorldSize, int& iWidth, i
 	m_bLastCallSuccessful = m_python.callFunction(m_python.getMapScriptModule(), "getGridSize",
 			argsList.makeFunctionArgs(), &iiReturn);
 	if (!isOverride() || iiReturn.size() < (size_t)2)
-		return;
+		return false;
 	FAssertMsg(iiReturn[0] > 0 && iiReturn[1] > 0, "the width and height returned by python getGridSize() must be positive");
 	iWidth = iiReturn[0];
 	iHeight = iiReturn[1];
+	return true;
 }
 
 void CvPythonCaller::mapLatitudeExtremes(int& iTop, int& iBottom) const
