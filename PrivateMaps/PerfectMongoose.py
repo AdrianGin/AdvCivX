@@ -91,8 +91,8 @@ class MapConstants:
 		#Percent of land vs. water
 		#LM - Exact Real Earth Value. Actual results vary depending on map size, meteors, and which landmass generator was used.
 		#self.landPercent = 0.2889
-		# advc: Low sea level should be close to the real ratio because that's how it works with the standard map scripts (e.g. Fractal). At Medium sea level, Fractal only yields about 21% land. PM has more bad, marginal and initially inaccessible terrain, but also a longer coastline and thus more seafood.
-		self.landPercent = 0.223
+		# advc.137: At Medium sea level, Fractal only aims at 23% land (BtS: 22). PM has more bad, marginal and initially inaccessible terrain, but also a longer coastline and thus more seafood.
+		self.landPercent = 0.24
 
 		#Percentage of land squares high enough to be Hills or Peaks.
 		self.HillPercent = 0.225 # advc: was 0.42

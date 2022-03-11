@@ -241,7 +241,9 @@ class FractalWorld:
 			landWeights[i] = landWeight
 		return landWeights
 
-	def generatePlotTypes(self, water_percent=78, shift_plot_types=True, grain_amount=3):
+	def generatePlotTypes(self,
+			water_percent=77, # advc.137: was 0.78
+			shift_plot_types=True, grain_amount=3):
 		# Check for changes to User Input variances.
 		self.checkForOverrideDefaultUserInputVariances()
 		
