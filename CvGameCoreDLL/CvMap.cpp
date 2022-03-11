@@ -93,7 +93,6 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 			GC.getInfo(GC.getInitCore().getWorldSize()).getGridWidth() : 0; //todotw:tcells wide
 	m_iGridHeight = (GC.getInitCore().getWorldSize() != NO_WORLDSIZE) ?
 			GC.getInfo(GC.getInitCore().getWorldSize()).getGridHeight() : 0;
-
 	// allow grid size override
 	if (pInitInfo != NULL)
 	{
@@ -143,7 +142,6 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 		// Check map script for latitude override (map script beats ini file)
 		GC.getPythonCaller()->mapLatitudeExtremes(m_iTopLatitude, m_iBottomLatitude);
 	}
-
 	m_iTopLatitude = std::min(m_iTopLatitude, 90);
 	m_iTopLatitude = std::max(m_iTopLatitude, -90);
 	m_iBottomLatitude = std::min(m_iBottomLatitude, 90);
@@ -151,7 +149,6 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 	FAssert(m_iTopLatitude >= m_iBottomLatitude); // advc
 
 	m_iNextRiverID = 0;
-
 	//
 	// set wrapping
 	//
