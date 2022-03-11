@@ -151,7 +151,7 @@ def getCustomMapOptionDescAt(argsList):
 					   "TXT_KEY_MAP_SCRIPT_EARTH_50", # advc.021a
 	                   "TXT_KEY_MAP_SCRIPT_PANGAEA",
 	                   "TXT_KEY_MAP_SCRIPT_LAKES",
-	                   "TXT_KEY_MAP_SCRIPT_ISLANDS",
+	                   "TXT_KEY_MAP_SCRIPT_ISLANDS_90", # advc.021a: was ..._ISLANDS
 	                   "TXT_KEY_MAP_SCRIPT_MEDITERRANEAN", 
 	                   "TXT_KEY_MAP_SCRIPT_TERRA",
 	                   "TXT_KEY_MAP_SCRIPT_TERRA_OLD_WORLD_START"]
@@ -169,7 +169,7 @@ def getCustomMapOptionDescAt(argsList):
 def getCustomMapOptionDefault(argsList):
 	iOption = argsList[0]
 	if (iOption == 0):
-		return 1 # advc.021a: Was 0, i.e. 70%. Now 60% as the default.
+		return 1 # advc.021a: Was 0, i.e. EARTH_70. Now EARTH_60 as the default.
 	else:
 		return 1
 
