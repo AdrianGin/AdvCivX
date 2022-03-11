@@ -1104,11 +1104,11 @@ class TerrainGenerator:
 	"If iDesertPercent=35, then about 35% of all land will be desert. Plains is similar. \
 	Note that all percentages are approximate, as values have to be roughened to achieve a natural look."
 	def __init__(self, iDesertPercent=32, iPlainsPercent=18,
-				 # advc.tsl: Increased tundra and snow latitude by 0.04 each. This is done with the noise added (or subtracted) by TerrainGenerator in mind.
-				 fSnowLatitude=0.74, fTundraLatitude=0.64,
-				 fGrassLatitude=0.1, fDesertBottomLatitude=0.2,
-				 fDesertTopLatitude=0.5, fracXExp=-1,
-				 fracYExp=-1, grain_amount=4):
+				 # advc.tsl: Increased tundra latitude by 0.04 and snow by 0.07. This is done with the noise added (or subtracted) by TerrainGenerator in mind.
+				 fSnowLatitude=0.77, fTundraLatitude=0.64,
+				 fGrassLatitude=0.1,
+				 fDesertBottomLatitude=0.2, fDesertTopLatitude=0.5,
+				 fracXExp=-1, fracYExp=-1, grain_amount=4):
 		
 		self.gc = CyGlobalContext()
 		self.map = CyMap()
