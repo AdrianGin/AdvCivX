@@ -652,11 +652,23 @@ class CvMainInterface:
 		screen.setStyle( "CityTab2", "Button_HUDJumpWonder_Style" )
 		screen.hide( "CityTab2" )
 		
-		# Minimap initialization
 		screen.setMainInterface(True)
-		# <advc.092>
-		iMiniMapPanelWidth = 208
-		iMiniMapPanelRMargin = 6
+		# Minimap initialization
+		# <advc.092>  <advc.137> 
+		iMiniMapHeight = 128 # was 122
+		iDefaultMiniMapPanelWidth = 208 # BtS value
+		iMaxMinimapPanelWidth = 216 # We can go a little wider
+		iMiniMapPanelWidth = iDefaultMiniMapPanelWidth
+		if gc.getMap().isWrapX():
+			# Avoid black bars on the sides
+			iMiniMapPanelWidth = iMiniMapHeight * gc.getMap().getGridWidth()
+			iMiniMapPanelWidth /= gc.getMap().getGridHeight()
+			iMiniMapPanelWidth += 6 # Don't know why the scaling doesn't quite work out
+			iMiniMapPanelWidth = min(iMiniMapPanelWidth, 216)
+		iMiniMapPanelRMargin = 6 # BtS value
+		# Center the panel within the available space
+		iMiniMapPanelRMargin += (iDefaultMiniMapPanelWidth - iMiniMapPanelWidth) / 2
+		# </advc.137>
 		iMiniMapPanelX = xResolution - iMiniMapPanelWidth - iMiniMapPanelRMargin
 		iMiniMapPanelHeight = 151
 		iMiniMapPanelBMargin = 0
@@ -665,8 +677,7 @@ class CvMainInterface:
 		iMiniMapLMargin = 4 # As in BtS - and 3 indeed looks too thin on the left.
 		self.iMiniMapX1 = iMiniMapPanelX + iMiniMapLMargin
 		self.iMiniMapX2 = iMiniMapPanelX + iMiniMapPanelWidth - iMiniMapRMargin
-		iMiniMapHeight = 122
-		iMiniMapBMargin = 9
+		iMiniMapBMargin = 5 # advc.137: was 9
 		self.iMiniMapY1 = iMiniMapPanelY + iMiniMapPanelHeight - iMiniMapBMargin - iMiniMapHeight
 		self.iMiniMapY2 = self.iMiniMapY1 + iMiniMapHeight
 		# </advc.092>
