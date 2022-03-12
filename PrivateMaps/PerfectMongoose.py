@@ -6219,12 +6219,12 @@ def getCustomMapOptionDescAt(argsList):
 	return u""
 	'''
 
-# <advc> Make cylindrical the middle option b/c that's what the standard map scripts do
+# <advc> Make cylindrical the middle choice b/c that's what the standard map scripts do
 def getCustomMapOptionDefault(argsList):
 #	return 0
 	[iOption] = argsList
 	option_defaults = {
-		0:	0,
+		0:	1, # And make the PW2 landmass generator the default
 		1:	0,
 		2:	1
 		}
