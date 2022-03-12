@@ -191,8 +191,10 @@
 			<!-- advc.137: was 32x20 -->
 			<iGridWidth>29</iGridWidth>
 			<iGridHeight>20</iGridHeight>
-			<iTerrainGrainChange>1</iTerrainGrainChange>
-			<iFeatureGrainChange>1</iFeatureGrainChange>
+			<!-- advc.129: was 1 -->
+			<iTerrainGrainChange>2</iTerrainGrainChange>
+			<!-- advc.129: was 1 -->
+			<iFeatureGrainChange>2</iFeatureGrainChange>
 			<iResearchPercent>150</iResearchPercent>
 			<!-- advc.140: was 30 -->
 			<iTradeProfitPercent>33</iTradeProfitPercent>
@@ -220,8 +222,8 @@
 			<iWarWearinessModifier>-25</iWarWearinessModifier>
 			<iGridWidth>34</iGridWidth>
 			<iGridHeight>25</iGridHeight>
-			<iTerrainGrainChange>1</iTerrainGrainChange>
-			<iFeatureGrainChange>1</iFeatureGrainChange>
+			<iTerrainGrainChange>3</iTerrainGrainChange>
+			<iFeatureGrainChange>3</iFeatureGrainChange>
 			<iResearchPercent>164</iResearchPercent>
 			<iTradeProfitPercent>30</iTradeProfitPercent>
 			<iDistanceMaintenancePercent>100</iDistanceMaintenancePercent>
