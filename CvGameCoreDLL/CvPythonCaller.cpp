@@ -1270,6 +1270,18 @@ bool CvPythonCaller::mapGridDimensions(WorldSizeTypes eWorldSize, int& iWidth, i
 	return true;
 }
 
+// advc.165:
+bool CvPythonCaller::mapPlotsPercent(WorldSizeTypes eWorldSize, int& iModifier) const
+{
+	long lResult = 100;
+	CyArgsList argsList;
+	argsList.add(eWorldSize);
+	m_bLastCallSuccessful = m_python.callFunction(m_python.getMapScriptModule(),
+			"getNumPlotsPercent", argsList.makeFunctionArgs(), &lResult);
+	iModifier = toInt(lResult);
+	return isOverride();
+}
+
 void CvPythonCaller::mapLatitudeExtremes(int& iTop, int& iBottom) const
 {
 	int const iNone = MIN_INT;

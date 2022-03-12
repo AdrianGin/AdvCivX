@@ -15,22 +15,20 @@ import CvMapGeneratorUtil
 from CvMapGeneratorUtil import TerrainGenerator
 from CvMapGeneratorUtil import FeatureGenerator
 
-# <advc.165>
-def getGridSize(argsList):
+# advc.165:
+def getNumPlotsPercent(argsList):
 	[iWorldSize] = argsList
 	if iWorldSize < 0:
-		return ()
+		return 100
 	sizeModifiers = {
-		WorldSizeTypes.WORLDSIZE_DUEL:		(-1, 0),
-		WorldSizeTypes.WORLDSIZE_TINY:		(-2,-2),
-		WorldSizeTypes.WORLDSIZE_SMALL:		(-2,-1),
-		WorldSizeTypes.WORLDSIZE_STANDARD:	(-2,-2),
-		WorldSizeTypes.WORLDSIZE_LARGE:		(-2,-2),
-		WorldSizeTypes.WORLDSIZE_HUGE:		(-3,-2)
+		WorldSizeTypes.WORLDSIZE_DUEL:		95,
+		WorldSizeTypes.WORLDSIZE_TINY:		77,
+		WorldSizeTypes.WORLDSIZE_SMALL:		83,
+		WorldSizeTypes.WORLDSIZE_STANDARD:	76,
+		WorldSizeTypes.WORLDSIZE_LARGE:		74,
+		WorldSizeTypes.WORLDSIZE_HUGE:		72
 	}
-	wi = CyGlobalContext().getWorldInfo(iWorldSize)
-	return (sizeModifiers[iWorldSize][0] + wi.getGridWidth(), sizeModifiers[iWorldSize][1] + wi.getGridHeight())
-# </advc.165>
+	return sizeModifiers[iWorldSize]
 
 def getDescription():
 	#TODO: get my own text string

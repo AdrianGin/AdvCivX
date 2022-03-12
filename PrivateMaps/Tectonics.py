@@ -79,21 +79,20 @@ from CvMapGeneratorUtil import TerrainGenerator
 from CvMapGeneratorUtil import FeatureGenerator
 
 # advc.165:
-def getGridSize(argsList):
+def getNumPlotsPercent(argsList):
 	[iWorldSize] = argsList
 	if iWorldSize < 0:
-		return ()
+		return 100
 	sizeModifiers = {
 		# NB: The smallest two sizes have highly unpredictable land-sea ratios
-		WorldSizeTypes.WORLDSIZE_DUEL:		(-1,-1),
-		WorldSizeTypes.WORLDSIZE_TINY:		(-1,-1),
-		WorldSizeTypes.WORLDSIZE_SMALL:		(-2,-1),
-		WorldSizeTypes.WORLDSIZE_STANDARD:	(-2,-1),
-		WorldSizeTypes.WORLDSIZE_LARGE:		(-2,-1),
-		WorldSizeTypes.WORLDSIZE_HUGE:		(-2,-2)
+		WorldSizeTypes.WORLDSIZE_DUEL:		89,
+		WorldSizeTypes.WORLDSIZE_TINY:		87,
+		WorldSizeTypes.WORLDSIZE_SMALL:		85,
+		WorldSizeTypes.WORLDSIZE_STANDARD:	83,
+		WorldSizeTypes.WORLDSIZE_LARGE:		81,
+		WorldSizeTypes.WORLDSIZE_HUGE:		77
 	}
-	wi = CyGlobalContext().getWorldInfo(iWorldSize)
-	return (sizeModifiers[iWorldSize][0] + wi.getGridWidth(), sizeModifiers[iWorldSize][1] + wi.getGridHeight())
+	return sizeModifiers[iWorldSize]
 
 def getDescription():
 	return "TXT_KEY_MAP_SCRIPT_TECTONICS_DESCR"

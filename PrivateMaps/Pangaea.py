@@ -37,27 +37,23 @@ def getGridSize(argsList):
 	return grid_sizes[eWorldSize]
 '''
 # advc.165: Adjust, don't overwrite the defaults.
-def getGridSize(argsList):
+def getNumPlotsPercent(argsList):
 	[iWorldSize] = argsList
 	if iWorldSize < 0:
-		return ()
+		return 100
 	sizeModifiers = {
-		WorldSizeTypes.WORLDSIZE_DUEL:		(-1, -1),
-		WorldSizeTypes.WORLDSIZE_TINY:		(-2, -1),
-		WorldSizeTypes.WORLDSIZE_SMALL:		(-2, -2),
-		WorldSizeTypes.WORLDSIZE_STANDARD:	(-3, -2),
-		WorldSizeTypes.WORLDSIZE_LARGE:		(-4, -2),
-		WorldSizeTypes.WORLDSIZE_HUGE:		(-5, -3)
+		WorldSizeTypes.WORLDSIZE_DUEL:		88,
+		WorldSizeTypes.WORLDSIZE_TINY:		83,
+		WorldSizeTypes.WORLDSIZE_SMALL:		78,
+		WorldSizeTypes.WORLDSIZE_STANDARD:	73,
+		WorldSizeTypes.WORLDSIZE_LARGE:		67,
+		WorldSizeTypes.WORLDSIZE_HUGE:		60
 	}
+	r = sizeModifiers[iWorldSize]
 	# Low sea level doesn't have as much impact on this map. Adjust the grid size in order to compensate.
-	seaChange = CyGlobalContext().getSeaLevelInfo(CyMap().getSeaLevel()).getSeaLevelChange()
-	wMod = sizeModifiers[iWorldSize][0]
-	hMod = sizeModifiers[iWorldSize][1]
-	if seaChange < 0:
-		wMod //= 2
-		hMod //= 2
-	wi = CyGlobalContext().getWorldInfo(iWorldSize)
-	return (wMod + wi.getGridWidth(), hMod + wi.getGridHeight())
+	if CyGlobalContext().getSeaLevelInfo(CyMap().getSeaLevel()).getSeaLevelChange() < 0:
+		r = (r * 6) // 5
+	return r
 
 def getDescription():
 	return "TXT_KEY_MAP_SCRIPT_PANGAEA_DESCR"

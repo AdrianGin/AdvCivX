@@ -93,6 +93,8 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 			GC.getInfo(GC.getInitCore().getWorldSize()).getGridWidth() : 0; //todotw:tcells wide
 	m_iGridHeight = (GC.getInitCore().getWorldSize() != NO_WORLDSIZE) ?
 			GC.getInfo(GC.getInitCore().getWorldSize()).getGridHeight() : 0;
+	// advc.137: (Ignore CvLandscapeInfos::getPlotsPerCellX/Y)
+	int iPlotsPerCell = 2;
 	// allow grid size override
 	if (pInitInfo != NULL)
 	{
@@ -104,15 +106,35 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 		WorldSizeTypes eWorldSize = GC.getInitCore().getWorldSize();
 		if (eWorldSize != NO_WORLDSIZE)
 		{
+			CvWorldInfo const& kWorldSz = GC.getInfo(eWorldSize);
+			// <advc.165>
+			int iPlotNumPercent;
+			if (GC.getPythonCaller()->mapPlotsPercent(eWorldSize, iPlotNumPercent))
+			{
+				scaled rTargetAspectRatio(kWorldSz.getGridWidth(),
+						kWorldSz.getGridHeight());
+				// (The number of cells is proportional to the number of plots)
+				scaled rTargetCells = m_iGridWidth * m_iGridHeight
+						* per100(iPlotNumPercent);
+				scaled rTargetHeight = (rTargetCells / rTargetAspectRatio).sqrt();
+				scaled rTargetWidth = rTargetCells / rTargetHeight;
+				m_iGridWidth = rTargetWidth.uround();
+				m_iGridHeight = rTargetHeight.uround();
+			}
+			else // </advc.165>
 			// check map script for grid size override
-			if (!GC.getPythonCaller()->mapGridDimensions(eWorldSize,
-				m_iGridWidth, m_iGridHeight) &&
-				// <advc.137> Undo aspect ratio changes for Continents
-				!GC.getInitCore().getScenario() &&
+			if (GC.getPythonCaller()->mapGridDimensions(eWorldSize,
+				m_iGridWidth, m_iGridHeight))
+			{	// <advc.137>
+				// If a map sets custom dimensions, then we can't change the scale.
+				iPlotsPerCell = 4;
+			}
+			// Undo aspect ratio changes for Continents
+			else if (!GC.getInitCore().getScenario() &&
 				GC.getInitCore().getMapScriptName() == CvWString("Continents"))
 			{
-				scaled rModAspectRatio(GC.getInfo(getWorldSize()).getGridWidth(),
-						GC.getInfo(getWorldSize()).getGridHeight());
+				scaled rModAspectRatio(kWorldSz.getGridWidth(),
+						kWorldSz.getGridHeight());
 				scaled rHStretch = fixp(1.6) / rModAspectRatio;
 				m_iGridWidth = (m_iGridWidth * rHStretch).uround();
 				m_iGridHeight = (m_iGridHeight / rHStretch).uround();
@@ -120,12 +142,18 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 		}
 
 		// convert to plot dimensions
+	#if 0
 		if (GC.getNumLandscapeInfos() > 0)
 		{	/*  advc.003x: A bit of code moved into new CvGlobals functions
 				in order to remove the dependency of CvMap on CvLandscapeInfos */
 			m_iGridWidth *= GC.getLandscapePlotsPerCellX();
 			m_iGridHeight *= GC.getLandscapePlotsPerCellY();
 		}
+	#endif
+		/*	<advc.137> The landscape-based multipliers (4) are too coarse.
+			I'm not seeing graphical artifacts; seems fine to use 2 instead. */
+		m_iGridWidth *= iPlotsPerCell;
+		m_iGridHeight *= iPlotsPerCell; // </advc.137>
 	}
 	updateNumPlots(); // advc.opt
 
