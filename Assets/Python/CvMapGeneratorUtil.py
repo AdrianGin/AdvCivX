@@ -1567,26 +1567,35 @@ class BonusBalancer:
 							continue # </advc.108c>
 						x,y = startx+dx, starty+dy
 						pLoopPlot = self.map.plot(x,y)
-						if (pLoopPlot
-								# advc.108c: Oil on water is hardly fair
-								and not pLoopPlot.isWater()):
+						if pLoopPlot:
 							plots.append(pLoopPlot)
 				
 				resources_placed = []
-				for pass_num in range(4):
+				for pass_num in range(5):
 					bIgnoreUniqueRange  = pass_num >= 1
 					bIgnoreOneArea 		= pass_num >= 2
-					bIgnoreAdjacent 	= pass_num >= 3
+					bIgnoreWater 		= pass_num >= 3 # advc.108c
+					bIgnoreAdjacent 	= pass_num >= 4
 					
 					for bonus in range(self.gc.getNumBonusInfos()):
 						type_string = self.gc.getBonusInfo(bonus).getType()
 						if (type_string not in resources_placed) and (type_string in self.resourcesToBalance):
 							#for (pLoopPlot) in plots:
-							# <advc.108c> Randomize placement
+							# <advc.108c>
+							# Allow resources that can appear on land only on land
+							# (i.e. no Oil on water)
+							bLandValid = False
+							for iTerrain in range(self.gc.getNumTerrainInfos()):
+								if self.gc.getBonusInfo(bonus).isTerrain(iTerrain):
+									if not self.gc.getTerrainInfo(iTerrain).isWater():
+										bLandValid = True
+							# Randomize placement
 							iOffset = self.gc.getGame().getMapRand().get(len(plots), "BonusBalancer")
 							for j in range(0, len(plots)):
 								pLoopPlot = plots[(j + iOffset) % len(plots)] # </advc.108c>
-								if (pLoopPlot.canHaveBonus(bonus, True)):
+								if (pLoopPlot.canHaveBonus(bonus, True)
+										# advc.108c:
+										and (bIgnoreWater or not pLoopPlot.isWater() or not bLandValid)):
 									if self.isBonusValid(bonus, pLoopPlot, bIgnoreUniqueRange, bIgnoreOneArea, bIgnoreAdjacent):
 										pLoopPlot.setBonusType(bonus)
 										resources_placed.append(type_string)
