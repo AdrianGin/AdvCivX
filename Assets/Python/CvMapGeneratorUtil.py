@@ -1106,8 +1106,8 @@ class TerrainGenerator:
 	"If iDesertPercent=35, then about 35% of all land will be desert. Plains is similar. \
 	Note that all percentages are approximate, as values have to be roughened to achieve a natural look."
 	def __init__(self, iDesertPercent=32, iPlainsPercent=18,
-				 # advc.tsl: Increased tundra latitude by 0.04 and snow by 0.07. This is done with the noise added (or subtracted) by TerrainGenerator in mind.
-				 fSnowLatitude=0.77, fTundraLatitude=0.64,
+				 # advc.tsl: Increased tundra latitude by 0.04 and snow by 0.08. This is done with the noise added (or subtracted) by TerrainGenerator in mind.
+				 fSnowLatitude=0.78, fTundraLatitude=0.64,
 				 fGrassLatitude=0.1,
 				 fDesertBottomLatitude=0.2, fDesertTopLatitude=0.5,
 				 fracXExp=-1, fracYExp=-1, grain_amount=4):
@@ -1248,10 +1248,10 @@ class TerrainGenerator:
 		# Adjust latitude using self.variation fractal, to mix things up:
 		fDiv = 5
 		# <advc.tsl> Dial the variation down, especially with the TSL option b/c temperate civs starting near the tundra look jarring.
-		fDiv += 1.5
+		fDiv += 1.8
 		iVariationHeight = self.variation.getHeight(iX, iY)
 		if self.gc.getGame().isOption(GameOptionTypes.GAMEOPTION_TRUE_STARTS):
-			fDiv += 1.8
+			fDiv += 1.5
 			# Grassland and Plains extending to high latitudes is not jarring, and need this Gulf Stream climate to get the Vikings on the map.
 			if iVariationHeight >= 175 and lat > 0.6 and lat < 0.7 and self.map.plot(iX, iY).isCoastalLand():
 				fDiv = 4.5
