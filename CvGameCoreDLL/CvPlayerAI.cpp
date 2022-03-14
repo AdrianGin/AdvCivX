@@ -22609,7 +22609,7 @@ scaled CvPlayerAI::AI_amortizationMultiplier(int iDelay) const
 	/*	2 would mean that amortization multiplier begins to decrease right in
 		the middle of the game, and that it will have decreased e.g. to 0.8
 		after 300 turns (normal settings). */
-	static scaled const rCoeff = fixp(1.95);
+	static scaled const rCoeff = fixp(1.9);
 	r *= rCoeff;
 	r.clamp(fixp(0.2), 1);
 	return r;
