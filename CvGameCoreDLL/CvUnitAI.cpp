@@ -18318,8 +18318,8 @@ bool CvUnitAI::AI_retreatToCity(bool bPrimary, bool bPrioritiseAirlift, int iMax
 	PROFILE_FUNC(); // (advc: iMaxPath mostly unused here; changing that could save time.)
 
 	//int iCurrentDanger = GET_PLAYER(getOwner()).AI_getPlotDanger(plot());
-	int const iCurrentDanger = getGroup()->alwaysInvisible() ? 0 : // K-Mod
-			GET_PLAYER(getOwner()).AI_getPlotDanger(getPlot()); 
+	int const iCurrentDanger = (getGroup()->alwaysInvisible() ? 0 : // K-Mod
+			GET_PLAYER(getOwner()).AI_getPlotDanger(getPlot())); 
 
 	CvCityAI const* pCity = getPlot().AI_getPlotCity();
 	if (iCurrentDanger <= 0 && pCity != NULL &&

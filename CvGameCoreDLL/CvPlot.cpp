@@ -4620,11 +4620,11 @@ BonusTypes CvPlot::getNonObsoleteBonusType(TeamTypes eTeam,
 	bool bCheckConnected) const // K-Mod
 {
 	FAssert(eTeam != NO_TEAM);
-	FAssert(GET_TEAM(eTeam).isAlive()); // K-Mod
+	FAssertMsg(GET_TEAM(eTeam).isAlive(), "advc.064d: OK if eTeam has just died"); // K-Mod
 
 	BonusTypes eBonus = getBonusType(eTeam);
 	if (eBonus == NO_BONUS)
-		return NO_BONUS; // advc
+		return NO_BONUS;
 	if (GET_TEAM(eTeam).isBonusObsolete(eBonus))
 		return NO_BONUS;
 

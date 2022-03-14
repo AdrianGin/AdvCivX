@@ -219,8 +219,7 @@ public:
 	{
 		return GC.getInitCore().getNumHumans();
 	}
-	DllExport int getGameTurn()																	// Exposed to Python
-	// <advc> Need a const version
+	DllExport int getGameTurn() // <advc> Need a const version							// Exposed to Python
 	{	CvGame const& kThis = *this;
 		return kThis.getGameTurn();
 	}
@@ -228,11 +227,11 @@ public:
 	{
 		return GC.getInitCore().getGameTurn();
 	} // </advc>
-	void setGameTurn(int iNewValue);															// Exposed to Python
+	void setGameTurn(int iNewValue);																// Exposed to Python
 	void incrementGameTurn();
-	// <advc> const
+
 	int getTurnYear(int iGameTurn) const;																// Exposed to Python
-	int getGameTurnYear() const; // </advc>																	// Exposed to Python
+	int getGameTurnYear() const;																	// Exposed to Python
 	int getElapsedGameTurns() const																		// Exposed to Python
 	{
 		return m_iElapsedGameTurns;

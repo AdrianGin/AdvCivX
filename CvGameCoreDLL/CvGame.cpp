@@ -4321,16 +4321,16 @@ void CvGame::incrementGameTurn()
 }
 
 
-int CvGame::getTurnYear(int iGameTurn) /* advc: */ const
+int CvGame::getTurnYear(int iGameTurn) const
 {
-	// moved the body of this method to Game Core Utils so we have access for other games than the current one (replay screen in HOF)
+	/*	moved the body of this method to Game Core Utils so that we have
+		access for other games than the current one (replay screen in HOF) */
 	return getTurnYearForGame(iGameTurn, getStartYear(), getCalendar(), getGameSpeedType());
 }
 
 
-int CvGame::getGameTurnYear() const // advc: const
+int CvGame::getGameTurnYear() const
 {
-	//return getTurnYear(getGameTurn()); // To work aorund non-const getGameTurn
 	return getTurnYear(getGameTurn());
 }
 
