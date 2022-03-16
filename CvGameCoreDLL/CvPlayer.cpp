@@ -2458,39 +2458,31 @@ CvSelectionGroup* CvPlayer::cycleSelectionGroups(CvUnit* pUnit, bool bForward,
 	return pGroup;
 }
 
-// AI_AUTO_PLAY_MOD, 07/09/08, jdog5000:
+/*	AI_AUTO_PLAY_MOD, 07/09/08, jdog5000:
+	(advc.127: Not much left of jdog's code) */
 void CvPlayer::setHumanDisabled(bool bNewVal)
 {
-	// <advc.127>
 	if (bNewVal == m_bDisableHuman)
 		return;
+	m_bDisableHuman = bNewVal;
 	m_bAutoPlayJustEnded = true;
-	CvGame& kGame = GC.getGame();
-	CvWString szReplayText;
-	if (bNewVal && !m_bDisableHuman)
+	updateHuman();
+	AI().AI_setHuman(!bNewVal);
+	if (isActive())
 	{
-		AI().AI_setHuman(false);
-		if (isActive()) // (Not sure if this test is needed)
+		CvWString szReplayText;
+		if (bNewVal)
 		{	// advc.004h:
 			gDLL->getEngineIFace()->clearAreaBorderPlots(AREA_BORDER_LAYER_FOUNDING_BORDER);
 			gDLL->UI().clearQueuedPopups();
 			szReplayText = gDLL->getText("TXT_KEY_AUTO_PLAY_STARTED");
 		}
+		else szReplayText = gDLL->getText("TXT_KEY_AUTO_PLAY_ENDED");
+		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
+				getID(), szReplayText, GC.getColorType("HIGHLIGHT_TEXT"));
 	}
-	else if (!bNewVal && m_bDisableHuman)
-	{
-		AI().AI_setHuman(true);
+	if (!bNewVal)
 		m_iNewMessages = 0; // Don't open Event Log when coming out of Auto Play
-		if (isActive())
-			szReplayText = gDLL->getText("TXT_KEY_AUTO_PLAY_ENDED");
-	}
-	if (!szReplayText.empty())
-	{
-		kGame.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szReplayText,
-				-1, -1, GC.getColorType("HIGHLIGHT_TEXT"));
-	} // </advc.127>
-	m_bDisableHuman = bNewVal;
-	updateHuman();
 }
 
 // <advc.127>
