@@ -1764,7 +1764,7 @@ DenialTypes UWAI::Team::makePeaceTrade(TeamTypes eEnemy, TeamTypes eBroker) cons
 		{
 			CvGameAI const& kGame = GC.AI_getGame();
 			scaled rScoreRatio(kGame.getTeamScore(m_eAgent),
-					kGame.getTeamScore(kGame.getRankTeam(0)));
+					kGame.getTeamScore(kGame.getRankTeam((TeamTypes)0)));
 			scaled const rGameEra = kGame.AI_getCurrEraFactor();
 			if (rGameEra > 0 &&
 				rScoreRatio < ((rGameEra - 1) / rGameEra + fixp(2/3.)) / 2)

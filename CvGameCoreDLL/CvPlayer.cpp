@@ -1555,8 +1555,8 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 						GC.getColorType("RED"));
 			}
 		}
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szCapturedBy,
-				pOldCity->getX(), pOldCity->getY(), GC.getColorType("WARNING_TEXT"));
+		GC.getGame().addReplayMessage(pOldCity->getPlot(), REPLAY_MESSAGE_MAJOR_EVENT,
+				getID(), szCapturedBy, GC.getColorType("WARNING_TEXT"));
 	} // <advc.ctr> City-ceded announcement, replay msg
 	else if (bTrade &&  // CvCity::liberate handles liberation announcement and replay msg.
 		pOldCity->getLiberationPlayer() != getID())
@@ -1595,8 +1595,8 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 						GC.getColorType("HIGHLIGHT_TEXT"));
 			}
 		}
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szHasCeded,
-				kCityPlot.getX(), kCityPlot.getY(), GC.getColorType("HIGHLIGHT_TEXT"));
+		GC.getGame().addReplayMessage(kCityPlot, REPLAY_MESSAGE_MAJOR_EVENT,
+				getID(), szHasCeded, GC.getColorType("HIGHLIGHT_TEXT"));
 	} // </advc.ctr>
 
 	// Capture gold
@@ -4508,8 +4508,8 @@ void CvPlayer::raze(CvCity& kCity) // advc: param was CvCity*
 
 	swprintf(szBuffer, gDLL->getText("TXT_KEY_MISC_CITY_RAZED_BY",
 			kCity.getNameKey(), getCivilizationDescriptionKey()).GetCString());
-	GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szBuffer,
-			kCity.getX(), kCity.getY(), GC.getColorType("WARNING_TEXT"));
+	GC.getGame().addReplayMessage(kCity.getPlot(), REPLAY_MESSAGE_MAJOR_EVENT,
+			getID(), szBuffer, GC.getColorType("WARNING_TEXT"));
 
 	kCity.doPartisans(); // advc.003y
 	CvEventReporter::getInstance().cityRazed(&kCity, getID());
@@ -7396,7 +7396,7 @@ void CvPlayer::changeGoldenAgeTurns(int iChange)
 		{
 			szBuffer = gDLL->getText("TXT_KEY_MISC_PLAYER_GOLDEN_AGE_BEGINS", getNameKey());
 			GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szBuffer,
-					-1, -1, GC.getColorType("HIGHLIGHT_TEXT"));
+					GC.getColorType("HIGHLIGHT_TEXT"));
 
 			CvEventReporter::getInstance().goldenAge(getID());
 		}
@@ -8753,8 +8753,8 @@ void CvPlayer::setAlive(bool bNewValue)
 								GC.getColorType("WARNING_TEXT"));
 					}
 				}
-				kGame.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szBuffer, -1, -1,
-						GC.getColorType("WARNING_TEXT"));
+				kGame.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
+						getID(), szBuffer, GC.getColorType("WARNING_TEXT"));
 				// <advc.104>
 				if ((getUWAI().isEnabled() || getUWAI().isEnabled(true)) && !isMinorCiv())
 					AI().uwai().uninit(); // </advc.104>
@@ -9347,8 +9347,8 @@ void CvPlayer::setCurrentEra(EraTypes eNewValue)
 	{
 		CvWString szBuffer = gDLL->getText("TXT_KEY_SOMEONE_ENTERED_ERA",
 				getNameKey(), GC.getInfo(eNewValue).getTextKeyWide());
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szBuffer,
-				-1, -1, GC.getColorType("ALT_HIGHLIGHT_TEXT"));
+		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
+				getID(), szBuffer, GC.getColorType("ALT_HIGHLIGHT_TEXT"));
 	} // </advc.106>
 	// <advc.106n> Save pre-Industrial minimap terrain for replay
 	if (GC.getGame().isFinalInitialized() &&
@@ -14974,8 +14974,8 @@ void CvPlayer::createGreatPeople(UnitTypes eGreatPersonUnit,
 	CvWString szReplayMessage = gDLL->getText("TXT_KEY_MISC_GP_BORN_REPLAY",
 			pGreatPeopleUnit->getReplayName().GetCString(),
 			kGPOwner.getCivilizationDescriptionKey()); // </advc.106>
-	GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szReplayMessage,
-			kAt.getX(), kAt.getY(), GC.getColorType("UNIT_TEXT"));
+	GC.getGame().addReplayMessage(kAt, REPLAY_MESSAGE_MAJOR_EVENT,
+			getID(), szReplayMessage, GC.getColorType("UNIT_TEXT"));
 	// Non-replay message
 	CvWString szMessage;
 	CvCity* pCity = kAt.getPlotCity();
@@ -17281,8 +17281,8 @@ bool CvPlayer::splitEmpire(CvArea& kArea) // advc: was iAreaId
 				GC.getInfo(eBestLeader).getTextKeyWide());
 		// advc.127b: Announcement loop moved down
 
-		kGame.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szMessage,
-				-1, -1, GC.getColorType("HIGHLIGHT_TEXT"));
+		kGame.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
+				getID(), szMessage, GC.getColorType("HIGHLIGHT_TEXT"));
 
 		// remove leftover culture from old recycled player
 		/*  BETTER_BTS_AI_MOD, Bugfix, 12/30/08, jdog5000: commented out
@@ -17564,7 +17564,7 @@ void CvPlayer::launch(VictoryTypes eVictory)
 	}
 	// <advc.106>
 	GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
-			getID(), szMsg, iPlotX, iPlotY, GC.getColorType("HIGHLIGHT_TEXT"));
+			getID(), szMsg, GC.getColorType("HIGHLIGHT_TEXT"), iPlotX, iPlotY);
 	// </advc.106>
 }
 
@@ -17693,14 +17693,11 @@ void CvPlayer::setUnitExtraCost(UnitClassTypes eUnitClass, int iCost)
 
 bool CvPlayer::hasShrine(ReligionTypes eReligion)
 {
-	bool bHasShrine = false;
-	if (eReligion != NO_RELIGION)
-	{
-		CvCity* pHolyCity = GC.getGame().getHolyCity(eReligion);
-		if (pHolyCity != NULL && pHolyCity->getOwner() == getID())
-			bHasShrine = pHolyCity->hasShrine(eReligion);
-	}
-	return bHasShrine;
+	FAssert(eReligion != NO_RELIGION); // advc.enum: No longer supported
+	CvCity const* pHolyCity = GC.getGame().getHolyCity(eReligion);
+	if (pHolyCity != NULL && pHolyCity->getOwner() == getID())
+		return pHolyCity->hasShrine(eReligion);
+	return false;
 }
 
 

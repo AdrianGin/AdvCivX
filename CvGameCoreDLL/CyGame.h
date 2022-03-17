@@ -273,8 +273,9 @@ public:
 
 	int getCultureThreshold(int /*CultureLevelTypes*/ eLevel);
 
-	int getPlotExtraYield(int iX, int iY, int /*YieldTypes*/ eYield); // K-Mod
-	void setPlotExtraYield(int iX, int iY, int /*YieldTypes*/ eYield, int iExtraYield);
+	// (advc.enum: deprecated x3)
+	int getPlotExtraYield(int iX, int iY, int eYield); // K-Mod
+	void setPlotExtraYield(int iX, int iY, int eYield, int iExtraYield);
 	void changePlotExtraCost(int iX, int iY, int iExtraCost);
 
 	bool isCivEverActive(int /*CivilizationTypes*/ eCivilization);

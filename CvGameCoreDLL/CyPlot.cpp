@@ -8,6 +8,7 @@
 #include "CvPlot.h"
 #include "CvArea.h" // advc: for CvArea::getID
 #include "CvUnit.h" // advc: for city/fort-related functions moved to CvUnit
+#include "CvMap.h" // advc.enum
 
 CyPlot::CyPlot(CvPlot* pPlot) : m_pPlot(pPlot) {}
 // advc.003y: (see CyCity.cpp)
@@ -222,13 +223,20 @@ int CyPlot::defenseModifier(int iDefendTeam, bool bIgnoreBuilding, bool bHelp)
 
 int CyPlot::getExtraMovePathCost()
 {
-	return m_pPlot ? m_pPlot->getExtraMovePathCost() : -1;
+	//return m_pPlot ? m_pPlot->getExtraMovePathCost() : -1;
+	// <advc.enum>
+	if (m_pPlot == NULL)
+		return 0;
+	return GC.getMap().getPlotExtraCost(*m_pPlot); // </advc.enum>
 }
 
 void CyPlot::changeExtraMovePathCost(int iChange)
 {
 	if (m_pPlot)
-		m_pPlot->changeExtraMovePathCost(iChange);
+	{
+		//m_pPlot->changeExtraMovePathCost(iChange);
+		GC.getMap().changePlotExtraCost(*m_pPlot, iChange); // advc.enum
+	}
 }
 
 bool CyPlot::isAdjacentOwned()

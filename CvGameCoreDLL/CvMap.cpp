@@ -83,7 +83,8 @@ void CvMap::uninit()
 }
 
 // Initializes data members that are serialized.
-void CvMap::reset(CvMapInitData* pInitInfo)
+void CvMap::reset(CvMapInitData const* pInitInfo,
+	bool bResetPlotExtraData) // advc.enum (only needed for legacy saves)
 {
 	uninit();
 
@@ -196,7 +197,9 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 	m_aiNumBonus.reset();
 	m_aiNumBonusOnLand.reset();
 	m_aebBalancedBonuses.reset(); // advc.108c
-
+	// <advc.enum>
+	if (bResetPlotExtraData)
+		resetPlotExtraData(); // </advc.enum>
 	m_areas.removeAll();
 }
 
@@ -286,6 +289,7 @@ void CvMap::erasePlots()
 {
 	for (int i = 0; i < numPlots(); i++)
 		plotByIndex(i)->erase();
+	resetPlotExtraData(); // advc.004j
 	m_replayTexture.clear(); // advc.106n
 }
 
@@ -513,6 +517,38 @@ void CvMap::updateYield()
 	for (int i = 0; i < numPlots(); i++)
 		getPlotByIndex(i).updateYield();
 }
+
+// <advc.enum> Moved from CvGame
+void CvMap::setPlotExtraYield(CvPlot& kPlot, YieldTypes eYield, int iChange)
+{
+	m_aeiPlotExtraYield.set(kPlot.plotNum(), eYield, iChange);
+	kPlot.updateYield();
+}
+
+
+void CvMap::changePlotExtraCost(CvPlot& kPlot, int iChange)
+{
+	m_aiPlotExtraCost.add(kPlot.plotNum(), iChange);
+}
+
+
+void CvMap::setPlotExtraYield(PlotNumTypes ePlot, YieldTypes eYield, int iChange)
+{
+	m_aeiPlotExtraYield.set(ePlot, eYield, iChange);
+}
+
+
+void CvMap::changePlotExtraCost(PlotNumTypes ePlot, int iChange)
+{
+	m_aiPlotExtraCost.add(ePlot, iChange);
+}
+
+
+void CvMap::resetPlotExtraData()
+{
+	m_aeiPlotExtraYield.reset();
+	m_aiPlotExtraCost.reset();
+} // </advc.enum>
 
 
 void CvMap::verifyUnitValidPlot()
@@ -1186,12 +1222,11 @@ void CvMap::invalidateBorderDangerCache(TeamTypes eTeam)
 // read object from a stream. used during load
 void CvMap::read(FDataStreamBase* pStream)
 {
-	CvMapInitData defaultMapData;
-
-	reset(&defaultMapData);
-
 	uint uiFlag=0;
 	pStream->Read(&uiFlag);
+
+	CvMapInitData defaultMapData;
+	reset(&defaultMapData, /* advc.enum: */ uiFlag >= 7);
 
 	pStream->Read(&m_iGridWidth);
 	pStream->Read(&m_iGridHeight);
@@ -1225,6 +1260,12 @@ void CvMap::read(FDataStreamBase* pStream)
 	// <advc.108c>
 	if (uiFlag >= 6)
 		m_aebBalancedBonuses.read(pStream); // </advc.108c>
+	// <advc.enum>
+	if (uiFlag >= 7)
+	{
+		m_aeiPlotExtraYield.read(pStream);
+		m_aiPlotExtraCost.read(pStream);
+	} // </advc.enum>
 	// <advc.304>
 	if (uiFlag >= 5)
 		GC.getGame().getBarbarianWeightMap().getActivityMap().read(pStream);
@@ -1282,7 +1323,8 @@ void CvMap::write(FDataStreamBase* pStream)
 	//uiFlag = 3; // advc.opt: m_ePlots
 	//uiFlag = 4; // advc.enum: new enum map save behavior
 	//uiFlag = 5; // advc.304: Barbarian weight map
-	uiFlag = 6; // advc.108c
+	//uiFlag = 6; // advc.108c
+	uiFlag = 7; // advc.enum: Extra plot yields, costs moved from CvGame
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iGridWidth);
@@ -1303,6 +1345,9 @@ void CvMap::write(FDataStreamBase* pStream)
 	/*	advc.108c (Player might save on turn 0, then reload and regenerate the map.
 		Therefore this info needs to be saved.) */
 	m_aebBalancedBonuses.write(pStream);
+	// <advc.enum>
+	m_aeiPlotExtraYield.write(pStream);
+	m_aiPlotExtraCost.write(pStream); // </advc.enum>
 	/*	advc.304: Serialize this for CvGame b/c the map size isn't known
 		when CvGame gets deserialized. (kludge) */
 	GC.getGame().getBarbarianWeightMap().getActivityMap().write(pStream);

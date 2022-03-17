@@ -333,8 +333,8 @@ void CvUnit::finalizeInit() // advc.003u: Body cut from init
 
 		CvWString szBuffer(gDLL->getText("TXT_KEY_MISC_SOMEONE_CREATED_UNIT",
 				kOwner.getNameKey(), getNameKey()));
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, kOwner.getID(),
-				szBuffer, getX(), getY(), GC.getColorType("UNIT_TEXT"));
+		GC.getGame().addReplayMessage(getPlot(), REPLAY_MESSAGE_MAJOR_EVENT,
+				kOwner.getID(), szBuffer, GC.getColorType("UNIT_TEXT"));
 	}
 
 	CvEventReporter::getInstance().unitCreated(this);
@@ -3945,18 +3945,17 @@ bool CvUnit::nuke(int iX, int iY)
 		}
 	}
 	// <advc.106>
-	if(pReplayCity != NULL)
+	if (pReplayCity != NULL)
 	{
 		szBuffer = gDLL->getText("TXT_KEY_MISC_CITY_NUKED",
 				pReplayCity->getNameKey(), GET_PLAYER(
 				pReplayCity->getOwner()).getNameKey(),
 				GET_PLAYER(getOwner()).getNameKey());
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
-				getOwner(), szBuffer, getX(), getY(),
-				GC.getColorType("WARNING_TEXT"));
+		GC.getGame().addReplayMessage(getPlot(), REPLAY_MESSAGE_MAJOR_EVENT,
+				getOwner(), szBuffer, GC.getColorType("WARNING_TEXT"));
 	} // </advc.106>
 
-	if(isSuicide())
+	if (isSuicide())
 		kill(true);
 
 	return true;

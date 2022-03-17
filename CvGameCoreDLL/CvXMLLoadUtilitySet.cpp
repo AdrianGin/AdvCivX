@@ -840,7 +840,11 @@ bool CvXMLLoadUtility::LoadPostMenuGlobals()
 bool CvXMLLoadUtility::LoadOptionalGlobals()
 {
 	bool bFXmlCreated = false; // Perhaps better not to do this twice
-	if (!m->bEventsLoaded && !GC.getGame().isOption(GAMEOPTION_NO_EVENTS))
+	if (!m->bEventsLoaded &&
+		(!GC.getGame().isOption(GAMEOPTION_NO_EVENTS) ||
+		/*	Don't risk sync issue that might arise from one player having
+			loaded the data through a previously started game */
+		GC.getGame().isNetworkMultiPlayer()))
 	{
 		if (!CreateFXml())
 			return false;

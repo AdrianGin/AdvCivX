@@ -178,7 +178,8 @@ struct EventMessage
 	std::wstring getDescription() const { return szDescription;	}
 };
 
-struct PlotExtraYield
+// advc.enum: obsolete
+/*struct PlotExtraYield
 {
 	int m_iX;
 	int m_iY;
@@ -187,7 +188,6 @@ struct PlotExtraYield
 	void read(FDataStreamBase* pStream);
 	void write(FDataStreamBase* pStream);
 };
-
 struct PlotExtraCost
 {
 	int m_iX;
@@ -197,9 +197,7 @@ struct PlotExtraCost
 	void read(FDataStreamBase* pStream);
 	void write(FDataStreamBase* pStream);
 };
-
-// advc.enum: Replaced with list enum map
-/*typedef std::vector< std::pair<BuildingClassTypes, int> > BuildingChangeArray;
+typedef std::vector< std::pair<BuildingClassTypes, int> > BuildingChangeArray;
 struct BuildingYieldChange {
 	BuildingClassTypes eBuildingClass;
 	YieldTypes eYield;

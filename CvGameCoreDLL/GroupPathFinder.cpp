@@ -488,9 +488,8 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 						std::max(0, GC.getInfo(kTo.getFeatureType()).getTurnDamage())) /
 						GC.getMAX_HIT_POINTS();
 			}
-
-			if (kTo.getExtraMovePathCost() > 0)
-				iWorstCost += (PATH_MOVEMENT_WEIGHT * kTo.getExtraMovePathCost());
+			if (GC.getMap().getPlotExtraCost(kTo) > 0)
+				iWorstCost += (PATH_MOVEMENT_WEIGHT * GC.getMap().getPlotExtraCost(kTo));
 		}
 
 		// defence modifiers

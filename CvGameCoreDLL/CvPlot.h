@@ -168,9 +168,9 @@ public:
 			bool bGarrisonStrength = false) const; // advc.500b
 	int movementCost(CvUnit const& kUnit, CvPlot const& kFrom,										// Exposed to Python
 			bool bAssumeRevealed = true) const; // advc.001i
-
-	int getExtraMovePathCost() const;																// Exposed to Python
-	void changeExtraMovePathCost(int iChange);														// Exposed to Python
+	// advc.enum: Still exposed to Python, obsolete within the DLL.
+	/*int getExtraMovePathCost() const;																// Exposed to Python
+	void changeExtraMovePathCost(int iChange);*/													// Exposed to Python
 
 	bool isAdjacentOwned() const;																	// Exposed to Python
 	bool isAdjacentPlayer(PlayerTypes ePlayer, bool bLandOnly = false) const;						// Exposed to Python
