@@ -1,16 +1,11 @@
-## Sid Meier's Civilization 4
-## Copyright Firaxis Games 2005
+## Sid Meier's Civilization 4 - Copyright Firaxis Games 2005
 from CvPythonExtensions import *
 import CvUtil
 import ScreenInput
 import CvScreenEnums
 import CvEventInterface
 import time
-
-# BUG - DLL - start
-import BugDll
-# BUG - DLL - end
-
+import BugDll # BUG - DLL
 # BUG - Options - start
 import BugCore
 import BugOptions
@@ -23,65 +18,30 @@ ScoreOpt = BugCore.game.Scores
 MainOpt = BugCore.game.MainInterface
 CityScreenOpt = BugCore.game.CityScreen
 # BUG - Options - end
-
-# BUG - Limit/Extra Religions - start
-import ReligionUtil
-# BUG - Limit/Extra Religions - end
-
-# BUG - PLE - start
-PleOpt = BugCore.game.PLE
-# BUG - PLE - end
-
+import ReligionUtil # BUG - Limit/Extra Religions
 # BUG - Align Icons - start
 import Scoreboard
 import PlayerUtil
 # BUG - Align Icons - end
-
-# BUG - Worst Enemy - start
-import AttitudeUtil
-# BUG - Refuses to Talk - end
-
-# BUG - Refuses to Talk - start
-import DiplomacyUtil
-# BUG - Refuses to Talk - end
-
-# BUG - Fractional Trade - start
-import TradeUtil
-# BUG - Fractional Trade - end
-
+import AttitudeUtil # BUG - Worst Enemy, Refuses to Talk
+import DiplomacyUtil # BUG - Refuses to Talk
+import TradeUtil # BUG - Fractional Trade
 import BugUnitPlot
-
 # globals
 gc = CyGlobalContext()
 ArtFileMgr = CyArtFileMgr()
 localText = CyTranslator()
-
-# BUG - 3.17 No Espionage - start
-import GameUtil
-# BUG - 3.17 No Espionage - end
-
-# BUG - Reminders - start
-import ReminderEventManager
-# BUG - Reminders - end
-
-# BUG - Great General Bar - start
-import GGUtil
-# BUG - Great General Bar - end
-
+PleOpt = BugCore.game.PLE # BUG - PLE
+import GameUtil # BUG - 3.17 No Espionage
+import ReminderEventManager # BUG - Reminders
+import GGUtil # BUG - Great General Bar
 # BUG - Great Person Bar - start
 import GPUtil
-GP_BAR_WIDTH = 320
+#GP_BAR_WIDTH = 320 # advc.092: Handled by TopBarsLayout
 # BUG - Great Person Bar - end
-
-# BUG - Progress Bar - Tick Marks - start
-import ProgressBarUtil
-# BUG - Progress Bar - Tick Marks - end
-
-# PLE Code
-import PLE
-
+import ProgressBarUtil # BUG - Progress Bar
+import PLE # PLE Code
 import MinimapOptions # advc.002a
-
 # <advc.090>
 import math
 def floor(f):
@@ -89,50 +49,38 @@ def floor(f):
 def ceil(f):
 	return int(math.ceil(f))
 # </advc.090>
-
-g_NumEmphasizeInfos = 0
-g_NumCityTabTypes = 0
-g_NumHurryInfos = 0
-g_NumUnitClassInfos = 0
-g_NumBuildingClassInfos = 0
-g_NumProjectInfos = 0
-g_NumProcessInfos = 0
-g_NumActionInfos = 0
-g_eEndTurnButtonState = -1
-
-# BUG - city specialist - start
-g_iSuperSpecialistCount = 0
-g_iCitySpecialistCount = 0
-g_iAngryCitizensCount = 0
-#SUPER_SPECIALIST_STACK_WIDTH = 15 # (advc: unused)
-SPECIALIST_ROW_HEIGHT = 34
-SPECIALIST_ROWS = 3
-MAX_SPECIALIST_BUTTON_SPACING = 30
-SPECIALIST_AREA_MARGIN = 45
-# BUG - city specialist - end
-
-# advc: Most of this global stuff is unused
-#MAX_SELECTED_TEXT = 5
-#MAX_DISPLAYABLE_BUILDINGS = 15
-#MAX_DISPLAYABLE_TRADE_ROUTES = 4
-#MAX_BONUS_ROWS = 10
-MAX_CITIZEN_BUTTONS = 8
-#SELECTION_BUTTON_COLUMNS = 8
-#SELECTION_BUTTON_ROWS = 2
-#NUM_SELECTION_BUTTONS = SELECTION_BUTTON_ROWS * SELECTION_BUTTON_COLUMNS
-#g_iNumBuildingWidgets = MAX_DISPLAYABLE_BUILDINGS
-#g_iNumTradeRouteWidgets = MAX_DISPLAYABLE_TRADE_ROUTES
-
-iBottomButtonContainerOffsetY = 113 # advc
-# END OF TURN BUTTON POSITIONS
-######################
 iEndOfTurnButtonSize = 32
+# <advc.092> Note: Eliminating most of the layout constants scattered across
+# this file and moving a few remaining crucial ones to the top is a work
+# in progress. It's a preliminary step toward scaling the HUD according to
+# the screen resolution. Still a lot of work left (too much, I'm afraid).
 # advc.002b (note): Also used for HORIZONTAL_MARGIN of CivicsScreen
-iEndOfTurnPosX = 296 # distance from right
-iEndOfTurnPosY = 147 # distance from bottom
+iLowerCornerWidth = 296
+iMiniMapHeight = 128 # advc.137: was 122
+iMiniMapVMargin = 3
+iGlobeViewBtnSz = 28
+iLowerCornerHeight = iMiniMapHeight + iGlobeViewBtnSz / 2 + 2 * iMiniMapVMargin + 1
+iLowerCornerPanelHeight = iLowerCornerHeight + 19
+iLowerCornerPanelWidth = iLowerCornerWidth + 8
+iFlagWidth = 68
+iFlagHeight = iFlagWidth * 250 / 68
+iFlagHMargin = 4
+iFlagTopMargin = 11
+iActionPaneHeight = 133
+iBottomContainerTMargin = 20
+iBottomContainerBMargin = 13
+iBottomContainerYOffset = iActionPaneHeight - iBottomContainerTMargin
+# </advc.092>
+
+# MULTI LIST  (advc, fixme: These are duplicated in PLE.py; should obtain them from here.)
+# <advc.092>
+iMultiListLMargin = 14
+iMultiListRMargin = 2 * iMultiListLMargin
+iMultiListXL = iLowerCornerPanelWidth + iMultiListLMargin
+iMultiListXR = iLowerCornerPanelWidth + iMultiListRMargin
+iPlotListUnitBtnSz = 34 # </advc.092>
 
 # MINIMAP BUTTON POSITIONS (advc: unused constants commented out)
-######################
 #iMinimapButtonsExtent = 228
 #iMinimapButtonsX = 227
 iMinimapButtonsY_Regular = 160
@@ -148,7 +96,6 @@ iGlobeButtonY_Minimal = 40
 #iGlobeToggleHeight = 48
 
 # GLOBE LAYER OPTION POSITIONING (advc: unused constants commented out)
-######################
 #iGlobeLayerOptionsX = 235
 iGlobeLayerOptionsY_Regular = 170# distance from bottom edge
 iGlobeLayerOptionsY_Minimal = 38 # distance from bottom edge
@@ -156,22 +103,31 @@ iGlobeLayerOptionsY_Minimal = 38 # distance from bottom edge
 #iGlobeLayerOptionHeight = 24
 
 # STACK BAR
-#####################
 iStackBarHeight = 27
-
-
-# MULTI LIST
-#####################
-iMultiListXL = 318
-iMultiListXR = 332
-
-
+# <advc.092>
+iCitySidePanelWidth = 258
+# Panel for commerce sliders on city screen
+iAdjustPanelMargin = 10 
+iAdjustPanelHeight = 105
+iTopBarHeight = iStackBarHeight + 7
+# Panel for growth and production bar
+iTopCityPanelSpacing = 2
+iTopCityPanelX = iCitySidePanelWidth + iTopCityPanelSpacing
+iCityNamePanelHeight = 38
+iTopCityPanelHeight = 2 * (iStackBarHeight + 3)
+iTopCityPanelY = iCityNamePanelHeight + iStackBarHeight + 5
+# HUD decorations in the corners (main screen)
+iHUDBackgrHeight = 60
+iHUDBackgrWidth = iCitySidePanelWidth + 9
+# </advc.092>
 # TOP CENTER TITLE
-#####################
-iCityCenterRow1X = 398
-iCityCenterRow1Y = 78
-iCityCenterRow2X = 398
-iCityCenterRow2Y = 104
+iCityCenterBarsHMargin = 140 # advc.092
+iCityCenterRow1X = iCitySidePanelWidth + iCityCenterBarsHMargin
+iCityCenterRow2X = iCityCenterRow1X
+iCityCenterBarsVMargin = 8
+iCityCenterRow1Y = iTopCityPanelY + iCityCenterBarsVMargin
+iCityCenterRow2Y = iTopCityPanelY + iTopCityPanelHeight - iStackBarHeight + 1
+iCityCenterBarYOffset = 4 # advc.092
 # advc: unused
 #iCityCenterRow1Xa = 347
 #iCityCenterRow2Xa = 482
@@ -180,8 +136,42 @@ iCityCenterRow2Y = 104
 g_iNumLeftBonus = 0
 g_iNumCenterBonus = 0
 g_iNumRightBonus = 0
-iAdvisorButtonY = 27 # advc.092
+# <advc.092>
+iAdvisorBtnSz = 28
+iAdvisorBtnY = iAdvisorBtnSz - 1 # </advc.092>
+# advc: Most of this stuff is unused
+#MAX_SELECTED_TEXT = 5
+#MAX_DISPLAYABLE_BUILDINGS = 15
+#MAX_DISPLAYABLE_TRADE_ROUTES = 4
+#MAX_BONUS_ROWS = 10
+MAX_CITIZEN_BUTTONS = 8
+#SELECTION_BUTTON_COLUMNS = 8
+#SELECTION_BUTTON_ROWS = 2
+#NUM_SELECTION_BUTTONS = SELECTION_BUTTON_ROWS * SELECTION_BUTTON_COLUMNS
+#g_iNumBuildingWidgets = MAX_DISPLAYABLE_BUILDINGS
+#g_iNumTradeRouteWidgets = MAX_DISPLAYABLE_TRADE_ROUTES
 
+# BUG - city specialist - start
+g_iSuperSpecialistCount = 0
+g_iCitySpecialistCount = 0
+g_iAngryCitizensCount = 0
+#SUPER_SPECIALIST_STACK_WIDTH = 15 # (advc: unused)
+SPECIALIST_ROW_HEIGHT = 34
+SPECIALIST_ROWS = 3
+MAX_SPECIALIST_BUTTON_SPACING = 30
+SPECIALIST_AREA_MARGIN = 45
+# BUG - city specialist - end
+
+g_NumEmphasizeInfos = 0
+g_NumCityTabTypes = 0
+g_NumHurryInfos = 0
+g_NumUnitClassInfos = 0
+g_NumBuildingClassInfos = 0
+g_NumProjectInfos = 0
+g_NumProcessInfos = 0
+g_NumActionInfos = 0
+g_eEndTurnButtonState = -1
+g_pSelectedUnit = 0
 g_szTimeText = ""
 
 # BUG - NJAGC - start
@@ -203,30 +193,37 @@ RAW_YIELD_HELP = (	"TXT_KEY_RAW_YIELD_VIEW_TRADE",
 					"TXT_KEY_RAW_YIELD_TILES_OWNED",
 					"TXT_KEY_RAW_YIELD_TILES_ALL"	)
 # BUG - Raw Yields - end
-
-# BUG - field of view slider - start
+# BUG - field of view slider:
 #DEFAULT_FIELD_OF_VIEW = 42 # disabled (replaced) by K-Mod
-# BUG - field of view slider - end
-
-HELP_TEXT_MINIMUM_WIDTH = 300
+#HELP_TEXT_MINIMUM_WIDTH = 300
 # <advc.092> (NB: setHelpTextArea seems to ignore most of these params)
 HELP_TEXT_DEFAULT_WIDTH = 350
 HELP_TEXT_LEFT_MARGIN = 7
-HELP_TEXT_TOP_MARGIN = 172
-HELP_TEXT_TOP_MARGIN_CITY = 50
+HELP_TEXT_BOTTOM_MARGIN = iActionPaneHeight + iPlotListUnitBtnSz + 5
+HELP_TEXT_BOTTOM_MARGIN_MIN = 50
+HELP_TEXT_AREA_ARGS = (False, "", True, False, CvUtil.FONT_LEFT_JUSTIFY, 300)
 # </advc.092>
 
-g_pSelectedUnit = 0
-
-# advc.092: Same values as in BUG
+# <advc.092>
 class TopBarsLayout:
 	def __init__(self, xResolution, bSingleLine):
 		self.xResolution = xResolution
 		self.bSingleLine = bSingleLine
-	def leftMargin(self):
+	def maxWidth(self):
+		# (Will have to make this optional)
+		#iWidth = self.xResolution - 2 * (iCitySidePanelWidth + 8)
+		iWidth = self.widthResearch()
 		if self.bSingleLine:
-			return 268 + (self.xResolution - 1440) / 2
-		return 268 + (self.xResolution - 1024) / 2
+			iWidth += self.spacing() + self.widthGP()
+			iWidth += self.spacing() + self.widthGG()
+		return iWidth
+	def singleLineThresh(self):
+		return self.maxWidth() + 2 * (iCitySidePanelWidth + 8)
+	def leftMargin(self):
+		# Can't base this on bGP and bGG b/c those can change w/o calls to
+		# initState and interfaceScreen. Separate progress bar widgets exist
+		# for bSingleLine=1 and bSingleLine=1, so checking bSingleLine is OK.
+		return (self.xResolution - self.maxWidth()) / 2
 	def topMargin(self):
 		return 2
 	def widthResearch(self):
@@ -246,8 +243,7 @@ class TopBarsLayout:
 	def xResearch(self):
 		iX = self.leftMargin()
 		if self.bSingleLine:
-			iX += self.spacing()
-			iX += self.widthGG()
+			iX += self.spacing() + self.widthGG()
 		return iX
 	def xGG(self):
 		return self.leftMargin()
@@ -255,6 +251,8 @@ class TopBarsLayout:
 		if self.bSingleLine:
 			return self.xResearch() + self.widthResearch() + self.spacing()
 		return self.xGG() + self.widthGG() + self.spacing()
+# </advc.092>
+
 
 class CvMainInterface:
 	"Main Interface Screen"
@@ -349,10 +347,6 @@ class CvMainInterface:
 
 ############## Basic operational functions ###################
 
-#########################################################################################
-#########################################################################################
-#########################################################################################
-#########################################################################################
 
 	def numPlotListButtonsPerRow(self):
 		try: # advc.009b
@@ -432,7 +426,7 @@ class CvMainInterface:
 		iRightMargin_FoVSlider = 20
 		self.iX_FoVSlider = self.xResolution - self.iW_FoVSlider - iRightMargin_FoVSlider
 		iTopMargin_FoVSlider = 30
-		self.iY_FoVSlider = iAdvisorButtonY + iTopMargin_FoVSlider
+		self.iY_FoVSlider = iAdvisorBtnY + iTopMargin_FoVSlider
 		# </advc.090>
 		self.sFieldOfView_Text = localText.getText(
 				"TXT_KEY_BUG_OPT_MAININTERFACE__FIELDOFVIEW_TEXT", ())
@@ -490,7 +484,7 @@ class CvMainInterface:
 		# BUG - Bars on single line for higher resolution screens - end
 		self.pBarPopulationBar = ProgressBarUtil.ProgressBar(
 				"PopulationBar-Canvas",
-				iCityCenterRow1X, iCityCenterRow1Y-4,
+				iCityCenterRow1X, iCityCenterRow1Y - iCityCenterBarYOffset,
 				self.xResolution - iCityCenterRow1X * 2, iStackBarHeight,
 				gc.getYieldInfo(YieldTypes.YIELD_FOOD).getColorType(),
 				ProgressBarUtil.SOLID_MARKS, True)
@@ -498,7 +492,7 @@ class CvMainInterface:
 		self.pBarPopulationBar.addBarItem("PopulationText")
 		self.pBarProductionBar = ProgressBarUtil.ProgressBar(
 				"ProductionBar-Canvas",
-				iCityCenterRow2X, iCityCenterRow2Y-4,
+				iCityCenterRow2X, iCityCenterRow2Y - iCityCenterBarYOffset,
 				self.xResolution - iCityCenterRow2X * 2, iStackBarHeight,
 				gc.getYieldInfo(YieldTypes.YIELD_PRODUCTION).getColorType(),
 				ProgressBarUtil.TICK_MARKS, True)
@@ -506,16 +500,17 @@ class CvMainInterface:
 		self.pBarProductionBar.addBarItem("ProductionText")
 		self.pBarProductionBar_Whip = ProgressBarUtil.ProgressBar(
 				"ProductionBar-Whip-Canvas",
-				iCityCenterRow2X, iCityCenterRow2Y-4,
-				self.xResolution - (iCityCenterRow2X*2), iStackBarHeight,
+				iCityCenterRow2X, iCityCenterRow2Y - iCityCenterBarYOffset,
+				self.xResolution - iCityCenterRow2X * 2, iStackBarHeight,
 				gc.getInfoTypeForString("COLOR_YELLOW"),
 				ProgressBarUtil.CENTER_MARKS, False)
 		self.pBarProductionBar_Whip.addBarItem("ProductionBar")
 		self.pBarProductionBar_Whip.addBarItem("ProductionText")
 # BUG - Progress Bar - Tick Marks - end
 
-		self.m_iNumPlotListButtonsPerRow = ((self.xResolution
-				- (iMultiListXL+iMultiListXR) - 68) / 34)
+		self.m_iNumPlotListButtonsPerRow = (
+				(self.xResolution - (iMultiListXL+iMultiListXR) - 2 * iPlotListUnitBtnSz) /
+				iPlotListUnitBtnSz)
 
 # BUG - BUG unit plot draw method - start
 # bug unit panel
@@ -528,9 +523,7 @@ class CvMainInterface:
 	def interfaceScreen (self):
 		"""
 		Draw all of the screen elements.
-
 		This function is called once after starting or loading a game.
-
 		THIS FUNCTION MUST NOT CREATE ANY INSTANCE OR GLOBAL VARIABLES.
 		It may alter existing ones created in __init__() or initState(), however.
 		"""
@@ -543,129 +536,171 @@ class CvMainInterface:
 		screen.setForcedRedraw(True)
 		screen.setDimensions(0, 0, self.xResolution, self.yResolution)
 
-		# to avoid changing all the code below
 		xResolution = self.xResolution
 		yResolution = self.yResolution
 
 		# Help Text Area
 		screen.setHelpTextArea(HELP_TEXT_DEFAULT_WIDTH, FontTypes.SMALL_FONT,
-				HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_TOP_MARGIN, -0.1,
-				False, "", True, False, CvUtil.FONT_LEFT_JUSTIFY,
-				HELP_TEXT_MINIMUM_WIDTH)
-
-		# Center Left
-		screen.addPanel("InterfaceCenterLeftBackgroundWidget", u"", u"",
-				True, False, 0, 0, 258, yResolution-149,
+				HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_BOTTOM_MARGIN, -0.1,
+				*HELP_TEXT_AREA_ARGS)
+	
+		# advc: Renamed the two panels below from "CenterLeft" to "CityLeft".
+		# (I don't think there's anything center about them.)	
+		# City Left
+		screen.addPanel("InterfaceCityLeftBackgroundWidget", u"", u"",
+				True, False,
+				0, 0,
+				iCitySidePanelWidth, yResolution - iLowerCornerHeight,
 				PanelStyles.PANEL_STYLE_STANDARD)
-		screen.setStyle("InterfaceCenterLeftBackgroundWidget", "Panel_City_Left_Style")
-		screen.hide("InterfaceCenterLeftBackgroundWidget")
-
-		# Top Left
-		screen.addPanel("InterfaceTopLeftBackgroundWidget", u"", u"",
-				True, False, 258, 0, xResolution - 516, yResolution-149,
+		screen.setStyle("InterfaceCityLeftBackgroundWidget", "Panel_City_Left_Style")
+		screen.hide("InterfaceCityLeftBackgroundWidget")
+		# City Right
+		screen.addPanel("InterfaceCityRightBackgroundWidget", u"", u"",
+				True, False,
+				xResolution - iCitySidePanelWidth, 0,
+				iCitySidePanelWidth, yResolution - iLowerCornerHeight,
 				PanelStyles.PANEL_STYLE_STANDARD)
-		screen.setStyle("InterfaceTopLeftBackgroundWidget", "Panel_City_Top_Style")
-		screen.hide("InterfaceTopLeftBackgroundWidget")
-
-		# Center Right
-		screen.addPanel("InterfaceCenterRightBackgroundWidget", u"", u"",
-				True, False, xResolution - 258, 0, 258, yResolution-149,
-				PanelStyles.PANEL_STYLE_STANDARD)
-		screen.setStyle("InterfaceCenterRightBackgroundWidget", "Panel_City_Right_Style")
-		screen.hide("InterfaceCenterRightBackgroundWidget")
+		screen.setStyle("InterfaceCityRightBackgroundWidget", "Panel_City_Right_Style")
+		screen.hide("InterfaceCityRightBackgroundWidget")
 
 		screen.addPanel("CityScreenAdjustPanel", u"", u"",
-				True, False, 10, 44, 238, 105,
+				True, False,
+				iAdjustPanelMargin, iAdjustPanelMargin + iTopBarHeight,
+				iCitySidePanelWidth - 2 * iAdjustPanelMargin, iAdjustPanelHeight,
 				PanelStyles.PANEL_STYLE_STANDARD)
 		screen.setStyle("CityScreenAdjustPanel", "Panel_City_Info_Style")
 		screen.hide("CityScreenAdjustPanel")
 
 		screen.addPanel("TopCityPanelLeft", u"", u"",
-				True, False, 260, 70, xResolution/2-260, 60,
+				True, False,
+				iTopCityPanelX, iTopCityPanelY,
+				xResolution / 2 - iTopCityPanelX, iTopCityPanelHeight,
 				PanelStyles.PANEL_STYLE_STANDARD)
 		screen.setStyle("TopCityPanelLeft", "Panel_City_TanTL_Style")
 		screen.hide("TopCityPanelLeft")
-
 		screen.addPanel("TopCityPanelRight", u"", u"",
-				True, False, xResolution/2, 70, xResolution/2-260, 60,
+				True, False,
+				xResolution / 2, iTopCityPanelY,
+				xResolution / 2 - iTopCityPanelX, iTopCityPanelHeight,
 				PanelStyles.PANEL_STYLE_STANDARD)
 		screen.setStyle("TopCityPanelRight", "Panel_City_TanTR_Style")
 		screen.hide("TopCityPanelRight")
+		# Top Center (advc: Renamed from "TopLeft"; and moved down.
+		# This panel covers pretty much the same space as the two above I think.)
+		screen.addPanel("InterfaceTopCenterBackgroundWidget", u"", u"",
+				True, False,
+				iCitySidePanelWidth, 0,
+				xResolution - 2 * iCitySidePanelWidth,
+				yResolution - iLowerCornerHeight,
+				PanelStyles.PANEL_STYLE_STANDARD)
+		screen.setStyle("InterfaceTopCenterBackgroundWidget", "Panel_City_Top_Style")
+		screen.hide("InterfaceTopCenterBackgroundWidget")
 
 		# Top Bar
 
 		# SF CHANGE
+		iCityScreenTopWidgetHeight = iTopBarHeight + 7
 		screen.addPanel("CityScreenTopWidget", u"", u"",
-				True, False, 0, -2, xResolution, 41,
+				True, False,
+				0, -2,
+				xResolution, iCityScreenTopWidgetHeight,
 				PanelStyles.PANEL_STYLE_STANDARD)
-
 		screen.setStyle("CityScreenTopWidget", "Panel_TopBar_Style")
 		screen.hide("CityScreenTopWidget")
 
 		# Top Center Title
 		screen.addPanel("CityNameBackground", u"", u"",
-				True, False, 260, 31, xResolution - (260*2), 38,
+				True, False,
+				iTopCityPanelX, iTopBarHeight - 3,
+				xResolution - (iTopCityPanelX * 2), iCityNamePanelHeight,
 				PanelStyles.PANEL_STYLE_STANDARD)
 		screen.setStyle("CityNameBackground", "Panel_City_Title_Style")
 		screen.hide("CityNameBackground")
 
-		# Left Background Widget
-		screen.addDDSGFC("InterfaceLeftBackgroundWidget",
+		# Left Background Gfc
+		# advc.001: Renamed from "...Widget", which had clashed with
+		# the block below and therefore had no effect. Also added show and hide
+		# calls throughout this file. (There's also an unused texture
+		# INTERFACE_BOTTOM_RIGHT, but that doesn't align with the Globe button,
+		# perhaps because the layout changed a bit at some point. So I'm not
+		# resurrecting that texture.)
+		screen.addDDSGFC("InterfaceLeftBackgroundGfc",
 				ArtFileMgr.getInterfaceArtInfo("INTERFACE_BOTTOM_LEFT").getPath(),
-				0, yResolution - 164, 304, 164,
+				0, yResolution - iLowerCornerPanelHeight + 4,
+				iLowerCornerPanelWidth, iLowerCornerPanelHeight + 4,
 				WidgetTypes.WIDGET_GENERAL, -1, -1)
-		screen.hide("InterfaceLeftBackgroundWidget")
-
-		# Center Background Widget
-		screen.addPanel("InterfaceCenterBackgroundWidget", u"", u"",
-				True, False, 296, yResolution - 133, xResolution - (296*2), 133,
-				PanelStyles.PANEL_STYLE_STANDARD)
-		screen.setStyle("InterfaceCenterBackgroundWidget", "Panel_Game_HudBC_Style")
-		screen.hide("InterfaceCenterBackgroundWidget")
+		screen.hide("InterfaceLeftBackgroundGfc")
 
 		# Left Background Widget
 		screen.addPanel("InterfaceLeftBackgroundWidget", u"", u"",
-				True, False, 0, yResolution - 168, 304, 168,
+				True, False,
+				0, yResolution - iLowerCornerPanelHeight,
+				iLowerCornerPanelWidth, iLowerCornerPanelHeight,
 				PanelStyles.PANEL_STYLE_STANDARD)
 		screen.setStyle("InterfaceLeftBackgroundWidget", "Panel_Game_HudBL_Style")
 		screen.hide("InterfaceLeftBackgroundWidget")
 
 		# Right Background Widget
 		screen.addPanel("InterfaceRightBackgroundWidget", u"", u"",
-				True, False, xResolution - 304, yResolution - 168, 304, 168,
+				True, False,
+				xResolution - iLowerCornerPanelWidth, yResolution - iLowerCornerPanelHeight,
+				iLowerCornerPanelWidth, iLowerCornerPanelHeight,
 				PanelStyles.PANEL_STYLE_STANDARD)
 		screen.setStyle("InterfaceRightBackgroundWidget", "Panel_Game_HudBR_Style")
 		screen.hide("InterfaceRightBackgroundWidget")
 
-		# Top Center Background
+		# Center Background Widget
+		screen.addPanel("InterfaceCenterBackgroundWidget", u"", u"",
+				True, False,
+				iLowerCornerWidth, yResolution - iActionPaneHeight,
+				xResolution - (iLowerCornerWidth * 2), iActionPaneHeight,
+				PanelStyles.PANEL_STYLE_STANDARD)
+		screen.setStyle("InterfaceCenterBackgroundWidget", "Panel_Game_HudBC_Style")
+		screen.hide("InterfaceCenterBackgroundWidget")
 
+		# Top Center Background
+		topBars = TopBarsLayout(self.xResolution, False) # advc.092
 		# SF CHANGE
 		screen.addPanel("InterfaceTopCenter", u"", u"",
-				True, False, 257, -2, xResolution-(257*2), 48,
+				True, False,
+				iCitySidePanelWidth - 1, -2,
+				xResolution - ((iCitySidePanelWidth - 1) * 2),
+				topBars.topMargin() + iStackBarHeight + 19,
 				PanelStyles.PANEL_STYLE_STANDARD)
-
 		screen.setStyle("InterfaceTopCenter", "Panel_Game_HudTC_Style")
 		screen.hide("InterfaceTopCenter")
 
 		# Top Left Background
 		screen.addPanel("InterfaceTopLeft", u"", u"",
-				True, False, 0, -2, 267, 60,
+				True, False,
+				0, -2,
+				iHUDBackgrWidth, iHUDBackgrHeight,
 				PanelStyles.PANEL_STYLE_STANDARD)
 		screen.setStyle("InterfaceTopLeft", "Panel_Game_HudTL_Style")
 		screen.hide("InterfaceTopLeft")
 
 		# Top Right Background
 		screen.addPanel("InterfaceTopRight", u"", u"",
-				True, False, xResolution - 267, -2, 267, 60,
+				True, False,
+				xResolution - iHUDBackgrWidth, -2,
+				iHUDBackgrWidth, iHUDBackgrHeight,
 				PanelStyles.PANEL_STYLE_STANDARD)
 		screen.setStyle("InterfaceTopRight", "Panel_Game_HudTR_Style")
 		screen.hide("InterfaceTopRight")
-
-		iBtnWidth	= 28
-		iBtnAdvance = 25
-		iBtnY = iAdvisorButtonY # advc.092
-		iBtnX = 27
-		iBtnX = 10 # moving the log button left = BUG Option Button
+		# <advc.092>
+		iBtnWidth = iAdvisorBtnSz
+		iAdvisorButtons = 11
+		iAdvisorBtnOverlap = 3
+		if not GameUtil.isEspionage():
+			iAdvisorButtons -= 1
+			iAdvisorBtnOverlap -= 1
+		iAdvisorBtnTotalWidth = iAdvisorButtons * (iBtnWidth - iAdvisorBtnOverlap)
+		iBtnAdvance = iAdvisorBtnSz - iAdvisorBtnOverlap
+		iBtnY = iAdvisorBtnY
+		# moving the log button left = BUG Option Button
+		iUpperLeftBtnMargin = 10 #27
+		# </advc.092>
+		iBtnX = iUpperLeftBtnMargin
 
 		# Turn log Button
 		screen.setImageButton("TurnLogButton", "",
@@ -675,7 +710,7 @@ class CvMainInterface:
 		screen.setStyle("TurnLogButton", "Button_HUDLog_Style")
 		screen.hide("TurnLogButton")
 
-		iBtnX = xResolution - 277
+		iBtnX = xResolution - iAdvisorBtnTotalWidth - 2
 
 		# Advisor Buttons...
 		screen.setImageButton("DomesticAdvisorButton", "",
@@ -771,51 +806,70 @@ class CvMainInterface:
 # BUG - field of view slider - start
 		self.setFieldofView_Text(screen)
 		#screen.addSlider(self.szSliderId, self.iX_FoVSlider + 5, self.iY_FoVSlider, iW, iH, self.iField_View - 1, 0, 100 - 1, WidgetTypes.WIDGET_GENERAL, -1, -1, False);
-		# advc.090:
-		screen.addSlider(self.szSliderId, self.iX_FoVSlider + self.iFoVLabelOffset, self.iY_FoVSlider, self.iW_FoVSlider, self.iH_FoVSlider, self.FoVToSliderPos(self.iField_View), 0, self.iW_FoVSlider, WidgetTypes.WIDGET_GENERAL, -1, -1, False);
+		# <advc.090>
+		screen.addSlider(self.szSliderId,
+				self.iX_FoVSlider + self.iFoVLabelOffset, self.iY_FoVSlider,
+				self.iW_FoVSlider, self.iH_FoVSlider,
+				self.FoVToSliderPos(self.iField_View), 0, self.iW_FoVSlider,
+				WidgetTypes.WIDGET_GENERAL, -1, -1, False); # </advc.090>
 		screen.hide(self.szSliderTextId)
 		screen.hide(self.szSliderId)
 # BUG - field of view slider - end
 
 		# City Tabs
-		iBtnX = xResolution - 324
-		iBtnY = yResolution - 94
-		iBtnWidth = 24
-		iBtnAdvance = 24
+		# <advc.092>
+		iCityTabsRMargin = 4
+		iCityTabBtnSz = 24
+		iCityTabBtnSpacing = 0
+		iCityTabButtons = 3
+		iCityTabBtnTotalHeight = ((iCityTabBtnSz + iCityTabBtnSpacing) * iCityTabButtons
+				- iCityTabBtnSpacing) # </advc.092>
+		iBtnX = xResolution - iLowerCornerPanelWidth - iCityTabBtnSz - iCityTabsRMargin
+		iBtnY = yResolution - (iBottomContainerYOffset - (iBottomContainerYOffset - iCityTabBtnTotalHeight) / 2)
+		iBtnWidth = iCityTabBtnSz
+		iBtnAdvance = iCityTabBtnSz + iCityTabBtnSpacing
 
-		screen.setButtonGFC("CityTab0", "", "", iBtnX, iBtnY, iBtnWidth, iBtnWidth, WidgetTypes.WIDGET_CITY_TAB, 0, -1, ButtonStyles.BUTTON_STYLE_STANDARD)
+		screen.setButtonGFC("CityTab0", "", "",
+				iBtnX, iBtnY, iBtnWidth, iBtnWidth,
+				WidgetTypes.WIDGET_CITY_TAB, 0, -1,
+				ButtonStyles.BUTTON_STYLE_STANDARD)
 		screen.setStyle("CityTab0", "Button_HUDJumpUnit_Style")
 		screen.hide("CityTab0")
 
 		iBtnY += iBtnAdvance
-		screen.setButtonGFC("CityTab1", "", "", iBtnX, iBtnY, iBtnWidth, iBtnWidth, WidgetTypes.WIDGET_CITY_TAB, 1, -1, ButtonStyles.BUTTON_STYLE_STANDARD)
+		screen.setButtonGFC("CityTab1", "", "",
+				iBtnX, iBtnY, iBtnWidth, iBtnWidth,
+				WidgetTypes.WIDGET_CITY_TAB, 1, -1,
+				ButtonStyles.BUTTON_STYLE_STANDARD)
 		screen.setStyle("CityTab1", "Button_HUDJumpBuilding_Style")
 		screen.hide("CityTab1")
 
 		iBtnY += iBtnAdvance
-		screen.setButtonGFC("CityTab2", "", "", iBtnX, iBtnY, iBtnWidth, iBtnWidth, WidgetTypes.WIDGET_CITY_TAB, 2, -1, ButtonStyles.BUTTON_STYLE_STANDARD)
+		screen.setButtonGFC("CityTab2", "", "",
+				iBtnX, iBtnY, iBtnWidth, iBtnWidth,
+				WidgetTypes.WIDGET_CITY_TAB, 2, -1,
+				ButtonStyles.BUTTON_STYLE_STANDARD)
 		screen.setStyle("CityTab2", "Button_HUDJumpWonder_Style")
 		screen.hide("CityTab2")
 
 		screen.setMainInterface(True)
 		# Minimap initialization
 		# <advc.092>  <advc.137>
-		iMiniMapHeight = 128 # was 122
-		iDefaultMiniMapPanelWidth = 208 # BtS value
-		iMaxMinimapPanelWidth = 216 # We can go a little wider
+		iDefaultMiniMapPanelWidth = iMiniMapHeight * 1625 / 1000 # BtS value
+		iMaxMiniMapPanelWidth = iDefaultMiniMapPanelWidth + 8 # We can go a little wider
 		iMiniMapPanelWidth = iDefaultMiniMapPanelWidth
 		if gc.getMap().isWrapX():
 			# Avoid black bars on the sides
 			iMiniMapPanelWidth = iMiniMapHeight * gc.getMap().getGridWidth()
 			iMiniMapPanelWidth /= gc.getMap().getGridHeight()
 			iMiniMapPanelWidth += 6 # Don't know why the scaling doesn't quite work out
-			iMiniMapPanelWidth = min(iMiniMapPanelWidth, 216)
-		iMiniMapPanelRMargin = 6 # BtS value
+			iMiniMapPanelWidth = min(iMiniMapPanelWidth, iMaxMiniMapPanelWidth)
+		iMiniMapPanelRMargin = 6
 		# Center the panel within the available space
 		iMiniMapPanelRMargin += (iDefaultMiniMapPanelWidth - iMiniMapPanelWidth) / 2
 		# </advc.137>
 		iMiniMapPanelX = xResolution - iMiniMapPanelWidth - iMiniMapPanelRMargin
-		iMiniMapPanelHeight = 151
+		iMiniMapPanelHeight = iLowerCornerHeight + 2
 		iMiniMapPanelBMargin = 0
 		iMiniMapPanelY = yResolution - iMiniMapPanelHeight - iMiniMapPanelBMargin
 		iMiniMapRMargin = 3
@@ -837,27 +891,34 @@ class CvMainInterface:
 		self.createMinimapButtons()
 
 		# Help button (always visible)
+		# <advc.092>
+		iTopRBtnSz = 24
+		iTopRBtnRMargin = 4
+		iTopRBtnTMargin = 2
+		iTopRBtnSpacing = 2
+		iBtnX = xResolution - iTopRBtnSz - iTopRBtnRMargin # </advc.092>
 		screen.setImageButton("InterfaceHelpButton",
 				ArtFileMgr.getInterfaceArtInfo("INTERFACE_GENERAL_CIVILOPEDIA_ICON").getPath(),
-				xResolution - 28, 2, 24, 24,
+				iBtnX, iTopRBtnTMargin,
+				iTopRBtnSz, iTopRBtnSz,
 				WidgetTypes.WIDGET_ACTION,
 				gc.getControlInfo(ControlTypes.CONTROL_CIVILOPEDIA).getActionInfoIndex(), -1)
 		screen.hide("InterfaceHelpButton")
-
+		iBtnX -= iTopRBtnSz + iTopRBtnSpacing # advc.092
 		screen.setImageButton("MainMenuButton",
 				ArtFileMgr.getInterfaceArtInfo("INTERFACE_GENERAL_MENU_ICON").getPath(),
-				xResolution - 54, 2, 24, 24,
+				iBtnX, iTopRBtnTMargin,
+				iTopRBtnSz, iTopRBtnSz,
 				WidgetTypes.WIDGET_MENU_ICON, -1, -1)
 		screen.hide("MainMenuButton")
 
 		# Globeview buttons
 		self.createGlobeviewButtons()
 
-		screen.addMultiListControlGFC("BottomButtonContainer", u"", iMultiListXL,
-				yResolution - iBottomButtonContainerOffsetY,
-				xResolution - (iMultiListXL+iMultiListXR),
-				100, 4,
-				48, 48,
+		screen.addMultiListControlGFC("BottomButtonContainer", u"",
+				iMultiListXL, yResolution - iBottomContainerYOffset, # iX, iY
+				xResolution - (iMultiListXL+iMultiListXR), 100, # iWidth, iHeight
+				4, 48, 48, # numLists, defaultWidth, defaultHeight
 				TableStyles.TABLE_STYLE_STANDARD)
 		screen.hide("BottomButtonContainer")
 
@@ -867,10 +928,10 @@ class CvMainInterface:
 
 # BUG - PLE - begin
 		for j in range(self.numPlotListRows()):
-			yRow = (j - self.numPlotListRows() + 1) * 34
+			yRow = (j - self.numPlotListRows() + 1) * iPlotListUnitBtnSz
 			yPixel = yResolution - 169 + yRow - 3
 			xPixel = 315 - 3
-			xWidth = self.numPlotListButtonsPerRow() * 34 + 3
+			xWidth = self.numPlotListButtonsPerRow() * iPlotListUnitBtnSz + 3
 			yHeight = 32 + 3
 
 			szStringPanel = "PlotListPanel" + str(j)
@@ -881,7 +942,7 @@ class CvMainInterface:
 			for i in range(self.numPlotListButtonsPerRow()):
 				k = j * self.numPlotListButtonsPerRow() + i
 
-				xOffset = i * 34
+				xOffset = i * iPlotListUnitBtnSz
 				szString = "PlotListButton" + str(k)
 
 # BUG - plot list - start
@@ -929,8 +990,8 @@ class CvMainInterface:
 
 		# Three states for end turn button...
 		screen.setImageButton("EndTurnButton", "",
-				xResolution - (iEndOfTurnButtonSize/2) - iEndOfTurnPosX,
-				yResolution - (iEndOfTurnButtonSize/2) - iEndOfTurnPosY,
+				xResolution - (iEndOfTurnButtonSize/2) - iLowerCornerWidth,
+				yResolution - (iEndOfTurnButtonSize/2) - iLowerCornerHeight + 2,
 				iEndOfTurnButtonSize, iEndOfTurnButtonSize,
 				WidgetTypes.WIDGET_END_TURN, -1, -1)
 		screen.setStyle("EndTurnButton", "Button_HUDEndTurn_Style")
@@ -1061,7 +1122,6 @@ class CvMainInterface:
 		# **********************************************************
 		szGameDataList = []
 
-		topBars = TopBarsLayout(self.xResolution, False) # advc.092
 		screen.addStackedBarGFC("ResearchBar",
 				topBars.xResearch(), topBars.topMargin(),
 				topBars.widthResearch(), iStackBarHeight,
@@ -1078,8 +1138,8 @@ class CvMainInterface:
 		screen.hide("ResearchBar")
 # BUG - Great General Bar - start
 		screen.addStackedBarGFC("GreatGeneralBar",
-				# (advc.092: Maybe the y position should add topBars.topMargin()?)
-				topBars.xGG(), iStackBarHeight,
+				# advc.092: Add topMargin
+				topBars.xGG(), iStackBarHeight + topBars.topMargin(),
 				topBars.widthGG(), iStackBarHeight,
 				InfoBarTypes.NUM_INFOBAR_TYPES,
 				WidgetTypes.WIDGET_HELP_GREAT_GENERAL, -1, -1)
@@ -1168,8 +1228,8 @@ class CvMainInterface:
 		szHideSelectionDataList = []
 
 		screen.addStackedBarGFC("PopulationBar",
-				iCityCenterRow1X, iCityCenterRow1Y-4,
-				xResolution - (iCityCenterRow1X*2), iStackBarHeight,
+				iCityCenterRow1X, iCityCenterRow1Y - iCityCenterBarYOffset,
+				xResolution - iCityCenterRow1X * 2, iStackBarHeight,
 				InfoBarTypes.NUM_INFOBAR_TYPES,
 				WidgetTypes.WIDGET_HELP_POPULATION, -1, -1)
 		screen.setStackedBarColors("PopulationBar", InfoBarTypes.INFOBAR_STORED,
@@ -1183,8 +1243,8 @@ class CvMainInterface:
 		screen.hide("PopulationBar")
 
 		screen.addStackedBarGFC("ProductionBar",
-				iCityCenterRow2X, iCityCenterRow2Y-4,
-				xResolution - (iCityCenterRow2X*2), iStackBarHeight,
+				iCityCenterRow2X, iCityCenterRow2Y - iCityCenterBarYOffset,
+				xResolution - iCityCenterRow2X * 2, iStackBarHeight,
 				InfoBarTypes.NUM_INFOBAR_TYPES,
 				WidgetTypes.WIDGET_HELP_PRODUCTION, -1, -1)
 		screen.setStackedBarColors("ProductionBar", InfoBarTypes.INFOBAR_STORED,
@@ -1281,40 +1341,40 @@ class CvMainInterface:
 
 # BUG - PLE - begin
 		screen.setButtonGFC("PlotListMinus", u"", "",
-				315 + (xResolution - (iMultiListXL+iMultiListXR) - 68), yResolution - 171,
+				315 + (xResolution - (iMultiListXL+iMultiListXR) - 2 * iPlotListUnitBtnSz), yResolution - 171,
 				32, 32,
 				WidgetTypes.WIDGET_PLOT_LIST_SHIFT, -1, -1,
 				ButtonStyles.BUTTON_STYLE_ARROW_LEFT)
 		screen.hide("PlotListMinus")
 
 		screen.setButtonGFC("PlotListPlus", u"", "",
-				298 + (xResolution - (iMultiListXL+iMultiListXR) - 34), yResolution - 171,
+				298 + (xResolution - (iMultiListXL+iMultiListXR) - iPlotListUnitBtnSz), yResolution - 171,
 				32, 32,
 				WidgetTypes.WIDGET_PLOT_LIST_SHIFT, 1, -1,
 				ButtonStyles.BUTTON_STYLE_ARROW_RIGHT)
 		screen.hide("PlotListPlus")
 
 		screen.setButtonGFC(self.PLE.PLOT_LIST_MINUS_NAME, u"", "",
-				315 + (xResolution - (iMultiListXL+iMultiListXR) - 68), yResolution - 171,
+				315 + (xResolution - (iMultiListXL+iMultiListXR) - 2 * iPlotListUnitBtnSz), yResolution - 171,
 				32, 32,
 				WidgetTypes.WIDGET_GENERAL, -1, -1, ButtonStyles.BUTTON_STYLE_ARROW_LEFT)
 		screen.hide(self.PLE.PLOT_LIST_MINUS_NAME)
 		screen.setButtonGFC(self.PLE.PLOT_LIST_PLUS_NAME, u"", "",
-				298 + (xResolution - (iMultiListXL+iMultiListXR) - 34), yResolution - 171,
+				298 + (xResolution - (iMultiListXL+iMultiListXR) - iPlotListUnitBtnSz), yResolution - 171,
 				32, 32, WidgetTypes.WIDGET_GENERAL, 1, -1,
 				ButtonStyles.BUTTON_STYLE_ARROW_RIGHT)
 		screen.hide(self.PLE.PLOT_LIST_PLUS_NAME)
 
 		screen.setImageButton(self.PLE.PLOT_LIST_UP_NAME,
 				ArtFileMgr.getInterfaceArtInfo("PLE_ARROW_UP").getPath(),
-				315 + (xResolution - (iMultiListXL+iMultiListXR) - 68) + 5,
+				315 + (xResolution - (iMultiListXL+iMultiListXR) - 2 * iPlotListUnitBtnSz) + 5,
 				yResolution - 171 + 5,
 				20, 20,
 				WidgetTypes.WIDGET_GENERAL, -1, -1)
 		screen.hide(self.PLE.PLOT_LIST_UP_NAME)
 		screen.setImageButton(self.PLE.PLOT_LIST_DOWN_NAME,
 				ArtFileMgr.getInterfaceArtInfo("PLE_ARROW_DOWN").getPath(),
-				298 + (xResolution - (iMultiListXL+iMultiListXR) - 34) + 5,
+				298 + (xResolution - (iMultiListXL+iMultiListXR) - iPlotListUnitBtnSz) + 5,
 				yResolution - 171 + 5,
 				20, 20,
 				WidgetTypes.WIDGET_GENERAL, -1, -1)
@@ -1405,8 +1465,9 @@ class CvMainInterface:
 # BUG - Raw Yields - end
 
 # BUG - BUG Option Button - Start
-		iBtnWidth	= 28
-		iBtnY = iAdvisorButtonY # advc.092
+		# <advc.092>
+		iBtnWidth = iAdvisorBtnSz
+		iBtnY = iAdvisorBtnY # </advc.092>
 		iBtnX = 27
 		iBtnX = 10
 
@@ -1532,7 +1593,7 @@ class CvMainInterface:
 		# Find out our resolution
 		xResolution = screen.getXResolution()
 		yResolution = screen.getYResolution()
-#		self.m_iNumPlotListButtons = (xResolution - (iMultiListXL+iMultiListXR) - 68) / 34
+#		self.m_iNumPlotListButtons = (xResolution - (iMultiListXL+iMultiListXR) - 2 * iPlotListUnitBtnSz) / iPlotListUnitBtnSz
 
 		self.initMinimap(screen)
 
@@ -1720,7 +1781,6 @@ class CvMainInterface:
 			self.updatePercentButtons()
 			CyInterface().setDirty(InterfaceDirtyBits.PercentButtons_DIRTY_BIT, False)
 		if (CyInterface().isDirty(InterfaceDirtyBits.Flag_DIRTY_BIT) == True):
-			# Percent Buttons
 			self.updateFlag()
 			CyInterface().setDirty(InterfaceDirtyBits.Flag_DIRTY_BIT, False)
 		if (CyInterface().isDirty(InterfaceDirtyBits.MiscButtons_DIRTY_BIT) == True):
@@ -1986,6 +2046,7 @@ class CvMainInterface:
 		if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_HIDE_ALL or
 				CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_MINIMAP_ONLY):
 			screen.hide("InterfaceLeftBackgroundWidget")
+			screen.hide("InterfaceLeftBackgroundGfc")
 			screen.hide("InterfaceTopBackgroundWidget")
 			screen.hide("InterfaceCenterBackgroundWidget")
 			screen.hide("InterfaceRightBackgroundWidget")
@@ -2018,6 +2079,7 @@ class CvMainInterface:
 # BUG - field of view slider - end
 		elif (CyInterface().isCityScreenUp()):
 			screen.show("InterfaceLeftBackgroundWidget")
+			screen.show("InterfaceLeftBackgroundGfc")
 			screen.show("InterfaceTopBackgroundWidget")
 			screen.show("InterfaceCenterBackgroundWidget")
 			screen.show("InterfaceRightBackgroundWidget")
@@ -2050,12 +2112,14 @@ class CvMainInterface:
 # BUG - field of view slider - end
 		elif (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_HIDE):
 			screen.hide("InterfaceLeftBackgroundWidget")
+			screen.hide("InterfaceLeftBackgroundGfc")
 			screen.show("InterfaceTopBackgroundWidget")
 			screen.hide("InterfaceCenterBackgroundWidget")
 			screen.hide("InterfaceRightBackgroundWidget")
 			screen.hide("MiniMapPanel")
 			screen.show("InterfaceTopLeft")
-			screen.show("InterfaceTopCenter")
+			if self.isShowTopBarsFrame(): # advc.092
+				screen.show("InterfaceTopCenter")
 			screen.show("InterfaceTopRight")
 			screen.show("TurnLogButton")
 			screen.show("EspionageAdvisorButton")
@@ -2098,6 +2162,7 @@ class CvMainInterface:
 # BUG - BUG Option Button - End
 		elif (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_ADVANCED_START):
 			screen.hide("InterfaceLeftBackgroundWidget")
+			screen.hide("InterfaceLeftBackgroundGfc")
 			screen.hide("InterfaceTopBackgroundWidget")
 			screen.hide("InterfaceCenterBackgroundWidget")
 			screen.hide("InterfaceRightBackgroundWidget")
@@ -2126,12 +2191,14 @@ class CvMainInterface:
 # BUG - BUG Option Button - End
 		elif (CyEngine().isGlobeviewUp()):
 			screen.hide("InterfaceLeftBackgroundWidget")
+			screen.hide("InterfaceLeftBackgroundGfc")
 			screen.hide("InterfaceTopBackgroundWidget")
 			screen.hide("InterfaceCenterBackgroundWidget")
 			screen.show("InterfaceRightBackgroundWidget")
 			screen.show("MiniMapPanel")
 			screen.show("InterfaceTopLeft")
-			screen.show("InterfaceTopCenter")
+			if self.isShowTopBarsFrame(): # advc.092
+				screen.show("InterfaceTopCenter")
 			screen.show("InterfaceTopRight")
 			screen.show("TurnLogButton")
 			screen.show("EspionageAdvisorButton")
@@ -2174,12 +2241,14 @@ class CvMainInterface:
 # BUG - BUG Option Button - End
 		else:
 			screen.show("InterfaceLeftBackgroundWidget")
+			screen.show("InterfaceLeftBackgroundGfc")
 			screen.show("InterfaceTopBackgroundWidget")
 			screen.show("InterfaceCenterBackgroundWidget")
 			screen.show("InterfaceRightBackgroundWidget")
 			screen.show("MiniMapPanel")
 			screen.show("InterfaceTopLeft")
-			screen.show("InterfaceTopCenter")
+			if self.isShowTopBarsFrame(): # advc.092
+				screen.show("InterfaceTopCenter")
 			screen.show("InterfaceTopRight")
 			screen.show("TurnLogButton")
 			screen.show("EspionageAdvisorButton")
@@ -2497,9 +2566,10 @@ class CvMainInterface:
 							screen.show(szStringIcon)
 
 						if bEnable:
-							x = 315 + ((iCount % self.numPlotListButtonsPerRow()) * 34)
+							x = 315 + ((iCount % self.numPlotListButtonsPerRow()) * iPlotListUnitBtnSz)
 							y = yResolution - 169
-							y += (iCount / self.numPlotListButtonsPerRow() - self.numPlotListRows() + 1) * 34
+							y += ((iCount / self.numPlotListButtonsPerRow() - self.numPlotListRows() + 1)
+									* iPlotListUnitBtnSz)
 
 							self.PLE._displayUnitPlotList_Dot(screen, pLoopUnit, szString,
 									iCount, x, y + 4)
@@ -2573,7 +2643,6 @@ class CvMainInterface:
 # BUG - BUG unit plot draw method - end
 
 
-
 	# This will update the flag widget for SP hotseat and dbeugging
 	def updateFlag(self):
 		eIFaceVis = CyInterface().getShowInterface()
@@ -2584,7 +2653,9 @@ class CvMainInterface:
 			xResolution = screen.getXResolution()
 			yResolution = screen.getYResolution()
 			screen.addFlagWidgetGFC("CivilizationFlag",
-					xResolution - 288, yResolution - 138, 68, 250,
+					xResolution - iLowerCornerWidth + 2 * iFlagHMargin,
+					yResolution - iLowerCornerHeight + iFlagTopMargin,
+					iFlagWidth, iFlagHeight,
 					gc.getGame().getActivePlayer(),
 					WidgetTypes.WIDGET_FLAG, gc.getGame().getActivePlayer(), -1)
 
@@ -3027,7 +3098,7 @@ class CvMainInterface:
 		iUnitCycleButtonMargin = 2 # Thicker margins look bad on low resolutions
 		iUnitCycleButtonSize = 32
 		iUnitCycleButtonX = kScreen.getXResolution() - iMultiListXR - iUnitCycleButtonMargin
-		iUnitCycleButtonY = kScreen.getYResolution() - iBottomButtonContainerOffsetY + iUnitCycleButtonMargin
+		iUnitCycleButtonY = kScreen.getYResolution() - iBottomContainerYOffset + iUnitCycleButtonMargin
 		pNextUnit = gc.getGame().getNextUnitInCycle(True, False)
 		if pNextUnit:
 			# The button looks weird when the HUD is partly hidden and no unit selected. Can be a nuisance when taking screenshots.
@@ -3780,11 +3851,10 @@ class CvMainInterface:
 			screen.show("EraText")
 # BUG - NJAGC - end
 # BUG - Bars on single line for higher resolution screens - start
-		# advc: Moved some variables up to get rid of duplicate code
-		bSingleLine = (xResolution >= 1440 and
-				(self.isShowGGProgressBar() or self.isShowGPProgressBar()))
-		topBars = TopBarsLayout(self.xResolution, bSingleLine) # advc.092
-		xCoord = topBars.xResearch() + topBars.widthResearch() / 2
+		# <advc.092>
+		bSingleLine = self.isShowTopBarsOnSingleLine()
+		topBars = TopBarsLayout(self.xResolution, bSingleLine)
+		xCoord = topBars.xResearch() + topBars.widthResearch() / 2 # </advc.092>
 		# Ruff: this used to be 3 but I changed it so it lines up with the Great Person Bar
 		yCoord = (3 +
 				topBars.topMargin()) # advc.092
@@ -3863,88 +3933,87 @@ class CvMainInterface:
 
 # BUG - Great Person Bar - start
 	def updateGreatPersonBar(self, screen):
-		if (not CyInterface().isCityScreenUp() and self.isShowGPProgressBar()):
-			pGPCity, iGPTurns = GPUtil.getDisplayCity()
-			szText = GPUtil.getGreatPeopleText(pGPCity, iGPTurns, GP_BAR_WIDTH,
-					MainOpt.isGPBarTypesNone(), MainOpt.isGPBarTypesOne(), True)
-			szText = u"<font=2>%s</font>" % (szText)
-			if (pGPCity):
-				iCityID = pGPCity.getID()
-			else:
-				iCityID = -1
-
+		if not self.isShowGPProgressBar() or CyInterface().isCityScreenUp():
+			return
+		# <advc.092>
+		bSingleLine = self.isShowTopBarsOnSingleLine()
+		topBars = TopBarsLayout(self.xResolution, bSingleLine) # </advc.092>
+		pGPCity, iGPTurns = GPUtil.getDisplayCity()
+		szText = GPUtil.getGreatPeopleText(pGPCity, iGPTurns,
+				topBars.widthGP(), # advc.092
+				MainOpt.isGPBarTypesNone(), MainOpt.isGPBarTypesOne(), True)
+		szText = u"<font=2>%s</font>" % (szText)
+		if (pGPCity):
+			iCityID = pGPCity.getID()
+		else:
+			iCityID = -1
 # BUG - Bars on single line for higher resolution screens - start
-			xResolution = screen.getXResolution()
-			if (xResolution >= 1440):
-				szGreatPersonBar = "GreatPersonBar-w"
-				xCoord = 268 + (xResolution - 1440) / 2 + 84 + 6 + 487 + 6 + 320 / 2
-				yCoord = 5
-			else:
-				szGreatPersonBar = "GreatPersonBar"
-				xCoord = 268 + (xResolution - 1024) / 2 + 100 + 7 + 380 / 2
-				yCoord = 30
-
-			screen.setText("GreatPersonBarText", "Background",
-					szText, CvUtil.FONT_CENTER_JUSTIFY,
-					xCoord, yCoord, -0.4, FontTypes.GAME_FONT,
-					WidgetTypes.WIDGET_GP_PROGRESS_BAR, -1, -1)
-			if (not pGPCity):
-				screen.setHitTest("GreatPersonBarText", HitTestTypes.HITTEST_NOHIT)
-			screen.show("GreatPersonBarText")
+		szGreatPersonBar = "GreatPersonBar-w"
+		# <advc.092>
+		xCoord = topBars.xGP() + topBars.widthGP() / 2
+		yCoord = 3 + topBars.topMargin()
+		if not bSingleLine:
+			szGreatPersonBar = "GreatPersonBar"
+			yCoord += iStackBarHeight # </advc.092>
+		screen.setText("GreatPersonBarText", "Background",
+				szText, CvUtil.FONT_CENTER_JUSTIFY,
+				xCoord, yCoord, # advc.092
+				-0.4,
+				FontTypes.GAME_FONT,
+				WidgetTypes.WIDGET_GP_PROGRESS_BAR, -1, -1)
+		if (not pGPCity):
+			screen.setHitTest("GreatPersonBarText", HitTestTypes.HITTEST_NOHIT)
+		screen.show("GreatPersonBarText")
 # BUG - Bars on single line for higher resolution screens - end
-
-			if (pGPCity):
-				fThreshold = float(gc.getPlayer(pGPCity.getOwner()).greatPeopleThreshold(False))
-				fRate = float(pGPCity.getGreatPeopleRate())
-				fFirst = float(pGPCity.getGreatPeopleProgress()) / fThreshold
-
-				screen.setBarPercentage(szGreatPersonBar, InfoBarTypes.INFOBAR_STORED, fFirst)
-				if (fFirst == 1):
-					screen.setBarPercentage(szGreatPersonBar, InfoBarTypes.INFOBAR_RATE,
-							fRate / fThreshold)
-				else:
-					screen.setBarPercentage(szGreatPersonBar, InfoBarTypes.INFOBAR_RATE,
-							fRate / fThreshold / (1 - fFirst))
+		if (pGPCity):
+			fThreshold = float(gc.getPlayer(pGPCity.getOwner()).greatPeopleThreshold(False))
+			fRate = float(pGPCity.getGreatPeopleRate())
+			fFirst = float(pGPCity.getGreatPeopleProgress()) / fThreshold
+			screen.setBarPercentage(szGreatPersonBar, InfoBarTypes.INFOBAR_STORED, fFirst)
+			if (fFirst == 1):
+				screen.setBarPercentage(szGreatPersonBar, InfoBarTypes.INFOBAR_RATE,
+						fRate / fThreshold)
 			else:
-				screen.setBarPercentage(szGreatPersonBar, InfoBarTypes.INFOBAR_STORED, 0)
-				screen.setBarPercentage(szGreatPersonBar, InfoBarTypes.INFOBAR_RATE, 0)
-
-			screen.show(szGreatPersonBar)
+				screen.setBarPercentage(szGreatPersonBar, InfoBarTypes.INFOBAR_RATE,
+						fRate / fThreshold / (1 - fFirst))
+		else:
+			screen.setBarPercentage(szGreatPersonBar, InfoBarTypes.INFOBAR_STORED, 0)
+			screen.setBarPercentage(szGreatPersonBar, InfoBarTypes.INFOBAR_RATE, 0)
+		screen.show(szGreatPersonBar)
 # BUG - Great Person Bar - end
 
 # BUG - Great General Bar - start
 	def updateGreatGeneralBar(self, screen):
-		if (not CyInterface().isCityScreenUp() and
-				self.isShowGGProgressBar()):
-			pPlayer = gc.getActivePlayer()
-			iCombatExp = pPlayer.getCombatExperience()
-			iThresholdExp = pPlayer.greatPeopleThreshold(True)
-			iNeededExp = iThresholdExp - iCombatExp
-
-			szText = u"<font=2>%s</font>" %(GGUtil.getGreatGeneralText(iNeededExp))
-
+		if not self.isShowGGProgressBar() or CyInterface().isCityScreenUp():
+			return
+		pPlayer = gc.getActivePlayer()
+		iCombatExp = pPlayer.getCombatExperience()
+		iThresholdExp = pPlayer.greatPeopleThreshold(True)
+		iNeededExp = iThresholdExp - iCombatExp
+		szText = u"<font=2>%s</font>" %(GGUtil.getGreatGeneralText(iNeededExp))
 # BUG - Bars on single line for higher resolution screens - start
-			xResolution = screen.getXResolution()
-			if (xResolution >= 1440):
-				szGreatGeneralBar = "GreatGeneralBar-w"
-				xCoord = 268 + (xResolution - 1440) / 2 + 84 / 2
-				yCoord = 5
-			else:
-				szGreatGeneralBar = "GreatGeneralBar"
-				xCoord = 268 + (xResolution - 1024) / 2 + 100 / 2
-				yCoord = 32
-
-			screen.setLabel("GreatGeneralBarText", "Background",
-					szText, CvUtil.FONT_CENTER_JUSTIFY,
-					xCoord, yCoord, -0.4, FontTypes.GAME_FONT,
-					WidgetTypes.WIDGET_HELP_GREAT_GENERAL, -1, -1)
-			screen.show("GreatGeneralBarText")
+		szGreatGeneralBar = "GreatGeneralBar-w"
+		# <advc.092>
+		bSingleLine = self.isShowTopBarsOnSingleLine()
+		topBars = TopBarsLayout(self.xResolution, bSingleLine)
+		xCoord = topBars.xGG() + topBars.widthGG() / 2
+		yCoord = 3 + topBars.topMargin()
+		if not bSingleLine:
+			szGreatGeneralBar = "GreatGeneralBar"
+			yCoord += iStackBarHeight # </advc.092>
+		screen.setLabel("GreatGeneralBarText", "Background",
+				szText, CvUtil.FONT_CENTER_JUSTIFY,
+				xCoord, yCoord, # advc.092
+				-0.4,
+				FontTypes.GAME_FONT,
+				WidgetTypes.WIDGET_HELP_GREAT_GENERAL, -1, -1)
+		screen.show("GreatGeneralBarText")
 # BUG - Bars on single line for higher resolution screens - end
-
-			fProgress = float(iCombatExp) / float(iThresholdExp)
-			screen.setBarPercentage(szGreatGeneralBar, InfoBarTypes.INFOBAR_STORED, fProgress)
-			screen.show(szGreatGeneralBar)
+		fProgress = float(iCombatExp) / float(iThresholdExp)
+		screen.setBarPercentage(szGreatGeneralBar, InfoBarTypes.INFOBAR_STORED, fProgress)
+		screen.show(szGreatGeneralBar)
 # BUG - Great General Bar - end
+
 	# <advc.078> I've replaced all calls to MainOpt.isShowGGProgressBar and MainOpt.isShowGPProgressBar with these functions
 	def isShowGGProgressBar(self):
 		if not MainOpt.isShowGGProgressBar():
@@ -3971,6 +4040,17 @@ class CvMainInterface:
 		return (activePlayer.isAnyGPPEver() or 
 				activePlayer.getGreatPeopleCreated() > 0)
 	# </advc.078>
+	# advc.092:
+	def isShowTopBarsOnSingleLine(self):
+		return (self.xResolution >= TopBarsLayout(self.xResolution, True).singleLineThresh() and
+				(self.isShowGGProgressBar() or self.isShowGPProgressBar()) and
+				# Show the potentially longer non-single-line research bar on the city screen
+				not CyInterface().isCityScreenUp())
+
+	# advc.092: Don't show that frame when the bars take up two lines
+	def isShowTopBarsFrame(self):
+		return (self.isShowTopBarsOnSingleLine() or
+				(not self.isShowGGProgressBar() and not self.isShowGPProgressBar()))
 
 	def updateTimeText(self):
 
@@ -4191,24 +4271,23 @@ class CvMainInterface:
 			# Help Text Area
 			if CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW:
 				screen.setHelpTextArea(HELP_TEXT_DEFAULT_WIDTH, FontTypes.SMALL_FONT,
-						HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_TOP_MARGIN, -0.1,
-						False, "", True, False, CvUtil.FONT_LEFT_JUSTIFY,
-						HELP_TEXT_MINIMUM_WIDTH)
+						HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_BOTTOM_MARGIN, -0.1,
+						*HELP_TEXT_AREA_ARGS)
 			else:
 				screen.setHelpTextArea(HELP_TEXT_DEFAULT_WIDTH, FontTypes.SMALL_FONT,
-						HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_TOP_MARGIN_CITY, -0.1,
-						False, "", True, False, CvUtil.FONT_LEFT_JUSTIFY,
-						HELP_TEXT_MINIMUM_WIDTH)
+						HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_BOTTOM_MARGIN_MIN, -0.1,
+						*HELP_TEXT_AREA_ARGS)
 
-			screen.hide("InterfaceTopLeftBackgroundWidget")
-			screen.hide("InterfaceTopRightBackgroundWidget")
-			screen.hide("InterfaceCenterLeftBackgroundWidget")
+			screen.hide("InterfaceTopCenterBackgroundWidget")
+			# advc: Doesn't exist
+			#screen.hide("InterfaceTopRightBackgroundWidget")
+			screen.hide("InterfaceCityLeftBackgroundWidget")
 			screen.hide("CityScreenTopWidget")
 			screen.hide("CityNameBackground")
 			screen.hide("TopCityPanelLeft")
 			screen.hide("TopCityPanelRight")
 			screen.hide("CityScreenAdjustPanel")
-			screen.hide("InterfaceCenterRightBackgroundWidget")
+			screen.hide("InterfaceCityRightBackgroundWidget")
 
 			if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW):
 				self.setMinimapButtonVisibility(True)
@@ -4216,15 +4295,15 @@ class CvMainInterface:
 		if not pHeadSelectedCity:
 			return 0
 
-		screen.show("InterfaceTopLeftBackgroundWidget")
-		screen.show("InterfaceTopRightBackgroundWidget")
-		screen.show("InterfaceCenterLeftBackgroundWidget")
+		screen.show("InterfaceTopCenterBackgroundWidget")
+		#screen.show("InterfaceTopRightBackgroundWidget")
+		screen.show("InterfaceCityLeftBackgroundWidget")
 		screen.show("CityScreenTopWidget")
 		screen.show("CityNameBackground")
 		screen.show("TopCityPanelLeft")
 		screen.show("TopCityPanelRight")
 		screen.show("CityScreenAdjustPanel")
-		screen.show("InterfaceCenterRightBackgroundWidget")
+		screen.show("InterfaceCityRightBackgroundWidget")
 
 		if (pHeadSelectedCity.getTeam() == gc.getGame().getActiveTeam()):
 			if (gc.getActivePlayer().getNumCities() > 1):
@@ -4300,9 +4379,10 @@ class CvMainInterface:
 			else:
 				szBuffer = localText.getText("INTERFACE_CITY_STAGNANT", ())
 
-			screen.setLabel("PopulationText", "Background", szBuffer,
-					CvUtil.FONT_CENTER_JUSTIFY, screen.centerX(512), iCityCenterRow1Y,
-					-1.3, FontTypes.GAME_FONT,
+			screen.setLabel("PopulationText", "Background",
+					szBuffer, CvUtil.FONT_CENTER_JUSTIFY,
+					screen.centerX(512), iCityCenterRow1Y, -1.3,
+					FontTypes.GAME_FONT,
 					WidgetTypes.WIDGET_GENERAL, -1, -1)
 			screen.setHitTest("PopulationText", HitTestTypes.HITTEST_NOHIT)
 			screen.show("PopulationText")
@@ -4488,9 +4568,10 @@ class CvMainInterface:
 								"INTERFACE_CITY_PRODUCTION",
 								(pHeadSelectedCity.getProductionNameKey(), iProductionTurns))
 # BUG - Whip Assist - end
-			screen.setLabel("ProductionText", "Background", szBuffer,
-					CvUtil.FONT_CENTER_JUSTIFY, screen.centerX(512), iCityCenterRow2Y,
-					-1.3, FontTypes.GAME_FONT,
+			screen.setLabel("ProductionText", "Background",
+					szBuffer, CvUtil.FONT_CENTER_JUSTIFY,
+					screen.centerX(512), iCityCenterRow2Y, -1.3,
+					FontTypes.GAME_FONT,
 					WidgetTypes.WIDGET_GENERAL, -1, -1)
 			screen.setHitTest("ProductionText", HitTestTypes.HITTEST_NOHIT)
 			screen.show("ProductionText")
@@ -4545,9 +4626,10 @@ class CvMainInterface:
 				if iAngerTimer > 0:
 					szBuffer += u" (%i)" % iAngerTimer
 # BUG - Anger Display - end
-			screen.setLabel("HappinessText", "Background", szBuffer,
-					CvUtil.FONT_LEFT_JUSTIFY, xResolution - iCityCenterRow1X + 6,
-					iCityCenterRow2Y, -0.3, FontTypes.GAME_FONT,
+			screen.setLabel("HappinessText", "Background",
+					szBuffer, CvUtil.FONT_LEFT_JUSTIFY,
+					xResolution - iCityCenterRow1X + 6, iCityCenterRow2Y, -0.3,
+					FontTypes.GAME_FONT,
 					WidgetTypes.WIDGET_HELP_HAPPINESS, -1, -1)
 			screen.show("HappinessText")
 		if (not pHeadSelectedCity.isProductionProcess()):
@@ -6293,7 +6375,6 @@ class CvMainInterface:
 
 	# Will set the selection button position
 	def setResearchButtonPosition(self, szButtonID, iCount):
-
 		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
 		xResolution = screen.getXResolution()
 # BUG - Bars on single line for higher resolution screens - start
@@ -6359,20 +6440,17 @@ class CvMainInterface:
 		# Positioning things based on the visibility of the globe
 		if kEngine.isGlobeviewUp():
 			screen.setHelpTextArea(HELP_TEXT_DEFAULT_WIDTH, FontTypes.SMALL_FONT,
-					HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_TOP_MARGIN_CITY, -0.1,
-					False, "", True, False, CvUtil.FONT_LEFT_JUSTIFY,
-					HELP_TEXT_MINIMUM_WIDTH)
+					HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_BOTTOM_MARGIN_MIN, -0.1,
+					*HELP_TEXT_AREA_ARGS)
 		else:
 			if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW):
 				screen.setHelpTextArea(HELP_TEXT_DEFAULT_WIDTH, FontTypes.SMALL_FONT,
-						HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_TOP_MARGIN, -0.1,
-						False, "", True, False, CvUtil.FONT_LEFT_JUSTIFY,
-						HELP_TEXT_MINIMUM_WIDTH)
+						HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_BOTTOM_MARGIN, -0.1,
+						*HELP_TEXT_AREA_ARGS)
 			else:
 				screen.setHelpTextArea(HELP_TEXT_DEFAULT_WIDTH, FontTypes.SMALL_FONT,
-						HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_TOP_MARGIN_CITY, -0.1,
-						False, "", True, False, CvUtil.FONT_LEFT_JUSTIFY,
-						HELP_TEXT_MINIMUM_WIDTH)
+						HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_BOTTOM_MARGIN_MIN, -0.1,
+						*HELP_TEXT_AREA_ARGS)
 
 		# Set base Y position for the LayerOptions, if we find them
 		if CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_HIDE:
@@ -6556,7 +6634,7 @@ class CvMainInterface:
 				szStyle = "Button_HUDSmall_Style"
 
 			screen.addCheckBoxGFC(szButtonID, "", "",
-					0, 0, 28, 28,
+					0, 0, iGlobeViewBtnSz, iGlobeViewBtnSz,
 					WidgetTypes.WIDGET_GLOBELAYER, i, -1,
 					ButtonStyles.BUTTON_STYLE_LABEL)
 			screen.setStyle(szButtonID, szStyle)

@@ -27,6 +27,7 @@ localText = CyTranslator()
 #####################
 iMultiListXL = 318
 iMultiListXR = 332
+iPlotListUnitBtnSz = 34 # advc.092
 
 class PLE:
 	def __init__(self):
@@ -849,7 +850,7 @@ class PLE:
 	############## base functions to calculate/transform the number of objects dependent on the screen resolution ######################
 
 	def getMaxCol(self):
-		return (self.xResolution - (iMultiListXL+iMultiListXR) - 68) / 34
+		return (self.xResolution - (iMultiListXL+iMultiListXR) - 2 * iPlotListUnitBtnSz) / iPlotListUnitBtnSz
 		
 	def getMaxRow(self):
 		# advc: max added (though it shouldn't normally matter)
@@ -1693,7 +1694,9 @@ class PLE:
 			sID = string.zfill(str(iU), 2) + string.zfill(str(iP), 2)
 			szStringUnitUpgrade = self.PLOT_LIST_UPGRADE_NAME + sID
 			szFileNameUpgrade = gc.getUnitInfo(iUnitIndex).getButton()
-			screen.setImageButton( szStringUnitUpgrade, szFileNameUpgrade, x, y, 34, 34, WidgetTypes.WIDGET_GENERAL, iUnitIndex, -1 )
+			screen.setImageButton( szStringUnitUpgrade, szFileNameUpgrade,
+					x, y, iPlotListUnitBtnSz, iPlotListUnitBtnSz,
+					WidgetTypes.WIDGET_GENERAL, iUnitIndex, -1 )
 			if pUnit.canUpgrade(iUnitIndex, false):
 				screen.enable(szStringUnitUpgrade, true)
 			else:
