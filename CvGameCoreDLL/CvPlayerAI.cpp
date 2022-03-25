@@ -21355,11 +21355,13 @@ bool CvPlayerAI::AI_proposeJointWar(PlayerTypes eHuman)
 		return false;
 	AI_changeContactTimer(eHuman, CONTACT_JOIN_WAR,
 			AI_getContactDelay(CONTACT_JOIN_WAR));
-	CvDiploParameters* pDiplo = new CvDiploParameters(getID());
-	/*  NB: The DLL never deletes CvDiploParameters objects; presumably
+	/*	NB: The DLL never deletes CvDiploParameters objects; presumably
 		handled by beginDiplomacy */
+	CvDiploParameters* pDiplo = new CvDiploParameters(getID());
+	CvPlayer const& kTargetLeader = GET_PLAYER(GET_TEAM(eBestTarget).getLeaderID());
 	pDiplo->setDiploComment(GC.getAIDiploCommentType("JOIN_WAR"),
-			GET_PLAYER(GET_TEAM(eBestTarget).getLeaderID()).getCivilizationAdjectiveKey());
+			kTargetLeader.getCivilizationAdjectiveKey(),
+			kTargetLeader.getNameKey(), ""); // advc.mnai (lfgr 11/2021)
 	pDiplo->setAIContact(true);
 	pDiplo->setData(eBestTarget);
 	gDLL->beginDiplomacy(pDiplo, eHuman);
@@ -21692,9 +21694,10 @@ bool CvPlayerAI::AI_proposeEmbargo(PlayerTypes eHuman)
 	AI_changeContactTimer(eHuman, CONTACT_STOP_TRADING,
 			AI_getContactDelay(CONTACT_STOP_TRADING));
 	CvDiploParameters* pDiplo = new CvDiploParameters(getID());
+	CvPlayer const& kTargetLeader = GET_PLAYER(GET_TEAM(eBestTeam).getLeaderID());
 	pDiplo->setDiploComment(GC.getAIDiploCommentType("STOP_TRADING"),
-			GET_PLAYER(GET_TEAM(eBestTeam).getLeaderID()).
-			getCivilizationAdjectiveKey());
+			kTargetLeader.getCivilizationAdjectiveKey(),
+			kTargetLeader.getNameKey(), ""); // advc.mnai (lfgr 11/2021)
 	pDiplo->setAIContact(true);
 	pDiplo->setData(eBestTeam);
 	gDLL->beginDiplomacy(pDiplo, eHuman);
