@@ -2780,7 +2780,9 @@ void CvTeam::changeWarWeariness(TeamTypes eIndex, int iChange)
 }
 
 void CvTeam::changeWarWeariness(TeamTypes eOtherTeam, const CvPlot& kPlot, int iFactor)
-{
+{	// <advc.300>
+	if (isBarbarian() || eOtherTeam == BARBARIAN_TEAM)
+		return; // </advc.300>
 	int iOurCulture = kPlot.countFriendlyCulture(getID());
 	int iTheirCulture = kPlot.countFriendlyCulture(eOtherTeam);
 
