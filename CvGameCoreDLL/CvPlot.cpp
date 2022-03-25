@@ -6086,7 +6086,8 @@ bool CvPlot::isRevealed(TeamTypes eTeam, bool bDebug) const
 }
 
 
-void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly, TeamTypes eFromTeam, bool bUpdatePlotGroup)
+void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly,
+	TeamTypes eFromTeam, bool bUpdatePlotGroup)
 {
 	FAssertBounds(0, MAX_TEAMS, eTeam);
 

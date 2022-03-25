@@ -16928,14 +16928,16 @@ void CvGameTextMgr::parsePlayerTraits(CvWStringBuffer &szBuffer, PlayerTypes ePl
 }
 
 // K-Mod. I've rewritten most of this function.
-void CvGameTextMgr::parseLeaderHeadHelp(CvWStringBuffer &szBuffer, PlayerTypes eThisPlayer, PlayerTypes eOtherPlayer)
+void CvGameTextMgr::parseLeaderHeadHelp(CvWStringBuffer &szBuffer,
+	PlayerTypes eThisPlayer, PlayerTypes eOtherPlayer)
 {
 	if (eThisPlayer == NO_PLAYER)
 		return;
 
-	const CvPlayerAI& kPlayer = GET_PLAYER(eThisPlayer);
+	CvPlayerAI const& kPlayer = GET_PLAYER(eThisPlayer);
 
-	szBuffer.append(CvWString::format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), kPlayer.getName()));
+	szBuffer.append(CvWString::format(SETCOLR L"%s" ENDCOLR,
+			TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), kPlayer.getName()));
 
 	parsePlayerTraits(szBuffer, eThisPlayer);
 
@@ -16943,7 +16945,8 @@ void CvGameTextMgr::parseLeaderHeadHelp(CvWStringBuffer &szBuffer, PlayerTypes e
 	if (/*gDLL->getChtLvl() > 0*/ GC.getGame().isDebugMode() &&// advc.135c
 		GC.altKey())
 	{
-		szBuffer.append(CvWString::format(SETCOLR SEPARATOR NEWLINE, TEXT_COLOR("COLOR_LIGHT_GREY")));
+		szBuffer.append(CvWString::format(SETCOLR SEPARATOR NEWLINE,
+				TEXT_COLOR("COLOR_LIGHT_GREY")));
 		szBuffer.append(CvWString::format(L"id=%d\n", eThisPlayer)); // advc.007
 		CitySiteEvaluator citySiteEval(kPlayer);
 
@@ -16970,7 +16973,8 @@ void CvGameTextMgr::parseLeaderHeadHelp(CvWStringBuffer &szBuffer, PlayerTypes e
 #define flavour_info(x) do { \
 	if (kPlayer.AI_getFlavorValue(FLAVOR_##x)) \
 	{ \
-		szBuffer.append(CvWString::format(L"%s"L#x L"=%d", bFirst? L"" : L", ", kPlayer.AI_getFlavorValue(FLAVOR_##x))); \
+		szBuffer.append(CvWString::format(L"%s"L#x L"=%d", bFirst? L"" : L", ", \
+				kPlayer.AI_getFlavorValue(FLAVOR_##x))); \
 		bFirst = false; \
 	} \
 } while (0)
@@ -16992,7 +16996,7 @@ void CvGameTextMgr::parseLeaderHeadHelp(CvWStringBuffer &szBuffer, PlayerTypes e
 
 	if (eOtherPlayer == NO_PLAYER)
 	{
-		getWarWearinessString(szBuffer, eThisPlayer, NO_PLAYER); // total war weariness
+		getWarWearinessString(szBuffer, eThisPlayer, NO_PLAYER); // total ww
 		return; // advc
 	}
 	CvTeam& kThisTeam = GET_TEAM(kPlayer.getTeam());

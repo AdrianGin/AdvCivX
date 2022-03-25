@@ -26194,8 +26194,9 @@ void CvPlayerAI::AI_convertUnitAITypesForCrush()
 		/* if (pLoopUnit->AI_getUnitAIType() == UNITAI_RESERVE
 			|| pLoopUnit->AI_isCityAIType() && (pLoopUnit->getExtraCityDefensePercent() <= 0)) */
 		// K-Mod, protective leaders might still want to use their gunpowder units...
-		if (pLoopUnit->AI_getUnitAIType() == UNITAI_RESERVE || pLoopUnit->AI_getUnitAIType() == UNITAI_COLLATERAL
-			|| (pLoopUnit->AI_isCityAIType() && pLoopUnit->getExtraCityDefensePercent()		
+		if (pLoopUnit->AI_getUnitAIType() == UNITAI_RESERVE ||
+			pLoopUnit->AI_getUnitAIType() == UNITAI_COLLATERAL ||
+			(pLoopUnit->AI_isCityAIType() && pLoopUnit->getExtraCityDefensePercent()		
 			+ pLoopUnit->getUnitInfo().getCityDefenseModifier() / 2 // cdtw
 			<= 30))
 		{

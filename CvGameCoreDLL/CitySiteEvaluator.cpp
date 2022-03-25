@@ -2457,7 +2457,7 @@ int AIFoundValue::adjustToStartingSurroundings(int iValue) const
 	// K-Mod. note: the range has been extended, and the 'bad' counting has been rescaled.
 	iGreaterBadTile /= 3;
 	int iGreaterRangePlots = 2 * (SQR(iRange) + iRange) + 1;
-	int iGreaterRangeFactor = iGreaterRangePlots / 6; // advc
+	int iGreaterRangeFactor = iGreaterRangePlots / 6;
 	if (iGreaterBadTile > iGreaterRangeFactor)
 	{
 		iR *= iGreaterRangeFactor;

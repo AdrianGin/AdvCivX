@@ -18,7 +18,10 @@ gc = CyGlobalContext()
 localText = CyTranslator()
 
 
-# advc.137: All event preconditions that use DefaultPlayers in BtS are going to use this function instead. Using default player counts was a bad idea to begin with, and now that I've increased the default player count on Deity, it's totally out of whack.
+# advc.137: All event preconditions that use DefaultPlayers in BtS are going to
+# use this function instead. Using default player counts was a bad idea
+# to begin with, and, now that I've increased the default player count on Huge maps,
+# it's totally out of whack.
 def worldSizeTarget():
 	# 5 adjusted by building class prereq modifier, rounded to nearest.
 	return ((5 * (100 + gc.getWorldInfo(gc.getMap().getWorldSize()).getBuildingClassPrereqModifier())) + 50) // 100
