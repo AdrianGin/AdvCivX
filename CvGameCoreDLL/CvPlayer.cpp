@@ -12686,9 +12686,17 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 		if (bAdd) // Add unit to the map
 		{
 			if (getAdvancedStartPoints() >= iCost)
-			{
-				CvUnit* pUnit = initUnit(eUnit, iX, iY,
-						(UnitAITypes)iData2); // advc.250c
+			{	// <advc.250c>
+				UnitAITypes eUnitAI = (UnitAITypes)iData2;
+				// Based on MNAI (lfgr 01/2022): At least one defender per city
+				if (eUnitAI == NO_UNITAI && !GC.getGame().isOption(GAMEOPTION_SPAH) &&
+					GC.getInfo(eUnit).getUnitAIType(UNITAI_CITY_DEFENSE) &&
+					pPlot->plotCount(PUF_isUnitAIType, UNITAI_CITY_DEFENSE,
+					-1, getID()) <= 0)
+				{
+					eUnitAI = UNITAI_CITY_DEFENSE;
+				} // </advc.250c>
+				CvUnit* pUnit = initUnit(eUnit, iX, iY, eUnitAI);
 				if (pUnit != NULL)
 				{
 					pUnit->finishMoves();
