@@ -623,6 +623,13 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 		break;
 
 	case WIDGET_MINIMAP_HIGHLIGHT:
+		// <advc.004> Leader help for Military Advisor
+		if (widgetDataStruct.m_iData1 == 2) // mode id
+		{
+			PlayerTypes ePlayer = (PlayerTypes)widgetDataStruct.m_iData2;
+			if (ePlayer > NO_PLAYER && ePlayer < MAX_CIV_PLAYERS)
+				GAMETEXT.parseLeaderHeadHelp(szBuffer, ePlayer, NO_PLAYER);
+		} // </advc.004>
 		break;
 
 	case WIDGET_PRODUCTION_MOD_HELP:
