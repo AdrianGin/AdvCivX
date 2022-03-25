@@ -13021,6 +13021,8 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 			pPlot->setRevealed(getTeam(), false, true, NO_TEAM, true);
 			changeAdvancedStartPoints(iCost);
 		}
+		// advc.001 (from MNAI - lfgr fix 11/2021): I guess for the city circles
+		GC.getGame().updateColoredPlots();
 		break;
 	}
 	default:
