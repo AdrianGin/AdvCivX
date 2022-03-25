@@ -7565,9 +7565,8 @@ int CvCity::getAdditionalBaseCommerceRateBySpecialist(CommerceTypes eCommerce,
 int CvCity::getAdditionalBaseCommerceRateBySpecialistImpl(CommerceTypes eCommerce,
 	SpecialistTypes eSpecialist, int iChange) const
 {
-	CvSpecialistInfo const& kSpecialist = GC.getInfo(eSpecialist);
-	return iChange * (kSpecialist.getCommerceChange(eCommerce) +
-			GET_PLAYER(getOwner()).getSpecialistExtraCommerce(eCommerce));
+	// advc: Forward to CvPlayer (based on MNAI - lfgr fix 01/2022)
+	return iChange * GET_PLAYER(getOwner()).specialistCommerce(eSpecialist, eCommerce);
 }
 // BUG - Specialist Additional Commerce - end
 
