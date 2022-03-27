@@ -9043,8 +9043,9 @@ void CvPlayer::onTurnLogging() const
 	{
 		logBBAI("Player %d (%S) setTurnActive for turn %d (%d %s)", getID(), getCivilizationDescription(0), GC.getGame().getGameTurn(), std::abs(GC.getGame().getGameTurnYear()), GC.getGame().getGameTurnYear()>0 ? "AD" : "BC");
 
-		if (GC.getGame().getGameTurn() > 0 &&
-			(GC.getGame().getGameTurn() % 25) == 0 && !isBarbarian())
+		if (GC.getGame().getGameTurn() > 0 && !isBarbarian() &&
+			// advc.007: Interval was 25
+			(GC.getGame().getGameTurn() % gScoreLogInterval) == 0)
 		{
 			CvWStringBuffer szBuffer;
 			GAMETEXT.setScoreHelp(szBuffer, getID());
