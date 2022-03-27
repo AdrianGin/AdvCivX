@@ -502,12 +502,6 @@ void RiseFall::setPlayerControl(PlayerTypes civId, bool b) {
 			g.updateActiveVisibility();
 		setUIHidden(!b);
 	}
-	if(!b) { // Update dot map owner
-		CyArgsList pyArgs;
-		pyArgs.add(formerHumanCiv);
-		CvEventReporter::getInstance().genericEvent(
-				"SwitchHotSeatPlayer", pyArgs.makeFunctionArgs());
-	}
 	if (b) // (Otherwise CvPlayer::setIsHuman has already updated the full attitude cache)
 	{
 		for(int i = 0; i < MAX_CIV_PLAYERS; i++) {

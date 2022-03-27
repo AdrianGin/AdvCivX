@@ -9505,6 +9505,12 @@ void CvGame::changeHumanPlayer(PlayerTypes eNewHuman,
 	bool bSetTurnActive) // advc
 {
 	PlayerTypes const eCurHuman = getActivePlayer();
+	/*	<advc.001> For BUG dot map update, Civ4lerts (when switching to
+		a colonial vassal). */
+	CyArgsList pyArgs;
+	pyArgs.add(eCurHuman);
+	CvEventReporter::getInstance().genericEvent(
+			"SwitchHotSeatPlayer", pyArgs.makeFunctionArgs()); // </advc.001>
 	/*	<advc> Probably not necessary, but seems cleaner to swap the
 		player options of the old and new human rather than just copying
 		from old to new. */
