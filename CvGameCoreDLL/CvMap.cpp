@@ -1420,7 +1420,7 @@ void CvMap::calculateAreas()
 			based on areas. Also, some scenarios don't call CvGame::
 			setInitialItems; these only get the initial calculation based on
 			land, sea and peaks (not ice). */
-		calculateAreas_030();
+		calculateAreas_advc();
 		calculateReprAreas();
 		return;
 	} // </advc.030>
@@ -1442,7 +1442,7 @@ void CvMap::calculateAreas()
 }
 
 // <advc.030>
-void CvMap::calculateAreas_030()
+void CvMap::calculateAreas_advc()
 {
 	for(int iPass = 0; iPass <= 1; iPass++)
 	{
