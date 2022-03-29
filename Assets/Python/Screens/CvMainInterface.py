@@ -1,5 +1,6 @@
 ## Sid Meier's Civilization 4 - Copyright Firaxis Games 2005
 from CvPythonExtensions import *
+from RectLayout import * # advc.092
 import CvUtil
 import ScreenInput
 import CvScreenEnums
@@ -105,9 +106,26 @@ iGlobeLayerOptionsY_Minimal = 38 # distance from bottom edge
 # STACK BAR
 iStackBarHeight = 27
 # <advc.092>
+gRect = {} # Global dictionary for (rectangular) layout data
+# These global variables should be set based on the screen resolution.
+# All positional data that goes through the functions below will then
+# be scaled accordingly. Global because these will have lots of call locations,
+# so I want the calls to be compact.
+gHorizontalScaleFactor = 1.0
+gVerticalScaleFactor = 1.0
+# This one should be smaller than 1 - space in between widgets should (if at all)
+# be only slighty affected by the screen resolution.
+gSpaceScaleFactor = 1.0
+def HLEN(iWidth):
+	return gHorizontalScaleFactor* iWidth
+def VLEN(iHeight):
+	return gVerticalScaleFactor * iHeight
+def HSPACE(iWidth):
+	return gHorizontalScaleFactor * gSpaceScaleFactor * iWidth
+def VSPACE(iHeight):
+	return gVerticalScaleFactor * gSpaceScaleFactor * iHeight
 iCitySidePanelWidth = 258
 # Panel for commerce sliders on city screen
-iAdjustPanelMargin = 10 
 iAdjustPanelHeight = 105
 iTopBarHeight = iStackBarHeight + 7
 # Panel for growth and production bar
@@ -256,6 +274,36 @@ class TopBarsLayout:
 
 class CvMainInterface:
 	"Main Interface Screen"
+	# <advc.092> CyGInterfaceScreen wrappers that look up global layout data
+	def addPanel(self, szName, eStyle = None):
+		if not eStyle:
+			eStyle = PanelStyles.PANEL_STYLE_STANDARD
+		lRect = gRect[szName]
+		self.screen.addPanel(szName, u"", u"", True, False,
+				lRect.x(), lRect.y(), lRect.width(), lRect.height(),
+				eStyle)
+	def addSlider(self, szName, iDefault, iMin = 0, iMax = -1, bVertical = False,
+			eWidgetType = None, iData1 = -1, iData2 = -1):
+		if not eWidgetType:
+			eWidgetType = WidgetTypes.WIDGET_GENERAL
+		lRect = gRect[szName]
+		if iMax < 0:
+			iMax = lRect.width()
+		self.screen.addSlider(szName,
+				lRect.x(), lRect.y(), lRect.width(), lRect.height(),
+				iDefault, iMin, iMax,
+				eWidgetType, iData1, iData2, bVertical)
+	def setLabel(self, szName, szAttachTo, szText, uiFlags, eFont, fZ = 0,
+			eWidgetType = None, iData1 = -1, iData2 = -1):
+		if not eWidgetType:
+			eWidgetType = WidgetTypes.WIDGET_GENERAL
+		# (Not so nice to use rectangles for this - as the side lengths are determined
+		# by the text length and font.)
+		lRect = gRect[szName]
+		self.screen.setLabel(szName, szAttachTo, szText, uiFlags,
+				lRect.x(), lRect.y(), fZ,
+				eFont, eWidgetType, iData1, iData2)
+	# </advc.092>
 
 	def __init__(self):
 		# advc.009b: This hack is no longer needed. I've moved the global onSwitchHotSeatPlayer function to BugUtil.py.
@@ -331,9 +379,7 @@ class CvMainInterface:
 # BUG - PLE - end
 
 # BUG - field of view slider - start
-		self.szSliderTextId = "FieldOfViewSliderText"
 		self.sFieldOfView_Text = ""
-		self.szSliderId = "FieldOfViewSlider"
 		self.iField_View_Prev = -1
 		self.iFoVPos_Prev = -1 # advc.090
 # BUG - field of view slider - end
@@ -380,6 +426,7 @@ class CvMainInterface:
 			screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
 		self.xResolution = screen.getXResolution()
 		self.yResolution = screen.getYResolution()
+		gRect['Top'] = lTop = RectLayout(None, 0, 0, self.xResolution, self.yResolution)
 		# advc.061:
 		gc.getGame().setScreenDimensions(self.xResolution, self.yResolution)
 # BUG - Raw Yields - begin
@@ -416,17 +463,15 @@ class CvMainInterface:
 		# <advc.090>
 		self.iFoVLabelLower = 10
 		self.iFoVLabelUpper = 100
-		# As in BUG; now in a variable. Horizontal gap between label and slider.
-		self.iFoVLabelOffset = 5
-		self.iH_FoVSlider = 15 # As in BUG; moved up.
-		# was 100:
+		#self.iW_FoVSlider = 100
 		self.iW_FoVSlider = min(max(100, self.xResolution / 12), 200)
 		self.iW_FoVSlider -= (self.iW_FoVSlider % 2)
 		#self.iX_FoVSlider = self.xResolution - 120
-		iRightMargin_FoVSlider = 20
-		self.iX_FoVSlider = self.xResolution - self.iW_FoVSlider - iRightMargin_FoVSlider
-		iTopMargin_FoVSlider = 30
-		self.iY_FoVSlider = iAdvisorBtnY + iTopMargin_FoVSlider
+		gRect['FoVSlider'] = RectLayout(
+				lTop, HSPACE(-25), iAdvisorBtnY + iAdvisorBtnSz + VSPACE(2),
+				self.iW_FoVSlider, VLEN(15))
+		gRect['FoVSliderText'] = offsetRectLayout(gRect['FoVSlider'],
+				HSPACE(-5), VSPACE(6))
 		# </advc.090>
 		self.sFieldOfView_Text = localText.getText(
 				"TXT_KEY_BUG_OPT_MAININTERFACE__FIELDOFVIEW_TEXT", ())
@@ -532,44 +577,40 @@ class CvMainInterface:
 
 		# This is the main interface screen, create it as such
 		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		self.screen = screen # advc.092
 		self.initState(screen)
 		screen.setForcedRedraw(True)
 		screen.setDimensions(0, 0, self.xResolution, self.yResolution)
 
 		xResolution = self.xResolution
 		yResolution = self.yResolution
+		lTop = gRect['Top']
 
 		# Help Text Area
 		screen.setHelpTextArea(HELP_TEXT_DEFAULT_WIDTH, FontTypes.SMALL_FONT,
 				HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_BOTTOM_MARGIN, -0.1,
 				*HELP_TEXT_AREA_ARGS)
-	
-		# advc: Renamed the two panels below from "CenterLeft" to "CityLeft".
-		# (I don't think there's anything center about them.)	
-		# City Left
-		screen.addPanel("InterfaceCityLeftBackgroundWidget", u"", u"",
-				True, False,
-				0, 0,
-				iCitySidePanelWidth, yResolution - iLowerCornerHeight,
-				PanelStyles.PANEL_STYLE_STANDARD)
-		screen.setStyle("InterfaceCityLeftBackgroundWidget", "Panel_City_Left_Style")
-		screen.hide("InterfaceCityLeftBackgroundWidget")
-		# City Right
-		screen.addPanel("InterfaceCityRightBackgroundWidget", u"", u"",
-				True, False,
-				xResolution - iCitySidePanelWidth, 0,
-				iCitySidePanelWidth, yResolution - iLowerCornerHeight,
-				PanelStyles.PANEL_STYLE_STANDARD)
-		screen.setStyle("InterfaceCityRightBackgroundWidget", "Panel_City_Right_Style")
-		screen.hide("InterfaceCityRightBackgroundWidget")
 
-		screen.addPanel("CityScreenAdjustPanel", u"", u"",
-				True, False,
-				iAdjustPanelMargin, iAdjustPanelMargin + iTopBarHeight,
-				iCitySidePanelWidth - 2 * iAdjustPanelMargin, iAdjustPanelHeight,
-				PanelStyles.PANEL_STYLE_STANDARD)
-		screen.setStyle("CityScreenAdjustPanel", "Panel_City_Info_Style")
-		screen.hide("CityScreenAdjustPanel")
+		gRect['CityLeftPanel'] = RectLayout(lTop,
+				0, 0,
+				HLEN(iCitySidePanelWidth), VLEN(-iLowerCornerHeight))
+		self.addPanel("CityLeftPanel")
+		screen.setStyle("CityLeftPanel", "Panel_City_Left_Style")
+		screen.hide("CityLeftPanel")
+
+		gRect['CityRightPanel'] = RectLayout(lTop,
+				RectLayout.RIGHT, 0,
+				HLEN(iCitySidePanelWidth), VLEN(-iLowerCornerHeight))
+		self.addPanel("CityRightPanel")
+		screen.setStyle("CityRightPanel", "Panel_City_Right_Style")
+		screen.hide("CityRightPanel")
+
+		gRect['CityAdjustPanel'] = RectLayout(gRect['CityLeftPanel'],
+				RectLayout.CENTER, iTopBarHeight + VSPACE(10),
+				HSPACE(-20), VLEN(iAdjustPanelHeight))
+		self.addPanel("CityAdjustPanel")
+		screen.setStyle("CityAdjustPanel", "Panel_City_Info_Style")
+		screen.hide("CityAdjustPanel")
 
 		screen.addPanel("TopCityPanelLeft", u"", u"",
 				True, False,
@@ -805,15 +846,9 @@ class CvMainInterface:
 
 # BUG - field of view slider - start
 		self.setFieldofView_Text(screen)
-		#screen.addSlider(self.szSliderId, self.iX_FoVSlider + 5, self.iY_FoVSlider, iW, iH, self.iField_View - 1, 0, 100 - 1, WidgetTypes.WIDGET_GENERAL, -1, -1, False);
-		# <advc.090>
-		screen.addSlider(self.szSliderId,
-				self.iX_FoVSlider + self.iFoVLabelOffset, self.iY_FoVSlider,
-				self.iW_FoVSlider, self.iH_FoVSlider,
-				self.FoVToSliderPos(self.iField_View), 0, self.iW_FoVSlider,
-				WidgetTypes.WIDGET_GENERAL, -1, -1, False); # </advc.090>
-		screen.hide(self.szSliderTextId)
-		screen.hide(self.szSliderId)
+		self.addSlider("FoVSlider", self.FoVToSliderPos(self.iField_View))
+		screen.hide("FoVSliderText")
+		screen.hide("FoVSlider")
 # BUG - field of view slider - end
 
 		# City Tabs
@@ -2074,8 +2109,8 @@ class CvMainInterface:
 			screen.hide("BUGOptionsScreenWidget")
 # BUG - BUG Option Button - End
 # BUG - field of view slider - start
-			screen.hide(self.szSliderTextId)
-			screen.hide(self.szSliderId)
+			screen.hide("FoVSliderText")
+			screen.hide("FoVSlider")
 # BUG - field of view slider - end
 		elif (CyInterface().isCityScreenUp()):
 			screen.show("InterfaceLeftBackgroundWidget")
@@ -2107,8 +2142,8 @@ class CvMainInterface:
 			screen.hide("BUGOptionsScreenWidget")
 # BUG - BUG Option Button - End
 # BUG - field of view slider - start
-			screen.hide(self.szSliderTextId)
-			screen.hide(self.szSliderId)
+			screen.hide("FoVSliderText")
+			screen.hide("FoVSlider")
 # BUG - field of view slider - end
 		elif (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_HIDE):
 			screen.hide("InterfaceLeftBackgroundWidget")
@@ -2142,8 +2177,8 @@ class CvMainInterface:
 				screen.show("BUGOptionsScreenWidget")
 # BUG - BUG Option Button - End
 # BUG - field of view slider - start
-			screen.hide(self.szSliderTextId)
-			screen.hide(self.szSliderId)
+			screen.hide("FoVSliderText")
+			screen.hide("FoVSlider")
 # BUG - field of view slider - end
 			screen.moveToFront("TurnLogButton")
 			screen.moveToFront("EspionageAdvisorButton")
@@ -2221,8 +2256,8 @@ class CvMainInterface:
 				screen.show("BUGOptionsScreenWidget")
 # BUG - BUG Option Button - End
 # BUG - field of view slider - start
-			screen.hide(self.szSliderTextId)
-			screen.hide(self.szSliderId)
+			screen.hide("FoVSliderText")
+			screen.hide("FoVSlider")
 # BUG - field of view slider - end
 			screen.moveToFront("TurnLogButton")
 			screen.moveToFront("EspionageAdvisorButton")
@@ -2276,11 +2311,11 @@ class CvMainInterface:
 # BUG - BUG Option Button - End
 # BUG - field of view slider - start
 			if (MainOpt.isShowFieldOfView()):
-				screen.show(self.szSliderTextId)
-				screen.show(self.szSliderId)
+				screen.show("FoVSliderText")
+				screen.show("FoVSlider")
 			else:
-				screen.hide(self.szSliderTextId)
-				screen.hide(self.szSliderId)
+				screen.hide("FoVSliderText")
+				screen.hide("FoVSlider")
 # BUG - field of view slider - end
 			screen.moveToFront("TurnLogButton")
 			screen.moveToFront("EspionageAdvisorButton")
@@ -4281,13 +4316,13 @@ class CvMainInterface:
 			screen.hide("InterfaceTopCenterBackgroundWidget")
 			# advc: Doesn't exist
 			#screen.hide("InterfaceTopRightBackgroundWidget")
-			screen.hide("InterfaceCityLeftBackgroundWidget")
+			screen.hide("CityLeftPanel")
 			screen.hide("CityScreenTopWidget")
 			screen.hide("CityNameBackground")
 			screen.hide("TopCityPanelLeft")
 			screen.hide("TopCityPanelRight")
-			screen.hide("CityScreenAdjustPanel")
-			screen.hide("InterfaceCityRightBackgroundWidget")
+			screen.hide("CityAdjustPanel")
+			screen.hide("CityRightPanel")
 
 			if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW):
 				self.setMinimapButtonVisibility(True)
@@ -4297,13 +4332,13 @@ class CvMainInterface:
 
 		screen.show("InterfaceTopCenterBackgroundWidget")
 		#screen.show("InterfaceTopRightBackgroundWidget")
-		screen.show("InterfaceCityLeftBackgroundWidget")
+		screen.show("CityLeftPanel")
 		screen.show("CityScreenTopWidget")
 		screen.show("CityNameBackground")
 		screen.show("TopCityPanelLeft")
 		screen.show("TopCityPanelRight")
-		screen.show("CityScreenAdjustPanel")
-		screen.show("InterfaceCityRightBackgroundWidget")
+		screen.show("CityAdjustPanel")
+		screen.show("CityRightPanel")
 
 		if (pHeadSelectedCity.getTeam() == gc.getGame().getActiveTeam()):
 			if (gc.getActivePlayer().getNumCities() > 1):
@@ -6858,7 +6893,7 @@ class CvMainInterface:
 
 # BUG - field of view slider - start
 		if inputClass.getNotifyCode() == NotifyCode.NOTIFY_SLIDER_NEWSTOP:
-			if inputClass.getFunctionName() == self.szSliderId:
+			if inputClass.getFunctionName() == "FoVSlider":
 				screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
 				#self.iField_View = inputClass.getData() + 1
 				# <advc.090>
@@ -6936,12 +6971,9 @@ class CvMainInterface:
 			self.iField_View_Prev = iFoV
 
 	def setFieldofView_Text(self, screen):
-		# advc.090: 2nd argument was self.iField_View
 		zsFieldOfView_Text = "%s [%i]" % (
-				self.sFieldOfView_Text, self.FoVToPercent(self.iField_View))
-		screen.setLabel(self.szSliderTextId, "",
-				zsFieldOfView_Text, CvUtil.FONT_RIGHT_JUSTIFY,
-				self.iX_FoVSlider, self.iY_FoVSlider + 6, 0,
-				FontTypes.GAME_FONT,
-				WidgetTypes.WIDGET_GENERAL, -1, -1)
+				self.sFieldOfView_Text,
+				self.FoVToPercent(self.iField_View)) # advc.090: was self.iField_View
+		self.setLabel("FoVSliderText", "", zsFieldOfView_Text,
+				CvUtil.FONT_RIGHT_JUSTIFY, FontTypes.GAME_FONT)
 # BUG - field of view slider - end
