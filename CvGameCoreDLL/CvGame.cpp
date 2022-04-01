@@ -2920,20 +2920,12 @@ void CvGame::updateScore(bool bForce)
 			GET_PLAYER(eBestPlayer).updateHistory(PLAYER_HISTORY_SCORE, getGameTurn());
 		// </advc.004s>
 	}
-	/*for (size_t i = 0; i < updateAttitude.size(); i++)
-		GET_PLAYER(updateAttitude[i]).AI_updateAttitude();*/
-	// <advc.001>
-	/*	The above isn't enough; the attitudes of those outside updateAttitude
-		toward those inside could also change. */
+	/*for (size_t i = 0; i < aeUpdateAttitude.size(); i++)
+		GET_PLAYER(aeUpdateAttitude[i]).AI_updateAttitude();*/
+	/*	<advc.001> The above isn't enough; the attitudes of those outside
+		aeUpdateAttitude toward those inside could also change. */
 	if (!aeUpdateAttitude.empty())
-	{
-		FOR_EACH_ENUM(Player)
-		{
-			CvPlayerAI& kLoopPlayer = GET_PLAYER(eLoopPlayer);
-			if (kLoopPlayer.isAlive() && kLoopPlayer.isMajorCiv())
-				kLoopPlayer.AI_updateAttitude();
-		}
-	} // </advc.001>
+		CvPlayerAI::AI_updateAttitudes(); // </advc.001>
 
 	EagerEnumMap<TeamTypes,bool> abTeamScored;
 	FOR_EACH_ENUM(CivTeam)
@@ -6193,12 +6185,11 @@ void CvGame::doDeals()
 	{
 		pLoopDeal->doTurn();
 	}
-	/*	<advc.130p> K-Mod had only done this update for players involved in any deals
+	/*	advc.130p: K-Mod had only done this update for players involved in any deals
 		(through an std::set), but third parties might disapprove of the deal.
 		(I think this was a minor oversight in K-Mod - but matters more in AdvCiv
 		b/c of changes to trade values of annual deals.) */
-	for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
-		itPlayer->AI_updateAttitude(); // </advc.130p>
+	CvPlayerAI::AI_updateAttitudes();
 }
 
 // advc.055: For doGlobalWarming (needs to have external linkage)
@@ -9239,8 +9230,7 @@ void CvGame::onAllGameDataRead()
 		(m_iAIAutoPlay != 0 && !isNetworkMultiPlayer()))
 	{
 		m_iAIAutoPlay = 0; // </advc.127>
-		for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
-			itPlayer->AI_updateAttitude();
+		CvPlayerAI::AI_updateAttitudes();
 	} // </advc.130n>
 	// <advc.130r>
 	else if (m_uiSaveFlag < 20)
@@ -9505,7 +9495,7 @@ void CvGame::changeHumanPlayer(PlayerTypes eNewHuman,
 	bool bSetTurnActive) // advc
 {
 	PlayerTypes const eCurHuman = getActivePlayer();
-	/*	<advc.001> For BUG dot map update, Civ4lerts (when switching to
+	/*	<advc.001> For BUG dot map update and Civ4lerts (when switching to
 		a colonial vassal). */
 	CyArgsList pyArgs;
 	pyArgs.add(eCurHuman);
@@ -9653,15 +9643,16 @@ int CvGame::freeCityCultureFromTrait(TraitTypes eTrait) const
 
 void CvGame::doUpdateCacheOnTurn()
 {
-	// advc.enum: Shrine data now cached by CvCity
+	// (advc.enum: Shrine data now cached by CvCity)
 
 	// reset cultural victories
+	/*	K-Mod (tbd.): Move this somewhere else;
+		doesn't need to be updated every turn! */
 	m_iNumCultureVictoryCities = 0;
 	FOR_EACH_ENUM(Victory)
 	{
 		if (!isVictoryValid(eLoopVictory))
 			continue;
-
 		CvVictoryInfo const& kVictoryInfo = GC.getInfo(eLoopVictory);
 		if (kVictoryInfo.getCityCulture() > 0)
 		{
@@ -9674,7 +9665,7 @@ void CvGame::doUpdateCacheOnTurn()
 			}
 		}
 	}
-	// K-Mod. (todo: move all of that stuff above somewhere else. That doesn't need to be updated every turn!)
+	// K-Mod.
 	if (isFinalInitialized()) // advc.pf: Else pathfinder may not have been created yet
 		CvSelectionGroup::resetPath(); // (one of the few manual resets we need)
 	m_aiActivePlayerCycledGroups.clear();

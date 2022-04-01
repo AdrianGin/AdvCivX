@@ -33,6 +33,17 @@ bool CvPlayerAI::areStaticsInitialized()
 	return CvPlayer::areStaticsInitialized(); // advc.003u
 }
 
+// advc: Update all attitude caches
+void CvPlayerAI::AI_updateAttitudes()
+{
+	FOR_EACH_ENUM(Player) // (PlayerAIIter might not be ready yet)
+	{
+		CvPlayerAI& kLoopPlayer = GET_PLAYER(eLoopPlayer);
+		if (kLoopPlayer.isAlive() && kLoopPlayer.isMajorCiv())
+			kLoopPlayer.AI_updateAttitude();
+	}
+}
+
 
 DllExport CvPlayerAI& CvPlayerAI::getPlayerNonInl(PlayerTypes ePlayer)
 {
@@ -29279,11 +29290,10 @@ int CvPlayerAI::AI_getContactDelay(ContactTypes eContact) const
 void CvPlayerAI::AI_setHuman(bool b)
 {
 	// Some of the first-impression modifiers don't apply to human players
+	CvPlayerAI::AI_updateAttitudes();
+	// <advc.115b>, advc.115f
 	for (PlayerAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
-	{
-		it->AI_updateAttitude();
-		it->AI_updateVictoryWeights(); // advc.115b, advc.115f
-	}
+		it->AI_updateVictoryWeights(); // </advc.115b>
 	if (b)
 		return;
 	/*	<advc.057> Enforce invariant: AI group head has maximal impassable count.

@@ -8647,7 +8647,7 @@ uint CvPlayer::getTotalTimePlayed() const
 
 void CvPlayer::setAlive(bool bNewValue)
 {
-	if(isAlive() == bNewValue)
+	if (isAlive() == bNewValue)
 		return;
 	/*	<advc.003m> Moved up b/c, once the team's AliveCount is set to 0,
 		at-war status is lost. Need that for lifting blockades.
@@ -8673,7 +8673,7 @@ void CvPlayer::setAlive(bool bNewValue)
 	{
 		GC.getAgents().playerRevived(getID());
 		// <advc.104r> (UWAI data gets deleted upon death)
-		if(getUWAI().isEnabled())
+		if (getUWAI().isEnabled())
 			getUWAI().processNewPlayerInGame(getID()); // </advc.104r>
 	}
 	// </advc.agent>
@@ -8697,26 +8697,19 @@ void CvPlayer::setAlive(bool bNewValue)
 			setTurnActive(true);
 		}
 		gDLL->openSlot(getID());
-		if(!isBarbarian()) // advc.003n
-		{	// K-Mod. Attitude cache
-			for (PlayerTypes i = (PlayerTypes)0; i < MAX_CIV_PLAYERS; i=(PlayerTypes)(i+1))
-			{
-				/*GET_PLAYER(i).AI_updateAttitude(getID());
-				AI().AI_updateAttitude(i);*/
-				/*  advc.001: E.g. AI_getRankDifferenceAttitude can change between
-					any two civs. */
-				if (GET_PLAYER(i).isAlive() && /* advc.003n: */ !GET_PLAYER(i).isMinorCiv())
-					GET_PLAYER(i).AI_updateAttitude();
-			} // K-Mod end
+		if (!isBarbarian()) // advc.003n
+		{
+			/*  advc.001: K-Mod had only updated attitudes of and toward this player,
+				but e.g. AI_getRankDifferenceAttitude can change b/w any two players. */
+			CvPlayerAI::AI_updateAttitudes();
 		}
 	}
 	else
-	{
-		// <advc.001> CvTeam::makePeace does this, but here they missed it.
-		for(int i = 0; i < MAX_CIV_PLAYERS; i++)
+	{	// <advc.001> CvTeam::makePeace does this, but here they've missed it.
+		FOR_EACH_ENUM(CivPlayer)
 		{
-			CvPlayer& kWarEnemy = GET_PLAYER((PlayerTypes)i);
-			if(kWarEnemy.isAlive() && kWarEnemy.getID() != getID() &&
+			CvPlayer& kWarEnemy = GET_PLAYER((PlayerTypes)eLoopCivPlayer);
+			if (kWarEnemy.isAlive() && kWarEnemy.getID() != getID() &&
 				!kWarEnemy.isMinorCiv() && GET_TEAM(kWarEnemy.getTeam()).isAtWar(getTeam()))
 			{
 				kWarEnemy.updateWarWearinessPercentAnger();
@@ -8764,7 +8757,7 @@ void CvPlayer::setAlive(bool bNewValue)
 
 	kGame.setScoreDirty(true);
 	// <advc.700>
-	if(kGame.isOption(GAMEOPTION_RISE_FALL))
+	if (kGame.isOption(GAMEOPTION_RISE_FALL))
 		kGame.getRiseFall().reportElimination(getID()); // </advc.700>
 }
 

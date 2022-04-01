@@ -3212,10 +3212,7 @@ void CvTeam::setDefensivePact(TeamTypes eIndex, bool bNewValue)
 	} // </advc.106f>
 	// K-Mod. update attitude
 	if (GC.getGame().isFinalInitialized())
-	{
-		for (PlayerAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
-			it->AI_updateAttitude();
-	} // K-Mod end
+		CvPlayerAI::AI_updateAttitudes(); // K-Mod end
 }
 
 
@@ -3708,10 +3705,10 @@ void CvTeam::queueWar(TeamTypes eAttackingTeam, TeamTypes eDefendingTeam,
 void CvTeam::triggerWars(bool bForceUpdateAttitude)
 {
 	bool bWarsDeclared = false;
-	if(bTriggeringWars)
+	if (bTriggeringWars)
 		return;
 	else bTriggeringWars = true;
-	while(!attacking_queue.empty())
+	while (!attacking_queue.empty())
 	{
 		GET_TEAM(attacking_queue.front()).declareWar(
 				defending_queue.front(), newdiplo_queue.front(),
@@ -3723,12 +3720,8 @@ void CvTeam::triggerWars(bool bForceUpdateAttitude)
 		primarydow_queue.pop();
 		bWarsDeclared = true;
 	}
-	if(bWarsDeclared /* advc: */ || bForceUpdateAttitude)
-	{
-		// from declareWar (K-Mod code)
-		for (PlayerAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
-			it->AI_updateAttitude();
-	}
+	if (bWarsDeclared /* advc: */ || bForceUpdateAttitude)
+		CvPlayerAI::AI_updateAttitudes(); // K-Mod
 	bTriggeringWars = false;
 } // </kekm.26>
 
