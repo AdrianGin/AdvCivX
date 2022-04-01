@@ -25,9 +25,10 @@ localText = CyTranslator()
 
 # MULTI LIST
 #####################
-iMultiListXL = 318
-iMultiListXR = 332
-iPlotListUnitBtnSz = 34 # advc.092
+#iMultiListXL = 318
+#iMultiListXR = 332
+# advc.092: Don't repeat those constants here, get them from CvMainInterface instead.
+import CvScreensInterface
 
 class PLE:
 	def __init__(self):
@@ -850,7 +851,8 @@ class PLE:
 	############## base functions to calculate/transform the number of objects dependent on the screen resolution ######################
 
 	def getMaxCol(self):
-		return (self.xResolution - (iMultiListXL+iMultiListXR) - 2 * iPlotListUnitBtnSz) / iPlotListUnitBtnSz
+		#return (self.xResolution - (iMultiListXL+iMultiListXR) - 2 * iPlotListUnitBtnSz) / iPlotListUnitBtnSz
+		return CvScreensInterface.mainInterface.numPlotListButtonsPerRow() # advc.092
 		
 	def getMaxRow(self):
 		# advc: max added (though it shouldn't normally matter)
@@ -1694,6 +1696,8 @@ class PLE:
 			sID = string.zfill(str(iU), 2) + string.zfill(str(iP), 2)
 			szStringUnitUpgrade = self.PLOT_LIST_UPGRADE_NAME + sID
 			szFileNameUpgrade = gc.getUnitInfo(iUnitIndex).getButton()
+			# advc.092: Get the size from CvMainInterface
+			iPlotListUnitBtnSz = CvSCreensInterface.mainInterface.plotListUnitButtonSize()
 			screen.setImageButton( szStringUnitUpgrade, szFileNameUpgrade,
 					x, y, iPlotListUnitBtnSz, iPlotListUnitBtnSz,
 					WidgetTypes.WIDGET_GENERAL, iUnitIndex, -1 )

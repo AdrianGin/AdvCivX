@@ -1,6 +1,18 @@
 # advc.092: New module to help specify positions of rectangular widgets
 # relative to each other.
 
+# (Not naming this "Point2D" to avoid potential clashes with other modules)
+class PointLayout:
+	def __init__(self, fX, fY):
+		self.fX = fX
+		self.fY = fY
+	def x(self):
+		return self.fX
+	def y(self):
+		return self.fY
+	def __str__(self):
+		return ( "Point(" + str(self.fX) + ", " + str(self.fY) + ")" )
+
 # Layout data of a rectangular widget or group of widgets:
 # a pair of coordinates and a pair of side lengths.
 # The constructor receives the coordinates as an offset from another
@@ -9,78 +21,155 @@
 # For convenience, the constructors works with float values, but the accessors
 # return integers because that's what most of the CyGInterfaceScreen functions
 # in the EXE expect.
-class RectLayout:
-	_ALIGN_CENTER = 100000
-	_ALIGN_OPPOSITE = _ALIGN_CENTER + 1
+class RectLayout(object):
+	_RESERVED_CONST = 10000
+	_ALIGN_CENTER = _RESERVED_CONST
+	_ALIGN_OPPOSITE = _RESERVED_CONST + 1
+	_MAX_LENGTH =  2 * _RESERVED_CONST
 
 	LEFT = 0
 	TOP = 0
 	CENTER = _ALIGN_CENTER	
 	RIGHT = _ALIGN_OPPOSITE
 	BOTTOM = _ALIGN_OPPOSITE
+	MAX = _MAX_LENGTH
 	def __init__(self,
 			# ('None' is allowed only for the RectLayout representing the screen itself.
 			# In that case, fX and fY need to be absolute screen coordinates.)
 			lParent,
 			# Distance from the lParent's left edge if positive,
-			# from the right edge if negative.
+			# from lParent's right edge if negative.
 			# CENTER centers this widget horizontally.
-			# LEFT is equivalent to 0.
-			# RIGHT is equivalent to lParent.width().
+			# RIGHT aligns this widget horizontally to the right edge of lParent.
+			# LEFT is equivalent to fX=0.
 			fX,
 			# Distance from the lParent's top edge if positive,
-			# from the bottom edge if negative.
+			# from lParent's bottom edge if negative.
 			# CENTER centers this widget vertically.
+			# BOTTOM aligns this widget vertically to the bottom edge of lParent.
 			# TOP is equivalent to 0.
-			# BOTTOM is equivalent to lParent.height().
 			fY,
-			# Our side lengths in pixels.
-			# If negative, then the parent's width or height gets added.
-			fWidth, fHeight):
-		if fWidth < 0:
-			fWidth += lParent.width()
-		if fHeight < 0:
-			fHeight += lParent.height()
-		self.fWidth = fWidth
-		self.fHeight = fHeight
+			# Our width in pixels if positive.
+			# If negative, then fWidth is the distance from lParent's right edge
+			# and, when fX is set to CENTER, then negative fWidth is also the 
+			# distance from lParent's left edge. Negative fWidth can't be combined
+			# with RIGHT alignment.
+			fWidth,
+			# Our height in pixels if positive.
+			# If negative, then fHeight is the distance from lParent's bottom edge
+			# and, when fY is set to CENTER, then negative fHeight is also the 
+			# distance from lParent's top edge. Negative fHeight can't be combined
+			# with BOTTOM alignment.
+			fHeight,
+			bOffScreen = False):
 		if not lParent:
 			self.fX = fX
 			self.fY = fY
+			fPrelimWidth = fWidth
+			fPrelimHeight = fHeight
 		else:
-			self.fX = self._calcCoord(lParent.x(), lParent.width(), fX, fWidth)
-			self.fY = self._calcCoord(lParent.y(), lParent.height(), fY, fHeight)
-		assert self.fWidth >= 0
-		assert self.fHeight >= 0
+			fPrelimWidth = RectLayout._calcSideLenPrelim(lParent.width(), fWidth)
+			fPrelimHeight = RectLayout._calcSideLenPrelim(lParent.height(), fHeight)
+			self.fX = RectLayout._calcCoord(lParent.x(), lParent.width(),
+					fX, fPrelimWidth, bOffScreen)
+			self.fY = RectLayout._calcCoord(lParent.y(), lParent.height(),
+					fY, fPrelimHeight, bOffScreen)
+		self.fWidth = fPrelimWidth
+		if fWidth == RectLayout.MAX:
+			self.fWidth = min(self.fWidth, lParent.xRight() - self.fX)
+		elif fWidth < 0:
+			if fX == RectLayout.CENTER: # Margin applies to both edges
+				self.fWidth += fWidth
+			else:
+				assert fX < RectLayout._RESERVED_CONST
+				self.fWidth -= self.fX - lParent.x() # Subtract left margin
+		self.fHeight = fPrelimHeight
+		if fHeight == RectLayout.MAX:
+			self.fHeight = min(self.fHeight, lParent.yBottom() - self.fY)
+		elif fHeight < 0:
+			if fY == RectLayout.CENTER: # Margin applies to both edges
+				self.fHeight += fHeight
+			else:
+				assert fY < RectLayout._RESERVED_CONST
+				self.fHeight -= self.fY - lParent.y() # Subtract left margin
+		assert 0 <= self.fWidth < RectLayout._RESERVED_CONST
+		assert 0 <= self.fHeight < RectLayout._RESERVED_CONST
+		assert self.fX < RectLayout._RESERVED_CONST
+		assert self.fY < RectLayout._RESERVED_CONST
 		# (It's OK for widgets to be only partly on the screen, so
 		# having negative fX or fY isn't necessarily wrong.)
 
+	# Preliminary calculation of side length. Preliminary b/c our screen coordinates
+	# haven't been calculated yet.
+	@staticmethod # (Very much not supposed to access self)
+	def _calcSideLenPrelim(iParentSideLen, fSideLen):
+		if fSideLen == RectLayout.MAX:
+			return iParentSideLen
+		else:
+			fR = fSideLen
+			if fSideLen < 0:
+				fR += iParentSideLen
+			return fR
+
 	# Calculate absolute coordinate on screen
-	def _calcCoord(self, iParentVal, iParentDim, iVal, iDim):
+	@staticmethod
+	def _calcCoord(iParentVal, iParentDim, iVal, iDim, bOffScreen):
 		iR = iParentVal
 		if iVal == RectLayout.CENTER:
 			iR += (iParentDim - iDim) / 2
 			return iR
 		if iVal == RectLayout._ALIGN_OPPOSITE:
-			return iParentDim - iDim
-		assert iVal < 100000, "High vals are reserved"
+			iR += iParentDim - iDim
+			return iR
 		iR += iVal
-		if iVal < 0:
+		if iVal < 0 and not bOffScreen:
 			iR += iParentDim - iDim
 		return iR
+	def move(self, fX, fY):
+		self.fX += fX
+		self.fY += fY
 	# Screen coordinates of our upper left corner
 	def x(self):
 		return int(round(self.fX))
 	def y(self):
 		return int(round(self.fY))
+	def upperLeft(self):
+		return Point(self.fX, self.fY)
+	# Screen coordinates of lower right corner
+	def xRight(self):
+		return self.x() + self.width()
+	def yBottom(self):
+		return self.y() + self.height()
 	# Our side lengths (pixels)
 	def width(self):
 		return int(round(self.fWidth))
 	def height(self):
 		return int(round(self.fHeight))
+	def encloses(self, lOther):
+		return (self.x() <= lOther.x() and self.xRight() >= lOther.xRight() and
+				self.y() <= lOther.y() and self.yBottom() >= lOther.yBottom())
+	def __str__(self):
+		return ( "Rect(" +
+				str(self.fX) + ", " + str(self.fY) + ", " +
+				str(self.fWidth) + ", " + str(self.fHeight) + ")" )
+	@staticmethod
+	def offsetPoint(lRect, fDeltaX, fDeltaY = 0):
+		if fDeltaX == RectLayout.CENTER:
+			fDeltaX = lRect.fWidth / 2
+		if fDeltaY == RectLayout.CENTER:
+			fDeltaY = lRect.fHeight / 2
+		assert fDeltaX < RectLayout._RESERVED_CONST
+		assert fDeltaY < RectLayout._RESERVED_CONST
+		return PointLayout(lRect.fX + fDeltaX, lRect.fY + fDeltaY)
+
+class SquareLayout(RectLayout):
+	def __init__(self, lParent, fX, fY, iSize, bOffScreen = False):
+		super(SquareLayout, self).__init__(lParent, fX, fY, iSize, iSize, bOffScreen)
+	def size(self):
+		return self.width()
 
 # Positional data for a group of widgets layed out in a single row or column.
 # Intended as an abstract class.
-# Tbd.: Wrap behavior, so that this class can be used for the "plot list" (unit icons).
 class _SingleFileLayout(RectLayout):
 	HORIZONTAL = True
 	VERTICAL = False
@@ -109,7 +198,7 @@ class _SingleFileLayout(RectLayout):
 			iTotalWidth = iTotalExpandingDim
 		else:
 			iTotalHeight = iTotalExpandingDim
-		super().__init__(lParent, fX, fY, iTotalWidth, iTotalHeight)
+		super(_SingleFileLayout, self).__init__(lParent, fX, fY, iTotalWidth, iTotalHeight)
 		assert iSpacing > -iExpandingDim, "widgets will appear out of sequence"
 		self.iWidgets = iWidgets
 		self.iNextWidget = 0
@@ -117,29 +206,29 @@ class _SingleFileLayout(RectLayout):
 		# Coordinates of current widget as an offset to ours
 		iBtnX = 0
 		iBtnY = 0
-		for i in range(iWidgets):
+		for i in range(self.iWidgets):
 			lWidget = RectLayout(self, iBtnX, iBtnY, fWidth, fHeight)
-			widgets.append(lWidget)
+			self.seq.append(lWidget)
 			if bHorizontal:
 				iBtnX += iSpacing + fWidth
 			else:
 				iBtnY += iSpacing + fHeight
 	def next(self):
-		if iNextWidget > iWidgets:
+		if self.iNextWidget > self.iWidgets:
 			return None
-		lNext = seq[iNextWidget]
-		iNextWidget += 1
+		lNext = self.seq[self.iNextWidget]
+		self.iNextWidget += 1
 		return lNext
+	def move(self, fX, fY):
+		super(_SingleFileLayout, self).move(fX, fY)
+		for lRect in self.seq:
+			lRect.move(fX, fY)
 
 class ColumnLayout(_SingleFileLayout):
 	def __init__(self, lParent, fX, fY, iWidgets, iSpacing, fWidth, fHeight = None):
-		super().__init__(lParent, SingleFileLayout.VERTICAL, fX, fY, iWidgets, iSpacing, fWidth, fHeight)
+		super(ColumnLayout, self).__init__(
+				lParent, _SingleFileLayout.VERTICAL, fX, fY, iWidgets, iSpacing, fWidth, fHeight)
 class RowLayout(_SingleFileLayout):
 	def __init__(self, lParent, fX, fY, iWidgets, iSpacing, fWidth, fHeight = None):
-		super().__init__(lParent, SingleFileLayout.HORIZONTAL, fX, fY, iWidgets, iSpacing, fWidth, fHeight)
-
-def offsetRectLayout(lRect, iDeltaX, iDeltaY = 0):
-	lCopy = RectLayout(None, 0, 0, lRect.width(), lRect.height())
-	lCopy.fX = lRect.fX + iDeltaX
-	lCopy.fY = lRect.fY + iDeltaY
-	return lCopy
+		super(RowLayout, self).__init__(
+				lParent, _SingleFileLayout.HORIZONTAL, fX, fY, iWidgets, iSpacing, fWidth, fHeight)
