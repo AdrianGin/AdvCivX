@@ -128,9 +128,10 @@ class StrategyLayer(object):
 		Resets the data to a blank state and clears the dirty flag.
 		"""
 		self.dirty = False
-		# advc.004: Force-enable upon reset - now that this option is accessible
-		# only through its key combo.
-		StratLayerOpt.setShowDotMap(True)
+		# <advc.004> Force-show upon reset - now that the dot map can be toggled
+		# only through its key combo (and not through a BUG options checkbox).
+		if StratLayerOpt.isEnabled():
+			StratLayerOpt.setShowDotMap(True) # </advc.004>
 	
 	def read(self):
 		"""
