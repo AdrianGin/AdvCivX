@@ -40,6 +40,7 @@ import GPUtil # BUG - Great Person Bar
 import ProgressBarUtil # BUG - Progress Bar
 import PLE # PLE Code
 import MinimapOptions # advc.002a
+import RawYields # BUG - Raw Yields
 # <advc.090>
 import math
 def floor(f):
@@ -54,7 +55,9 @@ def iround(f):
 gRectLayoutDict = {} # Global dictionary for (rectangular) layout data
 def gSetRectangle(szKeyName, lRect):
 	gRectLayoutDict[szKeyName] = lRect
-	print(szKeyName + " " + str(lRect)) # advc.tmp
+	if (not szKeyName.startswith("PlotListButton") or
+			szKeyName.startswith("PlotListButton315")): # lower left unit button
+		print(szKeyName + " " + str(lRect)) # advc.tmp
 def gSetRect(szKeyName, szParentKey, fX, fY, fWidth, fHeight, bOffScreen = False):
 	gSetRectangle(szKeyName, RectLayout(gRect(szParentKey),
 			fX, fY, fWidth, fHeight, bOffScreen))
@@ -99,20 +102,7 @@ def HSPACE(iWidth):
 def VSPACE(iHeight):
 	return iround(gVerticalScaleFactor * gSpaceScaleFactor * iHeight)
 gStackBarDefaultHeight = 27
-# Tbd.: Replace all these with global rect data
-iCitySidePanelWidth = 258 # gRect("CityLeftPanel").width()
-iCityNamePanelHeight = 38 # gRect("CityNameBackground").height()
-iTopCityPanelHeight = 2 * (gStackBarDefaultHeight + 3) # gRect("TopCityPanelLeft").height()
-iTopCityPanelY = iCityNamePanelHeight + gStackBarDefaultHeight + 5 # gRect("TopCityPanelLeft").y()
 # </advc.092>
-# TOP CENTER TITLE
-iCityCenterBarsHMargin = 140 # advc.092
-iCityCenterRow1X = iCitySidePanelWidth + iCityCenterBarsHMargin
-iCityCenterRow2X = iCityCenterRow1X
-iCityCenterBarsVMargin = 8
-iCityCenterRow1Y = iTopCityPanelY + iCityCenterBarsVMargin
-iCityCenterRow2Y = iTopCityPanelY + iTopCityPanelHeight - gStackBarDefaultHeight + 1
-iCityCenterBarYOffset = 4 # advc.092
 # BUG - city specialist - start
 #SUPER_SPECIALIST_STACK_WIDTH = 15 # (advc: unused)
 SPECIALIST_ROW_HEIGHT = 34
@@ -154,14 +144,11 @@ g_NumActionInfos = 0
 g_eEndTurnButtonState = -1
 g_pSelectedUnit = 0
 g_szTimeText = ""
-
 # BUG - NJAGC - start
 g_bShowTimeTextAlt = False
 g_iTimeTextCounter = -1
 # BUG - NJAGC - end
-
 # BUG - Raw Yields - start
-import RawYields
 g_bRawShowing = False
 g_bYieldView, g_iYieldType = RawYields.getViewAndType(0)
 g_iYieldTiles = RawYields.WORKED_TILES
@@ -176,22 +163,13 @@ RAW_YIELD_HELP = (	"TXT_KEY_RAW_YIELD_VIEW_TRADE",
 # BUG - Raw Yields - end
 # BUG - field of view slider:
 #DEFAULT_FIELD_OF_VIEW = 42 # disabled (replaced) by K-Mod
-#HELP_TEXT_MINIMUM_WIDTH = 300
-# <advc.092> (NB: setHelpTextArea seems to ignore most of these params)
-HELP_TEXT_DEFAULT_WIDTH = 350
-HELP_TEXT_LEFT_MARGIN = 7
-HELP_TEXT_BOTTOM_MARGIN = (5
-		+ 133 # CenterBottomPanelHeight = 133
-		+ 34) #iPlotListUnitBtnSz = 34
-HELP_TEXT_BOTTOM_MARGIN_MIN = 50
-HELP_TEXT_AREA_ARGS = (False, "", True, False, CvUtil.FONT_LEFT_JUSTIFY, 300)
-# </advc.092>
+
 
 class CvMainInterface:
 	"Main Interface Screen"
 	# <advc.092> CyGInterfaceScreen wrappers that look up global layout data
 	def addPanel(self, szName, eStyle = None):
-		if not eStyle:
+		if eStyle is None:
 			eStyle = PanelStyles.PANEL_STYLE_STANDARD
 		lRect = gRect(szName)
 		self.screen.addPanel(szName, u"", u"", True, False,
@@ -202,7 +180,7 @@ class CvMainInterface:
 			# or a CvInfo object with a getButton method
 			textureInfo,
 			eWidgetType = None, iData1 = -1, iData2 = -1, szAttachTo = None):
-		if not eWidgetType:
+		if eWidgetType is None:
 			eWidgetType = WidgetTypes.WIDGET_GENERAL
 		lRect = gRect(szName)
 		if isinstance(textureInfo, basestring):
@@ -210,8 +188,9 @@ class CvMainInterface:
 		else:
 			szTexture = textureInfo.getButton()
 		if szAttachTo:
+			lParent = gRect(szAttachTo)
 			self.screen.addDDSGFCAt(szName, szAttachTo, szTexture,
-					lRect.x(), lRect.y(), lRect.width(), lRect.height(),
+					lRect.x() - lParent.x(), lRect.y() - lParent.y(), lRect.width(), lRect.height(),
 					eWidgetType, iData1, iData2, False)
 		else:
 			self.screen.addDDSGFC(szName, szTexture,
@@ -220,38 +199,73 @@ class CvMainInterface:
 	def addDDSAt(self, szName, szAttachTo, textureInfo,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
 		self.addDDS(szName, textureInfo, eWidgetType, iData1, iData2, szAttachTo)
-	def _setStyledImageButton(self, szName, szAttachTo, szTexture, szStyle,
+	def _setStyledImageButton(self, szName, szAttachTo, szTexture, style,
 			eWidgetType, iData1, iData2):
-		if not eWidgetType:
+		if eWidgetType is None:
 			eWidgetType = WidgetTypes.WIDGET_GENERAL
 		lRect = gRect(szName)
+		if isinstance(style, basestring):
+			szStyle = style
+		else:
+			szStyle = None
 		if szAttachTo:
+			lParent = gRect(szAttachTo)
+			assert szStyle
 			self.screen.setImageButtonAt(szName, szAttachTo, szTexture,
-					lRect.x(), lRect.y(), lRect.width(), lRect.height(),
+					lRect.x() - lParent.x(), lRect.y() - lParent.y(), lRect.width(), lRect.height(),
 					eWidgetType, iData1, iData2)
 		else:
-			self.screen.setImageButton(szName, szTexture,
-					lRect.x(), lRect.y(), lRect.width(), lRect.height(),
-					eWidgetType, iData1, iData2)
+			if szStyle or style is None:
+				self.screen.setImageButton(szName, szTexture,
+						lRect.x(), lRect.y(), lRect.width(), lRect.height(),
+						eWidgetType, iData1, iData2)
+			else:
+				self.screen.setButtonGFC(szName, u"", "",
+						lRect.x(), lRect.y(), lRect.width(), lRect.height(),
+						eWidgetType, iData1, iData2, style)
 		if szStyle:
 			self.screen.setStyle(szName, szStyle)
-	def setStyledButton(self, szName, szStyle,
+	def setStyledButton(self, szName, style, # Style can be a key string or ID
 			eWidgetType = None, iData1 = -1, iData2 = -1, szAttachTo = None):
-		self._setStyledImageButton(szName, szAttachTo, "", szStyle,
+		self._setStyledImageButton(szName, szAttachTo, "", style,
 				eWidgetType, iData1, iData2)
 	def setStyledButtonAt(self, szName, szAttachTo, szStyle,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
 		self.setStyledButton(szName, szStyle, eWidgetType, iData1, iData2, szAttachTo)
 	def setImageButton(self, szName, szTexture,
 			eWidgetType = None, iData1 = -1, iData2 = -1, szAttachTo = None):
+		artInfo = ArtFileMgr.getInterfaceArtInfo(szTexture)
+		if artInfo:
+			szTexture = artInfo.getPath()
 		self._setStyledImageButton(szName, szAttachTo, szTexture, None,
 				eWidgetType, iData1, iData2)
 	def setImageButtonAt(self, szName, szAttachTo, szTexture,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
 		self.setImageButton(szName, szTexture, eWidgetType, iData1, iData2, szAttachTo)
+	def addCheckBox(self, szName, szTextureKey, szHLTextureKey, eStyle,
+			eWidgetType = None, iData1 = -1, iData2 = -1, szAttachTo = None):
+		if eWidgetType is None:
+			eWidgetType = WidgetTypes.WIDGET_GENERAL
+		lSquare = gRect(szName)
+		szTexturePath = ArtFileMgr.getInterfaceArtInfo(szTextureKey).getPath()
+		szHLTexturePath = ArtFileMgr.getInterfaceArtInfo(szHLTextureKey).getPath()
+		if szAttachTo:
+			lParent = gRect(szAttachTo)
+			self.screen.addCheckBoxGFCAt(szAttachTo, szName,
+					szTexturePath, szHLTexturePath,
+					lSquare.x() - lParent.x(), lSquare.y() - lParent.y(), lSquare.size(), lSquare.size(),
+					eWidgetType, iData1, iData2, eStyle, True)
+		else:
+			self.screen.addCheckBoxGFC(szName,
+					szTexturePath, szHLTexturePath,
+					lSquare.x(), lSquare.y(), lSquare.size(), lSquare.size(),
+					eWidgetType, iData1, iData2, eStyle)
+	def addCheckBoxAt(self, szName, szAttachTo, szTextureKey, szHLTextureKey, eStyle,
+			eWidgetType = None, iData1 = -1, iData2 = -1):
+		self.addCheckBox(szName, szTextureKey, szHLTextureKey, eStyle, eWidgetType, iData1, iData2, szAttachTo)
 	def addSlider(self, szName, iDefault, iMin = 0, iMax = -1, bVertical = False,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
-		if not eWidgetType:
+		if eWidgetType is None:
 			eWidgetType = WidgetTypes.WIDGET_GENERAL
 		lRect = gRect(szName)
 		if iMax < 0:
@@ -262,7 +276,7 @@ class CvMainInterface:
 				eWidgetType, iData1, iData2, bVertical)
 	def setLabel(self, szName, szAttachTo, szText, uiFlags, eFont, fZ = 0,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
-		if not eWidgetType:
+		if eWidgetType is None:
 			eWidgetType = WidgetTypes.WIDGET_GENERAL
 		lPoint = gPoint(szName)
 		self.screen.setLabel(szName, szAttachTo, szText, uiFlags,
@@ -270,26 +284,32 @@ class CvMainInterface:
 				eFont, eWidgetType, iData1, iData2)
 	def setText(self, szName, szAttachTo, szText, uiFlags, eFont, fZ = 0,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
-		if not eWidgetType:
+		if eWidgetType is None:
 			eWidgetType = WidgetTypes.WIDGET_GENERAL
 		lPoint = gPoint(szName)
 		self.screen.setText(szName, szAttachTo, szText, uiFlags,
 				lPoint.x(), lPoint.y(), fZ,
 				eFont, eWidgetType, iData1, iData2)
-	def createProgressBar(self, szName, szColorKey, uiMarks, bForward):
+	# color can be either a key string or a color id
+	def createProgressBar(self, szName, color, uiMarks, bForward):
 		lRect = gRect(szName)
+		if isinstance(color, basestring):
+			eColor = gc.getInfoTypeForString(color)
+		else:
+			eColor = color
 		return ProgressBarUtil.ProgressBar(szName + "-Canvas",
 				lRect.x(), lRect.y(), lRect.width(), lRect.height(),
-				gc.getInfoTypeForString(szColorKey), uiMarks, bForward)
+				eColor, uiMarks, bForward)
 	def addStackedBar(self, szName,
 			eWidgetType = None, iData1 = -1, iData2 = -1,
 			szAttachTo = None):
-		if not eWidgetType:
+		if eWidgetType is None:
 			eWidgetType = WidgetTypes.WIDGET_GENERAL
 		lRect = gRect(szName)
 		if szAttachTo:
+			lParent = gRect(szAttachTo)
 			self.screen.addStackedBarGFCAt(szName, szAttachTo,
-					lRect.x(), lRect.y(), lRect.width(), lRect.height(),
+					lRect.x() - lParent.x(), lRect.y() - lParent.y(), lRect.width(), lRect.height(),
 					InfoBarTypes.NUM_INFOBAR_TYPES,
 					eWidgetType, iData1, iData2)
 		else:
@@ -300,6 +320,21 @@ class CvMainInterface:
 	def addStackedBarAt(self, szName, szAttachTo,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
 		self.addStackedBar(szName, eWidgetType, iData1, iData2, szAttachTo)
+	def setDefaultHelpTextArea(self, bMinMargin = False):
+		# <advc.009b> Work around exceptions upon reloading scripts
+		if not hasattr(self, "screen"):
+			return # </advc.009b>
+		if bMinMargin:
+			# As in BtS; pretty arbitrary and overlaps the unit pane.
+			iBottomMargin = VSPACE(50)
+		else:
+			iBottomMargin = (VSPACE(5) + gRect("CenterBottomPanel").height() +
+					self.plotListUnitButtonSize())
+		# (I don't think the HLENs will have any effect; seems that the EXE
+		# ignores the fWidth and iMinWidth params.)
+		self.screen.setHelpTextArea(HLEN(350), FontTypes.SMALL_FONT,
+				HSPACE(7), gRect("Top").yBottom() - iBottomMargin, -0.1,
+				False, "", True, False, CvUtil.FONT_LEFT_JUSTIFY, HLEN(300))
 	# </advc.092>
 
 	def __init__(self):
@@ -394,6 +429,9 @@ class CvMainInterface:
 	# advc.092: So that PLE can access it
 	def plotListUnitButtonSize(self):
 		return BTNSZ(34)
+
+	def unitButtonOverlaySize(self):
+		return (12 * self.plotListUnitButtonSize()) / 34
 
 # I know that this is redundant, but CyInterface().getPlotListOffset() (and prob the column one too)
 # uses this function
@@ -509,13 +547,21 @@ class CvMainInterface:
 		gSetRect("RightHalf", "Top",
 				gRect("LeftHalf").xRight(), 0,
 				RectLayout.MAX, RectLayout.MAX)
-
+		# Background for top bars
 		gSetRect("TopCityPanelLeft", "LeftHalf",
 				gRect("CityNameBackground").x(), gRect("CityNameBackground").yBottom() + 1,
 				RectLayout.MAX, 2 * (gStackBarDefaultHeight + VSPACE(3)))
 		gSetRect("TopCityPanelRight", "RightHalf",
 				0, gRect("TopCityPanelLeft").y(),
 				gRect("CityNameBackground").width() / 2, gRect("TopCityPanelLeft").height())
+		# The two panels above really form a single panel; they're separate only
+		# so that the color fades away toward the middle. Let's put them together:
+		# (Could also define this as a child of TopCityPanelCenter - which includes
+		# CityNameBackground as well.) 
+		gSetRect("TopCityPanelLeftAndRight", "Top",
+				gRect("TopCityPanelLeft").x(), gRect("TopCityPanelLeft").y(),
+				gRect("TopCityPanelLeft").width() + gRect("TopCityPanelRight").width(),
+				gRect("TopCityPanelLeft").height())
 		gSetRect("CityScreenTopWidget", "Top",
 				0, -2,
 				RectLayout.MAX, gRect("TopBarsOneLineContainer").yBottom() + VLEN(12), True)
@@ -532,7 +578,10 @@ class CvMainInterface:
 				gRect("InterfaceTopLeft").width(),
 				gRect("InterfaceTopLeft").height(), True)
 
+		self.setCityCenterBarRects()
+
 		self.setAdvisorButtonRects()
+		self.setTopRightButtonRects()
 		# advc: BtS had used 27, BUG (always) 10.
 		if self.bScaleHUD or MainOpt.isShowOptionsButton():
 			iTurnLogBtnMargin = 10
@@ -622,28 +671,18 @@ class CvMainInterface:
 		self.pOneLineResearchBar.addBarItem("OneLineResearchBar")
 		self.pOneLineResearchBar.addBarItem("ResearchText")
 		# BUG - Bars on single line for higher resolution screens - end
-
-		self.pBarPopulationBar = ProgressBarUtil.ProgressBar(
-				"PopulationBar-Canvas",
-				iCityCenterRow1X, iCityCenterRow1Y - iCityCenterBarYOffset,
-				self.xResolution - iCityCenterRow1X * 2, gStackBarDefaultHeight,
+		self.pBarPopulationBar = self.createProgressBar("PopulationBar",
 				gc.getYieldInfo(YieldTypes.YIELD_FOOD).getColorType(),
 				ProgressBarUtil.SOLID_MARKS, True)
 		self.pBarPopulationBar.addBarItem("PopulationBar")
 		self.pBarPopulationBar.addBarItem("PopulationText")
-		self.pBarProductionBar = ProgressBarUtil.ProgressBar(
-				"ProductionBar-Canvas",
-				iCityCenterRow2X, iCityCenterRow2Y - iCityCenterBarYOffset,
-				self.xResolution - iCityCenterRow2X * 2, gStackBarDefaultHeight,
+		self.pBarProductionBar = self.createProgressBar("ProductionBar",
 				gc.getYieldInfo(YieldTypes.YIELD_PRODUCTION).getColorType(),
 				ProgressBarUtil.TICK_MARKS, True)
 		self.pBarProductionBar.addBarItem("ProductionBar")
 		self.pBarProductionBar.addBarItem("ProductionText")
-		self.pBarProductionBar_Whip = ProgressBarUtil.ProgressBar(
-				"ProductionBar-Whip-Canvas",
-				iCityCenterRow2X, iCityCenterRow2Y - iCityCenterBarYOffset,
-				self.xResolution - iCityCenterRow2X * 2, gStackBarDefaultHeight,
-				gc.getInfoTypeForString("COLOR_YELLOW"),
+		self.pBarProductionBar_Whip = self.createProgressBar(
+				"ProductionBar-Whip", "COLOR_YELLOW",
 				ProgressBarUtil.CENTER_MARKS, False)
 		self.pBarProductionBar_Whip.addBarItem("ProductionBar")
 		self.pBarProductionBar_Whip.addBarItem("ProductionText")
@@ -749,6 +788,33 @@ class CvMainInterface:
 				fGPBarWidth, gRect("TopBarsTwoLineContainer").height() / 2)
 # BUG - Great Person Bar, BUG - Great General Bar - end
 
+	def setCityCenterBarRects(self):
+		iYieldTextWidth = HLEN(140)
+		gSetRect("PopulationBar", "TopCityPanelLeftAndRight",
+				iYieldTextWidth, VSPACE(4),
+				-iYieldTextWidth, gStackBarDefaultHeight)
+		gSetRect("ProductionBar", "TopCityPanelLeftAndRight",
+				RectLayout.CENTER, -VSPACE(3),
+				gRect("PopulationBar").width(), gStackBarDefaultHeight)
+		gSetRectangle("ProductionBar-Whip", gRect("ProductionBar")) # BUG - Progress Bar - Tick Marks
+		gOffSetPoint("PopulationText", "PopulationBar",
+				RectLayout.CENTER, VSPACE(4))
+		gOffSetPoint("ProductionText", "ProductionBar",
+				RectLayout.CENTER, VSPACE(4))
+		iTextVOffset = VSPACE(4)
+		# NB: The "input texts" to the left will get right-aligned,
+		# the happy and health text to the right will get left-aligned.
+		# BUG - Food Rate Hover - start
+		gOffSetPoint("PopulationInputText", "PopulationBar",
+				-HSPACE(6), iTextVOffset)
+		# BUG - Food Rate Hover - end
+		gOffSetPoint("ProductionInputText", "ProductionBar",
+				-HSPACE(6), iTextVOffset)
+		gOffSetPoint("HealthText", "PopulationBar",
+				HSPACE(6) + gRect("PopulationBar").width(), iTextVOffset)
+		gOffSetPoint("HappinessText", "ProductionBar",
+				HSPACE(6) + gRect("ProductionBar").width(), iTextVOffset)
+
 	def setAdvisorButtonRects(self):
 		iSize = BTNSZ(28)
 		advisorNames = [ "Domestic", "Finance", "Civics", "Foreign", "Military", "Tech",
@@ -766,6 +832,14 @@ class CvMainInterface:
 		gSetRectangle("AdvisorButtons", lButtons)
 		for szAdvisorName in advisorNames:
 			gSetRectangle(szAdvisorName + "AdvisorButton", lButtons.next())
+
+	def setTopRightButtonRects(self):
+		lButtons = RowLayout(gRect("Top"),
+				-HSPACE(4), VSPACE(2),
+				2, HSPACE(2), BTNSZ(24))
+		gSetRectangle("TopRightButtons", lButtons)
+		gSetRectangle("MainMenuButton", lButtons.next())
+		gSetRectangle("InterfaceHelpButton", lButtons.next())
 
 	def setCityTabRects(self):
 		iButtons = 3
@@ -797,10 +871,7 @@ class CvMainInterface:
 		yResolution = self.yResolution
 		lTop = gRect("Top")
 
-		# Help Text Area
-		screen.setHelpTextArea(HELP_TEXT_DEFAULT_WIDTH, FontTypes.SMALL_FONT,
-				HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_BOTTOM_MARGIN, -0.1,
-				*HELP_TEXT_AREA_ARGS)
+		self.setDefaultHelpTextArea()
 
 		self.addPanel("CityLeftPanel")
 		screen.setStyle("CityLeftPanel", "Panel_City_Left_Style")
@@ -951,93 +1022,21 @@ class CvMainInterface:
 		gc.getMap().updateMinimapColor()
 		self.createMinimapButtons()
 
-		# Help button (always visible)
-		# <advc.092>
-		iTopRBtnSz = 24
-		iTopRBtnRMargin = 4
-		iTopRBtnTMargin = 2
-		iTopRBtnSpacing = 2
-		iBtnX = xResolution - iTopRBtnSz - iTopRBtnRMargin # </advc.092>
-		screen.setImageButton("InterfaceHelpButton",
-				ArtFileMgr.getInterfaceArtInfo("INTERFACE_GENERAL_CIVILOPEDIA_ICON").getPath(),
-				iBtnX, iTopRBtnTMargin,
-				iTopRBtnSz, iTopRBtnSz,
+		# Help button (always visible), main menu button
+		self.setImageButton("InterfaceHelpButton", "INTERFACE_GENERAL_CIVILOPEDIA_ICON",
 				WidgetTypes.WIDGET_ACTION,
-				gc.getControlInfo(ControlTypes.CONTROL_CIVILOPEDIA).getActionInfoIndex(), -1)
+				gc.getControlInfo(ControlTypes.CONTROL_CIVILOPEDIA).getActionInfoIndex())
 		screen.hide("InterfaceHelpButton")
-		iBtnX -= iTopRBtnSz + iTopRBtnSpacing # advc.092
-		screen.setImageButton("MainMenuButton",
-				ArtFileMgr.getInterfaceArtInfo("INTERFACE_GENERAL_MENU_ICON").getPath(),
-				iBtnX, iTopRBtnTMargin,
-				iTopRBtnSz, iTopRBtnSz,
-				WidgetTypes.WIDGET_MENU_ICON, -1, -1)
+		self.setImageButton("MainMenuButton", "INTERFACE_GENERAL_MENU_ICON",
+				WidgetTypes.WIDGET_MENU_ICON)
 		screen.hide("MainMenuButton")
 
-		# Globeview buttons
 		self.createGlobeviewButtons()
 
 		self.updateBottomButtonList()
 		screen.hide("BottomButtonList")
 
-		# *********************************************************************************
-		# PLOT LIST BUTTONS
-		# *********************************************************************************
-
-# BUG - PLE - begin
-		iPlotListUnitBtnSz = self.plotListUnitButtonSize()
-		for j in range(self.numPlotListRows()):
-			yRow = (j - self.numPlotListRows() + 1) * iPlotListUnitBtnSz
-			yPixel = yResolution - 169 + yRow - 3
-			xPixel = 315 - 3
-			xWidth = self.numPlotListButtonsPerRow() * iPlotListUnitBtnSz + 3
-			yHeight = 32 + 3
-
-			szStringPanel = "PlotListPanel" + str(j)
-			screen.addPanel(szStringPanel, u"", u"", True, False,
-					xPixel, yPixel, xWidth, yHeight,
-					PanelStyles.PANEL_STYLE_EMPTY)
-
-			for i in range(self.numPlotListButtonsPerRow()):
-				k = j * self.numPlotListButtonsPerRow() + i
-
-				xOffset = i * iPlotListUnitBtnSz
-				szString = "PlotListButton" + str(k)
-
-# BUG - plot list - start
-				szFileNamePromo = ArtFileMgr.getInterfaceArtInfo(
-						"OVERLAY_PROMOTION_FRAME").getPath()
-				szStringPromoFrame = szString + "PromoFrame"
-				screen.addDDSGFCAt(szStringPromoFrame , szStringPanel, szFileNamePromo,
-						xOffset + 2, 2, 32, 32,
-						WidgetTypes.WIDGET_PLOT_LIST, k, -1, False)
-				screen.hide(szStringPromoFrame)
-# BUG - plot list - end
-
-				screen.addCheckBoxGFCAt(szStringPanel, szString,
-						ArtFileMgr.getInterfaceArtInfo("INTERFACE_BUTTONS_GOVERNOR").getPath(),
-						ArtFileMgr.getInterfaceArtInfo("BUTTON_HILITE_SQUARE").getPath(),
-						xOffset + 3, 3, 32, 32,
-						WidgetTypes.WIDGET_PLOT_LIST, k, -1,
-						ButtonStyles.BUTTON_STYLE_LABEL, True)
-				screen.hide(szString)
-
-				szStringHealth = szString + "Health"
-				screen.addStackedBarGFCAt(szStringHealth, szStringPanel,
-						xOffset + 3, 26, 32, 11,
-						InfoBarTypes.NUM_INFOBAR_TYPES,
-						WidgetTypes.WIDGET_GENERAL, k, -1)
-				screen.hide(szStringHealth)
-
-				szStringIcon = szString + "Icon"
-				szFileName = ArtFileMgr.getInterfaceArtInfo("OVERLAY_MOVE").getPath()
-				screen.addDDSGFCAt(szStringIcon, szStringPanel, szFileName,
-						xOffset, 0, 12, 12,
-						WidgetTypes.WIDGET_PLOT_LIST, k, -1, False)
-				screen.hide(szStringIcon)
-
-		self.PLE.preparePlotListObjects(screen)
-# BUG - PLE - end
-
+		self.createPlotListFrames() # advc: Moved into subroutine
 
 		# End Turn Text
 		screen.setLabel("EndTurnText", "Background",
@@ -1254,11 +1253,7 @@ class CvMainInterface:
 
 		szHideSelectionDataList = []
 
-		screen.addStackedBarGFC("PopulationBar",
-				iCityCenterRow1X, iCityCenterRow1Y - iCityCenterBarYOffset,
-				xResolution - iCityCenterRow1X * 2, gStackBarDefaultHeight,
-				InfoBarTypes.NUM_INFOBAR_TYPES,
-				WidgetTypes.WIDGET_HELP_POPULATION, -1, -1)
+		self.addStackedBar("PopulationBar", WidgetTypes.WIDGET_HELP_POPULATION)
 		screen.setStackedBarColors("PopulationBar", InfoBarTypes.INFOBAR_STORED,
 				gc.getYieldInfo(YieldTypes.YIELD_FOOD).getColorType())
 		screen.setStackedBarColorsAlpha("PopulationBar", InfoBarTypes.INFOBAR_RATE,
@@ -1269,11 +1264,7 @@ class CvMainInterface:
 				gc.getInfoTypeForString("COLOR_EMPTY"))
 		screen.hide("PopulationBar")
 
-		screen.addStackedBarGFC("ProductionBar",
-				iCityCenterRow2X, iCityCenterRow2Y - iCityCenterBarYOffset,
-				xResolution - iCityCenterRow2X * 2, gStackBarDefaultHeight,
-				InfoBarTypes.NUM_INFOBAR_TYPES,
-				WidgetTypes.WIDGET_HELP_PRODUCTION, -1, -1)
+		self.addStackedBar("ProductionBar", WidgetTypes.WIDGET_HELP_PRODUCTION)
 		screen.setStackedBarColors("ProductionBar", InfoBarTypes.INFOBAR_STORED,
 				gc.getYieldInfo(YieldTypes.YIELD_PRODUCTION).getColorType())
 		screen.setStackedBarColorsAlpha("ProductionBar", InfoBarTypes.INFOBAR_RATE,
@@ -1365,54 +1356,6 @@ class CvMainInterface:
 				ButtonStyles.BUTTON_STYLE_ARROW_RIGHT)
 		screen.hide("MainCityScrollPlus")
 # BUG - City Arrows - end
-
-# BUG - PLE - begin
-		# <advc.092> (More to be done here)
-		xPLE = xResolution - gRect("BottomButtonList").width() + 298
-		yPLE = yResolution - 171 # </advc.092>
-		screen.setButtonGFC("PlotListMinus", u"", "",
-				xPLE - (3 * iPlotListUnitBtnSz) / 2,
-				yPLE,
-				32, 32,
-				WidgetTypes.WIDGET_PLOT_LIST_SHIFT, -1, -1,
-				ButtonStyles.BUTTON_STYLE_ARROW_LEFT)
-		screen.hide("PlotListMinus")
-		screen.setButtonGFC(self.PLE.PLOT_LIST_MINUS_NAME, u"", "",
-				xPLE - (3 * iPlotListUnitBtnSz) / 2,
-				yPLE,
-				32, 32,
-				WidgetTypes.WIDGET_GENERAL, -1, -1, ButtonStyles.BUTTON_STYLE_ARROW_LEFT)
-		screen.hide(self.PLE.PLOT_LIST_MINUS_NAME)
-
-		screen.setButtonGFC("PlotListPlus", u"", "",
-				xPLE - iPlotListUnitBtnSz,
-				yPLE,
-				32, 32,
-				WidgetTypes.WIDGET_PLOT_LIST_SHIFT, 1, -1,
-				ButtonStyles.BUTTON_STYLE_ARROW_RIGHT)
-		screen.hide("PlotListPlus")
-		screen.setButtonGFC(self.PLE.PLOT_LIST_PLUS_NAME, u"", "",
-				xPLE - iPlotListUnitBtnSz,
-				yPLE,
-				32, 32, WidgetTypes.WIDGET_GENERAL, 1, -1,
-				ButtonStyles.BUTTON_STYLE_ARROW_RIGHT)
-		screen.hide(self.PLE.PLOT_LIST_PLUS_NAME)
-
-		screen.setImageButton(self.PLE.PLOT_LIST_UP_NAME,
-				ArtFileMgr.getInterfaceArtInfo("PLE_ARROW_UP").getPath(),
-				xPLE - (3 * iPlotListUnitBtnSz) / 2 + 5,
-				yPLE + 5,
-				20, 20,
-				WidgetTypes.WIDGET_GENERAL, -1, -1)
-		screen.hide(self.PLE.PLOT_LIST_UP_NAME)
-		screen.setImageButton(self.PLE.PLOT_LIST_DOWN_NAME,
-				ArtFileMgr.getInterfaceArtInfo("PLE_ARROW_DOWN").getPath(),
-				xPLE - iPlotListUnitBtnSz + 5,
-				yPLE + 5,
-				20, 20,
-				WidgetTypes.WIDGET_GENERAL, -1, -1)
-		screen.hide(self.PLE.PLOT_LIST_DOWN_NAME)
-# BUG - PLE - end
 
 		screen.addPanel("TradeRouteListBackground", u"", u"",
 				True, False, 10, 157, 238, 30,
@@ -1646,13 +1589,101 @@ class CvMainInterface:
 		lRect = RectLayout(gRect("BottomButtonMaxSpace"),
 				0, iTMargin, RectLayout.MAX, -iBMargin)
 		gSetRectangle("BottomButtonList", lRect)
-		try: # advc.009b: Work around exception upon reloading scripts
-			self.screen.addMultiListControlGFC("BottomButtonList", u"",
-					lRect.x(), lRect.y(), lRect.width(), lRect.height(),
-					4, iButtonSize, iButtonSize, # numLists, defaultWidth, defaultHeight
-					TableStyles.TABLE_STYLE_STANDARD)
-		except AttributeError:
-			pass
+		self.screen.addMultiListControlGFC("BottomButtonList", u"",
+				lRect.x(), lRect.y(), lRect.width(), lRect.height(),
+				4, iButtonSize, iButtonSize, # numLists, defaultWidth, defaultHeight
+				TableStyles.TABLE_STYLE_STANDARD)
+
+	def createPlotListFrames(self): # advc: Cut from interfaceScreen
+		screen = self.screen
+# BUG - PLE - begin
+		iBtnSize = self.plotListUnitButtonSize()
+		iRows = self.numPlotListRows()
+		iCols = self.numPlotListButtonsPerRow()
+		for j in range(iRows):
+			szPanelName = "PlotListPanel" + str(j)
+			gSetRect(szPanelName, "Top",
+					gRect("LowerLeftCornerPanel").xRight() + HSPACE(8),
+					gRect("CenterBottomPanel").y() - VSPACE(6)
+					+ (j - iRows) * iBtnSize,
+					iCols * iBtnSize + HSPACE(3),
+					iBtnSize + VSPACE(1))
+			self.addPanel(szPanelName, PanelStyles.PANEL_STYLE_EMPTY)
+			for i in range(iCols):
+				k = j * iCols + i
+				xOffset = i * iBtnSize
+				szBtn = "PlotListButton" + str(k)
+# BUG - plot list - start
+				szBtnPromoFrame = szBtn + "PromoFrame"
+				iSizeDiff = 2
+				iFrameSize = iBtnSize - iSizeDiff
+				gSetRectangle(szBtnPromoFrame, SquareLayout(gRect(szPanelName),
+						xOffset + iSizeDiff, iSizeDiff, iFrameSize))
+				self.addDDSAt(szBtnPromoFrame, szPanelName,
+						"OVERLAY_PROMOTION_FRAME",
+						WidgetTypes.WIDGET_PLOT_LIST, k)
+				screen.hide(szBtnPromoFrame)
+# BUG - plot list - end
+				gSetRectangle(szBtn, SquareLayout(gRect(szPanelName),
+						xOffset + iSizeDiff + 1, iSizeDiff + 1, iFrameSize))
+				self.addCheckBoxAt(szBtn, szPanelName,
+						"INTERFACE_BUTTONS_GOVERNOR", "BUTTON_HILITE_SQUARE",
+						ButtonStyles.BUTTON_STYLE_LABEL,
+						WidgetTypes.WIDGET_PLOT_LIST, k)
+				screen.hide(szBtn)
+				szBtnHealth = szBtn + "Health"
+				gSetRectangle(szBtnHealth, RectLayout(gRect(szPanelName),
+						xOffset + iSizeDiff + 1, (26 * iBtnSize) / 32,
+						iBtnSize, (11 * iBtnSize) / 32))
+				self.addStackedBarAt(szBtnHealth, szPanelName,
+						WidgetTypes.WIDGET_GENERAL, k)
+				screen.hide(szBtnHealth)
+				szBtnIcon = szBtn + "Icon"
+				iOverlaySize = self.unitButtonOverlaySize()
+				gSetRectangle(szBtnIcon, SquareLayout(gRect(szPanelName),
+						xOffset, 0, iOverlaySize))
+				self.addDDSAt(szBtnIcon, szPanelName, "OVERLAY_MOVE",
+						WidgetTypes.WIDGET_PLOT_LIST, k)
+				screen.hide(szBtnIcon)
+
+		self.PLE.preparePlotListObjects(screen)
+		lBottommostPanel = gRect("PlotListPanel" + str(iRows - 1))
+		lPlusMinusButtons = RowLayout(gRect("Top"),
+				lBottommostPanel.xRight() + HSPACE(8),
+				lBottommostPanel.y() + VSPACE(3),
+				2, HSPACE(5), BTNSZ(32))
+		gSetRectangle("PlotListPlusMinus", lPlusMinusButtons)
+		gSetRectangle("PlotListMinus", lPlusMinusButtons.next())
+		gSetRectangle("PlotListPlus", lPlusMinusButtons.next())
+		lUpDownButtons = ColumnLayout(gRect("Top"),
+				gRect("PlotListPlusMinus").xCenter(),
+				gRect("PlotListPlusMinus").y(),
+				2, VSPACE(5), BTNSZ(24))
+		lUpDownButtons.move(-lUpDownButtons.width() / 2.0, -lUpDownButtons.height() / 2.0)
+		gSetRectangle("PlotListUpDown", lUpDownButtons)
+		gSetRectangle(self.PLE.PLOT_LIST_UP_NAME, lUpDownButtons.next())
+		gSetRectangle(self.PLE.PLOT_LIST_DOWN_NAME, lUpDownButtons.next())
+		# Copies for the PLE module
+		gSetRectangle(self.PLE.PLOT_LIST_MINUS_NAME, gRect("PlotListMinus"))
+		gSetRectangle(self.PLE.PLOT_LIST_PLUS_NAME, gRect("PlotListPlus"))
+
+		self.setStyledButton("PlotListMinus", ButtonStyles.BUTTON_STYLE_ARROW_LEFT,
+				WidgetTypes.WIDGET_PLOT_LIST_SHIFT, -1)
+		screen.hide("PlotListMinus")
+		self.setStyledButton(self.PLE.PLOT_LIST_MINUS_NAME, ButtonStyles.BUTTON_STYLE_ARROW_LEFT)
+		screen.hide(self.PLE.PLOT_LIST_MINUS_NAME)
+
+		self.setStyledButton("PlotListPlus", ButtonStyles.BUTTON_STYLE_ARROW_RIGHT,
+				WidgetTypes.WIDGET_PLOT_LIST_SHIFT, 1)
+		screen.hide("PlotListPlus")
+		self.setStyledButton(self.PLE.PLOT_LIST_PLUS_NAME, ButtonStyles.BUTTON_STYLE_ARROW_RIGHT)
+		screen.hide(self.PLE.PLOT_LIST_PLUS_NAME)
+
+		self.setImageButton(self.PLE.PLOT_LIST_UP_NAME, "PLE_ARROW_UP")
+		screen.hide(self.PLE.PLOT_LIST_UP_NAME)
+		self.setImageButton(self.PLE.PLOT_LIST_DOWN_NAME, "PLE_ARROW_DOWN")
+		screen.hide(self.PLE.PLOT_LIST_DOWN_NAME)
+# BUG - PLE - end
 
 	# Will update the screen (every 250 MS)
 	def updateScreen(self):
@@ -3205,7 +3236,7 @@ class CvMainInterface:
 				lRect.x(), lRect.y(), lRect.width(), lRect.height(),
 				WidgetTypes.WIDGET_CYCLE_UNIT, bWorkers, iWidgetData2,
 				ButtonStyles.BUTTON_STYLE_IMAGE)
-		iOverlaySize = BTNSZ(12)
+		iOverlaySize = self.unitButtonOverlaySize()
 		screen.addDDSGFCAt(szName + "Overlay", szName + "Button", szOverlayPath,
 				0, 0, iOverlaySize, iOverlaySize,
 				WidgetTypes.WIDGET_CYCLE_UNIT, bWorkers, iWidgetData2, False)
@@ -4307,15 +4338,8 @@ class CvMainInterface:
 
 		# advc: Deal with the non-city branch first (to reduce indentation)
 		if not CyInterface().isCityScreenUp():
-			# Help Text Area
-			if CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW:
-				screen.setHelpTextArea(HELP_TEXT_DEFAULT_WIDTH, FontTypes.SMALL_FONT,
-						HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_BOTTOM_MARGIN, -0.1,
-						*HELP_TEXT_AREA_ARGS)
-			else:
-				screen.setHelpTextArea(HELP_TEXT_DEFAULT_WIDTH, FontTypes.SMALL_FONT,
-						HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_BOTTOM_MARGIN_MIN, -0.1,
-						*HELP_TEXT_AREA_ARGS)
+			self.setDefaultHelpTextArea(
+					CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_SHOW)
 
 			screen.hide("TopCityPanelCenter")
 			# advc: Doesn't exist
@@ -4349,7 +4373,6 @@ class CvMainInterface:
 				screen.show("CityScrollMinus")
 				screen.show("CityScrollPlus")
 
-		# Help Text Area
 		screen.setHelpTextArea(390, FontTypes.SMALL_FONT,
 				0, 0, -2.2, True,
 				ArtFileMgr.getInterfaceArtInfo("POPUPS_BACKGROUND_TRANSPARENT").getPath(),
@@ -4418,11 +4441,8 @@ class CvMainInterface:
 			else:
 				szBuffer = localText.getText("INTERFACE_CITY_STAGNANT", ())
 
-			screen.setLabel("PopulationText", "Background",
-					szBuffer, CvUtil.FONT_CENTER_JUSTIFY,
-					screen.centerX(512), iCityCenterRow1Y, -1.3,
-					FontTypes.GAME_FONT,
-					WidgetTypes.WIDGET_GENERAL, -1, -1)
+			self.setLabel("PopulationText", "Background", szBuffer,
+					CvUtil.FONT_CENTER_JUSTIFY, FontTypes.GAME_FONT, -1.3)
 			screen.setHitTest("PopulationText", HitTestTypes.HITTEST_NOHIT)
 			screen.show("PopulationText")
 
@@ -4455,11 +4475,9 @@ class CvMainInterface:
 					gc.getYieldInfo(YieldTypes.YIELD_FOOD).getChar())
 			# draw label below
 		# advc.004: BULL widget help enabled
-		screen.setLabel("PopulationInputText", "Background",
-				szBuffer, CvUtil.FONT_RIGHT_JUSTIFY,
-				iCityCenterRow1X - 6, iCityCenterRow1Y, -0.3,
-				FontTypes.GAME_FONT,
-				WidgetTypes.WIDGET_FOOD_MOD_HELP, -1, -1)
+		self.setLabel("PopulationInputText", "Background", szBuffer,
+				CvUtil.FONT_RIGHT_JUSTIFY, FontTypes.GAME_FONT, -0.3,
+				WidgetTypes.WIDGET_FOOD_MOD_HELP)
 		screen.show("PopulationInputText")
 # BUG - Food Rate Hover - end
 		if (pHeadSelectedCity.badHealth(False) > 0 or
@@ -4479,11 +4497,9 @@ class CvMainInterface:
 				szBuffer = localText.getText(
 						"INTERFACE_CITY_HEALTH_GOOD_NO_BAD",
 						(pHeadSelectedCity.goodHealth(),))
-			screen.setLabel("HealthText", "Background",
-					szBuffer, CvUtil.FONT_LEFT_JUSTIFY,
-					xResolution - iCityCenterRow1X + 6, iCityCenterRow1Y, -0.3,
-					FontTypes.GAME_FONT,
-					WidgetTypes.WIDGET_HELP_HEALTH, -1, -1)
+			self.setLabel("HealthText", "Background", szBuffer,
+					CvUtil.FONT_LEFT_JUSTIFY, FontTypes.GAME_FONT, -0.3,
+					WidgetTypes.WIDGET_HELP_HEALTH)
 			screen.show("HealthText")
 		if (iFoodDifference < 0):
 			if (pHeadSelectedCity.getFood() + iFoodDifference > 0):
@@ -4607,11 +4623,9 @@ class CvMainInterface:
 								"INTERFACE_CITY_PRODUCTION",
 								(pHeadSelectedCity.getProductionNameKey(), iProductionTurns))
 # BUG - Whip Assist - end
-			screen.setLabel("ProductionText", "Background",
-					szBuffer, CvUtil.FONT_CENTER_JUSTIFY,
-					screen.centerX(512), iCityCenterRow2Y, -1.3,
-					FontTypes.GAME_FONT,
-					WidgetTypes.WIDGET_GENERAL, -1, -1)
+			self.setLabel("ProductionText", "Background", szBuffer,
+					CvUtil.FONT_CENTER_JUSTIFY, FontTypes.GAME_FONT, -1.3,
+					WidgetTypes.WIDGET_GENERAL)
 			screen.setHitTest("ProductionText", HitTestTypes.HITTEST_NOHIT)
 			screen.show("ProductionText")
 		if (pHeadSelectedCity.isProductionProcess()):
@@ -4627,11 +4641,9 @@ class CvMainInterface:
 		else:
 			szBuffer = u"%d%c" %(iProductionDiffNoFood,
 					gc.getYieldInfo(YieldTypes.YIELD_PRODUCTION).getChar())
-		screen.setLabel("ProductionInputText", "Background",
-				szBuffer, CvUtil.FONT_RIGHT_JUSTIFY,
-				iCityCenterRow1X - 6, iCityCenterRow2Y, -0.3,
-				FontTypes.GAME_FONT,
-				WidgetTypes.WIDGET_PRODUCTION_MOD_HELP, -1, -1)
+		self.setLabel("ProductionInputText", "Background", szBuffer,
+				CvUtil.FONT_RIGHT_JUSTIFY, FontTypes.GAME_FONT, -0.3,
+				WidgetTypes.WIDGET_PRODUCTION_MOD_HELP)
 		screen.show("ProductionInputText")
 		if (pHeadSelectedCity.happyLevel() >= 0 or
 				pHeadSelectedCity.unhappyLevel(0) > 0):
@@ -4665,11 +4677,9 @@ class CvMainInterface:
 				if iAngerTimer > 0:
 					szBuffer += u" (%i)" % iAngerTimer
 # BUG - Anger Display - end
-			screen.setLabel("HappinessText", "Background",
-					szBuffer, CvUtil.FONT_LEFT_JUSTIFY,
-					xResolution - iCityCenterRow1X + 6, iCityCenterRow2Y, -0.3,
-					FontTypes.GAME_FONT,
-					WidgetTypes.WIDGET_HELP_HAPPINESS, -1, -1)
+			self.setLabel("HappinessText", "Background", szBuffer,
+					CvUtil.FONT_LEFT_JUSTIFY, FontTypes.GAME_FONT, -0.3,
+					WidgetTypes.WIDGET_HELP_HAPPINESS)
 			screen.show("HappinessText")
 		if (not pHeadSelectedCity.isProductionProcess()):
 			# advc.064: Moved up
@@ -6477,19 +6487,9 @@ class CvMainInterface:
 		# </advc.004m>
 
 		# Positioning things based on the visibility of the globe
-		if kEngine.isGlobeviewUp():
-			screen.setHelpTextArea(HELP_TEXT_DEFAULT_WIDTH, FontTypes.SMALL_FONT,
-					HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_BOTTOM_MARGIN_MIN, -0.1,
-					*HELP_TEXT_AREA_ARGS)
-		else:
-			if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW):
-				screen.setHelpTextArea(HELP_TEXT_DEFAULT_WIDTH, FontTypes.SMALL_FONT,
-						HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_BOTTOM_MARGIN, -0.1,
-						*HELP_TEXT_AREA_ARGS)
-			else:
-				screen.setHelpTextArea(HELP_TEXT_DEFAULT_WIDTH, FontTypes.SMALL_FONT,
-						HELP_TEXT_LEFT_MARGIN, yResolution - HELP_TEXT_BOTTOM_MARGIN_MIN, -0.1,
-						*HELP_TEXT_AREA_ARGS)
+
+		self.setDefaultHelpTextArea(kEngine.isGlobeviewUp() or
+				CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_SHOW)
 
 		# Set base Y position for the LayerOptions, if we find them
 		if CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_HIDE:

@@ -140,6 +140,11 @@ class RectLayout(object):
 		return self.x() + self.width()
 	def yBottom(self):
 		return self.y() + self.height()
+	# Screen coordinates of center
+	def xCenter(self):
+		return int(round(self.fX + self.fWidth / 2))
+	def yCenter(self):
+		return int(round(self.fY + self.fHeight / 2))
 	# Our side lengths (pixels)
 	def width(self):
 		return int(round(self.fWidth))
