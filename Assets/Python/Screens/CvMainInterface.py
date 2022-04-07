@@ -2577,10 +2577,12 @@ class CvMainInterface:
 			for i in range(CyInterface().getNumCachedInterfacePlotUnits()):
 				pLoopUnit = CyInterface().getCachedInterfacePlotUnit(i)
 				if (pLoopUnit):
-
-					if ((iCount == 0) and (CyInterface().getPlotListColumn() > 0)):
+					# advc.004n: Allow going back down to a single row on the city screen
+					if (#iCount == 0 and
+							CyInterface().getPlotListColumn() > 0):
 						bLeftArrow = True
-					elif ((iCount == (self.numPlotListRows() * self.numPlotListButtonsPerRow() - 1)) and
+					#elif
+					if ((iCount == (self.numPlotListRows() * self.numPlotListButtonsPerRow() - 1)) and
 							((iVisibleUnits - iCount - CyInterface().getPlotListColumn() + iSkipped) > 1)):
 						bRightArrow = True
 
