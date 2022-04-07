@@ -778,17 +778,43 @@ bool CvDLLWidgetData::executeAction(CvWidgetDataStruct &widgetDataStruct)
 		break;
 
 	case WIDGET_PLOT_LIST_SHIFT:
-		gDLL->UI().changePlotListColumn(iData1 *
-			  // <advc.004n> BtS code:
-			  //((GC.ctrlKey()) ? (GC.getDefineINT("MAX_PLOT_LIST_SIZE") - 1) : 1));
-			  std::min(GC.getDefineINT("MAX_PLOT_LIST_SIZE"),
-			  gDLL->UI().getHeadSelectedCity()->getPlot().getNumUnits())
-			  /* Don't really know how to determine the number of units shown
-				 initially. Offset divided by 9 happens to work, at least for
-				 1024x768 (offset 81, 9 units) and 1280x1024 (144, 16). */
-			  - gDLL->UI().getPlotListOffset() / 9); // </advc.004n>
+	{
+		//int iIncr = (GC.ctrlKey() ? GC.getDefineINT("MAX_PLOT_LIST_SIZE") - 1 : 1);
+		// <advc.004n>
+		CvPlot const* pPlot = gDLL->UI().getSelectionPlot();
+		if (pPlot == NULL)
+			break;
+		int iStep = 10;
+		int const iChange = iData1;
+		int const iMaxStep = GC.getDefineINT("MAX_PLOT_LIST_SIZE"); // 100
+		if (gDLL->UI().isCityScreenUp())
+		{
+			int const iPlotUnits = pPlot->getNumUnits();
+			static int iUnitsPerRow = 0;
+			if (GC.getGame().getPlotListShift() == 0 && iChange == 1)
+			{
+				/*	Unhelpfully, the offset counts backward from the maximal
+					number of units that CvMainInterface can display at once.
+					Since we know that the city screen shows 1 row initially,
+					we can figure out how many units are actually shown.*/
+				iUnitsPerRow = gDLL->UI().getPlotListOffset() /
+						(GC.getMAX_PLOT_LIST_ROWS() - 1);
+				/*	Show a total of MAX_PLOT_LIST_SIZE. (Then move in steps of 10,
+					same as on the main screen, which shows multiple rows already
+					at shift 0.) */
+				iStep = std::max(iStep, std::min(
+						iPlotUnits, iMaxStep - iUnitsPerRow));
+			}
+			else if (GC.getGame().getPlotListShift() == 1 && iChange == -1)
+			{
+				FAssert(iUnitsPerRow > 0);
+				iStep = std::min(iMaxStep, iPlotUnits) - iUnitsPerRow;
+			}
+		}
+		GC.getGame().changePlotListShift(iChange);
+		gDLL->UI().changePlotListColumn(iData1 * iStep); // </advc.004n>
 		break;
-
+	}
 	case WIDGET_CITY_SCROLL:
 		if (iData1 > 0)
 			GC.getGame().doControl(CONTROL_NEXTCITY);

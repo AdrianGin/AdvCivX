@@ -2815,3 +2815,15 @@ void CvGame::handleDiplomacySetAIComment(DiploCommentTypes eComment) const
 	// advc.072:
 	m_bShowingCurrentDeals = (eComment == GC.getAIDiploCommentType("CURRENT_DEALS"));
 }
+
+
+// advc.004n: (Note - m_bCityScreenUp is already updated when this gets called.)
+void CvGame::onCityScreenChange()
+{
+	changePlotListShift(-getPlotListShift());
+	/*	To fix a BtS issue with the bottom rows of the plot list
+		being empty after having shifted the plot list on the city screen.
+		(Looks like the EXE ensures a nonnegative column value. Don't know
+		how to determine the current value to reset it more properly.) */
+	gDLL->UI().changePlotListColumn(-100000);
+}

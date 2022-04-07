@@ -524,6 +524,9 @@ void CvGame::reset(HandicapTypes eHandicap, bool bConstructorCall)
 	m_bNukesValid = false;
 	m_bShowingCurrentDeals = false; // advc.072 (not serialized)
 	m_iScreenWidth = m_iScreenHeight = 0; // advc.061
+	// <advc.004n>
+	m_iPlotListShift = 0;
+	m_bCityScreenUp = false; // </advc.004n>
 
 	m_eHandicap = eHandicap;
 	// <advc.127>
@@ -2866,7 +2869,14 @@ void CvGame::update()
 			responsiveness when hovering over the scoreboard. (Not sure.) */
 		if (getTurnSlice() % 4 == 0)
 			AI().uwai().invalidateUICache(); // </advc.104l>
-
+		/*	<advc.004n> (Disassembly suggests that the EXE caches this info,
+			so this check is fast.) */
+		bool bCityScreenUp = gDLL->UI().isCityScreenUp();
+		if (bCityScreenUp != m_bCityScreenUp)
+		{
+			m_bCityScreenUp = bCityScreenUp;
+			onCityScreenChange();
+		} // </advc004n>
 		if (getActivePlayer() != NO_PLAYER && GET_PLAYER(getActivePlayer()).getAdvancedStartPoints() >= 0 &&
 			!gDLL->UI().isInAdvancedStart())
 		{
