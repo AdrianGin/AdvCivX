@@ -1253,6 +1253,8 @@ void CvDLLWidgetData::doPlotListShift(int iChange)
 {
 	//int iIncr = (GC.ctrlKey() ? GC.getDefineINT("MAX_PLOT_LIST_SIZE") - 1 : 1); // BtS
 	// <advc.004n>
+	if (GC.getMAX_PLOT_LIST_ROWS() <= 1)
+		return;
 	CvPlot const* pPlot = gDLL->UI().getSelectionPlot();
 	if (pPlot == NULL)
 		return;

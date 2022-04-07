@@ -2851,7 +2851,7 @@ void CvGame::onCityScreenChange()
 	changePlotListShift(-getPlotListShift());
 	/*	To fix a BtS issue with the bottom rows of the plot list
 		being empty after having shifted the plot list on the city screen.
-		(Looks like the EXE ensures a nonnegative column value. Don't know
-		how to determine the current value to reset it more properly.) */
+		(Looks like the EXE ensures a nonnegative column value. Could probably
+		get the current value via Python for a more proper reset.) */
 	gDLL->UI().changePlotListColumn(-100000);
 }
