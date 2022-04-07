@@ -4942,6 +4942,15 @@
 		<Italian>[COLOR_WARNING_TEXT]Impossibile colpire con armi nucleari il territorio e le unit&#224; amiche[COLOR_REVERT]</Italian>
 		<Spanish>[COLOR_WARNING_TEXT]No se pueden hacer bombardeos nucleares contra los territorios o unidades amigos[COLOR_REVERT]</Spanish>
 	</TEXT>
+	<!--- ... nor own population in enemy cities. -->
+	<TEXT>
+		<Tag>TXT_KEY_CANT_NUKE_OWN_POP</Tag>
+		<English>[COLOR_WARNING_TEXT]Cannot Strike Cities with %d1_Thresh%% or more Friendly Nationality[COLOR_REVERT]</English>
+		<French>[COLOR_WARNING_TEXT]Impossible de lancer le missile nucl&#233;aire sur des cit&#233;s avec %d1_Thresh%%  de nationalité amie[COLOR_REVERT]</French>
+		<German>[COLOR_WARNING_TEXT]Städte mit %d1_Thresh%% befreundeter Nationalität dürfen nicht getroffen werden[COLOR_REVERT]</German>
+		<Italian>[COLOR_WARNING_TEXT]Impossibile colpire con armi nucleari le citt&#224; con il %d1_Thresh%% di nazionalità amica[COLOR_REVERT]</Italian>
+		<Spanish>[COLOR_WARNING_TEXT]No se pueden hacer bombardeos nucleares contra las ciudades con un %d1_Thresh%% de nacionalidad amiga[COLOR_REVERT]</Spanish>
+	</TEXT>
 
 	<!-- advc.072: Based on TXT_KEY_TRADE_PEACE_TREATY_STRING in
 		 CIV4GameTextInfos.xml -->

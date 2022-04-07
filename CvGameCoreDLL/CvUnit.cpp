@@ -3710,7 +3710,15 @@ bool CvUnit::isNukeVictim(const CvPlot* pPlot, TeamTypes eTeam) const
 		{
 			return true;
 		}
-		// <kekm.7> (advc): Not OK to nuke our own units
+		// <kekm.7> (advc)
+		// Can't nuke culturally owned population
+		if (kLoopPlot.isCity() &&
+			kLoopPlot.calculateFriendlyCulturePercent(eTeam) >=
+			GC.getDefineINT(CvGlobals::CITY_NUKE_CULTURE_THRESH))
+		{
+			return true;
+		}
+		// Not OK to nuke our own units
 		if (eTeam == getTeam() && kLoopPlot.plotCheck(NULL, -1, -1, NO_PLAYER, getTeam()))
 			return true; // </kekm.7>
 		if (kLoopPlot.plotCheck(PUF_isCombatTeam, eTeam, getTeam()) != NULL &&

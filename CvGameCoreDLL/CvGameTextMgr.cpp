@@ -20325,6 +20325,7 @@ void CvGameTextMgr::getPlotHelp(CvPlot* pMouseOverPlot,
 					break;
 				case INTERFACEMODE_NUKE:
 					getNukePlotHelp(*pMouseOverPlot, *pHeadSelectedUnit, szTempBuffer);
+					szTempBuffer.append(NEWLINE); // kekm.7
 					break;
 				// <advc.004c>
 				case INTERFACEMODE_AIRBOMB:
@@ -20368,27 +20369,12 @@ void CvGameTextMgr::getRebasePlotHelp(CvPlot const& kPlot,
 }
 
 void CvGameTextMgr::getNukePlotHelp(CvPlot const& kPlot,
-	CvUnit& kHeadSelectedUnit, CvWString& szHelp)
+	CvUnit& kNuke, CvWString& szHelp)
 {
-	for (TeamIter<ALIVE> it; it.hasNext(); ++it)
-	{
-		TeamTypes const eVictimTeam = it->getID();
-		if (kHeadSelectedUnit.isNukeVictim(&kPlot, eVictimTeam) &&
-			!kHeadSelectedUnit.isEnemy(eVictimTeam))
-		{	// <kekm.7> (advc)
-			if (eVictimTeam == kHeadSelectedUnit.getTeam())
-				szHelp.append(gDLL->getText("TXT_KEY_CANT_NUKE_OWN_TEAM"));
-			else // </kekm.7>
-			szHelp.append(gDLL->getText("TXT_KEY_CANT_NUKE_FRIENDS"));
-			break;
-		}
-	}
-	// <advc.650>
-	if (kHeadSelectedUnit.canNukeAt(
-		kHeadSelectedUnit.getPlot(), kPlot.getX(), kPlot.getY()))
-	{
+	if (kNuke.canNukeAt(kNuke.getPlot(), kPlot.getX(), kPlot.getY()))
+	{	// <advc.650>
 		TeamTypes eInterceptTeam=NO_TEAM;
-		int iInterceptChance = kHeadSelectedUnit.nukeInterceptionChance(
+		int iInterceptChance = kNuke.nukeInterceptionChance(
 				kPlot, &eInterceptTeam);
 		if (eInterceptTeam != NO_TEAM)
 		{
@@ -20396,9 +20382,56 @@ void CvGameTextMgr::getNukePlotHelp(CvPlot const& kPlot,
 			szHelp.append(gDLL->getText("TXT_KEY_NUKE_INTERCEPT_CHANCE",
 					// Should perhaps show the team only when its not directly affected?
 					GET_TEAM(eInterceptTeam).getName().c_str(), iInterceptChance));
+		} // </advc.650>
+		return; // advc
+	}
+	// <kekm.7> (advc): Prioritize the explanations
+	CvWString szExplain;
+	for (int iPass = 0; iPass < 3 && szExplain.empty(); iPass++) // </kekm.7>
+	{
+		for (TeamIter<ALIVE> it; it.hasNext(); ++it)
+		{
+			TeamTypes const eVictimTeam = it->getID();
+			if (!kNuke.isNukeVictim(&kPlot, eVictimTeam))
+				continue;
+			// <kekm.7> (advc)
+			if (kNuke.isEnemy(eVictimTeam))
+			{
+				if (iPass == 0)
+				{
+					bool bCityFound = false;
+					for (SquareIter it(kPlot, kNuke.nukeRange()); it.hasNext(); ++it)
+					{
+						if (it->isCity() && kNuke.isEnemy(it->getTeam()) &&
+							it->calculateFriendlyCulturePercent(kNuke.getTeam()) >=
+							GC.getDefineINT(CvGlobals::CITY_NUKE_CULTURE_THRESH))
+						{
+							bCityFound = true;
+							break;
+						}
+					}
+					if (bCityFound)
+					{
+						szExplain.append(gDLL->getText("TXT_KEY_CANT_NUKE_OWN_POP",
+								GC.getDefineINT(CvGlobals::CITY_NUKE_CULTURE_THRESH)));
+						break;
+					}
+				}
+			}
+			else
+			{
+				if (eVictimTeam == kNuke.getTeam())
+				{
+					if (iPass == 2)
+						szExplain.append(gDLL->getText("TXT_KEY_CANT_NUKE_OWN_TEAM"));
+				}
+				else if (iPass == 1) // </kekm.7>
+					szExplain.append(gDLL->getText("TXT_KEY_CANT_NUKE_FRIENDS"));
+				break;
+			}
 		}
-	} // </advc.650>
-	szHelp += NEWLINE; // kekm.7
+	}
+	szHelp.append(szExplain);
 }
 
 /*	advc.004c: (Beginning based on getNukePlotHelp; the defense damage part is akin

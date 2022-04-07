@@ -5478,6 +5478,21 @@ int CvPlot::calculateTeamCulturePercent(TeamTypes eTeam) const
 	return iTeamCulturePercent;
 }
 
+// kekm.7 (advc): Including vassals or master
+int CvPlot::calculateFriendlyCulturePercent(TeamTypes eTeam) const
+{
+	// Dead teams don't have vassal/ master relationships
+	if (!GET_TEAM(eTeam).isAlive())
+		return calculateTeamCulturePercent(eTeam);
+	int iR = 0;
+	for (PlayerIter<ALIVE,NOT_A_RIVAL_OF> itPlayer(eTeam);
+		itPlayer.hasNext(); ++itPlayer)
+	{
+		iR += calculateCulturePercent(itPlayer->getID());
+	}
+	return iR;
+}
+
 
 void CvPlot::setCulture(PlayerTypes eIndex, int iNewValue, bool bUpdate,
 	bool bUpdatePlotGroups)

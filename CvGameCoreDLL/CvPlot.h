@@ -545,6 +545,7 @@ public:
 			bool bAlive = false) const; // advc.035
 	int calculateCulturePercent(PlayerTypes ePlayer) const;											// Exposed to Python
 	int calculateTeamCulturePercent(TeamTypes eTeam) const;											// Exposed to Python
+	int calculateFriendlyCulturePercent(TeamTypes eTeam) const; // advc (for kekm.7)
 	void setCulture(PlayerTypes eIndex, int iNewValue, bool bUpdate,								// Exposed to Python
 			bool bUpdatePlotGroups);
 	void changeCulture(PlayerTypes eIndex, int iChange, bool bUpdate);								// Exposed to Python
