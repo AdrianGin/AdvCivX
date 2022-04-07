@@ -778,43 +778,9 @@ bool CvDLLWidgetData::executeAction(CvWidgetDataStruct &widgetDataStruct)
 		break;
 
 	case WIDGET_PLOT_LIST_SHIFT:
-	{
-		//int iIncr = (GC.ctrlKey() ? GC.getDefineINT("MAX_PLOT_LIST_SIZE") - 1 : 1);
-		// <advc.004n>
-		CvPlot const* pPlot = gDLL->UI().getSelectionPlot();
-		if (pPlot == NULL)
-			break;
-		int iStep = 10;
-		int const iChange = iData1;
-		int const iMaxStep = GC.getDefineINT("MAX_PLOT_LIST_SIZE"); // 100
-		if (gDLL->UI().isCityScreenUp())
-		{
-			int const iPlotUnits = pPlot->getNumUnits();
-			static int iUnitsPerRow = 0;
-			if (GC.getGame().getPlotListShift() == 0 && iChange == 1)
-			{
-				/*	Unhelpfully, the offset counts backward from the maximal
-					number of units that CvMainInterface can display at once.
-					Since we know that the city screen shows 1 row initially,
-					we can figure out how many units are actually shown.*/
-				iUnitsPerRow = gDLL->UI().getPlotListOffset() /
-						(GC.getMAX_PLOT_LIST_ROWS() - 1);
-				/*	Show a total of MAX_PLOT_LIST_SIZE. (Then move in steps of 10,
-					same as on the main screen, which shows multiple rows already
-					at shift 0.) */
-				iStep = std::max(iStep, std::min(
-						iPlotUnits, iMaxStep - iUnitsPerRow));
-			}
-			else if (GC.getGame().getPlotListShift() == 1 && iChange == -1)
-			{
-				FAssert(iUnitsPerRow > 0);
-				iStep = std::min(iMaxStep, iPlotUnits) - iUnitsPerRow;
-			}
-		}
-		GC.getGame().changePlotListShift(iChange);
-		gDLL->UI().changePlotListColumn(iData1 * iStep); // </advc.004n>
+		doPlotListShift(iData1); // advc: Moved into new function
 		break;
-	}
+
 	case WIDGET_CITY_SCROLL:
 		if (iData1 > 0)
 			GC.getGame().doControl(CONTROL_NEXTCITY);
@@ -1280,6 +1246,44 @@ void CvDLLWidgetData::doPlotList(CvWidgetDataStruct &widgetDataStruct)
 		if (bWasCityScreenUp)
 			gDLL->UI().lookAtSelectionPlot();
 	}
+}
+
+// advc: This has gotten verbose, moving it out of executeAction.
+void CvDLLWidgetData::doPlotListShift(int iChange)
+{
+	//int iIncr = (GC.ctrlKey() ? GC.getDefineINT("MAX_PLOT_LIST_SIZE") - 1 : 1); // BtS
+	// <advc.004n>
+	CvPlot const* pPlot = gDLL->UI().getSelectionPlot();
+	if (pPlot == NULL)
+		return;
+	int iStep = 10;
+	int const iMaxStep = GC.getDefineINT("MAX_PLOT_LIST_SIZE"); // 100
+	if (gDLL->UI().isCityScreenUp())
+	{
+		int const iPlotUnits = pPlot->getNumUnits();
+		static int iUnitsPerRow = 0;
+		if (GC.getGame().getPlotListShift() == 0 && iChange == 1)
+		{
+			/*	Unhelpfully, the offset counts backward from the maximal
+				number of units that CvMainInterface can display at once.
+				Since we know that the city screen shows 1 row initially,
+				we can figure out how many units are actually shown.*/
+			iUnitsPerRow = gDLL->UI().getPlotListOffset() /
+					(GC.getMAX_PLOT_LIST_ROWS() - 1);
+			/*	Show a total of MAX_PLOT_LIST_SIZE. (Then move in steps of 10,
+				same as on the main screen, which shows multiple rows already
+				at shift 0.) */
+			iStep = std::max(iStep, std::min(
+					iPlotUnits, iMaxStep - iUnitsPerRow));
+		}
+		else if (GC.getGame().getPlotListShift() == 1 && iChange == -1)
+		{
+			FAssert(iUnitsPerRow > 0);
+			iStep = std::min(iMaxStep, iPlotUnits) - iUnitsPerRow;
+		}
+	}
+	GC.getGame().changePlotListShift(iChange);
+	gDLL->UI().changePlotListColumn(iChange * iStep); // </advc.004n>
 }
 
 
