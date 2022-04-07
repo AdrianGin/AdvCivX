@@ -6433,21 +6433,18 @@ int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnable
 					break;
 
 				case UNITAI_ICBM:
+				{
 					//iMilitaryValue += ((bWarPlan) ? 200 : 100);
 					// K-Mod
-					if (!GC.getGame().isNoNukes())
+					int const iNukeWeight = AI_nukeWeight();
+					if (iNukeWeight > 0) // advc (replacing an assertion)
 					{
 						iOffenceValue = std::max(iOffenceValue,
 								(bWarPlan ? 2 : 1) * iWeight +
-								(GC.getGame().isNukesValid() ?
-								2 * AI_nukeWeight() : 0) * iWeight / 100);
-						FAssert(!GC.getGame().isNukesValid() ||
-								kTeam.isCapitulated() || // advc.143b
-								AI_nukeWeight() > 0);
-					}
-					// K-Mod end
+								(2 * iNukeWeight * iWeight) / 100);
+					} // K-Mod end
 					break;
-
+				}
 				case UNITAI_WORKER_SEA:
 					if (iCoastalCities > 0)
 					{
