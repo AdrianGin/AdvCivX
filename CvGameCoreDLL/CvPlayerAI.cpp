@@ -2894,7 +2894,7 @@ int CvPlayerAI::AI_targetCityValue(CvCity const& kCity, bool bRandomize,
 				}
 			}*/
 		}
-		/*	advc.104d: This (and, as a fall-back, the above) represents the
+		/*	advc.104d: This (and, as a fallback, the above) represents the
 			(strategic) economic value of kCity. Tactical aspects handled below. */
 		else iValue += pUWAICity->getAssetScore();
 	}
@@ -6203,6 +6203,7 @@ int CvPlayerAI::AI_techBuildingValue(TechTypes eTech, bool bConstCache, bool& bE
 int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnablesUnitWonder) const
 {
 	PROFILE_FUNC();
+	bEnablesUnitWonder = false;
 	CvTeamAI const& kTeam = GET_TEAM(getTeam()); // K-Mod
 
 	int const iHasMetCount = kTeam.getHasMetCivCount(true);
@@ -6239,8 +6240,6 @@ int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnable
 	} // </k146>
 
 	int iValue = 0;
-
-	bEnablesUnitWonder = false;
 	CvCivilization const& kCiv = getCivilization(); // advc.003w 
 	for (int i = 0; i < kCiv.getNumUnits(); i++)
 	{

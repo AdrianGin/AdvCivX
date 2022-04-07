@@ -3862,10 +3862,11 @@ bool CvPlayer::canTradeItem(PlayerTypes eWhoTo, TradeData item, bool bTestDenial
 		// advc.112: Make sure that only capitulation is possible between war enemies
 		if (!kToTeam.isAtWar(getTeam()))
 			bValid = true;
+		break;
 	case TRADE_SURRENDER:
 	{
 		bool bForce = (item.m_iData == 1); // Used by CvDeal::startTeamTrade
-		if ((kToTeam.isAtWar(getTeam()) || bForce) && item.m_eItemType == TRADE_SURRENDER)
+		if (kToTeam.isAtWar(getTeam()) || bForce)
 			bValid = true;
 		break;
 	}
