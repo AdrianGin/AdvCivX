@@ -2816,6 +2816,34 @@ void CvGame::handleDiplomacySetAIComment(DiploCommentTypes eComment) const
 	m_bShowingCurrentDeals = (eComment == GC.getAIDiploCommentType("CURRENT_DEALS"));
 }
 
+// <advc.004x>
+void CvGame::setDawnOfManShown(bool b)
+{
+	m_bDoMShown = b;
+}
+
+
+bool CvGame::isAboutToShowDawnOfMan() const
+{
+	return (!m_bDoMShown && getElapsedGameTurns() <= 0);
+} // </advc.004x>
+
+// <advc.061>
+void CvGame::setScreenDimensions(int x, int y)
+{
+	m_iScreenWidth = x;
+	m_iScreenHeight = y;
+}
+
+int CvGame::getScreenWidth() const
+{
+	return m_iScreenWidth;
+}
+
+int CvGame::getScreenHeight() const
+{
+	return m_iScreenHeight;
+} // </advc.061>
 
 // advc.004n: (Note - m_bCityScreenUp is already updated when this gets called.)
 void CvGame::onCityScreenChange()
