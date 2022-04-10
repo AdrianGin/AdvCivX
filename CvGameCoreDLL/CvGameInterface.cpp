@@ -2845,7 +2845,7 @@ int CvGame::getScreenHeight() const
 	return m_iScreenHeight;
 } // </advc.061>
 
-// advc.004n: (Note - m_bCityScreenUp is already updated when this gets called.)
+// advc.004n:
 void CvGame::onCityScreenChange()
 {
 	changePlotListShift(-getPlotListShift());
@@ -2854,4 +2854,24 @@ void CvGame::onCityScreenChange()
 		(Looks like the EXE ensures a nonnegative column value. Could probably
 		get the current value via Python for a more proper reset.) */
 	gDLL->UI().changePlotListColumn(-100000);
+	/*	<advc.092> Move the camera north a bit b/c that'll center the
+		map excerpt on the city screen better. */
+	if (m_bCityScreenUp)
+	{
+		CvPlot const* pCityPlot = gDLL->UI().getSelectionPlot();
+		if (pCityPlot != NULL)
+		{
+			CvPlot const* pOneNorth = GC.getMap().plotDirection(
+					pCityPlot->getX(), pCityPlot->getY(), DIRECTION_NORTH);
+			if (pOneNorth != NULL)
+			{
+				NiPoint3 nOneNorth = pOneNorth->getPoint();
+				NiPoint3 nCity = pCityPlot->getPoint();
+				float const fDisplWeight = 0.27f;
+				NiPoint3 nLookAt(nCity.x,
+						nCity.y + fDisplWeight * (nOneNorth.y - nCity.y), nCity.z);
+				gDLL->UI().lookAt(nLookAt, CAMERALOOKAT_CITY_ZOOM_IN);
+			}
+		}
+	} // </advc.092>
 }
