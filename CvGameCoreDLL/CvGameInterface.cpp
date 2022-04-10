@@ -2198,8 +2198,11 @@ bool CvGame::updateNukeAreaOfEffect(CvPlot const* pCenter) const
 	gDLL->getEngineIFace()->clearAreaBorderPlots(AREA_BORDER_LAYER_NUKE);
 	if (pCenter == NULL || gDLL->UI().getInterfaceMode() != INTERFACEMODE_NUKE)
 		return false;
-	if (!pNuke->canNukeAt(pNuke->getPlot(), pCenter->getX(), pCenter->getY()))
+	if (!pNuke->canNukeAt(pNuke->getPlot(), pCenter->getX(), pCenter->getY(),
+		pNuke->getTeam()))
+	{
 		return false;
+	}
 	NiColorA const& kColor = GC.getInfo(GC.getColorType("YELLOW")).getColor();
 	for (SquareIter itPlot(*pCenter, pNuke->nukeRange()); itPlot.hasNext(); ++itPlot)
 	{

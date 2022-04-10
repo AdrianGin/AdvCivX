@@ -20050,8 +20050,9 @@ bool CvUnitAI::AI_nuke()
 			/*	we could use "AI_deduceCitySite" here, but, if we can't see
 				the city, then we can't properly judge its target value. */
 			if (pLoopCity->isRevealed(getTeam()) &&
-				canNukeAt(getPlot(), pLoopCity->getX(), pLoopCity->getY()))
-			{	// <advc.650>
+				canNukeAt(getPlot(), pLoopCity->getX(), pLoopCity->getY(),
+				getTeam())) // advc.kekm.7 (advc)
+			{
 				apiPotentialTargets.push_back(std::make_pair(
 						/*	advc.650 (note): Not crucial anymore to search the
 							nuke range around the city b/c we're now considering
@@ -20077,7 +20078,7 @@ bool CvUnitAI::AI_nuke()
 			if (kLoopPlot.isVisible(kTeam.getID()) &&
 				// Units in or near cities are already taken care of
 				aeTargetEvaluated.count(kLoopPlot.plotNum()) <= 0 &&
-				canNukeAt(getPlot(), kLoopPlot.getX(), kLoopPlot.getY()))
+				canNukeAt(getPlot(), kLoopPlot.getX(), kLoopPlot.getY(), getTeam()))
 			{
 				apiPotentialTargets.push_back(std::make_pair(
 						/*	0 search range - let's not bother with max damage to
@@ -20102,7 +20103,7 @@ bool CvUnitAI::AI_nuke()
 				iValue /= 2;
 			// <advc.650>
 			scaled rInterceptChance = scaled::max(0,
-					per100(nukeInterceptionChance(*pTarget))
+					per100(nukeInterceptionChance(*pTarget, getTeam()))
 					/*	If everyone can intercept, then there's no point in
 						holding on to our nukes. */
 					- fixp(0.75) * rMeanInterceptChance);
@@ -20170,8 +20171,11 @@ int CvUnitAI::AI_nukeValue(CvPlot const& kCenterPlot, int iSearchRange,
 	for (SquareIter itTarget(kCenterPlot, iSearchRange); itTarget.hasNext(); ++itTarget)
 	{
 		CvPlot& kLoopTarget = *itTarget;
-		if (!canNukeAt(getPlot(), kLoopTarget.getX(), kLoopTarget.getY()))
+		if (!canNukeAt(getPlot(), kLoopTarget.getX(), kLoopTarget.getY(),
+			getTeam())) // advc.650
+		{
 			continue;
+		}
 		/*	Note: canNukeAt checks that we aren't hitting any 3rd party targets,
 			so we don't have to worry about checking that elsewhere */
 

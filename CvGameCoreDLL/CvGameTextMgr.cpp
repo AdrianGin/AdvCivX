@@ -20371,11 +20371,12 @@ void CvGameTextMgr::getRebasePlotHelp(CvPlot const& kPlot,
 void CvGameTextMgr::getNukePlotHelp(CvPlot const& kPlot,
 	CvUnit& kNuke, CvWString& szHelp)
 {
-	if (kNuke.canNukeAt(kNuke.getPlot(), kPlot.getX(), kPlot.getY()))
+	if (kNuke.canNukeAt(kNuke.getPlot(), kPlot.getX(), kPlot.getY(),
+		kNuke.getTeam())) // kekm.7 (advc)
 	{	// <advc.650>
 		TeamTypes eInterceptTeam=NO_TEAM;
 		int iInterceptChance = kNuke.nukeInterceptionChance(
-				kPlot, &eInterceptTeam);
+				kPlot, kNuke.getTeam(), &eInterceptTeam);
 		if (eInterceptTeam != NO_TEAM)
 		{
 			FAssert(iInterceptChance > 0);
@@ -20385,26 +20386,38 @@ void CvGameTextMgr::getNukePlotHelp(CvPlot const& kPlot,
 		} // </advc.650>
 		return; // advc
 	}
-	// <kekm.7> (advc): Prioritize the explanations
+	// <kekm.7> (advc)
 	CvWString szExplain;
-	for (int iPass = 0; iPass < 3 && szExplain.empty(); iPass++) // </kekm.7>
+	// To prevent info leaks
+	for (SquareIter it(kPlot, kNuke.nukeRange());
+		it.hasNext() && szExplain.empty(); ++it)
+	{
+		if (!it->isRevealed(kNuke.getTeam()))
+			szExplain.append(gDLL->getText("TXT_KEY_CANT_NUKE_UNREVEALED"));
+	}
+	// Prioritize the explanations
+	for (int iPass = 0; iPass < 4 && szExplain.empty(); iPass++) // </kekm.7>
 	{
 		for (TeamIter<ALIVE> it; it.hasNext(); ++it)
 		{
 			TeamTypes const eVictimTeam = it->getID();
-			if (!kNuke.isNukeVictim(&kPlot, eVictimTeam))
+			if (!kNuke.isNukeVictim(&kPlot, eVictimTeam, kNuke.getTeam()))
 				continue;
 			// <kekm.7> (advc)
 			if (kNuke.isEnemy(eVictimTeam))
 			{
-				if (iPass == 0)
+				if (iPass <= 1)
 				{
 					bool bCityFound = false;
 					for (SquareIter it(kPlot, kNuke.nukeRange()); it.hasNext(); ++it)
 					{
-						if (it->isCity() && kNuke.isEnemy(it->getTeam()) &&
+						if (it->isCity() &&
+							(iPass == 0 ?
+							(kNuke.isEnemy(it->getTeam()) &&
 							it->calculateFriendlyCulturePercent(kNuke.getTeam()) >=
-							GC.getDefineINT(CvGlobals::CITY_NUKE_CULTURE_THRESH))
+							GC.getDefineINT(CvGlobals::CITY_NUKE_CULTURE_THRESH)) :
+							!GET_TEAM(it->calculateCulturalOwner(true)).
+							isAtWar(kNuke.getTeam())))
 						{
 							bCityFound = true;
 							break;
@@ -20412,8 +20425,10 @@ void CvGameTextMgr::getNukePlotHelp(CvPlot const& kPlot,
 					}
 					if (bCityFound)
 					{
-						szExplain.append(gDLL->getText("TXT_KEY_CANT_NUKE_OWN_POP",
-								GC.getDefineINT(CvGlobals::CITY_NUKE_CULTURE_THRESH)));
+						szExplain.append(iPass == 0 ?
+								gDLL->getText("TXT_KEY_CANT_NUKE_OWN_POP",
+								GC.getDefineINT(CvGlobals::CITY_NUKE_CULTURE_THRESH)) :
+								gDLL->getText("TXT_KEY_CANT_NUKE_NEUTRAL_POP"));
 						break;
 					}
 				}
@@ -20422,10 +20437,10 @@ void CvGameTextMgr::getNukePlotHelp(CvPlot const& kPlot,
 			{
 				if (eVictimTeam == kNuke.getTeam())
 				{
-					if (iPass == 2)
+					if (iPass == 3)
 						szExplain.append(gDLL->getText("TXT_KEY_CANT_NUKE_OWN_TEAM"));
 				}
-				else if (iPass == 1) // </kekm.7>
+				else if (iPass == 2) // </kekm.7>
 					szExplain.append(gDLL->getText("TXT_KEY_CANT_NUKE_FRIENDS"));
 				break;
 			}
