@@ -54,6 +54,7 @@ class ProgressBar:
 			#self.m_y2 = self.h - 4
 			# advc.004: The marks are nearly impossible to see on the shaded area
 			# of the production bar. As a kludge, let them protrude a bit at the bottom.
+			# (screen.moveToFront doesn't seem to help.)
 			self.m_y2 = self.h + 4
 			self.m_y3 = -1
 			self.m_y4 = -1

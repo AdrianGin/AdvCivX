@@ -27,7 +27,7 @@ import PlayerUtil
 import AttitudeUtil # BUG - Worst Enemy, Refuses to Talk
 import DiplomacyUtil # BUG - Refuses to Talk
 import TradeUtil # BUG - Fractional Trade
-import BugUnitPlot
+#import BugUnitPlot # advc.092: Moved to avoid circular dependency
 # globals
 gc = CyGlobalContext()
 ArtFileMgr = CyArtFileMgr()
@@ -56,7 +56,9 @@ gRectLayoutDict = {} # Global dictionary for (rectangular) layout data
 def gSetRectangle(szKeyName, lRect):
 	gRectLayoutDict[szKeyName] = lRect
 	if (not szKeyName.startswith("PlotListButton") or
-			szKeyName.startswith("PlotListButton315")): # lower left unit button
+			# Lower left unit button when numPlotListButtonsPerRow is 35
+			# and numPlotListRows is 10. (9*35=315)
+			szKeyName.startswith("PlotListButton315")):
 		print(szKeyName + " " + str(lRect)) # advc.tmp
 def gSetRect(szKeyName, szParentKey, fX, fY, fWidth, fHeight, bOffScreen = False):
 	gSetRectangle(szKeyName, RectLayout(gRect(szParentKey),
@@ -75,7 +77,8 @@ def gPoint(szKeyName):
 	return gPointLayoutDict[szKeyName]
 def gOffSetPoint(szPointKeyName, szRectKeyName, fDeltaX, fDeltaY):
 	gSetPoint(szPointKeyName, RectLayout.offsetPoint(gRect(szRectKeyName), fDeltaX, fDeltaY))
-# These global variables should be set based on the screen resolution.
+# These global variables get set based on the screen resolution
+# when the enlarge-HUD BUG option is enabled.
 # All positional data that goes through the functions below will then
 # be scaled accordingly. Global because some of these will have lots of
 # call locations, so I want the calls to be compact.
@@ -85,23 +88,43 @@ gSquareButtonScaleFactor = 1.0
 # This one should be smaller than 1 - space in between widgets should (if at all)
 # be only slighty affected by the screen resolution.
 gSpaceScaleFactor = 1.0
-# Tbd.: Scaling should arguably not be linear; small widgets should be
-# magnified disproportionately. In particular, 0 space shouldn't necessarily
-# map to 0.
-def HLEN(iWidth):
-	return iround(gHorizontalScaleFactor * iWidth)
-def VLEN(iHeight):
-	return iround(gVerticalScaleFactor * iHeight)
-def BTNSZ(iSize):
-	return iround(gSquareButtonScaleFactor * iSize)
-# Tbd.: Negative arguments should assumed to be overlap,
-# i.e. those should move closer to 0 on higher resolution.
-# Callers should pass negative values only when there is overlap!
-def HSPACE(iWidth):
-	return iround(gHorizontalScaleFactor * gSpaceScaleFactor * iWidth)
-def VSPACE(iHeight):
-	return iround(gVerticalScaleFactor * gSpaceScaleFactor * iHeight)
-gStackBarDefaultHeight = 27
+# Magnify small distances disproportionately
+def _dispropMagnMult(fMult, iDist, fExp):
+	if fExp <= 0:
+		fExp = (iDist + 1.0) / iDist
+	return math.pow(fMult, fExp)
+def _scaleWidgetLenToRes(fScaleMult, iLen, fExp):
+	if iLen <= 0:
+		# Let's allow 0 for tiny lengths that should be
+		# 0 when the resolution is small.
+		assert iLen == 0
+		return iround(fScaleMult - 1)
+	return iround(iLen * _dispropMagnMult(fScaleMult, iLen, fExp))
+def _scaleSpaceToRes(fScaleMult, iSpacing, fExp):
+	fScaleMult *= gSpaceScaleFactor
+	if iSpacing == 0:
+		return max(0, iround(fScaleMult - 1))
+	elif iSpacing < 0:
+		# Negative space is overlap. Overlap should get smaller
+		# on higher resolutions.
+		fScaleMult = 1 / fScaleMult
+	return iround(iSpacing * _dispropMagnMult(fScaleMult, iSpacing, fExp))
+# The optional fExp params allow a caller to exponentiate the resolution-based
+# multipliers. Use fExp > 1 to increase the impact of screen resolution on a
+# distance, use 0 < fExp < 1 to decrease the impact.
+def HLEN(iWidth, fExp = 0):
+	return _scaleWidgetLenToRes(gHorizontalScaleFactor, iWidth, fExp)
+def VLEN(iHeight, fExp = 0):
+	return _scaleWidgetLenToRes(gVerticalScaleFactor, iHeight, fExp)
+def BTNSZ(iSize, fExp = 0):
+	return _scaleWidgetLenToRes(gSquareButtonScaleFactor, iSize, fExp)
+# Negative arguments are assumed to be overlap, i.e. those will
+# move closer to 0 on higher resolution. Callers should pass
+# negative values only when there is overlap!
+def HSPACE(iWidth, fExp = 0):
+	return _scaleSpaceToRes(gHorizontalScaleFactor, iWidth, fExp)
+def VSPACE(iHeight, fExp = 0):
+	return _scaleSpaceToRes(gVerticalScaleFactor, iHeight, fExp)
 # </advc.092>
 # BUG - city specialist - start
 #SUPER_SPECIALIST_STACK_WIDTH = 15 # (advc: unused)
@@ -335,6 +358,9 @@ class CvMainInterface:
 		self.screen.setHelpTextArea(HLEN(350), FontTypes.SMALL_FONT,
 				HSPACE(7), gRect("Top").yBottom() - iBottomMargin, -0.1,
 				False, "", True, False, CvUtil.FONT_LEFT_JUSTIFY, HLEN(300))
+
+	def stackBarDefaultHeight(self):
+		return VLEN(27, 0.85)
 	# </advc.092>
 
 	def __init__(self):
@@ -432,6 +458,8 @@ class CvMainInterface:
 
 	def unitButtonOverlaySize(self):
 		return (12 * self.plotListUnitButtonSize()) / 34
+	def plotListUnitFrameThickness(self):
+		return 2
 
 # I know that this is redundant, but CyInterface().getPlotListOffset() (and prob the column one too)
 # uses this function
@@ -460,8 +488,31 @@ class CvMainInterface:
 		self.yResolution = screen.getYResolution()
 		# <advc.092>
 		gSetRectangle("Top", RectLayout(None, 0, 0, self.xResolution, self.yResolution))
-		# Tbd.: Set based on a BUG option. And, if True, set the global scale factors.
-		self.bScaleHUD = False # </advc.092>
+		self.bScaleHUD = MainOpt.isEnlargeHUD()
+		global gHorizontalScaleFactor, gVerticalScaleFactor, gSquareButtonScaleFactor, gSpaceScaleFactor
+		if self.bScaleHUD:
+			# Divide by the aspects that the original HUD works was (presumably)
+			# optimized for.
+			xRatio = math.pow(self.xResolution / 1024.0, 0.4)
+			yRatio = math.pow(self.yResolution / 768.0, 0.4)
+			if xRatio > 1 and yRatio > 1:
+				gHorizontalScaleFactor = min(xRatio, yRatio)
+				# More is gained imo by vertical scaling; in part, due to change advc.137,
+				# which changes the minimap aspect ratio, but the original HUD also seems
+				# quite stretched horizontally. Apart from the main map height, vertical
+				# scaling happens at the expense of the sidebar height on the city screen.
+				gVerticalScaleFactor = max(yRatio,
+						min(gHorizontalScaleFactor * 1.05, max(xRatio, yRatio)))
+				gSquareButtonScaleFactor = ((2 * min(gHorizontalScaleFactor,
+						gVerticalScaleFactor) + 1) / 3)
+				gSpaceScaleFactor = (
+						# Space should not be expanded quite as much as button sizes.
+						((2 * gSquareButtonScaleFactor + 1) / 3) /
+						# Space is also subject to vertical or horizontal scaling.
+						# This division should ensure that space doesn't get expanded
+						# too much overall.
+						min(gHorizontalScaleFactor, gVerticalScaleFactor))
+		# </advc.092>
 		# advc.061:
 		gc.getGame().setScreenDimensions(self.xResolution, self.yResolution)
 # BUG - Raw Yields - begin
@@ -505,7 +556,7 @@ class CvMainInterface:
 		gSetRect("LowerRightCornerPanel", "Top",
 				RectLayout.RIGHT, RectLayout.BOTTOM,
 				gRect("LowerLeftCornerPanel").width(), gRect("LowerLeftCornerPanel").height())
-		gSetRect("LowerLeftCornerBackgr", "Top",
+		gSetRect("LowerLeftCornerBackgr", "LowerLeftCornerPanel",
 				0, 4,
 				RectLayout.MAX, RectLayout.MAX)
 		# The panel dimensions include decorations. The rest of the HUD is mostly
@@ -516,7 +567,8 @@ class CvMainInterface:
 				8, 0, RectLayout.MAX, -19)
 		gSetRect("CenterBottomPanel", "Top",
 				gRect("LowerLeftCorner").xRight(), RectLayout.BOTTOM,
-				-gRect("LowerRightCorner").width(), HLEN(133))
+				-gRect("LowerRightCorner").width(),
+				HLEN(133, 0.5)) # Hardly gain anything from scaling this up
 		# Sans the decoration on top
 		gSetRect("CenterBottom", "CenterBottomPanel",
 				0, 17, RectLayout.MAX, RectLayout.MAX)
@@ -534,12 +586,12 @@ class CvMainInterface:
 		gSetRect("CityCenterColumn", "Top",
 				gRect("CityLeftPanel").xRight(), 0,
 				-gRect("CityRightPanel").width(), RectLayout.MAX)
-		gSetRect("TopCityPanelCenter", "CityCenterColumn",
-				0, 0,
-				RectLayout.MAX, -gRect("CityLeftPanel").yBottom())
+		gSetRect("CityScreenTopWidget", "Top",
+				0, -2,
+				RectLayout.MAX, gRect("TopBarsOneLineContainer").yBottom() + VLEN(12), True)
 		gSetRect("CityNameBackground", "CityCenterColumn",
-				RectLayout.CENTER, gRect("TopBarsOneLineContainer").yBottom() + 2,
-				-HSPACE(2), VSPACE(38))
+				RectLayout.CENTER, gRect("CityScreenTopWidget").yBottom() - 8,
+				-HSPACE(2), VSPACE(38, 0.25))
 
 		gSetRect("LeftHalf", "Top",
 				0, 0,
@@ -550,21 +602,16 @@ class CvMainInterface:
 		# Background for top bars
 		gSetRect("TopCityPanelLeft", "LeftHalf",
 				gRect("CityNameBackground").x(), gRect("CityNameBackground").yBottom() + 1,
-				RectLayout.MAX, 2 * (gStackBarDefaultHeight + VSPACE(3)))
+				RectLayout.MAX, 2 * (self.stackBarDefaultHeight() + VSPACE(3)))
 		gSetRect("TopCityPanelRight", "RightHalf",
 				0, gRect("TopCityPanelLeft").y(),
 				gRect("CityNameBackground").width() / 2, gRect("TopCityPanelLeft").height())
 		# The two panels above really form a single panel; they're separate only
 		# so that the color fades away toward the middle. Let's put them together:
-		# (Could also define this as a child of TopCityPanelCenter - which includes
-		# CityNameBackground as well.) 
 		gSetRect("TopCityPanelLeftAndRight", "Top",
 				gRect("TopCityPanelLeft").x(), gRect("TopCityPanelLeft").y(),
 				gRect("TopCityPanelLeft").width() + gRect("TopCityPanelRight").width(),
 				gRect("TopCityPanelLeft").height())
-		gSetRect("CityScreenTopWidget", "Top",
-				0, -2,
-				RectLayout.MAX, gRect("TopBarsOneLineContainer").yBottom() + VLEN(12), True)
 		gSetRect("InterfaceTopCenter", "Top",
 				gRect("CityLeftPanel").xRight() + 1, -2,
 				-(gRect("CityRightPanel").width() - 1),
@@ -577,6 +624,29 @@ class CvMainInterface:
 				RectLayout.RIGHT, gRect("InterfaceTopLeft").y(),
 				gRect("InterfaceTopLeft").width(),
 				gRect("InterfaceTopLeft").height(), True)
+		# I can only get this panel to work correctly at its original height
+		iTopCityPanelCenterHeight = 140
+		gSetRect("TopCityPanelCenter", "CityCenterColumn",
+				0, 0, RectLayout.MAX, iTopCityPanelCenterHeight)
+		# To work around this limitation, I'm adding a copy of the troublesome panel
+		# that will be displaced toward the bottom when scaling the HUD height.
+		iTopCityPanelCenterHeightTarget = gRect("TopCityPanelLeftAndRight").yBottom() + VSPACE(5)
+		iVStagger = max(0, iTopCityPanelCenterHeightTarget - iTopCityPanelCenterHeight)
+		gSetRect("TopCityPanelCenterStagger", "TopCityPanelCenter",
+				0, iVStagger,
+				RectLayout.MAX, iTopCityPanelCenterHeight)
+		# Left and Right panel have a similar issue, affecting the borders at their
+		# inner edge. Need those to line up with TopCityPanelCenterStagger.
+		# Doesn't seem to hurt to just place the Left and Right panel (a bit) farther
+		# to the bottom, I guess b/c their upper edge overlaps with a different panel,
+		# i.e. copies aren't really needed - but I think this more explicit approach
+		# will be less confusing.
+		gSetRect("CityLeftPanelStagger", "CityLeftPanel",
+				0, iVStagger,
+				RectLayout.MAX, gRect("CityLeftPanel").height() - iVStagger)
+		gSetRect("CityRightPanelStagger", "CityRightPanel",
+				0, iVStagger,
+				RectLayout.MAX, gRect("CityRightPanel").height() - iVStagger)
 
 		self.setCityCenterBarRects()
 
@@ -591,6 +661,10 @@ class CvMainInterface:
 				iTurnLogBtnMargin, gRect("AdvisorButtons").y() - 2,
 				gRect("AdvisorButtons").height())
 
+		gSetPoint("EndTurnText", PointLayout(0, # (Text label gets centered through alignment)
+				max(
+				gRect("LowerLeftCornerPanel").y(),
+				gRect("LowerRightCornerPanel").y()) - VSPACE(20)))
 		iEndTurnBtnSz = BTNSZ(32)
 		gSetSquare("EndTurnButton", "Top",
 				-gRect("LowerRightCorner").width() + iEndTurnBtnSz / 2,
@@ -598,7 +672,7 @@ class CvMainInterface:
 				32)
 		iFlagWidth = 68
 		gSetRect("CivilizationFlag", "LowerRightCorner",
-				HSPACE(8), VSPACE(30),
+				HSPACE(8), VSPACE(30, 2),
 				iFlagWidth, iFlagWidth * 250 / 68)
 
 		self.setCityTabRects()
@@ -687,20 +761,13 @@ class CvMainInterface:
 		self.pBarProductionBar_Whip.addBarItem("ProductionBar")
 		self.pBarProductionBar_Whip.addBarItem("ProductionText")
 # BUG - Progress Bar - Tick Marks - end
-
 		iPlotListUnitBtnSz = self.plotListUnitButtonSize()
 		self.m_iNumPlotListButtonsPerRow = (
 				(gRect("BottomButtonMaxSpace").width() - 2 * iPlotListUnitBtnSz) /
 				iPlotListUnitBtnSz)
 		# advc.092: Moved down so that PLE can access the above
 		self.PLE.PLE_CalcConstants(screen) # BUG - PLE
-# BUG - BUG unit plot draw method - start
-		# BUG unit panel
-		self.BupPanel = BugUnitPlot.BupPanel(screen,
-				gRect("Top").width(), gRect("Top").height(),
-				gRect("BottomButtonMaxSpace").width(),
-				self.numPlotListButtonsPerRow(), self.numPlotListRows())
-# BUG - BUG unit plot draw method - end
+		# BUG - unit plot draw method - advc.092: Moved into interfaceScreen method
 
 	def setMiniMapRects(self):
 		# <advc.137>
@@ -741,7 +808,8 @@ class CvMainInterface:
 	def setTopBarRects(self):
 		gSetRect("TopBarsMaxSpace", "Top",
 				gRect("CityLeftPanel").xRight() + HSPACE(8), VSPACE(2),
-				-(gRect("CityRightPanel").width() + HSPACE(8)), 2 * VLEN(gStackBarDefaultHeight))
+				-(gRect("CityRightPanel").width() + HSPACE(8)),
+				2 * self.stackBarDefaultHeight())
 		fResearchBarWidth = fThinResearchBarWidth = 487
 		fGGBarWidth = 100
 		fThinGGBarWidth = 84
@@ -792,28 +860,29 @@ class CvMainInterface:
 		iYieldTextWidth = HLEN(140)
 		gSetRect("PopulationBar", "TopCityPanelLeftAndRight",
 				iYieldTextWidth, VSPACE(4),
-				-iYieldTextWidth, gStackBarDefaultHeight)
+				-iYieldTextWidth, self.stackBarDefaultHeight())
 		gSetRect("ProductionBar", "TopCityPanelLeftAndRight",
 				RectLayout.CENTER, -VSPACE(3),
-				gRect("PopulationBar").width(), gStackBarDefaultHeight)
+				gRect("PopulationBar").width(), self.stackBarDefaultHeight())
 		gSetRectangle("ProductionBar-Whip", gRect("ProductionBar")) # BUG - Progress Bar - Tick Marks
 		gOffSetPoint("PopulationText", "PopulationBar",
 				RectLayout.CENTER, VSPACE(4))
 		gOffSetPoint("ProductionText", "ProductionBar",
 				RectLayout.CENTER, VSPACE(4))
 		iTextVOffset = VSPACE(4)
+		iTextHMargin = HSPACE(6)
 		# NB: The "input texts" to the left will get right-aligned,
 		# the happy and health text to the right will get left-aligned.
 		# BUG - Food Rate Hover - start
 		gOffSetPoint("PopulationInputText", "PopulationBar",
-				-HSPACE(6), iTextVOffset)
+				-iTextHMargin, iTextVOffset)
 		# BUG - Food Rate Hover - end
 		gOffSetPoint("ProductionInputText", "ProductionBar",
-				-HSPACE(6), iTextVOffset)
+				-iTextHMargin, iTextVOffset)
 		gOffSetPoint("HealthText", "PopulationBar",
-				HSPACE(6) + gRect("PopulationBar").width(), iTextVOffset)
+				iTextHMargin + gRect("PopulationBar").width(), iTextVOffset)
 		gOffSetPoint("HappinessText", "ProductionBar",
-				HSPACE(6) + gRect("ProductionBar").width(), iTextVOffset)
+				iTextHMargin + gRect("ProductionBar").width(), iTextVOffset)
 
 	def setAdvisorButtonRects(self):
 		iSize = BTNSZ(28)
@@ -884,6 +953,17 @@ class CvMainInterface:
 		self.addPanel("TopCityPanelCenter")
 		screen.setStyle("TopCityPanelCenter", "Panel_City_Top_Style")
 		screen.hide("TopCityPanelCenter")
+		# <advc.092>
+		self.addPanel("TopCityPanelCenterStagger")
+		screen.setStyle("TopCityPanelCenterStagger", "Panel_City_Top_Style")
+		screen.hide("TopCityPanelCenterStagger")
+		self.addPanel("CityLeftPanelStagger")
+		screen.setStyle("CityLeftPanelStagger", "Panel_City_Left_Style")
+		screen.hide("CityLeftPanelStagger")
+		self.addPanel("CityRightPanelStagger")
+		screen.setStyle("CityRightPanelStagger", "Panel_City_Right_Style")
+		screen.hide("CityRightPanelStagger")
+		# </advc.092>
 
 		self.addPanel("CityAdjustPanel")
 		screen.setStyle("CityAdjustPanel", "Panel_City_Info_Style")
@@ -1032,19 +1112,21 @@ class CvMainInterface:
 		screen.hide("MainMenuButton")
 
 		self.createGlobeviewButtons()
-
 		self.updateBottomButtonList()
 		screen.hide("BottomButtonList")
-
 		self.createPlotListFrames() # advc: Moved into subroutine
+# BUG - unit plot draw method - start (advc.092: Moved from initState method)
+		from BugUnitPlot import BupPanel
+		self.BupPanel = BupPanel(screen,
+				# advc.092: BupPanel will access some global rectangles instead
+				#gRect("Top").width(), gRect("Top").height(),
+				#gRect("BottomButtonMaxSpace").width(),
+				self.numPlotListButtonsPerRow(), self.numPlotListRows())
+# BUG - unit plot draw method - end
 
-		# End Turn Text
-		screen.setLabel("EndTurnText", "Background",
-				u"", CvUtil.FONT_CENTER_JUSTIFY, 0,
-				yResolution - 188, -0.1, FontTypes.GAME_FONT,
-				WidgetTypes.WIDGET_GENERAL, -1, -1)
+		self.setLabel("EndTurnText", "Background", u"",
+				CvUtil.FONT_CENTER_JUSTIFY, FontTypes.GAME_FONT, -0.1)
 		screen.setHitTest("EndTurnText", HitTestTypes.HITTEST_NOHIT)
-
 		# Three states for end turn button...
 		self.setStyledButton("EndTurnButton", "Button_HUDEndTurn_Style",
 				WidgetTypes.WIDGET_END_TURN)
@@ -1055,7 +1137,6 @@ class CvMainInterface:
 		# RESEARCH BUTTONS
 		# *********************************************************************************
 
-		i = 0
 		for i in range(gc.getNumTechInfos()):
 			szName = "ResearchButton" + str(i)
 			screen.setImageButton(szName,
@@ -1064,7 +1145,6 @@ class CvMainInterface:
 					WidgetTypes.WIDGET_RESEARCH, i, -1)
 			screen.hide(szName)
 
-		i = 0
 		for i in range(gc.getNumReligionInfos()):
 			szName = "ReligionButton" + str(i)
 			if gc.getGame().isOption(GameOptionTypes.GAMEOPTION_PICK_RELIGION):
@@ -1083,7 +1163,6 @@ class CvMainInterface:
 		szHideCitizenList = []
 
 		# Angry Citizens
-		i = 0
 		for i in range(MAX_CITIZEN_BUTTONS):
 			szName = "AngryCitizen" + str(i)
 			screen.setImageButton(szName,
@@ -1095,9 +1174,7 @@ class CvMainInterface:
 			screen.hide(szName)
 
 		iCount = 0
-
 		# Increase Specialists...
-		i = 0
 		for i in range(gc.getNumSpecialistInfos()):
 			if (gc.getSpecialistInfo(i).isVisible()):
 				szName = "IncreaseSpecialist" + str(i)
@@ -1106,13 +1183,10 @@ class CvMainInterface:
 						WidgetTypes.WIDGET_CHANGE_SPECIALIST, i, 1,
 						ButtonStyles.BUTTON_STYLE_CITY_PLUS)
 				screen.hide(szName)
-
 				iCount = iCount + 1
 
 		iCount = 0
-
 		# Decrease specialists
-		i = 0
 		for i in range(gc.getNumSpecialistInfos()):
 			if (gc.getSpecialistInfo(i).isVisible()):
 				szName = "DecreaseSpecialist" + str(i)
@@ -1121,13 +1195,10 @@ class CvMainInterface:
 						WidgetTypes.WIDGET_CHANGE_SPECIALIST, i, -1,
 						ButtonStyles.BUTTON_STYLE_CITY_MINUS)
 				screen.hide(szName)
-
 				iCount = iCount + 1
 
 		iCount = 0
-
 		# Citizen Buttons
-		i = 0
 		for i in range(gc.getNumSpecialistInfos()):
 
 			if (gc.getSpecialistInfo(i).isVisible()):
@@ -1277,7 +1348,7 @@ class CvMainInterface:
 
 		screen.addStackedBarGFC("GreatPeopleBar",
 				xResolution - 246, yResolution - 188,
-				240, gStackBarDefaultHeight,
+				240, self.stackBarDefaultHeight(),
 				InfoBarTypes.NUM_INFOBAR_TYPES,
 				WidgetTypes.WIDGET_HELP_GREAT_PEOPLE, -1, -1)
 		screen.setStackedBarColors("GreatPeopleBar", InfoBarTypes.INFOBAR_STORED,
@@ -1292,7 +1363,7 @@ class CvMainInterface:
 
 		screen.addStackedBarGFC("CultureBar",
 				6, yResolution - 188,
-				240, gStackBarDefaultHeight,
+				240, self.stackBarDefaultHeight(),
 				InfoBarTypes.NUM_INFOBAR_TYPES,
 				WidgetTypes.WIDGET_HELP_CULTURE, -1, -1)
 		screen.setStackedBarColors("CultureBar", InfoBarTypes.INFOBAR_STORED,
@@ -1326,7 +1397,7 @@ class CvMainInterface:
 
 		screen.addStackedBarGFC("NationalityBar",
 				6, yResolution - 214,
-				240, gStackBarDefaultHeight,
+				240, self.stackBarDefaultHeight(),
 				InfoBarTypes.NUM_INFOBAR_TYPES,
 				WidgetTypes.WIDGET_HELP_NATIONALITY, -1, -1)
 		screen.hide("NationalityBar")
@@ -1473,7 +1544,6 @@ class CvMainInterface:
 		# UNIT INFO ELEMENTS
 		# *********************************************************************************
 
-		i = 0
 		szCircleArt = ArtFileMgr.getInterfaceArtInfo("WHITE_CIRCLE_40").getPath()
 		for i in range(gc.getNumPromotionInfos()):
 			szName = "PromotionButton" + str(i)
@@ -1566,11 +1636,12 @@ class CvMainInterface:
 			iButtonSize = 48
 		else:
 			iButtonSize = 36
+
 		# EF: minimum icon size for disabled buttons to work is 33 so these sizes won't fly
 		# iButtonSize=32, iHeight=102
 		# iButtonSize=24, iHeight=104
-		# advc.092: Apply HUD scaling in addition to BUG option
-		iButtonSize = BTNSZ(iButtonSize)
+		# advc.092: Apply only some HUD scaling
+		iButtonSize = BTNSZ(iButtonSize, 0.75)
 		# advc: I don't know why the BUG heights were chosen.
 		# I think they should be multiples of the button size. That was
 		# almost exactly the case for the three button sizes above 33.
@@ -1603,8 +1674,9 @@ class CvMainInterface:
 		for j in range(iRows):
 			szPanelName = "PlotListPanel" + str(j)
 			gSetRect(szPanelName, "Top",
-					gRect("LowerLeftCornerPanel").xRight() + HSPACE(8),
-					gRect("CenterBottomPanel").y() - VSPACE(6)
+					# (Don't want these margins to scale fully)
+					gRect("LowerLeftCornerPanel").xRight() + HSPACE(2) + 6,
+					gRect("CenterBottomPanel").y() - VSPACE(2) - 4
 					+ (j - iRows) * iBtnSize,
 					iCols * iBtnSize + HSPACE(3),
 					iBtnSize + VSPACE(1))
@@ -1615,7 +1687,7 @@ class CvMainInterface:
 				szBtn = "PlotListButton" + str(k)
 # BUG - plot list - start
 				szBtnPromoFrame = szBtn + "PromoFrame"
-				iSizeDiff = 2
+				iSizeDiff = self.plotListUnitFrameThickness()
 				iFrameSize = iBtnSize - iSizeDiff
 				gSetRectangle(szBtnPromoFrame, SquareLayout(gRect(szPanelName),
 						xOffset + iSizeDiff, iSizeDiff, iFrameSize))
@@ -1633,8 +1705,8 @@ class CvMainInterface:
 				screen.hide(szBtn)
 				szBtnHealth = szBtn + "Health"
 				gSetRectangle(szBtnHealth, RectLayout(gRect(szPanelName),
-						xOffset + iSizeDiff + 1, (26 * iBtnSize) / 32,
-						iBtnSize, (11 * iBtnSize) / 32))
+						xOffset + iSizeDiff + 1, (26 * iFrameSize) / 32,
+						iFrameSize, (11 * iFrameSize) / 32))
 				self.addStackedBarAt(szBtnHealth, szPanelName,
 						WidgetTypes.WIDGET_GENERAL, k)
 				screen.hide(szBtnHealth)
@@ -1659,11 +1731,11 @@ class CvMainInterface:
 				gRect("PlotListPlusMinus").xCenter(),
 				gRect("PlotListPlusMinus").y(),
 				2, VSPACE(5), BTNSZ(24))
-		lUpDownButtons.move(-lUpDownButtons.width() / 2.0, -lUpDownButtons.height() / 2.0)
+		lUpDownButtons.move(-lUpDownButtons.width() / 2.0, -lUpDownButtons.height() / 4.0)
 		gSetRectangle("PlotListUpDown", lUpDownButtons)
 		gSetRectangle(self.PLE.PLOT_LIST_UP_NAME, lUpDownButtons.next())
 		gSetRectangle(self.PLE.PLOT_LIST_DOWN_NAME, lUpDownButtons.next())
-		# Copies for the PLE module
+		# Copies for input handlers in PLE module
 		gSetRectangle(self.PLE.PLOT_LIST_MINUS_NAME, gRect("PlotListMinus"))
 		gSetRectangle(self.PLE.PLOT_LIST_PLUS_NAME, gRect("PlotListPlus"))
 
@@ -2412,6 +2484,9 @@ class CvMainInterface:
 
 	# Update plot List Buttons
 	def updatePlotListButtons(self):
+		# <advc.009b> Workaround to avoid exceptions while reloading scripts
+		if not hasattr(self, "BupPanel"):
+			return # </advc.009b>
 #		BugUtil.debug("updatePlotListButtons start - %s %s %s", self.bVanCurrentlyShowing, self.bPLECurrentlyShowing, self.bBUGCurrentlyShowing)
 		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
 		self.updatePlotListButtons_Hide(screen)
@@ -2565,8 +2640,6 @@ class CvMainInterface:
 
 	def updatePlotListButtons_Orig(self, screen):
 # need to put in something similar to 	def displayUnitPlotListObjects(self, screen, pLoopUnit, nRow, nCol):
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
 		pPlot = CyInterface().getSelectionPlot()
 		for i in range(gc.getNumPromotionInfos()):
 			szName = "PromotionButton" + str(i)
@@ -2678,19 +2751,19 @@ class CvMainInterface:
 							screen.show(szStringIcon)
 
 						if bEnable:
-							iPlotListUnitBtnSz = self.plotListUnitButtonSize()
-							x = 315 + ((iCount % self.numPlotListButtonsPerRow()) * iPlotListUnitBtnSz)
-							y = yResolution - 169
-							y += ((iCount / self.numPlotListButtonsPerRow() - self.numPlotListRows() + 1)
-									* iPlotListUnitBtnSz)
-
-							self.PLE._displayUnitPlotList_Dot(screen, pLoopUnit, szString,
-									iCount, x, y + 4)
+							iPlotListFrameSize = self.plotListUnitButtonSize()  - self.plotListUnitFrameThickness()
+							lPlotListBtn = gRect("PlotListButton" + str(iCount))
+							x = lPlotListBtn.x()
+							y = lPlotListBtn.y()
+							self.PLE._displayUnitPlotList_Dot(screen, pLoopUnit, szString, iCount,
+									x, y +
+									(4 * iPlotListFrameSize) / 32) # advc.092
 							self.PLE._displayUnitPlotList_Promo(screen, pLoopUnit, szString)
-							self.PLE._displayUnitPlotList_Upgrade(screen, pLoopUnit, szString,
-									iCount, x, y)
-							self.PLE._displayUnitPlotList_Mission(screen, pLoopUnit, szString,
-									iCount, x, y - 22, 12)
+							self.PLE._displayUnitPlotList_Upgrade(screen, pLoopUnit, szString, iCount,
+									x, y)
+							self.PLE._displayUnitPlotList_Mission(screen, pLoopUnit, szString, iCount,
+									x, y -
+									(22 * iPlotListFrameSize) / 32, self.unitButtonOverlaySize()) # advc.092
 
 					iCount = iCount + 1
 #			BugUtil.debug("updatePlotListButtons_Orig - vis units(%i), buttons per row(%i), max rows(%i)", iVisibleUnits, self.numPlotListButtonsPerRow(), iMaxRows)
@@ -4351,13 +4424,20 @@ class CvMainInterface:
 			screen.hide("TopCityPanelRight")
 			screen.hide("CityAdjustPanel")
 			screen.hide("CityRightPanel")
+			# <advc.092>
+			screen.hide("TopCityPanelCenterStagger")
+			screen.hide("CityLeftPanelStagger")
+			screen.hide("CityRightPanelStagger") # </advc.092>
 
 			if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW):
 				self.setMinimapButtonVisibility(True)
 			return 0
 		if not pHeadSelectedCity:
 			return 0
-
+		# <advc.092>
+		screen.show("TopCityPanelCenterStagger")
+		screen.show("CityLeftPanelStagger")
+		screen.show("CityRightPanelStagger") # </advc.092>
 		screen.show("TopCityPanelCenter")
 		#screen.show("InterfaceTopRightBackgroundWidget")
 		screen.show("CityLeftPanel")

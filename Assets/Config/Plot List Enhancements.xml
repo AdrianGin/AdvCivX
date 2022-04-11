@@ -17,10 +17,10 @@
 			<!-- advc.069: unused -->
 			<!--option id="Enabled" key="Enabled" 
 					type="boolean" default="False"/-->
-			<list   id="Draw_Method" key="Draw Method" 
+			<!--list id="Draw_Method" key="Draw Method" 
 					type="int" default="1" listType="string" 
 					values="PLE|VAN|NEW BUG" 
-					get="getDrawMethod" dirtyBit="PlotListButtons"/>
+					get="getDrawMethod" dirtyBit="PlotListButtons"/-->
 
 			<option id="PLE_Style" key="PLE Style" 
 					type="boolean" default="False"

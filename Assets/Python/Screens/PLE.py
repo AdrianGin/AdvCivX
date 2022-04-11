@@ -16,8 +16,6 @@ import BugUtil
 import BugCore
 PleOpt = BugCore.game.PLE
 
-import BugUnitPlot
-
 # globals
 gc = CyGlobalContext()
 ArtFileMgr = CyArtFileMgr()
@@ -117,6 +115,7 @@ class PLE:
 
 		self.iColOffset 			= 0
 		self.iRowOffset 			= 0
+		self.iArrowStep				= 10 # advc.004n
 		self.iVisibleUnits 			= 0
 		self.pActPlot 				= 0
 		self.pOldPlot 				= self.pActPlot
@@ -305,7 +304,8 @@ class PLE:
 						if (self.sPLEMode == self.PLE_MODE_STANDARD):
 							if (self.iColOffset > 0):
 								bLeftArrow = True
-							if ((self.iVisibleUnits - self.getMaxCol() - self.iColOffset) > 0):
+							if (#self.iVisibleUnits - # advc.001
+									self.getMaxCol() - self.iColOffset > 0):
 								bRightArrow = True
 								
 							if ((iCount >= 0) and (iCount < nNumUnits )):
@@ -318,7 +318,10 @@ class PLE:
 
 							if (self.iRowOffset > 0):
 								bDownArrow = True
-							if ((nRow >= self.getMaxRow()) > 0):
+							#if ((nRow >= self.getMaxRow()) > 0):
+							# advc.001: That doesn't seem to accomplish what was intended(?).
+							# Why not simply:
+							if self.iRowOffset < self.getMaxRow():
 								bUpArrow = True
 								
 							nCol = self.getCol( iCount ) 
@@ -375,7 +378,8 @@ class PLE:
 
 							if (self.iRowOffset > 0):
 								bDownArrow = True
-							if ((nRow >= self.getMaxRow()) > 0):
+							#if ((nRow >= self.getMaxRow()) > 0):
+							if self.iRowOffset < self.getMaxRow(): # advc.001
 								bUpArrow = True
 
 							if (self.nPLEGrpMode == self.PLE_GRP_UNITTYPE):
@@ -779,7 +783,11 @@ class PLE:
 	# Arrow Up
 	def getPlotListUpName(self, inputClass):
 		if ( inputClass.getNotifyCode() == NotifyCode.NOTIFY_CLICKED ):
-			self.iRowOffset += 1
+			# <advc.004n>
+			if inputClass.getFlags() & MouseFlags.MOUSE_RBUTTONUP:
+				self.iRowOffset = self.getMaxRow()
+			self.iRowOffset = min(self.iRowOffset + self.iArrowStep, self.getMaxRow()) # was +=1
+			# </advc.004n>
 			CyInterface().setDirty(InterfaceDirtyBits.PlotListButtons_DIRTY_BIT, True)
 			return 1
 		return 0
@@ -788,7 +796,11 @@ class PLE:
 	def getPlotListDownName(self, inputClass):
 		if ( inputClass.getNotifyCode() == NotifyCode.NOTIFY_CLICKED ):
 			if (self.iRowOffset > 0):
-				self.iRowOffset -= 1
+				# <advc.004n>
+				if inputClass.getFlags() & MouseFlags.MOUSE_RBUTTONUP:
+					self.iRowOffset = 0
+				self.iRowOffset = max(self.iRowOffset - self.iArrowStep, 0) # was -=1
+				# </advc.004n>
 				CyInterface().setDirty(InterfaceDirtyBits.PlotListButtons_DIRTY_BIT, True)
 				return 1
 		return 0
@@ -797,7 +809,11 @@ class PLE:
 	def getPlotListMinusName(self, inputClass):
 		if ( inputClass.getNotifyCode() == NotifyCode.NOTIFY_CLICKED ):
 			if (self.iColOffset > 0):
-				self.iColOffset -= 1
+				# <advc.004n>
+				if inputClass.getFlags() & MouseFlags.MOUSE_RBUTTONUP:
+					self.iColOffset = 0
+				self.iColOffset = max(self.iColOffset - self.iArrowStep, 0) # was -=1
+				# </advc.004n>
 				CyInterface().setDirty(InterfaceDirtyBits.PlotListButtons_DIRTY_BIT, True)
 				return 1
 		return 0
@@ -805,7 +821,11 @@ class PLE:
 	# Arrow Right
 	def getPlotListPlusName(self, inputClass):
 		if ( inputClass.getNotifyCode() == NotifyCode.NOTIFY_CLICKED ):
-			self.iColOffset += 1
+			# <advc.004n>
+			if inputClass.getFlags() & MouseFlags.MOUSE_RBUTTONUP:
+				self.iColOffset = self.getMaxCol()
+			self.iColOffset = min(self.iColOffset + self.iArrowStep, self.getMaxCol()) # was +=1
+			# </advc.004n>
 			CyInterface().setDirty(InterfaceDirtyBits.PlotListButtons_DIRTY_BIT, True)
 			return 1
 		return 0
