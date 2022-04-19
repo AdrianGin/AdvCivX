@@ -8883,7 +8883,9 @@ void CvCity::alterWorkingPlot(CityPlotTypes ePlot)
 {
 	if (ePlot == CITY_HOME_PLOT)
 	{
-		setCitizensAutomated(true);
+		setCitizensAutomated(//true
+				// advc.004t: toggle
+				!isCitizensAutomated());
 		return;
 	}
 	CvPlot* pPlot = getCityIndexPlot(ePlot);
