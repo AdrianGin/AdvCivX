@@ -55,11 +55,36 @@ def iround(f):
 gRectLayoutDict = {} # Global dictionary for (rectangular) layout data
 def gSetRectangle(szKeyName, lRect):
 	gRectLayoutDict[szKeyName] = lRect
-	if (not szKeyName.startswith("PlotListButton") or
+	bPrintRects = True # advc.tmp
+	if (bPrintRects and
+			(not szKeyName.startswith("PlotListButton") or
 			# Lower left unit button when numPlotListButtonsPerRow is 35
 			# and numPlotListRows is 10. (9*35=315)
-			szKeyName.startswith("PlotListButton315")):
-		print(szKeyName + " " + str(lRect)) # advc.tmp
+			szKeyName.startswith("PlotListButton315")) and
+			(not szKeyName.startswith("AngryCitizen") or
+			szKeyName.startswith("AngryCitizen0") or szKeyName.startswith("AngryCitizenChevron0")) and
+			(not szKeyName.startswith("IncreaseSpecialist") or
+			szKeyName.startswith("IncreaseSpecialist0")) and
+			(not szKeyName.startswith("DecreaseSpecialist") or
+			szKeyName.startswith("DecreaseSpecialist0")) and
+			(not szKeyName.startswith("SpecialistDisabledButton") or
+			szKeyName.startswith("SpecialistDisabledButton0")) and
+			(not szKeyName.startswith("CitizenButton") or
+			szKeyName.startswith("CitizenButton0")) and
+			(not szKeyName.startswith("CitizenChevron") or
+			szKeyName.startswith("CitizenChevron0")) and
+			(not szKeyName.startswith("Stacker_FreeSpecialist") or
+			szKeyName.startswith("Stacker_FreeSpecialist0")) and
+			(not szKeyName.startswith("Stacker_AngryCitizen") or
+			szKeyName.startswith("Stacker_AngryCitizen0")) and
+			(not szKeyName.startswith("IncrCitizenBanner") or
+			szKeyName.startswith("IncrCitizenBanner0")) and
+			(not szKeyName.startswith("IncrCitizenButton") or
+			szKeyName.startswith("IncrCitizenButton0")) and
+			(not szKeyName.startswith("DecrCitizenButton") or
+			szKeyName.startswith("DecrCitizenButton0"))
+			):
+		print(szKeyName + " " + str(lRect))
 def gSetRect(szKeyName, szParentKey, fX, fY, fWidth, fHeight, bOffScreen = False):
 	gSetRectangle(szKeyName, RectLayout(gRect(szParentKey),
 			fX, fY, fWidth, fHeight, bOffScreen))
@@ -127,14 +152,9 @@ def VSPACE(iHeight, fExp = 0):
 	return _scaleSpaceToRes(gVerticalScaleFactor, iHeight, fExp)
 # </advc.092>
 # BUG - city specialist - start
-#SUPER_SPECIALIST_STACK_WIDTH = 15 # (advc: unused)
-SPECIALIST_ROW_HEIGHT = 34
-SPECIALIST_ROWS = 3
-MAX_SPECIALIST_BUTTON_SPACING = 30
-SPECIALIST_AREA_MARGIN = 45
-g_iSuperSpecialistCount = 0
-g_iCitySpecialistCount = 0
-g_iAngryCitizensCount = 0
+g_iMaxEverFreeSpecialists = 0
+g_iMaxEverAdjustableSpecialists = 0
+g_iMaxEverAngry = 0
 # BUG - city specialist - end
 # advc: unused
 #iCityCenterRow1Xa = 347
@@ -255,37 +275,44 @@ class CvMainInterface:
 	def setStyledButtonAt(self, szName, szAttachTo, szStyle,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
 		self.setStyledButton(szName, szStyle, eWidgetType, iData1, iData2, szAttachTo)
-	def setImageButton(self, szName, szTexture,
+	@staticmethod
+	def _isInterfaceArtKey(s):
+		return (s.startswith("INTERFACE_") or s.startswith("BUTTON_"))
+	def setImageButton(self, szName,
+			szTexture, # Path or InterfaceArtInfo key
 			eWidgetType = None, iData1 = -1, iData2 = -1, szAttachTo = None):
-		artInfo = ArtFileMgr.getInterfaceArtInfo(szTexture)
-		if artInfo:
-			szTexture = artInfo.getPath()
+		if CvMainInterface._isInterfaceArtKey(szTexture):
+			szTexture = ArtFileMgr.getInterfaceArtInfo(szTexture).getPath()
 		self._setStyledImageButton(szName, szAttachTo, szTexture, None,
 				eWidgetType, iData1, iData2)
 	def setImageButtonAt(self, szName, szAttachTo, szTexture,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
 		self.setImageButton(szName, szTexture, eWidgetType, iData1, iData2, szAttachTo)
-	def addCheckBox(self, szName, szTextureKey, szHLTextureKey, eStyle,
+	def addCheckBox(self, szName,
+			szTexture, szHLTexture,  # Paths or InterfaceArtInfo keys
+			eStyle,
 			eWidgetType = None, iData1 = -1, iData2 = -1, szAttachTo = None):
 		if eWidgetType is None:
 			eWidgetType = WidgetTypes.WIDGET_GENERAL
-		lSquare = gRect(szName)
-		szTexturePath = ArtFileMgr.getInterfaceArtInfo(szTextureKey).getPath()
-		szHLTexturePath = ArtFileMgr.getInterfaceArtInfo(szHLTextureKey).getPath()
+		lRect = gRect(szName)
+		if CvMainInterface._isInterfaceArtKey(szTexture):
+			szTexture = ArtFileMgr.getInterfaceArtInfo(szTexture).getPath()
+		if CvMainInterface._isInterfaceArtKey(szHLTexture):
+			szHLTexture = ArtFileMgr.getInterfaceArtInfo(szHLTexture).getPath()
 		if szAttachTo:
 			lParent = gRect(szAttachTo)
 			self.screen.addCheckBoxGFCAt(szAttachTo, szName,
-					szTexturePath, szHLTexturePath,
-					lSquare.x() - lParent.x(), lSquare.y() - lParent.y(), lSquare.size(), lSquare.size(),
+					szTexture, szHLTexture,
+					lRect.x() - lParent.x(), lRect.y() - lParent.y(), lRect.width(), lRect.height(),
 					eWidgetType, iData1, iData2, eStyle, True)
 		else:
 			self.screen.addCheckBoxGFC(szName,
-					szTexturePath, szHLTexturePath,
-					lSquare.x(), lSquare.y(), lSquare.size(), lSquare.size(),
+					szTexture, szHLTexture,
+					lRect.x(), lRect.y(), lRect.width(), lRect.height(),
 					eWidgetType, iData1, iData2, eStyle)
-	def addCheckBoxAt(self, szName, szAttachTo, szTextureKey, szHLTextureKey, eStyle,
+	def addCheckBoxAt(self, szName, szAttachTo, szTexture, szHLTexture, eStyle,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
-		self.addCheckBox(szName, szTextureKey, szHLTextureKey, eStyle, eWidgetType, iData1, iData2, szAttachTo)
+		self.addCheckBox(szName, szTexture, szHLTexture, eStyle, eWidgetType, iData1, iData2, szAttachTo)
 	def addSlider(self, szName, iDefault, iMin = 0, iMax = -1, bVertical = False,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
 		if eWidgetType is None:
@@ -358,9 +385,18 @@ class CvMainInterface:
 		self.screen.setHelpTextArea(HLEN(350), FontTypes.SMALL_FONT,
 				HSPACE(7), gRect("Top").yBottom() - iBottomMargin, -0.1,
 				False, "", True, False, CvUtil.FONT_LEFT_JUSTIFY, HLEN(300))
-
 	def stackBarDefaultHeight(self):
 		return VLEN(27, 0.85)
+	def stackBarDefaultTextOffset(self):
+		# Was 3 or 4 in BtS. The aim is, presumably, to position the text
+		# (in the game font) at or almost at the bottom of the bar.
+		# I had assumed that making the offset a fraction of the bar height
+		# would suffice, but, somehow, they need to increase more than that.
+		return VLEN((3.25 * self.stackBarDefaultHeight()) / 27)
+	def cityScreenHeadingBackgrHeight(self):
+		return VLEN(30)
+	def cityScreenHeadingOffset(self):
+		return VLEN((8 * self.cityScreenHeadingBackgrHeight()) / 30)
 	# </advc.092>
 
 	def __init__(self):
@@ -562,9 +598,9 @@ class CvMainInterface:
 		# The panel dimensions include decorations. The rest of the HUD is mostly
 		# based on the undecorated size, so let's define ...
 		gSetRect("LowerLeftCorner", "LowerLeftCornerPanel",
-				0, 0, -8, -19)
+				0, 19, -8, RectLayout.MAX)
 		gSetRect("LowerRightCorner", "LowerRightCornerPanel",
-				8, 0, RectLayout.MAX, -19)
+				8, 19, RectLayout.MAX, RectLayout.MAX)
 		gSetRect("CenterBottomPanel", "Top",
 				gRect("LowerLeftCorner").xRight(), RectLayout.BOTTOM,
 				-gRect("LowerRightCorner").width(),
@@ -672,7 +708,7 @@ class CvMainInterface:
 				32)
 		iFlagWidth = 68
 		gSetRect("CivilizationFlag", "LowerRightCorner",
-				HSPACE(8), VSPACE(30, 2),
+				HSPACE(8), (gRect("LowerRightCorner").height() - gRect("CenterBottom").height()) / 2,
 				iFlagWidth, iFlagWidth * 250 / 68)
 
 		self.setCityTabRects()
@@ -761,13 +797,32 @@ class CvMainInterface:
 		self.pBarProductionBar_Whip.addBarItem("ProductionBar")
 		self.pBarProductionBar_Whip.addBarItem("ProductionText")
 # BUG - Progress Bar - Tick Marks - end
+		gSetRect("CityReligionArea", "CityRightPanel",
+				RectLayout.CENTER, gRect("CityAdjustPanel").y(),
+				-HSPACE(4), VLEN(50))
+		# Helper rects for uniform widget placement inside the side panels
+		gSetRect("CityLeftPanelContents", "CityLeftPanel",
+				RectLayout.CENTER, gRect("CityAdjustPanel").yBottom(),
+				-HSPACE(9),
+				gRect("LowerLeftCornerPanel").y() - gRect("LowerLeftCorner").y() + 4)
+		gSetRect("CityRightPanelContents", "CityRightPanel",
+				RectLayout.CENTER, gRect("CityReligionArea").yBottom(),
+				-HSPACE(9),
+				gRect("LowerRightCornerPanel").y() - gRect("LowerRightCorner").y() + 4)
+		gSetRect("GreatPeopleBar", "CityRightPanelContents",
+				0, RectLayout.BOTTOM,
+				RectLayout.MAX, self.stackBarDefaultHeight())
+		gOffSetPoint("GreatPeopleText", "GreatPeopleBar",
+				RectLayout.CENTER, self.stackBarDefaultTextOffset())
+		self.setCitizenButtonRects()
+
 		iPlotListUnitBtnSz = self.plotListUnitButtonSize()
 		self.m_iNumPlotListButtonsPerRow = (
 				(gRect("BottomButtonMaxSpace").width() - 2 * iPlotListUnitBtnSz) /
 				iPlotListUnitBtnSz)
 		# advc.092: Moved down so that PLE can access the above
 		self.PLE.PLE_CalcConstants(screen) # BUG - PLE
-		# BUG - unit plot draw method - advc.092: Moved into interfaceScreen method
+		# (BUG - unit plot draw method - advc.092: Moved into interfaceScreen method)
 
 	def setMiniMapRects(self):
 		# <advc.137>
@@ -866,23 +921,22 @@ class CvMainInterface:
 				gRect("PopulationBar").width(), self.stackBarDefaultHeight())
 		gSetRectangle("ProductionBar-Whip", gRect("ProductionBar")) # BUG - Progress Bar - Tick Marks
 		gOffSetPoint("PopulationText", "PopulationBar",
-				RectLayout.CENTER, VSPACE(4))
+				RectLayout.CENTER, self.stackBarDefaultTextOffset())
 		gOffSetPoint("ProductionText", "ProductionBar",
-				RectLayout.CENTER, VSPACE(4))
-		iTextVOffset = VSPACE(4)
+				RectLayout.CENTER, self.stackBarDefaultTextOffset())
 		iTextHMargin = HSPACE(6)
 		# NB: The "input texts" to the left will get right-aligned,
 		# the happy and health text to the right will get left-aligned.
 		# BUG - Food Rate Hover - start
 		gOffSetPoint("PopulationInputText", "PopulationBar",
-				-iTextHMargin, iTextVOffset)
+				-iTextHMargin, self.stackBarDefaultTextOffset())
 		# BUG - Food Rate Hover - end
 		gOffSetPoint("ProductionInputText", "ProductionBar",
-				-iTextHMargin, iTextVOffset)
+				-iTextHMargin, self.stackBarDefaultTextOffset())
 		gOffSetPoint("HealthText", "PopulationBar",
-				iTextHMargin + gRect("PopulationBar").width(), iTextVOffset)
+				iTextHMargin + gRect("PopulationBar").width(), self.stackBarDefaultTextOffset())
 		gOffSetPoint("HappinessText", "ProductionBar",
-				iTextHMargin + gRect("ProductionBar").width(), iTextVOffset)
+				iTextHMargin + gRect("ProductionBar").width(), self.stackBarDefaultTextOffset())
 
 	def setAdvisorButtonRects(self):
 		iSize = BTNSZ(28)
@@ -918,6 +972,101 @@ class CvMainInterface:
 		gSetRectangle("CityTabs", lButtons)
 		for i in range(iButtons):
 			gSetRectangle("CityTab" + str(i), lButtons.next())
+
+	def setCitizenButtonRects(self):
+		# (This will be a bit ugly because the stuff is right-aligned
+		# and b/c it's really a 2D grid. The RectLayout classes are
+		# for left-aligned single-file layouts.)
+
+		self.visibleSpecialists = []
+		for i in range(gc.getNumSpecialistInfos() - 1, -1, -1):
+			if (gc.getSpecialistInfo(i).isVisible()):
+				self.visibleSpecialists.append(i)
+
+		iCitizenBtnSize = BTNSZ(24)
+		iAdjustBtnSize = BTNSZ(20)
+		iSmallVSpace = VSPACE(3) # (one greater than in BtS)
+		iBigVSpace = iCitizenBtnSize - iAdjustBtnSize + iSmallVSpace
+		iSmallHSpace = HSPACE(2)
+		iBigHSpace = HSPACE(4)
+		# This value needs to be consistent with the FirstFreeSpecialist
+		# and AngryCitizenButtons rects
+		iNonAdjustablesOffset = (3 * iSmallVSpace + 2 * iCitizenBtnSize +
+				gRect("GreatPeopleBar").height())
+
+		lDecreaseSpecialistButtons = ColumnLayout(gRect("CityRightPanelContents"),
+				RectLayout.RIGHT, RectLayout.BOTTOM,
+				len(self.visibleSpecialists), iBigVSpace, iAdjustBtnSize)
+		lDecreaseSpecialistButtons.move(0, -iNonAdjustablesOffset)
+		gSetRectangle("DecreaseSpecialistButtons", lDecreaseSpecialistButtons)
+		for iSpecialist in self.visibleSpecialists:
+			gSetRectangle("DecreaseSpecialist" + str(iSpecialist), lDecreaseSpecialistButtons.next())
+		lIncreaseSpecialistButtons = ColumnLayout(gRect("CityRightPanelContents"),
+				RectLayout.RIGHT, RectLayout.BOTTOM,
+				len(self.visibleSpecialists), iBigVSpace, iAdjustBtnSize)
+		lIncreaseSpecialistButtons.move(-lDecreaseSpecialistButtons.width() - iSmallHSpace,
+				-iNonAdjustablesOffset)
+		gSetRectangle("IncreaseSpecialistButtons", lIncreaseSpecialistButtons)
+		for iSpecialist in self.visibleSpecialists:
+			gSetRectangle("IncreaseSpecialist" + str(iSpecialist), lIncreaseSpecialistButtons.next())
+
+		gSetRect("AdjustSpecialistButtons", "Top",
+				lIncreaseSpecialistButtons.x(), lIncreaseSpecialistButtons.y(),
+				lIncreaseSpecialistButtons.width() + lDecreaseSpecialistButtons.width(),
+				lIncreaseSpecialistButtons.height())
+		# Only a placeholder; the free-specialist row gets placed later.
+		gSetSquare("FirstFreeSpecialist", "CityRightPanelContents",
+				RectLayout.RIGHT, RectLayout.BOTTOM, iCitizenBtnSize)
+		gRect("FirstFreeSpecialist").move(
+				-gRect("AdjustSpecialistButtons").width() - iBigHSpace,
+				-gRect("GreatPeopleBar").height() - iSmallVSpace)
+		lAngryCitizenButtons = RowLayout(gRect("CityRightPanelContents"),
+				RectLayout.RIGHT, RectLayout.BOTTOM,
+				MAX_CITIZEN_BUTTONS, iSmallHSpace, iCitizenBtnSize)
+		lAngryCitizenButtons.move(
+				-gRect("AdjustSpecialistButtons").width() - iBigHSpace,
+				-gRect("GreatPeopleBar").height()
+				- gRect("FirstFreeSpecialist").height() - 2 * iSmallVSpace)
+		gSetRectangle("AngryCitizenButtons", lAngryCitizenButtons)
+		iChevronSize = BTNSZ(10)
+		for i in range(MAX_CITIZEN_BUTTONS - 1, -1, -1):
+			gSetRectangle("AngryCitizen" + str(i), lAngryCitizenButtons.next())
+			gSetSquare("AngryCitizenChevron" + str(i), "AngryCitizen" + str(i),
+						0, 0, iChevronSize)
+		lSpecialistDisabledButtons = ColumnLayout(gRect("CityRightPanelContents"),
+				RectLayout.RIGHT, RectLayout.BOTTOM,
+				len(self.visibleSpecialists), iSmallVSpace, iCitizenBtnSize)
+		lSpecialistDisabledButtons.move(
+				-gRect("AdjustSpecialistButtons").width() - iBigHSpace,
+				-iNonAdjustablesOffset)
+		gSetRectangle("SpecialistDisabledButtons", lSpecialistDisabledButtons)
+		for iSpecialist in self.visibleSpecialists:
+			gSetRectangle("SpecialistDisabledButton" + str(iSpecialist), lSpecialistDisabledButtons.next())
+
+		for i in range(len(self.visibleSpecialists)):
+			iSpecialist = self.visibleSpecialists[i]
+			lCitizenButtonRow = RowLayout(gRect("CityRightPanelContents"),
+					RectLayout.RIGHT, RectLayout.BOTTOM,
+					MAX_CITIZEN_BUTTONS, iSmallHSpace, iCitizenBtnSize)
+			lCitizenButtonRow.move(
+					-gRect("AdjustSpecialistButtons").width() - iBigHSpace,
+					-iNonAdjustablesOffset -
+					(len(self.visibleSpecialists) - i - 1) * (iCitizenBtnSize + iSmallVSpace))
+			gSetRectangle("CitizenButtonRow" + str(iSpecialist), lCitizenButtonRow)
+			for j in range(MAX_CITIZEN_BUTTONS - 1, -1, -1):
+				szNum = str((iSpecialist * 100) + j)
+				lBtn = lCitizenButtonRow.next()
+				gSetRectangle("CitizenButton" + szNum, lBtn)
+				gSetRectangle("CitizenButtonHighlight" + szNum, lBtn)
+				gSetSquare("CitizenChevron" + szNum, "CitizenButton" + szNum,
+						0, 0, iChevronSize)
+# BUG - city specialist - start
+		gSetRect("SpecialistLabelBackground", "CityRightPanelContents",
+				0, lSpecialistDisabledButtons.y() - gRect("CityRightPanelContents").yBottom() - iBigVSpace,
+				RectLayout.MAX, self.cityScreenHeadingBackgrHeight())
+		gOffSetPoint("SpecialistLabel", "SpecialistLabelBackground",
+				RectLayout.CENTER, self.cityScreenHeadingOffset())
+# BUG - city specialist - end
 
 	def interfaceScreen (self):
 		"""
@@ -1133,18 +1282,16 @@ class CvMainInterface:
 		screen.setEndTurnState("EndTurnButton", "Red")
 		screen.hide("EndTurnButton")
 
-		# *********************************************************************************
-		# RESEARCH BUTTONS
-		# *********************************************************************************
-
+		# Tech buttons (to be positioned later)
+		iTechBtnSize = BTNSZ(32)
 		for i in range(gc.getNumTechInfos()):
 			szName = "ResearchButton" + str(i)
 			screen.setImageButton(szName,
 					gc.getTechInfo(i).getButton(),
-					0, 0, 32, 32,
+					0, 0, iTechBtnSize, iTechBtnSize,
 					WidgetTypes.WIDGET_RESEARCH, i, -1)
 			screen.hide(szName)
-
+		iReligionBtnSize = BTNSZ(32)
 		for i in range(gc.getNumReligionInfos()):
 			szName = "ReligionButton" + str(i)
 			if gc.getGame().isOption(GameOptionTypes.GAMEOPTION_PICK_RELIGION):
@@ -1152,92 +1299,51 @@ class CvMainInterface:
 			else:
 				szButton = gc.getReligionInfo(i).getTechButton()
 			screen.setImageButton(szName, szButton,
-					0, 0, 32, 32,
+					0, 0, iReligionBtnSize, iReligionBtnSize,
 					WidgetTypes.WIDGET_RESEARCH, gc.getReligionInfo(i).getTechPrereq(), -1)
 			screen.hide(szName)
 
-		# *********************************************************************************
-		# CITIZEN BUTTONS
-		# *********************************************************************************
-
-		szHideCitizenList = []
-
-		# Angry Citizens
+		# Citizen buttons ...
+		#szHideCitizenList = [] # advc: unused
 		for i in range(MAX_CITIZEN_BUTTONS):
 			szName = "AngryCitizen" + str(i)
-			screen.setImageButton(szName,
-					ArtFileMgr.getInterfaceArtInfo("INTERFACE_ANGRYCITIZEN_TEXTURE").getPath(),
-					xResolution - 74 - (26 * i),
-					yResolution - 238,
-					24, 24,
-					WidgetTypes.WIDGET_ANGRY_CITIZEN, -1, -1)
+			self.setImageButton(szName,
+					"INTERFACE_ANGRYCITIZEN_TEXTURE",
+					WidgetTypes.WIDGET_ANGRY_CITIZEN)
 			screen.hide(szName)
-
-		iCount = 0
-		# Increase Specialists...
-		for i in range(gc.getNumSpecialistInfos()):
-			if (gc.getSpecialistInfo(i).isVisible()):
-				szName = "IncreaseSpecialist" + str(i)
-				screen.setButtonGFC(szName, u"", "",
-						xResolution - 46, (yResolution - 270 - (26 * iCount)), 20, 20,
-						WidgetTypes.WIDGET_CHANGE_SPECIALIST, i, 1,
-						ButtonStyles.BUTTON_STYLE_CITY_PLUS)
+		for iSpecialist in self.visibleSpecialists:
+			szName = "IncreaseSpecialist" + str(iSpecialist)
+			self.setStyledButton(szName,
+					ButtonStyles.BUTTON_STYLE_CITY_PLUS,
+					WidgetTypes.WIDGET_CHANGE_SPECIALIST, iSpecialist, 1)
+			screen.hide(szName)
+		for iSpecialist in self.visibleSpecialists:
+			szName = "DecreaseSpecialist" + str(iSpecialist)
+			self.setStyledButton(szName,
+					ButtonStyles.BUTTON_STYLE_CITY_MINUS,
+					WidgetTypes.WIDGET_CHANGE_SPECIALIST, iSpecialist, -1)
+			screen.hide(szName)
+		for iSpecialist in self.visibleSpecialists:
+			szName = "SpecialistDisabledButton" + str(iSpecialist)
+			self.setImageButton(szName,
+					gc.getSpecialistInfo(iSpecialist).getTexture(),
+					WidgetTypes.WIDGET_DISABLED_CITIZEN, iSpecialist)
+			screen.enable(szName, False)
+			screen.hide(szName)
+			for j in range(MAX_CITIZEN_BUTTONS):
+				szName = "CitizenButton" + str(iSpecialist * 100 + j)
+				self.addCheckBox(szName,
+							gc.getSpecialistInfo(iSpecialist).getTexture(), "",
+							ButtonStyles.BUTTON_STYLE_LABEL,
+							WidgetTypes.WIDGET_CITIZEN, iSpecialist, j)
 				screen.hide(szName)
-				iCount = iCount + 1
-
-		iCount = 0
-		# Decrease specialists
-		for i in range(gc.getNumSpecialistInfos()):
-			if (gc.getSpecialistInfo(i).isVisible()):
-				szName = "DecreaseSpecialist" + str(i)
-				screen.setButtonGFC(szName, u"", "",
-						xResolution - 24, (yResolution - 270 - (26 * iCount)), 20, 20,
-						WidgetTypes.WIDGET_CHANGE_SPECIALIST, i, -1,
-						ButtonStyles.BUTTON_STYLE_CITY_MINUS)
-				screen.hide(szName)
-				iCount = iCount + 1
-
-		iCount = 0
-		# Citizen Buttons
-		for i in range(gc.getNumSpecialistInfos()):
-
-			if (gc.getSpecialistInfo(i).isVisible()):
-
-				szName = "CitizenDisabledButton" + str(i)
-				screen.setImageButton(szName,
-						gc.getSpecialistInfo(i).getTexture(),
-						xResolution - 74, (yResolution - 272 - (26 * i)), 24, 24,
-						WidgetTypes.WIDGET_DISABLED_CITIZEN, i, -1)
-				screen.enable(szName, False)
-				screen.hide(szName)
-
-				for j in range(MAX_CITIZEN_BUTTONS):
-					szName = "CitizenButton" + str((i * 100) + j)
-					screen.addCheckBoxGFC(
-							szName, gc.getSpecialistInfo(i).getTexture(), "",
-							xResolution - 74 - (26 * j),
-							(yResolution - 272 - (26 * i)),
-							24, 24,
-							WidgetTypes.WIDGET_CITIZEN, i, j,
-							ButtonStyles.BUTTON_STYLE_LABEL)
-					screen.hide(szName)
-
 # BUG - city specialist - start
-		screen.addPanel("SpecialistBackground", u"", u"", True, False,
-				# advc.004: y position was yResolution minus 423.
-				# That works well for the stacked specialists, but not for the other options.
-				xResolution - 243, yResolution - 475, 230, 30,
-				PanelStyles.PANEL_STYLE_STANDARD)
-		screen.setStyle("SpecialistBackground", "Panel_City_Header_Style")
-		screen.hide("SpecialistBackground")
-		screen.setLabel("SpecialistLabel", "Background",
+		self.addPanel("SpecialistLabelBackground")
+		screen.setStyle("SpecialistLabelBackground", "Panel_City_Header_Style")
+		screen.hide("SpecialistLabelBackground")
+		self.setLabel("SpecialistLabel", "Background",
 				localText.getText("TXT_KEY_CONCEPT_SPECIALISTS", ()),
-				CvUtil.FONT_CENTER_JUSTIFY,
-				xResolution - 128,
-				# advc.004: y position was yResolution minus 415.
-				yResolution - 467, -0.1,
-				FontTypes.SMALL_FONT,
-				WidgetTypes.WIDGET_GENERAL, -1, -1)
+				CvUtil.FONT_CENTER_JUSTIFY, FontTypes.SMALL_FONT)
 		screen.hide("SpecialistLabel")
 # BUG - city specialist - end
 
@@ -1346,11 +1452,7 @@ class CvMainInterface:
 				gc.getInfoTypeForString("COLOR_EMPTY"))
 		screen.hide("ProductionBar")
 
-		screen.addStackedBarGFC("GreatPeopleBar",
-				xResolution - 246, yResolution - 188,
-				240, self.stackBarDefaultHeight(),
-				InfoBarTypes.NUM_INFOBAR_TYPES,
-				WidgetTypes.WIDGET_HELP_GREAT_PEOPLE, -1, -1)
+		self.addStackedBar("GreatPeopleBar", WidgetTypes.WIDGET_HELP_GREAT_PEOPLE)
 		screen.setStackedBarColors("GreatPeopleBar", InfoBarTypes.INFOBAR_STORED,
 				gc.getInfoTypeForString("COLOR_GREAT_PEOPLE_STORED"))
 		screen.setStackedBarColors("GreatPeopleBar", InfoBarTypes.INFOBAR_RATE,
@@ -1994,21 +2096,24 @@ class CvMainInterface:
 
 # BUG - city specialist - start
 			self.updateCitizenButtons_hide()
-			# advc.004: Show the SpecialistLabel regardless of BUG options
-			bShowingCitizenButtons = False
-			if (CityScreenOpt.isCitySpecialist_Stacker()):
-				bShowingCitizenButtons = self.updateCitizenButtons_Stacker()
-			elif (CityScreenOpt.isCitySpecialist_Chevron()):
-				bShowingCitizenButtons = self.updateCitizenButtons_Chevron()
-			else:
-				bShowingCitizenButtons = self.updateCitizenButtons()
-			# <advc.004>
-			if (bShowingCitizenButtons
-				# Not quite enough room for this label on low res
-				and self.yResolution > 900):
-				# Cut from updateCitizenButtons_Stacker ...
-				screen.show("SpecialistBackground")
-				screen.show("SpecialistLabel") # </advc.004>
+			pHeadSelectedCity = CyInterface().getHeadSelectedCity()
+			if (pHeadSelectedCity and CyInterface().isCityScreenUp() and
+					CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW):
+				if (CityScreenOpt.isCitySpecialist_Stacker()):
+					self.updateCitizenButtons_Stacker(pHeadSelectedCity)
+				elif (CityScreenOpt.isCitySpecialist_Chevron()):
+					self.updateCitizenButtons_Chevron(pHeadSelectedCity)
+				else:
+					self.updateCitizenButtons(pHeadSelectedCity)
+				# <advc.004> Show the SpecialistLabel regardless of BUG options
+				# Not quite enough space on low res. (Fixme: The Stacker layout
+				# does leave enough space, but then we'd need a separate label
+				# and background panel placed by updateCitizenButton_Stacker;
+				# currently, the position is set statically, ignoring options.)
+				if self.yResolution > 900:
+					# Cut from updateCitizenButtons_Stacker ...
+					screen.show("SpecialistLabelBackground")
+					screen.show("SpecialistLabel") # </advc.004>
 # BUG - city specialist - end
 
 			CyInterface().setDirty(InterfaceDirtyBits.CitizenButtons_DIRTY_BIT, False)
@@ -3360,477 +3465,350 @@ class CvMainInterface:
 
 # BUG - city specialist - start
 	def updateCitizenButtons_hide(self):
-		global MAX_CITIZEN_BUTTONS
 		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
 		xResolution = screen.getXResolution()
 		yResolution = screen.getYResolution()
 
 		for i in range(MAX_CITIZEN_BUTTONS):
-			szName = "FreeSpecialist" + str(i)
-			screen.hide(szName)
-			szName = "AngryCitizen" + str(i)
-			screen.hide(szName)
-			szName = "AngryCitizenChevron" + str(i)
-			screen.hide(szName)
+			screen.hide("FreeSpecialist" + str(i))
+			screen.hide("AngryCitizen" + str(i))
+			screen.hide("AngryCitizenChevron" + str(i))
+			screen.hide("Stacker_FreeSpecialist" + str(i))
+			screen.hide("Stacker_AngryCitizen" + str(i))
 
-		for i in range(gc.getNumSpecialistInfos()):
-			szName = "IncreaseSpecialist" + str(i)
+		for iSpecialist in self.visibleSpecialists:
+			szName = "IncreaseSpecialist" + str(iSpecialist)
 			screen.hide(szName)
-			szName = "DecreaseSpecialist" + str(i)
+			szName = "DecreaseSpecialist" + str(iSpecialist)
 			screen.hide(szName)
-			szName = "CitizenDisabledButton" + str(i)
+			szName = "SpecialistDisabledButton" + str(iSpecialist)
 			screen.hide(szName)
 			for j in range(MAX_CITIZEN_BUTTONS):
-				szName = "CitizenButton" + str((i * 100) + j)
-				screen.hide(szName)
-				szName = "CitizenButtonHighlight" + str((i * 100) + j)
-				screen.hide(szName)
-				szName = "CitizenChevron" + str((i * 100) + j)
-				screen.hide(szName)
+				szIndex = str(iSpecialist * 100 + j)
+				screen.hide("CitizenButton" + szIndex)
+				screen.hide("CitizenButtonHighlight" + szIndex)
+				screen.hide("CitizenChevron" + szIndex)
 
-				szName = "IncresseCitizenButton" + str((i * 100) + j)
-				screen.hide(szName)
-				szName = "IncresseCitizenBanner" + str((i * 100) + j)
-				screen.hide(szName)
-				szName = "DecresseCitizenButton" + str((i * 100) + j)
-				screen.hide(szName)
-				szName = "CitizenButtonHighlight" + str((i * 100) + j)
-				screen.hide(szName)
+				screen.hide("IncrCitizenButton" + szIndex)
+				screen.hide("IncrCitizenBanner" + szIndex)
+				screen.hide("DecrCitizenButton" + szIndex)
+				screen.hide("CitizenButtonHighlight" + szIndex)
 
-		global g_iSuperSpecialistCount
-		global g_iCitySpecialistCount
-		global g_iAngryCitizensCount
-
-		screen.hide("SpecialistBackground")
+		screen.hide("SpecialistLabelBackground")
 		screen.hide("SpecialistLabel")
 
-		for i in range(g_iSuperSpecialistCount):
-			szName = "FreeSpecialist" + str(i)
-			screen.hide(szName)
-		for i in range(g_iAngryCitizensCount):
-			szName = "AngryCitizen" + str(i)
-			screen.hide(szName)
+		for i in range(g_iMaxEverFreeSpecialists):
+			screen.hide("FreeSpecialist" + str(i))
+			screen.hide("Stacker_FreeSpecialist" + str(i))
+		for i in range(g_iMaxEverAngry):
+			screen.hide("AngryCitizen" + str(i))
+			screen.hide("Stacker_AngryCitizen" + str(i))
 
-		for i in range(gc.getNumSpecialistInfos()):
-			for k in range(g_iCitySpecialistCount):
-				szName = "IncresseCitizenBanner" + str((i * 100) + k)
-				screen.hide(szName)
-				szName = "IncresseCitizenButton" + str((i * 100) + k)
-				screen.hide(szName)
-				szName = "DecresseCitizenButton" + str((i * 100) + k)
-				screen.hide(szName)
+		for iSpecialist in self.visibleSpecialists:
+			for j in range(g_iMaxEverAdjustableSpecialists):
+				szIndex = str(iSpecialist * 100 + j)
+				screen.hide("IncrCitizenBanner" + szIndex)
+				screen.hide("IncrCitizenButton" + szIndex)
+				screen.hide("DecrCitizenButton" + szIndex)
 
 		return 0
 # BUG - city specialist - end
 
+	# advc.092: Refactored this and updateCitizenButtons_Chevron to reduce redundancy
+	def updateCitizenButtons(self, pHeadSelectedCity):
+		screen = self.screen
 
-	# Will update the citizen buttons
-	def updateCitizenButtons(self):
-
-		if not CyInterface().isCityScreenUp():
-			return False
-		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
-		if not (pHeadSelectedCity and
-				CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW):
-			return False
-		global MAX_CITIZEN_BUTTONS
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
-
-		if (pHeadSelectedCity.angryPopulation(0) < MAX_CITIZEN_BUTTONS):
-			iCount = pHeadSelectedCity.angryPopulation(0)
-		else:
-			iCount = MAX_CITIZEN_BUTTONS
-
-		bHandled = False
-
-		for i in range(iCount):
-			bHandled = True
+		for i in range(min(MAX_CITIZEN_BUTTONS, pHeadSelectedCity.angryPopulation(0))):
 			szName = "AngryCitizen" + str(i)
 			screen.show(szName)
 
+		self.updateFreeSpecialistButtons(pHeadSelectedCity)
+
+		for iSpecialist in self.visibleSpecialists:
+
+			self.updateAdjustableSpecialistButtons(pHeadSelectedCity, iSpecialist)
+
+			bHandled = False
+			for j in range(min(MAX_CITIZEN_BUTTONS, pHeadSelectedCity.getSpecialistCount(iSpecialist))):
+				bHandled = True
+				szIndex = str(iSpecialist * 100 + j)
+				szName = "CitizenButton" + szIndex
+				# advc: Redundant I think
+				'''
+				self.addCheckBox(szName,
+							gc.getSpecialistInfo(iSpecialist).getTexture(), "",
+							ButtonStyles.BUTTON_STYLE_LABEL,
+							WidgetTypes.WIDGET_CITIZEN, iSpecialist, j)
+				'''
+				screen.show(szName)
+				szName = "CitizenButtonHighlight" + szIndex
+				self.addDDS(szName, "BUTTON_HILITE_SQUARE",
+						WidgetTypes.WIDGET_CITIZEN, iSpecialist, j)
+				if pHeadSelectedCity.getForceSpecialistCount(iSpecialist) > j:
+					screen.show(szName)
+				else:
+					screen.hide(szName)
+			if not bHandled:
+				szName = "SpecialistDisabledButton" + str(iSpecialist)
+				screen.show(szName)
+
+	def updateFreeSpecialistButtons(self, pHeadSelectedCity):
+		screen = self.screen
 		iFreeSpecialistCount = 0
-		for i in range(gc.getNumSpecialistInfos()):
-			iFreeSpecialistCount += pHeadSelectedCity.getFreeSpecialistCount(i)
+		for iSpecialist in range(gc.getNumSpecialistInfos()):
+			iFreeSpecialistCount += pHeadSelectedCity.getFreeSpecialistCount(iSpecialist)
 
 		iCount = 0
-		bHandled = False
-		if (iFreeSpecialistCount > MAX_CITIZEN_BUTTONS):
-			for i in range(gc.getNumSpecialistInfos()):
-				if (pHeadSelectedCity.getFreeSpecialistCount(i) > 0):
-					if (iCount < MAX_CITIZEN_BUTTONS):
+		lFirstFreeSpecialist = gRect("FirstFreeSpecialist")
+		if iFreeSpecialistCount > MAX_CITIZEN_BUTTONS:
+			for iSpecialist in range(gc.getNumSpecialistInfos()):
+				if pHeadSelectedCity.getFreeSpecialistCount(iSpecialist) > 0:
+					if iCount < MAX_CITIZEN_BUTTONS:
 						szName = "FreeSpecialist" + str(iCount)
 						screen.setImageButton(szName,
-								gc.getSpecialistInfo(i).getTexture(),
-								xResolution - 74 - (26 * iCount),
-								yResolution - 214,
-								24, 24,
-								WidgetTypes.WIDGET_FREE_CITIZEN, i, 1)
+								gc.getSpecialistInfo(iSpecialist).getTexture(),
+								lFirstFreeSpecialist.x()
+								-(lFirstFreeSpecialist.size() + HSPACE(2)) * iCount,
+								lFirstFreeSpecialist.y(),
+								lFirstFreeSpecialist.size(), lFirstFreeSpecialist.size(),
+								WidgetTypes.WIDGET_FREE_CITIZEN, iSpecialist, 1)
 						screen.show(szName)
-						bHandled = true
 					iCount += 1
 		else:
-			for i in range(gc.getNumSpecialistInfos()):
-				for j in range(pHeadSelectedCity.getFreeSpecialistCount(i)):
-					if (iCount < MAX_CITIZEN_BUTTONS):
+			for iSpecialist in range(gc.getNumSpecialistInfos()):
+				for j in range(pHeadSelectedCity.getFreeSpecialistCount(iSpecialist)):
+					if iCount < MAX_CITIZEN_BUTTONS:
 						szName = "FreeSpecialist" + str(iCount)
 						screen.setImageButton(szName,
-								gc.getSpecialistInfo(i).getTexture(),
-								xResolution - 74 - (26 * iCount),
-								yResolution - 214,
-								24, 24,
-								WidgetTypes.WIDGET_FREE_CITIZEN, i, -1)
+								gc.getSpecialistInfo(iSpecialist).getTexture(),
+								lFirstFreeSpecialist.x() -
+								(lFirstFreeSpecialist.size() + HSPACE(2)) * iCount,
+								lFirstFreeSpecialist.y(),
+								lFirstFreeSpecialist.size(), lFirstFreeSpecialist.size(),
+								WidgetTypes.WIDGET_FREE_CITIZEN, iSpecialist, -1)
 						screen.show(szName)
-						bHandled = true
 					iCount = iCount + 1
 
-		for i in range(gc.getNumSpecialistInfos()):
-			bHandled = False
-			if (pHeadSelectedCity.getOwner() == gc.getGame().getActivePlayer() or
-					gc.getGame().isDebugMode()):
-				if (pHeadSelectedCity.isCitizensAutomated()):
-					iSpecialistCount = max(pHeadSelectedCity.getSpecialistCount(i),
-							pHeadSelectedCity.getForceSpecialistCount(i))
-				else:
-					iSpecialistCount = pHeadSelectedCity.getSpecialistCount(i)
-
-				if (pHeadSelectedCity.isSpecialistValid(i, 1) and
-						(pHeadSelectedCity.isCitizensAutomated() or
-						iSpecialistCount < (pHeadSelectedCity.getPopulation() +
-						pHeadSelectedCity.totalFreeSpecialists()))):
-					szName = "IncreaseSpecialist" + str(i)
-					screen.show(szName)
-					szName = "CitizenDisabledButton" + str(i)
-					screen.show(szName)
-
-				if iSpecialistCount > 0:
-					szName = "CitizenDisabledButton" + str(i)
-					screen.hide(szName)
-					szName = "DecreaseSpecialist" + str(i)
-					screen.show(szName)
-
-			if (pHeadSelectedCity.getSpecialistCount(i) < MAX_CITIZEN_BUTTONS):
-				iCount = pHeadSelectedCity.getSpecialistCount(i)
-			else:
-				iCount = MAX_CITIZEN_BUTTONS
-
-			for j in range(iCount):
-				bHandled = True
-				szName = "CitizenButton" + str((i * 100) + j)
-				screen.addCheckBoxGFC(szName, gc.getSpecialistInfo(i).getTexture(), "",
-						xResolution - 74 - (26 * j), (yResolution - 272 - (26 * i)), 24, 24,
-						WidgetTypes.WIDGET_CITIZEN, i, j,
-						ButtonStyles.BUTTON_STYLE_LABEL)
-				screen.show(szName)
-				szName = "CitizenButtonHighlight" + str((i * 100) + j)
-				screen.addDDSGFC(szName,
-						ArtFileMgr.getInterfaceArtInfo("BUTTON_HILITE_SQUARE").getPath(),
-						xResolution - 74 - (26 * j), (yResolution - 272 - (26 * i)), 24, 24,
-						WidgetTypes.WIDGET_CITIZEN, i, j)
-				if (pHeadSelectedCity.getForceSpecialistCount(i) > j):
-					screen.show(szName)
-				else:
-					screen.hide(szName)
-
-			if (not bHandled):
-				szName = "CitizenDisabledButton" + str(i)
-				screen.show(szName)
-
-		return True # advc.004: Signal success
-
-# BUG - city specialist - start
-	def updateCitizenButtons_Stacker(self):
-		if not CyInterface().isCityScreenUp():
-			return False
-		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
-		if not (pHeadSelectedCity and
-				CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW):
-			return False
-		global g_iSuperSpecialistCount
-		global g_iCitySpecialistCount
-		global g_iAngryCitizensCount
-
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
-		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
-		currentAngryCitizenCount = pHeadSelectedCity.angryPopulation(0)
-
-		if(currentAngryCitizenCount > 0):
-			stackWidth = 220 / currentAngryCitizenCount
-			if (stackWidth > MAX_SPECIALIST_BUTTON_SPACING):
-				stackWidth = MAX_SPECIALIST_BUTTON_SPACING
-
-		bHandled = False
-		for i in range(currentAngryCitizenCount):
-			bHandled = True
-			szName = "AngryCitizen" + str(i)
-			screen.setImageButton(szName,
-					ArtFileMgr.getInterfaceArtInfo("INTERFACE_ANGRYCITIZEN_TEXTURE").getPath(),
-					xResolution - SPECIALIST_AREA_MARGIN - (stackWidth * i),
-					yResolution - (282- SPECIALIST_ROW_HEIGHT),
-					30, 30,
-					WidgetTypes.WIDGET_ANGRY_CITIZEN, -1, -1)
+	def updateAdjustableSpecialistButtons(self, pHeadSelectedCity, iSpecialist):
+		if (pHeadSelectedCity.getOwner() != gc.getGame().getActivePlayer() and
+				not gc.getGame().isDebugMode()):
+			return
+		if pHeadSelectedCity.isCitizensAutomated():
+			iSpecialistCount = max(
+					pHeadSelectedCity.getSpecialistCount(iSpecialist),
+					pHeadSelectedCity.getForceSpecialistCount(iSpecialist))
+		else:
+			iSpecialistCount = pHeadSelectedCity.getSpecialistCount(iSpecialist)
+		screen = self.screen
+		if (pHeadSelectedCity.isSpecialistValid(iSpecialist, 1) and
+				(pHeadSelectedCity.isCitizensAutomated() or
+				iSpecialistCount < (pHeadSelectedCity.getPopulation() +
+				pHeadSelectedCity.totalFreeSpecialists()))):
+			szName = "IncreaseSpecialist" + str(iSpecialist)
+			screen.show(szName)
+			szName = "SpecialistDisabledButton" + str(iSpecialist)
+			screen.show(szName)
+		if iSpecialistCount > 0:
+			szName = "SpecialistDisabledButton" + str(iSpecialist)
+			screen.hide(szName)
+			szName = "DecreaseSpecialist" + str(iSpecialist)
 			screen.show(szName)
 
-		# update the max ever citizen counts
-		if g_iAngryCitizensCount < currentAngryCitizenCount:
-			g_iAngryCitizensCount = currentAngryCitizenCount
+	# BUG - city specialist - start  (advc.092: refactored)
+	def updateCitizenButtons_Chevron(self, pHeadSelectedCity):
+		screen = self.screen
 
-		iCount = 0
-		bHandled = False
-		currentSuperSpecialistCount = 0
-		for i in range(gc.getNumSpecialistInfos()):
-			if(pHeadSelectedCity.getFreeSpecialistCount(i) > 0):
-				currentSuperSpecialistCount = currentSuperSpecialistCount
-				currentSuperSpecialistCount += pHeadSelectedCity.getFreeSpecialistCount(i)
-		if(currentSuperSpecialistCount > 0):
-			stackWidth = 220 / currentSuperSpecialistCount
-			if (stackWidth > MAX_SPECIALIST_BUTTON_SPACING):
-				stackWidth = MAX_SPECIALIST_BUTTON_SPACING
-
-		for i in range(gc.getNumSpecialistInfos()):
-			for j in range(pHeadSelectedCity.getFreeSpecialistCount(i)):
-				szName = "FreeSpecialist" + str(iCount)
-				screen.setImageButton(szName,
-						gc.getSpecialistInfo(i).getTexture(),
-						xResolution - SPECIALIST_AREA_MARGIN - (stackWidth * iCount),
-						yResolution - (282 - SPECIALIST_ROW_HEIGHT * 2),
-						30, 30,
-						WidgetTypes.WIDGET_FREE_CITIZEN, i, 1)
-				screen.show(szName)
-				bHandled = true
-				iCount = iCount + 1
-
-		# update the max ever citizen counts
-		if g_iSuperSpecialistCount < iCount:
-			g_iSuperSpecialistCount = iCount
-
-		iXShiftVal = 0
-		iYShiftVal = 0
-		iSpecialistCount = 0
-		for i in range(gc.getNumSpecialistInfos()):
-			bHandled = False
-			if(iSpecialistCount > SPECIALIST_ROWS):
-				iXShiftVal = 115
-				iYShiftVal = (iSpecialistCount % SPECIALIST_ROWS) + 1
-			else:
-				iYShiftVal = iSpecialistCount
-
-			if (gc.getSpecialistInfo(i).isVisible()):
-				iSpecialistCount = iSpecialistCount + 1
-
-			if (gc.getPlayer(pHeadSelectedCity.getOwner()).isSpecialistValid(i) or i == 0):
-				iCount = (pHeadSelectedCity.getPopulation() - pHeadSelectedCity.angryPopulation(0))
-				iCount += pHeadSelectedCity.totalFreeSpecialists()
-			else:
-				iCount = pHeadSelectedCity.getMaxSpecialistCount(i)
-
-			# update the max ever citizen counts
-			if g_iCitySpecialistCount < iCount:
-				g_iCitySpecialistCount = iCount
-
-			RowLength = 110
-			if (i == 0):
-			#if (i == gc.getInfoTypeForString(gc.getDefineSTRING("DEFAULT_SPECIALIST"))):
-			# advc.001 (note): If the above is uncommented (I didn't comment it out), the following should be used instead:
-			#if i == gc.getDefineINT("DEFAULT_SPECIALIST"):
-				RowLength *= 2
-
-			HorizontalSpacing = MAX_SPECIALIST_BUTTON_SPACING
-			if (iCount > 0):
-				HorizontalSpacing = RowLength / iCount
-			if (HorizontalSpacing > MAX_SPECIALIST_BUTTON_SPACING):
-				HorizontalSpacing = MAX_SPECIALIST_BUTTON_SPACING
-
-			for k in range (iCount):
-				if (k >= pHeadSelectedCity.getSpecialistCount(i)):
-					szName = "IncresseCitizenBanner" + str((i * 100) + k)
-					screen.addCheckBoxGFC(szName, gc.getSpecialistInfo(i).getTexture(), "",
-							xResolution - (SPECIALIST_AREA_MARGIN + iXShiftVal) - (HorizontalSpacing * k),
-							(yResolution - 282 - (SPECIALIST_ROW_HEIGHT * iYShiftVal)),
-							30, 30,
-							WidgetTypes.WIDGET_CHANGE_SPECIALIST, i, 1,
-							ButtonStyles.BUTTON_STYLE_LABEL)
-					screen.enable(szName, False)
-					screen.show(szName)
-
-					szName = "IncresseCitizenButton" + str((i * 100) + k)
-					screen.addCheckBoxGFC(szName, "", "",
-							xResolution - (SPECIALIST_AREA_MARGIN + iXShiftVal) - (HorizontalSpacing * k),
-							(yResolution - 282 - (SPECIALIST_ROW_HEIGHT * iYShiftVal)),
-							30, 30,
-							WidgetTypes.WIDGET_CHANGE_SPECIALIST, i, 1,
-							ButtonStyles.BUTTON_STYLE_LABEL)
-					screen.show(szName)
-
-				else:
-					szName = "DecresseCitizenButton" + str((i * 100) + k)
-					screen.addCheckBoxGFC(szName, gc.getSpecialistInfo(i).getTexture(), "",
-							xResolution - (SPECIALIST_AREA_MARGIN + iXShiftVal) - (HorizontalSpacing * k),
-							(yResolution - 282 - (SPECIALIST_ROW_HEIGHT * iYShiftVal)),
-							30, 30,
-							WidgetTypes.WIDGET_CHANGE_SPECIALIST, i, -1,
-							ButtonStyles.BUTTON_STYLE_LABEL)
-					screen.show(szName)
-		#screen.show("SpecialistBackground")
-		#screen.show("SpecialistLabel")
-		# advc.004: Signal to the caller that the label should be shown
-		return True
-# BUG - city specialist - end
-
-# BUG - city specialist - start
-	def updateCitizenButtons_Chevron(self):
-		if not CyInterface().isCityScreenUp():
-			return False
-		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
-		if not (pHeadSelectedCity and
-				CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW):
-			return False
-		global MAX_CITIZEN_BUTTONS
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
-
-		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
 		iCount = pHeadSelectedCity.angryPopulation(0)
-		bHandled = False
 		j = 0
-		while (iCount > 0):
-			bHandled = True
-			szName = "AngryCitizen" + str(j)
-			screen.show(szName)
-			xCoord = xResolution - 74 - (26 * j)
-			yCoord = yResolution - 238
-			szName = "AngryCitizenChevron" + str(j)
+		while iCount > 0:
+			screen.show("AngryCitizen" + str(j))
+			szArtKey = None
 			if iCount >= 20:
-				szFileName = ArtFileMgr.getInterfaceArtInfo("OVERLAY_CHEVRON20").getPath()
+				szArtKey = "OVERLAY_CHEVRON20"
 				iCount -= 20
 			elif iCount >= 10:
-				szFileName = ArtFileMgr.getInterfaceArtInfo("OVERLAY_CHEVRON10").getPath()
+				szArtKey = "OVERLAY_CHEVRON10"
 				iCount -= 10
 			elif iCount >= 5:
-				szFileName = ArtFileMgr.getInterfaceArtInfo("OVERLAY_CHEVRON5").getPath()
+				szArtKey = "OVERLAY_CHEVRON5"
 				iCount -= 5
 			else:
-				szFileName = ""
 				iCount -= 1
-			if (szFileName != ""):
-				screen.addDDSGFC(szName ,
-						szFileName,
-						xCoord, yCoord, 10, 10,
-						WidgetTypes.WIDGET_CITIZEN, j, False)
+			if szArtKey:
+				szName = "AngryCitizenChevron" + str(j)
+				self.addDDS(szName, szArtKey,
+						WidgetTypes.WIDGET_CITIZEN, j)
 				screen.show(szName)
 			j += 1
 
-		iFreeSpecialistCount = 0
-		for i in range(gc.getNumSpecialistInfos()):
-			iFreeSpecialistCount += pHeadSelectedCity.getFreeSpecialistCount(i)
+		self.updateFreeSpecialistButtons(pHeadSelectedCity)
 
-		iCount = 0
-		bHandled = False
-		if (iFreeSpecialistCount > MAX_CITIZEN_BUTTONS):
-			for i in range(gc.getNumSpecialistInfos()):
-				if (pHeadSelectedCity.getFreeSpecialistCount(i) > 0):
-					if (iCount < MAX_CITIZEN_BUTTONS):
-						szName = "FreeSpecialist" + str(iCount)
-						screen.setImageButton(szName,
-								gc.getSpecialistInfo(i).getTexture(),
-								xResolution - 74 - (26 * iCount),
-								yResolution - 214,
-								24, 24,
-								WidgetTypes.WIDGET_FREE_CITIZEN, i, 1)
-						screen.show(szName)
-						bHandled = True
-					iCount += 1
-		else:
-			for i in range(gc.getNumSpecialistInfos()):
-				for j in range(pHeadSelectedCity.getFreeSpecialistCount(i)):
-					if (iCount < MAX_CITIZEN_BUTTONS):
-						szName = "FreeSpecialist" + str(iCount)
-						screen.setImageButton(szName,
-								gc.getSpecialistInfo(i).getTexture(),
-								xResolution - 74 - (26 * iCount),
-								yResolution - 214,
-								24, 24,
-								WidgetTypes.WIDGET_FREE_CITIZEN, i, -1)
-						screen.show(szName)
-						bHandled = True
-					iCount = iCount + 1
+		for iSpecialist in self.visibleSpecialists:
 
-		for i in range(gc.getNumSpecialistInfos()):
-			bHandled = False
-			if (pHeadSelectedCity.getOwner() == gc.getGame().getActivePlayer() or
-					gc.getGame().isDebugMode()):
-				if (pHeadSelectedCity.isCitizensAutomated()):
-					iSpecialistCount = max(pHeadSelectedCity.getSpecialistCount(i),
-							pHeadSelectedCity.getForceSpecialistCount(i))
-				else:
-					iSpecialistCount = pHeadSelectedCity.getSpecialistCount(i)
-				if (pHeadSelectedCity.isSpecialistValid(i, 1) and
-						(pHeadSelectedCity.isCitizensAutomated() or
-						iSpecialistCount < (pHeadSelectedCity.getPopulation() +
-						pHeadSelectedCity.totalFreeSpecialists()))):
-					szName = "IncreaseSpecialist" + str(i)
-					screen.show(szName)
-					szName = "CitizenDisabledButton" + str(i)
-					screen.show(szName)
+			self.updateAdjustableSpecialistButtons(pHeadSelectedCity, iSpecialist)
 
-				if iSpecialistCount > 0:
-					szName = "CitizenDisabledButton" + str(i)
-					screen.hide(szName)
-					szName = "DecreaseSpecialist" + str(i)
-					screen.show(szName)
-
-			iCount = pHeadSelectedCity.getSpecialistCount(i)
-			j = 0
-			while (iCount > 0):
-				bHandled = True
-
-				xCoord = xResolution - 74 - (26 * j)
-				yCoord = yResolution - 272 - (26 * i)
-
-				szName = "CitizenButton" + str((i * 100) + j)
-				screen.addCheckBoxGFC(szName, gc.getSpecialistInfo(i).getTexture(), "",
-						xCoord, yCoord, 24, 24,
-						WidgetTypes.WIDGET_CITIZEN, i, j,
-						ButtonStyles.BUTTON_STYLE_LABEL)
+			iCount = pHeadSelectedCity.getSpecialistCount(iSpecialist)
+			if iCount <= 0:
+				szName = "SpecialistDisabledButton" + str(iSpecialist)
 				screen.show(szName)
-
-				szName = "CitizenChevron" + str((i * 100) + j)
+				continue
+			j = 0
+			while iCount > 0:
+				szBtnIndex = str(iSpecialist * 100 + j)
+				screen.show("CitizenButton" + szBtnIndex)
+				szArtKey = None
 				if iCount >= 20:
-					szFileName = ArtFileMgr.getInterfaceArtInfo("OVERLAY_CHEVRON20").getPath()
+					szArtKey = "OVERLAY_CHEVRON20"
 					iCount -= 20
 				elif iCount >= 10:
-					szFileName = ArtFileMgr.getInterfaceArtInfo("OVERLAY_CHEVRON10").getPath()
+					szArtKey = "OVERLAY_CHEVRON10"
 					iCount -= 10
 				elif iCount >= 5:
-					szFileName = ArtFileMgr.getInterfaceArtInfo("OVERLAY_CHEVRON5").getPath()
+					szArtKey = "OVERLAY_CHEVRON5"
 					iCount -= 5
 				else:
-					szFileName = ""
 					iCount -= 1
-
-				if (szFileName != ""):
-					screen.addDDSGFC(szName,
-							szFileName,
-							xCoord, yCoord, 10, 10,
-							WidgetTypes.WIDGET_CITIZEN, i, False)
+				if szArtKey:
+					szName = "CitizenChevron" + szBtnIndex
+					self.addDDS(szName, szArtKey,
+							WidgetTypes.WIDGET_CITIZEN, iSpecialist, 0)
 					screen.show(szName)
 				j += 1
+# BUG - city specialist - end
 
-			if (not bHandled):
-				szName = "CitizenDisabledButton" + str(i)
+# BUG - city specialist - start
+	def updateCitizenButtons_Stacker(self, pHeadSelectedCity):
+		global g_iMaxEverFreeSpecialists
+		global g_iMaxEverAdjustableSpecialists
+		global g_iMaxEverAngry
+		screen = self.screen
+		iBtnSize = BTNSZ(30)
+		# advc.092: Nice that this can be quite compact,
+		# but looks rather strange on higher resolutions.
+		if gRect("Top").height() > 900:
+			iVSpace = 6
+		else:
+			iVSpace = 4
+		iVSpace = VSPACE(iVSpace)
+		SPECIALIST_ROW_HEIGHT = iBtnSize + iVSpace
+		MAX_SPECIALIST_BUTTON_SPACING = iBtnSize
+		gSetRect("StackerCitizenButtons", "CityRightPanelContents",
+				RectLayout.CENTER, 0,
+				-HSPACE(4), -gRect("GreatPeopleBar").height())
+		# For some reason, a smaller width is used for the iStackWidth calculations.
+		gSetRect("StackerRows", "StackerCitizenButtons",
+				RectLayout.CENTER, 0,
+				-HSPACE(6), RectLayout.MAX)
+
+		iFreeSpecialists = 0
+		for iSpecialist in range(gc.getNumSpecialistInfos()):
+			iFreeSpecialists += pHeadSelectedCity.getFreeSpecialistCount(iSpecialist)
+		if iFreeSpecialists > 0:
+			iStackWidth = min(gRect("StackerRows").width() / iFreeSpecialists,
+					MAX_SPECIALIST_BUTTON_SPACING)
+			lFreeSpecialistButtons = RowLayout(gRect("StackerCitizenButtons"),
+					RectLayout.RIGHT, RectLayout.BOTTOM,
+					iFreeSpecialists, iStackWidth - iBtnSize, iBtnSize)
+			# advc.001: Don't re-use the BtS name b/c that leads to problems
+			# when toggling the stacker option.
+			gSetRectangle("Stacker_FreeSpecialistButtons", lFreeSpecialistButtons)
+			g_iMaxEverFreeSpecialists = max(g_iMaxEverFreeSpecialists, iFreeSpecialists)
+		iCount = 0
+		for iSpecialist in range(gc.getNumSpecialistInfos() - 1, -1, -1):
+			for j in range(pHeadSelectedCity.getFreeSpecialistCount(iSpecialist)):
+				szName = "Stacker_FreeSpecialist" + str(iCount)
+				gSetRectangle(szName, lFreeSpecialistButtons.next())
+				self.setImageButton(szName, gc.getSpecialistInfo(iSpecialist).getTexture(),
+						WidgetTypes.WIDGET_FREE_CITIZEN, iSpecialist, 1)
 				screen.show(szName)
+				iCount += 1
 
-		return True # advc.004: Signal success
+		iAngry = pHeadSelectedCity.angryPopulation(0)
+		if iAngry > 0:
+			iStackWidth = min(gRect("StackerRows").width() / iAngry,
+					MAX_SPECIALIST_BUTTON_SPACING)
+			lAngryCitizenButtons = RowLayout(gRect("StackerCitizenButtons"),
+					RectLayout.RIGHT, RectLayout.BOTTOM,
+					iAngry, iStackWidth - iBtnSize, iBtnSize)
+			lAngryCitizenButtons.move(0, -SPECIALIST_ROW_HEIGHT)
+			gSetRectangle("Stacker_AngryCitizenButtons", lAngryCitizenButtons)
+			g_iMaxEverAngry = max(g_iMaxEverAngry, iAngry)
+		for i in range(iAngry):
+			szName = "Stacker_AngryCitizen" + str(i)
+			gSetRectangle(szName, lAngryCitizenButtons.next())
+			self.setImageButton(szName, "INTERFACE_ANGRYCITIZEN_TEXTURE",
+					WidgetTypes.WIDGET_ANGRY_CITIZEN)
+			screen.show(szName)
+
+		iVisibleSpecialists = 0
+		iDefaultSpecialist = gc.getDefineINT("DEFAULT_SPECIALIST")
+		for iSpecialist in range(gc.getNumSpecialistInfos()):
+			SPECIALIST_ROWS = 3
+			if iVisibleSpecialists > SPECIALIST_ROWS:
+				iXShift = gRect("StackerRows").width() / 2 + HSPACE(5)
+				iYShift = (iVisibleSpecialists % SPECIALIST_ROWS) + 1
+			else:
+				iXShift = 0
+				iYShift = iVisibleSpecialists
+			iYShift += 2
+			if gc.getSpecialistInfo(iSpecialist).isVisible():
+				iVisibleSpecialists += 1
+			if (gc.getPlayer(pHeadSelectedCity.getOwner()).isSpecialistValid(iSpecialist) or
+					iSpecialist == iDefaultSpecialist):
+				iCount = (pHeadSelectedCity.getPopulation()
+						- pHeadSelectedCity.angryPopulation(0)
+						+ pHeadSelectedCity.totalFreeSpecialists())
+			else:
+				iCount = pHeadSelectedCity.getMaxSpecialistCount(iSpecialist)
+			if iCount > 0:
+				iRowLength = gRect("StackerRows").width()
+				if iSpecialist != iDefaultSpecialist:
+					iRowLength /= 2
+				iStackWidth = min(iRowLength / iCount, MAX_SPECIALIST_BUTTON_SPACING)
+				lSpecialistButtons = RowLayout(gRect("StackerCitizenButtons"),
+						RectLayout.RIGHT, RectLayout.BOTTOM,
+						iCount, iStackWidth - iBtnSize, iBtnSize)
+				lSpecialistButtons.move(-iXShift, -(SPECIALIST_ROW_HEIGHT * iYShift))
+				gSetRectangle("Stacker_SpecialistButtons", lSpecialistButtons)
+				g_iMaxEverAdjustableSpecialists = max(g_iMaxEverAdjustableSpecialists, iCount)
+			for k in range(iCount):
+				szIndex = str(iSpecialist * 100 + k)
+				#SPECIALIST_AREA_MARGIN = 45 #gRect("StackerCitizenButtons") 4(extra margin)+9(original margin)+2(?)+iBtnSize
+				#iNonAdjustablesOffset = (3 * iSmallVSpace + 2 * iCitizenBtnSize +
+				#	gRect("GreatPeopleBar").height()#27  164  | 91-34=57  57-34=23  23-34=-11
+				#iYOffset = 282
+				lRect = lSpecialistButtons.next()
+				if k >= pHeadSelectedCity.getSpecialistCount(iSpecialist):
+					szName = "IncrCitizenBanner" + szIndex
+					gSetRectangle(szName, lRect)
+					self.addCheckBox(szName,
+							gc.getSpecialistInfo(iSpecialist).getTexture(), "",
+							ButtonStyles.BUTTON_STYLE_LABEL,
+							WidgetTypes.WIDGET_CHANGE_SPECIALIST, iSpecialist, 1)
+					screen.enable(szName, False)
+					screen.show(szName)
+					szName = "IncrCitizenButton" + szIndex
+					gSetRectangle(szName, lRect)
+					self.addCheckBox(szName, "", "",
+							ButtonStyles.BUTTON_STYLE_LABEL,
+							WidgetTypes.WIDGET_CHANGE_SPECIALIST, iSpecialist, 1)
+					screen.show(szName)
+				else:
+					szName = "DecrCitizenButton" + szIndex
+					gSetRectangle(szName, lRect)
+					self.addCheckBox(szName,
+							gc.getSpecialistInfo(iSpecialist).getTexture(), "",
+							ButtonStyles.BUTTON_STYLE_LABEL,
+							WidgetTypes.WIDGET_CHANGE_SPECIALIST, iSpecialist, -1)
+					screen.show(szName)
 # BUG - city specialist - end
 
 	# Will update the game data strings
 	def updateGameDataStrings(self):
-
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		# <advc.009b> Work around exceptions upon reloading scripts
+		if not hasattr(self, "screen"):
+			return # </advc.009b>
+		screen = self.screen
 
 		screen.hide("ResearchText")
 		screen.hide("GoldText")
@@ -4021,10 +3999,7 @@ class CvMainInterface:
 		else:
 			szResearchBar = "TwoLineResearchBar"
 		gOffSetPoint("ResearchText", szResearchBar,
-				RectLayout.CENTER,
-				# Ruff: this used to be 3 but I changed it so it lines up with the Great Person Bar
-				# advc: Should be OK now that it's an offset from the research bar
-				VLEN(3))
+				RectLayout.CENTER, self.stackBarDefaultTextOffset())
 		bAnarchy = gc.getPlayer(ePlayer).isAnarchy()
 		szText = None
 		if bAnarchy:
@@ -4096,7 +4071,7 @@ class CvMainInterface:
 		else:
 			szGPBar = "TwoLineGPBar"
 		gOffSetPoint("GreatPersonBarText", szGPBar,
-				RectLayout.CENTER, VLEN(3))
+				RectLayout.CENTER, self.stackBarDefaultTextOffset())
 		pGPCity, iGPTurns = GPUtil.getDisplayCity()
 		szText = GPUtil.getGreatPeopleText(pGPCity, iGPTurns,
 				gRect(szGPBar).width(),
@@ -4140,7 +4115,7 @@ class CvMainInterface:
 		else:
 			szGGBar = "TwoLineGGBar"
 		gOffSetPoint("GreatGeneralBarText", szGGBar,
-				RectLayout.CENTER, VLEN(3))
+				RectLayout.CENTER, self.stackBarDefaultTextOffset())
 		pPlayer = gc.getActivePlayer()
 		iCombatExp = pPlayer.getCombatExperience()
 		iThresholdExp = pPlayer.greatPeopleThreshold(True)
@@ -5514,10 +5489,8 @@ class CvMainInterface:
 					szBuffer += u" " + localText.getText(
 							"INTERFACE_CITY_TURNS", (iGPTurns,))
 # BUG - Great Person Turns - end
-			screen.setLabel("GreatPeopleText", "Background", szBuffer,
-					CvUtil.FONT_CENTER_JUSTIFY, xResolution - 126, yResolution - 182,
-					-1.3, FontTypes.GAME_FONT,
-					WidgetTypes.WIDGET_GENERAL, -1, -1)
+			self.setLabel("GreatPeopleText", "Background", szBuffer,
+					CvUtil.FONT_CENTER_JUSTIFY, FontTypes.GAME_FONT, -1.3)
 			screen.setHitTest("GreatPeopleText", HitTestTypes.HITTEST_NOHIT)
 			screen.show("GreatPeopleText")
 			# <advc> Refactored a bit

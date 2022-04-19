@@ -80,6 +80,7 @@ class RectLayout(object):
 		elif fWidth < 0:
 			if fX == RectLayout.CENTER: # Margin applies to both edges
 				self.fWidth += fWidth
+				self.fX -= fWidth / 2
 			else:
 				assert fX < RectLayout._RESERVED_CONST
 				self.fWidth -= self.fX - lParent.x() # Subtract left margin
@@ -89,6 +90,7 @@ class RectLayout(object):
 		elif fHeight < 0:
 			if fY == RectLayout.CENTER: # Margin applies to both edges
 				self.fHeight += fHeight
+				self.fY -= fHeight / 2
 			else:
 				assert fY < RectLayout._RESERVED_CONST
 				self.fHeight -= self.fY - lParent.y() # Subtract left margin
