@@ -97,9 +97,10 @@
 			
 			<!-- Specialist Stacker by TheLopez -->
 			<!-- Specialist Chevrons by Ruff_Hi -->
+			<!-- advc.004: "Default" renamed to "BtS" -->
 			<list   id="Specialists" key="City Specialists" 
 					type="int" default="2" listType="string" 
-					values="Default|Stacker|Chevron" 
+					values="BtS|Stacker|Chevron" 
 					get="getCitySpecialist" dirtyBit="CityScreen">
 				<choice id="Default" get="isCitySpecialist_Default"/>
 				<choice id="Stacker" get="isCitySpecialist_Stacker"/>
