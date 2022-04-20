@@ -706,11 +706,21 @@ class CvMainInterface:
 		gSetSquare("EndTurnButton", "Top",
 				-gRect("LowerRightCorner").width() + iEndTurnBtnSz / 2,
 				-gRect("LowerRightCorner").height() + iEndTurnBtnSz / 2 + 2,
-				32)
+				iEndTurnBtnSz)
 		iFlagWidth = 68
 		gSetRect("CivilizationFlag", "LowerRightCorner",
 				HSPACE(8), (gRect("LowerRightCorner").height() - gRect("CenterBottom").height()) / 2,
 				iFlagWidth, iFlagWidth * 250 / 68)
+# BUG - City Arrows - start
+		lMainCityScrollButtons = RowLayout(gRect("Top"),
+				(gRect("EndTurnButton").xRight() + gRect("MiniMapPanel").x()) / 2,
+				gRect("EndTurnButton").y(),
+				2, HSPACE(-12), BTNSZ(32))
+		lMainCityScrollButtons.move(-lMainCityScrollButtons.width() / 2, 0)
+		gSetRectangle("MainCityScrollButtons", lMainCityScrollButtons)
+		gSetRectangle("MainCityScrollMinus", lMainCityScrollButtons.next())
+		gSetRectangle("MainCityScrollPlus", lMainCityScrollButtons.next())
+# BUG - City Arrows - end
 
 		self.setCityTabRects()
 		# The height of the bottom button list isn't known here,
@@ -816,6 +826,18 @@ class CvMainInterface:
 		gOffSetPoint("GreatPeopleText", "GreatPeopleBar",
 				RectLayout.CENTER, self.stackBarDefaultTextOffset())
 		self.setCitizenButtonRects()
+
+		lCultureBars = ColumnLayout(gRect("CityLeftPanelContents"),
+				0, RectLayout.BOTTOM,
+				2, VSPACE(-1),
+				gRect("CityLeftPanelContents").width(), self.stackBarDefaultHeight())
+		gSetRectangle("CultureBars", lCultureBars)
+		gSetRectangle("NationalityBar", lCultureBars.next())
+		gSetRectangle("CultureBar", lCultureBars.next())
+		gOffSetPoint("NationalityText", "NationalityBar",
+				RectLayout.CENTER, self.stackBarDefaultTextOffset())
+		gOffSetPoint("CultureText", "CultureBar",
+				RectLayout.CENTER, self.stackBarDefaultTextOffset())
 
 		iPlotListUnitBtnSz = self.plotListUnitButtonSize()
 		self.m_iNumPlotListButtonsPerRow = (
@@ -1480,11 +1502,7 @@ class CvMainInterface:
 				gc.getInfoTypeForString("COLOR_EMPTY"))
 		screen.hide("GreatPeopleBar")
 
-		screen.addStackedBarGFC("CultureBar",
-				6, yResolution - 188,
-				240, self.stackBarDefaultHeight(),
-				InfoBarTypes.NUM_INFOBAR_TYPES,
-				WidgetTypes.WIDGET_HELP_CULTURE, -1, -1)
+		self.addStackedBar("CultureBar", WidgetTypes.WIDGET_HELP_CULTURE)
 		screen.setStackedBarColors("CultureBar", InfoBarTypes.INFOBAR_STORED,
 				gc.getInfoTypeForString("COLOR_CULTURE_STORED"))
 		screen.setStackedBarColors("CultureBar", InfoBarTypes.INFOBAR_RATE,
@@ -1498,11 +1516,7 @@ class CvMainInterface:
 		# (BUG - Limit/Extra Religions: Removed BtS code for adding
 		# ReligionHolyCityDDS, CorporationHeadquarterDDS to screen)
 
-		screen.addStackedBarGFC("NationalityBar",
-				6, yResolution - 214,
-				240, self.stackBarDefaultHeight(),
-				InfoBarTypes.NUM_INFOBAR_TYPES,
-				WidgetTypes.WIDGET_HELP_NATIONALITY, -1, -1)
+		self.addStackedBar("NationalityBar", WidgetTypes.WIDGET_HELP_NATIONALITY)
 		screen.hide("NationalityBar")
 
 		self.setStyledButton("CityScrollMinus", ButtonStyles.BUTTON_STYLE_ARROW_LEFT,
@@ -1513,16 +1527,13 @@ class CvMainInterface:
 		screen.hide("CityScrollPlus")
 
 # BUG - City Arrows - start
-		screen.setButtonGFC("MainCityScrollMinus", u"", "",
-				xResolution - 275, yResolution - 165, 32, 32,
-				WidgetTypes.WIDGET_CITY_SCROLL, -1, -1,
-				ButtonStyles.BUTTON_STYLE_ARROW_LEFT)
+		self.setStyledButton("MainCityScrollMinus",
+				ButtonStyles.BUTTON_STYLE_ARROW_LEFT,
+				WidgetTypes.WIDGET_CITY_SCROLL, -1)
 		screen.hide("MainCityScrollMinus")
-
-		screen.setButtonGFC("MainCityScrollPlus", u"", "",
-				xResolution - 255, yResolution - 165, 32, 32,
-				WidgetTypes.WIDGET_CITY_SCROLL, 1, -1,
-				ButtonStyles.BUTTON_STYLE_ARROW_RIGHT)
+		self.setStyledButton("MainCityScrollPlus",
+				ButtonStyles.BUTTON_STYLE_ARROW_RIGHT,
+				WidgetTypes.WIDGET_CITY_SCROLL, 1)
 		screen.hide("MainCityScrollPlus")
 # BUG - City Arrows - end
 
@@ -5381,10 +5392,8 @@ class CvMainInterface:
 		szBuffer = u"%d%% %s" %(
 				pHeadSelectedCity.plot().calculateCulturePercent(pHeadSelectedCity.getOwner()),
 				gc.getPlayer(pHeadSelectedCity.getOwner()).getCivilizationAdjective(0))
-		screen.setLabel("NationalityText", "Background", szBuffer,
-				CvUtil.FONT_CENTER_JUSTIFY, 125, yResolution - 210,
-				-0.3, FontTypes.SMALL_FONT,
-				WidgetTypes.WIDGET_GENERAL, -1, -1)
+		self.setLabel("NationalityText", "Background", szBuffer,
+				CvUtil.FONT_CENTER_JUSTIFY, FontTypes.SMALL_FONT, -0.3)
 		screen.setHitTest("NationalityText", HitTestTypes.HITTEST_NOHIT)
 		screen.show("NationalityText")
 		iRemainder = 100
@@ -5460,10 +5469,8 @@ class CvMainInterface:
 							"INTERFACE_CITY_TURNS",
 							(((iCultureLeftTimes100 + iRate - 1) / iRate),))
 # BUG - Culture Turns - end
-			screen.setLabel("CultureText", "Background", szBuffer,
-					CvUtil.FONT_CENTER_JUSTIFY, 125, yResolution - 184,
-					-1.3, FontTypes.GAME_FONT,
-					WidgetTypes.WIDGET_GENERAL, -1, -1)
+			self.setLabel("CultureText", "Background", szBuffer,
+					CvUtil.FONT_CENTER_JUSTIFY, FontTypes.GAME_FONT, -1.3)
 			screen.setHitTest("CultureText", HitTestTypes.HITTEST_NOHIT)
 			screen.show("CultureText")
 		if (pHeadSelectedCity.getGreatPeopleProgress() > 0 or
