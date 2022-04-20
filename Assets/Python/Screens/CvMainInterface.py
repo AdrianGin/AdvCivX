@@ -115,7 +115,7 @@ gSquareButtonScaleFactor = 1.0
 gSpaceScaleFactor = 1.0
 # Magnify small distances disproportionately
 def _dispropMagnMult(fMult, iDist, fExp):
-	if fExp <= 0:
+	if fExp <= 0 and iDist > 0:
 		fExp = (iDist + 1.0) / iDist
 	return math.pow(fMult, fExp)
 def _scaleWidgetLenToRes(fScaleMult, iLen, fExp):
@@ -388,15 +388,17 @@ class CvMainInterface:
 	def stackBarDefaultHeight(self):
 		return VLEN(27, 0.85)
 	def stackBarDefaultTextOffset(self):
-		# Was 3 or 4 in BtS. The aim is, presumably, to position the text
-		# (in the game font) at or almost at the bottom of the bar.
-		# I had assumed that making the offset a fraction of the bar height
-		# would suffice, but, somehow, they need to increase more than that.
-		return VLEN((3.25 * self.stackBarDefaultHeight()) / 27)
+		# Was 3 or 4 in BtS. Not sure whether the text is intended to be aligned
+		# at the bottom or center - the height of the game font is almost the same
+		# as the height of the bars. Let's assume that we want to center the text.
+		# I would've throught that making the offset a fraction of the bar height
+		# would accomplish that, but, somehow, it's not enough.
+		return VLEN((3.15 * self.stackBarDefaultHeight()) / 27)
 	def cityScreenHeadingBackgrHeight(self):
-		return VLEN(30)
+		return VSPACE(30)
 	def cityScreenHeadingOffset(self):
-		return VLEN((8 * self.cityScreenHeadingBackgrHeight()) / 30)
+		# advc.002b: Was 8 in BtS - too much at our font size.
+		return VLEN((6 * self.cityScreenHeadingBackgrHeight()) / 30)
 	# </advc.092>
 
 	def __init__(self):
@@ -625,9 +627,8 @@ class CvMainInterface:
 		gSetRect("CityScreenTopWidget", "Top",
 				0, -2,
 				RectLayout.MAX, gRect("TopBarsOneLineContainer").yBottom() + VLEN(12), True)
-		gSetRect("CityNameBackground", "CityCenterColumn",
-				RectLayout.CENTER, gRect("CityScreenTopWidget").yBottom() - 8,
-				-HSPACE(2), VSPACE(38, 0.25))
+
+		self.setCityNameRects()
 
 		gSetRect("LeftHalf", "Top",
 				0, 0,
@@ -910,6 +911,22 @@ class CvMainInterface:
 				RectLayout.RIGHT, RectLayout.BOTTOM,
 				fGPBarWidth, gRect("TopBarsTwoLineContainer").height() / 2)
 # BUG - Great Person Bar, BUG - Great General Bar - end
+
+	def setCityNameRects(self):
+		gSetRect("CityNameBackground", "CityCenterColumn",
+				RectLayout.CENTER, gRect("CityScreenTopWidget").yBottom() - 8,
+				-HSPACE(2), VSPACE(38, 0.25))
+		gOffSetPoint("CityNameText", "CityNameBackground",
+				RectLayout.CENTER, VLEN(3))
+		gOffSetPoint("DefenseText", "CityNameBackground",
+				RectLayout.RIGHT, VLEN(7, 0.7))
+		gPoint("DefenseText").move(-HSPACE(10), 0)
+		lCityScrollButtons = RowLayout(gRect("CityNameBackground"),
+				HSPACE(16), RectLayout.CENTER,
+				2, HSPACE(-18, 0.5), BTNSZ(32))
+		gSetRectangle("CityScrollButtons", lCityScrollButtons)
+		gSetRectangle("CityScrollMinus", lCityScrollButtons.next())
+		gSetRectangle("CityScrollPlus", lCityScrollButtons.next())
 
 	def setCityCenterBarRects(self):
 		iYieldTextWidth = HLEN(140)
@@ -1478,24 +1495,8 @@ class CvMainInterface:
 				gc.getInfoTypeForString("COLOR_EMPTY"))
 		screen.hide("CultureBar")
 
-# BUG - Limit/Extra Religions - start
-#		# Holy City Overlay
-#		for i in range(gc.getNumReligionInfos()):
-#			xCoord = xResolution - 242 + (i * 34)
-#			yCoord = 42
-#			szName = "ReligionHolyCityDDS" + str(i)
-#			screen.addDDSGFC(szName, ArtFileMgr.getInterfaceArtInfo("INTERFACE_HOLYCITY_OVERLAY").getPath(), xCoord, yCoord, 24, 24, WidgetTypes.WIDGET_HELP_RELIGION_CITY, i, -1)
-#			screen.hide(szName)
-# BUG - Limit/Extra Religions - end
-
-# BUG - Limit/Extra Corporations - start
-#		for i in range(gc.getNumCorporationInfos()):
-#			xCoord = xResolution - 242 + (i * 34)
-#			yCoord = 66
-#			szName = "CorporationHeadquarterDDS" + str(i)
-#			screen.addDDSGFC(szName, ArtFileMgr.getInterfaceArtInfo("INTERFACE_HOLYCITY_OVERLAY").getPath(), xCoord, yCoord, 24, 24, WidgetTypes.WIDGET_HELP_CORPORATION_CITY, i, -1)
-#			screen.hide(szName)
-# BUG - Limit/Extra Corporations - end
+		# (BUG - Limit/Extra Religions: Removed BtS code for adding
+		# ReligionHolyCityDDS, CorporationHeadquarterDDS to screen)
 
 		screen.addStackedBarGFC("NationalityBar",
 				6, yResolution - 214,
@@ -1504,16 +1505,11 @@ class CvMainInterface:
 				WidgetTypes.WIDGET_HELP_NATIONALITY, -1, -1)
 		screen.hide("NationalityBar")
 
-		screen.setButtonGFC("CityScrollMinus", u"", "",
-				274, 32, 32, 32,
-				WidgetTypes.WIDGET_CITY_SCROLL, -1, -1,
-				ButtonStyles.BUTTON_STYLE_ARROW_LEFT)
+		self.setStyledButton("CityScrollMinus", ButtonStyles.BUTTON_STYLE_ARROW_LEFT,
+				WidgetTypes.WIDGET_CITY_SCROLL, -1)
 		screen.hide("CityScrollMinus")
-
-		screen.setButtonGFC("CityScrollPlus", u"", "",
-				288, 32, 32, 32,
-				WidgetTypes.WIDGET_CITY_SCROLL, 1, -1,
-				ButtonStyles.BUTTON_STYLE_ARROW_RIGHT)
+		self.setStyledButton("CityScrollPlus", ButtonStyles.BUTTON_STYLE_ARROW_RIGHT,
+				WidgetTypes.WIDGET_CITY_SCROLL, 1)
 		screen.hide("CityScrollPlus")
 
 # BUG - City Arrows - start
@@ -4457,10 +4453,9 @@ class CvMainInterface:
 
 		szBuffer += u"</font>"
 
-		screen.setText("CityNameText", "Background",
-				szBuffer, CvUtil.FONT_CENTER_JUSTIFY,
-				screen.centerX(512), 32, -0.3, FontTypes.GAME_FONT,
-				WidgetTypes.WIDGET_CITY_NAME, -1, -1)
+		self.setText("CityNameText", "Background", szBuffer,
+				CvUtil.FONT_CENTER_JUSTIFY, FontTypes.GAME_FONT, -0.3, 
+				WidgetTypes.WIDGET_CITY_NAME)
 		screen.setStyle("CityNameText", "Button_Stone_Style")
 		screen.show("CityNameText")
 
@@ -5433,10 +5428,9 @@ class CvMainInterface:
 			szNewBuffer = "<font=4>"
 			szNewBuffer = szNewBuffer + szBuffer
 			szNewBuffer = szNewBuffer + "</font>"
-			screen.setLabel("DefenseText", "Background", szBuffer,
-					CvUtil.FONT_RIGHT_JUSTIFY, xResolution - 270, 40,
-					-0.3, FontTypes.SMALL_FONT,
-					WidgetTypes.WIDGET_HELP_DEFENSE, -1, -1)
+			self.setLabel("DefenseText", "Background", szBuffer,
+					CvUtil.FONT_RIGHT_JUSTIFY, FontTypes.SMALL_FONT, -0.3,
+					WidgetTypes.WIDGET_HELP_DEFENSE)
 			screen.show("DefenseText")
 		# advc.001: Left side was missing empty parentheses
 		if (pHeadSelectedCity.getCultureLevel() != CultureLevelTypes.NO_CULTURELEVEL):

@@ -10,6 +10,9 @@ class PointLayout:
 		return self.fX
 	def y(self):
 		return self.fY
+	def move(self, dX, dY):
+		self.fX += dX
+		self.fY += dY
 	def __str__(self):
 		return ( "Point(" + str(self.fX) + ", " + str(self.fY) + ")" )
 
@@ -163,8 +166,12 @@ class RectLayout(object):
 	def offsetPoint(lRect, fDeltaX, fDeltaY = 0):
 		if fDeltaX == RectLayout.CENTER:
 			fDeltaX = lRect.fWidth / 2
+		if fDeltaX == RectLayout.RIGHT:
+			fDeltaX = lRect.fWidth
 		if fDeltaY == RectLayout.CENTER:
 			fDeltaY = lRect.fHeight / 2
+		if fDeltaY == RectLayout.BOTTOM:
+			fDeltaY = lRect.fHeight
 		assert fDeltaX < RectLayout._RESERVED_CONST
 		assert fDeltaY < RectLayout._RESERVED_CONST
 		return PointLayout(lRect.fX + fDeltaX, lRect.fY + fDeltaY)
