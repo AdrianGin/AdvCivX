@@ -228,7 +228,7 @@ class _SingleFileLayout(RectLayout):
 			else:
 				iBtnY += iSpacing + fHeight
 	def next(self):
-		if self.iNextWidget > self.iWidgets:
+		if self.iNextWidget >= self.iWidgets:
 			return None
 		lNext = self.seq[self.iNextWidget]
 		self.iNextWidget += 1

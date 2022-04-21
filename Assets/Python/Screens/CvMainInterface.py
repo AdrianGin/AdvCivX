@@ -808,16 +808,16 @@ class CvMainInterface:
 		self.pBarProductionBar_Whip.addBarItem("ProductionBar")
 		self.pBarProductionBar_Whip.addBarItem("ProductionText")
 # BUG - Progress Bar - Tick Marks - end
-		gSetRect("CityReligionArea", "CityRightPanel",
+		gSetRect("CityOrgArea", "CityRightPanel",
 				RectLayout.CENTER, gRect("CityAdjustPanel").y(),
-				-HSPACE(4), VLEN(50))
+				-HSPACE(9), VLEN(50))
 		# Helper rects for uniform widget placement inside the side panels
 		gSetRect("CityLeftPanelContents", "CityLeftPanel",
 				RectLayout.CENTER, gRect("CityAdjustPanel").yBottom(),
 				-HSPACE(9),
 				gRect("LowerLeftCornerPanel").y() - gRect("LowerLeftCorner").y() + 4)
 		gSetRect("CityRightPanelContents", "CityRightPanel",
-				RectLayout.CENTER, gRect("CityReligionArea").yBottom(),
+				RectLayout.CENTER, gRect("CityOrgArea").yBottom(),
 				-HSPACE(9),
 				gRect("LowerRightCornerPanel").y() - gRect("LowerRightCorner").y() + 4)
 		gSetRect("GreatPeopleBar", "CityRightPanelContents",
@@ -5061,43 +5061,43 @@ class CvMainInterface:
 		iLeftCount = 0
 		iCenterCount = 0
 		iRightCount = 0
-		for i in range(gc.getNumBonusInfos()):
+		for iBonus in range(gc.getNumBonusInfos()):
 			bHandled = False
-			if (pHeadSelectedCity.hasBonus(i)):
-				iHealth = pHeadSelectedCity.getBonusHealth(i)
-				iHappiness = pHeadSelectedCity.getBonusHappiness(i)
+			if pHeadSelectedCity.hasBonus(iBonus):
+				iHealth = pHeadSelectedCity.getBonusHealth(iBonus)
+				iHappiness = pHeadSelectedCity.getBonusHappiness(iBonus)
 				szBuffer = u""
 				szLeadBuffer = u""
-				szTempBuffer = u"<font=1>%c" %(gc.getBonusInfo(i).getChar())
+				szTempBuffer = u"<font=1>%c" %(gc.getBonusInfo(iBonus).getChar())
 				szLeadBuffer = szLeadBuffer + szTempBuffer
-				if (pHeadSelectedCity.getNumBonuses(i) > 1):
-					szTempBuffer = u"(%d)" %(pHeadSelectedCity.getNumBonuses(i))
+				if pHeadSelectedCity.getNumBonuses(iBonus) > 1:
+					szTempBuffer = u"(%d)" %(pHeadSelectedCity.getNumBonuses(iBonus))
 					szLeadBuffer = szLeadBuffer + szTempBuffer
 				szLeadBuffer = szLeadBuffer + "</font>"
-				if (iHappiness != 0):
-					if (iHappiness > 0):
+				if iHappiness != 0:
+					if iHappiness > 0:
 						szTempBuffer = u"<font=1>+%d%c</font>" %(iHappiness,
 								CyGame().getSymbolID(FontSymbols.HAPPY_CHAR))
 					else:
 						szTempBuffer = u"<font=1>+%d%c</font>" %(-iHappiness,
 								CyGame().getSymbolID(FontSymbols.UNHAPPY_CHAR))
-					if (iHealth > 0):
+					if iHealth > 0:
 						szTempBuffer += u"<font=1>, +%d%c</font>" %(iHealth,
 								CyGame().getSymbolID(FontSymbols.HEALTHY_CHAR))
 					szName = "RightBonusItemLeft" + str(iRightCount)
 					screen.setLabelAt(szName, "BonusBack2", szLeadBuffer,
 							CvUtil.FONT_LEFT_JUSTIFY, 0, (iRightCount * 20) + 4,
 							-0.1, FontTypes.SMALL_FONT,
-							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, i, -1)
+							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
 					szName = "RightBonusItemRight" + str(iRightCount)
 					screen.setLabelAt(szName, "BonusBack2", szTempBuffer,
 							CvUtil.FONT_RIGHT_JUSTIFY, 102, (iRightCount * 20) + 4,
 							-0.1, FontTypes.SMALL_FONT,
-							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, i, -1)
+							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
 					iRightCount = iRightCount + 1
 					bHandled = True
 				if (iHealth != 0 and bHandled == False):
-					if (iHealth > 0):
+					if iHealth > 0:
 						szTempBuffer = u"<font=1>+%d%c</font>" %(iHealth,
 								CyGame().getSymbolID(FontSymbols.HEALTHY_CHAR))
 					else:
@@ -5107,21 +5107,21 @@ class CvMainInterface:
 					screen.setLabelAt(szName, "BonusBack1", szLeadBuffer,
 							CvUtil.FONT_LEFT_JUSTIFY, 0, (iCenterCount * 20) + 4,
 							-0.1, FontTypes.SMALL_FONT,
-							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, i, -1)
+							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
 					szName = "CenterBonusItemRight" + str(iCenterCount)
 					screen.setLabelAt(szName, "BonusBack1", szTempBuffer,
 							CvUtil.FONT_RIGHT_JUSTIFY, 62, (iCenterCount * 20) + 4,
 							-0.1, FontTypes.SMALL_FONT,
-							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, i, -1)
+							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
 					iCenterCount = iCenterCount + 1
 					bHandled = True
 				szBuffer = u""
-				if (not bHandled):
+				if not bHandled:
 					szName = "LeftBonusItem" + str(iLeftCount)
 					screen.setLabelAt(szName, "BonusBack0", szLeadBuffer,
 							CvUtil.FONT_LEFT_JUSTIFY, 0, (iLeftCount * 20) + 4,
 							-0.1, FontTypes.SMALL_FONT,
-							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, i, -1)
+							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
 					iLeftCount = iLeftCount + 1
 					bHandled = True
 		g_iNumLeftBonus = iLeftCount
@@ -5151,50 +5151,50 @@ class CvMainInterface:
 			self.yields.fillTable(screen, "TradeRouteTable", g_iYieldType, g_iYieldTiles)
 # BUG - Raw Yields - end
 		szBuffer = u""
+		# <advc.092>
+		if self.bScaleHUD:
+			iReligionCorpsMargin = VSPACE(4)
+		else:
+			iReligionCorpsMargin = 0
+		# </advc.092>
 # BUG - Limit/Extra Religions - start
 		if CityScreenOpt.isShowOnlyPresentReligions():
-			lReligions = ReligionUtil.getCityReligions(pHeadSelectedCity)
-			iCountReligions = len(lReligions)
-			iMaxWidth = 250#228
-			iMaxButtons = iCountReligions
-			# advc: Clutter moved into function
-			(iButtonSize, iButtonSpace, iMaxButtons) = self.orgButtonLayout(
-					iCountReligions, iMaxWidth, iMaxButtons)
-			for ii in range(iCountReligions):
-				i = lReligions[ii]
-				xCoord = xResolution - 242 + ((ii % iMaxButtons) *
-						(iButtonSize + iButtonSpace))
-				#xCoord = xResolution - 242 + (i * 34) # Origional Civ4 Code
-				yCoord = 42 + iButtonSize * (ii // iMaxButtons)
-				#yCoord = 42 # Origional Civ4 Code
-
-				bEnable = True
+			aReligions = ReligionUtil.getCityReligions(pHeadSelectedCity)
+			aReligionRows = self.cityOrgRects(
+					len(aReligions), gc.getNumReligionInfos())
+			if len(aReligionRows) > 0:
+				# (advc.092: The BUG code didn't support multiple religion rows either.
+				# Could adapt the corp code below if more religions are needed.)
+				lReligions = aReligionRows[0]
+			gSetRectangle("CityReligions", lReligions)
+			for i in range(len(aReligions)):
+				iReligion = aReligions[i]
 				# <advc> Commented out all code that only adds to szBuffer
 				# b/c that string is never used. (Already unused in Vanilla Civ 4.)
 				'''
-				if (pHeadSelectedCity.isHolyCityByType(i)):
-					szTempBuffer = u"%c" %(gc.getReligionInfo(i).getHolyCityChar())
+				if (pHeadSelectedCity.isHolyCityByType(iReligion)):
+					szTempBuffer = u"%c" %(gc.getReligionInfo(iReligion).getHolyCityChar())
 					# < 47 Religions Mod Start >
 					# This is now done below since the Holy City Overlay has to be added
 					# after the Religion Icon and can not be shown before its added
-					#szName = "ReligionHolyCityDDS" + str(i)
+					#szName = "ReligionHolyCityDDS" + str(iReligion)
 					#screen.show(szName)
 					# < 47 Religions Mod Start >
 				else:
-					szTempBuffer = u"%c" %(gc.getReligionInfo(i).getChar())
+					szTempBuffer = u"%c" %(gc.getReligionInfo(iReligion).getChar())
 				szBuffer = szBuffer + szTempBuffer
-				for j in range(CommerceTypes.NUM_COMMERCE_TYPES):
-					iCommerce = pHeadSelectedCity.getReligionCommerceByReligion(j, i)
-					if (iCommerce != 0):
-						if (iCommerce > 0):
-							szTempBuffer = u",%s%d%c" %("+", iCommerce, gc.getCommerceInfo(j).getChar())
+				for iCommerce in range(CommerceTypes.NUM_COMMERCE_TYPES):
+					iRate = pHeadSelectedCity.getReligionCommerceByReligion(iCommerce, iReligion)
+					if iRate != 0:
+						if iRate > 0:
+							szTempBuffer = u",%s%d%c" %("+", iRate, gc.getCommerceInfo(iCommerce).getChar())
 							szBuffer = szBuffer + szTempBuffer
 						else:
-							szTempBuffer = u",%s%d%c" %("", iCommerce, gc.getCommerceInfo(j).getChar())
+							szTempBuffer = u",%s%d%c" %("", iRate, gc.getCommerceInfo(iCommerce).getChar())
 							szBuffer = szBuffer + szTempBuffer
-				iHappiness = pHeadSelectedCity.getReligionHappiness(i)
-				if (iHappiness != 0):
-					if (iHappiness > 0):
+				iHappiness = pHeadSelectedCity.getReligionHappiness(iReligion)
+				if iHappiness != 0:
+					if iHappiness > 0:
 						szTempBuffer = u",+%d%c" %(iHappiness, CyGame().getSymbolID(FontSymbols.HAPPY_CHAR))
 						szBuffer = szBuffer + szTempBuffer
 					else:
@@ -5202,47 +5202,51 @@ class CvMainInterface:
 						szBuffer = szBuffer + szTempBuffer
 				szBuffer = szBuffer + " "
 				'''
-				szButton = gc.getReligionInfo(i).getButton()
-				szName = "ReligionDDS" + str(i)
-				screen.setImageButton(szName, szButton,
-						xCoord, yCoord, iButtonSize, iButtonSize,
-						WidgetTypes.WIDGET_HELP_RELIGION_CITY, i, -1)
-				screen.enable(szName, bEnable)
+				szButton = gc.getReligionInfo(iReligion).getButton()
+				szName = "ReligionDDS" + str(iReligion)
+				lReligion = lReligions.next()
+				if lReligion is None:
+					break
+				gSetRectangle(szName, lReligion)
+				self.setImageButton(szName, szButton,
+						WidgetTypes.WIDGET_HELP_RELIGION_CITY, iReligion)
+				screen.enable(szName, True)
 				screen.show(szName)
 				# Holy City Overlay
-				if (pHeadSelectedCity.isHolyCityByType(i)):
-					szName = "ReligionHolyCityDDS" + str(i)
-					screen.addDDSGFC(szName,
-							ArtFileMgr.getInterfaceArtInfo("INTERFACE_HOLYCITY_OVERLAY").getPath(),
-							xCoord, yCoord, iButtonSize, iButtonSize,
-							WidgetTypes.WIDGET_HELP_RELIGION_CITY, i, -1)
+				if pHeadSelectedCity.isHolyCityByType(iReligion):
+					szName = "ReligionHolyCityDDS" + str(iReligion)
+					gSetRectangle(szName, lReligion)
+					self.addDDS(szName, "INTERFACE_HOLYCITY_OVERLAY",
+							WidgetTypes.WIDGET_HELP_RELIGION_CITY, iReligion)
 					screen.show(szName)
 		else: # (show all religions)
-			for i in range(gc.getNumReligionInfos()):
-				xCoord = xResolution - 242 + (i * 34)
-				yCoord = 42
+			lReligions = RowLayout(gRect("CityOrgArea"),
+					RectLayout.CENTER, 0, gc.getNumReligionInfos(), HSPACE(10), BTNSZ(24))
+			gSetRectangle("CityReligions", lReligions)
+			for iReligion in range(gc.getNumReligionInfos()):
+				lReligion = lReligions.next()
 				bEnable = True
-				if (pHeadSelectedCity.isHasReligion(i)):
+				if (pHeadSelectedCity.isHasReligion(iReligion)):
 					# <advc>
-					if (pHeadSelectedCity.isHolyCityByType(i)):
-						#szTempBuffer = u"%c" %(gc.getReligionInfo(i).getHolyCityChar())
-						szName = "ReligionHolyCityDDS" + str(i)
+					if (pHeadSelectedCity.isHolyCityByType(iReligion)):
+						#szTempBuffer = u"%c" %(gc.getReligionInfo(iReligion).getHolyCityChar())
+						szName = "ReligionHolyCityDDS" + str(iReligion)
 						screen.show(szName)
 					# </advc> szBuffer code commented out (see advc comment above)
 					'''
 					else:
-						szTempBuffer = u"%c" %(gc.getReligionInfo(i).getChar())
+						szTempBuffer = u"%c" %(gc.getReligionInfo(iReligion).getChar())
 					szBuffer = szBuffer + szTempBuffer
-					for j in range(CommerceTypes.NUM_COMMERCE_TYPES):
-						iCommerce = pHeadSelectedCity.getReligionCommerceByReligion(j, i)
-						if (iCommerce != 0):
-							if (iCommerce > 0):
-								szTempBuffer = u",%s%d%c" %("+", iCommerce, gc.getCommerceInfo(j).getChar())
+					for iCommerce in range(CommerceTypes.NUM_COMMERCE_TYPES):
+						iRate = pHeadSelectedCity.getReligionCommerceByReligion(iCommerce, iReligion)
+						if iRate != 0:
+							if iRate > 0:
+								szTempBuffer = u",%s%d%c" %("+", iRate, gc.getCommerceInfo(iCommerce).getChar())
 								szBuffer = szBuffer + szTempBuffer
 							else:
-								szTempBuffer = u",%s%d%c" %("", iCommerce, gc.getCommerceInfo(j).getChar())
+								szTempBuffer = u",%s%d%c" %("", iRate, gc.getCommerceInfo(iCommerce).getChar())
 								szBuffer = szBuffer + szTempBuffer
-					iHappiness = pHeadSelectedCity.getReligionHappiness(i)
+					iHappiness = pHeadSelectedCity.getReligionHappiness(iReligion)
 					if (iHappiness != 0):
 						if (iHappiness > 0):
 							szTempBuffer = u",+%d%c" %(iHappiness, CyGame().getSymbolID(FontSymbols.HAPPY_CHAR))
@@ -5252,141 +5256,143 @@ class CvMainInterface:
 							szBuffer = szBuffer + szTempBuffer
 					szBuffer = szBuffer + " "
 					'''
-					szButton = gc.getReligionInfo(i).getButton()
+					szButton = gc.getReligionInfo(iReligion).getButton()
 				else:
 					bEnable = False
-					szButton = gc.getReligionInfo(i).getButton()
-				szName = "ReligionDDS" + str(i)
-				screen.setImageButton(szName, szButton,
-						xCoord, yCoord, 24, 24,
-						WidgetTypes.WIDGET_HELP_RELIGION_CITY, i, -1)
+					szButton = gc.getReligionInfo(iReligion).getButton()
+				szName = "ReligionDDS" + str(iReligion)
+				gSetRectangle(szName, lReligion)
+				self.setImageButton(szName, szButton,
+						WidgetTypes.WIDGET_HELP_RELIGION_CITY, iReligion)
 				screen.enable(szName, bEnable)
 				screen.show(szName)
-				if (pHeadSelectedCity.isHolyCityByType(i)):
-					szName = "ReligionHolyCityDDS" + str(i)
-					screen.addDDSGFC(szName,
-							ArtFileMgr.getInterfaceArtInfo("INTERFACE_HOLYCITY_OVERLAY").getPath(),
-							xCoord, yCoord, 24, 24,
-							WidgetTypes.WIDGET_HELP_RELIGION_CITY, i, -1)
+				if (pHeadSelectedCity.isHolyCityByType(iReligion)):
+					szName = "ReligionHolyCityDDS" + str(iReligion)
+					gSetRectangle(szName, lReligion)
+					self.addDDS(szName, "INTERFACE_HOLYCITY_OVERLAY",
+							WidgetTypes.WIDGET_HELP_RELIGION_CITY, iReligion)
 					screen.show(szName)
 # BUG - Limit/Extra Religions - end
 # BUG - Limit/Extra Corporations - start
 		if CityScreenOpt.isShowOnlyPresentCorporations():
-			lCorporations = []
-			for i in range(gc.getNumCorporationInfos()):
-				if (not pHeadSelectedCity.isHasCorporation(i)):
+			aCorporations = []
+			for iCorp in range(gc.getNumCorporationInfos()):
+				if not pHeadSelectedCity.isHasCorporation(iCorp):
 					continue
-				lCorporations += [i]
-			iCountCorporations = len(lCorporations)
-			iMaxWidth = 250#228
-			iMaxButtons = iCountCorporations
-			# advc: Duplicated clutter moved into function
-			(iButtonSize, iButtonSpace, iMaxButtons) = self.orgButtonLayout(
-					iCountCorporations, iMaxWidth, iMaxButtons)
-			for ii in range(iCountCorporations):
-				i = lCorporations[ii]
-				xCoord = xResolution - 242 + ((ii % iMaxButtons) *
-						(iButtonSize + iButtonSpace))
-				#xCoord = xResolution - 242 + (i * 34) # Origional Civ4 Code
-				yCoord = 66 + iButtonSize * (ii // iMaxButtons)
-				#yCoord = 66 # Origional Civ4 Code
-				bEnable = True
+				aCorporations += [iCorp]
+			# <advc.092>
+			aCorpRows = self.cityOrgRects(
+					len(aCorporations), gc.getNumCorporationInfos())
+			# Move corps under religions
+			for lCorpRow in aCorpRows:
+				lCorpRow.move(0, gRect("CityReligions").height() + iReligionCorpsMargin)
+			for i in range(len(aCorporations)):
+				lCorp = None
+				# Find next free spot
+				for lCorpRow in aCorpRows:
+					lCorp = lCorpRow.next()
+					if not lCorp is None:
+						break
+				if lCorp is None:
+					break
+				# </advc.092>
+				iCorp = aCorporations[i]
 				# advc: szBuffer code commented out (see advc comment above)
 				'''
-				if (pHeadSelectedCity.isHeadquartersByType(i)):
-					szTempBuffer = u"%c" %(gc.getCorporationInfo(i).getHeadquarterChar())
-					szName = "CorporationHeadquarterDDS" + str(i)
+				if pHeadSelectedCity.isHeadquartersByType(iCorp):
+					szTempBuffer = u"%c" %(gc.getCorporationInfo(iCorp).getHeadquarterChar())
+					szName = "CorporationHeadquarterDDS" + str(iCorp)
 					screen.show(szName)
 				else:
-					szTempBuffer = u"%c" %(gc.getCorporationInfo(i).getChar())
+					szTempBuffer = u"%c" %(gc.getCorporationInfo(iCorp).getChar())
 				szBuffer = szBuffer + szTempBuffer
-				for j in range(YieldTypes.NUM_YIELD_TYPES):
-					iYield = pHeadSelectedCity.getCorporationYieldByCorporation(j, i)
-					if (iYield != 0):
-						if (iYield > 0):
-							szTempBuffer = u",%s%d%c" %("+", iYield, gc.getYieldInfo(j).getChar())
+				for iYield in range(YieldTypes.NUM_YIELD_TYPES):
+					iRate = pHeadSelectedCity.getCorporationYieldByCorporation(iYield, iCorp)
+					if iRate != 0:
+						if iRate > 0:
+							szTempBuffer = u",%s%d%c" %("+", iRate, gc.getYieldInfo(iYield).getChar())
 							szBuffer = szBuffer + szTempBuffer
 						else:
-							szTempBuffer = u",%s%d%c" %("", iYield, gc.getYieldInfo(j).getChar())
+							szTempBuffer = u",%s%d%c" %("", iRate, gc.getYieldInfo(iYield).getChar())
 							szBuffer = szBuffer + szTempBuffer
-				for j in range(CommerceTypes.NUM_COMMERCE_TYPES):
-					iCommerce = pHeadSelectedCity.getCorporationCommerceByCorporation(j, i)
-					if (iCommerce != 0):
-						if (iCommerce > 0):
-							szTempBuffer = u",%s%d%c" %("+", iCommerce, gc.getCommerceInfo(j).getChar())
+				for iCommerce in range(CommerceTypes.NUM_COMMERCE_TYPES):
+					iRate = pHeadSelectedCity.getCorporationCommerceByCorporation(iCommerce, iCorp)
+					if iRate != 0:
+						if iRate > 0:
+							szTempBuffer = u",%s%d%c" %("+", iRate, gc.getCommerceInfo(iCommerce).getChar())
 							szBuffer = szBuffer + szTempBuffer
 						else:
-							szTempBuffer = u",%s%d%c" %("", iCommerce, gc.getCommerceInfo(j).getChar())
+							szTempBuffer = u",%s%d%c" %("", iRate, gc.getCommerceInfo(iCommerce).getChar())
 							szBuffer = szBuffer + szTempBuffer
 				szBuffer += " "
 				'''
-				szButton = gc.getCorporationInfo(i).getButton()
-				szName = "CorporationDDS" + str(i)
-				screen.setImageButton(szName, szButton,
-						xCoord, yCoord, iButtonSize, iButtonSize,
-						WidgetTypes.WIDGET_HELP_CORPORATION_CITY, i, -1)
-				screen.enable(szName, bEnable)
+				szButton = gc.getCorporationInfo(iCorp).getButton()
+				szName = "CorporationDDS" + str(iCorp)
+				gSetRectangle(szName, lCorp)
+				self.setImageButton(szName, szButton,
+						WidgetTypes.WIDGET_HELP_CORPORATION_CITY, iCorp)
+				screen.enable(szName, True)
 				screen.show(szName)
-				# Holy City Overlay
-				if (pHeadSelectedCity.isHeadquartersByType(i)):
-					szName = "CorporationHeadquarterDDS" + str(i)
-					screen.addDDSGFC(szName,
-							ArtFileMgr.getInterfaceArtInfo("INTERFACE_HOLYCITY_OVERLAY").getPath(),
-							xCoord, yCoord, iButtonSize, iButtonSize,
-							WidgetTypes.WIDGET_HELP_CORPORATION_CITY, i, -1)
+				# HQ Overlay
+				if pHeadSelectedCity.isHeadquartersByType(iCorp):
+					szName = "CorporationHeadquarterDDS" + str(iCorp)
+					gSetRectangle(szName, lCorp)
+					self.addDDS(szName, "INTERFACE_HOLYCITY_OVERLAY",
+							WidgetTypes.WIDGET_HELP_CORPORATION_CITY, iCorp)
 					screen.show(szName)
 		else: # (show all corps)
-			for i in range(gc.getNumCorporationInfos()):
-				xCoord = xResolution - 242 + (i * 34)
-				yCoord = 66
+			lCorporations = RowLayout(gRect("CityOrgArea"),
+					RectLayout.CENTER, gRect("CityReligions").height() + iReligionCorpsMargin,
+					gc.getNumReligionInfos(), HSPACE(10), BTNSZ(24))
+			for iCorp in range(gc.getNumCorporationInfos()):
+				lCorp = lCorporations.next()
 				bEnable = True
-				if (pHeadSelectedCity.isHasCorporation(i)):
+				if pHeadSelectedCity.isHasCorporation(iCorp):
 					# <advc>
-					if (pHeadSelectedCity.isHeadquartersByType(i)):
-						#szTempBuffer = u"%c" %(gc.getCorporationInfo(i).getHeadquarterChar())
-						szName = "CorporationHeadquarterDDS" + str(i)
+					if pHeadSelectedCity.isHeadquartersByType(iCorp):
+						#szTempBuffer = u"%c" %(gc.getCorporationInfo(iCorp).getHeadquarterChar())
+						szName = "CorporationHeadquarterDDS" + str(iCorp)
 						screen.show(szName)
 					# </advc> szBuffer code commented out (see advc comment above)
 					'''
 					else:
-						szTempBuffer = u"%c" %(gc.getCorporationInfo(i).getChar())
+						szTempBuffer = u"%c" %(gc.getCorporationInfo(iCorp).getChar())
 					szBuffer = szBuffer + szTempBuffer
-					for j in range(YieldTypes.NUM_YIELD_TYPES):
-						iYield = pHeadSelectedCity.getCorporationYieldByCorporation(j, i)
-						if (iYield != 0):
-							if (iYield > 0):
-								szTempBuffer = u",%s%d%c" %("+", iYield, gc.getYieldInfo(j).getChar())
+					for iYield in range(YieldTypes.NUM_YIELD_TYPES):
+						iRate = pHeadSelectedCity.getCorporationYieldByCorporation(iYield, iCorp)
+						if iRate != 0:
+							if iRate > 0:
+								szTempBuffer = u",%s%d%c" %("+", iRate, gc.getYieldInfo(iYield).getChar())
 								szBuffer = szBuffer + szTempBuffer
 							else:
-								szTempBuffer = u",%s%d%c" %("", iYield, gc.getYieldInfo(j).getChar())
+								szTempBuffer = u",%s%d%c" %("", iRate, gc.getYieldInfo(iYield).getChar())
 								szBuffer = szBuffer + szTempBuffer
-					for j in range(CommerceTypes.NUM_COMMERCE_TYPES):
-						iCommerce = pHeadSelectedCity.getCorporationCommerceByCorporation(j, i)
-						if (iCommerce != 0):
-							if (iCommerce > 0):
-								szTempBuffer = u",%s%d%c" %("+", iCommerce, gc.getCommerceInfo(j).getChar())
+					for iCommerce in range(CommerceTypes.NUM_COMMERCE_TYPES):
+						iRate = pHeadSelectedCity.getCorporationCommerceByCorporation(iCommerce, iCorp)
+						if iRate != 0:
+							if iRate > 0:
+								szTempBuffer = u",%s%d%c" %("+", iRate, gc.getCommerceInfo(iCommerce).getChar())
 								szBuffer = szBuffer + szTempBuffer
 							else:
-								szTempBuffer = u",%s%d%c" %("", iCommerce, gc.getCommerceInfo(j).getChar())
+								szTempBuffer = u",%s%d%c" %("", iRate, gc.getCommerceInfo(iCommerce).getChar())
 								szBuffer = szBuffer + szTempBuffer
 					szBuffer += " "
 					'''
-					szButton = gc.getCorporationInfo(i).getButton()
+					szButton = gc.getCorporationInfo(iCorp).getButton()
 				else:
 					bEnable = False
-					szButton = gc.getCorporationInfo(i).getButton()
-				szName = "CorporationDDS" + str(i)
-				screen.setImageButton(szName, szButton,
-						xCoord, yCoord, 24, 24,
-						WidgetTypes.WIDGET_HELP_CORPORATION_CITY, i, -1)
+					szButton = gc.getCorporationInfo(iCorp).getButton()
+				szName = "CorporationDDS" + str(iCorp)
+				gSetRectangle(szName, lCorp)
+				self.setImageButton(szName, szButton,
+						WidgetTypes.WIDGET_HELP_CORPORATION_CITY, iCorp)
 				screen.enable(szName, bEnable)
 				screen.show(szName)
-				if (pHeadSelectedCity.isHeadquartersByType(i)):
-					szName = "CorporationHeadquarterDDS" + str(i)
-					screen.addDDSGFC(szName,
-							ArtFileMgr.getInterfaceArtInfo("INTERFACE_HOLYCITY_OVERLAY").getPath(),
-							xCoord, yCoord, 24, 24,
-							WidgetTypes.WIDGET_HELP_CORPORATION_CITY, i, -1)
+				if pHeadSelectedCity.isHeadquartersByType(iCorp):
+					szName = "CorporationHeadquarterDDS" + str(iCorp)
+					gSetRectangle(szName, lCorp)
+					self.addDDS(szName, "INTERFACE_HOLYCITY_OVERLAY",
+							WidgetTypes.WIDGET_HELP_CORPORATION_CITY, iCorp)
 					screen.show(szName)
 # BUG - Limit/Extra Corporations - end
 		szBuffer = u"%d%% %s" %(
@@ -6808,62 +6814,74 @@ class CvMainInterface:
 		screen.setState("GlobeToggle", False)
 		screen.hide("GlobeToggle")
 
-	# advc: Cut from updateCityScreen
-	def orgButtonLayout(self, iOrgs, iMaxWidth, iMaxButtons):
-		if (iOrgs < 8):
+	# advc.092: Mostly cut from updateCityScreen
+	def cityOrgRects(self, iOrgs, iMaxOrgs):
+		if iOrgs <= 0:
+			return []
+		if iOrgs < 8:
 			iButtonSize = 24
 			iButtonSpace = 10
-		#elif (iOrgs >= iMaxButtons):
-			#iButtonSize = iMaxWidth / iMaxButtons
-			#iButtonSpace = 0
-		elif (iOrgs == 8):
+		elif iOrgs == 8:
 			iButtonSize = 24
 			iButtonSpace = 5
-		elif (iOrgs == 9):
+		elif iOrgs == 9:
 			iButtonSize = 24
 			iButtonSpace = 2
-		elif (iOrgs == 10):
+		elif iOrgs == 10:
 			iButtonSize = 21
 			iButtonSpace = 2
-		elif (iOrgs == 11):
+		elif iOrgs == 11:
 			iButtonSize = 20
 			iButtonSpace = 1
-		elif (iOrgs == 12):
+		elif iOrgs == 12:
 			iButtonSize = 18
 			iButtonSpace = 1
-		elif (iOrgs == 13):
+		elif iOrgs == 13:
 			iButtonSize = 18
 			iButtonSpace = 0
-		elif (iOrgs == 14):
+		elif iOrgs == 14:
 			iButtonSize = 16
 			iButtonSpace = 0
-		elif (iOrgs == 15):
+		elif iOrgs == 15:
 			iButtonSize = 15
 			iButtonSpace = 0
-		elif (iOrgs == 16):
+		elif iOrgs == 16:
 			iButtonSize = 14
 			iButtonSpace = 0
-		elif (iOrgs == 17):
-			iButtonSize = 13
-			iButtonSpace = 0
-		elif (iOrgs == 18):
-			iButtonSize = 13
-			iButtonSpace = 0
-		# (advc.001: The original code had a copy-paste error here)
-		elif (37 > iOrgs > 18):
-			iMaxButtons = 18
-			iButtonSize = 13
-			iButtonSpace = 0
-		elif iOrgs == 37 or iOrgs == 38:
-			iMaxWidth = 240
-			iMaxButtons = iround(iOrgs / 2.0, 0)
-			iButtonSize = iMaxWidth / iMaxButtons
-			iButtonSpace = (iMaxWidth - (iButtonSize * iMaxButtons)) // (iMaxButtons - 1)
 		else:
-			iMaxButtons = iround(iOrgs / 2.0, 0)
-			iButtonSize = iMaxWidth / iMaxButtons
-			iButtonSpace = (iMaxWidth - (iButtonSize * iMaxButtons)) // (iMaxButtons - 1)
-		return (iButtonSize, iButtonSpace, iMaxButtons)
+			iButtonSize = 13
+			iButtonSpace = 0
+		iOrgLimit = 18
+		iButtonsPerRow = min(iOrgLimit, iOrgs)
+		if iOrgs > 2 * iOrgLimit:
+			iMaxWidth = gRect("CityOrgArea").width()
+			if iOrgs == 37 or iOrgs == 38:
+				iMaxWidth = (24 * iMaxWidth) / 25
+			iButtonsPerRow = iround(iOrgs / 2.0)
+			iButtonSize = iMaxWidth / iButtonsPerRow
+			iButtonSpace = (iMaxWidth - (iButtonSize * iButtonsPerRow)) // (iButtonsPerRow - 1)
+		# <advc.092> Let's hope that this will work well enough for organization counts
+		# greater than 7. Only tested it for 7.
+		else:
+			iButtonSize = BTNSZ(iButtonSize)
+			iButtonSpace = HSPACE(iButtonSpace)
+		# Helper rect to determine left margin
+		lMaxOrgs = RowLayout(gRect("CityOrgArea"),
+				RectLayout.CENTER, 0, iMaxOrgs, iButtonSpace, iButtonSize)
+		if lMaxOrgs.width() <= gRect("CityOrgArea").width():
+			iLMargin = lMaxOrgs.x() - gRect("CityOrgArea").x()
+		else:
+			iLMargin = 0
+		aResult = []
+		iTopMargin = 0
+		while iOrgs > 0:
+			iOrgs -= iButtonsPerRow
+			aResult.append(
+					RowLayout(gRect("CityOrgArea"),
+					iLMargin, iTopMargin, iButtonsPerRow, iButtonSpace, iButtonSize))
+			iTopMargin += iButtonSize
+		return aResult
+		# </advc.092>
 
 	def update(self, fDelta):
 		return
