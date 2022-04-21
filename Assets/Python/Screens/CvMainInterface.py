@@ -218,6 +218,13 @@ class CvMainInterface:
 		self.screen.addPanel(szName, u"", u"", True, False,
 				lRect.x(), lRect.y(), lRect.width(), lRect.height(),
 				eStyle)
+	def addScrollPanel(self, szName, eStyle = None):
+		if eStyle is None:
+			eStyle = PanelStyles.PANEL_STYLE_EXTERNAL
+		lRect = gRect(szName)
+		self.screen.addScrollPanel(szName, u"",
+				lRect.x(), lRect.y(), lRect.width(), lRect.height(),
+				eStyle)
 	def addDDS(self, szName,
 			# Can be either an interface art info string
 			# or a CvInfo object with a getButton method
@@ -371,9 +378,6 @@ class CvMainInterface:
 			eWidgetType = None, iData1 = -1, iData2 = -1):
 		self.addStackedBar(szName, eWidgetType, iData1, iData2, szAttachTo)
 	def setDefaultHelpTextArea(self, bMinMargin = False):
-		# <advc.009b> Work around exceptions upon reloading scripts
-		if not hasattr(self, "screen"):
-			return # </advc.009b>
 		if bMinMargin:
 			# As in BtS; pretty arbitrary and overlaps the unit pane.
 			iBottomMargin = VSPACE(50)
@@ -817,7 +821,7 @@ class CvMainInterface:
 				-HSPACE(9),
 				gRect("LowerLeftCornerPanel").y() - gRect("LowerLeftCorner").y() + 4)
 		gSetRect("CityRightPanelContents", "CityRightPanel",
-				RectLayout.CENTER, gRect("CityOrgArea").yBottom(),
+				RectLayout.CENTER, gRect("CityOrgArea").yBottom() + VSPACE(4),
 				-HSPACE(9),
 				gRect("LowerRightCornerPanel").y() - gRect("LowerRightCorner").y() + 4)
 		gSetRect("GreatPeopleBar", "CityRightPanelContents",
@@ -826,6 +830,7 @@ class CvMainInterface:
 		gOffSetPoint("GreatPeopleText", "GreatPeopleBar",
 				RectLayout.CENTER, self.stackBarDefaultTextOffset())
 		self.setCitizenButtonRects()
+		self.setCityBonusRects()
 
 		lCultureBars = ColumnLayout(gRect("CityLeftPanelContents"),
 				0, RectLayout.BOTTOM,
@@ -1106,6 +1111,47 @@ class CvMainInterface:
 		gOffSetPoint("SpecialistLabel", "SpecialistLabelBackground",
 				RectLayout.CENTER, self.cityScreenHeadingOffset())
 # BUG - city specialist - end
+
+	def setCityBonusRects(self):
+		if self.isShowSpecialistLabel():
+			iSpecialistButtonsY = gRect("SpecialistLabelBackground").y()
+		else:
+			iSpecialistButtonsY = gRect("SpecialistLabelBackground").yBottom()
+		iMaxRMargin = gRect("Top").xRight() - gRect("CityRightPanelContents").x()
+		gSetRect("BonusPane0", "CityRightPanelContents",
+				0, 0,
+				HLEN(57), -(gRect("CityRightPanelContents").yBottom() - iSpecialistButtonsY))
+		gSetRect("BonusBack0", "CityRightPanelContents",
+				0, 0,
+				# Width was 157 in BtS. Perhaps the idea was to get all the scrollbars
+				# to appear on top of each other at the right edge. If so, then that's
+				# a pretty poor kludge. I'm going to push all scrollbars off-screen.
+				# That will still allow scrolling via mouse wheel - though the player
+				# may not even realize that not all resources are shown.
+				# Scrolling is only relevant when the height is insufficient for the
+				# list of bonus resources. That should never be the case with the
+				# BtS/AdvCiv rules, even at the lowest resolution.
+				iMaxRMargin, gRect("BonusPane0").height() + VSPACE(16))
+		gSetRect("BonusPane1", "CityRightPanelContents",
+				gRect("BonusPane0").width(), 0,
+				# advc.002b: Was 68 in BtS; need less space in the third col now
+				# b/c the plus signs are gone.
+				HLEN(80), gRect("BonusPane0").height())
+		gSetRect("BonusBack1", "CityRightPanelContents",
+				gRect("BonusPane1").x() - gRect("CityRightPanelContents").x(), 0,
+				# width was 184
+				iMaxRMargin, gRect("BonusBack0").height())
+		gSetRect("BonusPane2", "CityRightPanelContents",
+				gRect("BonusPane0").width() + gRect("BonusPane1").width(), 0,
+				RectLayout.MAX, gRect("BonusPane0").height())
+		gSetRect("BonusBack2", "CityRightPanelContents",
+				gRect("BonusPane2").x() - gRect("CityRightPanelContents").x(), 0,
+				# width was 205
+				iMaxRMargin, gRect("BonusBack0").height())
+		# The scroll panels (backgrounds) seem to apply some built-in margins
+		gRect("BonusBack0").move(-2, -2)
+		gRect("BonusBack1").move(-2, -2)
+		gRect("BonusBack2").move(-2, -2)
 
 	def interfaceScreen (self):
 		"""
@@ -1878,8 +1924,10 @@ class CvMainInterface:
 # BUG - Options - start
 		BugOptions.write()
 # BUG - Options - end
-
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		# <advc.009b> Work around exceptions upon reloading scripts
+		if not hasattr(self, "screen"):
+			return # </advc.009b>
+		screen = self.screen
 
 		# Find out our resolution
 		xResolution = screen.getXResolution()
@@ -2055,8 +2103,10 @@ class CvMainInterface:
 			return 0 # </advc.706>
 #		BugUtil.debug("redraw - Turn %d, Player %d, Interface %d, End Turn Button %d",
 #				gc.getGame().getGameTurn(), gc.getGame().getActivePlayer(), CyInterface().getShowInterface(), CyInterface().getEndTurnState())
-
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		# <advc.009b> Work around exceptions upon reloading scripts
+		if not hasattr(self, "screen"):
+			return # </advc.009b>
+		screen = self.screen
 
 # BUG - Field of View - start
 		#self.setFieldofView(screen, CyInterface().isCityScreenUp())
@@ -2113,11 +2163,7 @@ class CvMainInterface:
 				else:
 					self.updateCitizenButtons(pHeadSelectedCity)
 				# <advc.004> Show the SpecialistLabel regardless of BUG options
-				# Not quite enough space on low res. (Fixme: The Stacker layout
-				# does leave enough space, but then we'd need a separate label
-				# and background panel placed by updateCitizenButton_Stacker;
-				# currently, the position is set statically, ignoring options.)
-				if self.yResolution > 900:
+				if self.isShowSpecialistLabel():
 					# Cut from updateCitizenButtons_Stacker ...
 					screen.show("SpecialistLabelBackground")
 					screen.show("SpecialistLabel") # </advc.004>
@@ -2155,6 +2201,14 @@ class CvMainInterface:
 
 		return 0
 
+	# advc.004:
+	def isShowSpecialistLabel(self):
+		# Not quite enough space on low res. (Fixme: The Stacker layout does leave
+		# enough space, but then we'd need a separate label and background panel
+		# placed by updateCitizenButton_Stacker; currently, the position is set
+		# statically, ignoring options.)
+		return (gRect("Top").height() > 900)
+
 	# K-Mod. There are some special rules for which buttons should be shown and when.
 	# I'd rather have all those rules in one place. ie. here.
 	def showCommercePercent(self, eCommerce, ePlayer):
@@ -2183,7 +2237,7 @@ class CvMainInterface:
 	# Will update the percent buttons
 	def updatePercentButtons(self):
 
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 
 		for iI in range(CommerceTypes.NUM_COMMERCE_TYPES):
 			szString = "IncreasePercent" + str(iI)
@@ -2277,7 +2331,7 @@ class CvMainInterface:
 
 		global g_eEndTurnButtonState
 
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 
 		if (CyInterface().shouldDisplayEndTurnButton() and
 				CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW):
@@ -2309,7 +2363,7 @@ class CvMainInterface:
 	# Update the miscellaneous buttons
 	def updateMiscButtons(self):
 
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 
 		xResolution = screen.getXResolution()
 
@@ -2596,11 +2650,8 @@ class CvMainInterface:
 
 	# Update plot List Buttons
 	def updatePlotListButtons(self):
-		# <advc.009b> Workaround to avoid exceptions while reloading scripts
-		if not hasattr(self, "BupPanel"):
-			return # </advc.009b>
 #		BugUtil.debug("updatePlotListButtons start - %s %s %s", self.bVanCurrentlyShowing, self.bPLECurrentlyShowing, self.bBUGCurrentlyShowing)
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 		self.updatePlotListButtons_Hide(screen)
 		self.updatePlotListButtons_Common(screen)
 # BUG - draw methods
@@ -3435,7 +3486,7 @@ class CvMainInterface:
 	# Will update the research buttons
 	def updateResearchButtons(self):
 
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 
 		for i in range(gc.getNumTechInfos()):
 			szName = "ResearchButton" + str(i)
@@ -3472,7 +3523,7 @@ class CvMainInterface:
 
 # BUG - city specialist - start
 	def updateCitizenButtons_hide(self):
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 		xResolution = screen.getXResolution()
 		yResolution = screen.getYResolution()
 
@@ -4285,7 +4336,7 @@ class CvMainInterface:
 		global g_iNumCenterBonus
 		global g_iNumRightBonus
 
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
 		xResolution = screen.getXResolution()
 		yResolution = screen.getYResolution()
@@ -4339,31 +4390,19 @@ class CvMainInterface:
 			szName = "CityPercentText" + str(i)
 			screen.hide(szName)
 
-		screen.addPanel("BonusPane0", u"", u"", True, False,
-				xResolution - 244, 94, 57, yResolution - 520,
-				PanelStyles.PANEL_STYLE_CITY_COLUMNL)
+		self.addPanel("BonusPane0", PanelStyles.PANEL_STYLE_CITY_COLUMNL)
 		screen.hide("BonusPane0")
-		screen.addScrollPanel("BonusBack0", u"",
-				xResolution - 242, 94, 157, yResolution - 536,
-				PanelStyles.PANEL_STYLE_EXTERNAL)
+		self.addScrollPanel("BonusBack0")
 		screen.hide("BonusBack0")
 
-		screen.addPanel("BonusPane1", u"", u"", True, False,
-				xResolution - 187, 94, 68, yResolution - 520,
-				PanelStyles.PANEL_STYLE_CITY_COLUMNC)
+		self.addPanel("BonusPane1", PanelStyles.PANEL_STYLE_CITY_COLUMNC)
 		screen.hide("BonusPane1")
-		screen.addScrollPanel("BonusBack1", u"",
-				xResolution - 191, 94, 184, yResolution - 536,
-				PanelStyles.PANEL_STYLE_EXTERNAL)
+		self.addScrollPanel("BonusBack1")
 		screen.hide("BonusBack1")
 
-		screen.addPanel("BonusPane2", u"", u"", True, False,
-				xResolution - 119, 94, 107, yResolution - 520,
-				PanelStyles.PANEL_STYLE_CITY_COLUMNR)
+		self.addPanel("BonusPane2", PanelStyles.PANEL_STYLE_CITY_COLUMNR)
 		screen.hide("BonusPane2")
-		screen.addScrollPanel("BonusBack2", u"",
-				xResolution - 125, 94, 205, yResolution - 536,
-				PanelStyles.PANEL_STYLE_EXTERNAL)
+		self.addScrollPanel("BonusBack2")
 		screen.hide("BonusBack2")
 
 		screen.hide("TradeRouteTable")
@@ -5063,67 +5102,78 @@ class CvMainInterface:
 		iRightCount = 0
 		for iBonus in range(gc.getNumBonusInfos()):
 			bHandled = False
-			if pHeadSelectedCity.hasBonus(iBonus):
-				iHealth = pHeadSelectedCity.getBonusHealth(iBonus)
-				iHappiness = pHeadSelectedCity.getBonusHappiness(iBonus)
-				szBuffer = u""
-				szLeadBuffer = u""
-				szTempBuffer = u"<font=1>%c" %(gc.getBonusInfo(iBonus).getChar())
+			if not pHeadSelectedCity.hasBonus(iBonus):
+				continue
+			iHealth = pHeadSelectedCity.getBonusHealth(iBonus)
+			iHappiness = pHeadSelectedCity.getBonusHappiness(iBonus)
+			szBuffer = u""
+			szLeadBuffer = u""
+			szTempBuffer = u"<font=1>%c" %(gc.getBonusInfo(iBonus).getChar())
+			szLeadBuffer = szLeadBuffer + szTempBuffer
+			if pHeadSelectedCity.getNumBonuses(iBonus) > 1:
+				szTempBuffer = u"(%d)" %(pHeadSelectedCity.getNumBonuses(iBonus))
 				szLeadBuffer = szLeadBuffer + szTempBuffer
-				if pHeadSelectedCity.getNumBonuses(iBonus) > 1:
-					szTempBuffer = u"(%d)" %(pHeadSelectedCity.getNumBonuses(iBonus))
-					szLeadBuffer = szLeadBuffer + szTempBuffer
-				szLeadBuffer = szLeadBuffer + "</font>"
-				if iHappiness != 0:
-					if iHappiness > 0:
-						szTempBuffer = u"<font=1>+%d%c</font>" %(iHappiness,
-								CyGame().getSymbolID(FontSymbols.HAPPY_CHAR))
-					else:
-						szTempBuffer = u"<font=1>+%d%c</font>" %(-iHappiness,
-								CyGame().getSymbolID(FontSymbols.UNHAPPY_CHAR))
-					if iHealth > 0:
-						szTempBuffer += u"<font=1>, +%d%c</font>" %(iHealth,
-								CyGame().getSymbolID(FontSymbols.HEALTHY_CHAR))
-					szName = "RightBonusItemLeft" + str(iRightCount)
-					screen.setLabelAt(szName, "BonusBack2", szLeadBuffer,
-							CvUtil.FONT_LEFT_JUSTIFY, 0, (iRightCount * 20) + 4,
-							-0.1, FontTypes.SMALL_FONT,
-							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
-					szName = "RightBonusItemRight" + str(iRightCount)
-					screen.setLabelAt(szName, "BonusBack2", szTempBuffer,
-							CvUtil.FONT_RIGHT_JUSTIFY, 102, (iRightCount * 20) + 4,
-							-0.1, FontTypes.SMALL_FONT,
-							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
-					iRightCount = iRightCount + 1
-					bHandled = True
-				if (iHealth != 0 and bHandled == False):
-					if iHealth > 0:
-						szTempBuffer = u"<font=1>+%d%c</font>" %(iHealth,
-								CyGame().getSymbolID(FontSymbols.HEALTHY_CHAR))
-					else:
-						szTempBuffer = u"<font=1>+%d%c</font>" %(-iHealth,
-								CyGame().getSymbolID(FontSymbols.UNHEALTHY_CHAR))
-					szName = "CenterBonusItemLeft" + str(iCenterCount)
-					screen.setLabelAt(szName, "BonusBack1", szLeadBuffer,
-							CvUtil.FONT_LEFT_JUSTIFY, 0, (iCenterCount * 20) + 4,
-							-0.1, FontTypes.SMALL_FONT,
-							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
-					szName = "CenterBonusItemRight" + str(iCenterCount)
-					screen.setLabelAt(szName, "BonusBack1", szTempBuffer,
-							CvUtil.FONT_RIGHT_JUSTIFY, 62, (iCenterCount * 20) + 4,
-							-0.1, FontTypes.SMALL_FONT,
-							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
-					iCenterCount = iCenterCount + 1
-					bHandled = True
-				szBuffer = u""
-				if not bHandled:
-					szName = "LeftBonusItem" + str(iLeftCount)
-					screen.setLabelAt(szName, "BonusBack0", szLeadBuffer,
-							CvUtil.FONT_LEFT_JUSTIFY, 0, (iLeftCount * 20) + 4,
-							-0.1, FontTypes.SMALL_FONT,
-							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
-					iLeftCount = iLeftCount + 1
-					bHandled = True
+			szLeadBuffer = szLeadBuffer + "</font>"
+			iVSpace = VSPACE(4)
+			iRowHeight = BTNSZ(22) # advc.002b: 20 in BtS
+			# advc.002b: Removed the plus signs and commas before the amounts
+			# of (bad) health and (un-)happiness
+			if iHappiness != 0:
+				if iHappiness > 0:
+					szTempBuffer = u"<font=1>%d%c</font>" %(iHappiness,
+							CyGame().getSymbolID(FontSymbols.HAPPY_CHAR))
+				else:
+					szTempBuffer = u"<font=1>%d%c</font>" %(-iHappiness,
+							CyGame().getSymbolID(FontSymbols.UNHAPPY_CHAR))
+				if iHealth > 0:
+					szTempBuffer += u"<font=1> %d%c</font>" %(iHealth,
+							CyGame().getSymbolID(FontSymbols.HEALTHY_CHAR))
+				szName = "RightBonusItemLeft" + str(iRightCount)
+				screen.setLabelAt(szName, "BonusBack2", szLeadBuffer,
+						CvUtil.FONT_LEFT_JUSTIFY,
+						0, iRightCount * iRowHeight + iVSpace,
+						-0.1, FontTypes.SMALL_FONT,
+						WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
+				szName = "RightBonusItemRight" + str(iRightCount)
+				screen.setLabelAt(szName, "BonusBack2", szTempBuffer,
+						CvUtil.FONT_RIGHT_JUSTIFY,
+						gRect("BonusPane2").width() - HSPACE(8),
+						iRightCount * iRowHeight + iVSpace,
+						-0.1, FontTypes.SMALL_FONT,
+						WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
+				iRightCount = iRightCount + 1
+				bHandled = True
+			if (iHealth != 0 and bHandled == False):
+				if iHealth > 0:
+					szTempBuffer = u"<font=1>%d%c</font>" %(iHealth,
+							CyGame().getSymbolID(FontSymbols.HEALTHY_CHAR))
+				else:
+					szTempBuffer = u"<font=1>%d%c</font>" %(-iHealth,
+							CyGame().getSymbolID(FontSymbols.UNHEALTHY_CHAR))
+				szName = "CenterBonusItemLeft" + str(iCenterCount)
+				screen.setLabelAt(szName, "BonusBack1", szLeadBuffer,
+						CvUtil.FONT_LEFT_JUSTIFY,
+						0, iCenterCount * iRowHeight + iVSpace,
+						-0.1, FontTypes.SMALL_FONT,
+						WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
+				szName = "CenterBonusItemRight" + str(iCenterCount)
+				screen.setLabelAt(szName, "BonusBack1", szTempBuffer,
+						CvUtil.FONT_RIGHT_JUSTIFY,
+						gRect("BonusPane1").width() - HSPACE(8),
+						iCenterCount * iRowHeight + iVSpace,
+						-0.1, FontTypes.SMALL_FONT,
+						WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
+				iCenterCount = iCenterCount + 1
+				bHandled = True
+			szBuffer = u""
+			if not bHandled:
+				szName = "LeftBonusItem" + str(iLeftCount)
+				screen.setLabelAt(szName, "BonusBack0", szLeadBuffer,
+						CvUtil.FONT_LEFT_JUSTIFY, 0, (iLeftCount * iRowHeight) + iVSpace,
+						-0.1, FontTypes.SMALL_FONT,
+						WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
+				iLeftCount = iLeftCount + 1
+				bHandled = True
 		g_iNumLeftBonus = iLeftCount
 		g_iNumCenterBonus = iCenterCount
 		g_iNumRightBonus = iRightCount
@@ -5146,7 +5196,7 @@ class CvMainInterface:
 				WidgetTypes.WIDGET_HELP_MAINTENANCE, -1, -1)
 		screen.show("MaintenanceAmountText")
 # BUG - Raw Yields - start
-		if (bShowRawYields):
+		if bShowRawYields:
 			self.yields.processCity(pHeadSelectedCity)
 			self.yields.fillTable(screen, "TradeRouteTable", g_iYieldType, g_iYieldTiles)
 # BUG - Raw Yields - end
@@ -5166,7 +5216,7 @@ class CvMainInterface:
 				# (advc.092: The BUG code didn't support multiple religion rows either.
 				# Could adapt the corp code below if more religions are needed.)
 				lReligions = aReligionRows[0]
-			gSetRectangle("CityReligions", lReligions)
+				gSetRectangle("CityReligions", lReligions)
 			for i in range(len(aReligions)):
 				iReligion = aReligions[i]
 				# <advc> Commented out all code that only adds to szBuffer
@@ -5525,8 +5575,8 @@ class CvMainInterface:
 
 	# Will update the info pane strings
 	def updateInfoPaneStrings(self):
+		screen = self.screen
 		iRow = 0
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
 		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
 		pHeadSelectedUnit = CyInterface().getHeadSelectedUnit()
 		xResolution = screen.getXResolution()
@@ -5948,7 +5998,7 @@ class CvMainInterface:
 
 	# Will update the scores
 	def updateScoreStrings(self):
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 		xResolution = screen.getXResolution()
 		yResolution = screen.getYResolution()
 		screen.hide("ScoreBackground")
@@ -6461,7 +6511,7 @@ class CvMainInterface:
 
 	# Will update the help Strings
 	def updateHelpStrings(self):
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 		if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_HIDE_ALL):
 			screen.setHelpTextString("")
 		else:
@@ -6470,7 +6520,7 @@ class CvMainInterface:
 
 	# Will set the promotion button position
 	def setPromotionButtonPosition(self, szName, iPromotionCount):
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 # BUG - Stack Promotions - start
 		x, y = self.calculatePromotionButtonPosition(screen, iPromotionCount)
 		screen.moveItem(szName, x, y, -0.3)
@@ -6484,7 +6534,7 @@ class CvMainInterface:
 
 	# Will set the selection button position
 	def setResearchButtonPosition(self, szButtonID, iCount):
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 		xResolution = screen.getXResolution()
 # BUG - Bars on single line for higher resolution screens - start
 		if (xResolution >= 1440 and
@@ -6506,7 +6556,7 @@ class CvMainInterface:
 
 	# Will set the selection button position
 	def setScoreTextPosition(self, szButtonID, iWhichLine):
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 		yResolution = screen.getYResolution()
 		if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW):
 			yCoord = yResolution - 180
@@ -6518,7 +6568,7 @@ class CvMainInterface:
 	# Will build the globeview UI
 	def updateGlobeviewButtons(self):
 		kInterface = CyInterface()
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 		xResolution = screen.getXResolution()
 		yResolution = screen.getYResolution()
 
@@ -6662,7 +6712,7 @@ class CvMainInterface:
 
 	# Update minimap buttons
 	def setMinimapButtonVisibility(self, bVisible):
-		screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+		screen = self.screen
 		kInterface = CyInterface()
 		kGLM = CyGlobeLayerManager()
 		xResolution = screen.getXResolution()
@@ -6969,7 +7019,7 @@ class CvMainInterface:
 # BUG - field of view slider - start
 		if inputClass.getNotifyCode() == NotifyCode.NOTIFY_SLIDER_NEWSTOP:
 			if inputClass.getFunctionName() == "FoVSlider":
-				screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
+				screen = self.screen
 				#self.iField_View = inputClass.getData() + 1
 				# <advc.090>
 				# SLIDER_NEWSTOP triggers both on moving the slider and on hovering over the slider.
