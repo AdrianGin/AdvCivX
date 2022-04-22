@@ -103,7 +103,15 @@ class RectLayout(object):
 		assert self.fY < RectLayout._RESERVED_CONST
 		# (It's OK for widgets to be only partly on the screen, so
 		# having negative fX or fY isn't necessarily wrong.)
-
+	''' # Might not need this after all
+	def copy(self):
+		lCopy = RectLayout(0, 0, 0, 0)
+		lCopy.fX = self.fX
+		lCopy.fY = self.fY = lOther.fY
+		lCopy.fWidth = self.fWidth
+		lCopy.fHeight = self.fHeight
+		return lCopy
+	'''
 	# Preliminary calculation of side length. Preliminary b/c our screen coordinates
 	# haven't been calculated yet.
 	@staticmethod # (Very much not supposed to access self)
@@ -192,28 +200,42 @@ class _SingleFileLayout(RectLayout):
 			# or vertically (VERTICAL)
 			orientation,
 			fX, fY, # See super class ctor
-			iWidgets, # (Positive) number of widgets in the group
+			# (Positive) number of widgets in the group.
+			# RectLayout.MAX for the highest number that will (fully) fit
+			# into lParent (but at least 1).
+			iWidgets,
 			# Space in between two adjacent widgets.
 			# Negative space means that they overlap.
 			iSpacing,
 			# (Positive) widget size. By default, square dimensions are assumed.
 			fWidth, fHeight = None):
-		if not fHeight:
+		if fHeight is None:
 			fHeight = fWidth
 		bHorizontal = orientation
 		if bHorizontal:
-			iExpandingDim = fWidth
+			iExpandingLen = fWidth
 			iTotalHeight = fHeight
 		else:
-			iExpandingDim = fHeight
+			iExpandingLen = fHeight
 			iTotalWidth = fWidth
-		iTotalExpandingDim = iWidgets * iExpandingDim + (iWidgets - 1) * iSpacing
+		if iWidgets == RectLayout.MAX:
+			if bHorizontal:
+				iParentLen = lParent.width()
+			else:
+				iParentLen = lParent.height()
+			# (Not going to check the non-expanding dimension.
+			# I think it would be rather puzzling for the caller to end up with
+			# just a single widget on account of the parent being too "narrow".)
+			iWidgets = (1 + (iParentLen - iExpandingLen) // # no space before first widget
+					(iExpandingLen + iSpacing))
+		assert iWidgets < RectLayout._RESERVED_CONST
+		iTotalExpandingLen = iWidgets * iExpandingLen + (iWidgets - 1) * iSpacing
 		if bHorizontal:
-			iTotalWidth = iTotalExpandingDim
+			iTotalWidth = iTotalExpandingLen
 		else:
-			iTotalHeight = iTotalExpandingDim
+			iTotalHeight = iTotalExpandingLen
 		super(_SingleFileLayout, self).__init__(lParent, fX, fY, iTotalWidth, iTotalHeight)
-		assert iSpacing > -iExpandingDim, "widgets will appear out of sequence"
+		assert iSpacing > -iExpandingLen, "widgets will appear out of sequence"
 		self.iWidgets = iWidgets
 		self.iNextWidget = 0
 		self.seq = []
@@ -227,6 +249,8 @@ class _SingleFileLayout(RectLayout):
 				iBtnX += iSpacing + fWidth
 			else:
 				iBtnY += iSpacing + fHeight
+	def numWidgets(self):
+		return self.iWidgets
 	def next(self):
 		if self.iNextWidget >= self.iWidgets:
 			return None

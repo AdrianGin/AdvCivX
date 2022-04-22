@@ -82,7 +82,9 @@ def gSetRectangle(szKeyName, lRect):
 			(not szKeyName.startswith("IncrCitizenButton") or
 			szKeyName.startswith("IncrCitizenButton0")) and
 			(not szKeyName.startswith("DecrCitizenButton") or
-			szKeyName.startswith("DecrCitizenButton0"))
+			szKeyName.startswith("DecrCitizenButton0")) and
+			(not szKeyName.startswith("CityBonus") or
+			szKeyName.endswith("_0"))
 			):
 		print(szKeyName + " " + str(lRect))
 def gSetRect(szKeyName, szParentKey, fX, fY, fWidth, fHeight, bOffScreen = False):
@@ -100,8 +102,13 @@ def gSetPoint(szKeyName, lPoint):
 	print(szKeyName + " " + str(lPoint)) # advc.tmp
 def gPoint(szKeyName):
 	return gPointLayoutDict[szKeyName]
-def gOffSetPoint(szPointKeyName, szRectKeyName, fDeltaX, fDeltaY):
-	gSetPoint(szPointKeyName, RectLayout.offsetPoint(gRect(szRectKeyName), fDeltaX, fDeltaY))
+# rect can be a RectLayout or the string key of a global RectLayout
+def gOffSetPoint(szPointKeyName, rect, fDeltaX, fDeltaY):
+	if isinstance(rect, basestring):
+		lRect = gRect(rect)
+	else:
+		lRect = rect
+	gSetPoint(szPointKeyName, RectLayout.offsetPoint(lRect, fDeltaX, fDeltaY))
 # These global variables get set based on the screen resolution
 # when the enlarge-HUD BUG option is enabled.
 # All positional data that goes through the functions below will then
@@ -399,10 +406,10 @@ class CvMainInterface:
 		# would accomplish that, but, somehow, it's not enough.
 		return VLEN((3.15 * self.stackBarDefaultHeight()) / 27)
 	def cityScreenHeadingBackgrHeight(self):
-		return VSPACE(30)
+		return 30
 	def cityScreenHeadingOffset(self):
 		# advc.002b: Was 8 in BtS - too much at our font size.
-		return VLEN((6 * self.cityScreenHeadingBackgrHeight()) / 30)
+		return (6 * self.cityScreenHeadingBackgrHeight()) / 30
 	# </advc.092>
 
 	def __init__(self):
@@ -814,7 +821,7 @@ class CvMainInterface:
 # BUG - Progress Bar - Tick Marks - end
 		gSetRect("CityOrgArea", "CityRightPanel",
 				RectLayout.CENTER, gRect("CityAdjustPanel").y(),
-				-HSPACE(9), VLEN(50))
+				-HSPACE(9), VLEN(50, 0.5)) # fExp consistent with the org. button heights
 		# Helper rects for uniform widget placement inside the side panels
 		gSetRect("CityLeftPanelContents", "CityLeftPanel",
 				RectLayout.CENTER, gRect("CityAdjustPanel").yBottom(),
@@ -1026,9 +1033,9 @@ class CvMainInterface:
 		for i in range(gc.getNumSpecialistInfos() - 1, -1, -1):
 			if (gc.getSpecialistInfo(i).isVisible()):
 				self.visibleSpecialists.append(i)
-
-		iCitizenBtnSize = BTNSZ(24)
-		iAdjustBtnSize = BTNSZ(20)
+		# Lots of buttons on the right panel; need to be careful about scaling those up.
+		iCitizenBtnSize = BTNSZ(24, 0.3)
+		iAdjustBtnSize = (20 * iCitizenBtnSize) / 24
 		iSmallVSpace = VSPACE(3) # (one greater than in BtS)
 		iBigVSpace = iCitizenBtnSize - iAdjustBtnSize + iSmallVSpace
 		iSmallHSpace = HSPACE(2)
@@ -1120,7 +1127,8 @@ class CvMainInterface:
 		iMaxRMargin = gRect("Top").xRight() - gRect("CityRightPanelContents").x()
 		gSetRect("BonusPane0", "CityRightPanelContents",
 				0, 0,
-				HLEN(57), -(gRect("CityRightPanelContents").yBottom() - iSpecialistButtonsY))
+				# advc.004: Was 57; don't need quite this much space.
+				HLEN(53), -(gRect("CityRightPanelContents").yBottom() - iSpecialistButtonsY))
 		gSetRect("BonusBack0", "CityRightPanelContents",
 				0, 0,
 				# Width was 157 in BtS. Perhaps the idea was to get all the scrollbars
@@ -1136,7 +1144,7 @@ class CvMainInterface:
 				gRect("BonusPane0").width(), 0,
 				# advc.002b: Was 68 in BtS; need less space in the third col now
 				# b/c the plus signs are gone.
-				HLEN(80), gRect("BonusPane0").height())
+				HLEN(78), gRect("BonusPane0").height())
 		gSetRect("BonusBack1", "CityRightPanelContents",
 				gRect("BonusPane1").x() - gRect("CityRightPanelContents").x(), 0,
 				# width was 184
@@ -1148,10 +1156,39 @@ class CvMainInterface:
 				gRect("BonusPane2").x() - gRect("CityRightPanelContents").x(), 0,
 				# width was 205
 				iMaxRMargin, gRect("BonusBack0").height())
-		# The scroll panels (backgrounds) seem to apply some built-in margins
-		gRect("BonusBack0").move(-2, -2)
-		gRect("BonusBack1").move(-2, -2)
-		gRect("BonusBack2").move(-2, -2)
+		self.bCityBonusButtons = True
+		for i in range(3):
+			iBtnSize = iround(32 *
+					# Vertical space on the right is especially scarce on wide resolutions
+					# (though this really depends on our gHorizontal/VerticalScaleFactor ...)
+					(0.8 + gRect("Top").height() / float(gRect("Top").width())) / 1.43)
+			lRows = ColumnLayout(gRect("BonusBack" + str(i)),
+					0, VSPACE(2),
+					RectLayout.MAX, 1, RectLayout.MAX, iBtnSize)
+			if lRows.numWidgets() * 2.35 < gc.getNumBonusInfos():
+				# Not enough space for buttons
+				self.bCityBonusButtons = False
+				# This offset is helpful for placing the text labels
+				for i in range(3):
+					gRect("BonusBack" + str(i)).move(-2, -VSPACE(4))
+				return	
+			gSetRectangle("CityBonusColumn" + str(i), lRows)
+			for j in range(lRows.numWidgets()):
+				lRow = lRows.next()
+				szIndex = str(i) + "_" + str(j)
+				gSetRectangle("CityBonusCell" + szIndex, lRow)
+				lBtn = SquareLayout(lRow, 0, 0, iBtnSize)
+				gSetRectangle("CityBonusBtn" + szIndex, lBtn)
+				gSetRectangle("CityBonusCircle" + szIndex,
+						SquareLayout(lBtn,
+						# Not scaling the size b/c the text label won't scale either
+						RectLayout.RIGHT, RectLayout.BOTTOM, 16))
+				gOffSetPoint("CityBonusAmount" + szIndex, "CityBonusCircle" + szIndex,
+						RectLayout.CENTER, -2)
+				if i != 0:
+					gOffSetPoint("CityBonusEffect" + szIndex, lRow,
+							gRect("BonusPane" + str(i)).width() - HSPACE(4, 4),
+							iBtnSize / 4)
 
 	def interfaceScreen (self):
 		"""
@@ -1924,10 +1961,8 @@ class CvMainInterface:
 # BUG - Options - start
 		BugOptions.write()
 # BUG - Options - end
-		# <advc.009b> Work around exceptions upon reloading scripts
-		if not hasattr(self, "screen"):
-			return # </advc.009b>
-		screen = self.screen
+		# advc.009b: Set screen attribute after reloading scripts
+		screen = self.screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
 
 		# Find out our resolution
 		xResolution = screen.getXResolution()
@@ -2103,10 +2138,8 @@ class CvMainInterface:
 			return 0 # </advc.706>
 #		BugUtil.debug("redraw - Turn %d, Player %d, Interface %d, End Turn Button %d",
 #				gc.getGame().getGameTurn(), gc.getGame().getActivePlayer(), CyInterface().getShowInterface(), CyInterface().getEndTurnState())
-		# <advc.009b> Work around exceptions upon reloading scripts
-		if not hasattr(self, "screen"):
-			return # </advc.009b>
-		screen = self.screen
+		# advc.009b: Set screen attribute after reloading scripts
+		screen = self.screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
 
 # BUG - Field of View - start
 		#self.setFieldofView(screen, CyInterface().isCityScreenUp())
@@ -2915,7 +2948,10 @@ class CvMainInterface:
 
 						if bEnable:
 							iPlotListFrameSize = self.plotListUnitButtonSize()  - self.plotListUnitFrameThickness()
-							lPlotListBtn = gRect("PlotListButton" + str(iCount))
+							try: # advc.009b (workaround crash upon reloading scripts)
+								lPlotListBtn = gRect("PlotListButton" + str(iCount))
+							except KeyError:
+								return 0
 							x = lPlotListBtn.x()
 							y = lPlotListBtn.y()
 							self.PLE._displayUnitPlotList_Dot(screen, pLoopUnit, szString, iCount,
@@ -4414,16 +4450,39 @@ class CvMainInterface:
 		for i in range(g_iNumLeftBonus):
 			szName = "LeftBonusItem" + str(i)
 			screen.hide(szName)
+			# <advc.092>
+			if self.bCityBonusButtons:
+				szIndex = "0_" + str(i)
+				screen.hide("CityBonusBtn" + szIndex)
+				screen.hide("CityBonusCircle" + szIndex)
+				screen.hide("CityBonusAmount" + szIndex)
+			# </advc.092>
 		for i in range(g_iNumCenterBonus):
 			szName = "CenterBonusItemLeft" + str(i)
 			screen.hide(szName)
 			szName = "CenterBonusItemRight" + str(i)
 			screen.hide(szName)
+			# <advc.092>
+			if self.bCityBonusButtons:
+				szIndex = "1_" + str(i)
+				screen.hide("CityBonusBtn" + szIndex)
+				screen.hide("CityBonusCircle" + szIndex)
+				screen.hide("CityBonusAmount" + szIndex)
+				screen.hide("CityBonusEffect" + szIndex)
+			# </advc.092>
 		for i in range(g_iNumRightBonus):
 			szName = "RightBonusItemLeft" + str(i)
 			screen.hide(szName)
 			szName = "RightBonusItemRight" + str(i)
 			screen.hide(szName)
+			# <advc.092>
+			if self.bCityBonusButtons:
+				szIndex = "2_" + str(i)
+				screen.hide("CityBonusBtn" + szIndex)
+				screen.hide("CityBonusCircle" + szIndex)
+				screen.hide("CityBonusAmount" + szIndex)
+				screen.hide("CityBonusEffect" + szIndex)
+			# </advc.092>
 		for i in range(3):
 			szName = "BonusPane" + str(i)
 			screen.hide(szName)
@@ -5097,10 +5156,26 @@ class CvMainInterface:
 		# advc: unused
 		#if (iNumTradeRoutes > g_iNumTradeRoutes):
 		#	g_iNumTradeRoutes = iNumTradeRoutes
+		# <advc.004> Sort the resources by amount, effect, id
+		aCityBonuses = []
+		for iBonus in range(gc.getNumBonusInfos()):
+			aCityBonuses.append(iBonus)
+		aCityBonuses = sorted(aCityBonuses, key=lambda iBonus:
+				- 10000 * pHeadSelectedCity.getNumBonuses(iBonus)
+				- 1000 * pHeadSelectedCity.getBonusHappiness(iBonus)
+				- 900 * pHeadSelectedCity.getBonusHealth(iBonus)
+				+ iBonus) # </advc.004>
+		# <advc.092>
+		if self.bCityBonusButtons or gRect("Top").height() > 900:
+			iFontSize = 3
+		else:
+			iFontSize = 1 # (2 is mostly a little thicker - doesn't help)
+		szFontStart = u"<font=" + str(iFontSize) + u">"
+		# </advc.092>
 		iLeftCount = 0
 		iCenterCount = 0
 		iRightCount = 0
-		for iBonus in range(gc.getNumBonusInfos()):
+		for iBonus in aCityBonuses:
 			bHandled = False
 			if not pHeadSelectedCity.hasBonus(iBonus):
 				continue
@@ -5108,10 +5183,11 @@ class CvMainInterface:
 			iHappiness = pHeadSelectedCity.getBonusHappiness(iBonus)
 			szBuffer = u""
 			szLeadBuffer = u""
-			szTempBuffer = u"<font=1>%c" %(gc.getBonusInfo(iBonus).getChar())
+			szTempBuffer = szFontStart + (u"%c" %(gc.getBonusInfo(iBonus).getChar()))
 			szLeadBuffer = szLeadBuffer + szTempBuffer
-			if pHeadSelectedCity.getNumBonuses(iBonus) > 1:
-				szTempBuffer = u"(%d)" %(pHeadSelectedCity.getNumBonuses(iBonus))
+			iAmount = pHeadSelectedCity.getNumBonuses(iBonus)
+			if iAmount > 1:
+				szTempBuffer = u"(%d)" %(iAmount)
 				szLeadBuffer = szLeadBuffer + szTempBuffer
 			szLeadBuffer = szLeadBuffer + "</font>"
 			iVSpace = VSPACE(4)
@@ -5120,58 +5196,70 @@ class CvMainInterface:
 			# of (bad) health and (un-)happiness
 			if iHappiness != 0:
 				if iHappiness > 0:
-					szTempBuffer = u"<font=1>%d%c</font>" %(iHappiness,
-							CyGame().getSymbolID(FontSymbols.HAPPY_CHAR))
+					szTempBuffer = szFontStart + (u"%d%c</font>" %(iHappiness,
+							CyGame().getSymbolID(FontSymbols.HAPPY_CHAR)))
 				else:
-					szTempBuffer = u"<font=1>%d%c</font>" %(-iHappiness,
-							CyGame().getSymbolID(FontSymbols.UNHAPPY_CHAR))
+					szTempBuffer = szFontStart + (u"%d%c</font>" %(-iHappiness,
+							CyGame().getSymbolID(FontSymbols.UNHAPPY_CHAR)))
 				if iHealth > 0:
-					szTempBuffer += u"<font=1> %d%c</font>" %(iHealth,
-							CyGame().getSymbolID(FontSymbols.HEALTHY_CHAR))
-				szName = "RightBonusItemLeft" + str(iRightCount)
-				screen.setLabelAt(szName, "BonusBack2", szLeadBuffer,
-						CvUtil.FONT_LEFT_JUSTIFY,
-						0, iRightCount * iRowHeight + iVSpace,
-						-0.1, FontTypes.SMALL_FONT,
-						WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
-				szName = "RightBonusItemRight" + str(iRightCount)
-				screen.setLabelAt(szName, "BonusBack2", szTempBuffer,
-						CvUtil.FONT_RIGHT_JUSTIFY,
-						gRect("BonusPane2").width() - HSPACE(8),
-						iRightCount * iRowHeight + iVSpace,
-						-0.1, FontTypes.SMALL_FONT,
-						WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
+					szTempBuffer += szFontStart + (u" %d%c</font>" %(iHealth,
+							CyGame().getSymbolID(FontSymbols.HEALTHY_CHAR)))
+				# <advc.092>
+				if self.bCityBonusButtons:
+					self.fillCityBonusRow(2, iRightCount, iBonus, iAmount, szTempBuffer)
+				else: # </advc.092>
+					szName = "RightBonusItemLeft" + str(iRightCount)
+					screen.setLabelAt(szName, "BonusBack2", szLeadBuffer,
+							CvUtil.FONT_LEFT_JUSTIFY,
+							0, iRightCount * iRowHeight + iVSpace,
+							-0.1, FontTypes.SMALL_FONT,
+							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
+					szName = "RightBonusItemRight" + str(iRightCount)
+					screen.setLabelAt(szName, "BonusBack2", szTempBuffer,
+							CvUtil.FONT_RIGHT_JUSTIFY,
+							gRect("BonusPane2").width() - HSPACE(8),
+							iRightCount * iRowHeight + iVSpace,
+							-0.1, FontTypes.SMALL_FONT,
+							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
 				iRightCount = iRightCount + 1
 				bHandled = True
-			if (iHealth != 0 and bHandled == False):
+			if iHealth != 0 and bHandled == False:
 				if iHealth > 0:
-					szTempBuffer = u"<font=1>%d%c</font>" %(iHealth,
-							CyGame().getSymbolID(FontSymbols.HEALTHY_CHAR))
+					szTempBuffer = szFontStart + (u"%d%c</font>" %(iHealth,
+							CyGame().getSymbolID(FontSymbols.HEALTHY_CHAR)))
 				else:
-					szTempBuffer = u"<font=1>%d%c</font>" %(-iHealth,
-							CyGame().getSymbolID(FontSymbols.UNHEALTHY_CHAR))
-				szName = "CenterBonusItemLeft" + str(iCenterCount)
-				screen.setLabelAt(szName, "BonusBack1", szLeadBuffer,
-						CvUtil.FONT_LEFT_JUSTIFY,
-						0, iCenterCount * iRowHeight + iVSpace,
-						-0.1, FontTypes.SMALL_FONT,
-						WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
-				szName = "CenterBonusItemRight" + str(iCenterCount)
-				screen.setLabelAt(szName, "BonusBack1", szTempBuffer,
-						CvUtil.FONT_RIGHT_JUSTIFY,
-						gRect("BonusPane1").width() - HSPACE(8),
-						iCenterCount * iRowHeight + iVSpace,
-						-0.1, FontTypes.SMALL_FONT,
-						WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
+					szTempBuffer = szFontStart + (u"%d%c</font>" %(-iHealth,
+							CyGame().getSymbolID(FontSymbols.UNHEALTHY_CHAR)))
+				# <advc.092>
+				if self.bCityBonusButtons:
+					self.fillCityBonusRow(1, iCenterCount, iBonus, iAmount, szTempBuffer)
+				else: # </advc.092>
+					szName = "CenterBonusItemLeft" + str(iCenterCount)
+					screen.setLabelAt(szName, "BonusBack1", szLeadBuffer,
+							CvUtil.FONT_LEFT_JUSTIFY,
+							0, iCenterCount * iRowHeight + iVSpace,
+							-0.1, FontTypes.SMALL_FONT,
+							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
+					szName = "CenterBonusItemRight" + str(iCenterCount)
+					screen.setLabelAt(szName, "BonusBack1", szTempBuffer,
+							CvUtil.FONT_RIGHT_JUSTIFY,
+							gRect("BonusPane1").width() - HSPACE(8),
+							iCenterCount * iRowHeight + iVSpace,
+							-0.1, FontTypes.SMALL_FONT,
+							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
 				iCenterCount = iCenterCount + 1
 				bHandled = True
 			szBuffer = u""
 			if not bHandled:
-				szName = "LeftBonusItem" + str(iLeftCount)
-				screen.setLabelAt(szName, "BonusBack0", szLeadBuffer,
-						CvUtil.FONT_LEFT_JUSTIFY, 0, (iLeftCount * iRowHeight) + iVSpace,
-						-0.1, FontTypes.SMALL_FONT,
-						WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
+				# <advc.092>
+				if self.bCityBonusButtons:
+					self.fillCityBonusRow(0, iLeftCount, iBonus, iAmount)
+				else: # </advc.092>
+					szName = "LeftBonusItem" + str(iLeftCount)
+					screen.setLabelAt(szName, "BonusBack0", szLeadBuffer,
+							CvUtil.FONT_LEFT_JUSTIFY, 0, (iLeftCount * iRowHeight) + iVSpace,
+							-0.1, FontTypes.SMALL_FONT,
+							WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus, -1)
 				iLeftCount = iLeftCount + 1
 				bHandled = True
 		g_iNumLeftBonus = iLeftCount
@@ -5271,7 +5359,7 @@ class CvMainInterface:
 					screen.show(szName)
 		else: # (show all religions)
 			lReligions = RowLayout(gRect("CityOrgArea"),
-					RectLayout.CENTER, 0, gc.getNumReligionInfos(), HSPACE(10), BTNSZ(24))
+					RectLayout.CENTER, 0, gc.getNumReligionInfos(), HSPACE(10), BTNSZ(24, 0.5))
 			gSetRectangle("CityReligions", lReligions)
 			for iReligion in range(gc.getNumReligionInfos()):
 				lReligion = lReligions.next()
@@ -5393,7 +5481,7 @@ class CvMainInterface:
 		else: # (show all corps)
 			lCorporations = RowLayout(gRect("CityOrgArea"),
 					RectLayout.CENTER, gRect("CityReligions").height() + iReligionCorpsMargin,
-					gc.getNumReligionInfos(), HSPACE(10), BTNSZ(24))
+					gc.getNumReligionInfos(), HSPACE(10), BTNSZ(24, 0.5))
 			for iCorp in range(gc.getNumCorporationInfos()):
 				lCorp = lCorporations.next()
 				bEnable = True
@@ -5572,6 +5660,27 @@ class CvMainInterface:
 		screen.show("CultureBar")
 
 		return 0
+
+	def fillCityBonusRow(self, iColumn, iRow, iBonus, iAmount, szEffect = None):
+		szIndex = str(iColumn) + "_" + str(iRow)
+		self.setImageButton("CityBonusBtn" + szIndex, gc.getBonusInfo(iBonus).getButton(),
+				WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS_TRADE, iBonus)
+		if iAmount > 1:
+			self.addDDS("CityBonusCircle" + szIndex, "WHITE_CIRCLE_40",
+					WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus)
+			szAmount = (u"<font=2>"
+					+ str(iAmount)
+					# Foreign Advisor uses yellow - idk ...
+					#+ localText.changeTextColor(str(iAmount),
+					#gc.getInfoTypeForString("COLOR_YELLOW"))
+					+ "</font>")
+			self.setLabel("CityBonusAmount" + szIndex, "BonusBack0", szAmount,
+					CvUtil.FONT_CENTER_JUSTIFY, FontTypes.SMALL_FONT, -0.1,
+					WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus)
+		if szEffect:
+			self.setLabel("CityBonusEffect" + szIndex, "BonusBack" + str(iColumn), szEffect,
+					CvUtil.FONT_RIGHT_JUSTIFY, FontTypes.SMALL_FONT,
+					-0.1, WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus)
 
 	# Will update the info pane strings
 	def updateInfoPaneStrings(self):
@@ -6913,7 +7022,7 @@ class CvMainInterface:
 		# <advc.092> Let's hope that this will work well enough for organization counts
 		# greater than 7. Only tested it for 7.
 		else:
-			iButtonSize = BTNSZ(iButtonSize)
+			iButtonSize = BTNSZ(iButtonSize, 0.5)
 			iButtonSpace = HSPACE(iButtonSpace)
 		# Helper rect to determine left margin
 		lMaxOrgs = RowLayout(gRect("CityOrgArea"),
