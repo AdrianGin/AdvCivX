@@ -11490,9 +11490,17 @@ void CvGameTextMgr::setBuildingHelpActual(CvWStringBuffer &szBuffer,
 		GC.getGame().isDebugMode() && // advc.135c
 		GC.ctrlKey())
 	{
-		int iBuildingValue = pCity->AI().AI_buildingValue(eBuilding, 0, 0, true);
-		szBuffer.append(CvWString::format(L"\nAI Building Value = %d", iBuildingValue));
-	} // K-Mod end
+		if (GC.ctrlKey())
+		{
+			int iBuildingValue = pCity->AI().AI_buildingValue(
+					eBuilding, 0, 0, true);
+			szBuffer.append(CvWString::format(L"\nAI Building Value = %d",
+					iBuildingValue));
+		} // K-Mod end
+		// <advc.007>
+		else if (GC.altKey())
+			szBuffer.append(CvWString::format(L"id=%d\n", eBuilding));
+	} // </advc.007>
 
 	if (bStrategyText)
 	{
