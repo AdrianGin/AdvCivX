@@ -291,7 +291,8 @@ class CvMainInterface:
 		self.setStyledButton(szName, szStyle, eWidgetType, iData1, iData2, szAttachTo)
 	@staticmethod
 	def _isInterfaceArtKey(s):
-		return (s.startswith("INTERFACE_") or s.startswith("BUTTON_"))
+		return (s.startswith("INTERFACE_") or s.startswith("BUTTON_") or
+				s.startswith("RAW_YIELDS_")) # for BUG - Raw Yields
 	def setImageButton(self, szName,
 			szTexture, # Path or InterfaceArtInfo key
 			eWidgetType = None, iData1 = -1, iData2 = -1, szAttachTo = None):
@@ -338,6 +339,13 @@ class CvMainInterface:
 				lRect.x(), lRect.y(), lRect.width(), lRect.height(),
 				iDefault, iMin, iMax,
 				eWidgetType, iData1, iData2, bVertical)
+	def addTable(self, szName, iCols, szStyle):
+		lRect = gRect(szName)
+		self.screen.addTableControlGFC(szName, iCols,
+				lRect.x(), lRect.y(), lRect.width(), lRect.height(),
+				False, False, 32, 32,
+				TableStyles.TABLE_STYLE_STANDARD)
+		self.screen.setStyle(szName, szStyle)
 	def setLabel(self, szName, szAttachTo, szText, uiFlags, eFont, fZ = 0,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
 		if eWidgetType is None:
@@ -844,6 +852,7 @@ class CvMainInterface:
 		self.setCitizenButtonRects()
 		self.setCityBonusRects()
 
+		self.setTradeRouteRects()
 		lCultureBars = ColumnLayout(gRect("CityLeftPanelContents"),
 				0, RectLayout.BOTTOM,
 				2, VSPACE(-1),
@@ -1052,7 +1061,7 @@ class CvMainInterface:
 					gRect("CommerceSliderBtns3").xRight() + HSPACE(2), iY))
 			gSetPoint("CityPercentText" + str(i), PointLayout(
 					# (The horizontal spacing here seems pretty arbitrary)
-					gRect("CommerceSliderBtns3").xRight() + HSPACE(70, 2), iY))
+					gRect("CommerceSliderBtns3").xRight() + HSPACE(70, 3), iY))
 		# <advc.002b> Placing the buttons at just the same y coord as the labels
 		# doesn't quite work out
 		for i in range(4):
@@ -1073,6 +1082,56 @@ class CvMainInterface:
 				min(-1, gRect("CityLeftPanel").x() - gPoint("PercentText0").x() + HSPACE(6)),
 				gPoint("MaintenanceText").y() + iBtnSize + 1
 				- gPoint("PercentText0").y() + 2 * iVSpace)
+
+	def setTradeRouteRects(self):
+		gSetRect("TradeRouteListBackground", "CityLeftPanelContents",
+				0, gRect("CityAdjustPanel").yBottom() - gRect("CityLeftPanelContents").y() + VSPACE(4),
+				RectLayout.MAX, self.cityScreenHeadingBackgrHeight())
+		gOffSetPoint("TradeRouteListLabel", "TradeRouteListBackground",
+				RectLayout.CENTER, self.cityScreenHeadingOffset())
+		# One table row (at font size 1) takes up ca. 24 pixels.
+		# BtS will show a scrollbar when there are > 4 trade cities.
+		# (The upper limit in XML is 8 and the practical limit 5.)
+		# At the lowest resolution, showing 5 would indeed leave
+		# too little room for buildings, but, if we scale up, we should
+		# aim at at least 5 rows.
+		iRowH = 24
+		iHeightForRows = VLEN(4 * iRowH, 2)
+		gSetRect("TradeRouteTable", "CityLeftPanelContents",
+				RectLayout.CENTER,
+				1 + gRect("TradeRouteListBackground").yBottom() - gRect("CityLeftPanelContents").y(),
+				-1, 2 + iHeightForRows
+				- iHeightForRows % iRowH) # No point in making space for only half a row
+# BUG - Raw Yields - start
+		# Can't really scale these up b/c the background doesn't scale
+		iBtnSize = BTNSZ(24, 0.3)
+		iHSpaceSmall = HSPACE(0)
+		iHSpaceBig = HSPACE(10)
+
+		lRawYieldBtns = RowLayout(gRect("TradeRouteListBackground"),
+				0, RectLayout.CENTER,
+				YieldTypes.NUM_YIELD_TYPES, iHSpaceSmall, iBtnSize)
+		lPlotSelBtns = RowLayout(gRect("TradeRouteListBackground"),
+				0, RectLayout.CENTER,
+				3, iHSpaceSmall, iBtnSize)
+		iVOffset = 2 # Centering on the background widget doesn't look quite right
+		# Buttons rows at x=0 until we've placed the RawYieldMenu container
+		lRawYieldBtns.move(-gRect("TradeRouteListBackground").x(), iVOffset)
+		lPlotSelBtns.move(-gRect("TradeRouteListBackground").x(), iVOffset)
+		gSetRect("RawYieldMenu", "TradeRouteListBackground",
+				RectLayout.CENTER, RectLayout.CENTER,
+				lRawYieldBtns.width() + lPlotSelBtns.width() + 2 * iHSpaceBig + iBtnSize,
+				lRawYieldBtns.height())
+		gSetSquare("RawYieldsTrade0", "RawYieldMenu", 0, iVOffset, iBtnSize)
+		lRawYieldBtns.move(gRect("RawYieldsTrade0").xRight() + iHSpaceBig, 0)
+		lPlotSelBtns.move(lRawYieldBtns.xRight() + iHSpaceBig, 0)
+		gSetRectangle("RawYieldsFood1", lRawYieldBtns.next())
+		gSetRectangle("RawYieldsProduction2", lRawYieldBtns.next())
+		gSetRectangle("RawYieldsCommerce3", lRawYieldBtns.next())
+		gSetRectangle("RawYieldsWorkedTiles4", lPlotSelBtns.next())
+		gSetRectangle("RawYieldsCityTiles5", lPlotSelBtns.next())
+		gSetRectangle("RawYieldsOwnedTiles6", lPlotSelBtns.next())
+# BUG - Raw Yields - end
 
 	def setCityTabRects(self):
 		iButtons = 3
@@ -1679,85 +1738,47 @@ class CvMainInterface:
 		screen.hide("MainCityScrollPlus")
 # BUG - City Arrows - end
 
-		screen.addPanel("TradeRouteListBackground", u"", u"",
-				True, False, 10, 157, 238, 30,
-				PanelStyles.PANEL_STYLE_STANDARD)
+		self.addPanel("TradeRouteListBackground")
 		screen.setStyle("TradeRouteListBackground", "Panel_City_Header_Style")
 		screen.hide("TradeRouteListBackground")
 
-		screen.setLabel("TradeRouteListLabel", "Background",
+		self.setLabel("TradeRouteListLabel", "Background",
 				localText.getText("TXT_KEY_HEADING_TRADEROUTE_LIST", ()),
-				CvUtil.FONT_CENTER_JUSTIFY,
-				129, 165, -0.1, FontTypes.SMALL_FONT,
-				WidgetTypes.WIDGET_GENERAL, -1, -1)
+				CvUtil.FONT_CENTER_JUSTIFY, FontTypes.SMALL_FONT, -0.1)
 		screen.hide("TradeRouteListLabel")
 
 # BUG - Raw Yields - start
-		nX = 10 + 24
-		nY = 157 + 5
-		nSize = 24
-		nDist = 24
-		nGap = 10
-		szHighlightButton = ArtFileMgr.getInterfaceArtInfo("RAW_YIELDS_HIGHLIGHT").getPath()
-
 		# Trade
-		screen.addCheckBoxGFC("RawYieldsTrade0",
-				ArtFileMgr.getInterfaceArtInfo("RAW_YIELDS_TRADE").getPath(),
-				szHighlightButton,
-				nX, nY, nSize, nSize,
-				WidgetTypes.WIDGET_GENERAL, 0, -1,
+		self.addCheckBox("RawYieldsTrade0",
+				"RAW_YIELDS_TRADE", "RAW_YIELDS_HIGHLIGHT",
 				ButtonStyles.BUTTON_STYLE_LABEL)
 		screen.hide("RawYieldsTrade0")
 
 		# Yields
-		nX += nDist + nGap
-		screen.addCheckBoxGFC("RawYieldsFood1",
-				ArtFileMgr.getInterfaceArtInfo("RAW_YIELDS_FOOD").getPath(),
-				szHighlightButton,
-				nX, nY, nSize, nSize,
-				WidgetTypes.WIDGET_GENERAL, 1, -1,
+		self.addCheckBox("RawYieldsFood1",
+				"RAW_YIELDS_FOOD", "RAW_YIELDS_HIGHLIGHT",
 				ButtonStyles.BUTTON_STYLE_LABEL)
 		screen.hide("RawYieldsFood1")
-		nX += nDist
-		screen.addCheckBoxGFC("RawYieldsProduction2",
-				ArtFileMgr.getInterfaceArtInfo("RAW_YIELDS_PRODUCTION").getPath(),
-				szHighlightButton,
-				nX, nY, nSize, nSize,
-				WidgetTypes.WIDGET_GENERAL, 2, -1,
+		self.addCheckBox("RawYieldsProduction2",
+				"RAW_YIELDS_PRODUCTION", "RAW_YIELDS_HIGHLIGHT",
 				ButtonStyles.BUTTON_STYLE_LABEL)
 		screen.hide("RawYieldsProduction2")
-		nX += nDist
-		screen.addCheckBoxGFC("RawYieldsCommerce3",
-				ArtFileMgr.getInterfaceArtInfo("RAW_YIELDS_COMMERCE").getPath(),
-				szHighlightButton,
-				nX, nY, nSize, nSize,
-				WidgetTypes.WIDGET_GENERAL, 3, -1,
+		self.addCheckBox("RawYieldsCommerce3",
+				"RAW_YIELDS_COMMERCE", "RAW_YIELDS_HIGHLIGHT",
 				ButtonStyles.BUTTON_STYLE_LABEL)
 		screen.hide("RawYieldsCommerce3")
 
 		# Tile Selection
-		nX += nDist + nGap
-		screen.addCheckBoxGFC("RawYieldsWorkedTiles4",
-				ArtFileMgr.getInterfaceArtInfo("RAW_YIELDS_WORKED_TILES").getPath(),
-				szHighlightButton,
-				nX, nY, nSize, nSize,
-				WidgetTypes.WIDGET_GENERAL, 4, -1,
+		self.addCheckBox("RawYieldsWorkedTiles4",
+				"RAW_YIELDS_WORKED_TILES", "RAW_YIELDS_HIGHLIGHT",
 				ButtonStyles.BUTTON_STYLE_LABEL)
 		screen.hide("RawYieldsWorkedTiles4")
-		nX += nDist
-		screen.addCheckBoxGFC("RawYieldsCityTiles5",
-				ArtFileMgr.getInterfaceArtInfo("RAW_YIELDS_CITY_TILES").getPath(),
-				szHighlightButton,
-				nX, nY, nSize, nSize,
-				WidgetTypes.WIDGET_GENERAL, 5, -1,
+		self.addCheckBox("RawYieldsCityTiles5",
+				"RAW_YIELDS_CITY_TILES", "RAW_YIELDS_HIGHLIGHT",
 				ButtonStyles.BUTTON_STYLE_LABEL)
 		screen.hide("RawYieldsCityTiles5")
-		nX += nDist
-		screen.addCheckBoxGFC("RawYieldsOwnedTiles6",
-				ArtFileMgr.getInterfaceArtInfo("RAW_YIELDS_OWNED_TILES").getPath(),
-				szHighlightButton,
-				nX, nY, nSize, nSize,
-				WidgetTypes.WIDGET_GENERAL, 6, -1,
+		self.addCheckBox("RawYieldsOwnedTiles6",
+				"RAW_YIELDS_OWNED_TILES", "RAW_YIELDS_HIGHLIGHT",
 				ButtonStyles.BUTTON_STYLE_LABEL)
 		screen.hide("RawYieldsOwnedTiles6")
 # BUG - Raw Yields - end
@@ -4908,34 +4929,36 @@ class CvMainInterface:
 		screen.setStyle("BuildingListTable", "Table_City_Style")
 # BUG - Raw Yields - start
 		bShowRawYields = g_bYieldView and CityScreenOpt.isShowRawYields()
-		if (bShowRawYields):
-			screen.addTableControlGFC("TradeRouteTable", 4,
-					10, 187, 238, 98,
-					False, False, 32, 32,
-					TableStyles.TABLE_STYLE_STANDARD)
-			screen.setStyle("TradeRouteTable", "Table_City_Style")
-			# <advc.002b> Last param was 110 - too narrow
-			screen.setTableColumnHeader("TradeRouteTable", 0, u"", 125)
-			# Last param was 60
-			screen.setTableColumnHeader("TradeRouteTable", 1, u"", 55)
-			# Last param was 55
-			screen.setTableColumnHeader("TradeRouteTable", 2, u"", 50)
-			# Last param was 10
-			screen.setTableColumnHeader("TradeRouteTable", 3, u"", 5)
-			# </advc.002b>
+		if bShowRawYields:
+			iCols = 4
+		else:
+			iCols = 3
+		self.addTable("TradeRouteTable", iCols, "Table_City_Style")
+		# advc.092: The BUG and BtS column widths don't quite add up to the
+		# table's width. Don't know if that's as it should be.
+		iAvailW = gRect("TradeRouteTable").width() - 2
+		if bShowRawYields:
+			# advc.002b: Increased the (non-scaled) width of the first column
+			# by 15 and decreased the other three by 5 each.
+			screen.setTableColumnHeader("TradeRouteTable", 0, u"",
+					(125 * iAvailW) / 236)
+			screen.setTableColumnHeader("TradeRouteTable", 1, u"",
+					(55 * iAvailW) / 236)
+			screen.setTableColumnHeader("TradeRouteTable", 2, u"",
+					(50 * iAvailW) / 236)
+			screen.setTableColumnHeader("TradeRouteTable", 3, u"",
+					(6 * iAvailW) / 236)
 			screen.setTableColumnRightJustify("TradeRouteTable", 1)
 			screen.setTableColumnRightJustify("TradeRouteTable", 2)
 		else:
-			screen.addTableControlGFC("TradeRouteTable", 3,
-					10, 187, 238, 98,
-					False, False, 32, 32,
-					TableStyles.TABLE_STYLE_STANDARD)
-			screen.setStyle("TradeRouteTable", "Table_City_Style")
 # K-Mod: Trade culture
-			screen.setTableColumnHeader("TradeRouteTable", 0, u"", 128)
-			screen.setTableColumnHeader("TradeRouteTable", 1, u"", 98)
+			screen.setTableColumnHeader("TradeRouteTable", 0, u"",
+					(128 * iAvailW) / 236)
+			screen.setTableColumnHeader("TradeRouteTable", 1, u"",
+					(98 * iAvailW) / 236)
 # K-Mod: Trade culture end
-			screen.setTableColumnHeader("TradeRouteTable", 2, u"", 10)
+			screen.setTableColumnHeader("TradeRouteTable", 2, u"",
+					(10 * iAvailW) / 236)
 			screen.setTableColumnRightJustify("TradeRouteTable", 1)
 # BUG - Raw Yields - end
 		screen.setTableColumnHeader("BuildingListTable", 0, u"", 108)
