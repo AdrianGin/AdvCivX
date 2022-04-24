@@ -629,9 +629,6 @@ class CvMainInterface:
 				RectLayout.RIGHT, 0,
 				gRect("CityLeftPanel").width(), -gRect("LowerRightCorner").height())
 		self.setTopBarRects()
-		gSetRect("CityAdjustPanel", "CityLeftPanel",
-				RectLayout.CENTER, gRect("TopBarsOneLineContainer").yBottom() + VSPACE(15),
-				-HSPACE(10), VLEN(105))
 		gSetRect("CityCenterColumn", "Top",
 				gRect("CityLeftPanel").xRight(), 0,
 				-gRect("CityRightPanel").width(), RectLayout.MAX)
@@ -697,9 +694,10 @@ class CvMainInterface:
 				RectLayout.MAX, gRect("CityRightPanel").height() - iVStagger)
 
 		self.setCityCenterBarRects()
-
 		self.setAdvisorButtonRects()
 		self.setTopRightButtonRects()
+		gOffSetPoint("TimeText", "TopRightButtons",
+				-HSPACE(1), (4 * 24) / gRect("TopRightButtons").height())
 		# advc: BtS had used 27, BUG (always) 10.
 		if self.bScaleHUD or MainOpt.isShowOptionsButton():
 			iTurnLogBtnMargin = 10
@@ -708,11 +706,18 @@ class CvMainInterface:
 		gSetSquare("TurnLogButton", "Top",
 				iTurnLogBtnMargin, gRect("AdvisorButtons").y() - 2,
 				gRect("AdvisorButtons").height())
+		gSetPoint("GoldText", PointLayout(
+				(gRect("TurnLogButton").x() * 2) / 3, gPoint("TimeText").y()))
+		gSetPoint("EraText", PointLayout(
+				gRect("CityLeftPanel").xRight() - HSPACE(8), gPoint("GoldText").y()))
+		self.setCommerceAdjustRects()
 
 		gSetPoint("EndTurnText", PointLayout(0, # (Text label gets centered through alignment)
 				max(
 				gRect("LowerLeftCornerPanel").y(),
-				gRect("LowerRightCornerPanel").y()) - VSPACE(20)))
+				gRect("LowerRightCornerPanel").y()) - VSPACE(25)))
+		# Gets moved to a lower position when interface is minimized
+		gSetPoint("EndTurnTextMin", PointLayout(0, gRect("Top").yBottom() - VSPACE(86)))
 		iEndTurnBtnSz = BTNSZ(32)
 		gSetSquare("EndTurnButton", "Top",
 				-gRect("LowerRightCorner").width() + iEndTurnBtnSz / 2,
@@ -975,19 +980,22 @@ class CvMainInterface:
 				RectLayout.CENTER, self.stackBarDefaultTextOffset())
 		gOffSetPoint("ProductionText", "ProductionBar",
 				RectLayout.CENTER, self.stackBarDefaultTextOffset())
-		iTextHMargin = HSPACE(6)
+		iTextLMargin = HSPACE(3)
+		# Left margin somehow looks bigger. Also need more space on the left
+		# (for the BUG food help)
+		iTextRMargin = iTextLMargin + 3
 		# NB: The "input texts" to the left will get right-aligned,
 		# the happy and health text to the right will get left-aligned.
 		# BUG - Food Rate Hover - start
 		gOffSetPoint("PopulationInputText", "PopulationBar",
-				-iTextHMargin, self.stackBarDefaultTextOffset())
+				-iTextLMargin, self.stackBarDefaultTextOffset())
 		# BUG - Food Rate Hover - end
 		gOffSetPoint("ProductionInputText", "ProductionBar",
-				-iTextHMargin, self.stackBarDefaultTextOffset())
+				-iTextLMargin, self.stackBarDefaultTextOffset())
 		gOffSetPoint("HealthText", "PopulationBar",
-				iTextHMargin + gRect("PopulationBar").width(), self.stackBarDefaultTextOffset())
+				iTextRMargin + gRect("PopulationBar").width(), self.stackBarDefaultTextOffset())
 		gOffSetPoint("HappinessText", "ProductionBar",
-				iTextHMargin + gRect("ProductionBar").width(), self.stackBarDefaultTextOffset())
+				iTextRMargin + gRect("ProductionBar").width(), self.stackBarDefaultTextOffset())
 
 	def setAdvisorButtonRects(self):
 		iSize = BTNSZ(28)
@@ -1014,6 +1022,57 @@ class CvMainInterface:
 		gSetRectangle("TopRightButtons", lButtons)
 		gSetRectangle("MainMenuButton", lButtons.next())
 		gSetRectangle("InterfaceHelpButton", lButtons.next())
+
+	def setCommerceAdjustRects(self):
+		iMaxRows = CommerceTypes.NUM_COMMERCE_TYPES
+		iBtnSize = BTNSZ(20)
+		iVSpacing = VSPACE(-1)
+		iHSpacing = HSPACE(0)
+		iRowH = iBtnSize + iVSpacing
+		iColumnW = iBtnSize + iHSpacing
+		for i in range(iMaxRows):
+			gOffSetPoint("PercentText" + str(i), "Top",
+					HSPACE(14),
+					gRect("InterfaceTopLeft").yBottom() + VSPACE(-8)
+					+ i * iRowH)
+		iX = 65 + HSPACE(5) # Space for the PercentText label
+		for i in range(4): # Up to 4 buttons per row (2 for BUG - Min/Max Sliders)
+			lSliderBtns = ColumnLayout(gRect("Top"),
+					iX, gPoint("PercentText0").y(),
+					iMaxRows, iVSpacing, iBtnSize)
+			gSetRectangle("CommerceSliderBtns" + str(i), lSliderBtns)
+			iX += iColumnW
+		for i in range(iMaxRows):
+			szPrefix = "RateText" + str(i)
+			iY = gPoint("PercentText" + str(i)).y()
+			gSetPoint(szPrefix + "BtS", PointLayout(
+					gRect("CommerceSliderBtns1").xRight() + HSPACE(2), iY))
+			# for BUG - Min/Max Sliders
+			gSetPoint(szPrefix + "BUG", PointLayout(
+					gRect("CommerceSliderBtns3").xRight() + HSPACE(2), iY))
+			gSetPoint("CityPercentText" + str(i), PointLayout(
+					# (The horizontal spacing here seems pretty arbitrary)
+					gRect("CommerceSliderBtns3").xRight() + HSPACE(70, 2), iY))
+		# <advc.002b> Placing the buttons at just the same y coord as the labels
+		# doesn't quite work out
+		for i in range(4):
+			gRect("CommerceSliderBtns" + str(i)).move(0, 21 - iBtnSize)
+		# </advc.002b>
+		gSetPoint("MaintenanceText", PointLayout(
+				gPoint("PercentText0").x() + 1,
+				gRect("CommerceSliderBtns0").yBottom()))
+		gSetPoint("MaintenanceAmountText", PointLayout(
+				gPoint("CityPercentText0").x(),
+				gPoint("MaintenanceText").y()))
+		# The panel, which only appears on the city screen, needs to encompass
+		# all the widgets above - and be centered on the left city panel.
+		iVSpace = VSPACE(5)
+		gSetRect("CityAdjustPanel", "CityLeftPanel",
+				RectLayout.CENTER,
+				gPoint("PercentText0").y() - gRect("CityLeftPanel").y() - iVSpace,
+				min(-1, gRect("CityLeftPanel").x() - gPoint("PercentText0").x() + HSPACE(6)),
+				gPoint("MaintenanceText").y() + iBtnSize + 1
+				- gPoint("PercentText0").y() + 2 * iVSpace)
 
 	def setCityTabRects(self):
 		iButtons = 3
@@ -1963,11 +2022,7 @@ class CvMainInterface:
 # BUG - Options - end
 		# advc.009b: Set screen attribute after reloading scripts
 		screen = self.screen = CyGInterfaceScreen("MainInterface", CvScreenEnums.MAIN_INTERFACE)
-
-		# Find out our resolution
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
-#		self.m_iNumPlotListButtons = (xResolution - (iMultiListXL+iMultiListXR) - 2 * iPlotListUnitBtnSz) / iPlotListUnitBtnSz
+#		self.m_iNumPlotListButtons = (screen.getXResolution() - (iMultiListXL+iMultiListXR) - 2 * iPlotListUnitBtnSz) / iPlotListUnitBtnSz
 
 		self.initMinimap()
 
@@ -2059,13 +2114,14 @@ class CvMainInterface:
 					bShow = True
 # BUG - Options - end
 
-		if (bShow):
+		if bShow:
 			screen.showEndTurn("EndTurnText")
 			if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW or
 					CyInterface().isCityScreenUp()):
-				screen.moveItem("EndTurnText", 0, yResolution - 194, -0.1)
+				szTextPosKey = "EndTurnText"
 			else:
-				screen.moveItem("EndTurnText", 0, yResolution - 86, -0.1)
+				szTextPosKey = "EndTurnTextMin"
+			screen.moveItem("EndTurnText", gPoint(szTextPosKey).x(), gPoint(szTextPosKey).y(), -0.1)
 		else:
 			screen.hideEndTurn("EndTurnText")
 
@@ -2093,7 +2149,7 @@ class CvMainInterface:
 					else:
 						# countdown timer
 						g_iTimeTextCounter -= 250
-						if (g_iTimeTextCounter <= 0):
+						if g_iTimeTextCounter <= 0:
 							# <advc.067>
 							if g_bShowTimeTextAlt:
 								iPeriod = ClockOpt.getPrimaryPeriod()
@@ -2104,21 +2160,13 @@ class CvMainInterface:
 							g_bShowTimeTextAlt = not g_bShowTimeTextAlt
 				else:
 					g_bShowTimeTextAlt = False
+			#else:
+			#	screen.hide("EraText") # advc.067
+			self.updateTimeText()
+			self.setLabel("TimeText", "Background", g_szTimeText,
+					CvUtil.FONT_RIGHT_JUSTIFY, FontTypes.GAME_FONT, -0.3)
+			screen.show("TimeText")
 
-				self.updateTimeText()
-				screen.setLabel("TimeText", "Background",
-						g_szTimeText, CvUtil.FONT_RIGHT_JUSTIFY,
-						xResolution - 56, 6, -0.3, FontTypes.GAME_FONT,
-						WidgetTypes.WIDGET_GENERAL, -1, -1)
-				screen.show("TimeText")
-			else:
-				#screen.hide("EraText") # advc.067
-				self.updateTimeText()
-				screen.setLabel("TimeText", "Background",
-						g_szTimeText, CvUtil.FONT_RIGHT_JUSTIFY,
-						xResolution - 56, 6, -0.3, FontTypes.GAME_FONT,
-						WidgetTypes.WIDGET_GENERAL, -1, -1)
-				screen.show("TimeText")
 		else:
 			screen.hide("TimeText")
 			screen.hide("EraText")
@@ -2242,114 +2290,89 @@ class CvMainInterface:
 		# statically, ignoring options.)
 		return (gRect("Top").height() > 900)
 
-	# K-Mod. There are some special rules for which buttons should be shown and when.
+	# K-Mod: There are some special rules for which buttons should be shown and when.
 	# I'd rather have all those rules in one place. ie. here.
 	def showCommercePercent(self, eCommerce, ePlayer):
 		player = gc.getPlayer(ePlayer)
 		if not player.isFoundedFirstCity():
 			return False
-
 		if eCommerce == CommerceTypes.COMMERCE_GOLD and not CyInterface().isCityScreenUp():
 			return False
-
 		if player.getCommercePercent(eCommerce) > 0:
 			return True
-
 		if (eCommerce == CommerceTypes.COMMERCE_ESPIONAGE and
 				(gc.getGame().isOption(GameOptionTypes.GAMEOPTION_NO_ESPIONAGE) or
 				gc.getTeam(player.getTeam()).getHasMetCivCount(True) == 0 or
 				(gc.getPlayer(ePlayer).getCommercePercent(eCommerce) == 0 and # advc.120c
 				not CyInterface().isCityScreenUp() and MainOpt.isHideEspSlider()))):
 			return False
+		return player.isCommerceFlexible(eCommerce)
 
-		if player.isCommerceFlexible(eCommerce):
-			return True
-		return False
-	# K-Mod end
-
-	# Will update the percent buttons
 	def updatePercentButtons(self):
-
 		screen = self.screen
-
-		for iI in range(CommerceTypes.NUM_COMMERCE_TYPES):
-			szString = "IncreasePercent" + str(iI)
-			screen.hide(szString)
-			szString = "DecreasePercent" + str(iI)
-			screen.hide(szString)
+		for iCommerce in range(CommerceTypes.NUM_COMMERCE_TYPES):
+			szIndex = str(iCommerce)
+			screen.hide("IncreasePercent" + szIndex)
+			screen.hide("DecreasePercent" + szIndex)
 # BUG - Min/Max Sliders - start
-			szString = "MaxPercent" + str(iI)
-			screen.hide(szString)
-			szString = "MinPercent" + str(iI)
-			screen.hide(szString)
+			screen.hide("MaxPercent" + szIndex)
+			screen.hide("MinPercent" + szIndex)
 # BUG - Min/Max Sliders - start
-
 		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
-
-		#if (not CyInterface().isCityScreenUp() or (pHeadSelectedCity.getOwner() == gc.getGame().getActivePlayer()) or gc.getGame().isDebugMode()):
-		if (not CyInterface().isCityScreenUp() or
-				pHeadSelectedCity.getOwner() == gc.getGame().getActivePlayer()
-				# K-Mod: Debug mode still doesn't allow us to use the buttons
-				#or gc.getGame().isDebugMode()
-				):
-			iCount = 0
-
-			if (CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_HIDE_ALL and
-					CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_MINIMAP_ONLY and
-					CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_ADVANCED_START):
-				for iI in range(CommerceTypes.NUM_COMMERCE_TYPES):
-					# Intentional offset...
-					eCommerce = (iI + 1) % CommerceTypes.NUM_COMMERCE_TYPES
-
-					#if (gc.getActivePlayer().isCommerceFlexible(eCommerce) or (CyInterface().isCityScreenUp() and (eCommerce == CommerceTypes.COMMERCE_GOLD))):
-					if self.showCommercePercent(eCommerce, gc.getGame().getActivePlayer()): # K-Mod
+		if (CyInterface().isCityScreenUp() and
+				pHeadSelectedCity.getOwner() != gc.getGame().getActivePlayer()):
+				# K-Mod: Debug mode doesn't allow us to use the buttons
+				#and not gc.getGame().isDebugMode()
+			return
+		if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_HIDE_ALL or
+				CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_MINIMAP_ONLY or
+				CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_ADVANCED_START):
+			return
+		# <advc.092>
+		for i in range(4):
+			gRect("CommerceSliderBtns" + str(i)).resetIter() # </advc.092>
+		for i in range(CommerceTypes.NUM_COMMERCE_TYPES):
+			# Intentional offset...
+			eCommerce = (i + 1) % CommerceTypes.NUM_COMMERCE_TYPES
+			#if (not gc.getActivePlayer().isCommerceFlexible(eCommerce) and (not CyInterface().isCityScreenUp() or eCommerce != CommerceTypes.COMMERCE_GOLD)):
+			if not self.showCommercePercent(eCommerce, gc.getGame().getActivePlayer()): # K-Mod
+				continue
 # BUG - Min/Max Sliders - start
-						bEnable = gc.getActivePlayer().isCommerceFlexible(eCommerce)
-						if (MainOpt.isShowMinMaxCommerceButtons() and
-								not CyInterface().isCityScreenUp()):
-							iMinMaxAdjustX = 20
-							szString = "MaxPercent" + str(eCommerce)
-							screen.setButtonGFC(szString, u"", "", 70, 50 + (19 * iCount), 20, 20,
-									*BugDll.widget("WIDGET_SET_PERCENT", eCommerce, 100,
-									WidgetTypes.WIDGET_CHANGE_PERCENT, eCommerce, 100,
-									ButtonStyles.BUTTON_STYLE_CITY_PLUS))
-							screen.show(szString)
-							screen.enable(szString, bEnable)
-							szString = "MinPercent" + str(eCommerce)
-							screen.setButtonGFC(szString, u"", "", 130, 50 + (19 * iCount), 20, 20,
-									*BugDll.widget("WIDGET_SET_PERCENT", eCommerce, 0,
-									WidgetTypes.WIDGET_CHANGE_PERCENT, eCommerce, -100,
-									ButtonStyles.BUTTON_STYLE_CITY_MINUS))
-							screen.show(szString)
-							screen.enable(szString, bEnable)
-						else:
-							iMinMaxAdjustX = 0
-
-						szString = "IncreasePercent" + str(eCommerce)
-						screen.setButtonGFC(szString, u"", "",
-								70 + iMinMaxAdjustX, 50 + (19 * iCount), 20, 20,
-								WidgetTypes.WIDGET_CHANGE_PERCENT, eCommerce,
-								gc.getDefineINT("COMMERCE_PERCENT_CHANGE_INCREMENTS"),
-								ButtonStyles.BUTTON_STYLE_CITY_PLUS)
-						screen.show(szString)
-						screen.enable(szString, bEnable)
-						szString = "DecreasePercent" + str(eCommerce)
-						screen.setButtonGFC(szString, u"", "",
-								90 + iMinMaxAdjustX, 50 + (19 * iCount), 20, 20,
-								WidgetTypes.WIDGET_CHANGE_PERCENT, eCommerce,
-								-gc.getDefineINT("COMMERCE_PERCENT_CHANGE_INCREMENTS"),
-								ButtonStyles.BUTTON_STYLE_CITY_MINUS)
-						screen.show(szString)
-						screen.enable(szString, bEnable)
-
-						iCount = iCount + 1
-						# moved enabling above
+			bEnable = gc.getActivePlayer().isCommerceFlexible(eCommerce)
+			iCol = 0 # advc.092
+			if (MainOpt.isShowMinMaxCommerceButtons() and
+					not CyInterface().isCityScreenUp()):
+				szString = "MaxPercent" + str(eCommerce)
+				gSetRectangle(szString, gRect("CommerceSliderBtns0").next())
+				self.setStyledButton(szString, ButtonStyles.BUTTON_STYLE_CITY_PLUS,
+						WidgetTypes.WIDGET_CHANGE_PERCENT, eCommerce, 100)
+				screen.show(szString)
+				screen.enable(szString, bEnable)
+				szString = "MinPercent" + str(eCommerce)
+				gSetRectangle(szString, gRect("CommerceSliderBtns3").next())
+				self.setStyledButton(szString, ButtonStyles.BUTTON_STYLE_CITY_MINUS,
+						WidgetTypes.WIDGET_CHANGE_PERCENT, eCommerce, -100)
+				screen.show(szString)
+				screen.enable(szString, bEnable)
+				iCol = 1
+			szString = "IncreasePercent" + str(eCommerce)
+			gSetRectangle(szString, gRect("CommerceSliderBtns" + str(iCol)).next())
+			self.setStyledButton(szString, ButtonStyles.BUTTON_STYLE_CITY_PLUS,
+					WidgetTypes.WIDGET_CHANGE_PERCENT, eCommerce,
+					gc.getDefineINT("COMMERCE_PERCENT_CHANGE_INCREMENTS"))
+			screen.show(szString)
+			screen.enable(szString, bEnable)
+			szString = "DecreasePercent" + str(eCommerce)
+			gSetRectangle(szString, gRect("CommerceSliderBtns" + str(iCol + 1)).next())
+			self.setStyledButton(szString, ButtonStyles.BUTTON_STYLE_CITY_MINUS,
+					WidgetTypes.WIDGET_CHANGE_PERCENT, eCommerce,
+					-gc.getDefineINT("COMMERCE_PERCENT_CHANGE_INCREMENTS"))
+			screen.show(szString)
+			screen.enable(szString, bEnable)
+			# moved enabling above
 # BUG - Min/Max Sliders - end
 
-		return 0
-
-# BUG - start
-	def resetEndTurnObjects(self):
+	def resetEndTurnObjects(self): # BUG helper
 		"""
 		Clears the end turn text and hides it and the button.
 		"""
@@ -2357,15 +2380,10 @@ class CvMainInterface:
 		screen.setEndTurnState("EndTurnText", u"")
 		screen.hideEndTurn("EndTurnText")
 		screen.hideEndTurn("EndTurnButton")
-# BUG - end
 
-	# Will update the end Turn Button
 	def updateEndTurnButton(self):
-
 		global g_eEndTurnButtonState
-
 		screen = self.screen
-
 		if (CyInterface().shouldDisplayEndTurnButton() and
 				CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW):
 			eState = CyInterface().getEndTurnState()
@@ -2380,26 +2398,20 @@ class CvMainInterface:
 				screen.setEndTurnState("EndTurnButton", u"Green")
 				bShow = True
 
-			if (bShow):
+			if bShow:
 				screen.showEndTurn("EndTurnButton")
 			else:
 				screen.hideEndTurn("EndTurnButton")
 
-			if (g_eEndTurnButtonState == eState):
+			if g_eEndTurnButtonState == eState:
 				return
 
 			g_eEndTurnButtonState = eState
 		else:
 			screen.hideEndTurn("EndTurnButton")
-		return 0
 
-	# Update the miscellaneous buttons
 	def updateMiscButtons(self):
-
 		screen = self.screen
-
-		xResolution = screen.getXResolution()
-
 # BUG - Great Person Bar - start
 		if (CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_HIDE_ALL and
 				CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_MINIMAP_ONLY and
@@ -2964,7 +2976,7 @@ class CvMainInterface:
 									x, y -
 									(22 * iPlotListFrameSize) / 32, self.unitButtonOverlaySize()) # advc.092
 
-					iCount = iCount + 1
+					iCount += 1
 #			BugUtil.debug("updatePlotListButtons_Orig - vis units(%i), buttons per row(%i), max rows(%i)", iVisibleUnits, self.numPlotListButtonsPerRow(), iMaxRows)
 			if (iVisibleUnits > self.numPlotListButtonsPerRow() * iMaxRows):
 #				BugUtil.debug("updatePlotListButtons_Orig - show arrows %s %s", bLeftArrow, bRightArrow)
@@ -3302,7 +3314,7 @@ class CvMainInterface:
 						if (not pHeadSelectedCity.canTrain(eLoopUnit, False, False)):
 							screen.disableMultiListButton("BottomButtonList",
 									iRow, iCount, szButton)
-						iCount = iCount + 1
+						iCount += 1
 						bFound = True
 
 				iCount = 0
@@ -3329,7 +3341,7 @@ class CvMainInterface:
 								screen.disableMultiListButton("BottomButtonList",
 										iRow, iCount,
 										gc.getBuildingInfo(eLoopBuilding).getButton())
-							iCount = iCount + 1
+							iCount += 1
 							bFound = True
 
 				iCount = 0
@@ -3356,7 +3368,7 @@ class CvMainInterface:
 								screen.disableMultiListButton("BottomButtonList",
 										iRow, iCount,
 										gc.getBuildingInfo(eLoopBuilding).getButton())
-							iCount = iCount + 1
+							iCount += 1
 							bFound = True
 
 				iCount = 0
@@ -3376,7 +3388,7 @@ class CvMainInterface:
 							screen.disableMultiListButton("BottomButtonList",
 									iRow, iCount,
 									gc.getProjectInfo(i).getButton())
-						iCount = iCount + 1
+						iCount += 1
 						bFound = True
 
 				# Processes
@@ -3387,7 +3399,7 @@ class CvMainInterface:
 								gc.getProcessInfo(i).getButton(), iRow,
 								WidgetTypes.WIDGET_MAINTAIN, i, -1, False)
 						screen.show("BottomButtonList")
-						iCount = iCount + 1
+						iCount += 1
 						bFound = True
 
 				screen.selectMultiList("BottomButtonList",
@@ -3424,7 +3436,7 @@ class CvMainInterface:
 						else:
 							screen.enableMultiListPulse("BottomButtonList", False, 0, iCount)
 
-						iCount = iCount + 1
+						iCount += 1
 
 					if (CyInterface().canCreateGroup()):
 						screen.appendMultiListButton("BottomButtonList",
@@ -3432,7 +3444,7 @@ class CvMainInterface:
 								WidgetTypes.WIDGET_CREATE_GROUP, -1, -1, False)
 						screen.show("BottomButtonList")
 
-						iCount = iCount + 1
+						iCount += 1
 
 					if (CyInterface().canDeleteGroup()):
 						screen.appendMultiListButton("BottomButtonList",
@@ -3440,7 +3452,7 @@ class CvMainInterface:
 								WidgetTypes.WIDGET_DELETE_GROUP, -1, -1, False)
 						screen.show("BottomButtonList")
 
-						iCount = iCount + 1
+						iCount += 1
 				# <advc.154>
 				pUnit = None
 				if bHeadSelectionChanged:
@@ -3554,7 +3566,7 @@ class CvMainInterface:
 										bDone = True
 						screen.show(szName)
 						self.setResearchButtonPosition(szName, iCount)
-					iCount = iCount + 1
+					iCount += 1
 		return 0
 
 # BUG - city specialist - start
@@ -3681,7 +3693,7 @@ class CvMainInterface:
 								lFirstFreeSpecialist.size(), lFirstFreeSpecialist.size(),
 								WidgetTypes.WIDGET_FREE_CITIZEN, iSpecialist, -1)
 						screen.show(szName)
-					iCount = iCount + 1
+					iCount += 1
 
 	def updateAdjustableSpecialistButtons(self, pHeadSelectedCity, iSpecialist):
 		if (pHeadSelectedCity.getOwner() != gc.getGame().getActivePlayer() and
@@ -3908,163 +3920,141 @@ class CvMainInterface:
 		screen.hide("GoldText")
 		screen.hide("TimeText")
 		screen.hide("TwoLineResearchBar")
-
 # BUG - NJAGC - start
 		screen.hide("EraText")
 # BUG - NJAGC - end
-
 # BUG - Great Person Bar - start
 		screen.hide("TwoLineGPBar")
 		screen.hide("GreatPersonBarText")
 # BUG - Great Person Bar - end
-
 # BUG - Great General Bar - start
 		screen.hide("TwoLineGGBar")
 		screen.hide("GreatGeneralBarText")
 # BUG - Great General Bar - end
-
 # BUG - Bars on single line for higher resolution screens - start
 		screen.hide("OneLineGGBar")
 		screen.hide("OneLineResearchBar")
 		screen.hide("OneLineGPBar")
 # BUG - Bars on single line for higher resolution screens - end
-
 # BUG - Progress Bar - Tick Marks - start
 		self.pTwoLineResearchBar.hide(screen)
 		self.pOneLineResearchBar.hide(screen)
 # BUG - Progress Bar - Tick Marks - end
-
-		bShift = CyInterface().shiftKey()
-
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
-
 		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
-
-		if (pHeadSelectedCity):
+		if pHeadSelectedCity:
 			ePlayer = pHeadSelectedCity.getOwner()
 		else:
 			ePlayer = gc.getGame().getActivePlayer()
+		if ePlayer < 0 or ePlayer >= gc.getMAX_PLAYERS():
+			return
 
-		if (ePlayer < 0 or ePlayer >= gc.getMAX_PLAYERS()):
-			return 0
-
-		for iI in range(CommerceTypes.NUM_COMMERCE_TYPES):
-			szString = "PercentText" + str(iI)
-			screen.hide(szString)
-			szString = "RateText" + str(iI)
-			screen.hide(szString)
+		for iCommerce in range(CommerceTypes.NUM_COMMERCE_TYPES):
+			szIndex = str(iCommerce)
+			screen.hide("PercentText" + szIndex)
+			screen.hide("RateText" + szIndex)
 
 		if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_HIDE_ALL or
 				CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_MINIMAP_ONLY or
 				CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_ADVANCED_START):
-			return 0 # advc: Reduce indentation
+			return
 
 		# Percent of commerce
 		if gc.getPlayer(ePlayer).isAlive():
 			iCount = 0
-			for iI in range(CommerceTypes.NUM_COMMERCE_TYPES):
-				eCommerce = (iI + 1) % CommerceTypes.NUM_COMMERCE_TYPES
+			for i in range(CommerceTypes.NUM_COMMERCE_TYPES):
+				eCommerce = (i + 1) % CommerceTypes.NUM_COMMERCE_TYPES
 				#if (gc.getPlayer(ePlayer).isCommerceFlexible(eCommerce) or (CyInterface().isCityScreenUp() and (eCommerce == CommerceTypes.COMMERCE_GOLD))):
-				if self.showCommercePercent(eCommerce, ePlayer): # K-Mod
-					szOutText = u"<font=2>%c:%d%%</font>" %(
-							gc.getCommerceInfo(eCommerce).getChar(),
-							gc.getPlayer(ePlayer).getCommercePercent(eCommerce))
-					szString = "PercentText" + str(iI)
-					screen.setLabel(szString, "Background",
-							szOutText, CvUtil.FONT_LEFT_JUSTIFY,
-							14, 50 + (iCount * 19), -0.1, FontTypes.SMALL_FONT,
-							WidgetTypes.WIDGET_GENERAL, -1, -1)
-					screen.show(szString)
-
-					if not CyInterface().isCityScreenUp():
-						szOutText = u"<font=2>" + localText.getText(
-								"TXT_KEY_MISC_POS_GOLD_PER_TURN",
-								(gc.getPlayer(ePlayer).getCommerceRate(CommerceTypes(eCommerce)),))
-						szOutText += u"</font>"
+				if not self.showCommercePercent(eCommerce, ePlayer): # K-Mod
+					continue
+				szOutText = u"<font=2>%c:%d%%</font>" %(
+						gc.getCommerceInfo(eCommerce).getChar(),
+						gc.getPlayer(ePlayer).getCommercePercent(eCommerce))
+				szString = "PercentText" + str(iCount)
+				self.setLabel(szString, "Background", szOutText,
+						CvUtil.FONT_LEFT_JUSTIFY, FontTypes.SMALL_FONT, -0.1)
+				screen.show(szString)
+				if (not CyInterface().isCityScreenUp()
 						# <advc.004p>
-						if (eCommerce == CommerceTypes.COMMERCE_CULTURE and
-								not MainOpt.isShowTotalCultureRate()):
-							szOutText = u""
-						# </advc.004p>
-						szString = "RateText" + str(iI)
+						and (eCommerce != CommerceTypes.COMMERCE_CULTURE or
+						MainOpt.isShowTotalCultureRate())): # </advc.004p>
+					szOutText = u"<font=2>" + localText.getText(
+							"TXT_KEY_MISC_POS_GOLD_PER_TURN",
+							(gc.getPlayer(ePlayer).getCommerceRate(CommerceTypes(eCommerce)),))
+					szOutText += u"</font>"
+					szString = "RateText" + str(iCount)
 # BUG - Min/Max Sliders - start
-						if MainOpt.isShowMinMaxCommerceButtons():
-							iMinMaxAdjustX = 40
-						else:
-							iMinMaxAdjustX = 0
-						screen.setLabel(szString, "Background",
-								szOutText, CvUtil.FONT_LEFT_JUSTIFY,
-								112 + iMinMaxAdjustX, 50 + (iCount * 19), -0.1,
-								FontTypes.SMALL_FONT,
-								WidgetTypes.WIDGET_GENERAL, -1, -1)
+					szPointKey = szString
+					if MainOpt.isShowMinMaxCommerceButtons():
+						szPointKey += "BUG"
+					else:
+						szPointKey += "BtS"
+					gSetPoint(szString, gPoint(szPointKey))
 # BUG - Min/Max Sliders - end
-						screen.show(szString)
-
-					iCount = iCount + 1;
+					self.setLabel(szString, "Background", szOutText,
+							CvUtil.FONT_LEFT_JUSTIFY, FontTypes.SMALL_FONT, -0.1)
+					screen.show(szString)
+				iCount += 1;
 		self.updateTimeText()
-		screen.setLabel("TimeText", "Background",
-				g_szTimeText, CvUtil.FONT_RIGHT_JUSTIFY,
-				xResolution - 56, 6, -0.3, FontTypes.GAME_FONT,
-				WidgetTypes.WIDGET_GENERAL, -1, -1)
+		self.setLabel("TimeText", "Background", g_szTimeText,
+				CvUtil.FONT_RIGHT_JUSTIFY, FontTypes.GAME_FONT, -0.3)
 		screen.show("TimeText")
 		# advc.103: Don't show gold rate and current research when investigating
 		if (not gc.getPlayer(ePlayer).isAlive() or
 				(ePlayer != gc.getGame().getActivePlayer() and
 				not gc.getGame().isDebugMode())):
-			return 0
+			return
 # BUG - Gold Rate Warning - start
-		if True:#MainOpt.isGoldRateWarning(): # advc.070
-			pPlayer = gc.getPlayer(ePlayer)
-			iGold = pPlayer.getGold()
-			iGoldRate = pPlayer.calculateGoldRate()
-			if iGold < 0: # advc.070 (comment): Only relevant for mod-mods I think, so I'm not changing anything here.
-				szText = BugUtil.getText("TXT_KEY_MISC_NEG_GOLD", iGold)
-				if iGoldRate != 0:
-					if iGold + iGoldRate >= 0:
-						szText += BugUtil.getText(
-								"TXT_KEY_MISC_POS_GOLD_PER_TURN", iGoldRate)
-					elif iGoldRate >= 0:
-						szText += BugUtil.getText(
-								"TXT_KEY_MISC_POS_WARNING_GOLD_PER_TURN", iGoldRate)
-					else:
-						szText += BugUtil.getText(
-								"TXT_KEY_MISC_NEG_GOLD_PER_TURN", iGoldRate)
-			else:
-				szText = BugUtil.getText("TXT_KEY_MISC_POS_GOLD", iGold)
-				if iGoldRate != 0:
-					# <advc.070>
-					szRateText = " ("
-					szRateText += BugUtil.getText("TXT_KEY_MISC_PER_TURN", iGoldRate)
-					szRateText += ")"
-					# (I've removed the broke color option again in order to make room on the BUG menu)
-					#iRateColor = MainOpt.getGoldRateBrokeColor()
-					if iGoldRate >= 0:
-						iRateColor = MainOpt.getPositiveGoldRateColor()
-						#szText += BugUtil.getText("TXT_KEY_MISC_POS_GOLD_PER_TURN", iGoldRate)
-					#elif iGold + iGoldRate >= 0:
-					else:
-						iRateColor = MainOpt.getNegativeGoldRateColor()
-						#szText += BugUtil.getText("TXT_KEY_MISC_NEG_WARNING_GOLD_PER_TURN", iGoldRate)
-					#else:
-						#szText += BugUtil.getText("TXT_KEY_MISC_NEG_GOLD_PER_TURN", iGoldRate)
-					szText += localText.changeTextColor(szRateText, iRateColor)
-					# </advc.070>
-
-			if pPlayer.isStrike():
-				szText += BugUtil.getPlainText("TXT_KEY_MISC_STRIKE")
+		pPlayer = gc.getPlayer(ePlayer)
+		iGold = pPlayer.getGold()
+		iGoldRate = pPlayer.calculateGoldRate()
+		# advc.070 (comment): Only relevant for mod-mods I think,
+		# so I'm not changing anything here.
+		if iGold < 0:
+			szText = BugUtil.getText("TXT_KEY_MISC_NEG_GOLD", iGold)
+			if iGoldRate != 0:
+				if iGold + iGoldRate >= 0:
+					szText += BugUtil.getText(
+							"TXT_KEY_MISC_POS_GOLD_PER_TURN", iGoldRate)
+				elif iGoldRate >= 0:
+					szText += BugUtil.getText(
+							"TXT_KEY_MISC_POS_WARNING_GOLD_PER_TURN", iGoldRate)
+				else:
+					szText += BugUtil.getText(
+							"TXT_KEY_MISC_NEG_GOLD_PER_TURN", iGoldRate)
 		else:
-			szText = CyGameTextMgr().getGoldStr(ePlayer)
+			szText = BugUtil.getText("TXT_KEY_MISC_POS_GOLD", iGold)
+			if iGoldRate != 0:
+				# <advc.070>
+				szRateText = " ("
+				szRateText += BugUtil.getText("TXT_KEY_MISC_PER_TURN", iGoldRate)
+				szRateText += ")"
+				# (I've removed the broke color option again in order to make room on the BUG menu)
+				#iRateColor = MainOpt.getGoldRateBrokeColor()
+				if iGoldRate >= 0:
+					iRateColor = MainOpt.getPositiveGoldRateColor()
+					#szText += BugUtil.getText("TXT_KEY_MISC_POS_GOLD_PER_TURN", iGoldRate)
+				#elif iGold + iGoldRate >= 0:
+				else:
+					iRateColor = MainOpt.getNegativeGoldRateColor()
+					#szText += BugUtil.getText("TXT_KEY_MISC_NEG_WARNING_GOLD_PER_TURN", iGoldRate)
+				#else:
+				#szText += BugUtil.getText("TXT_KEY_MISC_NEG_GOLD_PER_TURN", iGoldRate)
+				szText += localText.changeTextColor(szRateText, iRateColor)
+				# </advc.070>
+
+		if pPlayer.isStrike():
+			szText += BugUtil.getPlainText("TXT_KEY_MISC_STRIKE")
+		# advc.070: Always show the warning
+		#if not MainOpt.isGoldRateWarning():
+		#	szText = CyGameTextMgr().getGoldStr(ePlayer)
 # BUG - Gold Rate Warning - end
-		screen.setLabel("GoldText", "Background",
-				szText, CvUtil.FONT_LEFT_JUSTIFY,
-				12, 6, -0.3, FontTypes.GAME_FONT,
-				WidgetTypes.WIDGET_GENERAL, -1, -1)
+		self.setLabel("GoldText", "Background", szText,
+				CvUtil.FONT_LEFT_JUSTIFY, FontTypes.GAME_FONT, -0.3)
 		screen.show("GoldText")
 
-		if (((gc.getPlayer(ePlayer).calculateGoldRate() != 0) and
-				not (gc.getPlayer(ePlayer).isAnarchy())) or
-				(gc.getPlayer(ePlayer).getGold() != 0)):
+		if ((gc.getPlayer(ePlayer).calculateGoldRate() != 0 and
+				not gc.getPlayer(ePlayer).isAnarchy())
+				or gc.getPlayer(ePlayer).getGold() != 0):
 			screen.show("GoldText")
 # BUG - NJAGC - start
 		#if (ClockOpt.isEnabled() and ClockOpt.isShowEra()):
@@ -4077,14 +4067,12 @@ class CvMainInterface:
 				iEra = gc.getPlayer(ePlayer).getCurrentEra()
 			szText = localText.getText("TXT_KEY_BUG_ERA",
 					(gc.getEraInfo(iEra).getDescription(),))
-			if(ClockOpt.isUseEraColor()):
+			if ClockOpt.isUseEraColor():
 				iEraColor = ClockOpt.getEraColor(gc.getEraInfo(iEra).getType())
-				if (iEraColor >= 0):
+				if iEraColor >= 0:
 					szText = localText.changeTextColor(szText, iEraColor)
-			screen.setLabel("EraText", "Background",
-					szText, CvUtil.FONT_RIGHT_JUSTIFY,
-					250, 6, -0.3, FontTypes.GAME_FONT,
-					WidgetTypes.WIDGET_GENERAL, -1, -1)
+			self.setLabel("EraText", "Background", szText,
+					CvUtil.FONT_RIGHT_JUSTIFY, FontTypes.GAME_FONT, -0.3)
 			screen.show("EraText")
 # BUG - NJAGC - end
 # BUG - Bars on single line for higher resolution screens - start
@@ -4154,7 +4142,7 @@ class CvMainInterface:
 # BUG - Progress Bar - Tick Marks - end
 		self.updateGreatPersonBar(screen) # BUG - Great Person Bar
 		self.updateGreatGeneralBar(screen) # BUG - Great General Bar
-		return 0
+		return
 
 # BUG - Great Person Bar - start
 	def updateGreatPersonBar(self, screen):
@@ -4423,8 +4411,7 @@ class CvMainInterface:
 			szName = "CorporationDDS" + str(i)
 			screen.hide(szName)
 		for i in range(CommerceTypes.NUM_COMMERCE_TYPES):
-			szName = "CityPercentText" + str(i)
-			screen.hide(szName)
+			screen.hide("CityPercentText" + str(i))
 
 		self.addPanel("BonusPane0", PanelStyles.PANEL_STYLE_CITY_COLUMNL)
 		screen.hide("BonusPane0")
@@ -4909,13 +4896,11 @@ class CvMainInterface:
 								CyGame().getSymbolID(FontSymbols.UNHAPPY_CHAR))
 					szBuffer = szBuffer + szTempBuffer
 				szName = "CityPercentText" + str(iCount)
-				screen.setLabel(szName, "Background",
-						szBuffer, CvUtil.FONT_RIGHT_JUSTIFY,
-						220, 45 + (19 * iCount) + 4, -0.3,
-						FontTypes.SMALL_FONT,
-						WidgetTypes.WIDGET_COMMERCE_MOD_HELP, eCommerce, -1)
+				self.setLabel(szName, "Background", szBuffer,
+						CvUtil.FONT_RIGHT_JUSTIFY, FontTypes.SMALL_FONT, -0.3,
+						WidgetTypes.WIDGET_COMMERCE_MOD_HELP, eCommerce)
 				screen.show(szName)
-				iCount = iCount + 1
+				iCount += 1
 		screen.addTableControlGFC("BuildingListTable", 3,
 				10, 317, 238, yResolution - 541,
 				False, False, 32, 32,
@@ -5271,17 +5256,15 @@ class CvMainInterface:
 				pHeadSelectedCity.getOwner()).calculateInflationRate()
 		iMaintenance /= 100 # </K-Mod>
 		szBuffer = localText.getText("INTERFACE_CITY_MAINTENANCE", ())
-		screen.setLabel("MaintenanceText", "Background", szBuffer,
-				CvUtil.FONT_LEFT_JUSTIFY, 15, 126,
-				-0.3, FontTypes.SMALL_FONT,
-				WidgetTypes.WIDGET_HELP_MAINTENANCE, -1, -1)
+		self.setLabel("MaintenanceText", "Background", szBuffer,
+				CvUtil.FONT_LEFT_JUSTIFY, FontTypes.SMALL_FONT, -0.3, 
+				WidgetTypes.WIDGET_HELP_MAINTENANCE)
 		screen.show("MaintenanceText")
 		szBuffer = u"-%d.%02d %c" %(iMaintenance/100, iMaintenance%100,
 				gc.getCommerceInfo(CommerceTypes.COMMERCE_GOLD).getChar())
-		screen.setLabel("MaintenanceAmountText", "Background", szBuffer,
-				CvUtil.FONT_RIGHT_JUSTIFY, 220, 125,
-				-0.3, FontTypes.SMALL_FONT,
-				WidgetTypes.WIDGET_HELP_MAINTENANCE, -1, -1)
+		self.setLabel("MaintenanceAmountText", "Background", szBuffer,
+				CvUtil.FONT_RIGHT_JUSTIFY, FontTypes.SMALL_FONT, -0.3,
+				WidgetTypes.WIDGET_HELP_MAINTENANCE)
 		screen.show("MaintenanceAmountText")
 # BUG - Raw Yields - start
 		if bShowRawYields:
@@ -6225,7 +6208,7 @@ class CvMainInterface:
 # BUG - Dead Civs - end
 												screen.show(szName)
 												CyInterface().checkFlashReset(ePlayer)
-												iCount = iCount + 1
+												iCount += 1
 # BUG - Align Icons - end
 							j = j - 1
 					i = i - 1

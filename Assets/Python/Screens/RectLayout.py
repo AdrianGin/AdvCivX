@@ -257,6 +257,8 @@ class _SingleFileLayout(RectLayout):
 		lNext = self.seq[self.iNextWidget]
 		self.iNextWidget += 1
 		return lNext
+	def resetIter(self):
+		self.iNextWidget = 0
 	def move(self, fX, fY):
 		super(_SingleFileLayout, self).move(fX, fY)
 		for lRect in self.seq:
