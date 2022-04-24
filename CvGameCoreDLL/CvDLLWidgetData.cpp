@@ -3408,14 +3408,17 @@ void CvDLLWidgetData::parseTechTreeHelp(CvWidgetDataStruct &widgetDataStruct, Cv
 
 void CvDLLWidgetData::parseChangePercentHelp(CvWidgetDataStruct &widgetDataStruct, CvWStringBuffer &szBuffer)
 {
-	if (widgetDataStruct.m_iData2 > 0)
+	int const iChange = widgetDataStruct.m_iData2;
+	szBuffer.assign(gDLL->getText(iChange > 0 ?
+			"TXT_KEY_MISC_INCREASE_RATE" : "TXT_KEY_MISC_DECREASE_RATE",
+			GC.getInfo((CommerceTypes)widgetDataStruct.m_iData1).getTextKeyWide(),
+			abs(iChange)));
+	// <advc.004> Hint about right-click behavior
+	if (!BUGOption::isEnabled("MainInterface__MinMax_Commerce", false))
 	{
-		szBuffer.assign(gDLL->getText("TXT_KEY_MISC_INCREASE_RATE", GC.getInfo((CommerceTypes) widgetDataStruct.m_iData1).getTextKeyWide(), widgetDataStruct.m_iData2));
-	}
-	else
-	{
-		szBuffer.assign(gDLL->getText("TXT_KEY_MISC_DECREASE_RATE", GC.getInfo((CommerceTypes) widgetDataStruct.m_iData1).getTextKeyWide(), -(widgetDataStruct.m_iData2)));
-	}
+		szBuffer.append(iChange > 0 ?
+				"TXT_KEY_MISC_INCREASE_RATE_HINT" : "TXT_KEY_MISC_DECREASE_RATE_HINT");
+	} // </advc.004>
 }
 
 // advc (comment): Could this function be merged into CvGameTextMgr::parseLeaderHeadHelp?
