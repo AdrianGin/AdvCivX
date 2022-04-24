@@ -103,15 +103,15 @@ class RectLayout(object):
 		assert self.fY < RectLayout._RESERVED_CONST
 		# (It's OK for widgets to be only partly on the screen, so
 		# having negative fX or fY isn't necessarily wrong.)
-	''' # Might not need this after all
+
 	def copy(self):
-		lCopy = RectLayout(0, 0, 0, 0)
+		lCopy = RectLayout(None, 0, 0, 0, 0)
 		lCopy.fX = self.fX
-		lCopy.fY = self.fY = lOther.fY
+		lCopy.fY = self.fY
 		lCopy.fWidth = self.fWidth
 		lCopy.fHeight = self.fHeight
 		return lCopy
-	'''
+
 	# Preliminary calculation of side length. Preliminary b/c our screen coordinates
 	# haven't been calculated yet.
 	@staticmethod # (Very much not supposed to access self)

@@ -712,15 +712,18 @@ class CvMainInterface:
 		else:
 			iTurnLogBtnMargin = 18
 		gSetSquare("TurnLogButton", "Top",
-				iTurnLogBtnMargin, gRect("AdvisorButtons").y() - 2,
+				iTurnLogBtnMargin, gRect("AdvisorButtons").y() - 1,
 				gRect("AdvisorButtons").height())
+		lBUGOptBtn = gRect("TurnLogButton").copy()
+		lBUGOptBtn.move(gRect("TurnLogButton").size() + HSPACE(4), 0)
+		gSetRectangle("BUGOptionsScreenWidget", lBUGOptBtn)
 		gSetPoint("GoldText", PointLayout(
 				(gRect("TurnLogButton").x() * 2) / 3, gPoint("TimeText").y()))
 		gSetPoint("EraText", PointLayout(
 				gRect("CityLeftPanel").xRight() - HSPACE(8), gPoint("GoldText").y()))
 		self.setCommerceAdjustRects()
 
-		gSetPoint("EndTurnText", PointLayout(0, # (Text label gets centered through alignment)
+		gSetPoint("EndTurnText", PointLayout(0, # (gets centered through text alignment)
 				max(
 				gRect("LowerLeftCornerPanel").y(),
 				gRect("LowerRightCornerPanel").y()) - VSPACE(25)))
@@ -1782,20 +1785,13 @@ class CvMainInterface:
 				ButtonStyles.BUTTON_STYLE_LABEL)
 		screen.hide("RawYieldsOwnedTiles6")
 # BUG - Raw Yields - end
-
 # BUG - BUG Option Button - Start
-		# <advc.092>
-		iBtnWidth = 28
-		iBtnY = iBtnWidth - 1 # </advc.092>
-		iBtnX = 27
-		iBtnX = 10
-
-#		sBUGOptionsScreenButton = ArtFileMgr.getInterfaceArtInfo("BUG_OPTIONS_SCREEN_BUTTON").getPath()
-#		screen.setImageButton("BUGOptionsScreenWidget", sBUGOptionsScreenButton, iBtnX + 30, iBtnY - 2, iBtnWidth, iBtnWidth, WidgetTypes.WIDGET_BUG_OPTION_SCREEN, -1, -1)
-		screen.setImageButton("BUGOptionsScreenWidget", "",
-				iBtnX + 30, iBtnY - 2, iBtnWidth, iBtnWidth,
-				WidgetTypes.WIDGET_BUG_OPTION_SCREEN, -1, -1)
-		screen.setStyle("BUGOptionsScreenWidget", "Button_HUDAdvisorCorporation_Style")
+		#self.setImageButton("BUGOptionsScreenWidget",
+		#		ArtFileMgr.getInterfaceArtInfo("BUG_OPTIONS_SCREEN_BUTTON").getPath(),
+		#		WidgetTypes.WIDGET_BUG_OPTION_SCREEN)
+		# <K-Mod>
+		self.setStyledButton("BUGOptionsScreenWidget", "Button_HUDAdvisorCorporation_Style",
+				WidgetTypes.WIDGET_BUG_OPTION_SCREEN) # </K-Mod>
 		screen.hide("BUGOptionsScreenWidget")
 # BUG - BUG Option Button - End
 
@@ -2484,9 +2480,7 @@ class CvMainInterface:
 			screen.hide("MainCityScrollMinus")
 			screen.hide("MainCityScrollPlus")
 # BUG - City Arrows - end
-# BUG - BUG Option Button - Start
-			screen.hide("BUGOptionsScreenWidget")
-# BUG - BUG Option Button - End
+			screen.hide("BUGOptionsScreenWidget") # BUG - BUG Option Button
 # BUG - field of view slider - start
 			screen.hide("FoVSliderText")
 			screen.hide("FoVSlider")
@@ -2517,9 +2511,7 @@ class CvMainInterface:
 			screen.hide("MainCityScrollMinus")
 			screen.hide("MainCityScrollPlus")
 # BUG - City Arrows - end
-# BUG - BUG Option Button - Start
-			screen.hide("BUGOptionsScreenWidget")
-# BUG - BUG Option Button - End
+			screen.hide("BUGOptionsScreenWidget") # BUG - BUG Option Button
 # BUG - field of view slider - start
 			screen.hide("FoVSliderText")
 			screen.hide("FoVSlider")
@@ -2571,9 +2563,7 @@ class CvMainInterface:
 			screen.moveToFront("MilitaryAdvisorButton")
 			screen.moveToFront("VictoryAdvisorButton")
 			screen.moveToFront("InfoAdvisorButton")
-# BUG - BUG Option Button - Start
-#			screen.moveToFront("BUGOptionsScreenWidget")
-# BUG - BUG Option Button - End
+#			screen.moveToFront("BUGOptionsScreenWidget") # BUG - BUG Option Button
 		elif (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_ADVANCED_START):
 			screen.hide("LowerLeftCornerPanel")
 			screen.hide("LowerLeftCornerBackgr")
@@ -2600,9 +2590,7 @@ class CvMainInterface:
 			screen.hide("MainCityScrollMinus")
 			screen.hide("MainCityScrollPlus")
 # BUG - City Arrows - end
-# BUG - BUG Option Button - Start
-			screen.hide("BUGOptionsScreenWidget")
-# BUG - BUG Option Button - End
+			screen.hide("BUGOptionsScreenWidget") # BUG - BUG Option Button
 		elif (CyEngine().isGlobeviewUp()):
 			screen.hide("LowerLeftCornerPanel")
 			screen.hide("LowerLeftCornerBackgr")
@@ -2650,9 +2638,7 @@ class CvMainInterface:
 			screen.moveToFront("MilitaryAdvisorButton")
 			screen.moveToFront("VictoryAdvisorButton")
 			screen.moveToFront("InfoAdvisorButton")
-# BUG - BUG Option Button - Start
-#			screen.moveToFront("BUGOptionsScreenWidget")
-# BUG - BUG Option Button - End
+#			screen.moveToFront("BUGOptionsScreenWidget") # BUG - BUG Option Button
 		else:
 			screen.show("LowerLeftCornerPanel")
 			#screen.show("LowerLeftCornerBackgr")
@@ -2708,9 +2694,7 @@ class CvMainInterface:
 			screen.moveToFront("MilitaryAdvisorButton")
 			screen.moveToFront("VictoryAdvisorButton")
 			screen.moveToFront("InfoAdvisorButton")
-# BUG - BUG Option Button - Start
-#			screen.moveToFront("BUGOptionsScreenWidget")
-# BUG - BUG Option Button - End
+#			screen.moveToFront("BUGOptionsScreenWidget") # BUG - BUG Option Button
 		screen.updateMinimapVisibility()
 		return 0
 
