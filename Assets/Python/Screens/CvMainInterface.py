@@ -870,6 +870,7 @@ class CvMainInterface:
 				RectLayout.CENTER, self.stackBarDefaultTextOffset())
 		gOffSetPoint("CultureText", "CultureBar",
 				RectLayout.CENTER, self.stackBarDefaultTextOffset())
+		self.setBuildingListRects()
 
 		iPlotListUnitBtnSz = self.plotListUnitButtonSize()
 		self.m_iNumPlotListButtonsPerRow = (
@@ -1138,6 +1139,17 @@ class CvMainInterface:
 		gSetRectangle("RawYieldsCityTiles5", lPlotSelBtns.next())
 		gSetRectangle("RawYieldsOwnedTiles6", lPlotSelBtns.next())
 # BUG - Raw Yields - end
+
+	def setBuildingListRects(self):
+		gSetRect("BuildingListBackground", "CityLeftPanelContents",
+				0, gRect("TradeRouteTable").yBottom() - gRect("CityLeftPanelContents").y() + VSPACE(4),
+				RectLayout.MAX, self.cityScreenHeadingBackgrHeight())
+		gOffSetPoint("BuildingListLabel", "BuildingListBackground",
+				RectLayout.CENTER, self.cityScreenHeadingOffset())
+		gSetRect("BuildingListTable", "CityLeftPanelContents",
+				RectLayout.CENTER,
+				1 + gRect("BuildingListBackground").yBottom() - gRect("CityLeftPanelContents").y(),
+				-1, gRect("CultureBars").y() - gRect("BuildingListBackground").yBottom() - 1 - VSPACE(4))
 
 	def setCityTabRects(self):
 		iButtons = 3
@@ -1798,17 +1810,13 @@ class CvMainInterface:
 		screen.hide("BUGOptionsScreenWidget")
 # BUG - BUG Option Button - End
 
-		screen.addPanel("BuildingListBackground", u"", u"",
-				True, False, 10, 287, 238, 30,
-				PanelStyles.PANEL_STYLE_STANDARD)
+		self.addPanel("BuildingListBackground")
 		screen.setStyle("BuildingListBackground", "Panel_City_Header_Style")
 		screen.hide("BuildingListBackground")
 
-		screen.setLabel("BuildingListLabel", "Background",
+		self.setLabel("BuildingListLabel", "Background",
 				localText.getText("TXT_KEY_CONCEPT_BUILDINGS", ()),
-				CvUtil.FONT_CENTER_JUSTIFY,
-				129, 295, -0.1, FontTypes.SMALL_FONT,
-				WidgetTypes.WIDGET_GENERAL, -1, -1)
+				CvUtil.FONT_CENTER_JUSTIFY, FontTypes.SMALL_FONT, -0.1)
 		screen.hide("BuildingListLabel")
 
 		# *********************************************************************************
@@ -4909,13 +4917,22 @@ class CvMainInterface:
 						WidgetTypes.WIDGET_COMMERCE_MOD_HELP, eCommerce)
 				screen.show(szName)
 				iCount += 1
-		screen.addTableControlGFC("BuildingListTable", 3,
-				10, 317, 238, yResolution - 541,
-				False, False,
-				# Tbd.: Scale up if we also scale up the building names (font size)
-				24, 24, # advc.097: Building button size (as in BAT mod)
-				TableStyles.TABLE_STYLE_STANDARD)
-		screen.setStyle("BuildingListTable", "Table_City_Style")
+		# <advc.092>
+		# Slightly larger font actually hardly affects the amount of
+		# displayable info and imo doesn't make the table look too crammed either.
+		# This means that the city screen uses size 1 only for the
+		# BUG yield breakdowns ("Raw Yields").
+		if self.bScaleHUD and gRect("Top").height() > 900:
+			self.iBldgFontSize = 2
+			self.iTRFontSize = 2
+			# Table rows don't or barely get higher, so the button size
+			# shouldn't be increased here.
+			iBldgBtnSize = None
+		else: # </advc.092>
+			self.iBldgFontSize = 1
+			self.iTRFontSize = 1
+			iBldgBtnSize = None
+		self.addTable("BuildingListTable", 3, "Table_City_Style", iBldgBtnSize)
 # BUG - Raw Yields - start
 		bShowRawYields = g_bYieldView and CityScreenOpt.isShowRawYields()
 		if bShowRawYields:
@@ -4928,16 +4945,16 @@ class CvMainInterface:
 		iAvailW = gRect("TradeRouteTable").width() - 2
 		# advc.092: I think the width of the 3rd (empty) column should be
 		# consistent between TR and building table. Was 10 in BtS.
-		iColW2 = 4
+		iColW2 = 2
 		if bShowRawYields:
 			# advc.002b: Increased the (non-scaled) width of the first column
 			# by 15 and decreased the other three by ca. 5 each.
 			screen.setTableColumnHeader("TradeRouteTable", 0, u"",
-					(125 * iAvailW) / 236)
+					(126 * iAvailW) / 236)
 			screen.setTableColumnHeader("TradeRouteTable", 1, u"",
 					(56 * iAvailW) / 236)
 			screen.setTableColumnHeader("TradeRouteTable", 2, u"",
-					(51 * iAvailW) / 236)
+					(52 * iAvailW) / 236)
 			screen.setTableColumnHeader("TradeRouteTable", 3, u"",
 					(iColW2 * iAvailW) / 236)
 			screen.setTableColumnRightJustify("TradeRouteTable", 1)
@@ -4947,7 +4964,7 @@ class CvMainInterface:
 			screen.setTableColumnHeader("TradeRouteTable", 0, u"",
 					(132 * iAvailW) / 236)
 			screen.setTableColumnHeader("TradeRouteTable", 1, u"",
-					(100 * iAvailW) / 236)
+					(102 * iAvailW) / 236)
 # K-Mod: Trade culture end
 			screen.setTableColumnHeader("TradeRouteTable", 2, u"",
 					(iColW2 * iAvailW) / 236)
@@ -4957,12 +4974,12 @@ class CvMainInterface:
 		if CityScreenOpt.isBuildings_IconOnly():
 			iColW0 = 40
 		elif CityScreenOpt.isBuildings_IconAndText():
-			iColW0 = 130
+			iColW0 = 132
 		else:
 			iColW0 = 105 # 108 in BtS
 		iColW1 = 236 - iColW0 - iColW2
 		# </advc.097>
-		iAvailW = 236 # advc.092: tbd.
+		iAvailW = gRect("BuildingListTable").width() - 2
 		screen.setTableColumnHeader("BuildingListTable", 0, u"",
 				(iColW0 * iAvailW) / 236)
 		screen.setTableColumnHeader("BuildingListTable", 1, u"",
@@ -5095,7 +5112,7 @@ class CvMainInterface:
 				# <advc.097> Gray out names of obsolete buildings
 				else:
 					szLeftBuffer = u"<color=%d,%d,%d,%d>%s</color>" %(
-							135, 135, 135, 255, szLeftBuffer)
+							120, 120, 120, 255, szLeftBuffer)
 				# </advc.097>
 				for iCommerce in range(CommerceTypes.NUM_COMMERCE_TYPES):
 					iChange = pHeadSelectedCity.getBuildingCommerceByBuilding(iCommerce, iBuilding)
@@ -5122,8 +5139,7 @@ class CvMainInterface:
 				else:
 					szIcon = gc.getBuildingInfo(iBuilding).getButton() # from BAT mod
 				# </advc.097>
-				iFontSize = 1 # advc.092
-				szFontStart = "<font="+ str(iFontSize) + ">" # advc.092
+				szFontStart = "<font="+ str(self.iBldgFontSize) + ">" # advc.092
 				screen.setTableText("BuildingListTable", 0, iNumBuildings,
 						szFontStart + szLeftBuffer + "</font>", szIcon,
 						WidgetTypes.WIDGET_HELP_BUILDING, iBuilding, -1,
@@ -5191,14 +5207,15 @@ class CvMainInterface:
 							gc.getCommerceInfo(CommerceTypes.COMMERCE_CULTURE).getChar())
 					szRightBuffer = szRightBuffer + szTradeCultureBuffer
 # K-Mod: Trade culture end
-				if (not bShowRawYields):
+				if not bShowRawYields:
 					screen.appendTableRow("TradeRouteTable")
+					szFontStart = "<font=" + str(self.iTRFontSize) + ">" # advc.092
 					screen.setTableText("TradeRouteTable", 0, iNumTradeRoutes,
-							"<font=1>" + szLeftBuffer + "</font>", "",
+							szFontStart + szLeftBuffer + "</font>", "",
 							WidgetTypes.WIDGET_HELP_TRADE_ROUTE_CITY, i, -1,
 							CvUtil.FONT_LEFT_JUSTIFY)
 					screen.setTableText("TradeRouteTable", 1, iNumTradeRoutes,
-							"<font=1>" + szRightBuffer + "</font>", "",
+							szFontStart + szRightBuffer + "</font>", "",
 							WidgetTypes.WIDGET_HELP_TRADE_ROUTE_CITY, i, -1,
 							CvUtil.FONT_RIGHT_JUSTIFY)
 # BUG - Raw Yields - end
@@ -5219,7 +5236,7 @@ class CvMainInterface:
 		if self.bCityBonusButtons or gRect("Top").height() > 900:
 			iFontSize = 3
 		else:
-			iFontSize = 1 # (2 is mostly a little thicker - doesn't help)
+			iFontSize = 1 # (2 doesn't really increase the size of icons)
 		szFontStart = u"<font=" + str(iFontSize) + u">"
 		# </advc.092>
 		iLeftCount = 0
