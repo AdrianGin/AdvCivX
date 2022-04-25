@@ -339,11 +339,14 @@ class CvMainInterface:
 				lRect.x(), lRect.y(), lRect.width(), lRect.height(),
 				iDefault, iMin, iMax,
 				eWidgetType, iData1, iData2, bVertical)
-	def addTable(self, szName, iCols, szStyle):
+	def addTable(self, szName, iCols, szStyle, iBtnSize = None):
+		if iBtnSize is None:
+			# Seems to work well for rows at font size 1 (BAT uses only 24)
+			iBtnSize = 26
 		lRect = gRect(szName)
 		self.screen.addTableControlGFC(szName, iCols,
 				lRect.x(), lRect.y(), lRect.width(), lRect.height(),
-				False, False, 32, 32,
+				False, False, iBtnSize, iBtnSize,
 				TableStyles.TABLE_STYLE_STANDARD)
 		self.screen.setStyle(szName, szStyle)
 	def setLabel(self, szName, szAttachTo, szText, uiFlags, eFont, fZ = 0,
@@ -4908,7 +4911,9 @@ class CvMainInterface:
 				iCount += 1
 		screen.addTableControlGFC("BuildingListTable", 3,
 				10, 317, 238, yResolution - 541,
-				False, False, 32, 32,
+				False, False,
+				# Tbd.: Scale up if we also scale up the building names (font size)
+				24, 24, # advc.097: Building button size (as in BAT mod)
 				TableStyles.TABLE_STYLE_STANDARD)
 		screen.setStyle("BuildingListTable", "Table_City_Style")
 # BUG - Raw Yields - start
@@ -4921,33 +4926,49 @@ class CvMainInterface:
 		# advc.092: The BUG and BtS column widths don't quite add up to the
 		# table's width. Don't know if that's as it should be.
 		iAvailW = gRect("TradeRouteTable").width() - 2
+		# advc.092: I think the width of the 3rd (empty) column should be
+		# consistent between TR and building table. Was 10 in BtS.
+		iColW2 = 4
 		if bShowRawYields:
 			# advc.002b: Increased the (non-scaled) width of the first column
-			# by 15 and decreased the other three by 5 each.
+			# by 15 and decreased the other three by ca. 5 each.
 			screen.setTableColumnHeader("TradeRouteTable", 0, u"",
 					(125 * iAvailW) / 236)
 			screen.setTableColumnHeader("TradeRouteTable", 1, u"",
-					(55 * iAvailW) / 236)
+					(56 * iAvailW) / 236)
 			screen.setTableColumnHeader("TradeRouteTable", 2, u"",
-					(50 * iAvailW) / 236)
+					(51 * iAvailW) / 236)
 			screen.setTableColumnHeader("TradeRouteTable", 3, u"",
-					(6 * iAvailW) / 236)
+					(iColW2 * iAvailW) / 236)
 			screen.setTableColumnRightJustify("TradeRouteTable", 1)
 			screen.setTableColumnRightJustify("TradeRouteTable", 2)
 		else:
 # K-Mod: Trade culture
 			screen.setTableColumnHeader("TradeRouteTable", 0, u"",
-					(128 * iAvailW) / 236)
+					(132 * iAvailW) / 236)
 			screen.setTableColumnHeader("TradeRouteTable", 1, u"",
-					(98 * iAvailW) / 236)
+					(100 * iAvailW) / 236)
 # K-Mod: Trade culture end
 			screen.setTableColumnHeader("TradeRouteTable", 2, u"",
-					(10 * iAvailW) / 236)
+					(iColW2 * iAvailW) / 236)
 			screen.setTableColumnRightJustify("TradeRouteTable", 1)
 # BUG - Raw Yields - end
-		screen.setTableColumnHeader("BuildingListTable", 0, u"", 108)
-		screen.setTableColumnHeader("BuildingListTable", 1, u"", 118)
-		screen.setTableColumnHeader("BuildingListTable", 2, u"", 10)
+		# <advc.097>
+		if CityScreenOpt.isBuildings_IconOnly():
+			iColW0 = 40
+		elif CityScreenOpt.isBuildings_IconAndText():
+			iColW0 = 130
+		else:
+			iColW0 = 105 # 108 in BtS
+		iColW1 = 236 - iColW0 - iColW2
+		# </advc.097>
+		iAvailW = 236 # advc.092: tbd.
+		screen.setTableColumnHeader("BuildingListTable", 0, u"",
+				(iColW0 * iAvailW) / 236)
+		screen.setTableColumnHeader("BuildingListTable", 1, u"",
+				(iColW1 * iAvailW) / 236)
+		screen.setTableColumnHeader("BuildingListTable", 2, u"",
+				(iColW2 * iAvailW) / 236)
 		screen.setTableColumnRightJustify("BuildingListTable", 1)
 
 		screen.show("BuildingListBackground")
@@ -4989,92 +5010,129 @@ class CvMainInterface:
 # BUG - Raw Yields - start
 		self.yields = RawYields.Tracker()
 # BUG - Raw Yields - end
-		for i in range(gc.getNumBuildingInfos()):
-			if (pHeadSelectedCity.getNumBuilding(i) > 0):
-				for k in range(pHeadSelectedCity.getNumBuilding(i)):
-					szLeftBuffer = gc.getBuildingInfo(i).getDescription()
-					szRightBuffer = u""
-					bFirst = True
-					if (pHeadSelectedCity.getNumActiveBuilding(i) > 0):
+		# <advc.097> Sort the building list?
+		aCityBldgs = []
+		for iBuilding in range(gc.getNumBuildingInfos()):
+			if pHeadSelectedCity.getNumBuilding(iBuilding) > 0:
+				aCityBldgs.append(iBuilding)
+		# I don't know ... This will result in a different order in every city.
+		# Something chronological based on tech reqs (but also taking special care
+		# of wonders and free buildings) should work better than the XML ordering
+		# - tbd.?
+		'''
+		aCityBldgs = sorted(aCityBldgs, key=lambda iBuilding:
+				# AdvCiv returns -32768 for free buildings. Let's just treat
+				# all stange year numbers as 10000, which will move them
+				# to the end of the list. The and/or is a hack for a
+				# conditional expression (properly added in Python 2.5).
+				(abs(pHeadSelectedCity.getBuildingOriginalTime(iBuilding)) >= 10000 and 10000
+				or pHeadSelectedCity.getBuildingOriginalTime(iBuilding))
+				+ iBuilding) # id as tiebreaker
+		'''
+		# </advc.097>
+		for iBuilding in aCityBldgs:
+			for k in range(pHeadSelectedCity.getNumBuilding(iBuilding)):
+				# <advc.097>
+				if CityScreenOpt.isBuildings_IconOnly():
+					szLeftBuffer = ""
+				else:
+					szLeftBuffer = gc.getBuildingInfo(iBuilding).getDescription()
+				# </advc.097>
+				szRightBuffer = u""
+				bFirst = True
+				if pHeadSelectedCity.getNumActiveBuilding(iBuilding) > 0:
 					# K-Mod. I've just swapped the order of health / happiness,
 					# to match the DLL hover-text.
-						iHappiness = pHeadSelectedCity.getBuildingHappiness(i)
-						if (iHappiness != 0):
-							if (bFirst == False):
-								szRightBuffer = szRightBuffer + ", "
-							else:
-								bFirst = False
-							if (iHappiness > 0):
-								szTempBuffer = u"+%d%c" %(iHappiness,
-										CyGame().getSymbolID(FontSymbols.HAPPY_CHAR))
-								szRightBuffer = szRightBuffer + szTempBuffer
-							else:
-								szTempBuffer = u"+%d%c" %(-iHappiness,
-										CyGame().getSymbolID(FontSymbols.UNHAPPY_CHAR))
-								szRightBuffer = szRightBuffer + szTempBuffer
-						iHealth = pHeadSelectedCity.getBuildingHealth(i)
-						if (iHealth != 0):
-							if (bFirst == False):
-								szRightBuffer = szRightBuffer + ", "
-							else:
-								bFirst = False
-							if (iHealth > 0):
-								szTempBuffer = u"+%d%c" %(iHealth,
-										CyGame().getSymbolID(FontSymbols.HEALTHY_CHAR))
-								szRightBuffer = szRightBuffer + szTempBuffer
-							else:
-								szTempBuffer = u"+%d%c" %(-iHealth,
-										CyGame().getSymbolID(FontSymbols.UNHEALTHY_CHAR))
-								szRightBuffer = szRightBuffer + szTempBuffer
+					iHappiness = pHeadSelectedCity.getBuildingHappiness(iBuilding)
+					if iHappiness != 0:
+						if not bFirst:
+							szRightBuffer = szRightBuffer + ", "
+						else:
+							bFirst = False
+						if iHappiness > 0:
+							szTempBuffer = u"+%d%c" %(iHappiness,
+									CyGame().getSymbolID(FontSymbols.HAPPY_CHAR))
+							szRightBuffer = szRightBuffer + szTempBuffer
+						else:
+							szTempBuffer = u"+%d%c" %(-iHappiness,
+									CyGame().getSymbolID(FontSymbols.UNHAPPY_CHAR))
+							szRightBuffer = szRightBuffer + szTempBuffer
+					iHealth = pHeadSelectedCity.getBuildingHealth(iBuilding)
+					if iHealth != 0:
+						if not bFirst:
+							szRightBuffer = szRightBuffer + ", "
+						else:
+							bFirst = False
+						if iHealth > 0:
+							szTempBuffer = u"+%d%c" %(iHealth,
+									CyGame().getSymbolID(FontSymbols.HEALTHY_CHAR))
+							szRightBuffer = szRightBuffer + szTempBuffer
+						else:
+							szTempBuffer = u"+%d%c" %(-iHealth,
+									CyGame().getSymbolID(FontSymbols.UNHEALTHY_CHAR))
+							szRightBuffer = szRightBuffer + szTempBuffer
 					# K-Mod end
-						for j in range(YieldTypes.NUM_YIELD_TYPES):
-							iYield = gc.getBuildingInfo(i).getYieldChange(j)
-							iYield += (pHeadSelectedCity.getNumBuilding(i) *
-									pHeadSelectedCity.getBuildingYieldChange(
-									gc.getBuildingInfo(i).getBuildingClassType(), j))
-							if (iYield != 0):
-								if (bFirst == False):
-									szRightBuffer = szRightBuffer + ", "
-								else:
-									bFirst = False
-								if (iYield > 0):
-									szTempBuffer = u"%s%d%c" %("+", iYield,
-											gc.getYieldInfo(j).getChar())
-									szRightBuffer = szRightBuffer + szTempBuffer
-								else:
-									szTempBuffer = u"%s%d%c" %("", iYield,
-											gc.getYieldInfo(j).getChar())
-									szRightBuffer = szRightBuffer + szTempBuffer
-# BUG - Raw Yields - start
-								self.yields.addBuilding(j, iYield)
-# BUG - Raw Yields - end
-					for j in range(CommerceTypes.NUM_COMMERCE_TYPES):
-						iCommerce = pHeadSelectedCity.getBuildingCommerceByBuilding(j, i)
-						iCommerce /= pHeadSelectedCity.getNumBuilding(i)
-						if (iCommerce != 0):
-							if (bFirst == False):
-								szRightBuffer = szRightBuffer + ", "
-							else:
-								bFirst = False
-							if (iCommerce > 0):
-								szTempBuffer = u"%s%d%c" %("+", iCommerce,
-										gc.getCommerceInfo(j).getChar())
-								szRightBuffer = szRightBuffer + szTempBuffer
-							else:
-								szTempBuffer = u"%s%d%c" %("", iCommerce,
-										gc.getCommerceInfo(j).getChar())
-								szRightBuffer = szRightBuffer + szTempBuffer
-					szBuffer = szLeftBuffer + "  " + szRightBuffer
-					screen.appendTableRow("BuildingListTable")
-					screen.setTableText("BuildingListTable", 0, iNumBuildings,
-							"<font=1>" + szLeftBuffer + "</font>", "",
-							WidgetTypes.WIDGET_HELP_BUILDING, i, -1,
-							CvUtil.FONT_LEFT_JUSTIFY)
-					screen.setTableText("BuildingListTable", 1, iNumBuildings,
-							"<font=1>" + szRightBuffer + "</font>", "",
-							WidgetTypes.WIDGET_HELP_BUILDING, i, -1,
-							CvUtil.FONT_RIGHT_JUSTIFY)
-					iNumBuildings = iNumBuildings + 1
+					for iYield in range(YieldTypes.NUM_YIELD_TYPES):
+						iChange = gc.getBuildingInfo(iBuilding).getYieldChange(iYield)
+						iChange += (pHeadSelectedCity.getNumBuilding(iBuilding) *
+								pHeadSelectedCity.getBuildingYieldChange(
+								gc.getBuildingInfo(iBuilding).getBuildingClassType(), iYield))
+						if iChange == 0:
+							continue
+						if (bFirst == False):
+							szRightBuffer = szRightBuffer + ", "
+						else:
+							bFirst = False
+						if iChange > 0:
+							szTempBuffer = u"%s%d%c" %("+", iChange,
+									gc.getYieldInfo(iYield).getChar())
+							szRightBuffer = szRightBuffer + szTempBuffer
+						else:
+							szTempBuffer = u"%s%d%c" %("", iChange,
+									gc.getYieldInfo(iYield).getChar())
+							szRightBuffer = szRightBuffer + szTempBuffer
+						self.yields.addBuilding(iYield, iChange) # BUG - Raw Yields
+				# <advc.097> Gray out names of obsolete buildings
+				else:
+					szLeftBuffer = u"<color=%d,%d,%d,%d>%s</color>" %(
+							135, 135, 135, 255, szLeftBuffer)
+				# </advc.097>
+				for iCommerce in range(CommerceTypes.NUM_COMMERCE_TYPES):
+					iChange = pHeadSelectedCity.getBuildingCommerceByBuilding(iCommerce, iBuilding)
+					iChange /= pHeadSelectedCity.getNumBuilding(iBuilding)
+					if iChange == 0:
+						continue
+					if not bFirst:
+						szRightBuffer = szRightBuffer + ", "
+					else:
+						bFirst = False
+					if iChange > 0:
+						szTempBuffer = u"%s%d%c" %("+", iChange,
+								gc.getCommerceInfo(iCommerce).getChar())
+						szRightBuffer = szRightBuffer + szTempBuffer
+					else:
+						szTempBuffer = u"%s%d%c" %("", iChange,
+								gc.getCommerceInfo(iCommerce).getChar())
+						szRightBuffer = szRightBuffer + szTempBuffer
+				#szBuffer = szLeftBuffer + "  " + szRightBuffer # advc: unused
+				screen.appendTableRow("BuildingListTable")
+				# <advc.097>
+				if CityScreenOpt.isBuildings_TextOnly():
+					szIcon = ""
+				else:
+					szIcon = gc.getBuildingInfo(iBuilding).getButton() # from BAT mod
+				# </advc.097>
+				iFontSize = 1 # advc.092
+				szFontStart = "<font="+ str(iFontSize) + ">" # advc.092
+				screen.setTableText("BuildingListTable", 0, iNumBuildings,
+						szFontStart + szLeftBuffer + "</font>", szIcon,
+						WidgetTypes.WIDGET_HELP_BUILDING, iBuilding, -1,
+						CvUtil.FONT_LEFT_JUSTIFY)
+				screen.setTableText("BuildingListTable", 1, iNumBuildings,
+						szFontStart + szRightBuffer + "</font>", "",
+						WidgetTypes.WIDGET_HELP_BUILDING, iBuilding, -1,
+						CvUtil.FONT_RIGHT_JUSTIFY)
+				iNumBuildings = iNumBuildings + 1
 		# advc: unused
 		#if (iNumBuildings > g_iNumBuildings):
 		#	g_iNumBuildings = iNumBuildings
@@ -5402,7 +5460,9 @@ class CvMainInterface:
 					screen.show(szName)
 # BUG - Limit/Extra Religions - end
 # BUG - Limit/Extra Corporations - start
-		if CityScreenOpt.isShowOnlyPresentCorporations():
+		#if CityScreenOpt.isShowOnlyPresentCorporations():
+		# advc.004: Now controlled by a single option
+		if CityScreenOpt.isShowOnlyPresentReligions():
 			aCorporations = []
 			for iCorp in range(gc.getNumCorporationInfos()):
 				if not pHeadSelectedCity.isHasCorporation(iCorp):
@@ -5659,10 +5719,8 @@ class CvMainInterface:
 			self.addDDS("CityBonusCircle" + szIndex, "WHITE_CIRCLE_40",
 					WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus)
 			szAmount = (u"<font=2>"
-					+ str(iAmount)
-					# Foreign Advisor uses yellow - idk ...
-					#+ localText.changeTextColor(str(iAmount),
-					#gc.getInfoTypeForString("COLOR_YELLOW"))
+					+ localText.changeTextColor(str(iAmount),
+					gc.getInfoTypeForString("COLOR_YELLOW"))
 					+ "</font>")
 			self.setLabel("CityBonusAmount" + szIndex, "BonusBack0", szAmount,
 					CvUtil.FONT_CENTER_JUSTIFY, FontTypes.SMALL_FONT, -0.1,

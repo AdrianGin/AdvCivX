@@ -203,33 +203,47 @@
 		<Italian>Solo Religioni Presenti</Italian>
 		<Spanish>Sólo Religiones Presentes</Spanish>
 	</TEXT>
-	
-	<!-- advc.004: Support for more than 7 religions is interesting to know for
-		 modders, but shouldn't be the players' concern. -->
+	<!-- advc.004: Now also covers corporations.
+		 (Support for more than 7 religions is interesting to know for modders,
+		 but shouldn't be the players' concern.) -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__ONLYPRESENTRELIGIONS_HOVER</Tag>
-		<English>When checked, the city screen displays only icons of religions that are practiced in the city.</English>
-		<German>Lässt den Stadtbildschirm (rechts oben) nur Symbole jener Religionen anzeigen, die in der Stadt praktiziert werden.</German>
+		<English>When checked, the city screen displays (on the upper right) only icons of religions that are practiced in the city - and of corporations that have expanded into the city.</English>
+		<German>Lässt den Stadtbildschirm (rechts oben) nur Symbole jener Religionen und Kapitalgesellschaften anzeigen, die in der Stadt verbreitet sind.</German>
 		<Italian>Quando è selezionato, mostra solo le religioni presenti nella città e consente di visualizzare oltre sette religioni.</Italian>
 		<Spanish>Muestra solamente las religiones que estén presentes en la ciudad, y permite más de siete religiones.</Spanish>
 	</TEXT>
-
-	<!-- advc.004: German shortened -->
-	<TEXT>
+	<!-- advc.004: Obsolete, see above. -->
+	<!--TEXT>
 		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__ONLYPRESENTCORPORATIONS_TEXT</Tag>
 		<English>Only Present Corporations</English>
 		<German>Nur vorhandene KGs</German>
 		<Italian>Solo Corporazioni Presenti</Italian>
 		<Spanish>Sólo Corporaciones Presentes</Spanish>
 	</TEXT>
-	
-	<!-- advc.004: See previous comment -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__ONLYPRESENTCORPORATIONS_HOVER</Tag>
 		<English>When checked, the city screen displays only icons of corporations that are present in the city.</English>
 		<German>Lässt den Stadtbildschirm (rechts oben) nur Symbole jener Kapitalgesellschaften anzeigen, die in der Stadt vertreten sind.</German>
 		<Italian>Quando è selezionato, mostra solo le religioni presenti nella città e consente di visualizzare oltre sette corporazioni.</Italian>
 		<Spanish>Si se activa, muestra sólo las corporaciones que están presentes en la ciudad y permite más de siete corporaciones.</Spanish>
+	</TEXT-->
+
+	<!-- advc.097: New option -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__BUILDINGS_TEXT</Tag>
+		<English>Buildings</English>
+		<German>Gebäude</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__BUILDINGS_HOVER</Tag>
+		<English>Determines how city buildings are listed. Depending on your resolution and whether the [COLOR_HIGHLIGHT_TEXT]Scale Up HUD[COLOR_REVERT] option (General tab) is enabled, you may find that there isn't enough room for building names [BOLD]and[\BOLD] icons (and effects).[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Icon + Text[COLOR_REVERT] - Building icons and names are shown.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Text Only[COLOR_REVERT] - Only building names are shown, as in BtS.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Icon Only[COLOR_REVERT] - Only building icons are shown.</English>
+		<German>Bestimmt, wie der Stadtbildschirm vorhandene Gebäude auflistet. Beim Spielen auf geringer Auflösung oder ohne die Option [COLOR_HIGHLIGHT_TEXT]Anzeige vergrößern[COLOR_REVERT] (Reiter "Allgemein") ist u.U. nicht genug Platz für Namen [BOLD]und[\BOLD] Symbole (und Effekte).[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Symbol &amp; Text[COLOR_REVERT] - Sowohl Gebäude-Symbole als auch -Namen werden angezeigt.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]nur Text[COLOR_REVERT] - Nur Gebäude-Namen werden angezeigt, wie in BtS.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]nur Symbol[COLOR_REVERT] - Nur Gebäude-Symbole werden angezeigt.</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__BUILDINGS_LIST</Tag>
+		<English>Icon + Text|Text Only|Icon Only</English>
+		<German>Symbol + Text|nur Text|nur Symbol</German>
 	</TEXT>
 
 	<!-- advc.004: German was too long -->
