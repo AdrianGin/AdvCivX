@@ -876,6 +876,7 @@ class CvMainInterface:
 		self.m_iNumPlotListButtonsPerRow = (
 				(gRect("BottomButtonMaxSpace").width() - 2 * iPlotListUnitBtnSz) /
 				iPlotListUnitBtnSz)
+		self.setPLEInfoPaneRects()
 		# advc.092: Moved down so that PLE can access the above
 		self.PLE.PLE_CalcConstants(screen) # BUG - PLE
 		# (BUG - unit plot draw method - advc.092: Moved into interfaceScreen method)
@@ -1325,6 +1326,48 @@ class CvMainInterface:
 					gOffSetPoint("CityBonusEffect" + szIndex, lRow,
 							gRect("BonusPane" + str(i)).width() - HSPACE(4, 4),
 							iBtnSize / 4)
+
+	def setPLEInfoPaneRects(self):
+		# Tbd. (based on the fragments copied from PLE.py)
+		'''
+		# <advc.002b> There are functions for these; I guess we should use them.
+		self.CFG_INFOPANE_PIX_PER_LINE_1 			= PleOpt.getInfoPaneStandardLineHeight()
+		self.CFG_INFOPANE_PIX_PER_LINE_2 			= PleOpt.getInfoPaneBulletedLineHeight()
+		# </advc.002b>
+		self.CFG_INFOPANE_DX 					    = 290
+		# <advc.092> Had been set via PleOpt. I don't think these should be configured
+		# by the user. Want to be able to adjust it to the screen size.
+		self.CFG_INFOPANE_X					= 5
+		self.CFG_INFOPANE_Y		 			= self.yResolution - 160 #PleOpt.getInfoPaneY()
+		# </advc.092>
+		self.CFG_INFOPANE_BUTTON_SIZE		= self.CFG_INFOPANE_PIX_PER_LINE_1 - 2
+		self.CFG_INFOPANE_BUTTON_PER_LINE	= self.CFG_INFOPANE_DX / self.CFG_INFOPANE_BUTTON_SIZE
+		self.CFG_INFOPANE_Y2				= self.CFG_INFOPANE_Y + 105
+		if ( CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW ):
+			y = self.CFG_INFOPANE_Y
+		else:
+			y = self.CFG_INFOPANE_Y2
+		dx = 0
+		if ( CyInterface().isCityScreenUp()):
+			dx = 260
+		screen.addPanel( self.UNIT_INFO_PANE, u"", u"", True, True, \
+						PleOpt.getInfoPaneX() + dx, y - dy, self.CFG_INFOPANE_DX, dy, \
+						PanelStyles.PANEL_STYLE_HUD_HELP )
+		# create shadow text
+		szTextBlack = localText.changeTextColor(mt.removeColor(szText), gc.getInfoTypeForString("COLOR_BLACK"))
+		# display shadow text
+		screen.addMultilineText( self.UNIT_INFO_TEXT_SHADOW, szTextBlack, \
+								PleOpt.getInfoPaneX() + dx + 5, y - dy + 5, \
+								self.CFG_INFOPANE_DX - 3, dy - 3, \
+								WidgetTypes.WIDGET_GENERAL, -1, -1, \
+								CvUtil.FONT_LEFT_JUSTIFY)
+		# display text
+		screen.addMultilineText( self.UNIT_INFO_TEXT, szText, \
+								PleOpt.getInfoPaneX() + dx + 4, y - dy + 4, \
+								self.CFG_INFOPANE_DX - 3, dy - 3, \
+								WidgetTypes.WIDGET_GENERAL, -1, -1, \
+								CvUtil.FONT_LEFT_JUSTIFY)
+		'''
 
 	def interfaceScreen (self):
 		"""
@@ -4536,7 +4579,7 @@ class CvMainInterface:
 				screen.show("CityScrollMinus")
 				screen.show("CityScrollPlus")
 
-		screen.setHelpTextArea(390, FontTypes.SMALL_FONT,
+		screen.setHelpTextArea(HLEN(390), FontTypes.SMALL_FONT,
 				0, 0, -2.2, True,
 				ArtFileMgr.getInterfaceArtInfo("POPUPS_BACKGROUND_TRANSPARENT").getPath(),
 				True, True,

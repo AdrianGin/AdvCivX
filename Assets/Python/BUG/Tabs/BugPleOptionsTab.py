@@ -81,7 +81,8 @@ class BugPleOptionsTab(BugOptionsTab.BugOptionsTab):
 		self.addSpacer(screen, right, "PLE_Right_Top")
 		
 		self.addLabel(screen, right, "PLE_Unit_Info_Tooltip")
-		#self.addCheckbox(screen, right, "PLE__Info_Pane")  # EF: Can't get it to work
+		# EF: Can't get it to work  (advc, note: Seems to be enabled anyway ...)
+		#self.addCheckbox(screen, right, "PLE__Info_Pane")
 		#self.addTextEdit(screen, right, right, "PLE__Info_Pane_X")
 		#self.addTextEdit(screen, right, right, "PLE__Info_Pane_Y")
 		
@@ -92,7 +93,10 @@ class BugPleOptionsTab(BugOptionsTab.BugOptionsTab):
 		rightL, rightR = self.addTwoColumnLayout(screen, right, "PLE_Specialties_Column")
 		self.addColorDropdown(screen, rightL, rightR, "PLE__Unit_Type_Specialties_Color")
 		self.addColorDropdown(screen, rightL, rightR, "PLE__Promotion_Specialties_Color")
-		# advc.069: Moved under the promotions heading
+		# advc.069: Moved under the promotions heading.
+		# advc.002b (note): Not sure if this really needs to be on the menu;
+		# perhaps the default I've set to match the theme's font sizes is fine
+		# for everyone.
 		self.addIntDropdown(screen, right, right, "PLE__Info_Pane_Promo_Icon_Offset_Y")
 		
 		# advc.069: Moved down; label indented.
