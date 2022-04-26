@@ -6,7 +6,7 @@ import ScreenInput
 import CvScreenEnums
 import string
 import CvScreensInterface
-from CvMainInterface import gRect # advc.002b
+from LayoutDict import gRect # advc.002b
 
 # globals
 gc = CyGlobalContext()

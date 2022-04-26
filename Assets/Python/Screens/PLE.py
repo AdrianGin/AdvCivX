@@ -25,8 +25,10 @@ localText = CyTranslator()
 #####################
 #iMultiListXL = 318
 #iMultiListXR = 332
-# advc.092: Don't repeat those constants here, get them from CvMainInterface instead.
+# <advc.092> Don't repeat those constants here (nor others throughout this module),
+# get them from CvMainInterface and the global layout data instead.
 import CvScreensInterface
+from LayoutDict import * # </advc.092>
 
 class PLE:
 	def __init__(self):
@@ -161,9 +163,9 @@ class PLE:
 		self.iMousePosTol			= 30
 		self.iInfoPaneCnt			= 0
 		self.iLastInfoPaneCnt		= -1
-
-		self.xResolution = 0
-		self.yResolution = 0
+		# advc.092: no longer used
+		#self.xResolution = 0
+		#self.yResolution = 0
 
 		self.bShowWoundedIndicator = False
 		self.bShowGreatGeneralIndicator = False
@@ -178,10 +180,11 @@ class PLE:
 		self.bPLEShowing = True
 
 	def PLE_CalcConstants(self, screen):
-		self.xResolution = screen.getXResolution()
-		self.yResolution = screen.getYResolution()
+		# advc.opt: All those widgets get added to the screen even if the enhanced
+		# plot list is disabled. Better put a hard limit on this.
+		self.iMaxPlotListIcons = min(500,
+				self.getMaxCol() * self.getMaxRow())
 
-		self.iMaxPlotListIcons = self.getMaxCol() * self.getMaxRow()
 		self.sPLEMode = self.PLE_MODE_MULTILINE
 		self.nPLEGrpMode = self.PLE_GRP_UNITTYPE
 		self.nPLELastGrpMode = self.nPLEGrpMode
@@ -190,31 +193,31 @@ class PLE:
 		self.setPLEUnitList(True)
 
 		self.pOldPlot = 0
-		# <advc.002b> There are functions for these; I guess we should use them.
-		self.CFG_INFOPANE_PIX_PER_LINE_1 			= PleOpt.getInfoPaneStandardLineHeight()
-		self.CFG_INFOPANE_PIX_PER_LINE_2 			= PleOpt.getInfoPaneBulletedLineHeight()
+		# <advc.002b> Increased from 19 and 24 respectively. There were also PleOpt
+		# methods getInfoPaneStandardLineHeight, getInfoPaneBulletedLineHeight.
+		# I guess those already became disused when PLE was integrated into BUG.
+		# advc.001: I also think these were mixed up - bulleted lines take up (slightly)
+		# more space, not less. (I suspect a minor remaining issue with wrapped-around
+		# bulleted lines taking up a little less space but being counted fully.)
+		self.CFG_INFOPANE_PIX_PER_LINE_1 			= 22 # standard
+		self.CFG_INFOPANE_PIX_PER_LINE_2 			= 24 # bulleted
 		# </advc.002b>
-		# advc.092 (tbd.): These constants need to scale with the screen size
-		self.CFG_INFOPANE_DX 					    = 290
-		# <advc.092> Had been set via PleOpt. I don't think these should be configured
-		# by the user. Want to be able to adjust it to the screen size.
-		self.CFG_INFOPANE_X					= 5
-		self.CFG_INFOPANE_Y		 			= self.yResolution - 160 #PleOpt.getInfoPaneY()
+		self.CFG_INFOPANE_DX 					    = gRect("DefaultHelpArea").width()
+		# <advc.092> Had been set via PleOpt
+		self.CFG_INFOPANE_X					= gRect("DefaultHelpArea").x()
+		self.CFG_INFOPANE_X_CITY			= (self.CFG_INFOPANE_X
+				+ gRect("CityLeftPanel").xRight() + HSPACE(2))
+		self.CFG_INFOPANE_Y		 			= gRect("DefaultHelpArea").y()
 		# </advc.092>
 		self.CFG_INFOPANE_BUTTON_SIZE		= self.CFG_INFOPANE_PIX_PER_LINE_1 - 2
 		self.CFG_INFOPANE_BUTTON_PER_LINE	= self.CFG_INFOPANE_DX / self.CFG_INFOPANE_BUTTON_SIZE
-		self.CFG_INFOPANE_Y2				= self.CFG_INFOPANE_Y + 105
+		self.CFG_INFOPANE_Y_MIN				= gRect("DefaultHelpAreaMin").y()
 
 		self.listPLEButtons = [(0,0,0)] * self.iMaxPlotListIcons
 
 
-	def updatePlotListButtons_PLE( self, screen, xResolution, yResolution ):
-
-		self.xResolution = xResolution
-		self.yResolution = yResolution
-
+	def updatePlotListButtons_PLE(self, screen):
 		self.iLoopCnt += 1
-
 		self.pActPlot = CyInterface().getSelectionPlot()
 		# if the plot changed, reset plot list offset
 		if (self.pOldPlot):
@@ -429,16 +432,20 @@ class PLE:
 						bFirstLoop 		= false
 
 			# left/right scroll buttons
-			if 	( ( self.sPLEMode == self.PLE_MODE_STANDARD ) and ( self.iVisibleUnits > self.getMaxCol() ) ) or \
-				( ( self.sPLEMode == self.PLE_MODE_STACK_VERT ) and ( ( nCol >= self.getMaxCol() or ( self.iColOffset > 0 ) ) ) ):
+			if ((self.sPLEMode == self.PLE_MODE_STANDARD and
+					self.iVisibleUnits > self.getMaxCol()) or
+					(self.sPLEMode == self.PLE_MODE_STACK_VERT and
+					((nCol >= self.getMaxCol() or self.iColOffset > 0)))):
 				screen.enable( self.PLOT_LIST_MINUS_NAME, bLeftArrow )
 				screen.show( self.PLOT_LIST_MINUS_NAME )
 				screen.enable( self.PLOT_LIST_PLUS_NAME, bRightArrow )
 				screen.show( self.PLOT_LIST_PLUS_NAME )
 				
 			# up/Down scroll buttons
-			if 	( ( self.sPLEMode == self.PLE_MODE_MULTILINE ) and ( ( nRow >= self.getMaxRow() or ( self.iRowOffset > 0 ) ) ) ) or \
-				( ( self.sPLEMode == self.PLE_MODE_STACK_HORIZ ) and ( ( nRow >= self.getMaxRow() or ( self.iRowOffset > 0 ) ) ) ):
+			if ((self.sPLEMode == self.PLE_MODE_MULTILINE and
+					(nRow >= self.getMaxRow() or self.iRowOffset > 0)) or
+					(self.sPLEMode == self.PLE_MODE_STACK_HORIZ and
+					((nRow >= self.getMaxRow() or self.iRowOffset > 0)))):
 				screen.enable(self.PLOT_LIST_UP_NAME, bUpArrow )
 				screen.show( self.PLOT_LIST_UP_NAME )
 				screen.enable( self.PLOT_LIST_DOWN_NAME, bDownArrow )
@@ -838,8 +845,9 @@ class PLE:
 	def getPlotListButtonName(self, inputClass):
 		id = inputClass.getID()
 		if ( inputClass.getNotifyCode() == NotifyCode.NOTIFY_CURSOR_MOVE_ON ):
-			if not CyInterface().isCityScreenUp():
-				self.showUnitInfoPane(id)
+			# advc.069: Let's actually show unit help on the city screen too
+			#if not CyInterface().isCityScreenUp():
+			self.showUnitInfoPane(id)
 			if mt.bAlt():
 				self.highlightMoves(id)
 			return 1
@@ -873,14 +881,15 @@ class PLE:
 			return 1
 		
 	############## base functions to calculate/transform the number of objects dependent on the screen resolution ######################
-	# advc.092 (fixme): Needs to _scale_ with the screen size
 
 	def getMaxCol(self):
 		#return (self.xResolution - (iMultiListXL+iMultiListXR) - 2 * iPlotListUnitBtnSz) / iPlotListUnitBtnSz
 		return CvScreensInterface.mainInterface.numPlotListButtonsPerRow() # advc.092
 		
 	def getMaxRow(self):
-		return (self.yResolution - 160) / max(1, self.getVerticalSpacing())
+		#(yResolution - 160)
+		return ((self.getY(0) + VLEN(9)) # advc.092
+				/ max(1, self.getColWidth()))
 		
 	def getRow(self, i):
 		return i / self.getMaxCol()
@@ -888,16 +897,22 @@ class PLE:
 	def getCol(self, i):
 		return i % self.getMaxCol()
 	# advc.092: Shouldn't be configurable through XML
-	def getVerticalSpacing(self):
-		return 42 #PleOpt.getVerticalSpacing()
+	def getColWidth(self):
+		#return PleOpt.getVerticalSpacing() #=42
+		return CvScreensInterface.mainInterface.plotListUnitButtonSize() + VSPACE(8)
 		
 	def getX(self, nCol):
-		# advc.092: Shouldn't be configurable
-		return 315 + nCol * 34 #PleOpt.getHoriztonalSpacing()
+		#return 315 + nCol * PleOpt.getHoriztonalSpacing() #=34
+		# <advc.092>
+		return (gRect("PlotListPanel0").x() + 3 +
+				nCol * CvScreensInterface.mainInterface.plotListUnitButtonSize()) # </advc.092>
 		
 	def getY(self, nRow):
-		# advc.092: Shouldn't be configurable
-		return self.yResolution - 169 - nRow * self.getVerticalSpacing()
+		#return yResolution - 169 ...
+		# <advc.092>
+		return (gRect("CenterBottomPanel").y()
+				- CvScreensInterface.mainInterface.plotListUnitButtonSize() - VSPACE(2) # </advc.092>
+				- nRow * self.getColWidth())
 		
 	def getI(self, nRow, nCol):
 		return ( nRow * self.getMaxCol() ) + ( nCol % self.getMaxCol() )
@@ -1050,9 +1065,6 @@ class PLE:
 		
 	# prepares the display of the mode, view, grouping, filter  switches
 	def preparePlotListObjects(self, screen):
-		xResolution = self.xResolution
-		yResolution = self.yResolution
-
 		iHealthyColor = PleOpt.getHealthyColor()
 		iWoundedColor = PleOpt.getWoundedColor()
 		iMovementColor = PleOpt.getFullMovementColor()
@@ -1062,6 +1074,9 @@ class PLE:
 		szFileNamePromo = ArtFileMgr.getInterfaceArtInfo("OVERLAY_PROMOTION_FRAME").getPath()
 		szFileNameGovernor = ArtFileMgr.getInterfaceArtInfo("INTERFACE_BUTTONS_GOVERNOR").getPath()
 		szFileNameHilite = ArtFileMgr.getInterfaceArtInfo("BUTTON_HILITE_SQUARE").getPath()
+		# <advc.092>
+		iFrameSize = (CvScreensInterface.mainInterface.plotListUnitButtonSize()
+				- CvScreensInterface.mainInterface.plotListUnitFrameThickness()) # </advc.092>
 		for i in range( self.iMaxPlotListIcons ):
 			# create button name
 			szString = self.PLOT_LIST_BUTTON_NAME + str(i)
@@ -1071,35 +1086,49 @@ class PLE:
 
 			# place/init the promotion frame. Important to have it at first place within the for loop.
 			szStringPromoFrame = szString + "PromoFrame"
-			screen.addDDSGFC( szStringPromoFrame, szFileNamePromo, x, y, 32, 32, WidgetTypes.WIDGET_GENERAL, i, -1 )
+			screen.addDDSGFC( szStringPromoFrame, szFileNamePromo,
+					x, y, iFrameSize, iFrameSize,
+					WidgetTypes.WIDGET_GENERAL, i, -1 )
 			screen.hide( szStringPromoFrame )
 
 			# place the plot list unit button
-			screen.addCheckBoxGFC( szString, szFileNameGovernor, szFileNameHilite, x, y, 32, 32, WidgetTypes.WIDGET_GENERAL, i, -1, ButtonStyles.BUTTON_STYLE_LABEL )
+			screen.addCheckBoxGFC( szString, szFileNameGovernor, szFileNameHilite,
+					x, y, iFrameSize, iFrameSize,
+					WidgetTypes.WIDGET_GENERAL, i, -1, ButtonStyles.BUTTON_STYLE_LABEL )
 			screen.hide( szString )
 
 			# place/init the health bar. Important to have it at last place within the for loop.
 			szStringHealthBar = szString + "HealthBar"
 #			screen.addStackedBarGFC( szStringHealthBar, x+7, y-7, 25, 14, InfoBarTypes.NUM_INFOBAR_TYPES, WidgetTypes.WIDGET_GENERAL, -1, -1 )
-			screen.addStackedBarGFC( szStringHealthBar, x+5, y-9, 29, 11, InfoBarTypes.NUM_INFOBAR_TYPES, WidgetTypes.WIDGET_GENERAL, i, -1 )
+			iBarW = (29 * iFrameSize) / 32
+			iBarX = x + CvScreensInterface.mainInterface.plotListUnitButtonSize() - iBarW
+			iBarH = (11 * iFrameSize) / 32
+			iBarY = y - iBarH + 2
+			screen.addStackedBarGFC( szStringHealthBar,
+					iBarX, iBarY, iBarW, iBarH,
+					InfoBarTypes.NUM_INFOBAR_TYPES,
+					WidgetTypes.WIDGET_GENERAL, i, -1 )
 			screen.setStackedBarColors( szStringHealthBar, InfoBarTypes.INFOBAR_STORED, iHealthyColor )
 			screen.setStackedBarColors( szStringHealthBar, InfoBarTypes.INFOBAR_RATE, iWoundedColor )
 			screen.hide( szStringHealthBar )
 
 			# place/init the movement bar. Important to have it at last place within the for loop.
 			szStringMoveBar = szString + "MoveBar"
-			screen.addStackedBarGFC( szStringMoveBar, x+5, y-5, 29, 11, InfoBarTypes.NUM_INFOBAR_TYPES, WidgetTypes.WIDGET_GENERAL, i, -1 )
+			screen.addStackedBarGFC( szStringMoveBar,
+					iBarX, iBarY + (5 * iBarH) / 11, iBarW, iBarH,
+					InfoBarTypes.NUM_INFOBAR_TYPES,
+					WidgetTypes.WIDGET_GENERAL, i, -1 )
 			screen.setStackedBarColors( szStringMoveBar, InfoBarTypes.INFOBAR_STORED, iMovementColor )
 			screen.setStackedBarColors( szStringMoveBar, InfoBarTypes.INFOBAR_RATE, iHasMovedColor )
 			screen.setStackedBarColors( szStringMoveBar, InfoBarTypes.INFOBAR_EMPTY, iNoMovementColor )
 			screen.hide( szStringMoveBar )
-
-		# advc.092 (fixme): Needs to scale with the screen size
-		nYOff	= 130 + 4
-		nXOff	= 290 - 12
-		nSize	= 24
-		nDist	= 22
-		nGap    = 10
+		# <advc.092>
+		nYOff	= gRect("CenterBottomPanel").height() + 1 # was 130 + 4
+		nXOff	= gRect("CenterBottomPanel").x() - 6 # was 290 - 12
+		nSize	= BTNSZ(24)
+		nDist	= nSize - 2 # was 22
+		nGap    = HSPACE(10)
+		yResolution = gRect("Top").height() # </advc.092>
 		nNum	= 0
 		
 		# PLE Style-Mode buttons
@@ -1726,7 +1755,7 @@ class PLE:
 			szStringUnitUpgrade = self.PLOT_LIST_UPGRADE_NAME + sID
 			szFileNameUpgrade = gc.getUnitInfo(iUnitIndex).getButton()
 			# advc.092: Get the size from CvMainInterface
-			iPlotListUnitBtnSz = CvSCreensInterface.mainInterface.plotListUnitButtonSize()
+			iPlotListUnitBtnSz = CvScreensInterface.mainInterface.plotListUnitButtonSize()
 			screen.setImageButton( szStringUnitUpgrade, szFileNameUpgrade,
 					x, y, iPlotListUnitBtnSz, iPlotListUnitBtnSz,
 					WidgetTypes.WIDGET_GENERAL, iUnitIndex, -1 )
@@ -1862,15 +1891,15 @@ class PLE:
 		
 		szUpgradeHelp = localText.getText("TXT_KEY_PLE_UPGRADE_HELP", () )		
 
-		szText 		= u"<font=2>" + szUnitName + \
-						szCombatType  + \
-						szStrength  + \
-						szMovement + \
-						szRange  + \
-						szSpecialText + \
-						szUpgradePrice + \
-						szUpgradeHelp + \
-					u"</font>"
+		szText 		= (u"<font=2>" + szUnitName +
+						szCombatType  +
+						szStrength  +
+						szMovement +
+						szRange  +
+						szSpecialText +
+						szUpgradePrice +
+						szUpgradeHelp +
+					u"</font>")
 					
 		# display the info pane
 		self.displayInfoPane(szText)
@@ -1960,9 +1989,11 @@ class PLE:
 		# compressed display for standard display
 		szStrengthMovement = u"<font=2>" + szCurrStrength + szMaxStrength
 		# advc.069: szTurnsToHeal omitted in the middle, appended at the end after a newline.
-		szStrengthMovement += u"%c" % CyGame().getSymbolID(FontSymbols.STRENGTH_CHAR) + ", " + \
-							szCurrMoves + szMaxMoves + u"%c"%(CyGame().getSymbolID(FontSymbols.MOVES_CHAR)) + szAirRange + szTurnsToHeal + u"</font>\n"
-							
+		szStrengthMovement += (u"%c" % CyGame().getSymbolID(FontSymbols.STRENGTH_CHAR) + ", " +
+							szCurrMoves + szMaxMoves +
+							u"%c"%(CyGame().getSymbolID(FontSymbols.MOVES_CHAR)) +
+							szAirRange + szTurnsToHeal + u"</font>\n")
+
 		# civilization type
 		szCiv = u""
 	#		iCiv = pUnit.getCivilizationType()
@@ -2047,16 +2078,16 @@ class PLE:
 			szPromotion = u"\n"*((iPromotionCount/self.CFG_INFOPANE_BUTTON_PER_LINE)+1)
 
 		# build text
-		szText 	= szUnitName + \
-				szPromotion + \
-				szStrengthMovement + \
-				szLevel + \
-				szExperience + \
-				szCargo + \
-				szCiv + \
-				szFortifyBonus + \
-				szEspionage + \
-				szSpecialText
+		szText 	= (szUnitName +
+				szPromotion +
+				szStrengthMovement +
+				szLevel +
+				szExperience +
+				szCargo +
+				szCiv +
+				szFortifyBonus +
+				szEspionage +
+				szSpecialText)
 
 		# display the info pane
 		dy = self.displayInfoPane(szText)
@@ -2066,7 +2097,8 @@ class PLE:
 		for i in range(gc.getNumPromotionInfos()):
 			if pUnit.isHasPromotion(i):
 				szName = self.PLE_PROMO_BUTTONS_UNITINFO + str(i)
-				self.displayUnitInfoPromoButtonPos( szName, iTemp, dy - self.CFG_INFOPANE_PIX_PER_LINE_1 + PleOpt.getInfoPanePromoIconOffsetY() )
+				self.displayUnitInfoPromoButtonPos( szName, iTemp, dy - self.CFG_INFOPANE_PIX_PER_LINE_1 )
+				#+ PleOpt.getInfoPanePromoIconOffsetY() ) # advc: Player shouldn't have to adjust this
 				screen.show( szName )
 				iTemp += 1
 							
@@ -2077,21 +2109,30 @@ class PLE:
 	def hideUnitInfoPromoButtons(self):
 		screen = CyGInterfaceScreen( "MainInterface", CvScreenEnums.MAIN_INTERFACE )
 		for i in range(gc.getNumPromotionInfos()):
-			szName = self.PLE_PROMO_BUTTONS_UNITINFO + str(i)
-			screen.hide( szName )
-		self.bUnitPromoButtonsActive = false
+			screen.hide( self.PLE_PROMO_BUTTONS_UNITINFO + str(i) )
+		self.bUnitPromoButtonsActive = False
 
 	# displays the unit's promotion buttons in the info pane. They are not part of the info pane.
 	def displayUnitInfoPromoButtonPos( self, szName, iPromotionCount, yOffset ):
-		self.bUnitPromoButtonsActive = true
+		self.bUnitPromoButtonsActive = True
 		screen = CyGInterfaceScreen( "MainInterface", CvScreenEnums.MAIN_INTERFACE )
-		# advc.092 (tbd.): This stuff needs to scale with the screen size
 		if ( CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW ):
 			y = self.CFG_INFOPANE_Y
 		else:
-			y = self.CFG_INFOPANE_Y2
-		screen.moveItem( szName, self.CFG_INFOPANE_X + 4 + (self.CFG_INFOPANE_BUTTON_SIZE * (iPromotionCount % self.CFG_INFOPANE_BUTTON_PER_LINE)), \
-								 y + 4 - yOffset + (self.CFG_INFOPANE_BUTTON_SIZE * (iPromotionCount / self.CFG_INFOPANE_BUTTON_PER_LINE)), -0.3 )
+			y = self.CFG_INFOPANE_Y_MIN
+		# <advc.069> To allow unit info on city screen
+		if CyInterface().isCityScreenUp():
+			x = self.CFG_INFOPANE_X_CITY
+		else: # </advc.069>
+			x = self.CFG_INFOPANE_X
+		screen.moveItem(szName,
+				x + 4 +
+				self.CFG_INFOPANE_BUTTON_SIZE *
+				(iPromotionCount % self.CFG_INFOPANE_BUTTON_PER_LINE),
+				y + 4 - yOffset +
+				self.CFG_INFOPANE_BUTTON_SIZE *
+				(iPromotionCount / self.CFG_INFOPANE_BUTTON_PER_LINE),
+				-0.3)
 		screen.moveToFront( szName )
 
 	# calculates the height of a text in pixels
@@ -2110,8 +2151,9 @@ class PLE:
 				iBulletLines += iWidth
 			else:
 				iNormalLines += iWidth
-		dy = iNormalLines*self.CFG_INFOPANE_PIX_PER_LINE_1 + (iBulletLines)*self.CFG_INFOPANE_PIX_PER_LINE_2 + 20
-		return dy
+		# advc.069: Was 20+... I guess that's a safety margin(?). Try going lower on that.
+		return (12 + iNormalLines*self.CFG_INFOPANE_PIX_PER_LINE_1
+				+ iBulletLines*self.CFG_INFOPANE_PIX_PER_LINE_2)
 		
 	# base function to display a self sizing info pane
 	def displayInfoPane(self, szText):
@@ -2126,43 +2168,42 @@ class PLE:
 		dy = self.getTextLines(szText)
 		
 		# draw panel
-		# advc.092 (tbd.): This stuff needs to scale with the screen size
 		if ( CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW ):
 			y = self.CFG_INFOPANE_Y
 		else:
-			y = self.CFG_INFOPANE_Y2
-		dx = 0
-		if ( CyInterface().isCityScreenUp()):
-			dx = 260
-		
-		screen.addPanel( self.UNIT_INFO_PANE, u"", u"", True, True, \
-						self.CFG_INFOPANE_X + dx, y - dy, self.CFG_INFOPANE_DX, dy, \
-						PanelStyles.PANEL_STYLE_HUD_HELP )
+			y = self.CFG_INFOPANE_Y_MIN
+		if CyInterface().isCityScreenUp():
+			x = self.CFG_INFOPANE_X_CITY # advc.092
+		else:
+			x = self.CFG_INFOPANE_X
+		screen.addPanel(self.UNIT_INFO_PANE, u"", u"", True, True,
+						x, y - dy, self.CFG_INFOPANE_DX, dy,
+						PanelStyles.PANEL_STYLE_HUD_HELP)
 		
 		# create shadow text
 		szTextBlack = localText.changeTextColor(mt.removeColor(szText), gc.getInfoTypeForString("COLOR_BLACK"))
 		
 		# display shadow text
-		screen.addMultilineText( self.UNIT_INFO_TEXT_SHADOW, szTextBlack, \
-								self.CFG_INFOPANE_X + dx + 5, y - dy + 5, \
-								self.CFG_INFOPANE_DX - 3, dy - 3, \
-								WidgetTypes.WIDGET_GENERAL, -1, -1, \
+		screen.addMultilineText( self.UNIT_INFO_TEXT_SHADOW, szTextBlack,
+								x + 5, y - dy + 5,
+								self.CFG_INFOPANE_DX - 3, dy - 3,
+								WidgetTypes.WIDGET_GENERAL, -1, -1,
 								CvUtil.FONT_LEFT_JUSTIFY)
 		# display text
-		screen.addMultilineText( self.UNIT_INFO_TEXT, szText, \
-								self.CFG_INFOPANE_X + dx + 4, y - dy + 4, \
-								self.CFG_INFOPANE_DX - 3, dy - 3, \
-								WidgetTypes.WIDGET_GENERAL, -1, -1, \
+		screen.addMultilineText( self.UNIT_INFO_TEXT, szText,
+								x + 4, y - dy + 4,
+								self.CFG_INFOPANE_DX - 3, dy - 3,
+								WidgetTypes.WIDGET_GENERAL, -1, -1,
 								CvUtil.FONT_LEFT_JUSTIFY)
 					
 		return dy
 
 	def checkInfoPane(self, tMousePos):
 		if self.bInfoPaneActive and (self.iInfoPaneCnt == (self.iLastInfoPaneCnt+1)): 
-			if (tMousePos.x < self.tLastMousePos[0]-self.iMousePosTol) or \
-				(tMousePos.x > self.tLastMousePos[0]+self.iMousePosTol) or \
-				(tMousePos.y < self.tLastMousePos[1]-self.iMousePosTol) or \
-				(tMousePos.y > self.tLastMousePos[1]+self.iMousePosTol):
+			if (tMousePos.x < self.tLastMousePos[0]-self.iMousePosTol or
+					tMousePos.x > self.tLastMousePos[0]+self.iMousePosTol or
+					tMousePos.y < self.tLastMousePos[1]-self.iMousePosTol or
+					tMousePos.y > self.tLastMousePos[1]+self.iMousePosTol):
 				self.hideInfoPane()
 				if self.bUnitPromoButtonsActive:
 					self.hideUnitInfoPromoButtons()
@@ -2198,9 +2239,8 @@ class PLE:
 
 	def _displayUnitPlotList_Dot( self, screen, pLoopUnit, szString, iCount, x, y ):
 		# this if statement and everything inside, handles the display of the colored buttons in the upper left corner of each unit icon.
-		# advc.092 (fixme): Needs to get the size from CvMainInterface
-		xSize = 12
-		ySize = 12
+		xSize = CvScreensInterface.mainInterface.unitButtonOverlaySize() # advc.092
+		ySize = xSize
 		xOffset = 0
 		yOffset = 0
 		if ((pLoopUnit.getTeam() != gc.getGame().getActiveTeam()) or pLoopUnit.isWaiting()):
@@ -2220,7 +2260,8 @@ class PLE:
 		# Wounded units will get a darker colored button.
 		if (self.bShowWoundedIndicator) and (pLoopUnit.isHurt()):
 			szDotState += "_INJURED"
-
+		# advc.092: Have the sizes and offset below match the unit btn size
+		iBtnSize = CvScreensInterface.mainInterface.plotListUnitButtonSize()
 		# Units led by a GG will get a star instead of a dot.
 		if (self.bShowGreatGeneralIndicator):
 			# is unit led by a GG?
@@ -2229,19 +2270,21 @@ class PLE:
 			# advc: Replacing the above
 			if pLoopUnit.getLeaderUnitType() >= 0:
 				szDotState += "_GG"
-				# advc.092 (fixme): Needs to get the size from CvMainInterface
-				xSize = 16
-				ySize = 16
-				xOffset = -3
-				yOffset = -3
-
+				# <advc.092>
+				xSize = (16 * iBtnSize) / 34
+				ySize = xSize
+				xOffset = -(3 * xSize) / 16
+				yOffset = -(3 * ySize) / 16
+				# </advc.092>
 		szFileNameState = ArtFileMgr.getInterfaceArtInfo(szDotState).getPath()
 
 		# display the colored spot icon
 		szStringIcon = szString+"Icon"
-		# advc.092 (fixme): Needs to scale with the size
 		screen.addDDSGFC( szStringIcon, szFileNameState,
-				x-3+xOffset, y-7+yOffset, xSize, ySize,
+				# <advc.092>
+				x - (3 * iBtnSize) / 34 + xOffset,
+				y - (7 * iBtnSize) / 34 + yOffset, # </advc.092>
+				xSize, ySize,
 				WidgetTypes.WIDGET_GENERAL, iCount, -1 )
 		screen.show( szStringIcon )
 
@@ -2264,9 +2307,12 @@ class PLE:
 				# place the upgrade arrow
 				szStringUpgrade = szString+"Upgrade"
 				szFileNameUpgrade = ArtFileMgr.getInterfaceArtInfo("OVERLAY_UPGRADE").getPath()	
-				# advc.092 (fixme): Needs to scale with the size
+				# advc.092:
+				iBtnSize = CvScreensInterface.mainInterface.plotListUnitButtonSize()
 				screen.addDDSGFC( szStringUpgrade, szFileNameUpgrade,
-						x+2, y+14, 8, 16,
+						# <advc.092>
+						x + (2 * iBtnSize) / 34, y + (14 * iBtnSize) / 34,
+						(8 * iBtnSize) / 34, (16 * iBtnSize) / 34, # </advc.092>
 						WidgetTypes.WIDGET_GENERAL, iCount, -1 )
 				screen.show( szStringUpgrade )
 

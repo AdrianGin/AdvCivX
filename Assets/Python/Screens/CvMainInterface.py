@@ -1,6 +1,9 @@
 ## Sid Meier's Civilization 4 - Copyright Firaxis Games 2005
 from CvPythonExtensions import *
-from RectLayout import * # advc.092
+# <advc.092>
+from RectLayout import *
+from LayoutDict import *
+# </advc.092>
 import CvUtil
 import ScreenInput
 import CvScreenEnums
@@ -50,114 +53,6 @@ def ceil(f):
 def iround(f):
 	return int(round(f))
 # </advc.090>
-
-# <advc.092>
-gRectLayoutDict = {} # Global dictionary for (rectangular) layout data
-def gSetRectangle(szKeyName, lRect):
-	gRectLayoutDict[szKeyName] = lRect
-	bPrintRects = True # advc.tmp
-	if (bPrintRects and
-			(not szKeyName.startswith("PlotListButton") or
-			# Lower left unit button when numPlotListButtonsPerRow is 35
-			# and numPlotListRows is 10. (9*35=315)
-			szKeyName.startswith("PlotListButton315")) and
-			(not szKeyName.startswith("AngryCitizen") or
-			szKeyName.startswith("AngryCitizen0") or szKeyName.startswith("AngryCitizenChevron0")) and
-			(not szKeyName.startswith("IncreaseSpecialist") or
-			szKeyName.startswith("IncreaseSpecialist0")) and
-			(not szKeyName.startswith("DecreaseSpecialist") or
-			szKeyName.startswith("DecreaseSpecialist0")) and
-			(not szKeyName.startswith("SpecialistDisabledButton") or
-			szKeyName.startswith("SpecialistDisabledButton0")) and
-			(not szKeyName.startswith("CitizenButton") or
-			szKeyName.startswith("CitizenButton0")) and
-			(not szKeyName.startswith("CitizenChevron") or
-			szKeyName.startswith("CitizenChevron0")) and
-			(not szKeyName.startswith("Stacker_FreeSpecialist") or
-			szKeyName.startswith("Stacker_FreeSpecialist0")) and
-			(not szKeyName.startswith("Stacker_AngryCitizen") or
-			szKeyName.startswith("Stacker_AngryCitizen0")) and
-			(not szKeyName.startswith("IncrCitizenBanner") or
-			szKeyName.startswith("IncrCitizenBanner0")) and
-			(not szKeyName.startswith("IncrCitizenButton") or
-			szKeyName.startswith("IncrCitizenButton0")) and
-			(not szKeyName.startswith("DecrCitizenButton") or
-			szKeyName.startswith("DecrCitizenButton0")) and
-			(not szKeyName.startswith("CityBonus") or
-			szKeyName.endswith("_0"))
-			):
-		print(szKeyName + " " + str(lRect))
-def gSetRect(szKeyName, szParentKey, fX, fY, fWidth, fHeight, bOffScreen = False):
-	gSetRectangle(szKeyName, RectLayout(gRect(szParentKey),
-			fX, fY, fWidth, fHeight, bOffScreen))
-def gSetSquare(szKeyName, szParentKey, fX, fY, fSideLen, bOffScreen = False):
-	gSetRectangle(szKeyName, SquareLayout(gRect(szParentKey),
-			fX, fY, fSideLen, bOffScreen))
-def gRect(szKeyName): # Called externally
-	return gRectLayoutDict[szKeyName]
-# Same deal for 2D points
-gPointLayoutDict = {}
-def gSetPoint(szKeyName, lPoint):
-	gPointLayoutDict[szKeyName] = lPoint
-	print(szKeyName + " " + str(lPoint)) # advc.tmp
-def gPoint(szKeyName):
-	return gPointLayoutDict[szKeyName]
-# rect can be a RectLayout or the string key of a global RectLayout
-def gOffSetPoint(szPointKeyName, rect, fDeltaX, fDeltaY):
-	if isinstance(rect, basestring):
-		lRect = gRect(rect)
-	else:
-		lRect = rect
-	gSetPoint(szPointKeyName, RectLayout.offsetPoint(lRect, fDeltaX, fDeltaY))
-# These global variables get set based on the screen resolution
-# when the enlarge-HUD BUG option is enabled.
-# All positional data that goes through the functions below will then
-# be scaled accordingly. Global because some of these will have lots of
-# call locations, so I want the calls to be compact.
-gHorizontalScaleFactor = 1.0
-gVerticalScaleFactor = 1.0
-gSquareButtonScaleFactor = 1.0
-# This one should be smaller than 1 - space in between widgets should (if at all)
-# be only slighty affected by the screen resolution.
-gSpaceScaleFactor = 1.0
-# Magnify small distances disproportionately
-def _dispropMagnMult(fMult, iDist, fExp):
-	if fExp <= 0 and iDist > 0:
-		fExp = (iDist + 1.0) / iDist
-	return math.pow(fMult, fExp)
-def _scaleWidgetLenToRes(fScaleMult, iLen, fExp):
-	if iLen <= 0:
-		# Let's allow 0 for tiny lengths that should be
-		# 0 when the resolution is small.
-		assert iLen == 0
-		return iround(fScaleMult - 1)
-	return iround(iLen * _dispropMagnMult(fScaleMult, iLen, fExp))
-def _scaleSpaceToRes(fScaleMult, iSpacing, fExp):
-	fScaleMult *= gSpaceScaleFactor
-	if iSpacing == 0:
-		return max(0, iround(fScaleMult - 1))
-	elif iSpacing < 0:
-		# Negative space is overlap. Overlap should get smaller
-		# on higher resolutions.
-		fScaleMult = 1 / fScaleMult
-	return iround(iSpacing * _dispropMagnMult(fScaleMult, iSpacing, fExp))
-# The optional fExp params allow a caller to exponentiate the resolution-based
-# multipliers. Use fExp > 1 to increase the impact of screen resolution on a
-# distance, use 0 < fExp < 1 to decrease the impact.
-def HLEN(iWidth, fExp = 0):
-	return _scaleWidgetLenToRes(gHorizontalScaleFactor, iWidth, fExp)
-def VLEN(iHeight, fExp = 0):
-	return _scaleWidgetLenToRes(gVerticalScaleFactor, iHeight, fExp)
-def BTNSZ(iSize, fExp = 0):
-	return _scaleWidgetLenToRes(gSquareButtonScaleFactor, iSize, fExp)
-# Negative arguments are assumed to be overlap, i.e. those will
-# move closer to 0 on higher resolution. Callers should pass
-# negative values only when there is overlap!
-def HSPACE(iWidth, fExp = 0):
-	return _scaleSpaceToRes(gHorizontalScaleFactor, iWidth, fExp)
-def VSPACE(iHeight, fExp = 0):
-	return _scaleSpaceToRes(gVerticalScaleFactor, iHeight, fExp)
-# </advc.092>
 # BUG - city specialist - start
 g_iMaxEverFreeSpecialists = 0
 g_iMaxEverAdjustableSpecialists = 0
@@ -397,16 +292,13 @@ class CvMainInterface:
 		self.addStackedBar(szName, eWidgetType, iData1, iData2, szAttachTo)
 	def setDefaultHelpTextArea(self, bMinMargin = False):
 		if bMinMargin:
-			# As in BtS; pretty arbitrary and overlaps the unit pane.
-			iBottomMargin = VSPACE(50)
+			lRect = gRect("DefaultHelpAreaMin")
 		else:
-			iBottomMargin = (VSPACE(5) + gRect("CenterBottomPanel").height() +
-					self.plotListUnitButtonSize())
-		# (I don't think the HLENs will have any effect; seems that the EXE
-		# ignores the fWidth and iMinWidth params.)
+			lRect = gRect("DefaultHelpArea")
+		# (Seems that the EXE ignores the fWidth and iMinWidth params. Sadly.)
 		self.screen.setHelpTextArea(HLEN(350), FontTypes.SMALL_FONT,
-				HSPACE(7), gRect("Top").yBottom() - iBottomMargin, -0.1,
-				False, "", True, False, CvUtil.FONT_LEFT_JUSTIFY, HLEN(300))
+				lRect.x(), lRect.y(), -0.1,
+				False, "", True, False, CvUtil.FONT_LEFT_JUSTIFY, lRect.width())
 	def stackBarDefaultHeight(self):
 		return VLEN(27, 0.85)
 	def stackBarDefaultTextOffset(self):
@@ -512,10 +404,9 @@ class CvMainInterface:
 		# <advc.009b>
 		except AttributeError:
 			return 0 # </advc.009b>
-	# advc.092: So that PLE can access it
+	# advc.092: So that PLE can access these
 	def plotListUnitButtonSize(self):
 		return BTNSZ(34)
-
 	def unitButtonOverlaySize(self):
 		return (12 * self.plotListUnitButtonSize()) / 34
 	def plotListUnitFrameThickness(self):
@@ -876,7 +767,17 @@ class CvMainInterface:
 		self.m_iNumPlotListButtonsPerRow = (
 				(gRect("BottomButtonMaxSpace").width() - 2 * iPlotListUnitBtnSz) /
 				iPlotListUnitBtnSz)
-		self.setPLEInfoPaneRects()
+		gSetRect("DefaultHelpArea", "Top",
+				HSPACE(7),
+				-(VSPACE(5) + gRect("CenterBottomPanel").height() + self.plotListUnitButtonSize()),
+				# Default area will actually ignore this, but it's relevant
+				# for the PLE Info Pane.
+				gRect("LowerLeftCorner").width() + HLEN(6), 0)
+		gSetRect("DefaultHelpAreaMin", "Top",
+				HSPACE(7),
+				# As in BtS; pretty arbitrary and overlaps the unit pane.
+				-VSPACE(50),
+				gRect("DefaultHelpArea").width(), 0)
 		# advc.092: Moved down so that PLE can access the above
 		self.PLE.PLE_CalcConstants(screen) # BUG - PLE
 		# (BUG - unit plot draw method - advc.092: Moved into interfaceScreen method)
@@ -1326,48 +1227,6 @@ class CvMainInterface:
 					gOffSetPoint("CityBonusEffect" + szIndex, lRow,
 							gRect("BonusPane" + str(i)).width() - HSPACE(4, 4),
 							iBtnSize / 4)
-
-	def setPLEInfoPaneRects(self):
-		# Tbd. (based on the fragments copied from PLE.py)
-		'''
-		# <advc.002b> There are functions for these; I guess we should use them.
-		self.CFG_INFOPANE_PIX_PER_LINE_1 			= PleOpt.getInfoPaneStandardLineHeight()
-		self.CFG_INFOPANE_PIX_PER_LINE_2 			= PleOpt.getInfoPaneBulletedLineHeight()
-		# </advc.002b>
-		self.CFG_INFOPANE_DX 					    = 290
-		# <advc.092> Had been set via PleOpt. I don't think these should be configured
-		# by the user. Want to be able to adjust it to the screen size.
-		self.CFG_INFOPANE_X					= 5
-		self.CFG_INFOPANE_Y		 			= self.yResolution - 160 #PleOpt.getInfoPaneY()
-		# </advc.092>
-		self.CFG_INFOPANE_BUTTON_SIZE		= self.CFG_INFOPANE_PIX_PER_LINE_1 - 2
-		self.CFG_INFOPANE_BUTTON_PER_LINE	= self.CFG_INFOPANE_DX / self.CFG_INFOPANE_BUTTON_SIZE
-		self.CFG_INFOPANE_Y2				= self.CFG_INFOPANE_Y + 105
-		if ( CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW ):
-			y = self.CFG_INFOPANE_Y
-		else:
-			y = self.CFG_INFOPANE_Y2
-		dx = 0
-		if ( CyInterface().isCityScreenUp()):
-			dx = 260
-		screen.addPanel( self.UNIT_INFO_PANE, u"", u"", True, True, \
-						PleOpt.getInfoPaneX() + dx, y - dy, self.CFG_INFOPANE_DX, dy, \
-						PanelStyles.PANEL_STYLE_HUD_HELP )
-		# create shadow text
-		szTextBlack = localText.changeTextColor(mt.removeColor(szText), gc.getInfoTypeForString("COLOR_BLACK"))
-		# display shadow text
-		screen.addMultilineText( self.UNIT_INFO_TEXT_SHADOW, szTextBlack, \
-								PleOpt.getInfoPaneX() + dx + 5, y - dy + 5, \
-								self.CFG_INFOPANE_DX - 3, dy - 3, \
-								WidgetTypes.WIDGET_GENERAL, -1, -1, \
-								CvUtil.FONT_LEFT_JUSTIFY)
-		# display text
-		screen.addMultilineText( self.UNIT_INFO_TEXT, szText, \
-								PleOpt.getInfoPaneX() + dx + 4, y - dy + 4, \
-								self.CFG_INFOPANE_DX - 3, dy - 3, \
-								WidgetTypes.WIDGET_GENERAL, -1, -1, \
-								CvUtil.FONT_LEFT_JUSTIFY)
-		'''
 
 	def interfaceScreen (self):
 		"""
@@ -2081,9 +1940,11 @@ class CvMainInterface:
 
 	# Will update the screen (every 250 MS)
 	def updateScreen(self):
-
 		global g_szTimeText
 		global g_iTimeTextCounter
+		# <advc.009b> Work around crash upon reloading scripts
+		try: gPoint("EndTurnText")
+		except KeyError: return # </advc.009b>
 
 #		BugUtil.debug("update - Turn %d, Player %d, Interface %d, End Turn Button %d ===",
 #				gc.getGame().getGameTurn(), gc.getGame().getActivePlayer(), CyInterface().getShowInterface(), CyInterface().getEndTurnState())
@@ -2184,14 +2045,13 @@ class CvMainInterface:
 					screen.setEndTurnState("EndTurnText", acOutput)
 					bShow = True
 # BUG - Options - end
-
 		if bShow:
 			screen.showEndTurn("EndTurnText")
 			if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW or
 					CyInterface().isCityScreenUp()):
 				szTextPosKey = "EndTurnText"
 			else:
-				szTextPosKey = "EndTurnTextMin"
+				szTextPosKey = "EndTurnTextMin"			
 			screen.moveItem("EndTurnText", gPoint(szTextPosKey).x(), gPoint(szTextPosKey).y(), -0.1)
 		else:
 			screen.hideEndTurn("EndTurnText")
@@ -2769,8 +2629,7 @@ class CvMainInterface:
 			sDrawMethod = self.DRAW_METHOD_VAN
 		# </advc.069>
 		if sDrawMethod == self.DRAW_METHOD_PLE:
-			self.PLE.updatePlotListButtons_PLE(
-					screen, self.xResolution, self.yResolution)
+			self.PLE.updatePlotListButtons_PLE(screen)
 			self.bPLECurrentlyShowing = True
 		elif sDrawMethod == self.DRAW_METHOD_VAN:
 			self.updatePlotListButtons_Orig(screen)
@@ -3019,7 +2878,7 @@ class CvMainInterface:
 
 						if bEnable:
 							iPlotListFrameSize = self.plotListUnitButtonSize()  - self.plotListUnitFrameThickness()
-							try: # advc.009b (workaround crash upon reloading scripts)
+							try: # advc.009b (work around crash upon reloading scripts)
 								lPlotListBtn = gRect("PlotListButton" + str(iCount))
 							except KeyError:
 								return 0
@@ -5155,7 +5014,7 @@ class CvMainInterface:
 				# <advc.097> Gray out names of obsolete buildings
 				else:
 					szLeftBuffer = u"<color=%d,%d,%d,%d>%s</color>" %(
-							120, 120, 120, 255, szLeftBuffer)
+							160, 160, 160, 255, szLeftBuffer)
 				# </advc.097>
 				for iCommerce in range(CommerceTypes.NUM_COMMERCE_TYPES):
 					iChange = pHeadSelectedCity.getBuildingCommerceByBuilding(iCommerce, iBuilding)

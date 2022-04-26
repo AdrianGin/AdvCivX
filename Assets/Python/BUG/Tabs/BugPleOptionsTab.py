@@ -93,11 +93,9 @@ class BugPleOptionsTab(BugOptionsTab.BugOptionsTab):
 		rightL, rightR = self.addTwoColumnLayout(screen, right, "PLE_Specialties_Column")
 		self.addColorDropdown(screen, rightL, rightR, "PLE__Unit_Type_Specialties_Color")
 		self.addColorDropdown(screen, rightL, rightR, "PLE__Promotion_Specialties_Color")
-		# advc.069: Moved under the promotions heading.
-		# advc.002b (note): Not sure if this really needs to be on the menu;
-		# perhaps the default I've set to match the theme's font sizes is fine
-		# for everyone.
-		self.addIntDropdown(screen, right, right, "PLE__Info_Pane_Promo_Icon_Offset_Y")
+		# advc.069: Moved under the promotions heading, then disabled entirely.
+		# Should be possible to set this correctly programmatically.
+		#self.addIntDropdown(screen, right, right, "PLE__Info_Pane_Promo_Icon_Offset_Y")
 		
 		# advc.069: Moved down; label indented.
 		self.addLabel(screen, right, "PLE_Upgrade_Cost", None, None, True)

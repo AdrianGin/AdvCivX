@@ -24,7 +24,7 @@ sBupStringBase = "BUGUnitPlotString"
 # advc.092: Obtain this from CvMainInterface instead
 from CvScreensInterface import mainInterface
 cBupCellSpacing = 3
-from CvMainInterface import HSPACE, BTNSZ, gRect # advc.092
+from LayoutDict import HSPACE, BTNSZ, gRect # advc.092
 
 class BupPanel:
 	def __init__(self, screen, #xRes, yRes, iMulti, # advc.092
