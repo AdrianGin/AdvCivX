@@ -1443,12 +1443,12 @@ class CvMainInterface:
 		screen.hide("EndTurnButton")
 
 		# Tech buttons (to be positioned later)
-		iTechBtnSize = BTNSZ(32)
+		self.iTechBtnSize = BTNSZ(32)
 		for i in range(gc.getNumTechInfos()):
 			szName = "ResearchButton" + str(i)
 			screen.setImageButton(szName,
 					gc.getTechInfo(i).getButton(),
-					0, 0, iTechBtnSize, iTechBtnSize,
+					0, 0, self.iTechBtnSize, self.iTechBtnSize,
 					WidgetTypes.WIDGET_RESEARCH, i, -1)
 			screen.hide(szName)
 		iReligionBtnSize = BTNSZ(32)
@@ -3451,47 +3451,67 @@ class CvMainInterface:
 
 	# Will update the research buttons
 	def updateResearchButtons(self):
-
 		screen = self.screen
-
-		for i in range(gc.getNumTechInfos()):
-			szName = "ResearchButton" + str(i)
-			screen.hide(szName)
-
-		# Find out our resolution
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
-
+		for iTech in range(gc.getNumTechInfos()):
+			screen.hide("ResearchButton" + str(iTech))
 		#screen.hide("InterfaceOrnamentLeftLow")
 		#screen.hide("InterfaceOrnamentRightLow")
-
-		for i in range(gc.getNumReligionInfos()):
-			szName = "ReligionButton" + str(i)
-			screen.hide(szName)
-		if (CyInterface().shouldShowResearchButtons() and
-				CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW):
-			iCount = 0
-			for i in range(gc.getNumTechInfos()):
-				if (gc.getActivePlayer().canResearch(i, False)):
-					if (iCount < 20):
-						szName = "ResearchButton" + str(i)
-						bDone = False
-						for j in range(gc.getNumReligionInfos()):
-							if (not bDone):
-								if (gc.getReligionInfo(j).getTechPrereq() == i):
-									if not (gc.getGame().isReligionSlotTaken(j)):
-										szName = "ReligionButton" + str(j)
-										bDone = True
-						screen.show(szName)
-						self.setResearchButtonPosition(szName, iCount)
-					iCount += 1
-		return 0
+		for iReligion in range(gc.getNumReligionInfos()):
+			screen.hide("ReligionButton" + str(iReligion))
+		if (not CyInterface().shouldShowResearchButtons() or
+				CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_SHOW):
+			return
+		# advc.092: Collect the button ids before moving them
+		aResearchBtns = []
+		for iTech in range(gc.getNumTechInfos()):
+			if not gc.getActivePlayer().canResearch(iTech, False):
+				continue
+			szName = "ResearchButton" + str(iTech)
+			for iReligion in range(gc.getNumReligionInfos()):
+				if gc.getReligionInfo(iReligion).getTechPrereq() == iTech:
+					if not gc.getGame().isReligionSlotTaken(iReligion):
+						szName = "ReligionButton" + str(iReligion)
+						break
+			aResearchBtns.append(szName)
+		# advc.092: Based on code from deleted setResearchButtonPosition method
+# BUG - Bars on single line for higher resolution screens - start
+		if self.isShowTopBarsOnSingleLine():
+			szResearchBar = "OneLineResearchBar"
+			iHMargin = HSPACE(0)
+		else:
+			szResearchBar = "TwoLineResearchBar"
+			# I think this is as in BtS; not sure if it's a good idea.
+			# I guess using some extra space for research buttons makes sense
+			# for low resolutions.)
+			iHMargin = HSPACE(-3)
+		xCoord = gRect(szResearchBar).x() + iHMargin
+		yCoord = max(0, gRect(szResearchBar).y() +
+				(gRect(szResearchBar).height() - self.iTechBtnSize) / 2)
+		iColW = self.iTechBtnSize + HSPACE(2)
+		iRowH = self.iTechBtnSize + VSPACE(2)
+		iAvailW = gRect(szResearchBar).xRight() - iHMargin - xCoord
+		iBtnPerRow = iAvailW / iColW # was 15 flat in BUG/BtS
+		xCoord += (iAvailW - min(iBtnPerRow, len(aResearchBtns)) * iColW) / 2 # center-align
+		iMaxCount = iBtnPerRow # was 20 flat in BtS
+		if (self.isShowTopBarsOnSingleLine() or
+				(not self.isShowGGProgressBar() and not self.isShowGPProgressBar())):
+			iMaxCount += iBtnPerRow
+		iCount = 0
+		for szButtonID in aResearchBtns:
+			screen.moveItem(szButtonID,
+					xCoord + iColW * (iCount % iBtnPerRow),
+					yCoord + iRowH * (iCount / iBtnPerRow),
+					-0.3)
+			screen.show(szButtonID)
+			iCount += 1
+			if iCount >= iMaxCount:
+				break
+# BUG - Bars on single line for higher resolution screens - end
+		
 
 # BUG - city specialist - start
 	def updateCitizenButtons_hide(self):
 		screen = self.screen
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
 
 		for i in range(MAX_CITIZEN_BUTTONS):
 			screen.hide("FreeSpecialist" + str(i))
@@ -3534,8 +3554,6 @@ class CvMainInterface:
 				screen.hide("IncrCitizenBanner" + szIndex)
 				screen.hide("IncrCitizenButton" + szIndex)
 				screen.hide("DecrCitizenButton" + szIndex)
-
-		return 0
 # BUG - city specialist - end
 
 	# advc.092: Refactored this and updateCitizenButtons_Chevron to reduce redundancy
@@ -6608,27 +6626,8 @@ class CvMainInterface:
 		return (266 - (24 * (iPromotionCount / 6)),
 				yResolution - 144 + (24 * (iPromotionCount % 6)))
 
-	# Will set the selection button position
-	def setResearchButtonPosition(self, szButtonID, iCount):
-		screen = self.screen
-		xResolution = screen.getXResolution()
-# BUG - Bars on single line for higher resolution screens - start
-		if (xResolution >= 1440 and
-			(self.isShowGGProgressBar() or self.isShowGPProgressBar())):
-			xCoord = 268 + (xResolution - 1440) / 2
-			xCoord += 6 + 84
-			screen.moveItem(szButtonID,
-					264 + ((xResolution - 1024) / 2) + (34 * (iCount % 15)),
-					0 + (34 * (iCount / 15)),
-					-0.3)
-		else:
-			xCoord = 264 + ((xResolution - 1024) / 2)
-
-		screen.moveItem(szButtonID,
-				xCoord + (34 * (iCount % 15)),
-				0 + (34 * (iCount / 15)),
-				-0.3)
-# BUG - Bars on single line for higher resolution screens - end
+	# advc.092: Merged into updateResearchButtons
+	#def setResearchButtonPosition(self, szButtonID, iCount)
 
 	# Will set the selection button position
 	def setScoreTextPosition(self, szButtonID, iWhichLine):
