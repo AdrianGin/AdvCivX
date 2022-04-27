@@ -499,14 +499,28 @@ class CvMainInterface:
 		g_NumProcessInfos = gc.getNumProcessInfos()
 		g_NumActionInfos = gc.getNumActionInfos()
 
+		# advc.004z: Moved ResourceIcons from last position to second and
+		# swappend BareMap and Yields.
+		# And moved this whole thing out of setMiniMapButtonVisibility,
+		# and storing some associated data too.
+		self.aMiniMapMainButtons = [
+			MiniMapButton("UnitIcons", ControlTypes.CONTROL_UNIT_ICONS, "Button_HUDGlobeUnit_Style"),
+			MiniMapButton("ResourceIcons", ControlTypes.CONTROL_RESOURCE_ALL, "Button_HUDBtnResources_Style"),
+			MiniMapButton("Grid", ControlTypes.CONTROL_GRID, "Button_HUDBtnGrid_Style"),
+			MiniMapButton("Yields", ControlTypes.CONTROL_YIELDS, "Button_HUDBtnTileAssets_Style"),
+			MiniMapButton("BareMap", ControlTypes.CONTROL_BARE_MAP, "Button_HUDBtnClearMap_Style"),
+			MiniMapButton("ScoresVisible", ControlTypes.CONTROL_SCORES, "Button_HUDBtnRank_Style")
+		]
+
 		# advc.092: Static positional data
 		# Start with the mini map b/c that's the number one thing that I would
 		# like to be adjusted to the screen resolution. Then base the size of
 		# the corner panels on the mini map size etc.
-		# Will first need the Globe button (its size affects the thickness of the
-		# frame around the minimap). This gets positioned at (0,0) as some sort of
-		# dummy/ template and later gets moved through moveItem. (Not my idea.)
-		gSetSquare("GlobeButton", "Top", 0, 0, BTNSZ(28))
+		# Will first need a template for the minimap buttons (their size affects
+		# the thickness of the frame around the minimap). 
+		gSetSquare("MiniMapButton", "Top", 0, 0, BTNSZ(28))
+		# While we're at it; this one gets treated similarly.
+		gSetSquare("GlobeToggle", "Top", 0, 0, BTNSZ(36))
 		self.setMiniMapRects()
 		gSetRect("LowerLeftCornerPanel", "Top",
 				RectLayout.LEFT, RectLayout.BOTTOM,
@@ -816,7 +830,7 @@ class CvMainInterface:
 				"Top",
 				-iMiniMapPanelRMargin, RectLayout.BOTTOM,
 				iMiniMapPanelWidth,
-				iMiniMapHeight + gRect("GlobeButton").size() / 2 + 3 + 2 * iMiniMapVMargin)
+				iMiniMapHeight + gRect("MiniMapButton").size() / 2 + 3 + 2 * iMiniMapVMargin)
 		gSetRect("MiniMap", "MiniMapPanel",
 				4, # As in BtS - and 3 indeed looks too thin on the left.
 				-5, # advc.137: was 9
@@ -2212,12 +2226,19 @@ class CvMainInterface:
 		if (CyInterface().isDirty(InterfaceDirtyBits.GlobeInfo_DIRTY_BIT) == True):
 			# Globeview and Globelayer buttons
 			CyInterface().setDirty(InterfaceDirtyBits.GlobeInfo_DIRTY_BIT, False)
-			self.updateGlobeviewButtons()
-			# <advc.004z>
-			if not bScoreStringsUpdated and MainOpt.isScoresInGlobeView():
-				# Show/hide scoreboard depending on whether the layer has options
-				self.updateScoreStrings() # </advc.004z>
-
+			#self.updateGlobeviewButtons()
+			# <advc.004z> Show/hide scoreboard depending on whether the layer has options
+			bHasOptions = self.updateGlobeviewButtons()
+			if CyEngine().isGlobeviewUp() and MainOpt.isScoresInGlobeView():
+				if bHasOptions:
+					self.hideScoreStrings()
+				else:
+					# Need this call even if already updated, just to show the
+					# background - which updateGlobeviewButtons has just hidden b/c
+					# there were no options to display. Awkward that options and score
+					# use the same background widget.
+					self.updateScoreStrings(bScoreStringsUpdated)
+			# </advc.004z>
 		return 0
 
 	# advc.004:
@@ -5716,7 +5737,7 @@ class CvMainInterface:
 # BUG - Stack Promotions - end
 
 		if CyEngine().isGlobeviewUp():
-			return 0
+			return
 
 		if (pHeadSelectedCity):
 			iOrders = CyInterface().getNumOrdersQueued()
@@ -5810,10 +5831,10 @@ class CvMainInterface:
 				screen.show("SelectedUnitPanel")
 				iRow += 1
 			# <advc> Reduce indentation
-			return 0
+			return
 		if (not pHeadSelectedUnit or
 				CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_SHOW):
-			return 0 # </advc>
+			return # </advc>
 		screen.setTableColumnHeader("SelectedUnitText", 0, u"", 100)
 		screen.setTableColumnHeader("SelectedUnitText", 1, u"", 75)
 		screen.setTableColumnHeader("SelectedUnitText", 2, u"", 10)
@@ -6095,150 +6116,146 @@ class CvMainInterface:
 					screen.show("SelectedUnitText")
 					screen.show("SelectedUnitPanel")
 					iRow += 1
-		return 0
+		return
 
-	# Will update the scores
-	def updateScoreStrings(self):
+	# advc.004z: Cut from updateScoreStrings
+	def hideScoreStrings(self):
 		screen = self.screen
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
-		screen.hide("ScoreBackground")
 # BUG - Align Icons - start
-		for i in range(gc.getMAX_CIV_PLAYERS()): # advc: Was MAX_PLAYERS
-			szName = "ScoreText" + str(i)
-			screen.hide(szName)
-			szName = "ScoreTech" + str(i)
-			screen.hide(szName)
+		for iPlayer in range(gc.getMAX_CIV_PLAYERS()): # advc: Was MAX_PLAYERS
+			szIndex = str(iPlayer)
+			screen.hide("ScoreText" + szIndex)
+			screen.hide("ScoreTech" + szIndex)
 			# <kekm.30>
-			szName = "ScoreLeader" + str(i)
-			screen.hide(szName)
-			szName = "ScoreCiv" + str(i)
-			screen.hide(szName) # </kekm.30>
-			for j in range(Scoreboard.NUM_PARTS):
-				szName = "ScoreText%d-%d" %(i, j)
-				screen.hide(szName)
+			screen.hide("ScoreLeader" + szIndex)
+			screen.hide("ScoreCiv" + szIndex) # </kekm.30>
+			for i in range(Scoreboard.NUM_PARTS):
+				screen.hide("ScoreText%d-%d" %(iPlayer, i))
 # BUG - Align Icons - end
 
+	# Will update the scores
+	def updateScoreStrings(self, bOnlyBackgr = False): # advc.004z: new param
+		screen = self.screen
+		# <advc.004z>
+		if not bOnlyBackgr:
+			self.hideScoreStrings() # </advc.004z>
+		screen.hide("ScoreBackground")
+		eUIVis = CyInterface().getShowInterface()
+		if (eUIVis == InterfaceVisibility.INTERFACE_HIDE_ALL or
+				eUIVis == InterfaceVisibility.INTERFACE_MINIMAP_ONLY or
+				not CyInterface().isScoresVisible() or
+				CyInterface().isCityScreenUp()):
+			return
+		if (CyEngine().isGlobeviewUp() and
+				# <advc.004z>
+				(not MainOpt.isScoresInGlobeView() or
+				eUIVis == InterfaceVisibility.INTERFACE_HIDE)): # </advc.004z>
+			return
+		# <advc.004z>
+		screen.show("ScoreBackground") # Moved up
+		if bOnlyBackgr:
+			return # </advc.004z>
+		xResolution = screen.getXResolution()
+		yResolution = screen.getYResolution()
 		iWidth = 0
 		iCount = 0
 		iBtnHeight = 22
-		yCoord = 0 # advc: Make sure this is defined when needed
+		yCoord = 0 # advc
 
-		if ((CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_HIDE_ALL and
-				CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_MINIMAP_ONLY)):
-			# <advc.004z>
-			kGLM = CyGlobeLayerManager()
-			iCurrentLayerID = kGLM.getCurrentLayerID()
-			# Copy-pasted from updateGlobeviewButtons
-			bGlobeViewOptions = (iCurrentLayerID != -1 and
-					kGLM.getLayer(iCurrentLayerID).getNumOptions() != 0 and
-					(MainOpt.isResourceIconOptions() or
-					kGLM.getLayer(iCurrentLayerID).getName() != "RESOURCES") and
-					(gc.getDefineINT("SHOW_UNIT_LAYER_OPTIONS") > 0 or
-					kGLM.getLayer(iCurrentLayerID).getName() != "UNITS"))
-			# </advc.004z>
-			if (CyInterface().isScoresVisible() and
-					not CyInterface().isCityScreenUp() and
-					(not CyEngine().isGlobeviewUp() or
-					# <advc.004z>
-					(not bGlobeViewOptions and MainOpt.isScoresInGlobeView() and
-					CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_HIDE))):
-					# </advc.004z>
 # BUG - Align Icons - start
-				bAlignIcons = ScoreOpt.isAlignIcons()
+		bAlignIcons = ScoreOpt.isAlignIcons()
+		if (bAlignIcons):
+			scores = Scoreboard.Scoreboard()
+		# <advc>
+		else:
+			scores = None # </advc>
+# BUG - Align Icons - end
+		# (BUG - Power Rating)  advc: Moved into the loop
+		i = gc.getMAX_CIV_TEAMS() - 1
+		while (i > -1):
+			eTeam = gc.getGame().getRankTeam(i)
+			# advc.004v: Show members of unmet dead teams
+			if (gc.getTeam(gc.getGame().getActiveTeam()).isHasMet(eTeam) or
+					gc.getTeam(eTeam).isHuman() or
+					gc.getGame().isDebugMode() or
+					(not gc.getTeam(eTeam).isAlive() and
+					gc.getTeam(eTeam).isEverAlive() and
+					ScoreOpt.isShowDeadCivs())):
+# BUG - Align Icons - start
 				if (bAlignIcons):
-					scores = Scoreboard.Scoreboard()
-				# <advc> Need to assign a value
-				else:
-					scores = None # </advc>
+					scores.addTeam(gc.getTeam(eTeam), i)
 # BUG - Align Icons - end
-				# (BUG - Power Rating)  advc: Moved into the loop
-				i = gc.getMAX_CIV_TEAMS() - 1
-				while (i > -1):
-					eTeam = gc.getGame().getRankTeam(i)
-					# advc.004v: Show members of unmet dead teams
-					if (gc.getTeam(gc.getGame().getActiveTeam()).isHasMet(eTeam) or
-							gc.getTeam(eTeam).isHuman() or
-							gc.getGame().isDebugMode() or
-							(not gc.getTeam(eTeam).isAlive() and
-							gc.getTeam(eTeam).isEverAlive() and
-							ScoreOpt.isShowDeadCivs())):
-# BUG - Align Icons - start
-						if (bAlignIcons):
-							scores.addTeam(gc.getTeam(eTeam), i)
-# BUG - Align Icons - end
-						j = gc.getMAX_CIV_PLAYERS() - 1
-						while (j > -1):
-							ePlayer = gc.getGame().getRankPlayer(j)
-							if (not CyInterface().isScoresMinimized() or
-									gc.getGame().getActivePlayer() == ePlayer):
+				j = gc.getMAX_CIV_PLAYERS() - 1
+				while (j > -1):
+					ePlayer = gc.getGame().getRankPlayer(j)
+					if (not CyInterface().isScoresMinimized() or
+							gc.getGame().getActivePlayer() == ePlayer):
 # BUG - Dead Civs - start
-								if (gc.getPlayer(ePlayer).isEverAlive() and
-										not gc.getPlayer(ePlayer).isBarbarian()
-										and (gc.getPlayer(ePlayer).isAlive() or
-										ScoreOpt.isShowDeadCivs())):
+						if (gc.getPlayer(ePlayer).isEverAlive() and
+								not gc.getPlayer(ePlayer).isBarbarian()
+								and (gc.getPlayer(ePlayer).isAlive() or
+								ScoreOpt.isShowDeadCivs())):
 # BUG - Dead Civs - end
 # BUG - Minor Civs - start
-									if (not gc.getPlayer(ePlayer).isMinorCiv() or
-											ScoreOpt.isShowMinorCivs()):
+							if (not gc.getPlayer(ePlayer).isMinorCiv() or
+									ScoreOpt.isShowMinorCivs()):
 # BUG - Minor Civs - end
-										if (gc.getPlayer(ePlayer).getTeam() == eTeam):
-											szBuffer = u"<font=2>"
+								if (gc.getPlayer(ePlayer).getTeam() == eTeam):
+									szBuffer = u"<font=2>"
 # BUG - Align Icons - start
-											if (bAlignIcons):
-												scores.addPlayer(gc.getPlayer(ePlayer), j)
+									if (bAlignIcons):
+										scores.addPlayer(gc.getPlayer(ePlayer), j)
 # BUG - Align Icons - end
-											# advc: Code moved into auxiliary function
-											szBuffer += self.playerScoreString(ePlayer, scores, bAlignIcons)
-											szBuffer = szBuffer + "</font>"
+									# advc: Code moved into auxiliary function
+									szBuffer += self.playerScoreString(ePlayer, scores, bAlignIcons)
+									szBuffer = szBuffer + "</font>"
 # BUG - Align Icons - start
-											if not bAlignIcons:
-												if CyInterface().determineWidth(szBuffer) > iWidth:
-													iWidth = CyInterface().determineWidth(szBuffer)
-												szName = "ScoreText" + str(ePlayer)
-												if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW
-														or CyInterface().isInAdvancedStart()):
-													yCoord = yResolution - 206
-												else:
-													yCoord = yResolution - 88
+									if not bAlignIcons:
+										if CyInterface().determineWidth(szBuffer) > iWidth:
+											iWidth = CyInterface().determineWidth(szBuffer)
+										szName = "ScoreText" + str(ePlayer)
+										if (eUIVis == InterfaceVisibility.INTERFACE_SHOW
+												or CyInterface().isInAdvancedStart()):
+											yCoord = yResolution - 206
+										else:
+											yCoord = yResolution - 88
 # BUG - Dead Civs - start
-												# Don't try to contact dead civs
-												if gc.getPlayer(ePlayer).isAlive():
-													iWidgetType = WidgetTypes.WIDGET_CONTACT_CIV
-													eContactPlayer = ePlayer
-												else:
-													iWidgetType = WidgetTypes.WIDGET_GENERAL
-													eContactPlayer = -1
-												screen.setText(szName, "Background",
-														szBuffer, CvUtil.FONT_RIGHT_JUSTIFY,
-														xResolution - 12, yCoord - (iCount * iBtnHeight),
-														-0.3, FontTypes.SMALL_FONT,
-														iWidgetType, eContactPlayer, -1)
+										# Don't try to contact dead civs
+										if gc.getPlayer(ePlayer).isAlive():
+											iWidgetType = WidgetTypes.WIDGET_CONTACT_CIV
+											eContactPlayer = ePlayer
+										else:
+											iWidgetType = WidgetTypes.WIDGET_GENERAL
+											eContactPlayer = -1
+										screen.setText(szName, "Background",
+												szBuffer, CvUtil.FONT_RIGHT_JUSTIFY,
+												xResolution - 12, yCoord - (iCount * iBtnHeight),
+												-0.3, FontTypes.SMALL_FONT,
+												iWidgetType, eContactPlayer, -1)
 # BUG - Dead Civs - end
-												screen.show(szName)
-												CyInterface().checkFlashReset(ePlayer)
-												iCount += 1
+										screen.show(szName)
+										CyInterface().checkFlashReset(ePlayer)
+										iCount += 1
 # BUG - Align Icons - end
-							j = j - 1
-					i = i - 1
+					j = j - 1
+			i = i - 1
 
 # BUG - Align Icons - start
-				if (bAlignIcons):
-					scores.draw(screen)
-				else:
-					if (CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_SHOW or
-							CyInterface().isInAdvancedStart()):
-						# advc.106d: Was yResolution-168. That position is actually just fine,
-						# but I can't figure out how to move the contents of the Scoreboard there.
-						yCoord = yResolution - 184
-					else:
-						yCoord = yResolution - 68
-					screen.setPanelSize("ScoreBackground",
-							xResolution - 21 - iWidth,
-							yCoord - (iBtnHeight * iCount) - 4,
-							iWidth + 12,
-							(iBtnHeight * iCount) + 8)
-					screen.show("ScoreBackground")
+		if (bAlignIcons):
+			scores.draw(screen)
+		else:
+			if (eUIVis == InterfaceVisibility.INTERFACE_SHOW or
+					CyInterface().isInAdvancedStart()):
+				# advc.106d: Was yResolution-168. That position is actually just fine,
+				# but I can't figure out how to move the contents of the Scoreboard there.
+				yCoord = yResolution - 184
+			else:
+				yCoord = yResolution - 68
+			screen.setPanelSize("ScoreBackground",
+					xResolution - 21 - iWidth,
+					yCoord - (iBtnHeight * iCount) - 4,
+					iWidth + 12,
+					(iBtnHeight * iCount) + 8)
 # BUG - Align Icons - end
 
 	# <advc> Body cut from updateScoreStrings in order to reduce indentation
@@ -6648,12 +6665,10 @@ class CvMainInterface:
 				996, yCoord - (iWhichLine * 18), -0.3)
 
 	# Will build the globeview UI
+	# advc.004z: Returns True iff the current layer has options
 	def updateGlobeviewButtons(self):
 		kInterface = CyInterface()
 		screen = self.screen
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
-
 		kEngine = CyEngine()
 		kGLM = CyGlobeLayerManager()
 		#iNumLayers = kGLM.getNumLayers() # advc: unused
@@ -6683,93 +6698,16 @@ class CvMainInterface:
 		self.setDefaultHelpTextArea(kEngine.isGlobeviewUp() or
 				CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_SHOW)
 
-		# Set base Y position for the LayerOptions, if we find them
-		if CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_HIDE:
-			iGlobeLayerOptionsY_Minimal = 38 # distance from bottom edge
-			iY = yResolution - iGlobeLayerOptionsY_Minimal
-		else:
-			iGlobeLayerOptionsY_Regular = 170# distance from bottom edge
-			iY = yResolution - iGlobeLayerOptionsY_Regular
-
 		# Hide the layer options ... all of them
-		for i in range (20):
+		for i in range(20):
 			szName = "GlobeLayerOption" + str(i)
 			screen.hide(szName)
 
 		# Setup the GlobeLayer panel
 		#iNumLayers = kGLM.getNumLayers() # advc: unused
-		if (kEngine.isGlobeviewUp() and
-				CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_HIDE_ALL):
-			# set up panel
-			# <advc.004z>
-			bUnitLayer = (eCurrentLayerType == GlobeLayerTypes.GLOBE_LAYER_UNIT)
-			bResourceLayer = (eCurrentLayerType == GlobeLayerTypes.GLOBE_LAYER_RESOURCE)
-			if (iCurrentLayerID >= 0 and
-					kGLM.getLayer(iCurrentLayerID).getNumOptions() > 0 and
-					# Could instead set NumOptions to 0 in CvGame::getGlobeLayers
-					# but then the resource layer wouldn't update properly
-					# when ResourceIconOptions is toggled in the BUG menu.
-					(not bResourceLayer or MainOpt.isResourceIconOptions())):
-				# </advc.004z>
-				bHasOptions = True
-			else:
-				bHasOptions = False
-				screen.hide("ScoreBackground")
-
-			# set up toggle button
-			screen.setState("GlobeToggle", True)
-
-			# Set GlobeLayer indicators correctly
-			for i in range(kGLM.getNumLayers()):
-				screen.setState("GlobeLayer" + str(i), iCurrentLayerID == i)
-
-			# Set up options pane
-			if bHasOptions:
-				kLayer = kGLM.getLayer(iCurrentLayerID)
-
-				iCurY = iY
-				iNumOptions = kLayer.getNumOptions()
-				iCurOption = kLayer.getCurrentOption()
-				iMaxTextWidth = -1
-				for iTmp in range(iNumOptions):
-					iOption = iTmp # iNumOptions - iTmp - 1
-					# <advc.004z> Skip dummy option (see CvEnums.h)
-					if bUnitLayer and iOption == 2:
-						continue # </advc.004z>
-					szName = "GlobeLayerOption" + str(iOption)
-					szCaption = kLayer.getOptionName(iOption)
-					# advc.004z: Highlight "All Units" option when the default (2) is selected.
-					# This is the case when none of the options has been clicked yet.
-					if (iOption == iCurOption or
-							(bUnitLayer and iCurOption == 2 and iOption == 0)):
-						szBuffer = "  <color=0,255,0>%s</color>  " % (szCaption)
-					else:
-						szBuffer = "  %s  " % (szCaption)
-					iTextWidth = CyInterface().determineWidth(szBuffer)
-
-					screen.setText(szName, "Background",
-							szBuffer, CvUtil.FONT_LEFT_JUSTIFY,
-							xResolution - 9 - iTextWidth, iCurY - iGlobeLayerOptionHeight - 10,
-							-0.3, FontTypes.SMALL_FONT,
-							WidgetTypes.WIDGET_GLOBELAYER_OPTION, iOption, -1)
-					screen.show(szName)
-
-					iCurY -= iGlobeLayerOptionHeight
-
-					if iTextWidth > iMaxTextWidth:
-						iMaxTextWidth = iTextWidth
-
-				#make extra space
-				iCurY -= iGlobeLayerOptionHeight;
-				iPanelWidth = iMaxTextWidth + 32
-				iPanelHeight = iY - iCurY
-				iPanelX = xResolution - 14 - iPanelWidth
-				iPanelY = iCurY
-				screen.setPanelSize("ScoreBackground",
-						iPanelX, iPanelY, iPanelWidth, iPanelHeight)
-				screen.show("ScoreBackground")
-
-		else:
+		if (not kEngine.isGlobeviewUp() or
+				CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_HIDE_ALL):
+			# advc: Do this branch first (to reduce indentation)
 			if iCurrentLayerID != -1:
 				kLayer = kGLM.getLayer(iCurrentLayerID)
 				if kLayer.getName() == "RESOURCES":
@@ -6791,70 +6729,138 @@ class CvMainInterface:
 
 			screen.hide("InterfaceGlobeLayerPanel")
 			screen.setState("GlobeToggle", False)
+			return False
+	
+		# set up panel
+		# <advc.004z>
+		bUnitLayer = (eCurrentLayerType == GlobeLayerTypes.GLOBE_LAYER_UNIT)
+		bResourceLayer = (eCurrentLayerType == GlobeLayerTypes.GLOBE_LAYER_RESOURCE)
+		if (iCurrentLayerID >= 0 and
+				kGLM.getLayer(iCurrentLayerID).getNumOptions() > 0 and
+				# Could instead set NumOptions to 0 in CvGame::getGlobeLayers
+				# but then the resource layer wouldn't update properly
+				# when ResourceIconOptions is toggled in the BUG menu.
+				(not bResourceLayer or MainOpt.isResourceIconOptions())):
+			# </advc.004z>
+			bHasOptions = True
+		else:
+			bHasOptions = False
+			screen.hide("ScoreBackground")
+
+		# set up toggle button
+		screen.setState("GlobeToggle", True)
+
+		# Set GlobeLayer indicators correctly
+		for i in range(kGLM.getNumLayers()):
+			screen.setState("GlobeLayer" + str(i), iCurrentLayerID == i)
+
+		# Set up options pane
+		if not bHasOptions:
+			return False
+		iGlobeLayerOptionHeight = 25 # advc.002b: was 24
+		iHMargin = HSPACE(8)
+		iCurY = gRect("GlobeToggle").y()
+		kLayer = kGLM.getLayer(iCurrentLayerID)
+		iNumOptions = kLayer.getNumOptions()
+		iCurOption = kLayer.getCurrentOption()
+		iMaxTextWidth = -1
+		for iTmp in range(iNumOptions):
+			iOption = iTmp # iNumOptions - iTmp - 1
+			# <advc.004z> Skip dummy option (see CvEnums.h)
+			if bUnitLayer and iOption == 2:
+				continue # </advc.004z>
+			szName = "GlobeLayerOption" + str(iOption)
+			szCaption = kLayer.getOptionName(iOption)
+			# advc.004z: Highlight "All Units" option when the default (2) is selected.
+			# This is the case when none of the options has been clicked yet.
+			if (iOption == iCurOption or
+					(bUnitLayer and iCurOption == 2 and iOption == 0)):
+				szBuffer = "  <color=0,255,0>%s</color>  " % (szCaption)
+			else:
+				szBuffer = "  %s  " % (szCaption)
+			iCurY -= iGlobeLayerOptionHeight
+			screen.setText(szName, "Background",
+					szBuffer, CvUtil.FONT_RIGHT_JUSTIFY,
+					gRect("Top").xRight() - iHMargin,
+					iCurY - iGlobeLayerOptionHeight / 3, # advc.092: was iCurY-10
+					-0.3, FontTypes.SMALL_FONT,
+					WidgetTypes.WIDGET_GLOBELAYER_OPTION, iOption, -1)
+			screen.show(szName)
+
+			iTextWidth = CyInterface().determineWidth(szBuffer)
+			if iTextWidth > iMaxTextWidth:
+				iMaxTextWidth = iTextWidth
+
+		iCurY -= iGlobeLayerOptionHeight #make extra space
+		iPanelWidth = iMaxTextWidth + iHMargin # advc.092: was ...+32
+		# (advc.092: Not a good idea after all I think)
+		#iPanelWidth = max(iPanelWidth, gRect("Top").xRight() - gRect("MiniMapPanel").x() - iHMargin)
+		screen.setPanelSize("ScoreBackground",
+				gRect("Top").xRight() - iPanelWidth - iHMargin, # advc.092: was ...-14
+				iCurY,
+				iPanelWidth, gRect("GlobeToggle").y() - iCurY)
+		screen.show("ScoreBackground")
+		return True
 
 	# Update minimap buttons
 	def setMinimapButtonVisibility(self, bVisible):
 		screen = self.screen
 		kInterface = CyInterface()
 		kGLM = CyGlobeLayerManager()
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
-
 		if (CyInterface().isCityScreenUp()):
 			bVisible = False
-		# advc.004z: Moved ResourceIcons from last position to second and swappend BareMap and Yields
-		kMainButtons = ["UnitIcons", "ResourceIcons", "Grid", "Yields", "BareMap", "ScoresVisible"]
-		kGlobeButtons = []
+		# <advc>
+		aMainButtons = []
+		for btn in self.aMiniMapMainButtons:
+			aMainButtons.append(btn.szName) # </advc>
+		aGlobeButtons = []
 		for i in range(kGLM.getNumLayers()):
-			kGlobeButtons.append("GlobeLayer" + str(i))
+			aGlobeButtons.append("GlobeLayer" + str(i))
 
 		if bVisible:
 			if CyEngine().isGlobeviewUp():
-				kHide = kMainButtons
-				kShow = kGlobeButtons
+				aHide = aMainButtons
+				aShow = aGlobeButtons
 			else:
-				kHide = kGlobeButtons
-				kShow = kMainButtons
+				aHide = aGlobeButtons
+				aShow = aMainButtons
 			screen.show("GlobeToggle")
 
 		else:
-			kHide = kMainButtons + kGlobeButtons
-			kShow = []
+			aHide = aMainButtons + aGlobeButtons
+			aShow = []
 			screen.hide("GlobeToggle")
 
-		for szButton in kHide:
+		for szButton in aHide:
 			screen.hide(szButton)
 
 		if CyInterface().getShowInterface() == InterfaceVisibility.INTERFACE_HIDE:
-			iMinimapButtonsY_Minimal = 32
-			iY = yResolution - iMinimapButtonsY_Minimal
-			iGlobeButtonY_Minimal = 40
-			iGlobeY = yResolution - iGlobeButtonY_Minimal
+			iGlobeY = gRect("Top").yBottom() - gRect("GlobeToggle").size() - VSPACE(4)
+			iY = gRect("Top").yBottom() - gRect("MiniMapButton").size() - VSPACE(4)
 		else:
-			iMinimapButtonsY_Regular = 160
-			iY = yResolution - iMinimapButtonsY_Regular
-			iGlobeButtonY_Regular = 168
-			iGlobeY = yResolution - iGlobeButtonY_Regular
+			iGlobeY = gRect("LowerRightCornerPanel").y()
+			iY = iGlobeY + gRect("GlobeToggle").size() - gRect("MiniMapButton").size()
+		iGlobeX = gRect("MiniMapPanel").xRight() + 1 - gRect("GlobeToggle").size()
+		# Update the layout data so that we can refer to it elsewhere
+		gSetSquare("GlobeToggle", "Top", iGlobeX, iGlobeY, gRect("GlobeToggle").size())
+		screen.moveItem("GlobeToggle", iGlobeX, iGlobeY, 0.0)
 
-		iBtnX = xResolution - 39
-		screen.moveItem("GlobeToggle", iBtnX, iGlobeY, 0.0)
-
-		iBtnAdvance = 28
-		iBtnX = iBtnX - len(kShow)*iBtnAdvance - 10
-		if len(kShow) > 0:
-			i = 0
-			for szButton in kShow:
-				screen.moveItem(szButton, iBtnX, iY, 0.0)
-				screen.moveToFront(szButton)
-				screen.show(szButton)
-				iBtnX += iBtnAdvance
-				i += 1
+		iStep = gRect("MiniMapButton").size() + HSPACE(0)
+		#iBtnX = iGlobeX - len(aShow) * iStep - HSPACE(10)
+		# advc.092: Better align left and leave any remaining space between the
+		# Globe Toggle and the smaller minimap buttons
+		iX = gRect("MiniMapPanel").x()
+		i = 0
+		for szButton in aShow:
+			screen.moveItem(szButton, iX, iY, 0.0)
+			screen.moveToFront(szButton)
+			screen.show(szButton)
+			iX += iStep
+			i += 1
 
 
 	def createGlobeviewButtons(self):
 		screen = self.screen
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
 		kGLM = CyGlobeLayerManager()
 		for i in range(kGLM.getNumLayers()):
 			szButtonID = "GlobeLayer" + str(i)
@@ -6862,7 +6868,8 @@ class CvMainInterface:
 			szStyle = kLayer.getButtonStyle()
 			if szStyle == 0 or szStyle == "":
 				szStyle = "Button_HUDSmall_Style"
-			lRect = gRect("GlobeButton")
+			# advc (note): Same preliminary position for all of them
+			lRect = gRect("MiniMapButton")
 			screen.addCheckBoxGFC(szButtonID, "", "",
 					lRect.x(), lRect.y(), lRect.size(), lRect.size(),
 					WidgetTypes.WIDGET_GLOBELAYER, i, -1,
@@ -6873,71 +6880,22 @@ class CvMainInterface:
 
 	def createMinimapButtons(self):
 		screen = self.screen
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
+		lRect = gRect("MiniMapButton")
+		# advc: Replacing a lot of redundant code
+		for btn in self.aMiniMapMainButtons:
+			screen.addCheckBoxGFC(btn.szName, "", "",
+					# advc (note): Same preliminary position for all of them
+					lRect.x(), lRect.y(), lRect.size(), lRect.size(),
+					WidgetTypes.WIDGET_ACTION,
+					gc.getControlInfo(btn.eControl).getActionInfoIndex(), -1,
+					ButtonStyles.BUTTON_STYLE_LABEL)
+			screen.setStyle(btn.szName, btn.szStyle)
+			screen.setState(btn.szName, False)
+			screen.hide(btn.szName)
 
-		screen.addCheckBoxGFC("UnitIcons", "", "",
-				0, 0, 28, 28,
-				WidgetTypes.WIDGET_ACTION,
-				gc.getControlInfo(ControlTypes.CONTROL_UNIT_ICONS).getActionInfoIndex(),
-				-1,
-				ButtonStyles.BUTTON_STYLE_LABEL)
-		screen.setStyle("UnitIcons", "Button_HUDGlobeUnit_Style")
-		screen.setState("UnitIcons", False)
-		screen.hide("UnitIcons")
-
-		screen.addCheckBoxGFC("Grid", "", "",
-				0, 0, 28, 28,
-				WidgetTypes.WIDGET_ACTION,
-				gc.getControlInfo(ControlTypes.CONTROL_GRID).getActionInfoIndex(),
-				-1,
-				ButtonStyles.BUTTON_STYLE_LABEL)
-		screen.setStyle("Grid", "Button_HUDBtnGrid_Style")
-		screen.setState("Grid", False)
-		screen.hide("Grid")
-
-		screen.addCheckBoxGFC("BareMap", "", "",
-				0, 0, 28, 28,
-				WidgetTypes.WIDGET_ACTION,
-				gc.getControlInfo(ControlTypes.CONTROL_BARE_MAP).getActionInfoIndex(),
-				-1,
-				ButtonStyles.BUTTON_STYLE_LABEL)
-		screen.setStyle("BareMap", "Button_HUDBtnClearMap_Style")
-		screen.setState("BareMap", False)
-		screen.hide("BareMap")
-
-		screen.addCheckBoxGFC("Yields", "", "",
-				0, 0, 28, 28,
-				WidgetTypes.WIDGET_ACTION,
-				gc.getControlInfo(ControlTypes.CONTROL_YIELDS).getActionInfoIndex(),
-				-1,
-				ButtonStyles.BUTTON_STYLE_LABEL)
-		screen.setStyle("Yields", "Button_HUDBtnTileAssets_Style")
-		screen.setState("Yields", False)
-		screen.hide("Yields")
-
-		screen.addCheckBoxGFC("ScoresVisible", "", "",
-				0, 0, 28, 28,
-				WidgetTypes.WIDGET_ACTION,
-				gc.getControlInfo(ControlTypes.CONTROL_SCORES).getActionInfoIndex(),
-				-1,
-				ButtonStyles.BUTTON_STYLE_LABEL)
-		screen.setStyle("ScoresVisible", "Button_HUDBtnRank_Style")
-		screen.setState("ScoresVisible", True)
-		screen.hide("ScoresVisible")
-
-		screen.addCheckBoxGFC("ResourceIcons", "", "",
-				0, 0, 28, 28,
-				WidgetTypes.WIDGET_ACTION,
-				gc.getControlInfo(ControlTypes.CONTROL_RESOURCE_ALL).getActionInfoIndex(),
-				-1,
-				ButtonStyles.BUTTON_STYLE_LABEL)
-		screen.setStyle("ResourceIcons", "Button_HUDBtnResources_Style")
-		screen.setState("ResourceIcons", False)
-		screen.hide("ResourceIcons")
-
+		lToggle = gRect("GlobeToggle")
 		screen.addCheckBoxGFC("GlobeToggle", "", "",
-				-1, -1, 36, 36,
+				lToggle.x(), lToggle.y(), lToggle.size(), lToggle.size(),
 				WidgetTypes.WIDGET_ACTION,
 				gc.getControlInfo(ControlTypes.CONTROL_GLOBELAYER).getActionInfoIndex(),
 				-1,
@@ -7184,3 +7142,10 @@ class CvMainInterface:
 		self.setLabel("FoVSliderText", "", zsFieldOfView_Text,
 				CvUtil.FONT_RIGHT_JUSTIFY, FontTypes.GAME_FONT)
 # BUG - field of view slider - end
+
+# advc:
+class MiniMapButton:
+	def __init__(self, szName, eControl, szStyle):
+		self.szName = szName
+		self.eControl = eControl
+		self.szStyle = szStyle

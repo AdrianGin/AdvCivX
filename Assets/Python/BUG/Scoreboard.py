@@ -383,7 +383,7 @@ class Scoreboard:
 		
 	def hide(self, screen):
 		"""Hides the text from the screen before building the scoreboard."""
-		screen.hide( "ScoreBackground" )
+		#screen.hide( "ScoreBackground" ) # advc.004z: Handled by CvMainInterface now
 		for p in range( gc.getMAX_CIV_PLAYERS() ):
 			name = "ScoreText%d" %( p ) # the part that flashes? holds the score and name
 			screen.hide( name )
@@ -597,7 +597,7 @@ class Scoreboard:
 			y = yResolution - 68
 		screen.setPanelSize( "ScoreBackground", xResolution - 21 - totalWidth, y - (height * self.size()) - 4, 
 							 totalWidth + 12, (height * self.size()) + 8 )
-		screen.show( "ScoreBackground" )
+		#screen.show( "ScoreBackground" ) # advc.004z: Handled by caller now
 		timer.log()
 
 
