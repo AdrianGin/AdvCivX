@@ -154,7 +154,7 @@ class CvMainInterface:
 			eWidgetType = None, iData1 = -1, iData2 = -1):
 		self.addDDS(szName, textureInfo, eWidgetType, iData1, iData2, szAttachTo)
 	def _setStyledImageButton(self, szName, szAttachTo, szTexture, style,
-			eWidgetType, iData1, iData2):
+			eWidgetType, iData1, iData2, szText = ""):
 		if eWidgetType is None:
 			eWidgetType = WidgetTypes.WIDGET_GENERAL
 		lRect = gRect(szName)
@@ -169,20 +169,25 @@ class CvMainInterface:
 					lRect.x() - lParent.x(), lRect.y() - lParent.y(), lRect.width(), lRect.height(),
 					eWidgetType, iData1, iData2)
 		else:
-			if szStyle or style is None:
+			if (szStyle or style is None) and not szText:
 				self.screen.setImageButton(szName, szTexture,
 						lRect.x(), lRect.y(), lRect.width(), lRect.height(),
 						eWidgetType, iData1, iData2)
 			else:
-				self.screen.setButtonGFC(szName, u"", "",
+				if szStyle:
+					style = ButtonStyles.BUTTON_STYLE_STANDARD
+				self.screen.setButtonGFC(szName, szText, "",
 						lRect.x(), lRect.y(), lRect.width(), lRect.height(),
 						eWidgetType, iData1, iData2, style)
+				if szStyle:
+					self.screen.setStyle(szName, szStyle)
 		if szStyle:
 			self.screen.setStyle(szName, szStyle)
 	def setStyledButton(self, szName, style, # Style can be a key string or ID
-			eWidgetType = None, iData1 = -1, iData2 = -1, szAttachTo = None):
+			eWidgetType = None, iData1 = -1, iData2 = -1, szAttachTo = None,
+			szText = ""): # Text label; rarely needed.
 		self._setStyledImageButton(szName, szAttachTo, "", style,
-				eWidgetType, iData1, iData2)
+				eWidgetType, iData1, iData2, szText)
 	def setStyledButtonAt(self, szName, szAttachTo, szStyle,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
 		self.setStyledButton(szName, szStyle, eWidgetType, iData1, iData2, szAttachTo)
@@ -674,6 +679,7 @@ class CvMainInterface:
 		iLMargin += 8
 		gSetRect("BottomButtonMaxSpace", "CenterBottom",
 				iLMargin, 0, -iRMargin, RectLayout.MAX)
+		self.setCityTaskRects()
 # BUG - field of view slider - start
 		# <advc.090>
 		self.iFoVLabelLower = 10
@@ -1082,6 +1088,66 @@ class CvMainInterface:
 		gSetRectangle("CityTabs", lButtons)
 		for i in range(iButtons):
 			gSetRectangle("CityTab" + str(i), lButtons.next())
+
+	def setCityTaskRects(self):
+		# Liberate button (was removed by the expansions)
+		#iBtnX = xResolution - 284
+		#iBtnY = yResolution - 177
+		#iBtnW = 64
+		#iBtnH = 30
+
+		gSetRect("CityTaskArea", "LowerRightCorner",
+				0, 0,
+				gRect("MiniMapPanel").x() - gRect("LowerRightCorner").x(), RectLayout.MAX)
+		# Sadly, these itty-bitty styled buttons aren't scalable.
+		'''
+		iBtnUnitW = BTNSZ(11)
+		iSmallBtnW = 2 * iBtnUnitW
+		iMediumBtnW = 3 * iBtnUnitW
+		iLargeBtnW = 3 * iSmallBtnW
+		iSmallBtnH = BTNSZ(24)
+		iMediumBtnH = BTNSZ(28)
+		iLargeBtnH = BTNSZ(30)
+		'''
+		iSmallBtnW = 22
+		iSmallBtnH = 24
+		iHighBtnH = 27
+		iMediumBtnW = 32
+		iMediumBtnH = 28
+		iLargeBtnW = 64
+		iLargeBtnH = 30
+		gSetRect("CityTaskBtns", "CityTaskArea",
+				RectLayout.CENTER, RectLayout.CENTER,
+				iLargeBtnW, iSmallBtnH + iHighBtnH + 2 * iMediumBtnH + iLargeBtnH)
+		# The above doesn't look centered, due to widget styles I guess.
+		gRect("CityTaskBtns").move(2, 3)
+		gSetRect("Conscript", "CityTaskBtns",
+				0, 0, iLargeBtnW, iLargeBtnH)
+		lHurryBtns = RowLayout(gRect("CityTaskBtns"),
+				0, gRect("Conscript").height(),
+				2, 0, iMediumBtnW, iMediumBtnH)
+		for i in range(2):
+			gSetRectangle("Hurry" + str(i), lHurryBtns.next())
+		lAutomateBtns = RowLayout(gRect("CityTaskBtns"),
+				0, gRect("Hurry0").yBottom() - gRect("CityTaskBtns").y(),
+				2, 0, iMediumBtnW, iMediumBtnH)
+		gSetRectangle("AutomateProduction", lAutomateBtns.next())
+		gSetRectangle("AutomateCitizens", lAutomateBtns.next())
+		lEmphYieldBtns = RowLayout(gRect("CityTaskBtns"),
+				0, gRect("AutomateProduction").yBottom() - gRect("CityTaskBtns").y(),
+				3, 0, iSmallBtnW, iSmallBtnH)
+		for i in range(3):
+			gSetRectangle("Emphasize" + str(i), lEmphYieldBtns.next())
+		lEmphMiscBtns = RowLayout(gRect("CityTaskBtns"),
+				0, gRect("Emphasize0").yBottom() - gRect("CityTaskBtns").y(),
+				3, 0, iSmallBtnW, iHighBtnH)
+		for i in range(3):
+			gSetRectangle("Emphasize" + str(3 + i), lEmphMiscBtns.next())
+		# The emphasize buttons in the middle are slightly thinner
+		gRect("Emphasize1").adjustSize(-2, 0)
+		gRect("Emphasize4").adjustSize(-2, 0)
+		gRect("Emphasize2").move(-2, 0)
+		gRect("Emphasize5").move(-2, 0)
 
 	def setCitizenButtonRects(self):
 		# (This will be a bit ugly because the stuff is right-aligned
@@ -3065,143 +3131,35 @@ class CvMainInterface:
 				# advc.154: Moved up a bit (needed at all?)
 				g_pSelectedUnit = 0
 
-				iBtnX = xResolution - 284
-				iBtnY = yResolution - 177
-				iBtnW = 64
-				iBtnH = 30
-
 				# Liberate button
 				#szText = "<font=1>" + localText.getText("TXT_KEY_LIBERATE_CITY", ()) + "</font>"
 				#screen.setButtonGFC("Liberate", szText, "", iBtnX, iBtnY, iBtnW, iBtnH, WidgetTypes.WIDGET_LIBERATE_CITY, -1, -1, ButtonStyles.BUTTON_STYLE_STANDARD)
 				#screen.setStyle("Liberate", "Button_CityT1_Style")
 				#screen.hide("Liberate")
 
-				iBtnSX = xResolution - 284
-
-				iBtnX = iBtnSX
-				iBtnY = yResolution - 140
-				iBtnW = 64
-				iBtnH = 30
-
-				# Conscript button
-				szText = "<font=1>" + localText.getText("TXT_KEY_DRAFT", ()) + "</font>"
-				screen.setButtonGFC("Conscript", szText, "",
-						iBtnX, iBtnY, iBtnW, iBtnH,
+				self.setStyledButton("Conscript", "Button_CityT1_Style",
 						WidgetTypes.WIDGET_CONSCRIPT, -1, -1,
-						ButtonStyles.BUTTON_STYLE_STANDARD)
-				screen.setStyle("Conscript", "Button_CityT1_Style")
+						None, "<font=1>" + localText.getText("TXT_KEY_DRAFT", ()) + "</font>")
 				screen.hide("Conscript")
 
-				iBtnY += iBtnH
-				iBtnW = 32
-				iBtnH = 28
+				for i in range(2):
+					szName = "Hurry" + str(i)
+					self.setStyledButton(szName, "Button_CityC" + str(i+1) + "_Style",
+						WidgetTypes.WIDGET_HURRY, i)
+					screen.hide(szName)
 
-				# Hurry Buttons
-				screen.setButtonGFC("Hurry0", "", "",
-						iBtnX, iBtnY, iBtnW, iBtnH,
-						WidgetTypes.WIDGET_HURRY, 0, -1,
-						ButtonStyles.BUTTON_STYLE_STANDARD)
-				screen.setStyle("Hurry0", "Button_CityC1_Style")
-				screen.hide("Hurry0")
+				self.setStyledButton("AutomateProduction", "Button_CityC3_Style",
+						WidgetTypes.WIDGET_AUTOMATE_PRODUCTION)
+				self.setStyledButton("AutomateCitizens", "Button_CityC4_Style",
+						WidgetTypes.WIDGET_AUTOMATE_CITIZENS)
 
-				iBtnX += iBtnW
-
-				screen.setButtonGFC("Hurry1", "", "",
-						iBtnX, iBtnY, iBtnW, iBtnH,
-						WidgetTypes.WIDGET_HURRY, 1, -1,
-						ButtonStyles.BUTTON_STYLE_STANDARD)
-				screen.setStyle("Hurry1", "Button_CityC2_Style")
-				screen.hide("Hurry1")
-
-				iBtnX = iBtnSX
-				iBtnY += iBtnH
-
-				# Automate Production Button
-				screen.addCheckBoxGFC("AutomateProduction", "", "",
-						iBtnX, iBtnY, iBtnW, iBtnH,
-						WidgetTypes.WIDGET_AUTOMATE_PRODUCTION, -1, -1,
-						ButtonStyles.BUTTON_STYLE_STANDARD)
-				screen.setStyle("AutomateProduction", "Button_CityC3_Style")
-
-				iBtnX += iBtnW
-
-				# Automate Citizens Button
-				screen.addCheckBoxGFC("AutomateCitizens", "", "",
-						iBtnX, iBtnY, iBtnW, iBtnH,
-						WidgetTypes.WIDGET_AUTOMATE_CITIZENS, -1, -1,
-						ButtonStyles.BUTTON_STYLE_STANDARD)
-				screen.setStyle("AutomateCitizens", "Button_CityC4_Style")
-
-				iBtnY += iBtnH
-				iBtnX = iBtnSX
-
-				iBtnW	= 22
-				iBtnWa	= 20
-				iBtnH	= 24
-				iBtnHa	= 27
-
-				# Set Emphasize buttons
-				i = 0
-				szButtonID = "Emphasize" + str(i)
-				screen.addCheckBoxGFC(szButtonID, "", "",
-						iBtnX, iBtnY, iBtnW, iBtnH,
-						WidgetTypes.WIDGET_EMPHASIZE, i, -1,
-						ButtonStyles.BUTTON_STYLE_LABEL)
-				szStyle = "Button_CityB" + str(i+1) + "_Style"
-				screen.setStyle(szButtonID, szStyle)
-				screen.hide(szButtonID)
-
-				i+=1
-				szButtonID = "Emphasize" + str(i)
-				screen.addCheckBoxGFC(szButtonID, "", "",
-						iBtnX+iBtnW, iBtnY, iBtnWa, iBtnH,
-						WidgetTypes.WIDGET_EMPHASIZE, i, -1,
-						ButtonStyles.BUTTON_STYLE_LABEL)
-				szStyle = "Button_CityB" + str(i+1) + "_Style"
-				screen.setStyle(szButtonID, szStyle)
-				screen.hide(szButtonID)
-
-				i+=1
-				szButtonID = "Emphasize" + str(i)
-				screen.addCheckBoxGFC(szButtonID, "", "",
-						iBtnX+iBtnW+iBtnWa, iBtnY, iBtnW, iBtnH,
-						WidgetTypes.WIDGET_EMPHASIZE, i, -1,
-						ButtonStyles.BUTTON_STYLE_LABEL)
-				szStyle = "Button_CityB" + str(i+1) + "_Style"
-				screen.setStyle(szButtonID, szStyle)
-				screen.hide(szButtonID)
-
-				iBtnY += iBtnH
-
-				i+=1
-				szButtonID = "Emphasize" + str(i)
-				screen.addCheckBoxGFC(szButtonID, "", "",
-						iBtnX, iBtnY, iBtnW, iBtnHa,
-						WidgetTypes.WIDGET_EMPHASIZE, i, -1,
-						ButtonStyles.BUTTON_STYLE_LABEL)
-				szStyle = "Button_CityB" + str(i+1) + "_Style"
-				screen.setStyle(szButtonID, szStyle)
-				screen.hide(szButtonID)
-
-				i+=1
-				szButtonID = "Emphasize" + str(i)
-				screen.addCheckBoxGFC(szButtonID, "", "",
-						iBtnX+iBtnW, iBtnY, iBtnWa, iBtnHa,
-						WidgetTypes.WIDGET_EMPHASIZE, i, -1,
-						ButtonStyles.BUTTON_STYLE_LABEL)
-				szStyle = "Button_CityB" + str(i+1) + "_Style"
-				screen.setStyle(szButtonID, szStyle)
-				screen.hide(szButtonID)
-
-				i+=1
-				szButtonID = "Emphasize" + str(i)
-				screen.addCheckBoxGFC(szButtonID, "", "",
-						iBtnX+iBtnW+iBtnWa, iBtnY, iBtnW, iBtnHa,
-						WidgetTypes.WIDGET_EMPHASIZE, i, -1,
-						ButtonStyles.BUTTON_STYLE_LABEL)
-				szStyle = "Button_CityB" + str(i+1) + "_Style"
-				screen.setStyle(szButtonID, szStyle)
-				screen.hide(szButtonID)
+				for i in range(6):
+					szName = "Emphasize" + str(i)
+					self.addCheckBox(szName, "", "",
+							ButtonStyles.BUTTON_STYLE_LABEL,
+							WidgetTypes.WIDGET_EMPHASIZE, i)
+					screen.setStyle(szName, "Button_CityB" + str(i+1) + "_Style")
+					screen.hide(szName)
 
 				screen.setState("AutomateCitizens",
 						pHeadSelectedCity.isCitizensAutomated())

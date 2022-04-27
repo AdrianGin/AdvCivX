@@ -141,6 +141,9 @@ class RectLayout(object):
 	def move(self, fX, fY):
 		self.fX += fX
 		self.fY += fY
+	def adjustSize(self, fWidthChange, fHeightChange):
+		self.fWidth += fWidthChange
+		self.fHeight += fHeightChange
 	# Screen coordinates of our upper left corner
 	def x(self):
 		return int(round(self.fX))
