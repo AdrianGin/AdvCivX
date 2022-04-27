@@ -3,6 +3,8 @@ from CvPythonExtensions import *
 # <advc.092>
 from RectLayout import *
 from LayoutDict import *
+# Will import this one locally
+del globals()["gSetScaleFactors"]
 # </advc.092>
 import CvUtil
 import ScreenInput
@@ -440,29 +442,34 @@ class CvMainInterface:
 		# <advc.092>
 		gSetRectangle("Top", RectLayout(None, 0, 0, self.xResolution, self.yResolution))
 		self.bScaleHUD = MainOpt.isEnlargeHUD()
-		global gHorizontalScaleFactor, gVerticalScaleFactor, gSquareButtonScaleFactor, gSpaceScaleFactor
 		if self.bScaleHUD:
 			# Divide by the aspects that the original HUD works was (presumably)
 			# optimized for.
 			xRatio = math.pow(self.xResolution / 1024.0, 0.4)
 			yRatio = math.pow(self.yResolution / 768.0, 0.4)
 			if xRatio > 1 and yRatio > 1:
-				gHorizontalScaleFactor = min(xRatio, yRatio)
+				fHorizontalScaleFactor = min(xRatio, yRatio)
 				# More is gained imo by vertical scaling; in part, due to change advc.137,
 				# which changes the minimap aspect ratio, but the original HUD also seems
 				# quite stretched horizontally. Apart from the main map height, vertical
 				# scaling happens at the expense of the sidebar height on the city screen.
-				gVerticalScaleFactor = max(yRatio,
-						min(gHorizontalScaleFactor * 1.05, max(xRatio, yRatio)))
-				gSquareButtonScaleFactor = ((2 * min(gHorizontalScaleFactor,
-						gVerticalScaleFactor) + 1) / 3)
-				gSpaceScaleFactor = (
+				fVerticalScaleFactor = max(yRatio,
+						min(fHorizontalScaleFactor * 1.05, max(xRatio, yRatio)))
+				fSquareButtonScaleFactor = ((2 * min(fHorizontalScaleFactor,
+						fVerticalScaleFactor) + 1) / 3)
+				fSpaceScaleFactor = (
 						# Space should not be expanded quite as much as button sizes.
-						((2 * gSquareButtonScaleFactor + 1) / 3) /
+						((2 * fSquareButtonScaleFactor + 1) / 3) /
 						# Space is also subject to vertical or horizontal scaling.
 						# This division should ensure that space doesn't get expanded
 						# too much overall.
-						min(gHorizontalScaleFactor, gVerticalScaleFactor))
+						min(fHorizontalScaleFactor, fVerticalScaleFactor))
+				# Already imported through import *, but need to call this setter
+				# on the LayoutDict module so that its state actually changes.
+				import LayoutDict
+				LayoutDict.gSetScaleFactors(fHorizontalScaleFactor, fVerticalScaleFactor,
+						fSquareButtonScaleFactor, fSpaceScaleFactor)
+				del LayoutDict
 		# </advc.092>
 		# advc.061:
 		gc.getGame().setScreenDimensions(self.xResolution, self.yResolution)

@@ -69,16 +69,23 @@ def gOffSetPoint(szPointKeyName, rect, fDeltaX, fDeltaY):
 	else:
 		lRect = rect
 	gSetPoint(szPointKeyName, RectLayout.offsetPoint(lRect, fDeltaX, fDeltaY))
-# These global variables get set based on the screen resolution
-# when the enlarge-HUD BUG option is enabled.
-# All positional data that goes through the functions below will then
-# be scaled accordingly.
 gHorizontalScaleFactor = 1.0
 gVerticalScaleFactor = 1.0
 gSquareButtonScaleFactor = 1.0
-# This one should be less than 1 b/c space in between widgets should (if at all)
-# be only slighty affected by the screen resolution.
 gSpaceScaleFactor = 1.0
+# Sets the global variables above.
+# All positional data that goes through the functions below will then
+# be scaled accordingly.
+def gSetScaleFactors(fHorizontal, fVertical, fSquare,
+		# This one should be less than 1 b/c space in between widgets should
+		# (if at all) be only slighty affected by the screen resolution.
+		fSpace):
+	global gHorizontalScaleFactor, gVerticalScaleFactor, gSquareButtonScaleFactor, gSpaceScaleFactor
+	gHorizontalScaleFactor = fHorizontal
+	gVerticalScaleFactor = fVertical
+	gSquareButtonScaleFactor = fSquare
+	gSpaceScaleFactor = fSpace
+
 # Magnify small distances disproportionately
 def _dispropMagnMult(fMult, iDist, fExp):
 	if fExp <= 0 and iDist > 0:
