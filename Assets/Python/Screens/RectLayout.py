@@ -138,9 +138,12 @@ class RectLayout(object):
 		if iVal < 0 and not bOffScreen:
 			iR += iParentDim - iDim
 		return iR
-	def move(self, fX, fY):
-		self.fX += fX
-		self.fY += fY
+	def move(self, fXChange, fYChange):
+		self.fX += fXChange
+		self.fY += fYChange
+	def moveTo(self, fX, fY):
+		self.fX = fX
+		self.fY = fY
 	def adjustSize(self, fWidthChange, fHeightChange):
 		self.fWidth += fWidthChange
 		self.fHeight += fHeightChange

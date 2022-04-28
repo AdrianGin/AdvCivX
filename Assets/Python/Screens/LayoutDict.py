@@ -32,6 +32,10 @@ def _isPrintLayoutKey(szKey):
 			szKey.startswith("IncrCitizenBanner0")) and
 			(not szKey.startswith("IncrCitizenButton") or
 			szKey.startswith("IncrCitizenButton0")) and
+			(not szKey.startswith("PromotionButton") or
+			szKey.endswith("Button0")) and
+			(not szKey.startswith("PLE_PROMO_BUTTONS_UNITINFO") or
+			szKey.startswith("PLE_PROMO_BUTTONS_UNITINFO0")) and
 			(not szKey.startswith("DecrCitizenButton") or
 			szKey.startswith("DecrCitizenButton0")) and
 			(not szKey.startswith("CityBonus") or

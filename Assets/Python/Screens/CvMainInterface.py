@@ -297,6 +297,38 @@ class CvMainInterface:
 	def addStackedBarAt(self, szName, szAttachTo,
 			eWidgetType = None, iData1 = -1, iData2 = -1):
 		self.addStackedBar(szName, eWidgetType, iData1, iData2, szAttachTo)
+	def _addEntityGraphic(self, szName, iEntity,
+			eWidgetType, iData1, iData2,
+			# NB: I've moved the scale param toward the front
+			fScale, fxRotation, fzRotation, bUnit = True):
+		if eWidgetType is None:
+			eWidgetType = WidgetTypes.WIDGET_GENERAL
+		lRect = gRect(szName)
+		if bUnit:
+			addEntityGraphicGFC = self.screen.addUnitGraphicGFC
+		else:
+			addEntityGraphicGFC = self.screen.addBuildingGraphicGFC
+		addEntityGraphicGFC(szName, iEntity,
+				lRect.x(), lRect.y(), lRect.width(), lRect.height(),
+				eWidgetType, iData1, iData2,
+				fxRotation, fzRotation, fScale, False)
+	def addUnitGraphic(self, szName, iUnit, # (UnitTypes id),
+			eWidgetType = None, iData1 = -1, iData2 = 1,
+			fScale = None, fxRotation = -20, fzRotation = 30):
+		if fScale is None:
+			fScale = 1.0
+			# <advc.002j>
+			if gc.getUnitInfo(iUnit).getDomainType() == DomainTypes.DOMAIN_LAND:
+				fScale *= 0.9 # </advc.002j>
+		self._addEntityGraphic(szName, iUnit,
+				eWidgetType, iData1, iData2,
+				fScale, fxRotation, fzRotation)
+	def addBuildingGraphic(self, szName, iBuilding, # (BuildingTypes id),
+			eWidgetType = None, iData1 = -1, iData2 = 1,
+			fScale = 0.8, fxRotation = -20, fzRotation = 30):
+		self._addEntityGraphic(szName, iBuilding,
+				eWidgetType, iData1, iData2,
+				fScale, fxRotation, fzRotation, False)
 	def setDefaultHelpTextArea(self, bMinMargin = False):
 		if bMinMargin:
 			lRect = gRect("DefaultHelpAreaMin")
@@ -680,6 +712,7 @@ class CvMainInterface:
 		gSetRect("BottomButtonMaxSpace", "CenterBottom",
 				iLMargin, 0, -iRMargin, RectLayout.MAX)
 		self.setCityTaskRects()
+		self.setInfoPaneRects()
 # BUG - field of view slider - start
 		# <advc.090>
 		self.iFoVLabelLower = 10
@@ -807,6 +840,7 @@ class CvMainInterface:
 				gRect("DefaultHelpArea").width(), 0)
 		# advc.092: Moved down so that PLE can access the above
 		self.PLE.PLE_CalcConstants(screen) # BUG - PLE
+		self.setPromoButtonRects()
 		# (BUG - unit plot draw method - advc.092: Moved into interfaceScreen method)
 
 	def setMiniMapRects(self):
@@ -1148,6 +1182,59 @@ class CvMainInterface:
 		gRect("Emphasize4").adjustSize(-2, 0)
 		gRect("Emphasize2").move(-2, 0)
 		gRect("Emphasize5").move(-2, 0)
+
+	def setInfoPaneRects(self):
+		# and the movement of promo buttons (incl. stack promos) is still to be revised
+		gSetRect("SelectedUnitPanel", "LowerLeftCorner",
+				RectLayout.CENTER, RectLayout.CENTER, -HSPACE(8), -VSPACE(9))
+		# Doesn't quite look properly centered
+		gRect("SelectedUnitPanel").move(-2, 2)
+		gSetRect("SelectedUnitText", "SelectedUnitPanel",
+				HSPACE(2), VLEN(30, 0.7),
+				(gRect("SelectedUnitPanel").width() * 183) / 280,
+				 # Not going to add a fifth row, not going to increase the font size,
+				 # so nothing is gained by making the table higher.
+				102)
+		gOffSetPoint("SelectedUnitLabel", "SelectedUnitPanel",
+				HSPACE(11), VSPACE(2))
+		gSetRect("SelectedCityText", "SelectedUnitPanel",
+				HSPACE(2), RectLayout.CENTER,
+				gRect("SelectedUnitText").width(), -1)
+		gSetRect("InterfaceUnitModel", "SelectedUnitPanel",
+				gRect("SelectedUnitText").width() - HLEN(8),
+				VLEN(2),
+				# Use available height, maintain the BtS aspect ratio.
+				# Well, BtS had used 123x132. Mounted units and ships tend
+				# to be wider than tall, and there's no real harm in overlapping,
+				# with the table to the left, so I'll actually make it wider
+				# than high. These dimensions only affect the 3D space in which
+				# the model is shown; won't distort the model itself.
+				0, -HLEN(6))
+		gRect("InterfaceUnitModel").adjustSize(
+				(gRect("InterfaceUnitModel").height() * 150) / 132, 0)
+		# Align right if protruding too much
+		gRect("InterfaceUnitModel").move(min(0,
+				gRect("LowerLeftCorner").xRight() + HLEN(2) - gRect("InterfaceUnitModel").xRight()), 0)
+
+	# These are for the info pane, so this function ties in with the above;
+	# however, mustn't be executed until the PLE constants have been set.
+	def setPromoButtonRects(self):
+		# Final positions will be set by calculatePromotionButtonPosition.
+		# I don't think the preliminary positions matter at all.
+		iBtnSize = BTNSZ(24)
+		for iPromo in range(gc.getNumPromotionInfos()):
+			gSetSquare("PromotionButton" + str(iPromo), "Top",
+					180, -18, iBtnSize)
+# BUG - PLE - begin
+			gSetSquare(self.PLE.PLE_PROMO_BUTTONS_UNITINFO + str(iPromo), "Top",
+					180, -18, self.PLE.CFG_INFOPANE_BUTTON_SIZE)
+# BUG - PLE - end
+# BUG - Stack Promotions - start
+			x, y = self.calculatePromotionButtonPosition(iPromo)
+			gSetSquare("PromotionButtonCircle" + str(iPromo), "Top",
+					x + (10 * iBtnSize) / 24, y + (10 * iBtnSize) / 24,
+					(16 * iBtnSize) / 24)
+# BUG - Stack Promotions - end
 
 	def setCitizenButtonRects(self):
 		# (This will be a bit ugly because the stuff is right-aligned
@@ -1812,31 +1899,23 @@ class CvMainInterface:
 		# UNIT INFO ELEMENTS
 		# *********************************************************************************
 
-		szCircleArt = ArtFileMgr.getInterfaceArtInfo("WHITE_CIRCLE_40").getPath()
-		for i in range(gc.getNumPromotionInfos()):
-			szName = "PromotionButton" + str(i)
-			screen.addDDSGFC(szName,
-					gc.getPromotionInfo(i).getButton(),
-					180, yResolution - 18, 24, 24,
-					WidgetTypes.WIDGET_PEDIA_JUMP_TO_PROMOTION, i, -1)
+		for iPromo in range(gc.getNumPromotionInfos()):
+			szName = "PromotionButton" + str(iPromo)
+			self.addDDS(szName, gc.getPromotionInfo(iPromo),
+					WidgetTypes.WIDGET_PEDIA_JUMP_TO_PROMOTION, iPromo)
 			screen.hide(szName)
 # BUG - Stack Promotions - start
-			szName = "PromotionButtonCircle" + str(i)
-			x, y = self.calculatePromotionButtonPosition(screen, i)
-			screen.addDDSGFC(szName,
-					szCircleArt,
-					x + 10, y + 10, 16, 16,
-					WidgetTypes.WIDGET_PEDIA_JUMP_TO_PROMOTION, i, -1)
+			szName = "PromotionButtonCircle" + str(iPromo)
+			x, y = self.calculatePromotionButtonPosition(iPromo)
+			gRect(szName).moveTo(x, y)
+			self.addDDS(szName, "WHITE_CIRCLE_40",
+					WidgetTypes.WIDGET_PEDIA_JUMP_TO_PROMOTION, iPromo)
 			screen.hide(szName)
 # BUG - Stack Promotions - end
-
 # BUG - PLE - begin
-			szName = self.PLE.PLE_PROMO_BUTTONS_UNITINFO + str(i)
-			screen.addDDSGFC(szName,
-					gc.getPromotionInfo(i).getButton(),
-					180, yResolution - 18,
-					self.PLE.CFG_INFOPANE_BUTTON_SIZE, self.PLE.CFG_INFOPANE_BUTTON_SIZE,
-					WidgetTypes.WIDGET_ACTION, gc.getPromotionInfo(i).getActionInfoIndex(), -1)
+			szName = self.PLE.PLE_PROMO_BUTTONS_UNITINFO + str(iPromo)
+			self.addDDS(szName, gc.getPromotionInfo(iPromo),
+					WidgetTypes.WIDGET_ACTION, gc.getPromotionInfo(iPromo).getActionInfoIndex())
 			screen.hide(szName)
 # BUG - PLE - end
 
@@ -2779,24 +2858,21 @@ class CvMainInterface:
 					if (bHandled == False):
 						eOrderNodeType = CyInterface().getOrderNodeType(i)
 						if (eOrderNodeType == OrderTypes.ORDER_TRAIN):
-							screen.addUnitGraphicGFC("InterfaceUnitModel",
+							self.addUnitGraphic("InterfaceUnitModel",
 									CyInterface().getOrderNodeData1(i),
-									175, yResolution - 138, 123, 132,
-									WidgetTypes.WIDGET_HELP_SELECTED, 0, -1,
-									-20, 30, 1, False)
+									WidgetTypes.WIDGET_HELP_SELECTED, 0)
 							bHandled = True
 						elif (eOrderNodeType == OrderTypes.ORDER_CONSTRUCT):
-							screen.addBuildingGraphicGFC("InterfaceUnitModel",
+							self.addBuildingGraphic("InterfaceUnitModel",
 									CyInterface().getOrderNodeData1(i),
-									175, yResolution - 138, 123, 132,
-									WidgetTypes.WIDGET_HELP_SELECTED, 0, -1,
-									-20, 30, 0.8, False)
+									WidgetTypes.WIDGET_HELP_SELECTED, 0)
 							bHandled = True
 						elif (eOrderNodeType == OrderTypes.ORDER_CREATE):
 							if(gc.getProjectInfo(CyInterface().getOrderNodeData1(i)).isSpaceship()):
 								modelType = 0
+								lRect = gRect("InterfaceUnitModel")
 								screen.addSpaceShipWidgetGFC("InterfaceUnitModel",
-										175, yResolution - 138, 123, 132,
+										lRect.x(), lRect.y(), lRect.width(), lRect.height(),
 										CyInterface().getOrderNodeData1(i), modelType,
 										WidgetTypes.WIDGET_HELP_SELECTED, 0, -1)
 							else:
@@ -2810,12 +2886,10 @@ class CvMainInterface:
 					bHandled = True
 				screen.moveToFront("SelectedCityText")
 			elif (CyInterface().getHeadSelectedUnit()):
-				screen.addUnitGraphicGFC("InterfaceUnitModel",
+				self.addUnitGraphic("InterfaceUnitModel",
 						CyInterface().getHeadSelectedUnit().getUnitType(),
-						175, yResolution - 138, 123, 132,
 						WidgetTypes.WIDGET_UNIT_MODEL,
-						CyInterface().getHeadSelectedUnit().getUnitType(), -1,
-						-20, 30, 1, False)
+						CyInterface().getHeadSelectedUnit().getUnitType())
 #				screen.addSpecificUnitGraphicGFC("InterfaceUnitModel", CyInterface().getHeadSelectedUnit(), 175, yResolution - 138, 123, 132, WidgetTypes.WIDGET_UNIT_MODEL, CyInterface().getHeadSelectedUnit().getUnitType(), -1, -20, 30, 1, False)
 				screen.moveToFront("SelectedUnitText")
 			else:
@@ -5653,35 +5727,20 @@ class CvMainInterface:
 					CvUtil.FONT_RIGHT_JUSTIFY, FontTypes.SMALL_FONT,
 					-0.1, WidgetTypes.WIDGET_PEDIA_JUMP_TO_BONUS, iBonus)
 
-	# Will update the info pane strings
 	def updateInfoPaneStrings(self):
 		screen = self.screen
 		iRow = 0
-		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
-		pHeadSelectedUnit = CyInterface().getHeadSelectedUnit()
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
-		bShift = CyInterface().shiftKey()
+		#bShift = CyInterface().shiftKey() # advc: unused
 
-		screen.addPanel("SelectedUnitPanel", u"", u"", True, False,
-				8, yResolution - 140, 280, 130,
-				PanelStyles.PANEL_STYLE_STANDARD)
+		self.addPanel("SelectedUnitPanel")
 		screen.setStyle("SelectedUnitPanel", "Panel_Game_HudStat_Style")
 		screen.hide("SelectedUnitPanel")
 
-		screen.addTableControlGFC("SelectedUnitText", 3,
-				10, yResolution - 109, 183, 102,
-				False, False, 32, 32,
-				TableStyles.TABLE_STYLE_STANDARD)
-		screen.setStyle("SelectedUnitText", "Table_EmptyScroll_Style")
+		self.addTable("SelectedUnitText", 3, "Table_EmptyScroll_Style")
 		screen.hide("SelectedUnitText")
 		screen.hide("SelectedUnitLabel")
 
-		screen.addTableControlGFC("SelectedCityText", 3,
-				10, yResolution - 139, 183, 128,
-				False, False, 32, 32,
-				TableStyles.TABLE_STYLE_STANDARD)
-		screen.setStyle("SelectedCityText", "Table_EmptyScroll_Style")
+		self.addTable("SelectedCityText", 3, "Table_EmptyScroll_Style")
 		screen.hide("SelectedCityText")
 
 		for i in range(gc.getNumPromotionInfos()):
@@ -5697,11 +5756,22 @@ class CvMainInterface:
 		if CyEngine().isGlobeviewUp():
 			return
 
-		if (pHeadSelectedCity):
+		# advc.092: Empty column in both unit and city text table.
+		# Shouldn't scale up I think. Was 10, but that exceeds the
+		# total width of the table by 2, and my guess is that the
+		# total of the column width is supposed to be 2 _less_ than
+		# the table width.
+		iThirdColW = 6
+		pHeadSelectedCity = CyInterface().getHeadSelectedCity()
+		if pHeadSelectedCity:
 			iOrders = CyInterface().getNumOrdersQueued()
-			screen.setTableColumnHeader("SelectedCityText", 0, u"", 121)
-			screen.setTableColumnHeader("SelectedCityText", 1, u"", 54)
-			screen.setTableColumnHeader("SelectedCityText", 2, u"", 10)
+			iFlexW = gRect("SelectedCityText").width() - 2 - iThirdColW
+			screen.setTableColumnHeader("SelectedCityText", 0, u"",
+					(121 * iFlexW) / 175)
+			screen.setTableColumnHeader("SelectedCityText", 1, u"",
+					(54 * iFlexW) / 175)
+			screen.setTableColumnHeader("SelectedCityText", 2, u"",
+					iThirdColW)
 			screen.setTableColumnRightJustify("SelectedCityText", 1)
 			for i in range(iOrders):
 				szLeftBuffer = u""
@@ -5790,12 +5860,17 @@ class CvMainInterface:
 				iRow += 1
 			# <advc> Reduce indentation
 			return
+		pHeadSelectedUnit = CyInterface().getHeadSelectedUnit()
 		if (not pHeadSelectedUnit or
 				CyInterface().getShowInterface() != InterfaceVisibility.INTERFACE_SHOW):
 			return # </advc>
-		screen.setTableColumnHeader("SelectedUnitText", 0, u"", 100)
-		screen.setTableColumnHeader("SelectedUnitText", 1, u"", 75)
-		screen.setTableColumnHeader("SelectedUnitText", 2, u"", 10)
+		iFlexW = gRect("SelectedUnitText").width() - 2 - iThirdColW
+		screen.setTableColumnHeader("SelectedUnitText", 0, u"",
+				(100 * iFlexW) / 175)
+		screen.setTableColumnHeader("SelectedUnitText", 1, u"",
+				(75 * iFlexW) / 175)
+		screen.setTableColumnHeader("SelectedUnitText", 2, u"",
+				iThirdColW)
 		screen.setTableColumnRightJustify("SelectedUnitText", 1)
 		if (CyInterface().mirrorsSelectionGroup()):
 			pSelectedGroup = pHeadSelectedUnit.getGroup()
@@ -5825,10 +5900,9 @@ class CvMainInterface:
 					fMaxMoves = float(iMaxMoves) / gc.getMOVE_DENOMINATOR()
 					szBuffer += u" %.1f - %.1f%c" % (fMinMoves, fMaxMoves,
 							CyGame().getSymbolID(FontSymbols.MOVES_CHAR))
-			screen.setText("SelectedUnitLabel", "Background",
-					szBuffer, CvUtil.FONT_LEFT_JUSTIFY,
-					18, yResolution - 137, -0.1, FontTypes.SMALL_FONT,
-					WidgetTypes.WIDGET_UNIT_NAME, -1, -1)
+			self.setText("SelectedUnitLabel", "Background", szBuffer,
+					CvUtil.FONT_LEFT_JUSTIFY, FontTypes.SMALL_FONT, -0.1,
+					WidgetTypes.WIDGET_UNIT_NAME)
 # BUG - Stack Movement Display - end
 # BUG - Stack Promotions - start
 			if MainOpt.isShowStackPromotions():
@@ -5845,6 +5919,7 @@ class CvMainInterface:
 				iSPColorAll = MainOpt.getStackPromotionColorAll()
 				iPromotionCount = 0
 				bShowCount = MainOpt.isShowStackPromotionCounts()
+				iPromoBtnSize = gRect("PromotionButton0").size() # advc.092
 				for i, iCount in enumerate(lPromotionCounts):
 					if (iCount > 0):
 						szName = "PromotionButton" + str(i)
@@ -5853,7 +5928,9 @@ class CvMainInterface:
 						screen.show(szName)
 						if (bShowCount and iCount > 1):
 							szName = "PromotionButtonCircle" + str(i)
-							screen.moveItem(szName, x + 10, y + 10, -0.3)
+							screen.moveItem(szName,
+									x + (10 * iPromoBtnSize) / 24,
+									y + (10 * iPromoBtnSize) / 24, -0.3)
 							screen.moveToFront(szName)
 							screen.show(szName)
 							szName = "PromotionButtonCount" + str(iPromotionCount)
@@ -5864,7 +5941,9 @@ class CvMainInterface:
 								szText = BugUtil.colorText(szText, iSPColor)
 							screen.setText(szName, "Background",
 									szText, CvUtil.FONT_CENTER_JUSTIFY,
-									x + 17, y + 7, -0.2, FontTypes.SMALL_FONT,
+									x + (17 * iPromoBtnSize) / 24,
+									y + (7 * iPromoBtnSize) / 24, -0.2,
+									FontTypes.SMALL_FONT,
 									WidgetTypes.WIDGET_PEDIA_JUMP_TO_PROMOTION, i, -1)
 							screen.setHitTest(szName, HitTestTypes.HITTEST_NOHIT)
 							screen.moveToFront(szName)
@@ -5898,10 +5977,9 @@ class CvMainInterface:
 						(pHeadSelectedUnit.getHotKeyNumber(), pHeadSelectedUnit.getName()))
 			if (len(szBuffer) > 60):
 				szBuffer = "<font=2>" + szBuffer + "</font>"
-			screen.setText("SelectedUnitLabel", "Background",
-					szBuffer, CvUtil.FONT_LEFT_JUSTIFY,
-					18, yResolution - 137, -0.1, FontTypes.SMALL_FONT,
-					WidgetTypes.WIDGET_UNIT_NAME, -1, -1)
+			self.setText("SelectedUnitLabel", "Background", szBuffer,
+					CvUtil.FONT_LEFT_JUSTIFY, FontTypes.SMALL_FONT, -0.1, 
+					WidgetTypes.WIDGET_UNIT_NAME)
 			if ((pSelectedGroup == 0) or (pSelectedGroup.getLengthMissionQueue() <= 1)):
 				screen.show("SelectedUnitText")
 				screen.show("SelectedUnitPanel")
@@ -6596,17 +6674,21 @@ class CvMainInterface:
 
 	# Will set the promotion button position
 	def setPromotionButtonPosition(self, szName, iPromotionCount):
-		screen = self.screen
 # BUG - Stack Promotions - start
-		x, y = self.calculatePromotionButtonPosition(screen, iPromotionCount)
-		screen.moveItem(szName, x, y, -0.3)
+		x, y = self.calculatePromotionButtonPosition(iPromotionCount)
+		gRect(szName).moveTo(x, y)
+		self.screen.moveItem(szName, x, y, -0.3)
 		return x, y
 # BUG - Stack Promotions - end
 
-	def calculatePromotionButtonPosition(self, screen, iPromotionCount):
-		yResolution = screen.getYResolution()
-		return (266 - (24 * (iPromotionCount / 6)),
-				yResolution - 144 + (24 * (iPromotionCount % 6)))
+	def calculatePromotionButtonPosition(self, iPromotionCount):
+		iBtnSize = gRect("PromotionButton0").size()
+		iAvailH = max(6 * iBtnSize, gRect("Top").yBottom() - gRect("SelectedUnitPanel").y())
+		iBtnPerCol = iAvailH / iBtnSize # was hardcoded to 6
+		return (gRect("SelectedUnitPanel").xRight() - iBtnSize - HSPACE(-2)
+				- (iBtnSize * (iPromotionCount / iBtnPerCol)),
+				gRect("Top").yBottom() - iAvailH
+				+ (iBtnSize * (iPromotionCount % iBtnPerCol)))
 
 	# advc.092: Merged into updateResearchButtons
 	#def setResearchButtonPosition(self, szButtonID, iCount)
