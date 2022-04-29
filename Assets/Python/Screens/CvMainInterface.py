@@ -5203,14 +5203,14 @@ class CvMainInterface:
 		# advc: unused
 		#if (iNumTradeRoutes > g_iNumTradeRoutes):
 		#	g_iNumTradeRoutes = iNumTradeRoutes
-		# <advc.004> Sort the resources by amount, effect, id
+		# <advc.004> Sort the resources by effect, amount, id
 		aCityBonuses = []
 		for iBonus in range(gc.getNumBonusInfos()):
 			aCityBonuses.append(iBonus)
 		aCityBonuses = sorted(aCityBonuses, key=lambda iBonus:
-				- 10000 * pHeadSelectedCity.getNumBonuses(iBonus)
-				- 1000 * pHeadSelectedCity.getBonusHappiness(iBonus)
-				- 900 * pHeadSelectedCity.getBonusHealth(iBonus)
+				- 10000 * pHeadSelectedCity.getBonusHappiness(iBonus)
+				- 9000 * pHeadSelectedCity.getBonusHealth(iBonus)
+				- 1000 * pHeadSelectedCity.getNumBonuses(iBonus)
 				+ iBonus) # </advc.004>
 		# <advc.092>
 		if self.bCityBonusButtons or gRect("Top").height() > 900:
