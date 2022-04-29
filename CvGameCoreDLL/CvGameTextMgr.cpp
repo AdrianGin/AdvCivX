@@ -371,36 +371,39 @@ void CvGameTextMgr::setMinimizePopupHelp(CvWString& szString, const CvPopupInfo 
 	}
 }
 
+// advc (note): This has been redundantly implemented in PLE.py (PLE.showUnitInfoPane)
 void CvGameTextMgr::setEspionageMissionHelp(CvWStringBuffer &szBuffer, const CvUnit* pUnit)
 {
-	if (pUnit->isSpy())
+	if (!pUnit->isSpy())
+		return;
+	PlayerTypes const eOwner =  pUnit->getPlot().getOwner();
+	if (eOwner == NO_PLAYER || TEAMID(eOwner) == pUnit->getTeam())
+		return;
+	if (!pUnit->canEspionage(pUnit->plot()))
 	{
-		PlayerTypes eOwner =  pUnit->getPlot().getOwner();
-		if (NO_PLAYER != eOwner && GET_PLAYER(eOwner).getTeam() != pUnit->getTeam())
-		{
-			if (!pUnit->canEspionage(pUnit->plot()))
-			{
-				szBuffer.append(NEWLINE);
-				szBuffer.append(gDLL->getText("TXT_KEY_UNIT_HELP_NO_ESPIONAGE"));
+		szBuffer.append(NEWLINE);
+		szBuffer.append(gDLL->getText("TXT_KEY_UNIT_HELP_NO_ESPIONAGE"));
 
-				if (pUnit->hasMoved() || pUnit->isMadeAttack())
-				{
-					szBuffer.append(gDLL->getText("TXT_KEY_UNIT_HELP_NO_ESPIONAGE_REASON_MOVED"));
-				}
-				else if (!pUnit->isInvisible(GET_PLAYER(eOwner).getTeam(), false))
-				{
-					szBuffer.append(gDLL->getText("TXT_KEY_UNIT_HELP_NO_ESPIONAGE_REASON_VISIBLE", GET_PLAYER(eOwner).getNameKey()));
-				}
-			}
-			else if (pUnit->getFortifyTurns() > 0)
-			{
-				int iModifier = -(pUnit->getFortifyTurns() * GC.getDefineINT("ESPIONAGE_EACH_TURN_UNIT_COST_DECREASE"));
-				if (iModifier != 0)
-				{
-					szBuffer.append(NEWLINE);
-					szBuffer.append(gDLL->getText("TXT_KEY_ESPIONAGE_COST", iModifier));
-				}
-			}
+		if (pUnit->hasMoved() || pUnit->isMadeAttack())
+		{
+			szBuffer.append(gDLL->getText(
+					"TXT_KEY_UNIT_HELP_NO_ESPIONAGE_REASON_MOVED"));
+		}
+		else if (!pUnit->isInvisible(GET_PLAYER(eOwner).getTeam(), false))
+		{
+			szBuffer.append(gDLL->getText(
+					"TXT_KEY_UNIT_HELP_NO_ESPIONAGE_REASON_VISIBLE",
+					GET_PLAYER(eOwner).getNameKey()));
+		}
+	}
+	else if (pUnit->getFortifyTurns() > 0)
+	{
+		int iModifier = -pUnit->getFortifyTurns() *
+				GC.getDefineINT("ESPIONAGE_EACH_TURN_UNIT_COST_DECREASE");
+		if (iModifier != 0)
+		{
+			szBuffer.append(NEWLINE);
+			szBuffer.append(gDLL->getText("TXT_KEY_ESPIONAGE_COST", iModifier));
 		}
 	}
 }
