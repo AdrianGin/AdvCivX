@@ -1294,16 +1294,20 @@ bool CvUnitAI::AI_considerPathDOW(CvPlot const& kPlot, MovementFlags eFlags)
 void CvUnitAI::AI_animalMove()
 {
 	PROFILE_FUNC();
-
-	if (SyncRandSuccess100(GC.getInfo(GC.getGame().getHandicapType()).
-		getAnimalAttackProb()))
 	{
-		if (AI_anyAttack(1, 0))
+		int iAttackPer1000 = GC.getInfo(GC.getGame().getHandicapType()).
+				getAnimalAttackProb() * 10;
+		// <advc.309> Times fraction of remaining hitpoints
+		iAttackPer1000 *= std::max(currHitPoints(), maxHitPoints() / 3);
+		iAttackPer1000 /= maxHitPoints(); // </advc.309>
+		if (SyncRandSuccess1000(iAttackPer1000))
 		{
-			return;
+			if (AI_anyAttack(1, 0))
+			{
+				return;
+			}
 		}
 	}
-
 	if (AI_heal())
 	{
 		return;
