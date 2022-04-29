@@ -114,6 +114,11 @@
 					type="boolean" default="False" 
 					get="isShowOnlyOnceProgress" dirtyBit="GameData"/>
 
+			<!-- advc.092: New option -->
+			<option id="EnlargeHUD" key="Enlarge HUD" 
+					type="boolean" default="True" 
+					get="isEnlargeHUD"/>
+
 			<!-- Field of View -->
 			<option id="FieldOfView" key="Field of View" 
 					type="boolean" default="False" 

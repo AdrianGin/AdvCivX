@@ -218,6 +218,18 @@
 		<German>Die Fortschrittsbalken für [COLOR_HIGHLIGHT_TEXT]Große Persönlichkeiten[COLOR_REVERT] and [COLOR_HIGHLIGHT_TEXT]Große Generäle[COLOR_REVERT] (falls überhaupt aktiviert) erscheinen erst, wenn entsprechender Fortschritt besteht.</German>
 	</TEXT>
 
+	<!-- advc.092: New option -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__ENLARGEHUD_TEXT</Tag>
+		<English>Scale Up HUD</English>
+		<German>Anzeige vergrößern</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__ENLARGEHUD_HOVER</Tag>
+		<English>When checked, the size of panels, buttons and the minimap is increased based on the rendering resolution. No effect when the resolution is set to the minimum (1024 x 768). Changes won't apply properly until Civ 4 is restarted.</English>
+		<German>Vergrößert Schaltflächen, die Minimap und andere Bedienelemente, wenn eine höhere Bildauflösung als 1024x768 Pixel eingestellt ist. Neustart von Civ 4 erforderlich.</German>
+	</TEXT>
+
 	<!-- advc.120c: Under the new heading, "Max/Min Buttons" should be clear
 		 enough. (Put "max" first to match the "+/-" order.) -->
 	<TEXT>
@@ -562,10 +574,11 @@
 		<Italian>Dimensione Icona Costruisci/Azione</Italian>
 		<Spanish>Tamaño de Iconos de acción/construcción</Spanish>
 	</TEXT>
+	<!-- advc.092: Mention interaction with enlarge-HUD option. -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__BUILDICONSIZE_HOVER</Tag>
-		<English>Determines the size of the build and action buttons in the bottom center of the screen.</English>
-		<German>Bestimmt die Größe der Bau- und Befehlssymbole im Menü am unteren Bildschirmrand</German>
+		<English>Determines the size of the order and action buttons in the bottom center of the screen. The size of those buttons is additionally affected by [COLOR_HIGHLIGHT_TEXT]Scale Up HUD[COLOR_REVERT] if that option is enabled.</English>
+		<German>Bestimmt die Größe der Befehls-Schaltflächen am unteren Bildschirmrand. Die Größe wird ggf. zusätzlich von der Option [COLOR_HIGHLIGHT_TEXT]Anzeige vergrößern[COLOR_REVERT] beeinflusst.</German>
 		<Italian>Determina la dimensione delle icone per i tasti di costruzione e azione nella parte bassa e centrale dello schermo.</Italian>
 		<Spanish>Determina el tamaño de los iconos de construir y acción en los botones de la parte inferior central de la pantalla.</Spanish>
 	</TEXT>

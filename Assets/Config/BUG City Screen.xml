@@ -87,13 +87,23 @@
 					get="isShowAngerCounter" dirtyBit="CityScreen"/>
 			
 			<!-- Show Only Present and Extra Religions/Corporations by johny smith -->
-			<!-- advc.004: defaults were both False in K-Mod -->
+			<!-- advc.004: Default was False in K-Mod -->
 			<option id="OnlyPresentReligions" key="Only Present Religions" 
 					type="boolean" default="True" 
 					get="isShowOnlyPresentReligions" dirtyBit="CityScreen"/>
-			<option id="OnlyPresentCorporations" key="Only Present Corporations" 
+			<!-- advc.004: Now controlled by OnlyPresentReligions -->
+			<!--option id="OnlyPresentCorporations" key="Only Present Corporations" 
 					type="boolean" default="True" 
-					get="isShowOnlyPresentCorporations" dirtyBit="CityScreen"/>
+					get="isShowOnlyPresentCorporations" dirtyBit="CityScreen"/-->
+
+			<!-- advc.097: New option -->
+			<list   id="Buildings" key="Buildings" 
+					type="int" default="0" listType="string" 
+					values="Both|Text|Icon" dirtyBit="CityScreen">
+				<choice id="Both" get="isBuildings_IconAndText"/>
+				<choice id="Text" get="isBuildings_TextOnly"/>
+				<choice id="Icon" get="isBuildings_IconOnly"/>
+			</list>
 			
 			<!-- Specialist Stacker by TheLopez -->
 			<!-- Specialist Chevrons by Ruff_Hi -->

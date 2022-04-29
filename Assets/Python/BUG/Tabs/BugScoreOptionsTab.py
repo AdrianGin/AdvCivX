@@ -72,7 +72,8 @@ class BugScoreOptionsTab(BugOptionsTab.BugOptionsTab):
 		self.addCheckbox(screen, left, "Scores__ColorCodeTeamScore", True)
 		self.addCheckbox(screen, left, "Scores__ExpandOnHover", True)
 		self.addCheckbox(screen, left, "Scores__LeftAlignName", True)
-		self.addCheckboxIntDropdown(screen, left, left, "Scores__ResearchIcons", "Scores__ResearchIconSize", "right", True)
+		# advc.092: Dropdown renamed from ResearchIconSize
+		self.addCheckboxIntDropdown(screen, left, left, "Scores__ResearchIcons", "Scores__TechButtonSize", "right", True)
 		# </advc.004>
 		# advc.004: Last param was 3 (space between left and center column)
 		self.addSpacer(screen, space, "Scores_Grid", 10)
@@ -83,8 +84,10 @@ class BugScoreOptionsTab(BugOptionsTab.BugOptionsTab):
 		centerL, centerR = self.addTwoColumnLayout(screen, center, "Scores")
 		# <advc.004> Indentation removed (False); order changed.
 		self.addIntDropdown(screen, centerL, centerR, "Scores__MaxPlayers", False, "LAYOUT_LEFT")
-		self.addIntDropdown(screen, centerL, centerR, "Scores__LineHeight", False, "LAYOUT_LEFT")
-		self.addIntDropdown(screen, centerL, centerR, "Scores__DefaultSpacing", False, "LAYOUT_LEFT")
+		# advc.092: Renamed from LineHeight
+		self.addIntDropdown(screen, centerL, centerR, "Scores__RowHeight", False, "LAYOUT_LEFT")
+		# advc.092: Renamed from DefaultSpacing
+		self.addIntDropdown(screen, centerL, centerR, "Scores__ColumnSpacing", False, "LAYOUT_LEFT")
 		self.addTextEdit(screen, center, center, "Scores__DisplayOrder")
 		# Label that tells players where to find a legend for the DisplayOrder
 		self.addLabel(screen, center, "Scores_DisplayOrderHelp", None, None, True)
