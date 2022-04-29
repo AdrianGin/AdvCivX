@@ -1932,6 +1932,7 @@ class CvMainInterface:
 			szName = "ScoreText" + str(i)
 			screen.setText(szName, "Background",
 					u"", CvUtil.FONT_RIGHT_JUSTIFY,
+					# advc.092 (note): I think these coordinates are only preliminary
 					996, 622, -0.3, FontTypes.SMALL_FONT,
 					WidgetTypes.WIDGET_CONTACT_CIV, i, -1)
 			screen.hide(szName)
@@ -6168,8 +6169,18 @@ class CvMainInterface:
 			for i in range(Scoreboard.NUM_PARTS):
 				screen.hide("ScoreText%d-%d" %(iPlayer, i))
 # BUG - Align Icons - end
+	# advc.092: Reconciling redundant BtS code from updateScoreStrings
+	# with BUG code from Scoreboard.draw.
+	def updateScoreBackgrSize(self, iTextWidth, iTextHeight):
+		iRMargin = gRect("Top").xRight() - gPoint("ScoreTextLowerRight").x()
+		iBMargin = gRect("GlobeToggle").y() - gPoint("ScoreTextLowerRight").y()
+		# These are bigger inner margins than I thought should be needed. Strange.
+		self.screen.setPanelSize("ScoreBackground",
+				gRect("Top").xRight() - iTextWidth - (5 * iRMargin) / 2,
+				gRect("GlobeToggle").y() - iTextHeight - (5 * iBMargin) / 2,
+				iTextWidth + 2 * iRMargin,
+				iTextHeight + 3 * iBMargin)
 
-	# Will update the scores
 	def updateScoreStrings(self, bOnlyBackgr = False): # advc.004z: new param
 		screen = self.screen
 		# <advc.004z>
@@ -6195,12 +6206,14 @@ class CvMainInterface:
 		yResolution = screen.getYResolution()
 		iWidth = 0
 		iCount = 0
-		iBtnHeight = 22
-		yCoord = 0 # advc
-
+		iBtnHeight = VLEN(22)
+		# <advc.092> The Scoreboard module will use this too
+		gSetPoint("ScoreTextLowerRight", PointLayout(
+				gRect("MiniMap").xRight(),
+				gRect("GlobeToggle").y() - VSPACE(6))) # </advc.092>
 # BUG - Align Icons - start
 		bAlignIcons = ScoreOpt.isAlignIcons()
-		if (bAlignIcons):
+		if bAlignIcons:
 			scores = Scoreboard.Scoreboard()
 		# <advc>
 		else:
@@ -6250,11 +6263,6 @@ class CvMainInterface:
 										if CyInterface().determineWidth(szBuffer) > iWidth:
 											iWidth = CyInterface().determineWidth(szBuffer)
 										szName = "ScoreText" + str(ePlayer)
-										if (eUIVis == InterfaceVisibility.INTERFACE_SHOW
-												or CyInterface().isInAdvancedStart()):
-											yCoord = yResolution - 206
-										else:
-											yCoord = yResolution - 88
 # BUG - Dead Civs - start
 										# Don't try to contact dead civs
 										if gc.getPlayer(ePlayer).isAlive():
@@ -6263,9 +6271,11 @@ class CvMainInterface:
 										else:
 											iWidgetType = WidgetTypes.WIDGET_GENERAL
 											eContactPlayer = -1
+										yCoord = gPoint("ScoreTextLowerRight").y() - iBtnHeight
 										screen.setText(szName, "Background",
 												szBuffer, CvUtil.FONT_RIGHT_JUSTIFY,
-												xResolution - 12, yCoord - (iCount * iBtnHeight),
+												gPoint("ScoreTextLowerRight").x(),
+												yCoord - iCount * iBtnHeight,
 												-0.3, FontTypes.SMALL_FONT,
 												iWidgetType, eContactPlayer, -1)
 # BUG - Dead Civs - end
@@ -6280,18 +6290,7 @@ class CvMainInterface:
 		if (bAlignIcons):
 			scores.draw(screen)
 		else:
-			if (eUIVis == InterfaceVisibility.INTERFACE_SHOW or
-					CyInterface().isInAdvancedStart()):
-				# advc.106d: Was yResolution-168. That position is actually just fine,
-				# but I can't figure out how to move the contents of the Scoreboard there.
-				yCoord = yResolution - 184
-			else:
-				yCoord = yResolution - 68
-			screen.setPanelSize("ScoreBackground",
-					xResolution - 21 - iWidth,
-					yCoord - (iBtnHeight * iCount) - 4,
-					iWidth + 12,
-					(iBtnHeight * iCount) + 8)
+			self.updateScoreBackgrSize(iWidth, iBtnHeight * iCount) # advc.092
 # BUG - Align Icons - end
 
 	# <advc> Body cut from updateScoreStrings in order to reduce indentation
@@ -6693,7 +6692,8 @@ class CvMainInterface:
 	# advc.092: Merged into updateResearchButtons
 	#def setResearchButtonPosition(self, szButtonID, iCount)
 
-	# Will set the selection button position
+	# advc: Unused; already unused in Civ4 v1.0.
+	'''
 	def setScoreTextPosition(self, szButtonID, iWhichLine):
 		screen = self.screen
 		yResolution = screen.getYResolution()
@@ -6703,6 +6703,7 @@ class CvMainInterface:
 			yCoord = yResolution - 88
 		screen.moveItem(szButtonID,
 				996, yCoord - (iWhichLine * 18), -0.3)
+	'''
 
 	# Will build the globeview UI
 	# advc.004z: Returns True iff the current layer has options
@@ -6798,7 +6799,7 @@ class CvMainInterface:
 		if not bHasOptions:
 			return False
 		iGlobeLayerOptionHeight = 25 # advc.002b: was 24
-		iHMargin = HSPACE(8)
+		iHMargin = gRect("Top").xRight() - gRect("MiniMap").xRight()
 		iCurY = gRect("GlobeToggle").y()
 		kLayer = kGLM.getLayer(iCurrentLayerID)
 		iNumOptions = kLayer.getNumOptions()

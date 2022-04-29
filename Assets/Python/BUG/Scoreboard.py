@@ -20,6 +20,8 @@ import CvUtil
 import re
 import string
 import MonkeyTools # advc.085: For checking Ctrl key
+import LayoutDict # advc.092
+import CvScreensInterface # advc.092
 
 # Globals
 ScoreOpt = BugCore.game.Scores
@@ -398,25 +400,34 @@ class Scoreboard:
 		self.assignRanks()
 		self.gatherVassals()
 		self.sort()
-		interface = CyInterface()
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
-		# <advc.106d>
-		# Was effectively 18 in BtS regardless of resolution
-		iVOffset = 0
-		if screen.getYResolution() > 1100:
-			iVOffset = 6
-		# </advc.106d>
-		x = xResolution - 12 # start here and shift left with each column
-		if ( interface.getShowInterface() == InterfaceVisibility.INTERFACE_SHOW or interface.isInAdvancedStart()):
-			y = yResolution - 188 - iVOffset # advc.106d: was yResolution-206
+		# <advc.092> "Default" choices added
+		bScaleHUD = BugCore.game.MainInterface.isEnlargeHUD()
+		if ScoreOpt.isRowHeightDefault():
+			if bScaleHUD:
+				height = LayoutDict.VLEN(21, 0.5)
+			else:
+				height = 20
 		else:
-			y = yResolution - 88
+			# Convert choice index to choice value by adding the
+			# lowest possible value
+			height = ScoreOpt.getRowHeight() - 1 + 10
+		if ScoreOpt.isTechButtonSizeDefault():
+			techIconSize = height + 2
+		else:
+			techIconSize = ScoreOpt.getTechButtonSize() - 1 + 12
+		if ScoreOpt.isColumnSpacingDefault():
+			if bScaleHUD:
+				defaultSpacing = LayoutDict.HSPACE(2, 2)
+			else:
+				defaultSpacing = 0
+		else:
+			defaultSpacing = ScoreOpt.getColumnSpacing() - 1 + 0
+		x = LayoutDict.gPoint("ScoreTextLowerRight").x() 
+		y = LayoutDict.gPoint("ScoreTextLowerRight").y()
+		y -= height
+		# </advc.092>
+		# start at x and shift left with each column
 		totalWidth = 0
-		height = ScoreOpt.getLineHeight()
-		techIconSize = ScoreOpt.getResearchIconSize()
-		
-		defaultSpacing = ScoreOpt.getDefaultSpacing()
 		spacing = defaultSpacing
 		szDisplayOrder = ScoreOpt.getDisplayOrder()
 		# <advc.085>
@@ -500,7 +511,7 @@ class Scoreboard:
 								value = VASSAL_PREFIX + value
 							else:
 								value += VASSAL_POSTFIX
-						newWidth = interface.determineWidth( value )
+						newWidth = CyInterface().determineWidth( value )
 						if (newWidth > width):
 							width = newWidth
 				if (width == 0):
@@ -589,14 +600,10 @@ class Scoreboard:
 				# </kekm.30>
 		
 		for playerScore in self._playerScores:
-			interface.checkFlashReset( playerScore.getID() )
-		
-		if ( interface.getShowInterface() == InterfaceVisibility.INTERFACE_SHOW or interface.isInAdvancedStart()):
-			y = yResolution - 168 - iVOffset # advc.106d: was yResolution-186
-		else:
-			y = yResolution - 68
-		screen.setPanelSize( "ScoreBackground", xResolution - 21 - totalWidth, y - (height * self.size()) - 4, 
-							 totalWidth + 12, (height * self.size()) + 8 )
+			CyInterface().checkFlashReset( playerScore.getID() )
+		# advc.092:
+		CvScreensInterface.mainInterface.updateScoreBackgrSize(totalWidth, height * self.size())
+
 		#screen.show( "ScoreBackground" ) # advc.004z: Handled by caller now
 		timer.log()
 
