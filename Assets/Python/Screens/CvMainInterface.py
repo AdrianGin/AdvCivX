@@ -686,9 +686,14 @@ class CvMainInterface:
 				-gRect("LowerRightCorner").width() + iEndTurnBtnSz / 2,
 				-gRect("LowerRightCorner").height() + iEndTurnBtnSz / 2 + 2,
 				iEndTurnBtnSz)
+		gSetRect("CivFlagArea", "LowerRightCorner",
+				0, 0,
+				gRect("MiniMapPanel").x() - gRect("LowerRightCorner").x() + 2,
+				RectLayout.MAX)
 		iFlagWidth = 68
-		gSetRect("CivilizationFlag", "LowerRightCorner",
-				HSPACE(8), (gRect("LowerRightCorner").height() - gRect("CenterBottom").height()) / 2,
+		gSetRect("CivilizationFlag", "CivFlagArea",
+				RectLayout.CENTER,
+				(gRect("LowerRightCorner").height() - gRect("CenterBottom").height()) / 2,
 				iFlagWidth, iFlagWidth * 250 / 68)
 # BUG - City Arrows - start
 		lMainCityScrollButtons = RowLayout(gRect("Top"),
@@ -6176,9 +6181,9 @@ class CvMainInterface:
 		iBMargin = gRect("GlobeToggle").y() - gPoint("ScoreTextLowerRight").y()
 		# These are bigger inner margins than I thought should be needed. Strange.
 		self.screen.setPanelSize("ScoreBackground",
-				gRect("Top").xRight() - iTextWidth - (5 * iRMargin) / 2,
+				gRect("Top").xRight() - iTextWidth - 2 * iRMargin,
 				gRect("GlobeToggle").y() - iTextHeight - (5 * iBMargin) / 2,
-				iTextWidth + 2 * iRMargin,
+				iTextWidth + (7 * iRMargin) / 4,
 				iTextHeight + 3 * iBMargin)
 
 	def updateScoreStrings(self, bOnlyBackgr = False): # advc.004z: new param
