@@ -2870,7 +2870,9 @@ void CvGame::onCityScreenChange()
 			{
 				NiPoint3 nOneNorth = pOneNorth->getPoint();
 				NiPoint3 nCity = pCityPlot->getPoint();
-				float const fDisplWeight = 0.27f;
+				float const fDisplWeight = 0.24f +
+						(BUGOption::isEnabled("MainInterface__EnlargeHUD", true) ?
+						0.03f : 0);
 				NiPoint3 nLookAt(nCity.x,
 						nCity.y + fDisplWeight * (nOneNorth.y - nCity.y), nCity.z);
 				gDLL->UI().lookAt(nLookAt, CAMERALOOKAT_CITY_ZOOM_IN);
