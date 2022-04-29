@@ -6,7 +6,7 @@ from RectLayout import *
 from math import pow
 
 def _isPrintLayoutKey(szKey):
-	return (True and # advc.tmp
+	return (False and # Toggle to True to enable output
 			# For long sequences of widgets, print only the first one or first few ...
 			(not szKey.startswith("PlotListButton") or
 			# Lower left unit button when numPlotListButtonsPerRow is 35
