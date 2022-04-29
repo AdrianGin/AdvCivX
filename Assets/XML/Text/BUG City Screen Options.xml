@@ -247,10 +247,11 @@
 	</TEXT>
 
 	<!-- advc.004: Was "City Specialists", which is redundant b/c we're on the
-		 "City" tab. And too long in translations. -->
+		 "City" tab. And too long in translations. Will also get placed under a
+		 heading "layout" for additional context. -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__SPECIALISTS_TEXT</Tag>
-		<English>Specialist Layout</English>
+		<English>Specialists</English>
 		<French>Spécialistes</French>
 		<German>Spezialisten</German>
 		<Italian>Specialisti</Italian>
