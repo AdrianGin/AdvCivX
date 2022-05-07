@@ -757,13 +757,17 @@ class CvMainInterface:
 		# value computed for self.DEFAULT_FIELD_OF_VIEW in CvGlobals,
 		# overwriting the FIELD_OF_VIEW set through XML until the game is restarted.
 		# 42.0 originally (FIELD_OF_VIEW in GlobalDefines)
-		self.DEFAULT_FIELD_OF_VIEW = 35.0
+		self.DEFAULT_FIELD_OF_VIEW = 37.0
 		#aspectFactor = pow((0.8 * self.xResolution) / self.yResolution, 0.72)
 		if ((not MainOpt.isRememberFieldOfView() and
 				not MainOpt.isShowFieldOfView()) or
 				int(MainOpt.getFieldOfView())) < 0:
-		#	self.DEFAULT_FIELD_OF_VIEW = int(max(self.DEFAULT_FIELD_OF_VIEW, min(2 * self.DEFAULT_FIELD_OF_VIEW, (aspectFactor * self.xResolution) / max(70 - self.DEFAULT_FIELD_OF_VIEW, 10))))
-		# The above might be fine if resource bubbles scaled properly - but they don't.
+		#	self.DEFAULT_FIELD_OF_VIEW = int(max(self.DEFAULT_FIELD_OF_VIEW,
+		#			min(2 * self.DEFAULT_FIELD_OF_VIEW,
+		#			(aspectFactor * self.xResolution) /
+		#			max(70 - self.DEFAULT_FIELD_OF_VIEW, 10))))
+			# Better to adjust only to the smaller aspect.
+			# Bigger screen also tends to mean that the player sits farther away.
 			if self.yResolution > 1024:
 				self.DEFAULT_FIELD_OF_VIEW = int(
 						(self.DEFAULT_FIELD_OF_VIEW * self.yResolution) / 1024)

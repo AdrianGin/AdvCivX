@@ -411,6 +411,35 @@
 		<fDefineFloatVal>5400</fDefineFloatVal>
 	</Define>
 
+	<!-- advc.004m: -28.0 in BtS. For a slightly more top-down view at medium zoom
+		 (at the expense of a perhaps slightly less flat angle at close zoom
+		 than would be desirable). -->
+	<Define> <!-- redefine -->
+		<DefineName>CAMERA_LOWER_PITCH</DefineName>
+		<fDefineFloatVal>-30.0</fDefineFloatVal>
+	</Define>
+
+	<!-- advc.004m: (1800, 300) in BtS. Not sure what units those are,
+		 I guess they're on the same scale as PLOT_SIZE. -->
+	<Define> <!-- redefine -->
+		<DefineName>CAMERA_MAX_SCROLL_SPEED</DefineName>
+		<fDefineFloatVal>2800.0</fDefineFloatVal>
+	</Define>
+	<!-- Not increasing this much b/c I still want to be able to position
+		 the camera at a precise location, e.g. for taking a screenshot. -->
+	<Define> <!-- redefine -->
+		<DefineName>CAMERA_MIN_SCROLL_SPEED</DefineName>
+		<fDefineFloatVal>325.0</fDefineFloatVal>
+	</Define>
+
+	<!-- advc.004m: This replaces CAMERA_CITY_ZOOM_IN_DISTANCE, which now gets
+		 set to this base value and is then adjusted to the field of view value
+		 (which gets set fully dynamically, not based on FIELD_OF_VIEW). -->
+	<Define>
+		<DefineName>CAMERA_BASE_CITY_DISTANCE</DefineName>
+		<fDefineFloatVal>3500</fDefineFloatVal>
+	</Define>
+
 	<!-- advc.002j: Was 1.25 in BtS; just a tiny adjustment. -->
 	<Define> <!-- redefine -->
 		<DefineName>SINGLE_UNIT_GFX_EXTRA_SCALE</DefineName>
