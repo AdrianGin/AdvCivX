@@ -629,6 +629,10 @@ class CvMainInterface:
 				RectLayout.RIGHT, gRect("InterfaceTopLeft").y(),
 				gRect("InterfaceTopLeft").width(),
 				gRect("InterfaceTopLeft").height(), True)
+		if self.bScaleHUD:
+			# Needs to be a little slimmer b/c I can't change the (default)
+			# position of the Turn Log
+			gRect("InterfaceTopLeft").adjustSize(0, -3)
 		# I can only get this panel to work correctly at its original height
 		iTopCityPanelCenterHeight = 140
 		gSetRect("TopCityPanelCenter", "CityCenterColumn",
@@ -666,6 +670,9 @@ class CvMainInterface:
 		gSetSquare("TurnLogButton", "Top",
 				iTurnLogBtnMargin, gRect("AdvisorButtons").y() - 1,
 				gRect("AdvisorButtons").height())
+		if self.bScaleHUD:
+			# To make room for the Turn Log, whose (default) position I can't change.
+			gRect("TurnLogButton").move(6, -3)
 		lBUGOptBtn = gRect("TurnLogButton").copy()
 		lBUGOptBtn.move(gRect("TurnLogButton").size() + HSPACE(4), 0)
 		gSetRectangle("BUGOptionsScreenWidget", lBUGOptBtn)
@@ -1019,7 +1026,10 @@ class CvMainInterface:
 					HSPACE(14),
 					gRect("InterfaceTopLeft").yBottom() + VSPACE(-8)
 					+ i * iRowH)
-		iX = 65 + HSPACE(5) # Space for the PercentText label
+			if self.bScaleHUD:
+				# Make room for the Turn Log, whose (default) position I can't change.
+				gPoint("PercentText" + str(i)).move(0, -3)
+		iX = 35 + HSPACE(35) # Space for the PercentText label
 		for i in range(4): # Up to 4 buttons per row (2 for BUG - Min/Max Sliders)
 			lSliderBtns = ColumnLayout(gRect("Top"),
 					iX, gPoint("PercentText0").y(),
@@ -1030,10 +1040,10 @@ class CvMainInterface:
 			szPrefix = "RateText" + str(i)
 			iY = gPoint("PercentText" + str(i)).y()
 			gSetPoint(szPrefix + "BtS", PointLayout(
-					gRect("CommerceSliderBtns1").xRight() + HSPACE(2), iY))
+					gRect("CommerceSliderBtns1").xRight() + HSPACE(3), iY))
 			# for BUG - Min/Max Sliders
 			gSetPoint(szPrefix + "BUG", PointLayout(
-					gRect("CommerceSliderBtns3").xRight() + HSPACE(2), iY))
+					gRect("CommerceSliderBtns3").xRight() + HSPACE(3), iY))
 			gSetPoint("CityPercentText" + str(i), PointLayout(
 					# (The horizontal spacing here seems pretty arbitrary)
 					gRect("CommerceSliderBtns3").xRight() + HSPACE(70, 3), iY))
