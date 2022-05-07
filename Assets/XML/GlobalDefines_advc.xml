@@ -411,6 +411,12 @@
 		<fDefineFloatVal>5400</fDefineFloatVal>
 	</Define>
 
+	<!-- advc.002j: Was 1.25 in BtS; just a tiny adjustment. -->
+	<Define> <!-- redefine -->
+		<DefineName>SINGLE_UNIT_GFX_EXTRA_SCALE</DefineName>
+		<fDefineFloatVal>1.22</fDefineFloatVal>
+	</Define>
+
 	<!-- advc.500b: If this is set to a value greater than 0, unhappiness for
 		 lack of military protection is computed based on defensive strength.
 		 Otherwise, the BtS computation is used, i.e. any combat unit
