@@ -11,6 +11,7 @@
 // For functions moved from CvGameCoreUtils to CvInfos
 #include "CvInfo_Building.h"
 #include "CvInfo_Terrain.h" // </advc>
+#include "SelfMod.h" // advc.092b
 
 int cyIntRange(int iNum, int iLow, int iHigh)
 {
@@ -264,3 +265,8 @@ int cyGetEspionageModifier(int iOurTeam, int iTargetTeam)
 	return CvTeam::getTeam((TeamTypes)iOurTeam).getEspionageModifier((TeamTypes)iTargetTeam);
 }
 
+// advc.092b:
+void cyUpdatePlotIndicatorSize()
+{
+	smc::BtS_EXE.patchPlotIndicatorSize();
+}

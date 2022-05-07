@@ -16,6 +16,7 @@
 #include "CvGameTextMgr.h"
 #include "CvMessageControl.h"
 #include "CvBugOptions.h"
+#include "SelfMod.h" // advc.092b
 #include <fstream> // advc.003d
 
 /*  advc: This file was added by patch 3.17, moving some UI functionality
@@ -2831,11 +2832,21 @@ bool CvGame::isAboutToShowDawnOfMan() const
 	return (!m_bDoMShown && getElapsedGameTurns() <= 0);
 } // </advc.004x>
 
-// <advc.061>
-void CvGame::setScreenDimensions(int x, int y)
-{
-	m_iScreenWidth = x;
-	m_iScreenHeight = y;
+/*	<advc.061> Could get this through winuser.h, but that's not trivial.
+	Let's just let Python provide the info to us. */
+void CvGame::setScreenDimensions(int iWidth, int iHeight)
+{	// <advc.001> Avoid warped plot indicators upon changing resolution
+	if (m_iScreenWidth != iWidth || m_iScreenHeight != iHeight)
+		gDLL->UI().setDirty(GlobeLayer_DIRTY_BIT, true); // </advc.001>
+	m_iScreenWidth = iWidth;
+	if (m_iScreenHeight != iHeight)
+	{
+		m_iScreenHeight = iHeight;
+		/*	<advc.092b> Do this as soon as we know the screen dimensions, before
+			a plot indicator gets created for the initially selected units. */
+		if (m_iScreenHeight > 0)
+			smc::BtS_EXE.patchPlotIndicatorSize(); // </advc.092b>
+	}
 }
 
 int CvGame::getScreenWidth() const

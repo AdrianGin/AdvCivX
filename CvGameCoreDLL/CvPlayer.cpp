@@ -21,6 +21,7 @@
 #include "CvDLLFlagEntityIFaceBase.h" // BBAI
 #include "BBAILog.h"
 #include "RiseFall.h" // advc.708: Needed only for savegame compatibility
+#include "SelfMod.h" // advc.092b
 
 // advc.003u: Statics moved from CvPlayerAI
 CvPlayerAI** CvPlayer::m_aPlayers = NULL;
@@ -19212,9 +19213,14 @@ void CvPlayer::getGlobeLayerColors(GlobeLayerTypes eGlobeLayerType, int iOption,
 {
 	PROFILE_FUNC(); // advc.opt
 	CvGame const& kGame = GC.getGame();
-	// <advc.004z> Too early; player options haven't been set yet.
-	if (kGame.getTurnSlice() <= 0)
-		return; // </advc.004z>
+	// <advc.004z>
+	if (kGame.getTurnSlice() <= 0 || // Too early; player options not yet set.
+		!smc::BtS_EXE.isPlotIndicatorSizePatched()) // advc.092b
+	{	/*	(No use in setting the GlobeLayer_DIRTY_BIT - caller won't have cleared
+			it yet. But the dirty bit seems to get set again at least once before
+			initialization is through. So we're actually saving a little time here.) */
+		return;
+	} // </advc.004z>
 	/*  <advc> These get cleared by some of the subroutines, but should be
 		empty to begin with. If not, there could be a memory leak. */
 	FAssert(aColors.empty() && aIndicators.empty());

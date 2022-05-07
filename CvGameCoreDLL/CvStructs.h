@@ -449,6 +449,8 @@ struct CvWidgetDataStruct
 	WidgetTypes m_eWidgetType;			//	What the 'type' of this widget is (for parsing help and executing actions)
 };
 
+/*	advc (note, fwiw): I've noticed while inspecting disassembly that the EXE
+	calls the auto-generated copy ctor of this struct. */
 struct DllExport CvPlotIndicatorData
 {
 	CvPlotIndicatorData()

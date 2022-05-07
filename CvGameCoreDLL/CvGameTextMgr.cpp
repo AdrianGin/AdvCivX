@@ -1575,7 +1575,7 @@ void CvGameTextMgr::setPlotListHelpPerOwner(CvWStringBuffer& szString,
 	int iScreenHeight = kGame.getScreenHeight();
 	int iLineLimit = (iScreenHeight == 0 ? 25 :
 			fmath::round(32 * dFontFactor * kGame.getScreenHeight() / 1000.0 - 5));
-	/*  When hovering over an indicator bubble (unit layer), only info about units
+	/*  When hovering over a plot indicator (unit layer), only info about units
 		in kPlot is shown. This means more space. Same when hovering over a flag
 		(bShort). */
 	if(bIndicator || bShort)
@@ -1905,7 +1905,7 @@ void CvGameTextMgr::setPlotListHelp(CvWStringBuffer &szString, CvPlot const& kPl
 
 	if (//(gDLL->getChtLvl() > 0)
 		GC.getGame().isDebugMode() &&// advc.135c
-		!bIndicator && // advc.007: Don't attach debug info to indicator bubbles
+		!bIndicator && // advc.007: Don't attach debug info to plot indicators
 		GC.ctrlKey())
 	{
 		/*  advc: Moved into subroutine. (Note: bShort and bOneLine are unused

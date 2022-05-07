@@ -517,7 +517,7 @@ public:
 	void setDawnOfManShown(bool b);
 	bool isAboutToShowDawnOfMan() const; // </advc.004x>
 	// <advc.061>
-	void setScreenDimensions(int x, int y); // (exposed to Python)
+	void setScreenDimensions(int iWidth, int iHeight); // (exposed to Python)
 	int getScreenWidth() const;
 	int getScreenHeight() const;
 	// </advc.061>  <advc.004n>

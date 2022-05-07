@@ -2836,8 +2836,8 @@ void CvGame::update()
 			{
 				autoSave(true); // advc.106l
 			}
-			/*	<advc.004m> This seems to be the earliest place where bubbles can
-				be enabled w/o crashing. */
+			/*	<advc.004m> This seems to be the earliest place where plot indicators
+				can be enabled w/o crashing. */
 			if (BUGOption::isEnabled("MainInterface__StartWithResourceIcons", true))
 				gDLL->getEngineIFace()->setResourceLayer(true);
 			// </advc.004m>
