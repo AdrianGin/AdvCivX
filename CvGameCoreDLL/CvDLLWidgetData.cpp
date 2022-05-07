@@ -1264,10 +1264,10 @@ void CvDLLWidgetData::doPlotListShift(int iChange, bool bMaxStep)
 		return;
 	int const iPlotUnits = pPlot->getNumUnits();
 	int iStep = 10;
-	// (Not sure that this is really a maximal limit of anything)
-	int const iBigStep = GC.getDefineINT("MAX_PLOT_LIST_SIZE"); // 100
 	if (gDLL->UI().isCityScreenUp())
 	{
+		// (Not sure that this is really a maximal limit of anything)
+		int const iBigStep = GC.getDefineINT("MAX_PLOT_LIST_SIZE"); // 100
 		/*	BUG drawing method will only ever show a single row on the city screen.
 			Don't want to expand rapidly upon the first right-shift then.
 			Instead, let the bMaxStep param jump to the final column. */

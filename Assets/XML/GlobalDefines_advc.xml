@@ -406,7 +406,7 @@
 
 	<!-- advc.004m: 2200 in BtS. Now ignored unless the "Default Camera Distance"
 		 BUG option is set to "Custom". -->
-	<Define>
+	<Define> <!-- redefine -->
 		<DefineName>CAMERA_START_DISTANCE</DefineName>
 		<fDefineFloatVal>5400</fDefineFloatVal>
 	</Define>

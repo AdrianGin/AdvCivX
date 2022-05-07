@@ -8728,7 +8728,8 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 			else
 			{
 				bFriendlyToSecretary =
-						(kOurTeam.AI_getAttitude(eSecretaryGeneral) == ATTITUDE_FRIENDLY);
+						// advc: was ==
+						(kOurTeam.AI_getAttitude(eSecretaryGeneral) >= ATTITUDE_FRIENDLY);
 			}
 		}
 	}

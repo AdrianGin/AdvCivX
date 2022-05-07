@@ -21,7 +21,7 @@ class PointLayout:
 # The constructor receives the coordinates as an offset from another
 # ("parent") RectLayout - and converts them to absolute screen coordinates
 # accessible through the x and y methods.
-# For convenience, the constructors works with float values, but the accessors
+# For convenience, the constructor works with float values, but the accessors
 # return integers because that's what most of the CyGInterfaceScreen functions
 # in the EXE expect.
 class RectLayout(object):
@@ -40,13 +40,13 @@ class RectLayout(object):
 			# ('None' is allowed only for the RectLayout representing the screen itself.
 			# In that case, fX and fY need to be absolute screen coordinates.)
 			lParent,
-			# Distance from the lParent's left edge if positive,
+			# Distance from lParent's left edge if positive,
 			# from lParent's right edge if negative.
 			# CENTER centers this widget horizontally.
 			# RIGHT aligns this widget horizontally to the right edge of lParent.
 			# LEFT is equivalent to fX=0.
 			fX,
-			# Distance from the lParent's top edge if positive,
+			# Distance from lParent's top edge if positive,
 			# from lParent's bottom edge if negative.
 			# CENTER centers this widget vertically.
 			# BOTTOM aligns this widget vertically to the bottom edge of lParent.

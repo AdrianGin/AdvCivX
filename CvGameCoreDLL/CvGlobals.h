@@ -26,7 +26,7 @@ class CvInterface;
 class FProfiler;
 class CvDLLUtilityIFaceBase;
 class CvPythonCaller; // advc.003y
-class CvDLLLogger;
+class CvDLLLogger; // advc
 class CvRandom;
 class CvGame; // advc.003u
 class CvGameAI;
