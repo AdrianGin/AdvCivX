@@ -6,7 +6,7 @@
 	in a single place. (But, so far, there's only one.) For the time being,
 	functions are exposed to Python through CyGameCoreUtils. */
 
-class Civ4BeyondSwordMods : private boost::noncopyable
+class Civ4BeyondSwordMods
 {
 public:
 	bool isPlotIndicatorSizePatched() const { return m_bPlotIndicatorSizePatched; }
