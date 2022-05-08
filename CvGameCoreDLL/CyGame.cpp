@@ -610,9 +610,9 @@ bool CyGame::isFinalInitialized()
 	return m_kGame.isFinalInitialized();
 }
 // advc.061:
-void CyGame::setScreenDimensions(int x, int y)
+void CyGame::setScreenDimensions(int iWidth, int iHeight)
 {
-	m_kGame.setScreenDimensions(x, y);
+	m_kGame.setScreenDimensions(iWidth, iHeight);
 }
 
 int /*PlayerTypes*/ CyGame::getActivePlayer()

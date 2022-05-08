@@ -164,7 +164,7 @@ public:
 	bool isSimultaneousTeamTurns();
 
 	bool isFinalInitialized();
-	void setScreenDimensions(int x, int y); // advc.061
+	void setScreenDimensions(int iWidth, int iHeight); // advc.061
 	int /*PlayerTypes*/ getActivePlayer();
 	void setActivePlayer(int /*PlayerTypes*/ eNewValue, bool bForceHotSeat);
 	int getPausePlayer();
