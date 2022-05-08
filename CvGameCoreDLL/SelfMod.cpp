@@ -166,12 +166,12 @@ public:
 				just as we expect - they're merely in a (slightly?) different place. */
 			/*	The first 27 instructions at the start of the function that calls
 				CvPlayer::getGlobeLayerColors. This is a fairly long sequence w/o any
-				absolute code locations in operands. After this sequence, there are a
-				bunch of DLL calls, the last one being CvPlayer::getGlobeLayerColors.
-				It would be nice to search for those calls as well - since native code
-				has fairly low entropy, meaning that my pattern of 27 instructions may
-				not be as unique as I hope - but I'm not sure if the call addresses for
-				external functions would be the same in a slightly abnormal EXE. */
+				absolute addresses in operands. After this sequence, there are a bunch
+				of DLL calls, the last one being CvPlayer::getGlobeLayerColors. It would
+				be nice to search for those calls as well - since native code has fairly
+				low entropy, meaning that my pattern of 27 instructions may not be as
+				unique as I hope - but I'm not sure if the call addresses for external
+				functions would be the same in a slightly abnormal EXE. */
 			byte aNeedleBytes[] = {
 				0x6A, 0xFF, 0x68, 0x15, 0xB9, 0xA3, 0x00, 0x64, 0xA1, 0x00, 0x00, 0x00,
 				0x00, 0x50, 0x64, 0x89, 0x25, 0x00, 0x00, 0x00, 0x00, 0x83, 0xEC, 0x68,
@@ -183,7 +183,7 @@ public:
 				0x41, 0x08, 0x50 
 			};
 			// Where we expect the needle at iAddressOffset=0
-			uint uiStartAddress = 0x00464930;
+			uint const uiStartAddress = 0x00464930;
 			// How big a uiAdressOffset we contemplate
 			int const iMaxAbsOffset = 256 * 1024;
 			if (uiStartAddress >= iMaxAbsOffset &&
@@ -208,7 +208,7 @@ public:
 				iAddressOffset = ((int)std::distance(aHaystackBytes, pos))
 						- iMaxAbsOffset;
 			}
-			else FErrorMsg("aCodeAddresses don't look like code addresses");
+			else FErrorMsg("uiStartAddress doesn't look like a code address");
 			// Run our initial test again to be on the safe side
 			if (!testCodeLayout(iAddressOffset))
 			{
