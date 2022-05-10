@@ -75,6 +75,7 @@ class PlotIndicatorSizePatch : RuntimePatch
 {
 public:
 	PlotIndicatorSizePatch(int iScreenHeight) : m_iScreenHeight(iScreenHeight) {}
+
 	void apply() // override
 	{
 		// Cache for performance (though probably not a concern)
@@ -110,18 +111,22 @@ public:
 						but the adjustment really just seems to be a bad idea. */
 					// std::pow(fHeightRatio, 0.85f)
 		}
-		/*	Players who use a big FoV tend to zoom in farther, I think, but I still
-			expect there to be less space per plot when the FoV is larger. (But I'm
-			not going to dirty the globe layer in response to a FoV change - that
-			would probably cause stuttering while the player adjusts the FoV slider.) */
+		/*	FoV correlates with screen size, (typical) camera distance and the
+			player's distance from the screen. And BtS seems to make a small adjustment
+			to field of view and camera distance too (probably not explicitly).
+			So it's hard to reason about this adjustment. In my tests, it has had
+			the desired result of making the diameters about one quarter of a plot's
+			side length. */
 		if (bAdjustToFoV)
 		{
 			float fTypicalFoV = 40;
 			ffBaseSize.onScreen *= std::min(2.f, std::max(0.5f,
 					std::sqrt(fTypicalFoV / GC.getFIELD_OF_VIEW())));
 		}
+		/*	(I'm not going to dirty the globe layer in response to a FoV change - that
+			would probably cause stuttering while the player adjusts the FoV slider.) */
 		{
-			int iUserChoice = BUGOption::getValue("MainInterface__OffScreenUnitSizeMult");
+			int iUserChoice = BUGOption::getValue("MainInterface__OffScreenUnitSizeMult", 3);
 			if (iUserChoice == 7)
 			{	// Meaning "disable". 0 size seems to do accomplish that.
 				ffBaseSize.offScreen = 0;
@@ -135,7 +140,7 @@ public:
 
 		/*	The onscreen size is hardcoded as an immediate operand (in FP32 format)
 			in three places and the offscreen size in one place.
-			|Code addr.|Disassembly							|Machine code
+			|Code addr.| Disassembly						| Code bytes
 			------------------------------------------------------------------------------
 			 00464A08	push 42280000h						 68 00 00 28 42
 			 004B76F4		(same as above)
@@ -184,7 +189,7 @@ public:
 			};
 			// Where we expect the needle at iAddressOffset=0
 			uint const uiStartAddress = 0x00464930;
-			// How big a uiAdressOffset we contemplate
+			// How big an iAddressOffset we contemplate
 			int const iMaxAbsOffset = 256 * 1024;
 			if (uiStartAddress >= iMaxAbsOffset &&
 				uiStartAddress <= MAX_INT - iMaxAbsOffset)
@@ -257,8 +262,7 @@ private:
 	{
 		PlotIndicatorSize(float fOnScreen = 0, float fOffScreen = 0)
 		:	onScreen(fOnScreen), offScreen(fOffScreen) {}
-		/*	Overriding operator== for this nested thing would be a PITA -
-			if not impossible. */
+		// Overriding operator== for this nested thing would be a PITA
 		bool equals(PlotIndicatorSizePatch::PlotIndicatorSize const& kOther)
 		{	// Exact floating point comparison
 			return (onScreen == kOther.onScreen &&
