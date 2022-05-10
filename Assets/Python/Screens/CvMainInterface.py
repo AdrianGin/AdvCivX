@@ -700,7 +700,7 @@ class CvMainInterface:
 		iFlagWidth = 68
 		gSetRect("CivilizationFlag", "CivFlagArea",
 				RectLayout.CENTER,
-				(gRect("LowerRightCorner").height() - gRect("CenterBottom").height()) / 2,
+				2 * (gRect("LowerRightCorner").height() - gRect("CenterBottom").height()) / 5,
 				iFlagWidth, iFlagWidth * 250 / 68)
 # BUG - City Arrows - start
 		lMainCityScrollButtons = RowLayout(gRect("Top"),
