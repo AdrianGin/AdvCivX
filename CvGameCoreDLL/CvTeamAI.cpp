@@ -754,60 +754,53 @@ bool CvTeamAI::AI_isLandTarget(TeamTypes eTarget,
 }
 
 /*	BETTER_BTS_AI_MOD, General AI, 01/10/10, jdog5000: START
-	advc.pf: Moved from CvPlot, refactored. At least the first one cares about
-	war plans and is therefore AI code. The second one doesn't have a plausible
-	use for human players either, and I want to keep them together. */
+	advc.pf: Moved from CvPlot. At least the first one cares about war plans and
+	is therefore AI code. The second one doesn't have a plausible use for
+	human players either, and I want to keep them together. */
 bool CvTeamAI::AI_isHasPathToEnemyCity(CvPlot const& kFrom, bool bIgnoreBarb) const
 {
 	PROFILE_FUNC();
 
-	if (kFrom.getArea().getNumCities() == countNumCitiesByArea(kFrom.getArea()))
-		false;
-	/*	advc: I guess it's important for performance to check capitals first;
-		So continue doing that, but compute the enemy players only in one place. */
-	std::vector<CvPlayer const*> apEnemies;
-	for (PlayerIter<ALIVE,KNOWN_POTENTIAL_ENEMY_OF> itEnemy(getID());
+	// Imitate instatiation of irrigated finder ...
+	/*std::vector<TeamTypes> teamVec;
+	teamVec.push_back(getID());
+	teamVec.push_back(NO_TEAM);*/
+	/*	advc.001: This is wrong - we need to set a target team. (Thx to spqkfk
+		for making me aware.) Checking all enemy capitals upfront (to save time)
+		is then (if we do it correctly) also a bad idea. Typically, there
+		won't be a high number of enemy capitals anyway. */
+	// advc.pf: Deleted remaining BBAI code on 21 Oct 2020. Replacement:
+	for (TeamIter<ALIVE,KNOWN_POTENTIAL_ENEMY_OF> itEnemy(getID());
 		itEnemy.hasNext(); ++itEnemy)
 	{
 		if (bIgnoreBarb && (itEnemy->isBarbarian() || itEnemy->isMinorCiv()))
 			continue;
-		if (AI_getWarPlan(itEnemy->getTeam()) != NO_WARPLAN)
-		apEnemies.push_back(&*itEnemy);
-	} 
-	// Imitate instatiation of irrigated finder ...
-	// advc.pf: Deleted on 21 Oct 2020, replaced with TeamStepfinder.
-	TeamPathFinder<TeamPath::LAND> pathFinder(*this, NULL, /*iMaxPath=*/18);
-	for (size_t i = 0; i < apEnemies.size(); i++)
-	{
-		CvCity* pCapital = apEnemies[i]->getCapital();
-		if (pCapital != NULL && pathFinder.generatePath(kFrom, pCapital->getPlot()))
-			return true;
-	}
-	for (size_t i = 0; i < apEnemies.size(); i++) // Check all other enemy cities
-	{
-		FOR_EACH_CITY(pCity, *apEnemies[i])
+		if (AI_getWarPlan(itEnemy->getID()) != NO_WARPLAN &&
+			AI_isHasPathToEnemyCity(kFrom, *itEnemy))
 		{
-			if (!pCity->isCapital() &&pathFinder.generatePath(kFrom, pCity->getPlot()))
-				return true;
+			return true;
 		}
-	}
+	} 
 	return false;
 }
 
-// (currently unused)
-bool CvTeamAI::AI_isHasPathToPlayerCity(CvPlot const& kFrom, PlayerTypes eOtherPlayer) const
+// advc: Was "isHasPathToPlayerCity" and was only used for debug info
+bool CvTeamAI::AI_isHasPathToEnemyCity(CvPlot const& kFrom,
+	CvTeam const& kEnemy) const
 {
 	PROFILE_FUNC();
-
-	if (kFrom.getArea().getCitiesPerPlayer(eOtherPlayer) == 0)
-		return false;
 	// Imitate instatiation of irrigated finder ...
 	// advc.pf: Deleted on 21 Oct 2020, replaced with TeamStepfinder.
-	TeamPathFinder<TeamPath::LAND> pathFinder(*this, &GET_TEAM(eOtherPlayer), 18);
-	FOR_EACH_CITY(pCity, GET_PLAYER(eOtherPlayer))
+	TeamPathFinder<TeamPath::LAND> pathFinder(*this, &kEnemy, 18);
+	for (MemberIter itMember(kEnemy.getID()); itMember.hasNext(); ++itMember)
 	{
-		if (pathFinder.generatePath(kFrom, pCity->getPlot()))
-			return true;
+		if (kFrom.getArea().getCitiesPerPlayer(itMember->getID()) <= 0)
+			continue;
+		FOR_EACH_CITY(pCity, *itMember)
+		{
+			if (pathFinder.generatePath(kFrom, pCity->getPlot()))
+				return true;
+		}
 	}
 	return false;
 } // BETTER_BTS_AI_MOD: END

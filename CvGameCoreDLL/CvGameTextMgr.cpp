@@ -4037,48 +4037,59 @@ void CvGameTextMgr::setPlotHelpDebug_Ctrl(CvWStringBuffer& szString, CvPlot cons
 					iNumOtherCitySites, iOtherSiteBestValue));
 		}
 	}
-	else if (kPlot.isOwned() && pPlotCity == NULL)
+	else if (kPlot.isOwned() && pPlotCity == NULL &&
+		!kPlot.isWater()) // advc.007
 	{
-		if(bAlt && !bShift)
+		if (bAlt && !bShift)
 		{
-			if (GET_TEAM(kPlot.getTeam()).AI_isHasPathToEnemyCity(kPlot))
+			CvTeamAI const& kPlotTeam = GET_TEAM(kPlot.getTeam());
+			// <advc.opt> Don't compute this over and over as the user inspects it
+			static TeamTypes eCacheTeam = NO_TEAM;
+			static bool bHasPath = false;
+			static ArrayEnumMap<TeamTypes,bool> abHasPath;
+			bool const bUpdCache = (kPlotTeam.getID() != eCacheTeam);
+			if (bUpdCache)
+				bHasPath = kPlotTeam.AI_isHasPathToEnemyCity(kPlot); // </advc.opt>
+			if (bHasPath)
 				szString.append(CvWString::format(L"\nCan reach an enemy city\n\n"));
 			else szString.append(CvWString::format(L"\nNo reachable enemy cities\n\n"));
-			for (int iI = 0; iI < MAX_PLAYERS; ++iI)
-			{
-				if (GET_PLAYER((PlayerTypes)iI).isAlive())
+			for (TeamIter<ALIVE> itTarget; itTarget.hasNext(); ++itTarget)
+			{	// <advc.opt>
+				if (bUpdCache)
 				{
-					if (kPlot.getTeam() == TEAMID((PlayerTypes)iI) || // advc.pf
-						GET_TEAM(kPlot.getTeam()).AI_isHasPathToPlayerCity(kPlot,(PlayerTypes)iI))
-					{
-						szString.append(CvWString::format(SETCOLR L"Can reach %s city" ENDCOLR,
-								TEXT_COLOR("COLOR_GREEN"), GET_PLAYER((PlayerTypes)iI).getName()));
-					}
-					else
-					{
-						szString.append(CvWString::format(SETCOLR L"Cannot reach any %s city" ENDCOLR,
-								TEXT_COLOR("COLOR_NEGATIVE_TEXT"), GET_PLAYER((PlayerTypes)iI).getName()));
-					}
-
-					if (GET_TEAM(kPlot.getTeam()).isAtWar(TEAMID((PlayerTypes)iI)))
-					{
-						szString.append(CvWString::format(L" (enemy)"));
-					}
-					szString.append(CvWString::format(L"\n"));
-					// <advc.007>
-					szString.append(CvString::format("Bonus trade counter: %d\n",
-							GET_PLAYER(kPlot.getOwner()).AI_getBonusTradeCounter((PlayerTypes)iI)));
-					// </advc.007>
+					abHasPath.set(itTarget->getID(),
+							&kPlotTeam == &*itTarget || // advc.pf
+							kPlotTeam.AI_isHasPathToEnemyCity(kPlot, *itTarget));
+				} // </advc.opt>
+				if (abHasPath.get(itTarget->getID()))
+				{
+					szString.append(CvWString::format(SETCOLR L"Can reach %s city" ENDCOLR,
+							TEXT_COLOR("COLOR_GREEN"), itTarget->getName().c_str()));
 				}
+				else
+				{
+					szString.append(CvWString::format(SETCOLR L"Cannot reach any %s city" ENDCOLR,
+							TEXT_COLOR("COLOR_NEGATIVE_TEXT"), itTarget->getName().c_str()));
+				}
+				if (kPlotTeam.isAtWar(itTarget->getID()))
+					szString.append(CvWString::format(L" (enemy)"));
+				szString.append(CvWString::format(L"\n"));
+				// <advc.007>
+				for (MemberIter itMember(itTarget->getID()); itMember.hasNext(); ++itMember)
+				{
+					szString.append(CvString::format("Bonus trade counter: %d\n",
+							GET_PLAYER(kPlot.getOwner()).AI_getBonusTradeCounter(
+							itMember->getID())));
+				} // </advc.007>
 			}
 		}
 		else if (bShift && bAlt)
 		{
-			for (int iI = 0; iI < GC.getNumCivicInfos(); iI++)
+			FOR_EACH_ENUM(Civic)
 			{
 				szString.append(CvWString::format(L"\n %s = %d",
-						GC.getInfo((CivicTypes)iI).getDescription(),
-						GET_PLAYER(kPlot.getOwner()).AI_civicValue((CivicTypes)iI)));
+						GC.getInfo(eLoopCivic).getDescription(),
+						GET_PLAYER(kPlot.getOwner()).AI_civicValue(eLoopCivic)));
 			}
 		}
 		// advc.007: Commented out
