@@ -111,12 +111,12 @@ public:
 						but the adjustment really just seems to be a bad idea. */
 					// std::pow(fHeightRatio, 0.85f)
 		}
-		/*	FoV correlates with screen size, (typical) camera distance and the
-			player's distance from the screen. And BtS seems to make a small adjustment
-			to field of view and camera distance too (probably not explicitly).
-			So it's hard to reason about this adjustment. In my tests, it has had
-			the desired result of making the diameters about one quarter of a plot's
-			side length. */
+		/*	FoV correlates with screen size, (typical) camera distance and
+			the player's distance from the screen. And BtS seems to make a small
+			adjustment based on FoV and camera distance too (probably
+			not explicitly). So it's hard to reason about this adjustment.
+			In my tests, it has had the desired result of making the diameters
+			about one quarter of a plot's side length. */
 		if (bAdjustToFoV)
 		{
 			float fTypicalFoV = 40;
