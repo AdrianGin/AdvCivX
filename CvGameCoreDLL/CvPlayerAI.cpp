@@ -13916,7 +13916,10 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI,
 			iAttackUnits = std::max(1, iAttackUnits);
 			/*	this is not strictly guaranteed, but I expect it to
 				always be true under normal playing conditions. */
-			FAssert(iAttackUnits >= iLimitedUnits || iLimitedUnits <= 3);
+			/*	advc: Rare, but fine. An AI player may have never done any
+				offensive buildup and may still have trained some siege units
+				as counterattackers. */
+			//FAssert(iAttackUnits >= iLimitedUnits || iLimitedUnits <= 3);
 
 			iValue *= std::max(1, iAttackUnits - iLimitedUnits);
 			iValue /= iAttackUnits;

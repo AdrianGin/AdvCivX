@@ -4043,11 +4043,12 @@ void CvGameTextMgr::setPlotHelpDebug_Ctrl(CvWStringBuffer& szString, CvPlot cons
 		if (bAlt && !bShift)
 		{
 			CvTeamAI const& kPlotTeam = GET_TEAM(kPlot.getTeam());
-			// <advc.opt> Don't compute this over and over as the user inspects it
+			// <advc.opt> Don't compute this over and over as the user inspects the text
 			static TeamTypes eCacheTeam = NO_TEAM;
 			static bool bHasPath = false;
 			static ArrayEnumMap<TeamTypes,bool> abHasPath;
 			bool const bUpdCache = (kPlotTeam.getID() != eCacheTeam);
+			eCacheTeam = kPlotTeam.getID();
 			if (bUpdCache)
 				bHasPath = kPlotTeam.AI_isHasPathToEnemyCity(kPlot); // </advc.opt>
 			if (bHasPath)
