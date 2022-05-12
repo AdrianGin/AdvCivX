@@ -138,12 +138,6 @@ namespace
 		iBtnX += iIncrX;
 		dialogTemplate.AddButton( _T("Ignore Always"), WS_VISIBLE, 0,
 				iBtnX, iBtnY, iBtnW, iBtnH, IDC_IGNORE_ALWAYS );
-		iBtnX += iIncrX;
-		dialogTemplate.AddButton( _T("&Abort"), WS_VISIBLE, 0,
-				iBtnX, iBtnY, iBtnW, iBtnH, IDC_ABORT );
-		iBtnX += iIncrX;
-		dialogTemplate.AddButton( _T("&Debug"), WS_VISIBLE, 0,
-				iBtnX, iBtnY, iBtnW, iBtnH, IDC_DEBUG );
 		// <advc.006l>
 		if (bShowStopBtn)
 		{
@@ -151,6 +145,12 @@ namespace
 			dialogTemplate.AddButton(_T("&Stop Auto Play"), WS_VISIBLE, 0,
 					iBtnX, iBtnY, iBtnW, iBtnH, IDC_STOP);
 		} // </advc.006l>
+		iBtnX += iIncrX;
+		dialogTemplate.AddButton( _T("&Abort"), WS_VISIBLE, 0,
+				iBtnX, iBtnY, iBtnW, iBtnH, IDC_ABORT );
+		iBtnX += iIncrX;
+		dialogTemplate.AddButton( _T("&Debug"), WS_VISIBLE, 0,
+				iBtnX, iBtnY, iBtnW, iBtnH, IDC_DEBUG );
 		dialogTemplate.AddEditBox( _T(""),
 				ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY |
 				WS_VSCROLL | WS_HSCROLL | WS_VISIBLE, WS_EX_STATICEDGE,
