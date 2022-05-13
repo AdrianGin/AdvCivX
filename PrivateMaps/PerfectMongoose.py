@@ -2894,15 +2894,16 @@ def ShrinkMap(largeMap, lWidth, lHeight, sWidth, sHeight):
 		for x in range(sWidth):
 			weights      = 0.0
 			contributors = 0.0
-			yyStart = int(y * yScale)
-			yyStop = int((y + 1) * yScale)
-			if yyStop < ((y + 1) * yScale):
-				yyStop += 1
+			# <advc.001> Using the scale ratios here can lead to out of bounds
+			# indices due to floating-point inaccuracy.
+			yyStart = (y * lHeight) // sHeight
+			yyStop = ((y + 1) * lHeight + sHeight - 1) // sHeight
+			# </advc.001>
 			for yy in range(yyStart, yyStop):
-				xxStart = int(x * xScale)
-				xxStop = int((x + 1) * xScale)
-				if xxStop < ((x + 1) * xScale):
-					xxStop += 1
+				# <advc.001>
+				xxStart = (x * lWidth) // sWidth
+				xxStop = ((x + 1) * lWidth + sWidth - 1) // sWidth
+				# </advc.001>
 				for xx in range(xxStart, xxStop):
 					weight = GetWeight(x, y, xx, yy, xScale, yScale)
 					i = yy * lWidth + xx
