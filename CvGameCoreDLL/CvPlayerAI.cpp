@@ -33,6 +33,17 @@ bool CvPlayerAI::areStaticsInitialized()
 	return CvPlayer::areStaticsInitialized(); // advc.003u
 }
 
+// advc: Update all attitude caches
+void CvPlayerAI::AI_updateAttitudes()
+{
+	FOR_EACH_ENUM(Player) // (PlayerAIIter might not be ready yet)
+	{
+		CvPlayerAI& kLoopPlayer = GET_PLAYER(eLoopPlayer);
+		if (kLoopPlayer.isAlive() && kLoopPlayer.isMajorCiv())
+			kLoopPlayer.AI_updateAttitude();
+	}
+}
+
 
 DllExport CvPlayerAI& CvPlayerAI::getPlayerNonInl(PlayerTypes ePlayer)
 {
@@ -2883,7 +2894,7 @@ int CvPlayerAI::AI_targetCityValue(CvCity const& kCity, bool bRandomize,
 				}
 			}*/
 		}
-		/*	advc.104d: This (and, as a fall-back, the above) represents the
+		/*	advc.104d: This (and, as a fallback, the above) represents the
 			(strategic) economic value of kCity. Tactical aspects handled below. */
 		else iValue += pUWAICity->getAssetScore();
 	}
@@ -6192,6 +6203,7 @@ int CvPlayerAI::AI_techBuildingValue(TechTypes eTech, bool bConstCache, bool& bE
 int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnablesUnitWonder) const
 {
 	PROFILE_FUNC();
+	bEnablesUnitWonder = false;
 	CvTeamAI const& kTeam = GET_TEAM(getTeam()); // K-Mod
 
 	int const iHasMetCount = kTeam.getHasMetCivCount(true);
@@ -6228,8 +6240,6 @@ int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnable
 	} // </k146>
 
 	int iValue = 0;
-
-	bEnablesUnitWonder = false;
 	CvCivilization const& kCiv = getCivilization(); // advc.003w 
 	for (int i = 0; i < kCiv.getNumUnits(); i++)
 	{
@@ -6423,21 +6433,18 @@ int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnable
 					break;
 
 				case UNITAI_ICBM:
+				{
 					//iMilitaryValue += ((bWarPlan) ? 200 : 100);
 					// K-Mod
-					if (!GC.getGame().isNoNukes())
+					int const iNukeWeight = AI_nukeWeight();
+					if (iNukeWeight > 0) // advc (replacing an assertion)
 					{
 						iOffenceValue = std::max(iOffenceValue,
 								(bWarPlan ? 2 : 1) * iWeight +
-								(GC.getGame().isNukesValid() ?
-								2 * AI_nukeWeight() : 0) * iWeight / 100);
-						FAssert(!GC.getGame().isNukesValid() ||
-								kTeam.isCapitulated() || // advc.143b
-								AI_nukeWeight() > 0);
-					}
-					// K-Mod end
+								(2 * iNukeWeight * iWeight) / 100);
+					} // K-Mod end
 					break;
-
+				}
 				case UNITAI_WORKER_SEA:
 					if (iCoastalCities > 0)
 					{
@@ -8721,7 +8728,8 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 			else
 			{
 				bFriendlyToSecretary =
-						(kOurTeam.AI_getAttitude(eSecretaryGeneral) == ATTITUDE_FRIENDLY);
+						// advc: was ==
+						(kOurTeam.AI_getAttitude(eSecretaryGeneral) >= ATTITUDE_FRIENDLY);
 			}
 		}
 	}
@@ -13908,7 +13916,10 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI,
 			iAttackUnits = std::max(1, iAttackUnits);
 			/*	this is not strictly guaranteed, but I expect it to
 				always be true under normal playing conditions. */
-			FAssert(iAttackUnits >= iLimitedUnits || iLimitedUnits <= 3);
+			/*	advc: Rare, but fine. An AI player may have never done any
+				offensive buildup and may still have trained some siege units
+				as counterattackers. */
+			//FAssert(iAttackUnits >= iLimitedUnits || iLimitedUnits <= 3);
 
 			iValue *= std::max(1, iAttackUnits - iLimitedUnits);
 			iValue /= iAttackUnits;
@@ -21355,11 +21366,13 @@ bool CvPlayerAI::AI_proposeJointWar(PlayerTypes eHuman)
 		return false;
 	AI_changeContactTimer(eHuman, CONTACT_JOIN_WAR,
 			AI_getContactDelay(CONTACT_JOIN_WAR));
-	CvDiploParameters* pDiplo = new CvDiploParameters(getID());
-	/*  NB: The DLL never deletes CvDiploParameters objects; presumably
+	/*	NB: The DLL never deletes CvDiploParameters objects; presumably
 		handled by beginDiplomacy */
+	CvDiploParameters* pDiplo = new CvDiploParameters(getID());
+	CvPlayer const& kTargetLeader = GET_PLAYER(GET_TEAM(eBestTarget).getLeaderID());
 	pDiplo->setDiploComment(GC.getAIDiploCommentType("JOIN_WAR"),
-			GET_PLAYER(GET_TEAM(eBestTarget).getLeaderID()).getCivilizationAdjectiveKey());
+			kTargetLeader.getCivilizationAdjectiveKey(),
+			kTargetLeader.getNameKey(), ""); // advc.mnai (lfgr 11/2021)
 	pDiplo->setAIContact(true);
 	pDiplo->setData(eBestTarget);
 	gDLL->beginDiplomacy(pDiplo, eHuman);
@@ -21692,9 +21705,10 @@ bool CvPlayerAI::AI_proposeEmbargo(PlayerTypes eHuman)
 	AI_changeContactTimer(eHuman, CONTACT_STOP_TRADING,
 			AI_getContactDelay(CONTACT_STOP_TRADING));
 	CvDiploParameters* pDiplo = new CvDiploParameters(getID());
+	CvPlayer const& kTargetLeader = GET_PLAYER(GET_TEAM(eBestTeam).getLeaderID());
 	pDiplo->setDiploComment(GC.getAIDiploCommentType("STOP_TRADING"),
-			GET_PLAYER(GET_TEAM(eBestTeam).getLeaderID()).
-			getCivilizationAdjectiveKey());
+			kTargetLeader.getCivilizationAdjectiveKey(),
+			kTargetLeader.getNameKey(), ""); // advc.mnai (lfgr 11/2021)
 	pDiplo->setAIContact(true);
 	pDiplo->setData(eBestTeam);
 	gDLL->beginDiplomacy(pDiplo, eHuman);
@@ -22609,7 +22623,7 @@ scaled CvPlayerAI::AI_amortizationMultiplier(int iDelay) const
 	/*	2 would mean that amortization multiplier begins to decrease right in
 		the middle of the game, and that it will have decreased e.g. to 0.8
 		after 300 turns (normal settings). */
-	static scaled const rCoeff = fixp(1.95);
+	static scaled const rCoeff = fixp(1.9);
 	r *= rCoeff;
 	r.clamp(fixp(0.2), 1);
 	return r;
@@ -26191,8 +26205,9 @@ void CvPlayerAI::AI_convertUnitAITypesForCrush()
 		/* if (pLoopUnit->AI_getUnitAIType() == UNITAI_RESERVE
 			|| pLoopUnit->AI_isCityAIType() && (pLoopUnit->getExtraCityDefensePercent() <= 0)) */
 		// K-Mod, protective leaders might still want to use their gunpowder units...
-		if (pLoopUnit->AI_getUnitAIType() == UNITAI_RESERVE || pLoopUnit->AI_getUnitAIType() == UNITAI_COLLATERAL
-			|| (pLoopUnit->AI_isCityAIType() && pLoopUnit->getExtraCityDefensePercent()		
+		if (pLoopUnit->AI_getUnitAIType() == UNITAI_RESERVE ||
+			pLoopUnit->AI_getUnitAIType() == UNITAI_COLLATERAL ||
+			(pLoopUnit->AI_isCityAIType() && pLoopUnit->getExtraCityDefensePercent()		
 			+ pLoopUnit->getUnitInfo().getCityDefenseModifier() / 2 // cdtw
 			<= 30))
 		{
@@ -29213,6 +29228,11 @@ bool CvPlayerAI::AI_feelsSafe() const
 	{
 		return false;
 	}
+	FOR_EACH_CITY(pCity, GET_PLAYER(BARBARIAN_PLAYER))
+	{
+		if (pCity->getPreviousOwner() == getID())
+			return false;
+	}
 	for (TeamAIIter<MAJOR_CIV,OTHER_KNOWN_TO> it(getTeam()); it.hasNext(); ++it)
 	{
 		CvTeamAI const& kRival = *it;
@@ -29270,11 +29290,10 @@ int CvPlayerAI::AI_getContactDelay(ContactTypes eContact) const
 void CvPlayerAI::AI_setHuman(bool b)
 {
 	// Some of the first-impression modifiers don't apply to human players
+	CvPlayerAI::AI_updateAttitudes();
+	// <advc.115b>, advc.115f
 	for (PlayerAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
-	{
-		it->AI_updateAttitude();
-		it->AI_updateVictoryWeights(); // advc.115b, advc.115f
-	}
+		it->AI_updateVictoryWeights(); // </advc.115b>
 	if (b)
 		return;
 	/*	<advc.057> Enforce invariant: AI group head has maximal impassable count.

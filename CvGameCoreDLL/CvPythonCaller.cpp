@@ -1254,22 +1254,8 @@ CvWString CvPythonCaller::customMapOptionDescription(char const* szMapScriptName
 	FAssert(m_bLastCallSuccessful || GC.getInitCore().getSavedGame());
 	return szResult;
 }
-// advc.108:
-bool CvPythonCaller::isAnyCustomMapOptionSetTo(CvWString szTranslatedDesc) const
-{
-	CvString szMapScriptNameNarrow(GC.getInitCore().getMapScriptName());
-	for (int i = 0; i < GC.getMap().getNumCustomMapOptions(); i++)
-	{
-		CustomMapOptionTypes eOptionValue = GC.getInitCore().getCustomMapOption(i);
-		CvWString szOptionDescr(customMapOptionDescription(
-				szMapScriptNameNarrow.c_str(), i, eOptionValue));
-		if (szOptionDescr == szTranslatedDesc)
-			return true;
-	}
-	return false;
-}
 
-void CvPythonCaller::mapGridDimensions(WorldSizeTypes eWorldSize, int& iWidth, int& iHeight) const
+bool CvPythonCaller::mapGridDimensions(WorldSizeTypes eWorldSize, int& iWidth, int& iHeight) const
 {
 	std::vector<int> iiReturn;
 	CyArgsList argsList;
@@ -1277,10 +1263,23 @@ void CvPythonCaller::mapGridDimensions(WorldSizeTypes eWorldSize, int& iWidth, i
 	m_bLastCallSuccessful = m_python.callFunction(m_python.getMapScriptModule(), "getGridSize",
 			argsList.makeFunctionArgs(), &iiReturn);
 	if (!isOverride() || iiReturn.size() < (size_t)2)
-		return;
+		return false;
 	FAssertMsg(iiReturn[0] > 0 && iiReturn[1] > 0, "the width and height returned by python getGridSize() must be positive");
 	iWidth = iiReturn[0];
 	iHeight = iiReturn[1];
+	return true;
+}
+
+// advc.165:
+bool CvPythonCaller::mapPlotsPercent(WorldSizeTypes eWorldSize, int& iModifier) const
+{
+	long lResult = 100;
+	CyArgsList argsList;
+	argsList.add(eWorldSize);
+	m_bLastCallSuccessful = m_python.callFunction(m_python.getMapScriptModule(),
+			"getNumPlotsPercent", argsList.makeFunctionArgs(), &lResult);
+	iModifier = toInt(lResult);
+	return isOverride();
 }
 
 void CvPythonCaller::mapLatitudeExtremes(int& iTop, int& iBottom) const

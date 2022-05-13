@@ -52,7 +52,7 @@ class FDataStreamBase;
 #define FOR_EACH_NON_DEFAULT_PAIR(kEnumMap, EnumPrefix, ValueType) \
 	int iANON_NON_DEFAULT_ITER = 0; \
 	for (std::pair<EnumPrefix##Types,ValueType> per##EnumPrefix##Val; \
-		kEnumMap.nextNonDefaultPair<ValueType>(iANON_NON_DEFAULT_ITER, per##EnumPrefix##Val); )
+		(kEnumMap).nextNonDefaultPair<ValueType>(iANON_NON_DEFAULT_ITER, per##EnumPrefix##Val); )
 /*	Example:
 FOR_EACH_NON_DEFAULT_PAIR(m_aiBlockadedCount, Team, int)
 	expands to
@@ -64,9 +64,9 @@ for (std::pair<TeamTypes,int> perTeamVal;
 #define FOR_EACH_NON_DEFAULT_KEY(kEnumMap, EnumPrefix) \
 	int iANON_NON_DEFAULT_ITER = 0; \
 	for (EnumPrefix##Types eLoop##EnumPrefix = \
-		kEnumMap.nextNonDefaultKey(iANON_NON_DEFAULT_ITER); \
-		eLoop##EnumPrefix != kEnumMap.endKey(); \
-		eLoop##EnumPrefix = kEnumMap.nextNonDefaultKey(iANON_NON_DEFAULT_ITER))
+		(kEnumMap).nextNonDefaultKey(iANON_NON_DEFAULT_ITER); \
+		eLoop##EnumPrefix != (kEnumMap).endKey(); \
+		eLoop##EnumPrefix = (kEnumMap).nextNonDefaultKey(iANON_NON_DEFAULT_ITER))
 
 /*	Uncomment to enable additional assertions. These all concern conditions that
 	the user of this class is supposed to ensure; mainly overflow checks.

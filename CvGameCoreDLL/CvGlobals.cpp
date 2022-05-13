@@ -738,6 +738,10 @@ void CvGlobals::cacheGlobalFloats(
 	if (fNewFoV != m_fFIELD_OF_VIEW)
 	{
 		m_fFIELD_OF_VIEW = fNewFoV;
+		// Adjust camera distance on city screen to FoV
+		float fCityCamDist = getDefineFLOAT("CAMERA_BASE_CITY_DISTANCE");
+		fCityCamDist *= std::sqrt(40 / fNewFoV);
+		setDefineFLOAT("CAMERA_CITY_ZOOM_IN_DISTANCE", fCityCamDist);
 		if (bAllowRecursion && IsGraphicsInitialized())
 		{
 			GC.getPythonCaller()->callScreenFunction("updateCameraStartDistance");

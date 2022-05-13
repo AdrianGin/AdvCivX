@@ -3,6 +3,7 @@
 #if defined(FASSERT_ENABLE) && defined(WIN32)
 
 #include "FDialogTemplate.h"
+#include "CvGame.h" // advc.006l
 
 #include <tchar.h>
 #include <stdio.h>
@@ -12,10 +13,11 @@ namespace
 	// These are the return values from the modal Assert Dialog
 	enum
 	{
-		ASSERT_DLG_DEBUG		= 0x01,
-		ASSERT_DLG_IGNORE		= 0x02,
-		ASSERT_DLG_IGNOREALWAYS = 0x03,
-		ASSERT_DLG_EXIT			= 0x04,
+		ASSERT_DLG_DEBUG,
+		ASSERT_DLG_IGNORE,
+		ASSERT_DLG_IGNOREALWAYS,
+		ASSERT_DLG_STOP, // advc.006l (based on code by Erik in the WtP mod)
+		ASSERT_DLG_EXIT,
 	};
 
 	// This global structure is filled out by the original call to our FAssert
@@ -45,6 +47,7 @@ namespace
 #define IDC_ABORT                       1004
 #define IDC_ASSERTION_TEXT              1005
 #define IDC_COPY_TO_CLIPBOARD           1006
+#define IDC_STOP                        1007 // advc.106l
 
 	INT_PTR CALLBACK AssertDlgProc(HWND hDlg, UINT msg,WPARAM wParam, LPARAM lParam)
 	{
@@ -100,6 +103,10 @@ namespace
 				case IDC_ABORT:
 					EndDialog(hDlg, ASSERT_DLG_EXIT);
 					return TRUE;
+				// <advc.006l>
+				case IDC_STOP:
+					EndDialog(hDlg, ASSERT_DLG_STOP);
+					return TRUE; // </advc.006l>
 				}
 			}
 			break;
@@ -110,28 +117,47 @@ namespace
 
 	DWORD DisplayAssertDialog()
 	{
+		int const iTotalW = 379; // (advc.006l - as in BtS)
 		CDialogTemplate dialogTemplate(_T("Assert Failed!"),
-			DS_SETFONT | DS_CENTER | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU,
-			0, 0, 379, 166, _T("MS Shell Dlg"), 8);
-
-		dialogTemplate.AddButton( _T("Ignore Always"), WS_VISIBLE, 0,
-			157,145,64,14, IDC_IGNORE_ALWAYS );
-
+				DS_SETFONT | DS_CENTER | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP |
+				WS_CAPTION | WS_SYSMENU,
+				0, 0, iTotalW, 166, _T("MS Shell Dlg"), 8);
+		// <advc>
+		int const iBtnY = 145, iBtnH = 14, iLMargin = 7,
+				iBtnW = /*64*/63, iSpacing = /*11*/10; // advc.006l
+		int iIncrX = iBtnW + iSpacing;
+		//int iBtnX = iLMargin + iIncrX; // </advc>
+		// <advc.006l> Center-align instead
+		int iTotalBtnW = 4 * iIncrX;
+		bool const bShowStopBtn = (GC.getGame().getAIAutoPlay() > 0);
+		if (bShowStopBtn)
+			iTotalBtnW += iIncrX;
+		int iBtnX = (iTotalW - iTotalBtnW) / 2; // </advc.006l>
 		dialogTemplate.AddButton( _T("&Ignore Once"), WS_VISIBLE, 0,
-			82,145,64,14, IDC_IGNORE_ONCE );
-
-		dialogTemplate.AddButton( _T("&Debug"), WS_VISIBLE, 0,
-			307,145,64,14, IDC_DEBUG );
-
+				iBtnX, iBtnY, iBtnW, iBtnH, IDC_IGNORE_ONCE );
+		iBtnX += iIncrX;
+		dialogTemplate.AddButton( _T("Ignore Always"), WS_VISIBLE, 0,
+				iBtnX, iBtnY, iBtnW, iBtnH, IDC_IGNORE_ALWAYS );
+		// <advc.006l>
+		if (bShowStopBtn)
+		{
+			iBtnX += iIncrX;
+			dialogTemplate.AddButton(_T("&Stop Auto Play"), WS_VISIBLE, 0,
+					iBtnX, iBtnY, iBtnW, iBtnH, IDC_STOP);
+		} // </advc.006l>
+		iBtnX += iIncrX;
 		dialogTemplate.AddButton( _T("&Abort"), WS_VISIBLE, 0,
-			232,145,64,14, IDC_ABORT );
-
-		dialogTemplate.AddEditBox( _T(""), ES_MULTILINE | ES_AUTOVSCROLL |
-			ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL | WS_VISIBLE, WS_EX_STATICEDGE,
-			7,7,365,130, IDC_ASSERTION_TEXT );
-
-		int res = DialogBoxIndirect(GetModuleHandle(0), dialogTemplate.GetDialogTemplate(), NULL, (DLGPROC)AssertDlgProc);
-		return res;
+				iBtnX, iBtnY, iBtnW, iBtnH, IDC_ABORT );
+		iBtnX += iIncrX;
+		dialogTemplate.AddButton( _T("&Debug"), WS_VISIBLE, 0,
+				iBtnX, iBtnY, iBtnW, iBtnH, IDC_DEBUG );
+		dialogTemplate.AddEditBox( _T(""),
+				ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY |
+				WS_VSCROLL | WS_HSCROLL | WS_VISIBLE, WS_EX_STATICEDGE,
+				iLMargin, iLMargin, 365, 130, IDC_ASSERTION_TEXT );
+		int iRes = DialogBoxIndirect(GetModuleHandle(0),
+				dialogTemplate.GetDialogTemplate(), NULL, (DLGPROC)AssertDlgProc);
+		return iRes;
 	}
 
 } // end anonymous namespace
@@ -158,6 +184,10 @@ bool FAssertDlg( const char* szExpr, const char* szMsg, const char* szFile, unsi
 	case ASSERT_DLG_IGNOREALWAYS:
 		bIgnoreAlways = true;
 		return false;
+	// <advc.006l>
+	case ASSERT_DLG_STOP:
+		GC.getGame().setAIAutoPlay(0);
+		return false; // </advc.006l>
 
 	case ASSERT_DLG_EXIT:
 		exit(0);

@@ -18,7 +18,10 @@ gc = CyGlobalContext()
 localText = CyTranslator()
 
 
-# advc.137: All event preconditions that use DefaultPlayers in BtS are going to use this function instead. Using default player counts was a bad idea to begin with, and now that I've increased the default player count on Deity, it's totally out of whack.
+# advc.137: All event preconditions that use DefaultPlayers in BtS are going to
+# use this function instead. Using default player counts was a bad idea
+# to begin with, and, now that I've increased the default player count on Huge maps,
+# it's totally out of whack.
 def worldSizeTarget():
 	# 5 adjusted by building class prereq modifier, rounded to nearest.
 	return ((5 * (100 + gc.getWorldInfo(gc.getMap().getWorldSize()).getBuildingClassPrereqModifier())) + 50) // 100
@@ -846,7 +849,8 @@ def applyVolcano1(argsList):
 			loopPlot = plotXY(kTriggeredData.iPlotX, kTriggeredData.iPlotY, iDX, iDY)
 			if not loopPlot.isNone() and not loopPlot.isWater():
 				if (iDX != 0 or iDY != 0):
-					if gc.getGame().getPlotExtraYield(loopPlot.getX(), loopPlot.getY(), YieldTypes.YIELD_FOOD) == 0:
+					# advc.enum: Now at CyMap
+					if gc.getMap().getPlotExtraYield(loopPlot.getX(), loopPlot.getY(), YieldTypes.YIELD_FOOD) == 0:
 						listPlots.append(loopPlot)
 
 	# zero - 50%, one - 25%, two - 25%
@@ -856,7 +860,8 @@ def applyVolcano1(argsList):
 		if len(listPlots) <= 0:
 			break
 		plot = listPlots[gc.getGame().getSorenRandNum(len(listPlots), "Volcano event increased yield")]
-		gc.getGame().setPlotExtraYield(plot.getX(), plot.getY(), YieldTypes.YIELD_FOOD, 1)
+		# advc.enum: was getGame()...
+		gc.getMap().setPlotExtraYield(plot.getX(), plot.getY(), YieldTypes.YIELD_FOOD, 1)
 		placeLandmark(plot, sEventType, 1, 0, 0, True, -1) # event sign
 		if plot.getOwner() != PlayerTypes.NO_PLAYER:
 			plot_owner = plot.getOwner()
@@ -1000,7 +1005,8 @@ def applySaltpeter(argsList):
 		if iCount == 0:
 			break
 		iCount -= 1
-		gc.getGame().setPlotExtraYield(loopPlot[1].getX(), loopPlot[1].getY(), YieldTypes.YIELD_COMMERCE, 1)
+		# advc.enum: was getGame()...
+		gc.getMap().setPlotExtraYield(loopPlot[1].getX(), loopPlot[1].getY(), YieldTypes.YIELD_COMMERCE, 1)
 		CyInterface().addMessage(kTriggeredData.ePlayer, false, gc.getEVENT_MESSAGE_TIME(), localText.getText("TXT_KEY_EVENT_SALTPETER_DISCOVERED", ()), "", InterfaceMessageTypes.MESSAGE_TYPE_INFO, None, gc.getInfoTypeForString("COLOR_WHITE"), loopPlot[1].getX(), loopPlot[1].getY(), true, true)
 		# EventSigns start -- Add landmark for other plots, if there is still a yield change
 		placeLandmark(loopPlot[1], sEventType, 0, 0, 1, True, -1) # K-Mod. (originally it used iFood, iProd, iComm -- and that's not correct.)

@@ -26,7 +26,7 @@ class CvInterface;
 class FProfiler;
 class CvDLLUtilityIFaceBase;
 class CvPythonCaller; // advc.003y
-class CvDLLLogger;
+class CvDLLLogger; // advc
 class CvRandom;
 class CvGame; // advc.003u
 class CvGameAI;
@@ -458,6 +458,7 @@ public:
 		/* <advc.ctr> */ \
 		DO(CITY_TRADE_CULTURE_THRESH) \
 		DO(NATIVE_CITY_CULTURE_THRESH) /* </advc.ctr> */ \
+		DO(CITY_NUKE_CULTURE_THRESH) /* advc (for kekm.7) */ \
 		DO(TREAT_REVEALED_BUILDINGS_AS_VISIBLE) /* advc.045 */ \
 		DO(DOUBLE_OBSOLETE_BUILDING_COMMERCE) /* advc.098 */ \
 		/* <advc.094> */ \

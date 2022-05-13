@@ -380,7 +380,7 @@ void RiseFall::atTurnEnd(PlayerTypes civId) {
 		abandonPlans(currentCh.getCiv());
 		CvWString replayText = gDLL->getText("TXT_KEY_RF_INTERLUDE_STARTED");
 		g.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getActivePlayer(),
-				replayText, -1, -1, GC.getColorType("HIGHLIGHT_TEXT"));
+				replayText, GC.getColorType("HIGHLIGHT_TEXT"));
 	}
 }
 
@@ -502,12 +502,6 @@ void RiseFall::setPlayerControl(PlayerTypes civId, bool b) {
 			g.updateActiveVisibility();
 		setUIHidden(!b);
 	}
-	if(!b) { // Update dot map owner
-		CyArgsList pyArgs;
-		pyArgs.add(formerHumanCiv);
-		CvEventReporter::getInstance().genericEvent(
-				"SwitchHotSeatPlayer", pyArgs.makeFunctionArgs());
-	}
 	if (b) // (Otherwise CvPlayer::setIsHuman has already updated the full attitude cache)
 	{
 		for(int i = 0; i < MAX_CIV_PLAYERS; i++) {
@@ -552,7 +546,7 @@ void RiseFall::setPlayerName() {
 		CvWString replayText = gDLL->getText("TXT_KEY_RF_REPLAY_NEXT_CHAPTER",
 				pos + 1, GET_PLAYER(activeCiv).getReplayName());
 		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, activeCiv, replayText,
-				-1, -1, GC.getColorType("HIGHLIGHT_TEXT"));
+				GC.getColorType("HIGHLIGHT_TEXT"));
 	}
 }
 

@@ -21,6 +21,7 @@
 #include "CvDLLFlagEntityIFaceBase.h" // BBAI
 #include "BBAILog.h"
 #include "RiseFall.h" // advc.708: Needed only for savegame compatibility
+#include "SelfMod.h" // advc.092b
 
 // advc.003u: Statics moved from CvPlayerAI
 CvPlayerAI** CvPlayer::m_aPlayers = NULL;
@@ -1555,8 +1556,8 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 						GC.getColorType("RED"));
 			}
 		}
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szCapturedBy,
-				pOldCity->getX(), pOldCity->getY(), GC.getColorType("WARNING_TEXT"));
+		GC.getGame().addReplayMessage(pOldCity->getPlot(), REPLAY_MESSAGE_MAJOR_EVENT,
+				getID(), szCapturedBy, GC.getColorType("WARNING_TEXT"));
 	} // <advc.ctr> City-ceded announcement, replay msg
 	else if (bTrade &&  // CvCity::liberate handles liberation announcement and replay msg.
 		pOldCity->getLiberationPlayer() != getID())
@@ -1595,8 +1596,8 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 						GC.getColorType("HIGHLIGHT_TEXT"));
 			}
 		}
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szHasCeded,
-				kCityPlot.getX(), kCityPlot.getY(), GC.getColorType("HIGHLIGHT_TEXT"));
+		GC.getGame().addReplayMessage(kCityPlot, REPLAY_MESSAGE_MAJOR_EVENT,
+				getID(), szHasCeded, GC.getColorType("HIGHLIGHT_TEXT"));
 	} // </advc.ctr>
 
 	// Capture gold
@@ -2458,39 +2459,31 @@ CvSelectionGroup* CvPlayer::cycleSelectionGroups(CvUnit* pUnit, bool bForward,
 	return pGroup;
 }
 
-// AI_AUTO_PLAY_MOD, 07/09/08, jdog5000:
+/*	AI_AUTO_PLAY_MOD, 07/09/08, jdog5000:
+	(advc.127: Not much left of jdog's code) */
 void CvPlayer::setHumanDisabled(bool bNewVal)
 {
-	// <advc.127>
 	if (bNewVal == m_bDisableHuman)
 		return;
+	m_bDisableHuman = bNewVal;
 	m_bAutoPlayJustEnded = true;
-	CvGame& kGame = GC.getGame();
-	CvWString szReplayText;
-	if (bNewVal && !m_bDisableHuman)
+	updateHuman();
+	AI().AI_setHuman(!bNewVal);
+	if (isActive())
 	{
-		AI().AI_setHuman(false);
-		if (isActive()) // (Not sure if this test is needed)
+		CvWString szReplayText;
+		if (bNewVal)
 		{	// advc.004h:
 			gDLL->getEngineIFace()->clearAreaBorderPlots(AREA_BORDER_LAYER_FOUNDING_BORDER);
 			gDLL->UI().clearQueuedPopups();
 			szReplayText = gDLL->getText("TXT_KEY_AUTO_PLAY_STARTED");
 		}
+		else szReplayText = gDLL->getText("TXT_KEY_AUTO_PLAY_ENDED");
+		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
+				getID(), szReplayText, GC.getColorType("HIGHLIGHT_TEXT"));
 	}
-	else if (!bNewVal && m_bDisableHuman)
-	{
-		AI().AI_setHuman(true);
+	if (!bNewVal)
 		m_iNewMessages = 0; // Don't open Event Log when coming out of Auto Play
-		if (isActive())
-			szReplayText = gDLL->getText("TXT_KEY_AUTO_PLAY_ENDED");
-	}
-	if (!szReplayText.empty())
-	{
-		kGame.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szReplayText,
-				-1, -1, GC.getColorType("HIGHLIGHT_TEXT"));
-	} // </advc.127>
-	m_bDisableHuman = bNewVal;
-	updateHuman();
 }
 
 // <advc.127>
@@ -3870,10 +3863,11 @@ bool CvPlayer::canTradeItem(PlayerTypes eWhoTo, TradeData item, bool bTestDenial
 		// advc.112: Make sure that only capitulation is possible between war enemies
 		if (!kToTeam.isAtWar(getTeam()))
 			bValid = true;
+		break;
 	case TRADE_SURRENDER:
 	{
 		bool bForce = (item.m_iData == 1); // Used by CvDeal::startTeamTrade
-		if ((kToTeam.isAtWar(getTeam()) || bForce) && item.m_eItemType == TRADE_SURRENDER)
+		if (kToTeam.isAtWar(getTeam()) || bForce)
 			bValid = true;
 		break;
 	}
@@ -4516,8 +4510,8 @@ void CvPlayer::raze(CvCity& kCity) // advc: param was CvCity*
 
 	swprintf(szBuffer, gDLL->getText("TXT_KEY_MISC_CITY_RAZED_BY",
 			kCity.getNameKey(), getCivilizationDescriptionKey()).GetCString());
-	GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szBuffer,
-			kCity.getX(), kCity.getY(), GC.getColorType("WARNING_TEXT"));
+	GC.getGame().addReplayMessage(kCity.getPlot(), REPLAY_MESSAGE_MAJOR_EVENT,
+			getID(), szBuffer, GC.getColorType("WARNING_TEXT"));
 
 	kCity.doPartisans(); // advc.003y
 	CvEventReporter::getInstance().cityRazed(&kCity, getID());
@@ -7404,7 +7398,7 @@ void CvPlayer::changeGoldenAgeTurns(int iChange)
 		{
 			szBuffer = gDLL->getText("TXT_KEY_MISC_PLAYER_GOLDEN_AGE_BEGINS", getNameKey());
 			GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szBuffer,
-					-1, -1, GC.getColorType("HIGHLIGHT_TEXT"));
+					GC.getColorType("HIGHLIGHT_TEXT"));
 
 			CvEventReporter::getInstance().goldenAge(getID());
 		}
@@ -8655,7 +8649,7 @@ uint CvPlayer::getTotalTimePlayed() const
 
 void CvPlayer::setAlive(bool bNewValue)
 {
-	if(isAlive() == bNewValue)
+	if (isAlive() == bNewValue)
 		return;
 	/*	<advc.003m> Moved up b/c, once the team's AliveCount is set to 0,
 		at-war status is lost. Need that for lifting blockades.
@@ -8681,7 +8675,7 @@ void CvPlayer::setAlive(bool bNewValue)
 	{
 		GC.getAgents().playerRevived(getID());
 		// <advc.104r> (UWAI data gets deleted upon death)
-		if(getUWAI().isEnabled())
+		if (getUWAI().isEnabled())
 			getUWAI().processNewPlayerInGame(getID()); // </advc.104r>
 	}
 	// </advc.agent>
@@ -8705,26 +8699,19 @@ void CvPlayer::setAlive(bool bNewValue)
 			setTurnActive(true);
 		}
 		gDLL->openSlot(getID());
-		if(!isBarbarian()) // advc.003n
-		{	// K-Mod. Attitude cache
-			for (PlayerTypes i = (PlayerTypes)0; i < MAX_CIV_PLAYERS; i=(PlayerTypes)(i+1))
-			{
-				/*GET_PLAYER(i).AI_updateAttitude(getID());
-				AI().AI_updateAttitude(i);*/
-				/*  advc.001: E.g. AI_getRankDifferenceAttitude can change between
-					any two civs. */
-				if (GET_PLAYER(i).isAlive() && /* advc.003n: */ !GET_PLAYER(i).isMinorCiv())
-					GET_PLAYER(i).AI_updateAttitude();
-			} // K-Mod end
+		if (!isBarbarian()) // advc.003n
+		{
+			/*  advc.001: K-Mod had only updated attitudes of and toward this player,
+				but e.g. AI_getRankDifferenceAttitude can change b/w any two players. */
+			CvPlayerAI::AI_updateAttitudes();
 		}
 	}
 	else
-	{
-		// <advc.001> CvTeam::makePeace does this, but here they missed it.
-		for(int i = 0; i < MAX_CIV_PLAYERS; i++)
+	{	// <advc.001> CvTeam::makePeace does this, but here they've missed it.
+		FOR_EACH_ENUM(CivPlayer)
 		{
-			CvPlayer& kWarEnemy = GET_PLAYER((PlayerTypes)i);
-			if(kWarEnemy.isAlive() && kWarEnemy.getID() != getID() &&
+			CvPlayer& kWarEnemy = GET_PLAYER((PlayerTypes)eLoopCivPlayer);
+			if (kWarEnemy.isAlive() && kWarEnemy.getID() != getID() &&
 				!kWarEnemy.isMinorCiv() && GET_TEAM(kWarEnemy.getTeam()).isAtWar(getTeam()))
 			{
 				kWarEnemy.updateWarWearinessPercentAnger();
@@ -8761,8 +8748,8 @@ void CvPlayer::setAlive(bool bNewValue)
 								GC.getColorType("WARNING_TEXT"));
 					}
 				}
-				kGame.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szBuffer, -1, -1,
-						GC.getColorType("WARNING_TEXT"));
+				kGame.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
+						getID(), szBuffer, GC.getColorType("WARNING_TEXT"));
 				// <advc.104>
 				if ((getUWAI().isEnabled() || getUWAI().isEnabled(true)) && !isMinorCiv())
 					AI().uwai().uninit(); // </advc.104>
@@ -8772,7 +8759,7 @@ void CvPlayer::setAlive(bool bNewValue)
 
 	kGame.setScoreDirty(true);
 	// <advc.700>
-	if(kGame.isOption(GAMEOPTION_RISE_FALL))
+	if (kGame.isOption(GAMEOPTION_RISE_FALL))
 		kGame.getRiseFall().reportElimination(getID()); // </advc.700>
 }
 
@@ -9051,8 +9038,9 @@ void CvPlayer::onTurnLogging() const
 	{
 		logBBAI("Player %d (%S) setTurnActive for turn %d (%d %s)", getID(), getCivilizationDescription(0), GC.getGame().getGameTurn(), std::abs(GC.getGame().getGameTurnYear()), GC.getGame().getGameTurnYear()>0 ? "AD" : "BC");
 
-		if (GC.getGame().getGameTurn() > 0 &&
-			(GC.getGame().getGameTurn() % 25) == 0 && !isBarbarian())
+		if (GC.getGame().getGameTurn() > 0 && !isBarbarian() &&
+			// advc.007: Interval was 25
+			(GC.getGame().getGameTurn() % gScoreLogInterval) == 0)
 		{
 			CvWStringBuffer szBuffer;
 			GAMETEXT.setScoreHelp(szBuffer, getID());
@@ -9355,8 +9343,8 @@ void CvPlayer::setCurrentEra(EraTypes eNewValue)
 	{
 		CvWString szBuffer = gDLL->getText("TXT_KEY_SOMEONE_ENTERED_ERA",
 				getNameKey(), GC.getInfo(eNewValue).getTextKeyWide());
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szBuffer,
-				-1, -1, GC.getColorType("ALT_HIGHLIGHT_TEXT"));
+		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
+				getID(), szBuffer, GC.getColorType("ALT_HIGHLIGHT_TEXT"));
 	} // </advc.106>
 	// <advc.106n> Save pre-Industrial minimap terrain for replay
 	if (GC.getGame().isFinalInitialized() &&
@@ -12694,9 +12682,17 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 		if (bAdd) // Add unit to the map
 		{
 			if (getAdvancedStartPoints() >= iCost)
-			{
-				CvUnit* pUnit = initUnit(eUnit, iX, iY,
-						(UnitAITypes)iData2); // advc.250c
+			{	// <advc.250c>
+				UnitAITypes eUnitAI = (UnitAITypes)iData2;
+				// Based on MNAI (lfgr 01/2022): At least one defender per city
+				if (eUnitAI == NO_UNITAI && !GC.getGame().isOption(GAMEOPTION_SPAH) &&
+					GC.getInfo(eUnit).getUnitAIType(UNITAI_CITY_DEFENSE) &&
+					pPlot->plotCount(PUF_isUnitAIType, UNITAI_CITY_DEFENSE,
+					-1, getID()) <= 0)
+				{
+					eUnitAI = UNITAI_CITY_DEFENSE;
+				} // </advc.250c>
+				CvUnit* pUnit = initUnit(eUnit, iX, iY, eUnitAI);
 				if (pUnit != NULL)
 				{
 					pUnit->finishMoves();
@@ -12943,7 +12939,10 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 
 		if (bAdd) // Add Improvement to the plot
 		{
-			if (getAdvancedStartPoints() >= iCost)
+			// <advc.mnai.> lfgr 11/2021: Refund overwritten improvement
+			int const iOldCost = std::max(0, getAdvancedStartImprovementCost(
+					pPlot->getImprovementType(), false, pPlot));
+			if (iOldCost + /* </advc.mnai.> */ getAdvancedStartPoints() >= iCost)
 			{
 				if (pPlot->isFeature())
 				{
@@ -12962,7 +12961,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 					}
 				}
 				pPlot->setImprovementType(eImprovement);
-				changeAdvancedStartPoints(-iCost);
+				changeAdvancedStartPoints(-iCost /* advc.mnai.: */ + iOldCost);
 			}
 		}
 		else // Remove Improvement from the Plot
@@ -13026,6 +13025,8 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 			pPlot->setRevealed(getTeam(), false, true, NO_TEAM, true);
 			changeAdvancedStartPoints(iCost);
 		}
+		// advc.001 (from MNAI - lfgr fix 11/2021): I guess for the city circles
+		GC.getGame().updateColoredPlots();
 		break;
 	}
 	default:
@@ -14982,8 +14983,8 @@ void CvPlayer::createGreatPeople(UnitTypes eGreatPersonUnit,
 	CvWString szReplayMessage = gDLL->getText("TXT_KEY_MISC_GP_BORN_REPLAY",
 			pGreatPeopleUnit->getReplayName().GetCString(),
 			kGPOwner.getCivilizationDescriptionKey()); // </advc.106>
-	GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szReplayMessage,
-			kAt.getX(), kAt.getY(), GC.getColorType("UNIT_TEXT"));
+	GC.getGame().addReplayMessage(kAt, REPLAY_MESSAGE_MAJOR_EVENT,
+			getID(), szReplayMessage, GC.getColorType("UNIT_TEXT"));
 	// Non-replay message
 	CvWString szMessage;
 	CvCity* pCity = kAt.getPlotCity();
@@ -17289,8 +17290,8 @@ bool CvPlayer::splitEmpire(CvArea& kArea) // advc: was iAreaId
 				GC.getInfo(eBestLeader).getTextKeyWide());
 		// advc.127b: Announcement loop moved down
 
-		kGame.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getID(), szMessage,
-				-1, -1, GC.getColorType("HIGHLIGHT_TEXT"));
+		kGame.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
+				getID(), szMessage, GC.getColorType("HIGHLIGHT_TEXT"));
 
 		// remove leftover culture from old recycled player
 		/*  BETTER_BTS_AI_MOD, Bugfix, 12/30/08, jdog5000: commented out
@@ -17572,7 +17573,7 @@ void CvPlayer::launch(VictoryTypes eVictory)
 	}
 	// <advc.106>
 	GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
-			getID(), szMsg, iPlotX, iPlotY, GC.getColorType("HIGHLIGHT_TEXT"));
+			getID(), szMsg, GC.getColorType("HIGHLIGHT_TEXT"), iPlotX, iPlotY);
 	// </advc.106>
 }
 
@@ -17701,14 +17702,11 @@ void CvPlayer::setUnitExtraCost(UnitClassTypes eUnitClass, int iCost)
 
 bool CvPlayer::hasShrine(ReligionTypes eReligion)
 {
-	bool bHasShrine = false;
-	if (eReligion != NO_RELIGION)
-	{
-		CvCity* pHolyCity = GC.getGame().getHolyCity(eReligion);
-		if (pHolyCity != NULL && pHolyCity->getOwner() == getID())
-			bHasShrine = pHolyCity->hasShrine(eReligion);
-	}
-	return bHasShrine;
+	FAssert(eReligion != NO_RELIGION); // advc.enum: No longer supported
+	CvCity const* pHolyCity = GC.getGame().getHolyCity(eReligion);
+	if (pHolyCity != NULL && pHolyCity->getOwner() == getID())
+		return pHolyCity->hasShrine(eReligion);
+	return false;
 }
 
 
@@ -17978,8 +17976,6 @@ bool CvPlayer::canDefyResolution(VoteSourceTypes eVoteSource,
 void CvPlayer::setDefiedResolution(VoteSourceTypes eVoteSource,
 	VoteSelectionSubData const& kData)
 {
-	FAssertMsg(canDefyResolution(eVoteSource, kData),
-			"OK to fail when a team member defies a resolution"); // kekm.25
 	// cities get unhappiness
 	FOR_EACH_CITY_VAR(pLoopCity, *this)
 	{
@@ -19217,9 +19213,14 @@ void CvPlayer::getGlobeLayerColors(GlobeLayerTypes eGlobeLayerType, int iOption,
 {
 	PROFILE_FUNC(); // advc.opt
 	CvGame const& kGame = GC.getGame();
-	// <advc.004z> Too early; player options haven't been set yet.
-	if (kGame.getTurnSlice() <= 0)
-		return; // </advc.004z>
+	// <advc.004z>
+	if (kGame.getTurnSlice() <= 0 || // Too early; player options not yet set.
+		!smc::BtS_EXE.isPlotIndicatorSizePatched()) // advc.092b
+	{	/*	(No use in setting the GlobeLayer_DIRTY_BIT - caller won't have cleared
+			it yet. But the dirty bit seems to get set again at least once before
+			initialization is through. So we're actually saving a little time here.) */
+		return;
+	} // </advc.004z>
 	/*  <advc> These get cleared by some of the subroutines, but should be
 		empty to begin with. If not, there could be a memory leak. */
 	FAssert(aColors.empty() && aIndicators.empty());

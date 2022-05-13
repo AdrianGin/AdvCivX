@@ -623,6 +623,13 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 		break;
 
 	case WIDGET_MINIMAP_HIGHLIGHT:
+		// <advc.004> Leader help for Military Advisor
+		if (widgetDataStruct.m_iData1 == 2) // mode id
+		{
+			PlayerTypes ePlayer = (PlayerTypes)widgetDataStruct.m_iData2;
+			if (ePlayer > NO_PLAYER && ePlayer < MAX_CIV_PLAYERS)
+				GAMETEXT.parseLeaderHeadHelp(szBuffer, ePlayer, NO_PLAYER);
+		} // </advc.004>
 		break;
 
 	case WIDGET_PRODUCTION_MOD_HELP:
@@ -771,15 +778,7 @@ bool CvDLLWidgetData::executeAction(CvWidgetDataStruct &widgetDataStruct)
 		break;
 
 	case WIDGET_PLOT_LIST_SHIFT:
-		gDLL->UI().changePlotListColumn(iData1 *
-			  // <advc.004n> BtS code:
-			  //((GC.ctrlKey()) ? (GC.getDefineINT("MAX_PLOT_LIST_SIZE") - 1) : 1));
-			  std::min(GC.getDefineINT("MAX_PLOT_LIST_SIZE"),
-			  gDLL->UI().getHeadSelectedCity()->getPlot().getNumUnits())
-			  /* Don't really know how to determine the number of units shown
-				 initially. Offset divided by 9 happens to work, at least for
-				 1024x768 (offset 81, 9 units) and 1280x1024 (144, 16). */
-			  - gDLL->UI().getPlotListOffset() / 9); // </advc.004n>
+		doPlotListShift(iData1); // advc: Moved into new function
 		break;
 
 	case WIDGET_CITY_SCROLL:
@@ -1067,6 +1066,10 @@ bool CvDLLWidgetData::executeAltAction(CvWidgetDataStruct &widgetDataStruct)
 	bool bHandled = true;
 	switch (widgetDataStruct.m_eWidgetType)
 	{
+	// <advc.004n>
+	case WIDGET_PLOT_LIST_SHIFT:
+		doPlotListShift(iData1, true);
+		break; // </advc.004n>
 	case WIDGET_HELP_TECH_ENTRY:
 	case WIDGET_HELP_TECH_PREPREQ:
 	case WIDGET_RESEARCH:
@@ -1247,6 +1250,59 @@ void CvDLLWidgetData::doPlotList(CvWidgetDataStruct &widgetDataStruct)
 		if (bWasCityScreenUp)
 			gDLL->UI().lookAtSelectionPlot();
 	}
+}
+
+// advc: This has gotten verbose, moving it out of executeAction.
+void CvDLLWidgetData::doPlotListShift(int iChange, bool bMaxStep)
+{
+	//int iIncr = (GC.ctrlKey() ? GC.getDefineINT("MAX_PLOT_LIST_SIZE") - 1 : 1); // BtS
+	// <advc.004n>
+	if (GC.getMAX_PLOT_LIST_ROWS() <= 1)
+		return;
+	CvPlot const* pPlot = gDLL->UI().getSelectionPlot();
+	if (pPlot == NULL)
+		return;
+	int const iPlotUnits = pPlot->getNumUnits();
+	int iStep = 10;
+	if (gDLL->UI().isCityScreenUp())
+	{
+		// (Not sure that this is really a maximal limit of anything)
+		int const iBigStep = GC.getDefineINT("MAX_PLOT_LIST_SIZE"); // 100
+		/*	BUG drawing method will only ever show a single row on the city screen.
+			Don't want to expand rapidly upon the first right-shift then.
+			Instead, let the bMaxStep param jump to the final column. */
+		bool bBUGMethod = BUGOption::isEnabled("PLE__BUG_Style", false);
+		static int iUnitsPerRow = 0;
+		if (GC.getGame().getPlotListShift() == 0 && iChange == 1)
+		{
+			/*	Unhelpfully, the offset counts backward from the maximal
+				number of units that CvMainInterface can display at once.
+				Since we know that the city screen shows 1 row initially,
+				we can figure out how many units are actually shown.*/
+			iUnitsPerRow = gDLL->UI().getPlotListOffset() /
+					(GC.getMAX_PLOT_LIST_ROWS() - 1);
+			/*	Show a total of MAX_PLOT_LIST_SIZE. (Then move in steps of 10,
+				same as on the main screen, which shows multiple rows already
+				at shift 0.) */
+			if (!bBUGMethod)
+			{
+				iStep = std::max(iStep, std::min(
+						iPlotUnits, iBigStep - iUnitsPerRow));
+			}
+			else if (bMaxStep)
+				iStep = iPlotUnits - iUnitsPerRow;
+		}
+		else if (GC.getGame().getPlotListShift() == 1 && iChange == -1 &&
+			!bBUGMethod)
+		{
+			FAssert(iUnitsPerRow > 0);
+			iStep = std::min(iBigStep, iPlotUnits) - iUnitsPerRow;
+		}
+		else if (bBUGMethod && bMaxStep)
+			iStep = iPlotUnits - iUnitsPerRow;
+	}
+	GC.getGame().changePlotListShift(iChange);
+	gDLL->UI().changePlotListColumn(iChange * iStep); // </advc.004n>
 }
 
 
@@ -3352,14 +3408,17 @@ void CvDLLWidgetData::parseTechTreeHelp(CvWidgetDataStruct &widgetDataStruct, Cv
 
 void CvDLLWidgetData::parseChangePercentHelp(CvWidgetDataStruct &widgetDataStruct, CvWStringBuffer &szBuffer)
 {
-	if (widgetDataStruct.m_iData2 > 0)
+	int const iChange = widgetDataStruct.m_iData2;
+	szBuffer.assign(gDLL->getText(iChange > 0 ?
+			"TXT_KEY_MISC_INCREASE_RATE" : "TXT_KEY_MISC_DECREASE_RATE",
+			GC.getInfo((CommerceTypes)widgetDataStruct.m_iData1).getTextKeyWide(),
+			abs(iChange)));
+	// <advc.004> Hint about right-click behavior
+	if (!BUGOption::isEnabled("MainInterface__MinMax_Commerce", false))
 	{
-		szBuffer.assign(gDLL->getText("TXT_KEY_MISC_INCREASE_RATE", GC.getInfo((CommerceTypes) widgetDataStruct.m_iData1).getTextKeyWide(), widgetDataStruct.m_iData2));
-	}
-	else
-	{
-		szBuffer.assign(gDLL->getText("TXT_KEY_MISC_DECREASE_RATE", GC.getInfo((CommerceTypes) widgetDataStruct.m_iData1).getTextKeyWide(), -(widgetDataStruct.m_iData2)));
-	}
+		szBuffer.append(iChange > 0 ?
+				"TXT_KEY_MISC_INCREASE_RATE_HINT" : "TXT_KEY_MISC_DECREASE_RATE_HINT");
+	} // </advc.004>
 }
 
 // advc (comment): Could this function be merged into CvGameTextMgr::parseLeaderHeadHelp?
