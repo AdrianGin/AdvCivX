@@ -742,13 +742,19 @@ bool CvReplayInfo::read(FDataStreamBase& stream)
 		m_eDifficulty = (HandicapTypes)iType;
 		if(!checkBounds(m_eDifficulty, 0, GC.getNumHandicapInfos())) return false; // advc.106i  (not -1 b/c of advc.250a)
 		stream.ReadString(m_szLeaderName);
+		if(!checkBounds(m_szLeaderName.length(), 0, 128)) return false; // advc.106i
 		stream.ReadString(m_szCivDescription);
+		if(!checkBounds(m_szCivDescription.length(), 0, 128)) return false; // advc.106i
 		stream.ReadString(m_szShortCivDescription);
+		if(!checkBounds(m_szShortCivDescription.length(), 0, 128)) return false; // advc.106i
 		stream.ReadString(m_szCivAdjective);
+		if(!checkBounds(m_szCivAdjective.length(), 0, 128)) return false; // advc.106i
 		if(iVersion > 3)
+		{
 			stream.ReadString(m_szMapScriptName);
+			if(!checkBounds(m_szMapScriptName.length(), 0, 128)) return false; // advc.106i
+		}
 		else m_szMapScriptName = gDLL->getText("TXT_KEY_TRAIT_PLAYER_UNKNOWN");
-		if(!checkBounds(m_szLeaderName.length() + m_szCivDescription.length() + m_szShortCivDescription.length() + m_szCivAdjective.length() + m_szMapScriptName.length(), 5, 250)) return false; // advc.106i
 		stream.Read(&iType);
 		m_eWorldSize = (WorldSizeTypes)iType;
 		if(!checkBounds(m_eWorldSize, 0, GC.getNumWorldInfos() - 1)) return false; // advc.106i
