@@ -318,6 +318,44 @@
 		<Italian>Seleziona il massimo numero di Civiltà che verranno mostrate (0 significa illimitate).</Italian>
 		<Spanish>Permite seleccionar el máximo número de civilizaciones a mostrar (0 indica que no hay límite).</Spanish>
 	</TEXT>
+
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_SCORES__LINEHEIGHT_TEXT</Tag>
+		<English>Line Height</English>
+		<French>Line Height</French>
+		<German>Zeilenhöhe</German>
+		<Italian>Altezza riga</Italian>
+		<Spanish>Altura de Línea</Spanish>
+	</TEXT>
+	
+	<!-- advc.004: rewritten (English, German) -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_SCORES__LINEHEIGHT_HOVER</Tag>
+		<English>The vertical space for each row (default: 20)</English>
+		<French>Select the height of each civilization's line (default value is 22).</French>
+		<German>Höhe der einzelnen Einträge (Standard: 20)</German>
+		<Italian>Imposta l'altezza della riga di ogni Civiltà (il valore predefinito è 22).</Italian>
+		<Spanish>Permite seleccionar la altura de la línea para cada civilización (valor por defecto: 22).</Spanish>
+	</TEXT>
+	
+	<!-- advc.004: Was "Default Spacing"; I don't think players are going to use
+		 custom spacing much. -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_SCORES__DEFAULTSPACING_TEXT</Tag>
+		<English>Column Spacing</English>
+		<French>Default Spacing</French>
+		<German>Spaltenabstand</German>
+		<Italian>Spaziatura</Italian>
+		<Spanish>Espaciado por defecto</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_SCORES__DEFAULTSPACING_HOVER</Tag>
+		<English>The default spacing between columns (in pixels). Custom spacing between individual columns can be specified in the [COLOR_HIGHLIGHT_TEXT]Column Order[COLOR_REVERT] box.</English>
+		<French>The spacing between columns (in pixels) to use when none is specified for a column.</French>
+		<German>Standardabstand (in Pixeln) zwischen Spalten. Im Feld [COLOR_HIGHLIGHT_TEXT]Spaltenreihenfolge[COLOR_REVERT] kann zwischen einzelnen Spalten ein breiterer oder schmalerer Abstand eingestellt werden.</German>
+		<Italian>Definisce la spaziatura (in pixel) tra le colonne che viene utilizzata quando non ne viene specificata una differente per una o più colonne specifiche mediante l'utilizzo di un codice numerico.</Italian>
+		<Spanish>Espaciado en píxeles a emplear cuando no se especifica uno para una columna.</Spanish>
+	</TEXT>
 	
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_SCORES__DISPLAYORDER_TEXT</Tag>
@@ -427,78 +465,26 @@
 		<Italian>Quando è selezionato, nel Pannello del Punteggio vengono visualizzate le icone invece dei nomi delle Tecnologie ricercate dalle Civiltà (per cui ti è lecito conoscerle).</Italian>
 		<Spanish>Si se activa, muestra iconos de investigación en lugar de nombres de investigaciones.</Spanish>
 	</TEXT>
-
-	<!-- advc.092: Changed the id of this option from RESEARCHICONSIZE.
-		 Now has a choice "Default" and therefore needs a choice list text key: -->
+	
 	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_SCORES__TECHBUTTONSIZE_LIST</Tag>
-		<English>Default|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32</English>
-		<German>Standard|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32</German>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_SCORES__TECHBUTTONSIZE_TEXT</Tag>
+		<Tag>TXT_KEY_BUG_OPT_SCORES__RESEARCHICONSIZE_TEXT</Tag>
 		<English>Size</English>
 		<French>Size</French>
 		<German>Größe</German>
 		<Italian>Dimensione</Italian>
 		<Spanish>Tamaño</Spanish>
 	</TEXT>
+	
+	<!-- advc.004: Minor changes -->
 	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_SCORES__TECHBUTTONSIZE_HOVER</Tag>
-		<English>Size of the research icons. [COLOR_HIGHLIGHT_TEXT]Default[COLOR_REVERT] leaves the size up to the [COLOR_HIGHLIGHT_TEXT]Scale Up HUD[COLOR_REVERT] option (General tab); 24 pixels if that option is disabled.</English>
+		<Tag>TXT_KEY_BUG_OPT_SCORES__RESEARCHICONSIZE_HOVER</Tag>
+		<English>Size of the research icons (default: 24)</English>
 		<French>Select the size of the research icons when displayed (default value is 24).</French>
-		<German>Größe der Technologiesymbole. [COLOR_HIGHLIGHT_TEXT]Standard[COLOR_REVERT] bedeutet, dass die Option [COLOR_HIGHLIGHT_TEXT]Anzeige vergrößern[COLOR_REVERT] (Reiter "Allgemein") über die Größe entscheidet. Ist jene Option deaktiviert, dann ist der Standard-Wert 24 Pixel.</German>
+		<German>Größe der Technologiesymbole (Standard: 24)</German>
 		<Italian>Imposta la dimensione delle Icone di Ricerca (quando queste sono visualizzate; il valore predefinito è 24).</Italian>
 		<Spanish>Tamaño de los iconos de investigación (por defecto: 24).</Spanish>
 	</TEXT>
-
-	<!-- advc.092: Same deal as for the TECHBUTTONSIZE option above.
-		 The original option id was LINEHEIGHT. -->
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_SCORES__ROWHEIGHT_TEXT</Tag>
-		<English>Line Height</English>
-		<French>Line Height</French>
-		<German>Zeilenhöhe</German>
-		<Italian>Altezza riga</Italian>
-		<Spanish>Altura de Línea</Spanish>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_SCORES__ROWHEIGHT_LIST</Tag>
-		<English>Default|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30</English>
-		<German>Standard|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30</German>
-	</TEXT>
-	<!-- advc.004: rewritten (English, German) -->
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_SCORES__ROWHEIGHT_HOVER</Tag>
-		<English>The vertical space for each row. [COLOR_HIGHLIGHT_TEXT]Default[COLOR_REVERT] leaves the height up to the [COLOR_HIGHLIGHT_TEXT]Scale Up HUD[COLOR_REVERT] option (General tab); 20 pixels if that option is disabled.</English>
-		<French>Select the height of each civilization's line (default value is 20).</French>
-		<German>Höhe der einzelnen Einträge. [COLOR_HIGHLIGHT_TEXT]Standard[COLOR_REVERT] bedeutet, dass die Option [COLOR_HIGHLIGHT_TEXT]Anzeige vergrößern[COLOR_REVERT] (Reiter "Allgemein") über die Höhe entscheidet. Ist jene Option deaktiviert, dann ist der Standard-Wert 20 Pixel.</German>
-		<Italian>Imposta l'altezza della riga di ogni Civiltà (il valore predefinito è 20).</Italian>
-		<Spanish>Permite seleccionar la altura de la línea para cada civilización (valor por defecto: 20).</Spanish>
-	</TEXT>
-	<!-- advc.092: The original option id was DEFAULTSPACING
-		 (and the display name "Default Spacing"). -->
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_SCORES__COLUMNSPACING_TEXT</Tag>
-		<English>Column Spacing</English>
-		<German>Spaltenabstand</German>
-		<Italian>Spaziatura</Italian>
-		<Spanish>Espaciado</Spanish>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_SCORES__COLUMNSPACING_LIST</Tag>
-		<English>Default|0|1|2|3|4|5|6|7|8|9|10</English>
-		<German>Standard|0|1|2|3|4|5|6|7|8|9|10</German>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_SCORES__COLUMNSPACING_HOVER</Tag>
-		<English>The amount of space between any two columns. [COLOR_HIGHLIGHT_TEXT]Default[COLOR_REVERT] leaves the spacing up to the [COLOR_HIGHLIGHT_TEXT]Scale Up HUD[COLOR_REVERT] option (General tab); 0 space if that option is disabled. Custom spacing between individual columns can be specified in the [COLOR_HIGHLIGHT_TEXT]Column Order[COLOR_REVERT] box and overrides any default.</English>
-		<French>The spacing between columns (in pixels) to use when none is specified for a column.</French>
-		<German>Abstand (in Pixeln) zwischen benachbarten Spalten. [COLOR_HIGHLIGHT_TEXT]Standard[COLOR_REVERT] bedeutet, dass die Option [COLOR_HIGHLIGHT_TEXT]Anzeige vergrößern[COLOR_REVERT] (Reiter "Allgemein") über den Abstand entscheidet. Ist jene Option deaktiviert, dann ist der Standard-Abstand 0. Im Feld [COLOR_HIGHLIGHT_TEXT]Spaltenreihenfolge[COLOR_REVERT] können auch Abstände zwischen einzelnen Spalten eingestellt werden.</German>
-		<Italian>Definisce la spaziatura (in pixel) tra le colonne che viene utilizzata quando non ne viene specificata una differente per una o più colonne specifiche mediante l'utilizzo di un codice numerico.</Italian>
-		<Spanish>Espaciado en píxeles a emplear cuando no se especifica uno para una columna.</Spanish>
-	</TEXT>
-
+	
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_SCORES__POWER_TEXT</Tag>
 		<English>Power Ratio</English>

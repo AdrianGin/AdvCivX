@@ -243,9 +243,7 @@ def toggleDebugMode(argsList=None):
 def updateDefaultCamDistance(option, value):
 	import CvScreensInterface
 	CvScreensInterface.updateCameraStartDistance()
-# advc.095:
+
+# <advc.095:
 def updateCityBarWidth(option, value):
 	gc.getGame().setCityBarWidth(value)
-# advc.092b:
-def updatePlotIndicatorSize(option, value):
-	cyUpdatePlotIndicatorSize()

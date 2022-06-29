@@ -607,7 +607,8 @@
 				</EncouragedCiv>
 				<EncouragedCiv>
 					<!-- Alt. idea: Copper until ERA_MEDIEVAL. But having
-						 Copper all the time undercuts their UU. -->
+						 Copper all the time can make their mounted UU feel
+						 a little redundant. -->
 					<CivilizationType>CIVILIZATION_PERSIA</CivilizationType>
 					<UntilEra>ERA_MEDIEVAL</UntilEra>
 				</EncouragedCiv>

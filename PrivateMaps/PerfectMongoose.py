@@ -91,8 +91,8 @@ class MapConstants:
 		#Percent of land vs. water
 		#LM - Exact Real Earth Value. Actual results vary depending on map size, meteors, and which landmass generator was used.
 		#self.landPercent = 0.2889
-		# advc.137: At Medium sea level, Fractal only aims at 23% land (BtS: 22). PM has more bad, marginal and initially inaccessible terrain, but also a longer coastline and thus more seafood.
-		self.landPercent = 0.2315
+		# advc: Low sea level should be close to the real ratio because that's how it works with the standard map scripts (e.g. Fractal). At Medium sea level, Fractal only yields about 21% land. PM has more bad, marginal and initially inaccessible terrain, but also a longer coastline and thus more seafood.
+		self.landPercent = 0.223
 
 		#Percentage of land squares high enough to be Hills or Peaks.
 		self.HillPercent = 0.225 # advc: was 0.42
@@ -386,9 +386,8 @@ class MapConstants:
 		#Height and Width of main climate and height maps. This does not
 		#reflect the resulting map size. Both dimensions( + 1 if wrapping in
 		#that dimension = False) must be evenly divisible by self.hmMaxGrain
-		# advc.137: Increased both by 16
-		self.hmWidth  = 160
-		self.hmHeight = 113
+		self.hmWidth  = 144
+		self.hmHeight = 97
 
 		#Size of largest map increment to begin midpoint displacement. Must
 		#be a power of 2.
@@ -566,9 +565,8 @@ class MapConstants:
 		# I'm making the hex-based generator unavailable. So the PW2 generator takes choice id 1 on the menu, but is still represented by id 2 within the script (b/c a lot of code would have to be changed otherwise).
 		if self.LandmassGenerator == 1:
 			self.LandmassGenerator = 2
-		if self.LandmassGenerator == 0:
-			# advc: The PW3 generator leads to a lot of seafood. I think that outweighs a higher chance of landmasses without starting sites.
-			self.landPercent -= 0.004
+			# advc: Land tends to be easier to access with the PW2 generator (though, on the other hand, there tends to be less seafood).
+			self.landPercent -= 0.003
 		# Hill/Peak Style
 		# Always place hills and peaks based (mainly) on differences in altitude. Using absolute altitude is pretty much only good for concluding that it's a bad idea.
 		#self.HillPeakStyle     = mmap.getCustomMapOption(2)
@@ -2894,16 +2892,15 @@ def ShrinkMap(largeMap, lWidth, lHeight, sWidth, sHeight):
 		for x in range(sWidth):
 			weights      = 0.0
 			contributors = 0.0
-			# <advc.001> Using the scale ratios here can lead to out of bounds
-			# indices due to floating-point inaccuracy.
-			yyStart = (y * lHeight) // sHeight
-			yyStop = ((y + 1) * lHeight + sHeight - 1) // sHeight
-			# </advc.001>
+			yyStart = int(y * yScale)
+			yyStop = int((y + 1) * yScale)
+			if yyStop < ((y + 1) * yScale):
+				yyStop += 1
 			for yy in range(yyStart, yyStop):
-				# <advc.001>
-				xxStart = (x * lWidth) // sWidth
-				xxStop = ((x + 1) * lWidth + sWidth - 1) // sWidth
-				# </advc.001>
+				xxStart = int(x * xScale)
+				xxStop = int((x + 1) * xScale)
+				if xxStop < ((x + 1) * xScale):
+					xxStop += 1
 				for xx in range(xxStart, xxStop):
 					weight = GetWeight(x, y, xx, yy, xScale, yScale)
 					i = yy * lWidth + xx
@@ -6221,12 +6218,12 @@ def getCustomMapOptionDescAt(argsList):
 	return u""
 	'''
 
-# <advc> Make cylindrical the middle choice b/c that's what the standard map scripts do
+# <advc> Make cylindrical the middle option b/c that's what the standard map scripts do
 def getCustomMapOptionDefault(argsList):
 #	return 0
 	[iOption] = argsList
 	option_defaults = {
-		0:	1, # And make the PW2 landmass generator the default
+		0:	0,
 		1:	0,
 		2:	1
 		}

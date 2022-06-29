@@ -178,8 +178,7 @@ struct EventMessage
 	std::wstring getDescription() const { return szDescription;	}
 };
 
-// advc.enum: obsolete
-/*struct PlotExtraYield
+struct PlotExtraYield
 {
 	int m_iX;
 	int m_iY;
@@ -188,6 +187,7 @@ struct EventMessage
 	void read(FDataStreamBase* pStream);
 	void write(FDataStreamBase* pStream);
 };
+
 struct PlotExtraCost
 {
 	int m_iX;
@@ -197,7 +197,9 @@ struct PlotExtraCost
 	void read(FDataStreamBase* pStream);
 	void write(FDataStreamBase* pStream);
 };
-typedef std::vector< std::pair<BuildingClassTypes, int> > BuildingChangeArray;
+
+// advc.enum: Replaced with list enum map
+/*typedef std::vector< std::pair<BuildingClassTypes, int> > BuildingChangeArray;
 struct BuildingYieldChange {
 	BuildingClassTypes eBuildingClass;
 	YieldTypes eYield;
@@ -449,8 +451,6 @@ struct CvWidgetDataStruct
 	WidgetTypes m_eWidgetType;			//	What the 'type' of this widget is (for parsing help and executing actions)
 };
 
-/*	advc (note, fwiw): I've noticed while inspecting disassembly that the EXE
-	calls the auto-generated copy ctor of this struct. */
 struct DllExport CvPlotIndicatorData
 {
 	CvPlotIndicatorData()

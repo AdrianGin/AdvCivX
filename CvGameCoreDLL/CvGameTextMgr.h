@@ -306,7 +306,7 @@ public:
 
 	DllExport void getPlotHelp(CvPlot* pMouseOverPlot, CvCity* pCity, CvPlot* pFlagPlot, bool bAlt, CvWStringBuffer& strHelp);
 	void getRebasePlotHelp(CvPlot const& kPlot, CvUnit& kHeadSelectedUnit, CvWString& szHelp);
-	void getNukePlotHelp(CvPlot const& kPlot, CvUnit& kNuke, CvWString& szHelp);
+	void getNukePlotHelp(CvPlot const& kPlot, CvUnit& kHeadSelectedUnit, CvWString& szHelp);
 	// <advc.004c>
 	void getAirBombPlotHelp(CvPlot const& kPlot, CvUnit& kHeadSelectedUnit, CvWString& szHelp);
 	void getAirStrikePlotHelp(CvPlot const& kPlot, CvUnit& kHeadSelectedUnit, CvWString& szHelp);

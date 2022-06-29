@@ -187,7 +187,6 @@
     <ClCompile Include="..\RFTotalScore.cpp" />
     <ClCompile Include="..\RiseFall.cpp" />
     <ClCompile Include="..\ScaledNumTest.cpp" />
-    <ClCompile Include="..\SelfMod.cpp" />
     <ClCompile Include="..\Shelf.cpp" />
     <ClCompile Include="..\StartingPositionIteration.cpp" />
     <ClCompile Include="..\StartPointsAsHandicap.cpp" />
@@ -360,7 +359,6 @@
     <ClInclude Include="..\PlotRange.h" />
     <ClInclude Include="..\ScaledNum.h" />
     <ClInclude Include="..\ScaledNumFwd.h" />
-    <ClInclude Include="..\SelfMod.h" />
     <ClInclude Include="..\StartingPositionIteration.h" />
     <ClInclude Include="..\TeamPathFinder.h" />
     <ClInclude Include="..\Trigonometry.h" />

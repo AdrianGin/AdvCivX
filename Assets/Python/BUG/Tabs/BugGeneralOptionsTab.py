@@ -25,11 +25,7 @@ class BugGeneralOptionsTab(BugOptionsTab.BugOptionsTab):
 		self.addSpacer(screen, left, "GeneralL1")
 		self.createTechSplashPanel(screen, left)
 		#self.createLeaderheadPanel(screen, left)
-		# <advc.092>
-		self.addSpacer(screen, left, "AboveEnlargeHUD1")
-		self.addSpacer(screen, left, "AboveEnlargeHUD2")
-		self.addCheckbox(screen, left, "MainInterface__EnlargeHUD")
-		# </advc.092>
+
 		#self.createAutoSavePanel(screen, center)
 		self.createInfoPanePanel(screen, center)
 		# advc: Don't have space for this spacer anymore

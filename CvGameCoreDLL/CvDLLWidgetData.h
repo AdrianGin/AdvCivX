@@ -25,7 +25,6 @@ public:
 
 	//	Actions to be executed
 	void doPlotList(CvWidgetDataStruct &widgetDataStruct);
-	void doPlotListShift(int iChange, bool bMaxStep = false); // advc
 	void doLiberateCity();
 	void doRenameCity();
 	void doRenameUnit();

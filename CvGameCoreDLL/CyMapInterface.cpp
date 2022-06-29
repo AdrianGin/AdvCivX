@@ -78,11 +78,7 @@ void CyMapPythonInterface()
 		.def("updateFog", &CyMap::updateFog, "void ()")
 		.def("updateMinimapColor", &CyMap::updateMinimapColor, "void ()")
 		.def("updateMinOriginalStartDist", &CyMap::updateMinOriginalStartDist, "void (CyArea* pArea)")
-		// <advc.enum> Moved from CyGame
-		.def("getPlotExtraYield", &CyMap::getPlotExtraYield, "int (int iX, int iY, int eYield)") // K-Mod
-		.def("setPlotExtraYield", &CyMap::setPlotExtraYield, "void (int iX, int iY, int eYield, int iExtraYield)")
-		.def("changePlotExtraCost", &CyMap::changePlotExtraCost, "void (int iX, int iY, int iCost)")
-		// </advc.enum>  <advc.002a>
+		// <advc.002a>
 		.def("setMinimapShowUnits", &CyMap::setMinimapShowUnits, "void (bool)")
 		.def("setMinimapWaterAlpha", &CyMap::setMinimapWaterAlpha, "void (float)")
 		.def("setMinimapLandAlpha", &CyMap::setMinimapLandAlpha, "void (float)")

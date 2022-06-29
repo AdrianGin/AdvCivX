@@ -78,21 +78,22 @@ import Popup as PyPopup
 from CvMapGeneratorUtil import TerrainGenerator
 from CvMapGeneratorUtil import FeatureGenerator
 
-# advc.165:
-def getNumPlotsPercent(argsList):
+# <advc.165>
+def getGridSize(argsList):
 	[iWorldSize] = argsList
 	if iWorldSize < 0:
-		return 100
+		return ()
 	sizeModifiers = {
-		# NB: The smallest two sizes have highly unpredictable land-sea ratios
-		WorldSizeTypes.WORLDSIZE_DUEL:		89,
-		WorldSizeTypes.WORLDSIZE_TINY:		87,
-		WorldSizeTypes.WORLDSIZE_SMALL:		85,
-		WorldSizeTypes.WORLDSIZE_STANDARD:	83,
-		WorldSizeTypes.WORLDSIZE_LARGE:		81,
-		WorldSizeTypes.WORLDSIZE_HUGE:		77
+		WorldSizeTypes.WORLDSIZE_DUEL:		(1, -1),
+		WorldSizeTypes.WORLDSIZE_TINY:		(0, -1),
+		WorldSizeTypes.WORLDSIZE_SMALL:		(0, -1),
+		WorldSizeTypes.WORLDSIZE_STANDARD:	(-1,-1),
+		WorldSizeTypes.WORLDSIZE_LARGE:		(-2, 0),
+		WorldSizeTypes.WORLDSIZE_HUGE:		(-1,-1)
 	}
-	return sizeModifiers[iWorldSize]
+	wi = CyGlobalContext().getWorldInfo(iWorldSize)
+	return (sizeModifiers[iWorldSize][0] + wi.getGridWidth(), sizeModifiers[iWorldSize][1] + wi.getGridHeight())
+# </advc.165>
 
 def getDescription():
 	return "TXT_KEY_MAP_SCRIPT_TECTONICS_DESCR"
@@ -133,14 +134,11 @@ def getWrapY():
 def getTopLatitude():
 	if (6 == CyMap().getCustomMapOption(0)): # advc.021a: was 5==...
 		return 65
-	#return 90
-	CyPythonMgr().allowDefaultImpl() # advc.129
-
+	return 90
 def getBottomLatitude():
 	if (6 == CyMap().getCustomMapOption(0)): # advc.021a: was 5==...
 		return 25
-	#return -90
-	CyPythonMgr().allowDefaultImpl() # advc.129
+	return -90
 	
 def getCustomMapOptionDescAt(argsList):
 	iOption = argsList[0]
@@ -150,7 +148,7 @@ def getCustomMapOptionDescAt(argsList):
 					   "TXT_KEY_MAP_SCRIPT_EARTH_50", # advc.021a
 	                   "TXT_KEY_MAP_SCRIPT_PANGAEA",
 	                   "TXT_KEY_MAP_SCRIPT_LAKES",
-	                   "TXT_KEY_MAP_SCRIPT_ISLANDS_90", # advc.021a: was ..._ISLANDS
+	                   "TXT_KEY_MAP_SCRIPT_ISLANDS",
 	                   "TXT_KEY_MAP_SCRIPT_MEDITERRANEAN", 
 	                   "TXT_KEY_MAP_SCRIPT_TERRA",
 	                   "TXT_KEY_MAP_SCRIPT_TERRA_OLD_WORLD_START"]
@@ -168,7 +166,7 @@ def getCustomMapOptionDescAt(argsList):
 def getCustomMapOptionDefault(argsList):
 	iOption = argsList[0]
 	if (iOption == 0):
-		return 1 # advc.021a: Was 0, i.e. EARTH_70. Now EARTH_60 as the default.
+		return 1 # advc.021a: Was 0, i.e. 70%. Now 60% as the default.
 	else:
 		return 1
 
@@ -212,10 +210,8 @@ class voronoiMap:
 		# plateSize is a random number which gives the probability of growing a plate
 		self.plateSize = [0] * (self.numContinents + self.numSeaPlates)
 		self.altitudeVariation = 2
-		# advc.021a: was 12
-		self.peakAltitude = 15
-		# advc.021a: was 9
-		self.hillAltitude = 10
+		self.peakAltitude = 12
+		self.hillAltitude = 9
 		self.landAltitude = 6
 		for x in range(self.mapWidth):
 			for y in range(self.mapHeight):
@@ -510,10 +506,6 @@ class voronoiMap:
 					else:
 						self.plotTypes[i] = PlotTypes.PLOT_HILLS
 				elif (height > self.landAltitude):
-					# <advc.021a>
-					if self.dice.get(100, "Random hill") < height:
-						self.plotTypes[i] = PlotTypes.PLOT_HILLS
-					# </advc.021a>
 					self.plotTypes[i] = PlotTypes.PLOT_LAND
 				else:
 					self.plotTypes[i] = PlotTypes.PLOT_OCEAN
@@ -1440,7 +1432,7 @@ class riversFromSea:
 		else:
 			maxNumber /= 2
 		# Moved down; guaranteeing at least 1 river sounds prudent
-		riversNumber = int(1 + maxNumber)
+		riversNumber = 1 + maxNumber
 		# </advc.021a>
 		self.coasts = self.collateCoasts()
 		coastsNumber = len(self.coasts)

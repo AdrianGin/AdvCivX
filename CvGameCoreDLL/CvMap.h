@@ -26,17 +26,13 @@ struct CvMapInitData // holds initialization info
 	bool m_bWrapY;
 
 	CvMapInitData(int iGridW = 0, int iGridH = 0,
-		// advc.129: was +/-90
-		int iTopLatitude = 87, int iBottomLatitude = -87,
+		int iTopLatitude = 90, int iBottomLatitude = -90,
 		bool bWrapX = false, bool bWrapY = false)
 	:	m_iGridH(iGridH), m_iGridW(iGridW),
 		m_iTopLatitude(iTopLatitude), m_iBottomLatitude(iBottomLatitude),
 		m_bWrapY(bWrapY), m_bWrapX(bWrapX)
 	{}
 };
-/*	advc.003k: Probably has been compiled into the EXE,
-	best not to change the memory layout at all. */
-BOOST_STATIC_ASSERT(sizeof(CvMapInitData) == 20);
 
 class CvMap /* advc.003e: */ : private boost::noncopyable
 {
@@ -252,9 +248,7 @@ public:
 
 	DllExport void init(CvMapInitData* pInitData=NULL);
 	DllExport void setupGraphical();
-	DllExport void reset(CvMapInitData* pInitData)  // <advc.enum>
-	{ reset(pInitData, true); }
-	void reset(CvMapInitData const* pInitData, bool bResetPlotExtraData); // </advc.enum>
+	DllExport void reset(CvMapInitData* pInitData);
 
 protected:
 
@@ -282,22 +276,6 @@ public: // advc: made several functions const
 	void updateWorkingCity();
 	void updateMinOriginalStartDist(CvArea const& kArea);										// Exposed to Python
 	void updateYield();
-	// <advc.enum> Moved from CvGame
-	int getPlotExtraYield(CvPlot const& kPlot, YieldTypes eYield) const // K-Mod: Exposed to Python
-	{
-		return m_aeiPlotExtraYield.get(kPlot.plotNum(), eYield);
-	}
-	void setPlotExtraYield(CvPlot& kPlot, YieldTypes eYield, int iChange);					// Exposed to Python
-	int getPlotExtraCost(CvPlot const& kPlot) const
-	{
-		return m_aiPlotExtraCost.get(kPlot.plotNum());
-	}
-	void changePlotExtraCost(CvPlot& kPlot, int iChange);									// Exposed to Python
-	void resetPlotExtraData();
-	// (Just for save-compatibility)
-	void setPlotExtraYield(PlotNumTypes ePlot, YieldTypes eYield, int iChange);
-	void changePlotExtraCost(PlotNumTypes ePlot, int iChange);
-	// </advc.enum>
 
 	void verifyUnitValidPlot();
 	void combinePlotGroups(PlayerTypes ePlayer, CvPlotGroup* pPlotGroup1, CvPlotGroup* pPlotGroup2,
@@ -313,10 +291,7 @@ public: // advc: made several functions const
 	bool isValidRandPlot(CvPlot const& kPlot, RandPlotFlags eFlags,
 			CvArea const* pArea, int iMinCivUnitDistance) const; // </advc>
 
-	DllExport CvCity* findCity(int iX, int iY,												// Exposed to Python
-		PlayerTypes eOwner = NO_PLAYER, TeamTypes eTeam = NO_TEAM,
-		bool bSameArea = true, bool bCoastalOnly = false, TeamTypes eTeamAtWarWith = NO_TEAM,
-		DirectionTypes eDirection = NO_DIRECTION, CvCity* pSkipCity = NULL)
+	DllExport CvCity* findCity(int iX, int iY, PlayerTypes eOwner = NO_PLAYER, TeamTypes eTeam = NO_TEAM, bool bSameArea = true, bool bCoastalOnly = false, TeamTypes eTeamAtWarWith = NO_TEAM, DirectionTypes eDirection = NO_DIRECTION, CvCity* pSkipCity = NULL)	// Exposed to Python
 	{	// <advc.004r>
 		return findCity(iX, iY, eOwner, eTeam, bSameArea, bCoastalOnly,
 				eTeamAtWarWith, eDirection, pSkipCity, NO_TEAM);
@@ -445,9 +420,7 @@ public: // advc: made several functions const
 	CvWString getNonDefaultCustomMapOptionDesc(int iOption) const; // advc.190b (exposed to Python)
 	// <advc.108b>
 	bool isCustomMapOption(char const* szOptionsValue, bool bCheckContains = false,
-			bool bIgnoreCase = true) const;
-	bool isCustomMapOption(CvWString szOptionsValue, bool bCheckContains = false,
-		bool bIgnoreCase = true) const; // </advc.108b>
+			bool bIgnoreCase = true) const; // </advc.108b>
 
 	int getNumBonuses(BonusTypes eIndex) const;																	// Exposed to Python
 	void changeNumBonuses(BonusTypes eIndex, int iChange);
@@ -547,10 +520,6 @@ public: // advc: made several functions const
 			bool bWrapX, bool bWrapY, WorldSizeTypes eWorldSize,
 			ClimateTypes eClimate, SeaLevelTypes eSeaLevel,
 			int iNumCustomMapOptions, CustomMapOptionTypes* eCustomMapOptions);
-	// <advc.108c>
-	void setBonusBalanced(BonusTypes eBonus) { m_aebBalancedBonuses.set(eBonus, true); }
-	bool isBonusBalanced(BonusTypes eBonus) const { return m_aebBalancedBonuses.get(eBonus); }
-	// </advc.108c>
 	void updateReplayTexture(); // advc.106n
 	byte const* getReplayTexture() const; // advc.106n
 	/*	<advc.002a> Set through BUG options, but I worry that accessing those
@@ -599,10 +568,6 @@ protected:
 		before XML is loaded.) */
 	ArrayEnumMap<BonusTypes,int,PlotNumInt> m_aiNumBonus;
 	ArrayEnumMap<BonusTypes,int,PlotNumInt> m_aiNumBonusOnLand;
-	ListEnumMap<BonusTypes,bool> m_aebBalancedBonuses; // advc.108c
-	// These two were vectors of structs at CvGame
-	ListEnumMap2D<PlotNumTypes,YieldTypes,int,char> m_aeiPlotExtraYield;
-	ListEnumMap<PlotNumTypes,int> m_aiPlotExtraCost;
 	// </advc.enum>
 	CvPlot* m_pMapPlots;
 	std::map<Shelf::Id,Shelf*> m_shelves; // advc.300
@@ -612,7 +577,7 @@ protected:
 
 	void calculateAreas();
 	// <advc.030>
-	void calculateAreas_advc();
+	void calculateAreas_030();
 	void calculateReprAreas();
 	void calculateAreas_DFS(CvPlot const& p);
 	void updateLakes();

@@ -145,7 +145,7 @@ int RFChapterScore::modifiedCivScore(PlayerTypes civId) const {
 		AI civ that the human player still gets score for, but not the current
 		human civ. */
 	if(g.getWinner() == TEAMID(civId) && !GET_PLAYER(civId).isActive())
-		return g.getPlayerScore(g.getRankPlayer((PlayerTypes)0)) + 1;
+		return g.getPlayerScore(g.getRankPlayer(0)) + 1;
 	return g.getPlayerScore(civId);
 }
 

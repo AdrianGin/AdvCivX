@@ -15,7 +15,6 @@
 #ifdef LOG_AI
 #define gLogBBAI true // advc.007: So that LOG_AI can be checked in FAssert
 #define gPlayerLogLevel		3
-#define gScoreLogInterval	100 // advc.007: was hardcoded to 25 in CvPlayer::onTurnLogging
 #define gTeamLogLevel		3
 #define gCityLogLevel		3
 #define gUnitLogLevel		3
@@ -24,7 +23,6 @@
 #else
 #define gLogBBAI false // advc.007
 #define gPlayerLogLevel		0
-#define gScoreLogInterval	10000
 #define gTeamLogLevel		0
 #define gCityLogLevel		0
 #define gUnitLogLevel		0

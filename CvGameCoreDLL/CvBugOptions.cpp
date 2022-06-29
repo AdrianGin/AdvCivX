@@ -26,9 +26,8 @@ int getDefineINT(const char* xmlKey, int iDefault) {
 
 // advc:
 bool checkBUGStatus(const char* optionKey, bool bWarn)
-{	// Once we've received the screen height, BUG should be good to go.
-	if(GC.getGame().getScreenHeight() <= 0 &&
-		(!GC.IsGraphicsInitialized() || GC.getGame().getActivePlayer() == NO_PLAYER))
+{
+	if(!GC.IsGraphicsInitialized() || GC.getGame().getActivePlayer() == NO_PLAYER)
 	{
 		if(!bWarn)
 			return false;

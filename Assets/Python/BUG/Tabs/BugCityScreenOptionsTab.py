@@ -34,8 +34,6 @@ class BugCityScreenOptionsTab(BugOptionsTab.BugOptionsTab):
 		
 		#self.createCityBarPanel(screen, right)
 		#self.addSpacer(screen, right, "CityScreen6")
-		self.createLayoutPanel(screen, right) # advc.004
-		self.addSpacer(screen, right, "CityScreen5") # advc.004
 		self.createMiscellaneousPanel(screen, right)
 		
 	def createRawYieldsPanel(self, screen, panel):
@@ -131,15 +129,6 @@ class BugCityScreenOptionsTab(BugOptionsTab.BugOptionsTab):
 		#self.addCheckbox(screen, right, "CityBar__HideInstructions")
 		# EF: Airport Icons option is on Map tab
 		###self.addCheckbox(screen, right, "CityBar__AirportIcons")
-
-	def createLayoutPanel(self, screen, panel):
-		self.addLabel(screen, panel, "Layout", "Layout:")
-		# advc.097:
-		self.addTextDropdown(screen, panel, panel, "CityScreen__Buildings", True)
-		self.addTextDropdown(screen, panel, panel, "CityScreen__Specialists", True)
-		# advc.004: Already shown on the General tab, once should be enough.
-		#self.addCheckbox(screen, panel, "MainInterface__ProgressBarsTickMarks")
-		self.addCheckbox(screen, panel, "CityScreen__OnlyPresentReligions")
 		
 	def createMiscellaneousPanel(self, screen, panel):
 		self.addLabel(screen, panel, "Misc", "Miscellaneous:")
@@ -147,21 +136,23 @@ class BugCityScreenOptionsTab(BugOptionsTab.BugOptionsTab):
 		self.addCheckbox(screen, panel, "CityScreen__ClickMapToExit")
 		# advc.002q: New option
 		self.addCheckbox(screen, panel, "CityScreen__CitySoundScapes")
+		# advc.004: Moved up
+		self.addTextDropdown(screen, panel, panel, "CityScreen__Specialists", True)
+		#self.addCheckbox(screen, panel, "MiscHover__RemoveSpecialist")
+		
 		# advc.065: No longer optional
 		#self.addCheckbox(screen, panel, "MiscHover__BaseCommerce")
-		self.addCheckbox(screen, panel, "CityScreen__FoodAssist")	
+		self.addCheckbox(screen, panel, "CityScreen__FoodAssist")
+		
 		# (advc.064: Anger_Counter moved to HurryDetail)
+		
 		# advc.065: No longer optional
 		#self.addCheckbox(screen, panel, "CityScreen__CultureTurns")
 		# advc.004: Already shown on the General tab, once should be enough.
 		#self.addCheckbox(screen, panel, "MainInterface__ProgressBarsTickMarks")
-
-		# advc.004: Moved to (new) layout panel
-		#self.addTextDropdown(screen, panel, panel, "CityScreen__Specialists", True)
-		#self.addCheckbox(screen, panel, "CityScreen__OnlyPresentReligions")
-		#self.addCheckbox(screen, panel, "CityScreen__OnlyPresentCorporations")
-
-		#self.addCheckbox(screen, panel, "MiscHover__RemoveSpecialist")
+		self.addCheckbox(screen, panel, "CityScreen__OnlyPresentReligions")
+		self.addCheckbox(screen, panel, "CityScreen__OnlyPresentCorporations")
+		
 		#self.addCheckbox(screen, panel, "MiscHover__UnitExperience")
 		#self.addCheckbox(screen, panel, "MiscHover__UnitExperienceModifiers")
 		#self.addCheckbox(screen, panel, "MiscHover__ConscriptUnit")

@@ -51,14 +51,12 @@ TrueStarts::TrueStarts()
 				szMapName != CvWString("Arboria") && szMapName != CvWString("Caldera"));
 		// Scenario makers tend to use peaks very liberally
 		m_bAdjustPeakScore = (GC.getGame().isScenario() ||
-				/*	This earth-like script also places lots of peaks.
-					(advc.021a: Not that many anymore, but it varies quite a bit.
-					In any case, adjusting the scoring won't hurt.) */
+				// This earth-like script also places lots of peaks
 				szMapName == CvWString("Tectonics"));
 	}
 	m_bBonusesIgnoreLatitude = (!m_bMapHasLatitudes ||
 			GC.getPythonCaller()->isBonusIgnoreLatitude());
-	m_bBalancedResources = kMap.isCustomMapOption(gDLL->getText("TXT_KEY_MAP_BALANCED"));
+	m_bBalancedResources = kMap.isCustomMapOption("Balanced");
 	/*	Don't focus on the initial human player when
 		any civ may come under human control later on */
 	m_bPrioritizeHumans = !GC.getGame().isOption(GAMEOPTION_RISE_FALL);
@@ -541,7 +539,7 @@ void TrueStarts::sanitize()
 		CvPlot const& kPlot = kMap.getPlotByIndex(eLoopPlotNum);
 		if (kPlot.getBonusType() != NO_BONUS &&
 			(!m_bBalancedResources ||
-			!GC.getMap().isBonusBalanced(kPlot.getBonusType())))
+			GC.getInfo(kPlot.getBonusType()).getPlacementOrder() > 2))
 		{
 			EagerEnumMap<PlayerTypes,scaled> aerPlayerWeights;
 			setPlayerWeightsPerPlot(eLoopPlotNum, aerPlayerWeights);
@@ -836,7 +834,6 @@ void TrueStarts::changeCivs()
 				((szMapName == CvWString("PerfectMongoose") ||
 				szMapName == CvWString("Tectonics") ||
 				szMapName == CvWString("RandomScriptMap")) &&
-				// This will only work when playing in English
 				GC.getMap().isCustomMapOption("Old World", true)) ||
 				(szMapName == CvWString("NewWorld") &&
 				/*	If someone adds options to that map, then there might be

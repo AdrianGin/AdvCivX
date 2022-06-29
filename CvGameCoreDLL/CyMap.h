@@ -85,10 +85,6 @@ public:
 	void updateFog();
 	void updateMinimapColor();
 	void updateMinOriginalStartDist(CyArea* pArea);
-	// <advc.enum> Moved from CyGame
-	int getPlotExtraYield(int iX, int iY, int /*YieldTypes*/ eYield); // K-Mod
-	void setPlotExtraYield(int iX, int iY, int /*YieldTypes*/ eYield, int iExtraYield);
-	void changePlotExtraCost(int iX, int iY, int iExtraCost); // </advc.enum>
 	// <advc.002a>
 	void setMinimapShowUnits(bool b);
 	void setMinimapWaterAlpha(float f);

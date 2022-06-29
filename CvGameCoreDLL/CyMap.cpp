@@ -294,31 +294,6 @@ void CyMap::updateMinOriginalStartDist(CyArea* pArea)
 	m_kMap.updateMinOriginalStartDist(pArea->getArea());
 }
 
-// <advc.enum> Moved from CyGame
-int CyMap::getPlotExtraYield(int iX, int iY, int /*YieldTypes*/ eYield) // K-Mod
-{
-	CvPlot const* pPlot = m_kMap.plot(iX, iY);
-	if (pPlot == NULL)
-		return 0;
-	return m_kMap.getPlotExtraYield(*pPlot, (YieldTypes)eYield);
-}
-
-void CyMap::setPlotExtraYield(int iX, int iY, int /*YieldTypes*/ eYield, int iExtraYield)
-{
-	CvPlot* pPlot = m_kMap.plot(iX, iY);
-	if (pPlot == NULL)
-		return;
-	m_kMap.setPlotExtraYield(*pPlot, (YieldTypes)eYield, iExtraYield);
-}
-
-void CyMap::changePlotExtraCost(int iX, int iY, int iCost)
-{
-	CvPlot* pPlot = m_kMap.plot(iX, iY);
-	if (pPlot == NULL)
-		return;
-	m_kMap.changePlotExtraCost(*pPlot, iCost);
-} // </advc.enum>
-
 // <advc.002a>
 void CyMap::setMinimapShowUnits(bool b)
 {

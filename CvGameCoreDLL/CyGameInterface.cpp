@@ -158,7 +158,7 @@ void CyGamePythonInterface()
 
 		.def("isFinalInitialized", &CyGame::isFinalInitialized, "bool () - Returns whether or not the game initialization process has ended (game has started)")
 		// advc.061:
-		.def("setScreenDimensions", &CyGame::setScreenDimensions, "void (int iWidth, int iHeight)")
+		.def("setScreenDimensions", &CyGame::setScreenDimensions)
 		.def("getActivePlayer", &CyGame::getActivePlayer, "returns index of the active player")
 		.def("setActivePlayer", &CyGame::setActivePlayer, "void (int /*PlayerTypes*/ eNewValue, bool bForceHotSeat)")
 		.def("getPausePlayer", &CyGame::getPausePlayer, "int () - will get who paused us")
@@ -265,7 +265,7 @@ void CyGamePythonInterface()
 		.def("changeHumanPlayer", &CyGame::changeHumanPlayer, "void ( int /*PlayerTypes*/ eNewHuman )")
 
 		.def("getCultureThreshold", &CyGame::getCultureThreshold, "int getCultureThreshold(CultureLevelTypes eLevel)")
-		// (advc.enum: deprecated x3)
+
 		.def("getPlotExtraYield", &CyGame::getPlotExtraYield, "int (int iX, int iY, int /*YieldTypes*/ eYield)") // K-Mod
 		.def("setPlotExtraYield", &CyGame::setPlotExtraYield, "void (int iX, int iY, int /*YieldTypes*/ eYield, int iExtraYield)")
 		.def("changePlotExtraCost", &CyGame::changePlotExtraCost, "void (int iX, int iY, int iCost)")

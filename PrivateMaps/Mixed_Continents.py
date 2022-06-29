@@ -50,20 +50,22 @@ def getDescription():
 	# advc.mxc:
 	return "Variant of Jam3's \"Continents and Islands\", which, in turn, is based on Sirian's \"Big and Small\". Allows the \"small\" landmasses to be continents as well. Customized for the AdvCiv mod."
 
-# advc.165:
-def getNumPlotsPercent(argsList):
+# <advc.165>
+def getGridSize(argsList):
 	[iWorldSize] = argsList
 	if iWorldSize < 0:
-		return 100
+		return ()
 	sizeModifiers = {
-		WorldSizeTypes.WORLDSIZE_DUEL:		100,
-		WorldSizeTypes.WORLDSIZE_TINY:		98,
-		WorldSizeTypes.WORLDSIZE_SMALL:		95,
-		WorldSizeTypes.WORLDSIZE_STANDARD:	92,
-		WorldSizeTypes.WORLDSIZE_LARGE:		88,
-		WorldSizeTypes.WORLDSIZE_HUGE:		84
+		WorldSizeTypes.WORLDSIZE_DUEL:		( 0, 0),
+		WorldSizeTypes.WORLDSIZE_TINY:		( 0, 0),
+		WorldSizeTypes.WORLDSIZE_SMALL:		(-1, 0),
+		WorldSizeTypes.WORLDSIZE_STANDARD:	( 0,-1),
+		WorldSizeTypes.WORLDSIZE_LARGE:		(-1,-1),
+		WorldSizeTypes.WORLDSIZE_HUGE:		(-2,-1)
 	}
-	return sizeModifiers[iWorldSize]
+	wi = CyGlobalContext().getWorldInfo(iWorldSize)
+	return (sizeModifiers[iWorldSize][0] + wi.getGridWidth(), sizeModifiers[iWorldSize][1] + wi.getGridHeight())
+# </advc.165>
 
 def isAdvancedMap():
 	"This map should not show up in simple mode"

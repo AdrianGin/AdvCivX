@@ -689,7 +689,7 @@ void GreedForAssets::evaluate()
 	/*	(Count non-wonder buildings for rPresentScore? May construct those
 		in the conquered cities too eventually ...) */
 	scaled rUtility = scaled::min(650, 350 * rConqScore /
-			scaled::max(rPresentScore, 1));
+			(rPresentScore + scaled::epsilon()));
 	log("Base utility from assets: %d", rUtility.round());
 	scaled const rTeamSzMult = teamSizeMultiplier();
 	if (rTeamSzMult != 1)
@@ -834,6 +834,8 @@ scaled GreedForAssets::medianDistFromOurConquests(PlayerTypes ePlayer) const
 {
 	CvPlayerAI const& kPlayer = GET_PLAYER(ePlayer);
 	vector<scaled> arDistances;
+	CvArea const* pCapitalArea = (GET_PLAYER(ePlayer).hasCapital() ?
+			GET_PLAYER(ePlayer).getCapital()->area() : NULL);
 	for (size_t i = 0; i < ourConquestsFromThem().size(); i++)
 	{
 		/*	For a human, it's almost always easy to tell whether one civ is
@@ -849,6 +851,9 @@ scaled GreedForAssets::medianDistFromOurConquests(PlayerTypes ePlayer) const
 		if (iDist < 0) // unreachable
 			iDist = 1000;
 		arDistances.push_back(iDist);
+		// Double weight for cities in capital area
+		if (pCacheCity->city().area() == pCapitalArea)
+			arDistances.push_back(iDist);
 	}
 	scaled r = 1000;
 	if (!arDistances.empty())

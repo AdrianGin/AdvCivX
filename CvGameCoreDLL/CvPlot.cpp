@@ -2707,6 +2707,18 @@ int CvPlot::movementCost(CvUnit const& kUnit, CvPlot const& kFrom,
 }
 
 
+int CvPlot::getExtraMovePathCost() const
+{
+	return GC.getGame().getPlotExtraCost(getX(), getY());
+}
+
+
+void CvPlot::changeExtraMovePathCost(int iChange)
+{
+	GC.getGame().changePlotExtraCost(getX(), getY(), iChange);
+}
+
+
 bool CvPlot::isAdjacentOwned() const
 {
 	FOR_EACH_ADJ_PLOT(*this)
@@ -4040,7 +4052,7 @@ void CvPlot::setOwner(PlayerTypes eNewValue, bool bCheckUnits, bool bUpdatePlotG
 	if(getOwner() == eNewValue)
 		return;
 	PlayerTypes eOldOwner = getOwner(); // advc.ctr
-	GC.getGame().addReplayMessage(*this, REPLAY_MESSAGE_PLOT_OWNER_CHANGE, eNewValue);
+	GC.getGame().addReplayMessage(REPLAY_MESSAGE_PLOT_OWNER_CHANGE, eNewValue, (char*)NULL, getX(), getY());
 
 	CvCity* pOldCity = getPlotCity();
 	if (pOldCity != NULL)  // advc: Removed some assertions and NULL/NO_... checks in this block
@@ -4084,8 +4096,8 @@ void CvPlot::setOwner(PlayerTypes eNewValue, bool bCheckUnits, bool bUpdatePlotG
 		szBuffer = gDLL->getText("TXT_KEY_MISC_CITY_REVOLTS_JOINS", pOldCity->getNameKey(),
 				GET_PLAYER(eNewValue).getCivilizationDescriptionKey(),
 				szOldOwnerDescr); // advc.101
-		GC.getGame().addReplayMessage(*this, REPLAY_MESSAGE_MAJOR_EVENT,
-				getOwner(), szBuffer);
+		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getOwner(),
+				szBuffer, getX(), getY());
 				// advc.106: Use ALT_HIGHLIGHT for research-related stuff now
 				//,GC.getColorType("ALT_HIGHLIGHT_TEXT")
 		FAssert(pOldCity->getOwner() != eNewValue);
@@ -4608,11 +4620,11 @@ BonusTypes CvPlot::getNonObsoleteBonusType(TeamTypes eTeam,
 	bool bCheckConnected) const // K-Mod
 {
 	FAssert(eTeam != NO_TEAM);
-	FAssertMsg(GET_TEAM(eTeam).isAlive(), "advc.064d: OK if eTeam has just died"); // K-Mod
+	FAssert(GET_TEAM(eTeam).isAlive()); // K-Mod
 
 	BonusTypes eBonus = getBonusType(eTeam);
 	if (eBonus == NO_BONUS)
-		return NO_BONUS;
+		return NO_BONUS; // advc
 	if (GET_TEAM(eTeam).isBonusObsolete(eBonus))
 		return NO_BONUS;
 
@@ -5120,27 +5132,27 @@ int CvPlot::calculateNatureYield(YieldTypes eYield, TeamTypes eTeam, bool bIgnor
 	bool bIgnoreHills) const // advc.300
 {
 	// advc.016: Cut from calculateYield
-	int iYieldRate = GC.getMap().getPlotExtraYield(*this, eYield);
+	int iYield = GC.getGame().getPlotExtraYield(getX(), getY(), eYield);
 	if (isImpassable())
 	{
 		//return 0;
 		/*  advc.016: Impassable tiles with extra yields can be worked -
 			as in BtS. This allows Python modders to make peaks workable. */
-		return iYieldRate;
+		return iYield;
 	}
-	iYieldRate += GC.getInfo(getTerrainType()).getYield(eYield);
+	iYield += GC.getInfo(getTerrainType()).getYield(eYield);
 	bool const bHills = (isHills() /* advc.300 */ && !bIgnoreHills);
 	if (bHills)
-		iYieldRate += GC.getInfo(eYield).getHillsChange();
+		iYield += GC.getInfo(eYield).getHillsChange();
 	else if (isPeak())
-		iYieldRate += GC.getInfo(eYield).getPeakChange();
+		iYield += GC.getInfo(eYield).getPeakChange();
 	else if (isLake())
-		iYieldRate += GC.getInfo(eYield).getLakeChange();
+		iYield += GC.getInfo(eYield).getLakeChange();
 	if (eTeam != NO_TEAM)
 	{
 		BonusTypes eBonus = getBonusType(eTeam);
 		if (eBonus != NO_BONUS)
-			iYieldRate += GC.getInfo(eBonus).getYieldChange(eYield);
+			iYield += GC.getInfo(eBonus).getYieldChange(eYield);
 	}
 	if (isRiver())
 	{
@@ -5152,12 +5164,12 @@ int CvPlot::calculateNatureYield(YieldTypes eYield, TeamTypes eTeam, bool bIgnor
 		int iRivers = 1;
 		/*if(isConnectRiverSegments()) // Disabled for now
 			iRivers++;*/
-		iYieldRate += iRivers * iYieldPerRiver; // </advc.500a>
+		iYield += iRivers * iYieldPerRiver; // </advc.500a>
 	}
 
 	if (bHills)
 	{
-		iYieldRate += ((bIgnoreFeature || !isFeature()) ?
+		iYield += ((bIgnoreFeature || !isFeature()) ?
 				GC.getInfo(getTerrainType()).getHillsYieldChange(eYield) :
 				GC.getInfo(getFeatureType()).getHillsYieldChange(eYield));
 	}
@@ -5165,10 +5177,10 @@ int CvPlot::calculateNatureYield(YieldTypes eYield, TeamTypes eTeam, bool bIgnor
 	if (!bIgnoreFeature)
 	{
 		if (isFeature())
-			iYieldRate += GC.getInfo(getFeatureType()).getYieldChange(eYield);
+			iYield += GC.getInfo(getFeatureType()).getYieldChange(eYield);
 	}
 
-	return std::max(0, iYieldRate);
+	return std::max(0, iYield);
 }
 
 
@@ -5476,21 +5488,6 @@ int CvPlot::calculateTeamCulturePercent(TeamTypes eTeam) const
 		iTeamCulturePercent += calculateCulturePercent(itMember->getID());
 	}
 	return iTeamCulturePercent;
-}
-
-// kekm.7 (advc): Including vassals or master
-int CvPlot::calculateFriendlyCulturePercent(TeamTypes eTeam) const
-{
-	// Dead teams don't have vassal/ master relationships
-	if (!GET_TEAM(eTeam).isAlive())
-		return calculateTeamCulturePercent(eTeam);
-	int iR = 0;
-	for (PlayerIter<ALIVE,NOT_A_RIVAL_OF> itPlayer(eTeam);
-		itPlayer.hasNext(); ++itPlayer)
-	{
-		iR += calculateCulturePercent(itPlayer->getID());
-	}
-	return iR;
 }
 
 
@@ -6101,8 +6098,7 @@ bool CvPlot::isRevealed(TeamTypes eTeam, bool bDebug) const
 }
 
 
-void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly,
-	TeamTypes eFromTeam, bool bUpdatePlotGroup)
+void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly, TeamTypes eFromTeam, bool bUpdatePlotGroup)
 {
 	FAssertBounds(0, MAX_TEAMS, eTeam);
 
@@ -7939,11 +7935,11 @@ void CvPlot::applyEvent(EventTypes eEvent)
 	else if (kEvent.getRouteChange() < 0)
 		setRouteType(NO_ROUTE, true);
 
-	FOR_EACH_ENUM(Yield)
+	for (int i = 0; i < NUM_YIELD_TYPES; ++i)
 	{
-		int iChange = kEvent.getPlotExtraYield(eLoopYield);
+		int iChange = kEvent.getPlotExtraYield(i);
 		if (iChange != 0)
-			GC.getMap().setPlotExtraYield(*this, eLoopYield, iChange);
+			GC.getGame().setPlotExtraYield(m_iX, m_iY, (YieldTypes)i, iChange);
 	}
 }
 

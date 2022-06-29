@@ -2,7 +2,7 @@
 #include "CvFractal.h"
 
 
-#define FLOAT_PRECISION 1024 // advc.opt: was 1000
+#define FLOAT_PRECISION		(1000)
 
 
 CvFractal::CvFractal()
@@ -47,15 +47,15 @@ void CvFractal::fracInit(int iNewXs, int iNewYs, int iGrain, CvRandom& random,
 			(Flags)iFlags, pRifts, iFracXExp, iFracYExp);
 }
 
-/*	pbyHints should be a 1d array of bytes representing a 2d array
-	with width = 2^(iFracXExp - minExp + iGrain) + (GC.getMap().isWrapX() ? 0 : 1)
-	and height = 2^(iFracYExp - minExp + iGrain) + (GC.getMap().isWrapY() ? 0 : 1)
-	where minExp = std::min(iFracXExp, iFracYExp)
-	Note above that an extra value is required in a dimension
-	in which the map does not wrap. */
+// pbyHints should be a 1d array of bytes representing a 2d array
+//	with width = 2^(iFracXExp - minExp + iGrain) + (GC.getMap().isWrapX() ? 0 : 1)
+//	and height = 2^(iFracYExp - minExp + iGrain) + (GC.getMap().isWrapY() ? 0 : 1)
+// where minExp = std::min(iFracXExp, iFracYExp)
+// Note above that an extra value is required in a dimension in which the map does not wrap.
+
 void CvFractal::fracInitHinted(int iNewXs, int iNewYs, int iGrain, CvRandom& random,
 	byte* pbyHints, int iHintsLength, int iFlags, CvFractal* pRifts,
-	int iFracXExp, int iFracYExp)
+	int iFracXExp/*=7*/, int iFracYExp/*=6*/)
 {
 	Flags eFlagsNonPolar = ((Flags)iFlags) & (~FRAC_POLAR);
 	fracInitInternal(iNewXs, iNewYs, iGrain, random, pbyHints, iHintsLength,
@@ -70,29 +70,11 @@ void CvFractal::fracInitInternal(int iNewXs, int iNewYs, int iGrain, CvRandom& r
 
 	reset();
 
-	bool bDefaultInternalDims = true; // advc.137
-	if (iFracXExp < 0 /* advc.137: */ || iFracXExp == DEFAULT_FRAC_X_EXP)
+	if (iFracXExp < 0)
 		iFracXExp = DEFAULT_FRAC_X_EXP;
-	else bDefaultInternalDims = false; // advc.137
-	if (iFracYExp < 0 /* advc.137: */ || iFracYExp == DEFAULT_FRAC_Y_EXP)
+	if (iFracYExp < 0)
 		iFracYExp = DEFAULT_FRAC_Y_EXP;
-	else bDefaultInternalDims = false; // advc.137
-	/*	iFracXExp should be 8 or less
-		iFracYExp should be one less than iFracXExp for Civ3 worlds */
-	// <advc.137> I think this should depend on the ratio of iNewXs to iNewYs
-	if (bDefaultInternalDims && 2 * iNewXs < 3 * iNewYs && pbyHints == NULL)
-	{
-		iFracYExp++;
-		if (2 * iNewXs < iNewYs)
-			iFracXExp--;
-		// Akin to what RandomScriptMap's R_MultilayeredFractal does
-		if (iNewXs >= 90 && iNewYs >= 70)
-		{
-			iFracXExp++;
-			iFracYExp++;
-		}
-		FAssert(iFracXExp <= 8 && iFracYExp <= 8 && abs(iFracXExp - iFracYExp) <= 1);
-	} // </advc.137>
+
 	m_iFracXExp = iFracXExp;
 	m_iFracYExp = iFracYExp;
 	m_iFracX = 1 << iFracXExp;

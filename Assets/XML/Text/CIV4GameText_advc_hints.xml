@@ -750,7 +750,7 @@
 <!-- advc.004z: "Flag Resources view" isn't the proper term -->
 <TEXT>
 	<Tag>TXT_KEY_HINT_INTERFACE_25</Tag>
-	<English>Press [CTRL + R] to toggle the Resource Display ("balloons").</English>
+	<English>Press [CTRL + R] to toggle the Resource Display (indicator "bubbles").</English>
 	<French>Appuyez sur [CTRL + R] pour afficher ou masquer les ressources.</French>
 	<German>Dr&#252;cken Sie [STRG + R], um in die Ressourcen-Symbole ein- oder auszublenden.</German>
 	<Italian>Premi [CTRL + R] per visualizzare/nascondere la segnalazione risorse.</Italian>
@@ -761,7 +761,7 @@
 	 -->
 <TEXT>
 	<Tag>TXT_KEY_HINT_INTERFACE_48</Tag>
-	<English>Press [ALT + U] to toggle the Unit Display ("balloons").</English>
+	<English>Press [ALT + U] to toggle the Unit Display (indicator "bubbles").</English>
 	<French>Appuyez sur [ALT + U] pour afficher ou masquer les unités.</French>
 	<German>Dr&#252;cken Sie [ALT + U], um in die Einheiten-Marker ein- oder auszublenden.</German>
 	<Italian>Premi [ALT + U] per visualizzare/nascondere la segnalazione unit&#224;.</Italian>

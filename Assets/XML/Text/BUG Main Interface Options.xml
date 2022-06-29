@@ -218,18 +218,6 @@
 		<German>Die Fortschrittsbalken für [COLOR_HIGHLIGHT_TEXT]Große Persönlichkeiten[COLOR_REVERT] and [COLOR_HIGHLIGHT_TEXT]Große Generäle[COLOR_REVERT] (falls überhaupt aktiviert) erscheinen erst, wenn entsprechender Fortschritt besteht.</German>
 	</TEXT>
 
-	<!-- advc.092: New option -->
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__ENLARGEHUD_TEXT</Tag>
-		<English>Scale Up HUD</English>
-		<German>Anzeige vergrößern</German>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__ENLARGEHUD_HOVER</Tag>
-		<English>When checked, the size of panels, buttons and the minimap is increased based on the rendering resolution. No effect when the resolution is set to the minimum (1024 x 768). Changes won't apply properly until Civ 4 is restarted.</English>
-		<German>Vergrößert Schaltflächen, die Minimap und andere Bedienelemente, wenn eine höhere Bildauflösung als 1024x768 Pixel eingestellt ist. Neustart von Civ 4 erforderlich.</German>
-	</TEXT>
-
 	<!-- advc.120c: Under the new heading, "Max/Min Buttons" should be clear
 		 enough. (Put "max" first to match the "+/-" order.) -->
 	<TEXT>
@@ -546,12 +534,12 @@
 		<German>Diese Farbe wird anstatt der obigen verwendet, wenn eine Beförderung allen Einheiten des Verbandes gemeinsam ist.</German>
 	</TEXT>
 	
-	<!-- advc.061 (German: not enough space for "Einheiten nach Besitzer gruppieren") -->
+	<!-- advc.061 -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__LISTUNITSPEROWNER_TEXT</Tag>
 		<English>List Units per Owner</English>
 		<French>Grouper les unités par propriétaire</French>
-		<German>Einheiten pro Besitzer</German>
+		<German>Einheiten nach Besitzer gruppieren</German>
 		<Italian>Elenca unità per proprietario</Italian>
 		<Spanish>Agrupar unidades por propietario</Spanish>
 	</TEXT>
@@ -574,11 +562,10 @@
 		<Italian>Dimensione Icona Costruisci/Azione</Italian>
 		<Spanish>Tamaño de Iconos de acción/construcción</Spanish>
 	</TEXT>
-	<!-- advc.092: Mention interaction with enlarge-HUD option. -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__BUILDICONSIZE_HOVER</Tag>
-		<English>Determines the size of the order and action buttons in the bottom center of the screen. The size of those buttons is additionally affected by [COLOR_HIGHLIGHT_TEXT]Scale Up HUD[COLOR_REVERT] if that option is enabled.</English>
-		<German>Bestimmt die Größe der Befehls-Schaltflächen am unteren Bildschirmrand. Die Größe wird ggf. zusätzlich von der Option [COLOR_HIGHLIGHT_TEXT]Anzeige vergrößern[COLOR_REVERT] beeinflusst.</German>
+		<English>Determines the size of the build and action buttons in the bottom center of the screen.</English>
+		<German>Bestimmt die Größe der Bau- und Befehlssymbole im Menü am unteren Bildschirmrand</German>
 		<Italian>Determina la dimensione delle icone per i tasti di costruzione e azione nella parte bassa e centrale dello schermo.</Italian>
 		<Spanish>Determina el tamaño de los iconos de construir y acción en los botones de la parte inferior central de la pantalla.</Spanish>
 	</TEXT>
@@ -746,37 +733,6 @@
 		<Italian>Abilita la segnalazione delle risorse all'inizio del gioco.</Italian>
 		<Spanish>Activa las marcas de recursos al inicio del juego.</Spanish>
 	</TEXT>
-
-	<!-- advc.092b: Plot indicator size options -->
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__PLOTINDICATORSIZE_TEXT</Tag>
-		<English>Balloon Size</English>
-		<German>Ballon-Größe</German>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__PLOTINDICATORSIZE_LIST</Tag>
-		<English>Auto|BtS|25|30|35|40|45|50|55|60|65</English>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__PLOTINDICATORSIZE_HOVER</Tag>
-		<English>The size of the balloon icons that the game uses for the Resource and Unit Display and for indicating tiles where some event has occurred. [COLOR_HIGHLIGHT_TEXT]Auto[COLOR_REVERT] sets the size based on the camera's [COLOR_HIGHLIGHT_TEXT]Field of View[COLOR_REVERT] value, [COLOR_HIGHLIGHT_TEXT]BtS[COLOR_REVERT] sets it based on the screen resolution. The other choices aim at (approximately) a specific diameter in pixels.</English>
-		<German>Die Größe der "Sprechblasen" in denen Ressourcen-, Einheiten- und Ereignis-Symbole angezeigt werden. [COLOR_HIGHLIGHT_TEXT]Auto[COLOR_REVERT] bedeutet, dass die Größe abhängig von der [COLOR_HIGHLIGHT_TEXT]Sichtfeld[COLOR_REVERT]-Größe gewählt wird, [COLOR_HIGHLIGHT_TEXT]BtS[COLOR_REVERT], dass sie von der Bildauflösung abhängt. Es kann auch ein bestimmter Durchmesser in Pixeln (ungefähr) eingestellt werden.</German>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__OFFSCREENUNITSIZEMULT_TEXT</Tag>
-		<English>Off-Screen Balloon Size</English>
-		<German>Ballon-Größe Bildrand</German>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__OFFSCREENUNITSIZEMULT_LIST</Tag>
-		<English>0.8|1.0|1.2|1.4|1.6|1.8|2.0|Disable</English>
-		<German>0.8|1.0|1.2|1.4|1.6|1.8|2.0|Keine</German>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__OFFSCREENUNITSIZEMULT_HOVER</Tag>
-		<English>Multiplier for the [COLOR_HIGHLIGHT_TEXT]Balloon Size[COLOR_REVERT] when the currently selected unit is off-screen. (Off-screen indicators shown for certain events are not affected by this multiplier.) [COLOR_HIGHLIGHT_TEXT]1.4[COLOR_REVERT] is the AdvCiv default, [COLOR_HIGHLIGHT_TEXT]1.6[COLOR_REVERT] is closest to the original behavior. [COLOR_HIGHLIGHT_TEXT]Disable[COLOR_REVERT] means that no balloon is shown for off-screen units. Changes won't take effect until a different unit is selected.</English>
-		<German>Faktor, mit dem die [COLOR_HIGHLIGHT_TEXT]Ballon-Größe[COLOR_REVERT] multipliziert wird, wenn die derzeit ausgewählte Einheit nicht im Bild ist. Standard in AdvCiv ist [COLOR_HIGHLIGHT_TEXT]1.4[COLOR_REVERT], in BtS betrug der Faktor ca. [COLOR_HIGHLIGHT_TEXT]1.6[COLOR_REVERT]. Die Einheiten-Ballons am Bildrand können auch ganz deaktiviert werden ([COLOR_HIGHLIGHT_TEXT]Keine[COLOR_REVERT]). Änderungen werden erst nach Auswahl einer anderen Einheit wirksam. (Ein Ballon am Bildrand wird auch bei manchen Ereignis-Meldungen angezeigt; diese Option hier betrifft aber nur Einheiten.)</German>
-	</TEXT>
 	
 	<!-- advc.002f: -->
 	<!-- Based on TXT_KEY_EMPHASIZE_AVOID_GROWTH.
@@ -916,7 +872,7 @@
 	<!-- advc.101 -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__REVOLTCHANCEICON_TEXT</Tag>
-		<English>Revolt Possible</English>
+		<English>Revolt Icon</English>
 		<German>Revolte droht</German>
 	</TEXT>
 	<TEXT>

@@ -85,7 +85,7 @@
 				 were larger. Shape is vertically stretched, but I
 				 don't think that's important. Along a river is what matters. -->
 			<iTotalArea>438</iTotalArea>
-			<iBias>9</iBias>
+			<iBias>7</iBias>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -191,7 +191,7 @@
 				 somewhat important too. Egypt connects the tropics with
 				 the Mediterranean. -->
 			<iHStretch>50</iHStretch>
-			<iBias>6</iBias>
+			<iBias>4</iBias>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -394,7 +394,7 @@
 				 in the game. -->
 			<iTotalArea>1000</iTotalArea>
 			<iMajorRiverWeight>50</iMajorRiverWeight>
-			<iBias>14</iBias>
+			<iBias>12</iBias>
 		</TruCivInfo>
 		<TruCivInfo>
 			<Type>TRU_MAYA</Type>
@@ -509,7 +509,7 @@
 			<iMountainousArea>50</iMountainousArea>
 			<!-- Iran -->
 			<iTotalArea>1648</iTotalArea>
-			<iBias>-1</iBias>
+			<iBias>-2</iBias>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>
@@ -593,7 +593,7 @@
 			<iMountainousArea>5</iMountainousArea>
 			<!-- My generous approximation of Sumer/ Babylonia -->
 			<iTotalArea>100</iTotalArea>
-			<iBias>13</iBias>
+			<iBias>12</iBias>
 			<GeoRegion>ARTSTYLE_MIDDLE_EAST</GeoRegion>
 		</TruCivInfo>
 		<TruCivInfo>

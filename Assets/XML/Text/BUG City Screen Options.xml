@@ -203,79 +203,62 @@
 		<Italian>Solo Religioni Presenti</Italian>
 		<Spanish>Sólo Religiones Presentes</Spanish>
 	</TEXT>
-	<!-- advc.004: Now also covers corporations.
-		 (Support for more than 7 religions is interesting to know for modders,
-		 but shouldn't be the players' concern.) -->
+	
+	<!-- advc.004: Support for more than 7 religions is interesting to know for
+		 modders, but shouldn't be the players' concern. -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__ONLYPRESENTRELIGIONS_HOVER</Tag>
-		<English>When checked, the city screen displays (on the upper right) only icons of religions that are practiced in the city - and of corporations that have expanded into the city.</English>
-		<German>Lässt den Stadtbildschirm (rechts oben) nur Symbole jener Religionen und Kapitalgesellschaften anzeigen, die in der Stadt verbreitet sind.</German>
+		<English>When checked, the city screen displays only icons of religions that are practiced in the city.</English>
+		<German>Lässt den Stadtbildschirm (rechts oben) nur Symbole jener Religionen anzeigen, die in der Stadt praktiziert werden.</German>
 		<Italian>Quando è selezionato, mostra solo le religioni presenti nella città e consente di visualizzare oltre sette religioni.</Italian>
 		<Spanish>Muestra solamente las religiones que estén presentes en la ciudad, y permite más de siete religiones.</Spanish>
 	</TEXT>
-	<!-- advc.004: Obsolete, see above. -->
-	<!--TEXT>
+
+	<!-- advc.004: German shortened -->
+	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__ONLYPRESENTCORPORATIONS_TEXT</Tag>
 		<English>Only Present Corporations</English>
 		<German>Nur vorhandene KGs</German>
 		<Italian>Solo Corporazioni Presenti</Italian>
 		<Spanish>Sólo Corporaciones Presentes</Spanish>
 	</TEXT>
+	
+	<!-- advc.004: See previous comment -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__ONLYPRESENTCORPORATIONS_HOVER</Tag>
 		<English>When checked, the city screen displays only icons of corporations that are present in the city.</English>
 		<German>Lässt den Stadtbildschirm (rechts oben) nur Symbole jener Kapitalgesellschaften anzeigen, die in der Stadt vertreten sind.</German>
 		<Italian>Quando è selezionato, mostra solo le religioni presenti nella città e consente di visualizzare oltre sette corporazioni.</Italian>
 		<Spanish>Si se activa, muestra sólo las corporaciones que están presentes en la ciudad y permite más de siete corporaciones.</Spanish>
-	</TEXT-->
-
-	<!-- advc.097: New option -->
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__BUILDINGS_TEXT</Tag>
-		<English>Buildings</English>
-		<German>Gebäude</German>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__BUILDINGS_HOVER</Tag>
-		<English>Determines how city buildings are listed. Depending on your resolution and whether the [COLOR_HIGHLIGHT_TEXT]Scale Up HUD[COLOR_REVERT] option (General tab) is enabled, you may find that there isn't enough room for building names [BOLD]and[\BOLD] icons (and effects).[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Icon + Text[COLOR_REVERT] - Building icons and names are shown.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Text Only[COLOR_REVERT] - Only building names are shown, as in BtS.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Icon Only[COLOR_REVERT] - Only building icons are shown.</English>
-		<German>Bestimmt, wie der Stadtbildschirm vorhandene Gebäude auflistet. Beim Spielen auf geringer Auflösung oder ohne die Option [COLOR_HIGHLIGHT_TEXT]Anzeige vergrößern[COLOR_REVERT] (Reiter "Allgemein") ist u.U. nicht genug Platz für Namen [BOLD]und[\BOLD] Symbole (und Effekte).[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Symbol &amp; Text[COLOR_REVERT] - Sowohl Gebäude-Symbole als auch -Namen werden angezeigt.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]nur Text[COLOR_REVERT] - Nur Gebäude-Namen werden angezeigt, wie in BtS.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]nur Symbol[COLOR_REVERT] - Nur Gebäude-Symbole werden angezeigt.</German>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__BUILDINGS_LIST</Tag>
-		<English>Icon + Text|Text Only|Icon Only</English>
-		<German>Symbol + Text|nur Text|nur Symbol</German>
 	</TEXT>
 
-	<!-- advc.004: Was "City Specialists", which is redundant b/c we're on the
-		 "City" tab. And too long in translations. Will also get placed under a
-		 heading "layout" for additional context. -->
+	<!-- advc.004: German was too long -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__SPECIALISTS_TEXT</Tag>
-		<English>Specialists</English>
+		<English>City Specialists</English>
 		<French>Spécialistes</French>
 		<German>Spezialisten</German>
 		<Italian>Specialisti</Italian>
 		<Spanish>Especialistas</Spanish>
 	</TEXT>
-	<!-- Description wasn't really informative; rewritten.
-		 NB: The highlighting of forced specialists was probably disabled b/c it
-		 would look odd with the stacked up icons, and b/c a chevron icon represents
-		 several specialists, some of which may be forced, some non-forced. -->
+	<!-- Only replaced "vanilla BtS" with "BtS" - calling BtS vanilla is always
+		 a little confusing. -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__SPECIALISTS_HOVER</Tag>
-		<English>Determines how city specialists are displayed:[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]BtS[COLOR_REVERT] - Shows assigned specialist icons side by side (until running out of space). Manually assigned specialists are highlighted; the other two layouts disable this.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Stacker[COLOR_REVERT] - Shows icons to indicate both the assigned and allowed specialists - and lets the icons overlap when running out of space. [NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Chevron[COLOR_REVERT] - Like the BtS layout except that groups of 5 or more specialists are represented by a single icon with a tiny chevron symbol.</English>
+		<English>Determines how specialists are displayed:[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Default[COLOR_REVERT] - Shows specialists using the BtS format.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Stacker[COLOR_REVERT] - Shows specialists stacked using the Stacked Specialist mod.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Chevron[COLOR_REVERT] - Shows specialists grouped into 5 (single chevron), 10 (capped chevron) and 20 (boxed capped chevron) format.</English>
 		<French>Determine comment les spécialistes sont montrés.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Défaut[COLOR_REVERT] - Montre les spécialistes comme BtS.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Tas[COLOR_REVERT] - Tasse les spécialistes.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Chevrons[COLOR_REVERT] - Groupe les spécialistes par 5 (simple chevron), 10 (chevron plein) et 20 (chevron plein plus carré).</French>
-		<German>Bestimmt die Anordnung der Spezialisten im Stadt-Bildschirm:[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]BtS[COLOR_REVERT] - Spezialisten-Symbole werden, wie in BtS, Seite-an-Seite angeordnet bis kein Platz mehr ist. Manuell zugewiesene Spezialisten werden hervorgehoben (die anderen beiden Optionen tun dies nicht).[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Stapel[COLOR_REVERT] - Auch die maximal arlaubte Anzahl von Spezialisten wird durch Symbole angezeigt. Wenn nicht genug Platz ist, werden die Symbole teilweise überlagert ("gestapelt").[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Chevron[COLOR_REVERT] - Wie in BtS, aber Gruppen von 5 oder mehr Spezialisten werden durch ein einzelnes Symbol ersetzt, das mit einem kleinen Haken versehen ist.</German>
+		<German>Bestimmt die Anordnung der Spezialisten im Stadt-Bildschirm:[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Standard[COLOR_REVERT] - Spezialisten werden wie in "Beyond the Sword" angeordnet[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Stapel[COLOR_REVERT] - Spezialisten werden gestapelt angeordnet (verwendet die "Stacked Specialist"-Mod)[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Chevron[COLOR_REVERT] - Spezialisten werden zu Gruppen aus 5 (einfaches Chevron), 10 (geschlossenes Chevron) und 20 (eingerahmtes geschlossenes Chevron) Spezialisten zusammengefasst</German>
 		<Italian>Determina quanti Specialisti vengono mostrati:[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Predefinito[COLOR_REVERT] - mostra gli Specialisti utilizzando il formato standard di Civ4:BtS;[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Impilati[COLOR_REVERT] - mostra gli Specialisti utilizzando il formato a pile dello 'Stacked Specialist Mod';[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Galloni[COLOR_REVERT] - mostra gli Specialisti raggruppati per 5, 10 e 20 utilizzando il formato a galloni dello 'Chevron Mod'.</Italian>
 		<Spanish>Determina cómo se muestra a los especialistas:[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Por Defecto[COLOR_REVERT] - Muestra a los especialistas en el formato por defecto de BtS.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Apilados[COLOR_REVERT] - Muestra a los especialistas apilados empleando el mod Stacked Specialists.[NEWLINE][ICON_BULLET][COLOR_HIGHLIGHT_TEXT]Grupos[COLOR_REVERT] - Muestra a los especialistas agrupados en 5 (grupo simple), 10 (grupo con raya superior) y 20 (grupo en caja).</Spanish>
 	</TEXT>
+
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_CITYSCREEN__SPECIALISTS_LIST</Tag>
-		<English>BtS|Stacker|Chevron</English>
-		<French>BtS|Tas|Chevrons</French>
-		<German>BtS|Stapel|Chevron</German>
-		<Italian>BtS|Impilati|Galloni</Italian>
-		<Spanish>BtS|Apilados|Grupos</Spanish>
+		<English>Default|Stacker|Chevron</English>
+		<French>Défaut|Tas|Chevrons</French>
+		<German>Standard|Stapel|Chevron</German>
+		<Italian>Predefinito|Impilati|Galloni</Italian>
+		<Spanish>Por Defecto|Apilados|Grupos</Spanish>
 	</TEXT>
 
 	<!-- advc.004: Minor changes -->

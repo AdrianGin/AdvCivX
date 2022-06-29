@@ -182,7 +182,7 @@ int CvArea::countHasCorporation(CorporationTypes eCorporation, PlayerTypes eOwne
 	return iCount;
 }
 
-// <advc.030>
+
 void CvArea::updateLake(bool bCheckRepr)
 {
 	PROFILE_FUNC();
@@ -219,8 +219,10 @@ void CvArea::setRepresentativeArea(int iArea)
 	performance reasons before costlier more specific checks. */
 bool CvArea::canBeEntered(CvArea const& kFrom, CvUnit const* u) const
 {
-	// Called very often. Mostly from the various plot danger functions.
 	//PROFILE_FUNC();
+	/*  Called very often. Mostly from the various plot danger functions.
+		advc.inl: I've inlined all functions called from here.
+		Still consumes a significant portion of the total turn time. */
 	if(getID() == kFrom.getID())
 		return true;
 	/*  If I wanted to support canMoveAllTerrain here, then I couldn't do

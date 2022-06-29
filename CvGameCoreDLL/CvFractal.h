@@ -27,25 +27,20 @@ public:
 		// <avdc.enum> Move ..._EXP out and give the enum bitwise operators (see end of file)
 	};
 	static int const DEFAULT_FRAC_X_EXP = 7;
-	static int const DEFAULT_FRAC_Y_EXP = 6;
-	// </advc.enum>
+	static int const DEFAULT_FRAC_Y_EXP = 6; // </advc.enum>
 
-	/*	Smoothness varies with 2^grain.
-		Totally random is grain=min{iFracXExp,iFracYExp}.
-		As smooth as possible is grain=0. */
-	DllExport void fracInit(int iNewXs, int iNewYs, int iGrain, CvRandom& random,		// Exposed to Python
-			int iFlags, CvFractal* pRifts=NULL,
-			// <advc.137> Let fracInitInternal work this out
-			int iFracXExp = /*DEFAULT_FRAC_X_EXP*/-1,
-			int iFracYExp = /*DEFAULT_FRAC_Y_EXP*/-1); // </advc.137>
-	DllExport void fracInitHinted(int iNewXs, int iNewYs, int iGrain, CvRandom& random,	// Exposed to Python
-			byte* pbyHints, int iHintsLength, int iFlags, CvFractal* pRifts,
-			// <advc.137>
-			int iFracXExp = /*DEFAULT_FRAC_X_EXP*/-1,
-			int iFracYExp = /*DEFAULT_FRAC_Y_EXP*/-1); // </advc.137>
+	//  Smoothness varies with 2^grain.
+	//  Totally random is grain = min (iFracXExp, iFracYExp).
+	//  As smooth as possible is grain = 0;
 
-	DllExport int getHeight(int x, int y);												// Exposed to Python
-	DllExport int getHeightFromPercent(int iPercent);									// Exposed to Python
+	// iFracXExp should be 8 or less
+	// iFracYExp should be one less than iFracXExp for Civ3 worlds
+
+	DllExport void fracInit(int iNewXs, int iNewYs, int iGrain, CvRandom& random, int iFlags, CvFractal* pRifts=NULL, int iFracXExp=DEFAULT_FRAC_X_EXP, int iFracYExp=DEFAULT_FRAC_Y_EXP);	// Exposed to Python
+	DllExport void fracInitHinted(int iNewXs, int iNewYs, int iGrain, CvRandom& random, byte* pbyHints, int iHintsLength, int iFlags, CvFractal* pRifts, int iFracXExp=DEFAULT_FRAC_X_EXP, int iFracYExp=DEFAULT_FRAC_Y_EXP); // Exposed to Python
+
+	DllExport int getHeight(int x, int y);																					// Exposed to Python
+	DllExport int getHeightFromPercent(int iPercent);																			// Exposed to Python
 
 	void reset();
 	DllExport CvFractal();

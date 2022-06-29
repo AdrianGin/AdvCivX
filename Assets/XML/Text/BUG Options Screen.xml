@@ -159,12 +159,6 @@
 		<Italian>Varie:</Italian>
 		<Spanish>Misceláneo:</Spanish>
 	</TEXT>
-	<!-- advc.004: New label -->
-	<TEXT>
-		<Tag>TXT_KEY_BUG_OPTLABEL_LAYOUT</Tag>
-		<English>Layout:</English>
-		<German>Darstellung:</German>
-	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPTLABEL_INIFILENOTFOUND</Tag>
 		<English>Cannot Find INI File</English>

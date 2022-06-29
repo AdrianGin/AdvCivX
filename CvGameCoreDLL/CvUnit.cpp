@@ -333,8 +333,8 @@ void CvUnit::finalizeInit() // advc.003u: Body cut from init
 
 		CvWString szBuffer(gDLL->getText("TXT_KEY_MISC_SOMEONE_CREATED_UNIT",
 				kOwner.getNameKey(), getNameKey()));
-		GC.getGame().addReplayMessage(getPlot(), REPLAY_MESSAGE_MAJOR_EVENT,
-				kOwner.getID(), szBuffer, GC.getColorType("UNIT_TEXT"));
+		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, kOwner.getID(),
+				szBuffer, getX(), getY(), GC.getColorType("UNIT_TEXT"));
 	}
 
 	CvEventReporter::getInstance().unitCreated(this);
@@ -3695,8 +3695,7 @@ bool CvUnit::airlift(int iX, int iY)
 }
 
 // advc (comment): Says whether eTeam is a victim of this (nuke) unit if it nukes pPlot
-bool CvUnit::isNukeVictim(const CvPlot* pPlot, TeamTypes eTeam,
-	TeamTypes eObs) const // kekm.7 (advc)
+bool CvUnit::isNukeVictim(const CvPlot* pPlot, TeamTypes eTeam) const
 {
 	// kekm.7 (advc): Not OK to nuke our own cities or units
 	if (!GET_TEAM(eTeam).isAlive()/* || eTeam == getTeam()*/)
@@ -3705,26 +3704,13 @@ bool CvUnit::isNukeVictim(const CvPlot* pPlot, TeamTypes eTeam,
 	for (SquareIter it(*pPlot, nukeRange()); it.hasNext(); ++it)
 	{
 		CvPlot const& kLoopPlot	= *it;
-		// <kekm.7> (advc): Respect the fog of war
-		TeamTypes const ePlotTeam = (eObs == NO_TEAM ? kLoopPlot.getTeam() :
-				kLoopPlot.getRevealedTeam(eObs, false)); // </kekm.7>
-		if (ePlotTeam == eTeam &&
+		if (kLoopPlot.getTeam() == eTeam &&
 			// kekm.7 (advc): OK to nuke our own land
 			(eTeam != getTeam() || kLoopPlot.isCity()))
 		{
 			return true;
 		}
-		// <kekm.7> (advc)
-		// Can't nuke too much non-enemy population
-		if (kLoopPlot.isCity() && !isEnemy(eTeam) &&
-			((eTeam == getTeam() &&
-			kLoopPlot.calculateFriendlyCulturePercent(eTeam) >=
-			GC.getDefineINT(CvGlobals::CITY_NUKE_CULTURE_THRESH)) ||
-			eTeam == TEAMID(kLoopPlot.calculateCulturalOwner(true))))
-		{
-			return true;
-		}
-		// Not OK to nuke our own units
+		// <kekm.7> (advc): Not OK to nuke our own units
 		if (eTeam == getTeam() && kLoopPlot.plotCheck(NULL, -1, -1, NO_PLAYER, getTeam()))
 			return true; // </kekm.7>
 		if (kLoopPlot.plotCheck(PUF_isCombatTeam, eTeam, getTeam()) != NULL &&
@@ -3737,8 +3723,7 @@ bool CvUnit::isNukeVictim(const CvPlot* pPlot, TeamTypes eTeam,
 }
 
 
-bool CvUnit::canNukeAt(CvPlot const& kFrom, int iX, int iY,
-	TeamTypes eObs) const // kekm.7 (advc)
+bool CvUnit::canNukeAt(CvPlot const& kFrom, int iX, int iY) const
 {
 	if (!canNuke(&kFrom))
 		return false;
@@ -3749,33 +3734,26 @@ bool CvUnit::canNukeAt(CvPlot const& kFrom, int iX, int iY,
 
 	if (airRange() > 0 && iDistance > airRange())
 		return false;
-	// <kekm.7> (advc) Can't nuke blindly
-	for (SquareIter itPlot(iX, iY, nukeRange()); itPlot.hasNext(); ++itPlot)
-	{
-		if (!itPlot->isRevealed(getTeam()))
-			return false;
-	} // </kekm.7>
 
 	CvPlot* pTargetPlot = GC.getMap().plot(iX, iY);
 	for (TeamIter<MAJOR_CIV> itTeam; itTeam.hasNext(); ++itTeam)
 	{
-		if (isNukeVictim(pTargetPlot, itTeam->getID(), eObs) &&
+		if (isNukeVictim(pTargetPlot, itTeam->getID()) &&
 			!isEnemy(itTeam->getID(), kFrom))
 		{
 			return false;
 		}
 	}
+
 	return true;
 }
 
 
 bool CvUnit::nuke(int iX, int iY)
 {
-	if (!canNukeAt(getPlot(), iX, iY,
-		getTeam())) // kekm.7 (advc)
-	{
+	if(!canNukeAt(getPlot(), iX, iY))
 		return false;
-	}
+
 	CvWString szBuffer;
 	CvPlot& kPlot = GC.getMap().getPlot(iX, iY);
 
@@ -3788,14 +3766,14 @@ bool CvUnit::nuke(int iX, int iY)
 		if (abTeamsAffected.get(it->getID()) && !isEnemy(it->getID()))
 		{
 			//GET_TEAM(getTeam()).declareWar(it->getID(), false, WARPLAN_LIMITED);
-			CvTeam::queueWar(getTeam(), it->getID(), false, WARPLAN_LIMITED); // kekm.26
+			// kekm.26:
+			CvTeam::queueWar(getTeam(), it->getID(), false, WARPLAN_LIMITED);
 		}
 		CvTeam::triggerWars(); // kekm.26
 	}
 	// <advc.650> Moved into subroutine
 	TeamTypes eBestTeam=NO_TEAM;
-	int iBestInterception = nukeInterceptionChance(kPlot, NO_TEAM,
-			&eBestTeam, &abTeamsAffected);
+	int iBestInterception = nukeInterceptionChance(kPlot, &eBestTeam, &abTeamsAffected);
 	// </advc.650>
 	setReconPlot(&kPlot);
 	// <advc.002m>
@@ -3967,24 +3945,25 @@ bool CvUnit::nuke(int iX, int iY)
 		}
 	}
 	// <advc.106>
-	if (pReplayCity != NULL)
+	if(pReplayCity != NULL)
 	{
 		szBuffer = gDLL->getText("TXT_KEY_MISC_CITY_NUKED",
 				pReplayCity->getNameKey(), GET_PLAYER(
 				pReplayCity->getOwner()).getNameKey(),
 				GET_PLAYER(getOwner()).getNameKey());
-		GC.getGame().addReplayMessage(getPlot(), REPLAY_MESSAGE_MAJOR_EVENT,
-				getOwner(), szBuffer, GC.getColorType("WARNING_TEXT"));
+		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
+				getOwner(), szBuffer, getX(), getY(),
+				GC.getColorType("WARNING_TEXT"));
 	} // </advc.106>
 
-	if (isSuicide())
+	if(isSuicide())
 		kill(true);
 
 	return true;
 }
 
 // advc.650:
-int CvUnit::nukeInterceptionChance(CvPlot const& kTarget, TeamTypes eObs,
+int CvUnit::nukeInterceptionChance(CvPlot const& kTarget,
 	TeamTypes* pBestTeam, // Optional out-param
 	// Allow caller to provide set of affected teams (just to save time)
 	EagerEnumMap<TeamTypes,bool> const* pTeamsAffected) const
@@ -3994,7 +3973,7 @@ int CvUnit::nukeInterceptionChance(CvPlot const& kTarget, TeamTypes eObs,
 	if (pTeamsAffected == NULL)
 	{
 		for (TeamIter<ALIVE> it; it.hasNext(); ++it)
-			abTeamsAffected_local.set(it->getID(), isNukeVictim(&kTarget, it->getID(), eObs));
+			abTeamsAffected_local.set(it->getID(), isNukeVictim(&kTarget, it->getID()));
 	}
 	EagerEnumMap<TeamTypes,bool> const& abTeamsAffected = (pTeamsAffected == NULL ?
 			abTeamsAffected_local : *pTeamsAffected);
@@ -4014,7 +3993,7 @@ int CvUnit::nukeInterceptionChance(CvPlot const& kTarget, TeamTypes eObs,
 		{
 			int iMasterChance = GET_TEAM(kInterceptTeam.getMasterTeam()).
 					getNukeInterception();
-			if (iMasterChance > iBestInterception)
+			if(iMasterChance > iBestInterception)
 			{
 				iBestInterception = iMasterChance;
 				eBestTeam = kInterceptTeam.getMasterTeam();

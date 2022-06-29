@@ -56,20 +56,22 @@ turned me loose on it, finally. Once I got going, I just kept on going!
 #		return []
 #	[eWorldSize] = argsList
 #	return grid_sizes[eWorldSize]
-# advc.165:
-def getNumPlotsPercent(argsList):
+# <advc.165> The normal grid would be fine, but b/c of advc.137, it's a bit too small.
+def getGridSize(argsList):
 	[iWorldSize] = argsList
 	if iWorldSize < 0:
-		return 100
+		return ()
 	sizeModifiers = {
-		WorldSizeTypes.WORLDSIZE_DUEL:		96,
-		WorldSizeTypes.WORLDSIZE_TINY:		95,
-		WorldSizeTypes.WORLDSIZE_SMALL:		94,
-		WorldSizeTypes.WORLDSIZE_STANDARD:	92,
-		WorldSizeTypes.WORLDSIZE_LARGE:		90,
-		WorldSizeTypes.WORLDSIZE_HUGE:		87
+		WorldSizeTypes.WORLDSIZE_DUEL:		(1, 0),
+		WorldSizeTypes.WORLDSIZE_TINY:		(1, 0),
+		WorldSizeTypes.WORLDSIZE_SMALL:		(1, 0),
+		WorldSizeTypes.WORLDSIZE_STANDARD:	(0, 1),
+		WorldSizeTypes.WORLDSIZE_LARGE:		(1, 1),
+		WorldSizeTypes.WORLDSIZE_HUGE:		(1, 1)
 	}
-	return sizeModifiers[iWorldSize]
+	wi = CyGlobalContext().getWorldInfo(iWorldSize)
+	return (sizeModifiers[iWorldSize][0] + wi.getGridWidth(), sizeModifiers[iWorldSize][1] + wi.getGridHeight())
+# </advc.165>
 
 def getDescription():
 	return "TXT_KEY_MAP_SCRIPT_TERRA_DESCR"

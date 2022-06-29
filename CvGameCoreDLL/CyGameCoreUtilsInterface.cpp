@@ -68,6 +68,4 @@ void CyGameCoreUtilsPythonInterface()
 	python::def("isLimitedProject", cyIsLimitedProject, "bool (int /*ProjectTypes*/ eProject)");
 	python::def("getCombatOdds", cyGetCombatOdds, "int (CyUnit* pAttacker, CyUnit* pDefender)");
 	python::def("getEspionageModifier", cyGetEspionageModifier, "int (int /*TeamTypes*/ iOurTeam, int /*TeamTypes*/ iTargetTeam)");
-
-	python::def("cyUpdatePlotIndicatorSize", cyUpdatePlotIndicatorSize, "void (void)"); // advc.092b
 }

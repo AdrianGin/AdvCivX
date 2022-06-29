@@ -22,27 +22,27 @@ class BugMapOptionsTab(BugOptionsTab.BugOptionsTab):
 		left, center, right = self.addThreeColumnLayout(screen, column, "Top", True)
 		# advc.004:
 		self.addLabel(screen, left, "Layers", "Layers:")
-		# <advc.004h>
-		self.addCheckbox(screen, left, "MainInterface__FoundingYields")
-		self.addTextDropdown(screen, left, left, "MainInterface__FoundingBorder")
-		# </advc.004h>  <advc.004z>
+		# <advc.004z>
 		self.addCheckbox(screen, left, "MainInterface__ScoresInGlobeView")
 		self.addCheckbox(screen, left, "MainInterface__ResourceIconOptions")
 		self.addCheckbox(screen, left, "MainInterface__TribalVillageIcons")
 		# </advc.004z>
 		# advc.004m:
 		self.addCheckbox(screen, left, "MainInterface__StartWithResourceIcons")
-		# <advc.092b> Plot indicator size options
-		self.addTextDropdown(screen, left, left, "MainInterface__PlotIndicatorSize")
-		self.addTextDropdown(screen, left, left, "MainInterface__OffScreenUnitSizeMult")
-		# Not enough room here for the Strategy Overlay options anymore. Moved those
-		# to the right column. Instead place misc. options here. </advc.092b>
-		self.addSpacer(screen, left, "SpacerLeft1")
-		self.addLabel(screen, left, "Misc", "Misc:")
-		self.addCheckbox(screen, left, "EventSigns__Enabled")
-		# advc.savem
-		self.addCheckbox(screen, left, "MainInterface__EnableSavemap")
-
+		# <advc.004h>
+		self.addCheckbox(screen, left, "MainInterface__FoundingYields")
+		self.addTextDropdown(screen, left, left, "MainInterface__FoundingBorder")
+		# </advc.004h>
+		self.addSpacer(screen, left, "SpacerLeft1") # advc.004
+		self.addLabel(screen, left, "StrategyOverlay", "Dot Map Overlay:")
+		self.addCheckbox(screen, left, "StrategyOverlay__Enabled")
+		# advc.004: Disabled; Ctrl+X should suffice.
+		#self.addCheckbox(screen, left, "StrategyOverlay__ShowDotMap")
+		self.addCheckbox(screen, left, "StrategyOverlay__DotMapDrawDots")
+		leftL, leftR = self.addTwoColumnLayout(screen, left, "DotMapBrightness")
+		#self.addTextEdit(screen, leftL, leftR, "StrategyOverlay__DotMapDotIcon")
+		self.addSlider(screen, leftL, leftR, "StrategyOverlay__DotMapBrightness", False, False, False, "up", 0, 100)
+		self.addSlider(screen, leftL, leftR, "StrategyOverlay__DotMapHighlightBrightness", False, False, False, "up", 0, 100)
 		#self.addLabel(screen, center, "CityBar", "CityBar:")
 		#self.addCheckbox(screen, center, "CityBar__StarvationTurns")
 		# <advc.011b>
@@ -95,16 +95,10 @@ class BugMapOptionsTab(BugOptionsTab.BugOptionsTab):
 		self.addCheckbox(screen, right, "MainInterface__UnitsOnMinimap")
 		self.addSpacer(screen, right, "SpacerRight2")
 		# </advc.002a>
-		# advc.092b: Moved from the left column, and made more compact.
-		self.addLabel(screen, right, "StrategyOverlay", "Dot Map Overlay:")
-		rightL, rightR = self.addTwoColumnLayout(screen, right, "DotMapBrightness")
-		self.addCheckbox(screen, rightL, "StrategyOverlay__Enabled")
-		# advc.004: Disabled; Ctrl+X should suffice.
-		#self.addCheckbox(screen, right, "StrategyOverlay__ShowDotMap")
-		self.addCheckbox(screen, rightR, "StrategyOverlay__DotMapDrawDots")
-		#self.addTextEdit(screen, rightL, rightR, "StrategyOverlay__DotMapDotIcon")
-		self.addSlider(screen, rightL, rightR, "StrategyOverlay__DotMapBrightness", False, False, False, "up", 0, 100)
-		self.addSlider(screen, rightL, rightR, "StrategyOverlay__DotMapHighlightBrightness", False, False, False, "up", 0, 100)
+		self.addLabel(screen, right, "Misc", "Misc:")
+		self.addCheckbox(screen, right, "EventSigns__Enabled")
+		# advc.savem
+		self.addCheckbox(screen, right, "MainInterface__EnableSavemap")
 		
 		#self.addCheckbox(screen, right, "Actions__IgnoreHarmlessBarbarians")
 		

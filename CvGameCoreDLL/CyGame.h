@@ -164,7 +164,7 @@ public:
 	bool isSimultaneousTeamTurns();
 
 	bool isFinalInitialized();
-	void setScreenDimensions(int iWidth, int iHeight); // advc.061
+	void setScreenDimensions(int x, int y); // advc.061
 	int /*PlayerTypes*/ getActivePlayer();
 	void setActivePlayer(int /*PlayerTypes*/ eNewValue, bool bForceHotSeat);
 	int getPausePlayer();
@@ -273,9 +273,8 @@ public:
 
 	int getCultureThreshold(int /*CultureLevelTypes*/ eLevel);
 
-	// (advc.enum: deprecated x3)
-	int getPlotExtraYield(int iX, int iY, int eYield); // K-Mod
-	void setPlotExtraYield(int iX, int iY, int eYield, int iExtraYield);
+	int getPlotExtraYield(int iX, int iY, int /*YieldTypes*/ eYield); // K-Mod
+	void setPlotExtraYield(int iX, int iY, int /*YieldTypes*/ eYield, int iExtraYield);
 	void changePlotExtraCost(int iX, int iY, int iExtraCost);
 
 	bool isCivEverActive(int /*CivilizationTypes*/ eCivilization);

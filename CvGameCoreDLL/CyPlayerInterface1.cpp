@@ -187,7 +187,7 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 		.def("forceRandomWBStart", &CyPlayer::forceRandomWBStart, "void forceRandomWBStart()") // advc.027
 		.def("getTotalPopulation", &CyPlayer::getTotalPopulation, "int ()")
 		.def("getAveragePopulation", &CyPlayer::getAveragePopulation, "int ()")
-		.def("getRealPopulation", &CyPlayer::getRealPopulation, "int ()") // advc: int, not long
+		.def("getRealPopulation", &CyPlayer::getRealPopulation, "long int ()")
 
 		.def("getTotalLand", &CyPlayer::getTotalLand, "int ()")
 		.def("getTotalLandScored", &CyPlayer::getTotalLandScored, "int ()")

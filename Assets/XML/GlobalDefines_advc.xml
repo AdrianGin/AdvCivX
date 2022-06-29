@@ -406,44 +406,9 @@
 
 	<!-- advc.004m: 2200 in BtS. Now ignored unless the "Default Camera Distance"
 		 BUG option is set to "Custom". -->
-	<Define> <!-- redefine -->
+	<Define>
 		<DefineName>CAMERA_START_DISTANCE</DefineName>
 		<fDefineFloatVal>5400</fDefineFloatVal>
-	</Define>
-
-	<!-- advc.004m: -28.0 in BtS. For a slightly more top-down view at medium zoom
-		 (at the expense of a perhaps slightly less flat angle at close zoom
-		 than would be desirable). -->
-	<Define> <!-- redefine -->
-		<DefineName>CAMERA_LOWER_PITCH</DefineName>
-		<fDefineFloatVal>-30.0</fDefineFloatVal>
-	</Define>
-
-	<!-- advc.004m: (1800, 300) in BtS. Not sure what units those are,
-		 I guess they're on the same scale as PLOT_SIZE. -->
-	<Define> <!-- redefine -->
-		<DefineName>CAMERA_MAX_SCROLL_SPEED</DefineName>
-		<fDefineFloatVal>2800.0</fDefineFloatVal>
-	</Define>
-	<!-- Not increasing this much b/c I still want to be able to position
-		 the camera at a precise location, e.g. for taking a screenshot. -->
-	<Define> <!-- redefine -->
-		<DefineName>CAMERA_MIN_SCROLL_SPEED</DefineName>
-		<fDefineFloatVal>325.0</fDefineFloatVal>
-	</Define>
-
-	<!-- advc.004m: This replaces CAMERA_CITY_ZOOM_IN_DISTANCE, which now gets
-		 set to this base value and is then adjusted to the field of view value
-		 (which gets set fully dynamically, not based on FIELD_OF_VIEW). -->
-	<Define>
-		<DefineName>CAMERA_BASE_CITY_DISTANCE</DefineName>
-		<fDefineFloatVal>3500</fDefineFloatVal>
-	</Define>
-
-	<!-- advc.002j: Was 1.25 in BtS; just a tiny adjustment. -->
-	<Define> <!-- redefine -->
-		<DefineName>SINGLE_UNIT_GFX_EXTRA_SCALE</DefineName>
-		<fDefineFloatVal>1.22</fDefineFloatVal>
 	</Define>
 
 	<!-- advc.500b: If this is set to a value greater than 0, unhappiness for
@@ -951,17 +916,6 @@
 	<Define>
 		<DefineName>NATIVE_CITY_CULTURE_THRESH</DefineName>
 		<iDefineIntVal>20</iDefineIntVal>
-	</Define>
-
-	<!-- advc (for kekm.7): Can't nuke a city if the nationality percentage
-		 of the nuke owner is at least this high.
-		 Recommended: Same as CITY_TRADE_CULTURE_THRESH,
-		 use 101 (or a higher value) for BtS behavior. Still won't be able to
-		 nuke cities culturally owned by a neutral party or politically owned
-		 by the nuke owner. -->
-	<Define>
-		<DefineName>CITY_NUKE_CULTURE_THRESH</DefineName>
-		<iDefineIntVal>10</iDefineIntVal>
 	</Define>
 
 	<!-- [advc.030] Set this to 1 or greater (recommended) to treat plot groups

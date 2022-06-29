@@ -114,11 +114,6 @@
 					type="boolean" default="False" 
 					get="isShowOnlyOnceProgress" dirtyBit="GameData"/>
 
-			<!-- advc.092: New option -->
-			<option id="EnlargeHUD" key="Enlarge HUD" 
-					type="boolean" default="True" 
-					get="isEnlargeHUD"/>
-
 			<!-- Field of View -->
 			<option id="FieldOfView" key="Field of View" 
 					type="boolean" default="False" 
@@ -268,26 +263,6 @@
 				<choice id="None"/>
 				<choice id="Adjacent"/>
 				<choice id="CityCross"/>
-			</list>
-
-			<!-- advc.092b (Caveat: The DLL doesn't have access to the IDs
-				 of these choices. The behavior is implemented only based on
-				 the order of the choices.) -->
-			<list   id="PlotIndicatorSize" key="Plot Indicator Size"
-					type="int" default="0" listType="string"
-					dirtyBit="GlobeLayer">
-				<change module="InputUtil" function="updatePlotIndicatorSize"/>
-				<choice id="Auto"/> <choice id="BtS"/>
-				<choice id="25"/> <choice id="30"/> <choice id="35"/>
-				<choice id="40"/> <choice id="45"/> <choice id="50"/> <choice id="55"/>
-				<choice id="60"/> <choice id="65"/>
-			</list>
-			<list   id="OffScreenUnitSizeMult" key="Off Screen Unit Size Mult"
-					type="int" default="4" listType="string">
-				<change module="InputUtil" function="updatePlotIndicatorSize"/>
-				<choice id="0.8"/> <choice id="1.0"/> <choice id="1.2"/> <choice id="1.4"/>
-				<choice id="1.6"/> <choice id="1.8"/> <choice id="2.0"/> <choice id="2.2"/>
-				<choice id="Disable"/>
 			</list>
 
 			<!-- advc.002f: -->
