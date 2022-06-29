@@ -184,10 +184,18 @@ class CvCivicsScreen:
 			
 			szAreaID = self.AREA_NAME + str(i)
 			screen = self.getScreen()
-			# advc.002b: CIVIC_LIST_PANEL_WIDTH instead of HEADINGS_WIDTH
-			screen.addPanel(szAreaID, "", "", True, True, fX, fY, self.CIVIC_LIST_PANEL_WIDTH, self.HEADINGS_BOTTOM - self.HEADINGS_TOP, PanelStyles.PANEL_STYLE_MAIN)
+			screen.addPanel(szAreaID, "", "", True, True,
+					# advc.002b: CIVIC_LIST_PANEL_WIDTH instead of HEADINGS_WIDTH
+					fX, fY, self.CIVIC_LIST_PANEL_WIDTH, self.HEADINGS_BOTTOM - self.HEADINGS_TOP,
+					PanelStyles.PANEL_STYLE_MAIN)
 
-			screen.setLabel("", "Background",  u"<font=3>" + gc.getCivicOptionInfo(i).getDescription().upper() + u"</font>", CvUtil.FONT_CENTER_JUSTIFY, fX + self.HEADINGS_WIDTH/2, self.HEADINGS_TOP + self.TEXT_MARGIN, 0, FontTypes.GAME_FONT, WidgetTypes.WIDGET_GENERAL, -1, -1 )
+			screen.setLabel("", "Background", 
+					u"<font=3>" + gc.getCivicOptionInfo(i).getDescription().upper() + u"</font>",
+					CvUtil.FONT_CENTER_JUSTIFY,
+					# advc.002b: CIVIC_LIST_PANEL_WIDTH instead of HEADINGS_WIDTH
+					fX + self.CIVIC_LIST_PANEL_WIDTH / 2, self.HEADINGS_TOP + self.TEXT_MARGIN, 0,
+					FontTypes.GAME_FONT,
+					WidgetTypes.WIDGET_GENERAL, -1, -1 )
 
 			fY += self.TEXT_MARGIN
 			
