@@ -283,7 +283,7 @@
 				<choice id="60"/> <choice id="65"/>
 			</list>
 			<list   id="OffScreenUnitSizeMult" key="Off Screen Unit Size Mult"
-					type="int" default="4" listType="string">
+					type="int" default="3" listType="string">
 				<change module="InputUtil" function="updatePlotIndicatorSize"/>
 				<choice id="0.8"/> <choice id="1.0"/> <choice id="1.2"/> <choice id="1.4"/>
 				<choice id="1.6"/> <choice id="1.8"/> <choice id="2.0"/> <choice id="2.2"/>
