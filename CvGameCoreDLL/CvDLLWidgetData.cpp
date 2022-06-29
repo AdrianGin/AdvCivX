@@ -3344,10 +3344,11 @@ void CvDLLWidgetData::parseChangeSpecialistHelp(
 	CvCity* pHeadSelectedCity = gDLL->UI().getHeadSelectedCity();
 	if (pHeadSelectedCity == NULL)
 		return;
-
-	if (widgetDataStruct.m_iData2 > 0)
+	SpecialistTypes const eSpecialist = (SpecialistTypes)widgetDataStruct.m_iData1;
+	int const iChange = widgetDataStruct.m_iData2;
+	if (iChange > 0)
 	{
-		GAMETEXT.parseSpecialistHelp(szBuffer, (SpecialistTypes)widgetDataStruct.m_iData1, pHeadSelectedCity);
+		GAMETEXT.parseSpecialistHelp(szBuffer, eSpecialist, pHeadSelectedCity);
 		if (widgetDataStruct.m_iData1 != GC.getDEFAULT_SPECIALIST())
 		{
 			if (!GET_PLAYER(pHeadSelectedCity->getOwner()).
@@ -3366,9 +3367,16 @@ void CvDLLWidgetData::parseChangeSpecialistHelp(
 	}
 	else
 	{
-		szBuffer.assign(gDLL->getText("TXT_KEY_MISC_REMOVE_SPECIALIST", GC.getInfo(
+		/*	<advc.004> Stacker display has no separate remove button;
+			should therefore show yields regardless of iChange. */
+		bool const bStacker = (BUGOption::getValue("CityScreen__Specialists", 2) == 1);
+		if (bStacker)
+		{
+			GAMETEXT.parseSpecialistHelp(szBuffer, eSpecialist, pHeadSelectedCity);
+			szBuffer.append(NEWLINE);
+		} // </advc.004>
+		szBuffer.append(gDLL->getText("TXT_KEY_MISC_REMOVE_SPECIALIST", GC.getInfo(
 				(SpecialistTypes)widgetDataStruct.m_iData1).getTextKeyWide()));
-
 		if (pHeadSelectedCity->getForceSpecialistCount((SpecialistTypes)widgetDataStruct.m_iData1) > 0)
 		{
 			szBuffer.append(NEWLINE);
