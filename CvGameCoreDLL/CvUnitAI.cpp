@@ -1306,13 +1306,17 @@ void CvUnitAI::AI_animalMove()
 			{
 				return;
 			}
+			bAttackAttempted = true; // advc.309
 		}
 	}
-	if (AI_heal())
+	// advc.309: Animals shouldn't heal so readily
+	if (SyncRandSuccessRatio(getDamage(), maxHitPoints()))
 	{
-		return;
+		if (AI_heal())
+		{
+			return;
+		}
 	}
-
 	if (AI_patrol())
 	{
 		return;
