@@ -685,7 +685,7 @@ EnumMapBase<Derived,E,V,CV,iDEFAULT>::cvDEFAULT =
 	If such a class is needed, the AdvCiv code from July 2021 should be consulted.) */
 
 #define ListEnumMapBase \
-	EnumMapBase<ListEnumMap<E,V,CV,iDEFAULT,bEND_MARKER>, E, V, \
+	EnumMapBase<ListEnumMap<E,V,CV,iDEFAULT,bMONOTONE,bEND_MARKER>, E, V, \
 	/* void ptr means use the default. List-based maps have their own default */ \
 	/* b/c they shouldn't use compact bit blocks for V=bool. */ \
 	typename \
@@ -694,6 +694,10 @@ EnumMapBase<Derived,E,V,CV,iDEFAULT>::cvDEFAULT =
 template<typename E, class V,
 	class CV = void*,
 	int iDEFAULT = (int)enum_traits<V>::none,
+	/*	Promises not to change a key from a value other than iDEFAULT to iDEFAULT
+		except when the whole map is (explicitly) reset.
+		The promise will not be enforced nor (reliably) asserted. */
+	bool bMONOTONE = false,
 	/*	Storing a dummy key and value at the end of the list avoids checking for
 		the end of the list when searching for a key (and its value).
 		Tbd.: Is that worth the extra memory? Perhaps only in mappings read
@@ -710,10 +714,10 @@ protected:
 	CompactE* m_aKeys;
 	CompactV* m_aValues;
 	short m_iSize;
-	/*	Keeping this counter probably isn't gaining us much, but the memory would
-		otherwise be used for padding. Alternatively, it could be used for a
-		capacity variable (like std::vector) -- however, given that the arrays
-		are sorted, a capacity mechanism would not be trivial to implement. */
+	/*	Keeping this counter probably isn't gaining us much (nothing if bMONOTONE),
+		but the memory would otherwise be used for padding. Alternatively, it could
+		be used for a capacity variable (like std::vector) -- however, given that the
+		arrays are sorted, a capacity mechanism would not be trivial to implement. */
 	short m_iNonDefault;
 
 public:
@@ -804,6 +808,8 @@ public:
 			#endif
 				pStream->Write(m_aKeys[i]);
 			}
+			else if (bMONOTONE)
+				FErrorMsg("bMONOTONE ListEnumMap storing non-default value");
 		}
 	#ifdef FASSERT_ENABLE
 		FAssert(iWritten == m_iNonDefault);
@@ -980,13 +986,21 @@ protected:
 			m_iNonDefault++;
 		if (cvOld != cvDEFAULT)
 		{
-			if ((--m_iNonDefault) == 0 &&
+			if ((--m_iNonDefault) == 0)
+			{
+				if (bMONOTONE)
+					FErrorMsg("bMONOTONE promise broken");
 				/*	Otherwise not worth the risk of having to reallocate later.
 					Well, a test suggests that this check helps marginally
 					at best and that checking >=4 would hurt more than help. */
-				m_iSize >= 2)
+				if (m_iSize >= 2)
+					reset();
+			}
+			else if (bMONOTONE)
 			{
-				reset();
+			#ifdef ENUM_MAP_EXTRA_ASSERTS
+				FAssertMsg(cvNew != cvDEFAULT || m_iSize == 0, "bMONOTONE promise broken");
+			#endif
 			}
 		}
 	}
@@ -1006,9 +1020,16 @@ protected:
 				return false;
 		}
 		kPair.first = uncompactKey(m_aKeys[iIter]);
-		kPair.second = static_cast<ValueType>(m_aValues[iIter]);
+		CompactV const val = m_aValues[iIter];
+		kPair.second = static_cast<ValueType>(val);
 		iIter++;
-		return (bEND_MARKER ? (kPair.first != endKey()) : true);
+		bool bFound = (bEND_MARKER ? (kPair.first != endKey()) : true);
+		if (!bMONOTONE) // Skip default values if they can exist
+		{
+			if (bFound && val == cvDEFAULT)
+				return _nextNonDefaultPair(iIter, kPair); // tail recursion
+		}
+		return bFound;
 	}
 	E _nextNonDefaultKey(int& iIter) const
 	{
@@ -1023,10 +1044,19 @@ protected:
 			if (iIter >= m_iSize)
 				return endKey();
 		}
-		return uncompactKey(m_aKeys[iIter++]);
+		CompactE eKey = m_aKeys[iIter++];
+		if (bMONOTONE || getCompact(eKey) != cvDEFAULT)
+			return uncompactKey(eKey);
+		return _nextNonDefaultKey(iIter);
 	}
 };
 #undef ListEnumMapBase
+
+template<typename E, class V, class CV = void*,
+	int iDEFAULT = (int)enum_traits<V>::none, bool bEND_MARKER = false>
+class NonDefaultEnumMap : public ListEnumMap<E, V, CV, iDEFAULT,
+	/*bMONOTONE=*/true, bEND_MARKER>
+{};
 
 #define OfflineListEnumSetBase \
 	EnumMapBase<OfflineListEnumSet<E>, E, bool, bool, false>
@@ -2019,10 +2049,11 @@ class ArrayEnumMap2D : public EnumMap2D<
 
 template<typename EOuter, typename EInner, class V,
 	class CV = void*,
-	int iDEFAULT = (int)enum_traits<V>::none>
+	int iDEFAULT = (int)enum_traits<V>::none,
+	bool bMONOTONE = false>
 class ListEnumMap2D : public EnumMap2D<
 	ListEnumMap<EOuter,
-	ArrayEnumMap<EInner, V, CV, iDEFAULT, true>*>,
+	ArrayEnumMap<EInner, V, CV, iDEFAULT, true>*, void*, NULL, bMONOTONE>,
 	ArrayEnumMap<EInner, V, CV, iDEFAULT, true> >
 {};
 
