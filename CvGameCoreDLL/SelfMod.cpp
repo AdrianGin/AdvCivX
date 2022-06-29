@@ -15,13 +15,28 @@ class RuntimePatch : boost::noncopyable
 {
 public:
 	virtual ~RuntimePatch() { restorePageProtections(); }
-	virtual void apply()=0;
+	// Return false on unexpected failure
+	bool applyIfEnabled()
+	{
+//		if (!GC.getDefineBOOL("DISABLE_EXE_RUNTIME_MODS"))
+			return apply();
+		return true;
+	}
+	/*	Derived classes can override this to be exempt from the
+		DISABLE_EXE_RUNTIME_MODS check */
+	virtual bool isOptionalThroughXML() const { return true; }
 
 protected:
+	virtual bool apply()=0; // See applyIfEnabled about the return value
 	bool unprotectPage(LPVOID pAddress, SIZE_T uiSize,
 		DWORD ulNewProtect = PAGE_EXECUTE_READWRITE)
 	{
-		/*	Getting a segmentation fault when writing to the code section under
+		/*	Any actual self-modifying code (which is what this class is really
+			inteded for) should have the saafety switch in XML */
+		FAssert((ulNewProtect != PAGE_EXECUTE &&
+				ulNewProtect != PAGE_EXECUTE_READ &&
+				ulNewProtect != PAGE_EXECUTE_READWRITE) || isOptionalThroughXML());
+		/*	Getting a segmentation fault when writing to the text segment under
 			Win 8.1. Probably the same on all Windows versions that anyone still uses.
 			Need to unprotect the virtual memory page first. Let's hope that this
 			long outdated version of VirtualProtect from WinBase.h (nowadays located
@@ -71,12 +86,12 @@ private:
 	}
 };
 
-class PlotIndicatorSizePatch : RuntimePatch
+class PlotIndicatorSizePatch : public RuntimePatch
 {
 public:
 	PlotIndicatorSizePatch(int iScreenHeight) : m_iScreenHeight(iScreenHeight) {}
-
-	void apply() // override
+protected:
+	bool apply() // override
 	{
 		// Cache for performance (though probably not a concern)
 		static PlotIndicatorSize ffMostRecentBaseSize;
@@ -128,14 +143,14 @@ public:
 		{
 			int iUserChoice = BUGOption::getValue("MainInterface__OffScreenUnitSizeMult", 3);
 			if (iUserChoice == 7)
-			{	// Meaning "disable". 0 size seems to do accomplish that.
+			{	// Meaning "disable". 0 size seems to accomplish that.
 				ffBaseSize.offScreen = 0;
 			}
 			else ffBaseSize.offScreen = ffBaseSize.onScreen * (0.8f + 0.2f * iUserChoice);
 		}
 
 		if (ffBaseSize.equals(ffMostRecentBaseSize))
-			return;
+			return true;
 		ffMostRecentBaseSize = ffBaseSize;
 
 		/*	The onscreen size is hardcoded as an immediate operand (in FP32 format)
@@ -208,7 +223,7 @@ public:
 				if (pos == pHaystackEnd)
 				{
 					FErrorMsg("Failed to locate plot indicator code bytes in EXE");
-					return;
+					return false;
 				}
 				iAddressOffset = ((int)std::distance(aHaystackBytes, pos))
 						- iMaxAbsOffset;
@@ -218,7 +233,7 @@ public:
 			if (!testCodeLayout(iAddressOffset))
 			{
 				FErrorMsg("Address offset likely incorrect");
-				return;
+				return false;
 			}
 		}
 
@@ -230,10 +245,26 @@ public:
 			FAssert(((int)uiCodeAddress) > -iAddressOffset);
 			uiCodeAddress += iAddressOffset;
 			if (!unprotectPage(reinterpret_cast<LPVOID>(uiCodeAddress), sizeof(float)))
-				return;
+				return false;
 			*reinterpret_cast<float*>(uiCodeAddress) = fSize;
 		}
+		return true;
 	}
+
+private:
+	int m_iScreenHeight;
+	struct PlotIndicatorSize
+	{
+		PlotIndicatorSize(float fOnScreen = 0, float fOffScreen = 0)
+		:	onScreen(fOnScreen), offScreen(fOffScreen) {}
+		// Overriding operator== for this nested thing would be a PITA
+		bool equals(PlotIndicatorSizePatch::PlotIndicatorSize const& kOther)
+		{	// Exact floating point comparison
+			return (onScreen == kOther.onScreen &&
+					offScreen == kOther.offScreen);
+		}
+		float onScreen, offScreen;
+	};
 
 	bool testCodeLayout(int iAddressOffset = 0)
 	{
@@ -255,21 +286,6 @@ public:
 		}
 		return true; // Looks good, we don't worry.
 	}
-	
-private:
-	int m_iScreenHeight;
-	struct PlotIndicatorSize
-	{
-		PlotIndicatorSize(float fOnScreen = 0, float fOffScreen = 0)
-		:	onScreen(fOnScreen), offScreen(fOffScreen) {}
-		// Overriding operator== for this nested thing would be a PITA
-		bool equals(PlotIndicatorSizePatch::PlotIndicatorSize const& kOther)
-		{	// Exact floating point comparison
-			return (onScreen == kOther.onScreen &&
-					offScreen == kOther.offScreen);
-		}
-		float onScreen, offScreen;
-	};
 };
 
 } // (end of unnamed namespace)
@@ -285,6 +301,5 @@ void Civ4BeyondSwordMods::patchPlotIndicatorSize()
 	}
 	// (If we fail past here, there won't be a point in trying again.)
 	m_bPlotIndicatorSizePatched = true;
-	PlotIndicatorSizePatch patch(iScreenHeight);
-	patch.apply();
+	PlotIndicatorSizePatch(iScreenHeight).applyIfEnabled();
 }

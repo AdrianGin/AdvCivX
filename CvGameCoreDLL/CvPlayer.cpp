@@ -2547,11 +2547,9 @@ const wchar* CvPlayer::getName(uint uiForm) const
 		// No prefix if the key isn't present
 		if(szKey.compare(szPrefix) == 0)
 			szPrefix = L"";
-		/*  Same hack as above. Don't call gDll->getModName b/c then I'd have
-			to deal with narrow/wide string conversion. */
-		static CvWString r; // Important to put the assignment on a separate line
-		r = szPrefix + GC.getInitCore().getLeaderName(getID(), uiForm);
-		return r;
+		static CvWString szName; // Important to put the assignment on a separate line
+		szName = szPrefix + GC.getInitCore().getLeaderName(getID(), uiForm);
+		return szName;
 	} // </advc.106i>
 	return GC.getInitCore().getLeaderName(getID(), uiForm);
 }

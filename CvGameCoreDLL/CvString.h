@@ -207,4 +207,20 @@ BOOST_STATIC_ASSERT(sizeof(CvWStringBuffer) == 12); // </advc.003k>
 // Don't move these into a cpp file, since I don't want CvString to be part of the DLL, MT
 // advc: I've done just that - since CvString is part of the DLL.
 
+
+/*	advc (side note): Regarding the FString classes mentioned in Firaxis comments,
+	the EXE does use those, and, based on disassembly, the memory layout might be: */
+#if 0
+struct FString // (Or maybe this is only a component that FString holds a pointer to)
+{
+	int m_iCapacity;
+	int m_iSize;
+	char m_cFirstChar;
+	char const* GetCString() const { return &m_cFirstChar; }
+	/*	I guess growth must involve allocation of raw memory and a reinterpret_cast.
+		It's not a static array like MSVC's std::string uses:
+		union { Elem _Buf[_BUF_SIZE]; _Elem *_Ptr; ) */
+};
+#endif
+
 #endif

@@ -790,6 +790,19 @@ void CvGlobals::setDEFAULT_SPECIALIST(int iValue)
 	m_eDEFAULT_SPECIALIST = (SpecialistTypes)iValue;
 } // </advc.opt>
 
+/*	advc: The EXE constantly polls stagger time while idle.
+	That's annoying when debugging/ reverse-engineering. */
+int CvGlobals::getDefineINTExternal(char const* szName) const
+{
+	/*	This address for the "EVENT_MESSAGE_STAGGER_TIME" string is hardcoded in
+		the EXE. Checking for that is obviously faster than a string comparison.
+		(And it's not really a problem if the check fails for some strange version
+		of the EXE.) */
+	if (szName == reinterpret_cast<char const*>(0x00C9C868))
+		return getDefineINT(EVENT_MESSAGE_STAGGER_TIME);
+	return getDefineINT(szName);
+}
+
 int CvGlobals::getDefineINT(char const* szName,
 	// BETTER_BTS_AI_MOD, 02/21/10, jdog5000: START
 	int iDefault) const
@@ -918,6 +931,13 @@ int CvGlobals::getUSE_FINISH_TEXT_CALLBACK()
 
 void CvGlobals::setDLLIFace(CvDLLUtilityIFaceBase* pDll)
 {
+	// <advc.106i>
+	if (pDll != m_pDLL && pDll != NULL)
+	{
+		m_modName.update(
+				pDll->getExternalModName(true),
+				pDll->getExternalModName(false));
+	} // </advc.106i>
 	m_pDLL = pDll;
 }
 

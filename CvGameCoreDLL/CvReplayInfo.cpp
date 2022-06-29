@@ -35,7 +35,6 @@ CvReplayInfo::CvReplayInfo() :
 	m->iNormalizedScore = 0, // </advc.003k>
 	m->iFinalScore = -1; // advc.707
 	// <advc.106i>
-	m->szPurportedModName = gDLL->getModName(); // Local copy; not sure if necessary.
 	m->iVersionRead = -1;
 	m->bDisplayOtherMods = false;
 	// See comment in GlobalDefines_advc.xml
@@ -72,8 +71,8 @@ CvReplayInfo::~CvReplayInfo()
 
 void CvReplayInfo::createInfo(PlayerTypes ePlayer)
 {
-	if(!STORE_REPLAYS_AS_BTS) // advc.106i (and moved up)
-		m_szModName = gDLL->getModName();
+	if (!STORE_REPLAYS_AS_BTS) // advc.106i (and moved up)
+		m_szModName = GC.getModName().getFullPath();
 	CvGame const& kGame = GC.getGame();
 	CvMap const& kMap = GC.getMap();
 	/*  <advc>: createInfo gets called when Python scripts are (re-)loaded.
@@ -361,7 +360,7 @@ void CvReplayInfo::appendSettingsMsg(CvWString& szSettings, PlayerTypes ePlayer)
 	}
 	if(iOptions > 0)
 		szSettings = szSettings.substr(0, szSettings.length() - 2) + L"\n";
-	// CvWString szModName(::getModName()) // I'd like the prefix to be optional
+	//CvWString szModName(GC.getModName().getName) // I'd like the prefix to be configurable
 	CvWString const szKey = "TXT_KEY_REPLAY_PREFIX";
 	CvWString szModName = gDLL->getText(szKey);
 	// Don't list mod name if the tag isn't present
@@ -686,7 +685,7 @@ const char* CvReplayInfo::getModName() const
 			as the mod name. (I don't remember if this was on purpose.) */
 		m_szModName.empty())
 	{
-		return m->szPurportedModName;
+		return GC.getModName().getFullPath();
 	} // </advc.106i>
 	return m_szModName;
 }
@@ -873,9 +872,10 @@ bool CvReplayInfo::read(FDataStreamBase& stream)
 					return false;
 			}
 			else if(!m->bDisplayOtherMods &&
-					std::strcmp(m_szModName.GetCString(), gDLL->getModName()) != 0)
+				std::strcmp(m_szModName.c_str(), GC.getModName().getFullPath()) != 0)
+			{
 				return false; // Replay from a different mod
-			// </advc.106i>
+			} // </advc.106i>
 		} // <advc.707>
 		if(iVersion == 5)
 			stream.Read(&m->iFinalScore);

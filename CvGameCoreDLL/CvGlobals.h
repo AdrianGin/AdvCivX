@@ -31,6 +31,7 @@ class CvRandom;
 class CvGame; // advc.003u
 class CvGameAI;
 class CvAgents; // advc.agent
+class ModName; // advc.106i
 class CvInitCore;
 class CvStatsReporter;
 class CvDLLInterfaceIFaceBase;
@@ -402,10 +403,12 @@ public:
 	bool isCachingDone() const { return (m_aiGlobalDefinesCache != NULL); } // advc.003c
 
 	// ***** EXPOSED TO PYTHON *****
-	DllExport int getDefineINT(char const* szName) const
+	int getDefineINT(char const* szName) const
 	{
 		return getDefineINT(szName, 0); // advc.opt: Call the BBAI version
 	}
+	// advc: Separate function for external calls (exported through .def file)
+	int getDefineINTExternal(char const* szName) const;
 	// BETTER_BTS_AI_MOD, Efficiency, Options, 02/21/10, jdog5000:
 	int getDefineINT(char const* szName, int iDefault) const;
 	// <advc>
@@ -516,6 +519,7 @@ public:
 		DO(NUKE_UNIT_DAMAGE_BASE) \
 		DO(NUKE_UNIT_DAMAGE_RAND_1) \
 		DO(NUKE_UNIT_DAMAGE_RAND_2) \
+		DO(EVENT_MESSAGE_STAGGER_TIME) \
 		/* </advc.opt> */ \
 		DO(PATH_DAMAGE_WEIGHT) \
 		DO(HILLS_EXTRA_DEFENSE) \
@@ -698,8 +702,9 @@ public:
 
 	DllExport void setDLLIFace(CvDLLUtilityIFaceBase* pDll);
 	CvDLLUtilityIFaceBase* getDLLIFace() const { return m_pDLL; } // advc: const
-
 	DllExport CvDLLUtilityIFaceBase* getDLLIFaceNonInl();
+	ModName const& getModName() const { return m_modName; } // advc.106i
+
 	DllExport void setDLLProfiler(FProfiler* prof);
 	FProfiler* getDLLProfiler();
 	DllExport void enableDLLProfiler(bool bEnable);
@@ -816,8 +821,9 @@ protected:
 	bool m_bZoomOut;
 	bool m_bZoomIn;
 	bool m_bLoadGameFromFile;*/ // advc.003j: Unused; not even written.
+	ModName m_modName; // advc.106i
 
-	FMPIManager * m_pFMPMgr;
+	FMPIManager* m_pFMPMgr;
 
 	CvRandomExtended* m_asyncRand; // advc.007c (was CvRandom)
 	CvPythonCaller* m_pPythonCaller; // advc.003y
@@ -962,6 +968,7 @@ private:
 	// advc.006:
 	void handleUnknownTypeString(char const* szType, bool bHideAssert, bool bFromPython) const;
 	//void addToInfosVectors(void* infoVector); // advc.enum (no longer used)
+	void updateModName(); // advc.106i
 };
 
 extern CvGlobals gGlobals;	// for debugging

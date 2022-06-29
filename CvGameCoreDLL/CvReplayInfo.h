@@ -127,7 +127,6 @@ protected:
 		// <advc.106i>
 		int iVersionRead;
 		bool bDisplayOtherMods;
-		CvString szPurportedModName;
 		// </advc.106i>
 		friend CvReplayInfo;
 	};

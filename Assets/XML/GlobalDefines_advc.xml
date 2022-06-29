@@ -126,6 +126,15 @@
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
+	<!-- advc.092b: Set to 1 to disable all code that modifies the EXE
+		 at runtime. In case that those modifications render the mod unplayable
+		 with some edition of BtS or operating system and no one is around to
+		 properly fix the issue. -->
+	<Define>
+		<DefineName>DISABLE_EXE_RUNTIME_MODS</DefineName>
+        <iDefineIntVal>0</iDefineIntVal>
+    </Define>
+
     <!-- [advc.100]
 		 Only relevant if UWAI disabled (or only in the background).
 		 When an AI civ is willing to declare war in exchange for gold or tech,
