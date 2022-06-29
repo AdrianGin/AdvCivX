@@ -423,7 +423,7 @@
 		 I guess they're on the same scale as PLOT_SIZE. -->
 	<Define> <!-- redefine -->
 		<DefineName>CAMERA_MAX_SCROLL_SPEED</DefineName>
-		<fDefineFloatVal>2800.0</fDefineFloatVal>
+		<fDefineFloatVal>2400.0</fDefineFloatVal>
 	</Define>
 	<!-- Not increasing this much b/c I still want to be able to position
 		 the camera at a precise location, e.g. for taking a screenshot. -->
