@@ -716,8 +716,12 @@ bool CvReplayInfo::read(FDataStreamBase& stream)
 		} /* Replay from another mod that has increased the replay version;
 			 won't be able to parse that. (Actually, it might be OK - if the mod
 			 only appends additional data at the end of the stream.) */
-		if(iVersion > REPLAY_VERSION)
+		if(iVersion > REPLAY_VERSION &&
+			// Taurus replays set a single bit in the version number
+			(iVersion & ~(1 << 7)) > REPLAY_VERSION)
+		{
 			return false;
+		}
 		m->iVersionRead = iVersion; // For the checkBounds function
 		// </advc.106i>
 		if (iVersion < 2)
