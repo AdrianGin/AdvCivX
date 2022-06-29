@@ -20248,12 +20248,12 @@ bool CvPlayerAI::AI_doDeals(PlayerTypes eOther)
 				canContact(eOther, true)); // </advc.133>
 		if (GET_PLAYER(eOther).isHuman() && canContact(eOther, true))
 		{
-			apHumanDealsToCancel.push_back(pLoopDeal);
 			bool const bVassalDeal = pLoopDeal->isVassalDeal(); // K-Mod
 			// <advc.062>
-			DenialTypes eVassalCancelReason = (!bVassalDeal ? NO_DENIAL :
-					GET_TEAM(getTeam()).AI_surrenderTrade(TEAMID(eOther)));
-			// </advc.062>
+			DenialTypes eVassalCancelReason =
+					(bVassalDeal && !GET_TEAM(getTeam()).isCapitulated() ?
+					GET_TEAM(getTeam()).AI_surrenderTrade(TEAMID(eOther)) :
+					NO_DENIAL); // </advc.062>
 			CvDiploParameters* pDiplo = new CvDiploParameters(getID());
 			if (bVassalDeal)
 			{
@@ -20277,9 +20277,9 @@ bool CvPlayerAI::AI_doDeals(PlayerTypes eOther)
 				gDLL->beginDiplomacy(pDiplo, eOther);
 				bContacted = true;
 			}
-			// advc.133: Don't contact human (nor kill deal) yet
-			//pDiplo->setDiploComment((DiploCommentTypes)GC.getInfoTypeForString("AI_DIPLOCOMMENT_CANCEL_DEAL"));
-			// ...
+			/*pDiplo->setDiploComment((DiploCommentTypes)GC.getInfoTypeForString("AI_DIPLOCOMMENT_CANCEL_DEAL"));
+			  ...*/
+			else apHumanDealsToCancel.push_back(pLoopDeal); // advc.133
 		}
 		else
 		{
