@@ -340,7 +340,9 @@ void CvGame::regenerateMap(/* advc.tsl: */ bool bAutomated)
 	setStartTurnYear();
 	m_iElapsedGameTurns = 0;
 	// </advc.251>
-	setTurnSlice(0); // advc.001: Reset minutesPlayed to 0
+	/*	advc.001: Reset minutesPlayed to 0. Note: Would cause a (redundant)
+		autosave in CvGame::update if I hadn't added a re-gen check there. */
+	setTurnSlice(0);
 	CvEventReporter::getInstance().resetStatistics();
 
 	m_iMapRegens++; // advc.tsl
@@ -2847,8 +2849,10 @@ void CvGame::update()
 		}
 		if (getTurnSlice() == 0) // advc (note): Implies 0 elapsed game turns
 		{	// <advc.700> Delay initial auto-save until RiseFall is initialized
-			if (!isOption(GAMEOPTION_RISE_FALL) &&// </advc.700>
-				m_iTurnLoadedFromSave != m_iElapsedGameTurns) // advc.044
+			if (!isOption(GAMEOPTION_RISE_FALL) && // </advc.700>
+				m_iTurnLoadedFromSave != m_iElapsedGameTurns && // advc.044
+				// advc: Necessary now that re-gen resets turn slice
+				m_iMapRegens <= 0)
 			{
 				autoSave(true); // advc.106l
 			}

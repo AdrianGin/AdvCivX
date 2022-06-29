@@ -8946,8 +8946,9 @@ void CvPlayer::setTurnActive(bool bNewValue, bool bDoTurn)
 				// <advc.700>
 				if(kGame.isOption(GAMEOPTION_RISE_FALL))
 					kGame.getRiseFall().atActiveTurnStart();
-				// </advc.700>
-				else kGame.autoSave(); // advc.106l
+				// </advc.700>  <advc.106l>
+				else if (kGame.isFinalInitialized()) // No initial autosave here
+					kGame.autoSave(); // <advc.106l>
 			} // </advc.044>
 			// <advc.106b> Clear messages in any case (in particular during AIAutoPlay)
 			for (size_t i = 0; i < m_aMajorMsgs.size(); i++)
