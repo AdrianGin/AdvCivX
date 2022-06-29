@@ -27034,7 +27034,7 @@ bool CvPlayerAI::AI_advancedStartPlaceCity(CvPlot* pPlot)
 			if (eImprovement == NO_IMPROVEMENT)
 				continue;
 			CvPlot* pLoopPlot = &(*it);
-			if (pLoopPlot != NULL && pLoopPlot->isImproved())
+			if (pLoopPlot != NULL && pLoopPlot->getImprovementType() != eImprovement)
 			{
 				eBestImprovement = eImprovement;
 				pBestPlot = pLoopPlot;
