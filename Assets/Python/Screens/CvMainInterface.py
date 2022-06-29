@@ -916,7 +916,9 @@ class CvMainInterface:
 			# Update total width
 			fOneLineTotalWidth = (fResearchBarWidth + fThinGPBarWidth + fThinGGBarWidth +
 					2 * iThinSpacing)
-			fMultTwoLines = gRect("TopBarsMaxSpace").width() / float(fThinResearchBarWidth)
+			# Leave some room to make sure we don't overlap the Advisor buttons.
+			# Not scaled b/c, if anything, the buttons protrude more on smaller res.
+			fMultTwoLines = (gRect("TopBarsMaxSpace").width() - 15) / float(fThinResearchBarWidth)
 			fThinResearchBarWidth *= fMultTwoLines
 			fGGBarWidth *= fMultTwoLines
 		fGPBarWidth = fThinResearchBarWidth - fGGBarWidth - iSpacing
