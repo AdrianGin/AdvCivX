@@ -3244,10 +3244,14 @@ class CvMainInterface:
 						WidgetTypes.WIDGET_HURRY, i)
 					screen.hide(szName)
 
-				self.setStyledButton("AutomateProduction", "Button_CityC3_Style",
+				self.addCheckBox("AutomateProduction", "", "",
+						ButtonStyles.BUTTON_STYLE_STANDARD,
 						WidgetTypes.WIDGET_AUTOMATE_PRODUCTION)
-				self.setStyledButton("AutomateCitizens", "Button_CityC4_Style",
+				screen.setStyle("AutomateProduction", "Button_CityC3_Style")
+				self.addCheckBox("AutomateCitizens", "", "",
+						ButtonStyles.BUTTON_STYLE_STANDARD,
 						WidgetTypes.WIDGET_AUTOMATE_CITIZENS)
+				screen.setStyle("AutomateCitizens", "Button_CityC4_Style")
 
 				for i in range(6):
 					szName = "Emphasize" + str(i)
