@@ -4161,7 +4161,10 @@ void TacticalSituation::evalEngagement()
 			if (!kPlot.isVisible(eOurTeam) || !kPlot.sameArea(kGroupPlot) ||
 				!kPlot.isUnit() || // shortcut
 				// Could do without this if it's too slow
-				!pHeadUnit->canMoveInto(kPlot, true, false, false, true, false))
+				!pHeadUnit->canMoveInto(kPlot, true, false, false, true,
+				/*	We're about to move our units, but their movement points haven't
+					been restored yet, so it's important not to check for moves. */
+				/*bDangerCheck=*/true))
 			{
 				continue;
 			}
@@ -4199,17 +4202,29 @@ void TacticalSituation::evalEngagement()
 			// Akin to CvPlayerAI::AI_enemyTargetMissions
 			MissionAITypes const eMission = pGroup->AI_getMissionAIType();
 			CvPlot const* pMissionPlot = pGroup->AI_getMissionAIPlot();
-			/*	K-Mod uses MISSIONAI_ASSAULT also for land-based assaults on cities.
-				This should be more helpful than CvPlayerAI::AI_enemyTargetMission,
-				which counts all missions that target a hostile tile, i.e. also
-				reinforcements. (CvTeamAI::AI_endWarVal relies on that function.) */
-			if ((eMission == MISSIONAI_PILLAGE && ePlotOwner == eThey) ||
-				(eMission == MISSIONAI_ASSAULT && pMissionPlot != NULL &&
-				pMissionPlot->getOwner() == eThey))
+			bool const bPillage = (eMission == MISSIONAI_PILLAGE && ePlotOwner == eThey);
+			if (bPillage ||
+				// (K-Mod uses MISSIONAI_ASSAULT also for land-based assaults on cities)
+				((eMission == MISSIONAI_ASSAULT || eMission == MISSIONAI_GROUP ||
+				eMission == MISSIONAI_REINFORCE) &&
+				pMissionPlot != NULL && pMissionPlot->getOwner() == eThey &&
+				// Don't count besiegers
+				(!pMissionPlot->isCity() || stepDistance(&kGroupPlot, pMissionPlot) > 1)))
 			{
-				iOurMissions += iGroupSize + pGroup->getCargo();
+				int iMissionScore = pGroup->getNumUnits() + pGroup->getCargo();
+				if (bPillage)
+					iMissionScore = intdiv::uround(iMissionScore, 2);
+				iOurMissions += iMissionScore;
 			}
 		}
+	}
+	if (iOurMissions > 0 && kOurTeam.AI_isPushover(eTheirTeam))
+	{
+		/*	If the target is weak, even a small fraction of our military en route
+			could have a big impact once it arrives. */
+		iOurMissions *= 3;
+		iOurMissions /= 2;
+		log("Mission count increased b/c target is short work");
 	}
 	/*	So long as we check canMoveInto with bAttack=true above, this here
 		probably won't save time. */
@@ -4265,16 +4280,6 @@ void TacticalSituation::evalEngagement()
 		iTheirExposed += iTheirDamaged;
 	}
 	} // (end of profile scope)
-	// Don't count entangled units on missions
-	iOurMissions = std::max(0, iOurMissions - iEntangled);
-	if (iOurMissions > 0 && kOurTeam.AI_isPushover(eTheirTeam))
-	{
-		/*	If the target is weak, even a small fraction of our military en route
-			could have a big impact once it arrives. */
-		iOurMissions *= 3;
-		iOurMissions /= 2;
-		log("Mission count increased b/c target is short work");
-	}
 	int const iOurEvac = evacPop(eWe, eThey);
 	int const iTheirEvac = evacPop(eThey, eWe);
 	/*	If a human is involved or if it's our turn, then we shouldn't worry too
