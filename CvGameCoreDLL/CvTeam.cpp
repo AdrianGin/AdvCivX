@@ -3646,6 +3646,7 @@ void CvTeam::assignVassal(TeamTypes eVassal, bool bSurrender) const
 
 void CvTeam::freeVassal(TeamTypes eVassal) const
 {
+	bool const bWasCapitulated = GET_TEAM(eVassal).isCapitulated(); // advc.130y
 	FOR_EACH_DEAL_VAR(pLoopDeal)
 	{
 		if (!pLoopDeal->isBetween(getID(), eVassal))
@@ -3661,7 +3662,9 @@ void CvTeam::freeVassal(TeamTypes eVassal) const
 		}
 	}
 	// <advc.130y>
-	if(isCapitulated() && GET_PLAYER(GET_TEAM(eVassal).getLeaderID()).
+	if (isCapitulated() && // Master has just capitulated
+		bWasCapitulated && // Vassal had capitulated, now freed.
+		GET_PLAYER(GET_TEAM(eVassal).getLeaderID()).
 		// Not thankful if still thankful to old master
 		AI_getMemoryAttitude(getLeaderID(), MEMORY_INDEPENDENCE) <= 0)
 	{
