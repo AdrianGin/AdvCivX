@@ -454,7 +454,7 @@ void CvEventReporter::preSave()
 	if(bAutoSave)
 	{
 		szDefineName = "AUTO_SAVING_MESSAGE_TIME";
-		szMsgTag = L"TXT_KEY_AUTO_SAVING2";
+		szMsgTag = L"TXT_KEY_AUTOSAVING2";
 	}
 	else if(bQuickSave)
 	{
