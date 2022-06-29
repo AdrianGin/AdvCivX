@@ -15766,7 +15766,7 @@ void CvGameTextMgr::appendToAttitudeBreakdown(CvWStringBuffer& szBreakdown, int 
 		szTempBuffer.Format(SETCOLR L"%s" ENDCOLR,
 				TEXT_COLOR(iAttitudeChange > 0 ?
 				"COLOR_POSITIVE_TEXT" : "COLOR_NEGATIVE_TEXT"),
-				gDLL->getText(iAttitudeChange < 0 || szTextKeyAlt == NULL ?
+				gDLL->getText(iAttitudeChange > 0 || szTextKeyAlt == NULL ?
 				szTextKey : szTextKeyAlt, iAttitudeChange).GetCString());
 		szBreakdown.append(NEWLINE);
 		szBreakdown.append(szTempBuffer);
