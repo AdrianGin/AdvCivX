@@ -4440,6 +4440,10 @@ void CvPlot::setPlotType(PlotTypes eNewValue, bool bRecalculate, bool bRebuildGr
 	if (bRebuildGraphics && GC.IsGraphicsInitialized())
 	{
 		//Update terrain graphical
+		/*	advc (note): Calling RebuildAllPlots here would get rid of artifacts
+			in terrain surfaces - but it's too slow. Just rebuilding surrounding
+			plots doesn't do the trick; there's sth. else, apparently, that
+			RebuildAllPlots does. (Or perhaps a delayed RebuildPlot call would do?) */
 		gDLL->getEngineIFace()->RebuildPlot(getX(), getY(), true, true);
 		//gDLL->getEngineIFace()->SetDirty(MinimapTexture_DIRTY_BIT, true); //minimap does a partial update
 		//gDLL->getEngineIFace()->SetDirty(GlobeTexture_DIRTY_BIT, true);

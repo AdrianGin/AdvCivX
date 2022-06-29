@@ -318,6 +318,22 @@ void CvGame::regenerateMap(/* advc.tsl: */ bool bAutomated)
 	CvMapGenerator::GetInstance().addGameElements();
 
 	gDLL->getEngineIFace()->RebuildAllPlots();
+	/*	<advc.001> Even if we call CvMap::setupGraphical before RebuildAllPlots,
+		there are still artifacts in texture surfaces. I guess we need to give
+		the EXE a little bit of time. I'm leaving the original call in place too
+		(although it takes about a second) to avoid (overt) momentary glitches. */
+	setUpdateTimer(UPDATE_REBUILD_PLOTS, 1);
+	// Fix dark lines running through Flood Plains
+	{
+		FeatureTypes eFloodPlains = (FeatureTypes)GC.getInfoTypeForString(
+				"FEATURE_FLOOD_PLAINS");
+		FOR_EACH_ENUM(PlotNum)
+		{
+			CvPlot& kPlot = GC.getMap().getPlotByIndex(eLoopPlotNum);
+			if (kPlot.isRiver() && kPlot.getFeatureType() == eFloodPlains)
+				kPlot.updateRiverSymbol(true, true);
+		}
+	} // </advc.001>
 	// <advc.251>
 	setGameTurn(0);
 	setStartTurn(0);
@@ -8509,6 +8525,8 @@ void CvGame::handleUpdateTimer(UpdateTimerTypes eTimerType)
 		} // </advc.004j>
 		// advc.106n:
 		case UPDATE_STORE_REPLAY_TEXTURE: GC.getMap().updateReplayTexture(); break;
+		// advc.001:
+		case UPDATE_REBUILD_PLOTS: gDLL->getEngineIFace()->RebuildAllPlots(); break;
 		default: FErrorMsg("Unknown update timer type");
 		}
 	}

@@ -454,6 +454,7 @@ public:
 		UPDATE_MOUSE_FOCUS, // advc.001w
 		UPDATE_LOOK_AT_STARTING_PLOT, // advc.004j
 		UPDATE_STORE_REPLAY_TEXTURE, // advc.106n
+		UPDATE_REBUILD_PLOTS, // advc.001
 		NUM_UPDATE_TIMER_TYPES
 	};
 	void setUpdateTimer(UpdateTimerTypes eTimerType, int iDelay);
