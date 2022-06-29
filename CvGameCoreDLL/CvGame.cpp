@@ -5423,12 +5423,15 @@ void CvGame::setGameState(GameStateTypes eNewValue)
 		if (isOption(GAMEOPTION_RISE_FALL))
 			m_pRiseFall->prepareForExtendedGame(); // </advc.707>
 		showEndGameSequence();
-		for (PlayerIter<HUMAN> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		// advc (note): For dead humans, the popup will only lead to the opening menu.
+		for (PlayerIter<EVER_ALIVE> itHuman; itHuman.hasNext(); ++itHuman)
 		{
+			if (!itHuman->isHuman())
+				continue;
 			// One more turn?
 			CvPopupInfo* pInfo = new CvPopupInfo(BUTTONPOPUP_EXTENDED_GAME);
 			if (pInfo != NULL)
-				itPlayer->addPopup(pInfo);
+				itHuman->addPopup(pInfo);
 		}
 	}
 	gDLL->UI().setDirty(Cursor_DIRTY_BIT, true);
@@ -9320,11 +9323,13 @@ void CvGame::showEndGameSequence()
 {
 	long iHours = getMinutesPlayed() / 60;
 	long iMinutes = getMinutesPlayed() % 60;
-
-	for (PlayerIter<HUMAN> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	// (PlayerIter<HUMAN> would only affect humans alive)
+	for (PlayerIter<EVER_ALIVE> itHuman; itHuman.hasNext(); ++itHuman)
 	{
-		CvPlayer& kPlayer = *itPlayer;
-		addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, kPlayer.getID(),
+		CvPlayer& kHuman = *itHuman;
+		if (!kHuman.isHuman())
+			continue;
+		addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, kHuman.getID(),
 				gDLL->getText("TXT_KEY_MISC_TIME_SPENT", iHours, iMinutes));
 		CvPopupInfo* pInfo = new CvPopupInfo(BUTTONPOPUP_TEXT);
 		if (pInfo != NULL)
@@ -9336,9 +9341,9 @@ void CvGame::showEndGameSequence()
 						GC.getInfo(getVictory()).getTextKeyWide()));
 			}
 			else pInfo->setText(gDLL->getText("TXT_KEY_MISC_DEFEAT"));
-			kPlayer.addPopup(pInfo);
+			kHuman.addPopup(pInfo);
 		}
-		if (getWinner() == kPlayer.getTeam())
+		if (getWinner() == kHuman.getTeam())
 		{
 			if (!CvString(GC.getInfo(getVictory()).getMovie()).empty())
 			{
@@ -9348,7 +9353,7 @@ void CvGame::showEndGameSequence()
 				{
 						pInfo->setText(L"showVictoryMovie");
 						pInfo->setData1((int)getVictory());
-						kPlayer.addPopup(pInfo);
+						kHuman.addPopup(pInfo);
 				}
 			}
 			else if (GC.getInfo(getVictory()).isDiploVote())
@@ -9357,7 +9362,7 @@ void CvGame::showEndGameSequence()
 				if (pInfo != NULL)
 				{
 					pInfo->setText(L"showUnVictoryScreen");
-					kPlayer.addPopup(pInfo);
+					kHuman.addPopup(pInfo);
 				}
 			}
 		}
@@ -9366,13 +9371,13 @@ void CvGame::showEndGameSequence()
 		if (pInfo != NULL)
 		{
 			pInfo->setText(L"showReplay");
-			pInfo->setData1(kPlayer.getID());
+			pInfo->setData1(kHuman.getID());
 			/*	advc.106i (comment): The BtS comment below means that the HoF
 				is not shown right after the player exits from the Replay screen.
 				That it still gets shown later on is intentional (see a few
 				lines below). */
 			pInfo->setOption1(false); // don't go to HOF on exit
-			kPlayer.addPopup(pInfo);
+			kHuman.addPopup(pInfo);
 		}
 		// show top cities / stats
 		pInfo = new CvPopupInfo(BUTTONPOPUP_PYTHON_SCREEN);
@@ -9381,14 +9386,14 @@ void CvGame::showEndGameSequence()
 			pInfo->setText(L"showInfoScreen");
 			pInfo->setData1(0);
 			pInfo->setData2(1);
-			kPlayer.addPopup(pInfo);
+			kHuman.addPopup(pInfo);
 		}
 		// show Dan
 		pInfo = new CvPopupInfo(BUTTONPOPUP_PYTHON_SCREEN);
 		if (pInfo != NULL)
 		{
 			pInfo->setText(L"showDanQuayleScreen");
-			kPlayer.addPopup(pInfo);
+			kHuman.addPopup(pInfo);
 		}
 		// show Hall of Fame
 		pInfo = new CvPopupInfo(BUTTONPOPUP_PYTHON_SCREEN);
@@ -9396,7 +9401,7 @@ void CvGame::showEndGameSequence()
 		{
 			pInfo->setText(L"showHallOfFame");
 			pInfo->setData1(0); // advc.003y: Disable replay buttons
-			kPlayer.addPopup(pInfo);
+			kHuman.addPopup(pInfo);
 		}
 	}
 }
