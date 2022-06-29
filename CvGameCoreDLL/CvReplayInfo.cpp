@@ -46,8 +46,8 @@ CvReplayInfo::CvReplayInfo() :
 			GC.getNumColorInfos() <= 127) &&
 			/*  This replay object may well not use any of the added world sizes etc.,
 				but I want the same replay format for all replays written by the mod. */
-			GC.getNumWorldInfos() <= 6 && GC.getNumVictoryInfos() >= 7 &&
-			GC.getNumHandicapInfos() >= 9 && GC.getNumGameSpeedInfos() >= 4);
+			GC.getNumWorldInfos() <= 6 && GC.getNumVictoryInfos() <= 7 &&
+			GC.getNumHandicapInfos() <= 9 && GC.getNumGameSpeedInfos() <= 4);
 	// </advc.106i>
 	// advc.106m:
 	FAssert(!STORE_REPLAYS_AS_BTS || GC.getDefineINT(CvGlobals::MINIMAP_RENDER_SIZE) == 512);
