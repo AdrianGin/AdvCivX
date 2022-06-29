@@ -31,7 +31,7 @@ class BupPanel:
 			iVanCols, iVanRows):
 		self.CellSpacing = HSPACE(cBupCellSpacing) # advc.092:
 		# advc.092: Replacing cBupCellSize
-		self.CellSize = mainInterface.numPlotListButtonsPerRow()
+		self.CellSize = mainInterface.plotListUnitButtonSize()
 		self.MaxCells = iVanCols * iVanRows
 		self.Rows = iVanRows
 		self.Cols = iVanCols
@@ -49,8 +49,8 @@ class BupPanel:
 		# however, the panel location values are still used to help locate the cells
 		# SO DON'T DELETE THEM!
 		# <advc.092>
-		self.xPanel = gRect("PlotListPanel0").x()
-		self.yPanel = gRect("PlotListPanel0").y() - cBupCellSpacing # </advc.092>
+		self.xPanel = gRect("PlotListPanel0").x() + cBupCellSpacing
+		self.yPanel = gRect("PlotListPanel0").y() + cBupCellSpacing # </advc.092>
 		self.wPanel = iVanCols * self.CellSize + cBupCellSpacing
 		self.hPanel = iVanRows * self.CellSize + cBupCellSpacing
 
