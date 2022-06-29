@@ -8555,6 +8555,7 @@ int CvPlayerAI::AI_getRankDifferenceAttitude(PlayerTypes ePlayer) const
 					(rFarAheadThresh - rPeakScoreRatio) :
 					(rTheirScoreToOurs - 1) /
 					(rPeakScoreRatio - 1));
+			rMultFromScore.increaseTo(0);
 			rMultiplier += rMultFromScore;
 			rMultiplier /= 2;
 		}
