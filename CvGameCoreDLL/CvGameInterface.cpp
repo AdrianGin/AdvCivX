@@ -2792,18 +2792,18 @@ bool CvGame::isAboutToShowDawnOfMan() const
 /*	<advc.061> Could get this through winuser.h, but that's not trivial.
 	Let's just let Python provide the info to us. */
 void CvGame::setScreenDimensions(int iWidth, int iHeight)
-{	// <advc.001> Avoid warped plot indicators upon changing resolution
-	if (m_iScreenWidth != iWidth || m_iScreenHeight != iHeight)
-		gDLL->UI().setDirty(GlobeLayer_DIRTY_BIT, true); // </advc.001>
+{
+	if (m_iScreenWidth == iWidth && m_iScreenHeight == iHeight)
+		return;
 	m_iScreenWidth = iWidth;
-	if (m_iScreenHeight != iHeight)
-	{
-		m_iScreenHeight = iHeight;
-		/*	<advc.092b> Do this as soon as we know the screen dimensions, before
-			a plot indicator gets created for the initially selected units. */
-		if (m_iScreenHeight > 0)
-			smc::BtS_EXE.patchPlotIndicatorSize(); // </advc.092b>
-	}
+	m_iScreenHeight = iHeight;
+	// advc.001: Avoid warped plot indicators upon changing resolution
+	gDLL->UI().setDirty(GlobeLayer_DIRTY_BIT, true);
+	CvGlobals::getInstance().updateCityCamDist(); // advc.004m
+	/*	<advc.092b> Do this as soon as we know the screen dimensions, before
+		a plot indicator gets created for the initially selected units. */
+	if (m_iScreenHeight > 0)
+		smc::BtS_EXE.patchPlotIndicatorSize(); // </advc.092b>
 }
 
 int CvGame::getScreenWidth() const
@@ -2838,7 +2838,7 @@ void CvGame::onCityScreenChange()
 			{
 				NiPoint3 nOneNorth = pOneNorth->getPoint();
 				NiPoint3 nCity = pCityPlot->getPoint();
-				float const fDisplWeight = 0.24f +
+				float const fDisplWeight = 0.23f +
 						(BUGOption::isEnabled("MainInterface__EnlargeHUD", true) ?
 						0.03f : 0);
 				NiPoint3 nLookAt(nCity.x,

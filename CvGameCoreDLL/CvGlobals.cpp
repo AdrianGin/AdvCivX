@@ -738,10 +738,7 @@ void CvGlobals::cacheGlobalFloats(
 	if (fNewFoV != m_fFIELD_OF_VIEW)
 	{
 		m_fFIELD_OF_VIEW = fNewFoV;
-		// Adjust camera distance on city screen to FoV
-		float fCityCamDist = getDefineFLOAT("CAMERA_BASE_CITY_DISTANCE");
-		fCityCamDist *= std::sqrt(40 / fNewFoV);
-		setDefineFLOAT("CAMERA_CITY_ZOOM_IN_DISTANCE", fCityCamDist);
+		updateCityCamDist();
 		if (bAllowRecursion && IsGraphicsInitialized())
 		{
 			GC.getPythonCaller()->callScreenFunction("updateCameraStartDistance");
@@ -858,7 +855,7 @@ void CvGlobals::setDefineSTRING(char const* szName, char const* szValue, /* advc
 	FAssertMsg(!bUpdateCache, "No strings to update"); // advc.opt
 }
 
-// advc.004m:
+// <advc.004m>
 void CvGlobals::updateCameraStartDistance(bool bReset)
 {
 	static float m_fCAMERA_START_DISTANCE_Override = std::max(1000.f,
@@ -884,6 +881,24 @@ void CvGlobals::updateCameraStartDistance(bool bReset)
 	setDefineFLOAT("CAMERA_START_DISTANCE", fNewValue,
 			false); // Update the cache explicitly instead:
 	cacheGlobalFloats(false);
+}
+
+void CvGlobals::updateCityCamDist()
+{
+	float fCityCamDist = getDefineFLOAT("CAMERA_BASE_CITY_DISTANCE");
+	/*	Exponentiate to let the player yet exert _some_ control (through the FoV)
+		over the city-screen camera distance. */
+	fCityCamDist *= std::pow(40 / GC.getFIELD_OF_VIEW(), 0.85f);
+	float fDefaultAspectRatio = 8/5.f;
+	int const iW = getGame().getScreenWidth();
+	int const iH = getGame().getScreenHeight();
+	float fAspectRatio = (iH <= 0 ? fDefaultAspectRatio : iW / (float)iH);
+	float fScreenDimMult = fAspectRatio / fDefaultAspectRatio;
+	// On small screens, width can be the limiting dimension.
+	if (iW > 0 && iW < 1400)
+		fScreenDimMult *= std::pow(1280.f / getGame().getScreenWidth(), 0.85f);
+	fCityCamDist *= ::range(fScreenDimMult, 2/3.f, 1.5f);
+	setDefineFLOAT("CAMERA_CITY_ZOOM_IN_DISTANCE", fCityCamDist);
 }
 
 int CvGlobals::getMaxCivPlayers() const
