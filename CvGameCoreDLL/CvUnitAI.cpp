@@ -1294,6 +1294,7 @@ bool CvUnitAI::AI_considerPathDOW(CvPlot const& kPlot, MovementFlags eFlags)
 void CvUnitAI::AI_animalMove()
 {
 	PROFILE_FUNC();
+	bool bAttackAttempted = false; // advc.309
 	{
 		int iAttackPer1000 = GC.getInfo(GC.getGame().getHandicapType()).
 				getAnimalAttackProb() * 10;
@@ -1321,7 +1322,14 @@ void CvUnitAI::AI_animalMove()
 	{
 		return;
 	}
-
+	// <advc.309> Cornered animal will attack
+	if (!bAttackAttempted)
+	{
+		if (AI_anyAttack(1, 0))
+		{
+			return;
+		}
+	} // </advc.309>
 	getGroup()->pushMission(MISSION_SKIP);
 }
 
