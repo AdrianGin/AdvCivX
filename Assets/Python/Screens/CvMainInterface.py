@@ -5045,7 +5045,7 @@ class CvMainInterface:
 		'''
 		aCityBldgs = sorted(aCityBldgs, key=lambda iBuilding:
 				# AdvCiv returns -32768 for free buildings. Let's just treat
-				# all stange year numbers as 10000, which will move them
+				# all strange year numbers as 10000, which will move them
 				# to the end of the list. The and/or is a hack for a
 				# conditional expression (properly added in Python 2.5).
 				(abs(pHeadSelectedCity.getBuildingOriginalTime(iBuilding)) >= 10000 and 10000
@@ -6766,8 +6766,7 @@ class CvMainInterface:
 
 		# Hide the layer options ... all of them
 		for i in range(20):
-			szName = "GlobeLayerOption" + str(i)
-			screen.hide(szName)
+			screen.hide("GlobeLayerOption" + str(i))
 
 		# Setup the GlobeLayer panel
 		#iNumLayers = kGLM.getNumLayers() # advc: unused
@@ -6805,7 +6804,7 @@ class CvMainInterface:
 				kGLM.getLayer(iCurrentLayerID).getNumOptions() > 0 and
 				# Could instead set NumOptions to 0 in CvGame::getGlobeLayers
 				# but then the resource layer wouldn't update properly
-				# when ResourceIconOptions is toggled in the BUG menu.
+				# when ResourceIconOptions is toggled on the BUG menu.
 				(not bResourceLayer or MainOpt.isResourceIconOptions())):
 			# </advc.004z>
 			bHasOptions = True

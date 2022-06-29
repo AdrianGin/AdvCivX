@@ -1220,7 +1220,7 @@ void CvSelectionGroup::startMission()
 			{
 				deleteMissionQueueNode(headMissionQueueNode());
 				// K-Mod
-				if (headMissionQueueNode())
+				if (headMissionQueueNode() != NULL)
 					activateHeadMission();
 				// K-Mod end
 				if (isActiveOwned() && IsSelected())

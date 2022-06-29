@@ -953,12 +953,6 @@ void CvGlobals::setTypesEnum(const char* szType, int iEnum)
 	m_typesMap[szType] = iEnum;
 }
 
-// advc.003c:
-bool CvGlobals::isCachingDone() const
-{
-	return m_aiGlobalDefinesCache != NULL;
-}
-
 // advc.106i:
 void CvGlobals::setHoFScreenUp(bool b)
 {

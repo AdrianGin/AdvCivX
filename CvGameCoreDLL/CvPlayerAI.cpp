@@ -3609,7 +3609,7 @@ int CvPlayerAI::AI_countDangerousUnits(CvPlot const& kAttackerPlot, CvPlot const
 			if (bTestMoves)
 			{
 				int const iDistance = stepDistance(&kAttackerPlot, &kDefenderPlot);
-				// <advc.128> Take the time to compute a path in important cases
+				// <advc.004l> Take the time to compute a path in important cases
 				if (iDistance <= 3 && (isHuman() ||
 					// Prevent sneak attacks by human Woodsmen and Guerilla
 					(kUnit.isHuman() && kAttackerPlot.isVisible(eTeam) &&
@@ -3621,7 +3621,7 @@ int CvPlayerAI::AI_countDangerousUnits(CvPlot const& kAttackerPlot, CvPlot const
 						continue;
 					}
 				}
-				else // </advc.128>
+				else // </advc.004l>
 				{
 					int iAttackerRange = kUnit.baseMoves();
 					if (kAttackerPlot.isValidRoute(&kUnit, /* advc.001i: */ false))
@@ -20224,7 +20224,7 @@ bool CvPlayerAI::AI_doDeals(PlayerTypes eOther)
 	std::vector<CvDeal*> apHumanDealsToCancel; // </advc.133>
 	FOR_EACH_DEAL_VAR(pLoopDeal)
 	{
-		if(!pLoopDeal->isBetween(getID(), eOther) || // advc: Ensure this upfront
+		if (!pLoopDeal->isBetween(getID(), eOther) || // advc: Ensure this upfront
 			!pLoopDeal->isCancelable(getID()))
 		{
 			continue;
@@ -20235,7 +20235,7 @@ bool CvPlayerAI::AI_doDeals(PlayerTypes eOther)
 		/*  Cancellation checks moved into a new function
 			to reduce code duplication */
 		CancelCode eCancel = AI_checkCancel(*pLoopDeal, eOther);
-		if(eCancel == NO_CANCEL)
+		if (eCancel == NO_CANCEL)
 		{
 			aapDealsPerPlayer[eOther].push_back(pLoopDeal);
 			continue;

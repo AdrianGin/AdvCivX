@@ -189,7 +189,7 @@ bool CvInitCore::getPbem() const
 }
 
 
-bool CvInitCore::getSlotVacant(PlayerTypes eID) const  // advc: refactored
+bool CvInitCore::getSlotVacant(PlayerTypes eID) const
 {
 	FAssertBounds(0, MAX_CIV_PLAYERS, eID);
 	SlotStatus eStatus = getSlotStatus(eID);
@@ -439,9 +439,7 @@ void CvInitCore::resetGame(/* advc.enum: */ bool bBeforeRead)
 	} // </advc.003c>
 	// Map-specific custom parameters
 	clearCustomMapOptions();
-	/*  advc: Unused as far as I can tell, but still better to ensure that it
-		gets initialized. */
-	m_iNumHiddenCustomMapOptions = 0;
+	m_iNumHiddenCustomMapOptions = 0; // advc: ensure initialization
 	// Data-defined victory conditions
 	//refreshVictories();
 	/*	<advc> Unrolling that function should make it easier to use an EnumMap instead
@@ -1063,14 +1061,8 @@ void CvInitCore::setType(GameType eType)
 	for (int i = 0; i < ARRAYSIZE(aeHideMP); i++)
 	{
 		CvGameOptionInfo& kOption = GC.getInfo(aeHideMP[i]);
-		if (eType == GAME_MP_SCENARIO || eType == GAME_MP_NEW || eType == GAME_MP_LOAD ||
-			eType == GAME_HOTSEAT_SCENARIO || eType == GAME_HOTSEAT_NEW ||
-			eType == GAME_PBEM_LOAD || eType == GAME_PBEM_NEW ||
-			eType == GAME_PBEM_SCENARIO)
-		{
+		if (getGameMultiplayer())
 			kOption.setVisible(false);
-		}
-		// Otherwise as set in XML
 		else kOption.setVisible(kOption.getVisibleXML());
 	} // </advc.054>
 	/*	<advc.tsl> Disable in network games b/c it can't apply just to civs

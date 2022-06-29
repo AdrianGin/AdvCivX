@@ -1,20 +1,15 @@
 #pragma once
-
 #ifndef CvString_h
 #define CvString_h
 
 #include <string>
 
-//
 // simple string classes, based on stl, but with a few helpers
-//
-// DON'T add any data members or virtual functions to these classes, so they stay the same size as their stl counterparts
-//
 // Mustafa Thamer
 // Firaxis Games, copyright 2005
 //
 /*	advc (note): There's a revised version of this class by lesslol in the MNAI-U mod;
-	could be more efficient. */
+	could be more efficient. C2C has also made some changes. */
 
 // wide string
 class CvWString : public std::wstring
@@ -27,11 +22,11 @@ public:
 	CvWString(const wchar* s) { if (s) *this = s; }
 //	CvWString(const __wchar_t* s) { if (s) *this = s; }
 	CvWString(const std::wstring& s) { assign(s.c_str()); }
-//#ifndef _USRDLL
+#ifndef _USRDLL
 	// FString conversion, if not in the DLL
-//	CvWString(const FStringA& s) { Copy(s.GetCString()); }
-//	CvWString(const FStringW& s) { assign(s.GetCString()); }
-//#endif // advc (the EXE doesn't even use these)
+	CvWString(const FStringA& s) { Copy(s.GetCString()); }
+	CvWString(const FStringW& s) { assign(s.GetCString()); }
+#endif
 	~CvWString() {}
 
 	void Copy(const char* s); // advc: Definition moved into implementation file
@@ -50,11 +45,11 @@ public:
 	const CvWString& operator=( const std::wstring& s) { assign(s.c_str());	return *this; }
 	const CvWString& operator=( const std::string& w) { Copy(w.c_str());	return *this; }
 	const CvWString& operator=( const CvWString& w) { assign(w.c_str());	return *this; }
-//#ifndef _USRDLL
+#ifndef _USRDLL
 	// FString conversion, if not in the DLL
-//	const CvWString& operator=( const FStringW& s) { assign(s.GetCString());	return *this; }
-//	const CvWString& operator=( const FStringA& w) { Copy(w.GetCString());	return *this; }
-//#endif // advc (the EXE doesn't even use these)
+	const CvWString& operator=( const FStringW& s) { assign(s.GetCString());	return *this; }
+	const CvWString& operator=( const FStringA& w) { Copy(w.GetCString());	return *this; }
+#endif
 	const CvWString& operator=( const char* w) { Copy(w);	return *this; }
 
 	void Format(LPCWSTR lpszFormat, ...);
@@ -200,7 +195,13 @@ public:
 	static CvString format(const char * fmt, ...);
 	static std::string formatv(const char * fmt, va_list args);
 };
-
+// DON'T add any data members or virtual functions to these classes,
+// so they stay the same size as their stl counterparts
+/*	<advc.003k> This is also advisable b/c this header has been compiled into
+	the EXE and its classes are used in the interfaces between EXE and DLL */
+BOOST_STATIC_ASSERT(sizeof(CvWString) == sizeof(std::wstring));
+BOOST_STATIC_ASSERT(sizeof(CvString) == sizeof(std::string));
+BOOST_STATIC_ASSERT(sizeof(CvWStringBuffer) == 12); // </advc.003k>
 
 // INLINES
 // Don't move these into a cpp file, since I don't want CvString to be part of the DLL, MT

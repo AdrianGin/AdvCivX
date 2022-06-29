@@ -19,6 +19,9 @@ void CvEventReporter::resetStatistics()
 	m_kStatistics.reset();
 }
 
+// advc.106l: Explicit constructor added, so I can initialize my booleans.
+CvEventReporter::CvEventReporter() : m_bPreAutoSave(false), m_bPreQuickSave(false) {}
+
 // advc.003y: Just pass the call along
 void CvEventReporter::initPythonCallbackGuards()
 {
@@ -566,6 +569,3 @@ void CvEventReporter::writeStatistics(FDataStreamBase* pStream)
 	m_kStatistics.write(pStream);
 	REPRO_TEST_FINAL_WRITE();
 }
-
-// advc.106l: Explicit constructor added, so I can initialize my booleans.
-CvEventReporter::CvEventReporter() : m_bPreAutoSave(false), m_bPreQuickSave(false) {}

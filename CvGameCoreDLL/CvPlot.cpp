@@ -6879,7 +6879,7 @@ void CvPlot::doFeature()
 					if (pCity != NULL &&
 						/*	advc.106: K-Mod had added an isVisible check,
 							but features aren't affected by fog of war. */
-						isRevealed(TEAMID(pCity->getOwner())))
+						isRevealed(pCity->getTeam()))
 					{
 						// Tell the owner of this city.
 						CvWString szBuffer(gDLL->getText("TXT_KEY_MISC_FEATURE_GROWN_NEAR_CITY",

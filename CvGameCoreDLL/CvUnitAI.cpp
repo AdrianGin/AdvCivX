@@ -9702,7 +9702,10 @@ bool CvUnitAI::AI_omniGroup(UnitAITypes eUnitAI, int iMaxGroup, int iMaxOwnUnitA
 	if (!atPlot(pBestUnit->plot()))
 	{
 		if (!bMergeGroups && getGroup()->getNumUnits() > 1)
-			joinGroup(NULL); // might as well leave our current group behind, since they won't be merging anyway.
+		{	/*	might as well leave our current group behind
+				since they won't be merging anyway. */
+			joinGroup(NULL);
+		}
 		getGroup()->pushMission(MISSION_MOVE_TO_UNIT, pBestUnit->getOwner(),
 				pBestUnit->getID(), eFlags, false, false, MISSIONAI_GROUP, NULL, pBestUnit);
 	}

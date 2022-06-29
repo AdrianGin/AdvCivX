@@ -574,7 +574,7 @@ PBGameSetupData::PBGameSetupData()
 	}
 }
 
-// <advc.071>
+// advc.071:
 FirstContactData::FirstContactData(CvPlot const* pAt1, CvPlot const* pAt2,
 	CvUnit const* pUnit1, CvUnit const* pUnit2)
 {
@@ -601,4 +601,4 @@ FirstContactData::FirstContactData(CvPlot const* pAt1, CvPlot const* pAt2,
 		u2.eOwner = pUnit2->getOwner();
 		u2.iID = pUnit2->getID();
 	}
-} // </advc.071>
+}

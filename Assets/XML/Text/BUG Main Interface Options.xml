@@ -330,10 +330,7 @@
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__CAMERA_TEXT</Tag>
 		<English>Camera</English>
-		<French>Camera</French>
-		<German>Camera</German>
-		<Italian>Camera</Italian>
-		<Spanish>Camera</Spanish>
+		<German>Kamera</German>
 	</TEXT>
 	<!-- Sadly has to be abbreviated in order to make room for advc.002f
 		 in the center column -->

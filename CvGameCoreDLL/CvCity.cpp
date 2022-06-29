@@ -4172,7 +4172,7 @@ int CvCity::cultureStrength(PlayerTypes ePlayer,
 	}
 	else
 	{
-		/*  Religion offense might still make sense even when ePlayer is defated, but
+		/*  Religion offense might still make sense even when ePlayer is defeated, but
 			can't expect the owner to memorize the state religions of defeated players.
 			Instead, count some religion offense also when the owner's state religion
 			is absent and at least one religion is in the city. This makes (some) sense
@@ -6925,7 +6925,7 @@ int CvCity::getBaseYieldRateModifier(YieldTypes eYield, int iExtra) const
 void CvCity::setBaseYieldRate(YieldTypes eYield, int iNewValue)
 {
 	if (getBaseYieldRate(eYield) == iNewValue)
-		return; // advc
+		return;
 
 	FAssert(iNewValue >= 0);
 	//FAssert((iNewValue * 100) / 100 >= 0); // advc: ??

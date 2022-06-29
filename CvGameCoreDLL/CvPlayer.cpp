@@ -2540,7 +2540,7 @@ const wchar* CvPlayer::getName(uint uiForm) const
 		return GC.getInfo(getLeaderType()).getDescription(uiForm);
 	}
 	// <advc.106i>
-	if(m_bSavingReplay)
+	if (m_bSavingReplay)
 	{
 		CvWString const szKey = "TXT_KEY_REPLAY_PREFIX";
 		CvWString szPrefix = gDLL->getText(szKey);
@@ -13786,7 +13786,7 @@ void CvPlayer::doWarnings()
 			}
 		}
 	} // <advc.002e>
-	if(GC.IsGraphicsInitialized())
+	if (GC.IsGraphicsInitialized())
 		showForeignPromoGlow(true); // </advc.002e>
 }
 

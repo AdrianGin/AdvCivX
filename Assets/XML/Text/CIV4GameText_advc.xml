@@ -616,18 +616,15 @@
 		 so I'm disabling them here. -->
 	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_AUTOSAVING</Tag>
-		<English></English><French></French><German></German>
-		<Italian></Italian><Spanish></Spanish>
+		<English></English>
 	</TEXT>
 	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_QUICK_SAVING</Tag>
-		<English></English><French></French><German></German>
-		<Italian></Italian><Spanish></Spanish>
+		<English></English>
 	</TEXT>
 	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_SAVING_GAME</Tag>
-		<English></English><French></French><German></German>
-		<Italian></Italian><Spanish></Spanish>
+		<English></English>
 	</TEXT>
 	<!-- Copied from CIV4GameText_Misc1.xml and appended a "2" to the name. -->
 	<TEXT>
@@ -1099,8 +1096,7 @@
 		<Spanish>Nueva l&#237;nea</Spanish>
 	</TEXT>
 
-	<!-- advc.004: Originally in CIV4GameTextInfos.xml; info about right-click
-		 shorthand added. -->
+	<!-- advc.004: To be appended to TXT_KEY_MISC_*CREASE_RATE_HINT -->
 	<TEXT>
 		<Tag>TXT_KEY_MISC_INCREASE_RATE_HINT</Tag>
 		<English>. (Right-click to set to 100%.)</English>

@@ -2854,7 +2854,8 @@ void CvGame::update()
 		updateTurnTimer();
 		AI().AI_updateAssignWork();
 		testAlive();
-		if (getAIAutoPlay() == 0 && !gDLL->GetAutorun() && GAMESTATE_EXTENDED != getGameState())
+		if (getAIAutoPlay() == 0 && !gDLL->GetAutorun() &&
+			getGameState() != GAMESTATE_EXTENDED)
 		{
 			if (countHumanPlayersAlive() == 0 &&
 				!isOption(GAMEOPTION_RISE_FALL)) // advc.707
@@ -5067,9 +5068,7 @@ void CvGame::toggleDebugMode()
 void CvGame::updateDebugModeCache()
 {
 	//if ((gDLL->getChtLvl() > 0) || (gDLL->GetWorldBuilderMode()))
-	/*	advc.135c: Replacing the above (should perhaps just remove the check
-		b/c toggleDebugMode already checks isDebugToolsAllowed) */
-	if (isDebugToolsAllowed(false))
+	if (isDebugToolsAllowed(false)) // advc.135c
 		m_bDebugModeCache = m_bDebugMode;
 	else m_bDebugModeCache = false;
 }
@@ -5091,7 +5090,7 @@ bool CvGame::isDebugToolsAllowed(bool bWB) const
 	}
 	if (bWB)
 	{
-		// Cut and pasted from canDoControl (CvGameInterface.cpp)
+		// Cut from canDoControl (CvGameInterface.cpp)
 		return GC.getInitCore().getAdminPassword().empty();
 	}
 	return gDLL->getChtLvl() > 0;
@@ -5127,7 +5126,7 @@ bool CvGame::isSimultaneousTeamTurns() const
 	return true;
 }
 
-
+// advc (note): Not called when loading a savegame from the opening menu
 void CvGame::setFinalInitialized(bool bNewValue)
 {
 	PROFILE_FUNC();
@@ -10090,7 +10089,7 @@ void CvGame::doVoteResults()
 								getReplayName(), 0, 0);
 					}
 					else if (kVote.isAssignCity() && !szTargetCityName.empty() &&
-							subdata.eOtherPlayer != NO_PLAYER)
+						subdata.eOtherPlayer != NO_PLAYER)
 					{
 						szResolution = gDLL->getText("TXT_KEY_POPUP_ELECTION_ASSIGN_CITY",
 								GET_PLAYER(subdata.ePlayer).getCivilizationAdjectiveKey(),

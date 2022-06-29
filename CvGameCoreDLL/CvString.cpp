@@ -3,6 +3,9 @@
 #include "CvGameCoreDLL.h"
 #include "CvString.h"
 
+/*	advc: New implementation file for function definitions moved from CvString.h.
+	Note, however, that these definitions were compiled into th EXE along with
+	the rest of the header. */
 
 void CvWString::Copy(const char* s)
 {
@@ -142,7 +145,7 @@ bool CvString::formatv(std::string & out, const char * fmt, va_list args)
 	if (success)
 		out = pbuf;
 	else
-		out = "";
+		out.clear(); // K-Mod
 
 	if (pbuf!=buf)
 		delete [] pbuf;
@@ -182,7 +185,7 @@ bool CvWString::formatv(std::wstring & out, const wchar * fmt, va_list args)
 	if (success)
 		out = pbuf;
 	else
-		out = L"";
+		out.clear(); // K-Mod
 
 	if (pbuf!=buf)
 		delete [] pbuf;

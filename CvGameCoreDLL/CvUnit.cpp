@@ -5582,7 +5582,7 @@ bool CvUnit::discover()
 }
 
 
-int CvUnit::getMaxHurryProduction(CvCity const* pCity) const // advc: const CvCity*
+int CvUnit::getMaxHurryProduction(CvCity const* pCity) const
 {
 	int iProduction = m_pUnitInfo->getBaseHurry() +
 			m_pUnitInfo->getHurryMultiplier() * pCity->getPopulation();
@@ -7343,12 +7343,12 @@ bool CvUnit::canSiege(TeamTypes eTeam) const
 	return true;
 }
 
-// <kekm.8> "Added function for checking whether a unit is a combat unit."
+// kekm.8: "Added function for checking whether a unit is a combat unit."
 bool CvUnit::canCombat() const
 {
 	// avdc: Check m_pUnitInfo->isMilitaryProduction() instead?
 	return (baseCombatStr() > 0 || airBaseCombatStr() > 0 || isNuke());
-} // </kekm.8>
+}
 
 
 bool CvUnit::canAttack() const

@@ -100,7 +100,7 @@ void UWAI::Team::doWar()
 	if (!getUWAI().isReady())
 		return;
 	CvTeamAI& kAgent = GET_TEAM(m_eAgent);
-	if (!kAgent.isAlive() || kAgent.isBarbarian() || kAgent.isMinorCiv())
+	if (!kAgent.isAlive() || !kAgent.isMajorCiv())
 		return;
 	FAssertMsg(!kAgent.isAVassal() || kAgent.getNumWars() > 0 ||
 			kAgent.AI_getNumWarPlans(WARPLAN_DOGPILE) +

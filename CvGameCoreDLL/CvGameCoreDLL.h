@@ -26,7 +26,7 @@
 //#undef max
 //#undef min
 #include <MMSystem.h>
-#if defined _DEBUG && !defined USE_MEMMANAGER
+#ifdef _DEBUG
 	#define USE_MEMMANAGER
 	#include <crtdbg.h>
 #endif

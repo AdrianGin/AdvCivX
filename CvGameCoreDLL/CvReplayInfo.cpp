@@ -520,11 +520,11 @@ void CvReplayInfo::clearReplayMessageMap()
 	}
 	m_listReplayMessages.clear();
 }
-// <advc> To reduce code duplication
+// advc: To reduce code duplication
 bool CvReplayInfo::isReplayMsgValid(uint i) const
 {
 	return (i < m_listReplayMessages.size() && m_listReplayMessages[i] != NULL);
-} // </advc>
+}
 
 int CvReplayInfo::getReplayMessageTurn(uint i) const
 {
@@ -680,7 +680,7 @@ int CvReplayInfo::getMinimapSize() const
 const char* CvReplayInfo::getModName() const
 {	/*  <advc.106i> Pretend to the EXE that every replay is an AdvCiv replay.
 		(Let CvReplayInfo::read decide which ones to show in HoF.) */
-	if(STORE_REPLAYS_AS_BTS || GC.getDefineINT("HOF_DISPLAY_BTS_REPLAYS") > 0 ||
+	if (STORE_REPLAYS_AS_BTS || GC.getDefineINT("HOF_DISPLAY_BTS_REPLAYS") > 0 ||
 		GC.getDefineINT("HOF_DISPLAY_OTHER_MOD_REPLAYS") > 0 ||
 		/*  It seems that some earlier version of AdvCiv has written an empty string
 			as the mod name. (I don't remember if this was on purpose.) */

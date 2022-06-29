@@ -2919,77 +2919,75 @@ void CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 		}
 	}
 	// <advc.071>
-	if(bShowMessage)
+	if (!bShowMessage)
+		return;
+	FirstContactData fcData = *pData;
+	CvPlot const* pAt1 = GC.getMap().plot(fcData.x1, fcData.y1);
+	CvPlot const* pAt2 = GC.getMap().plot(fcData.x2, fcData.y2);
+	CvUnit const* pUnit1 = ::getUnit(fcData.u1);
+	CvUnit const* pUnit2 = ::getUnit(fcData.u2);
+	CvUnit const* pUnitMet = NULL;
+	CvPlot const* pAt = NULL;
+	PlayerTypes ePlayerMet = NO_PLAYER;
+	if (pUnit1 != NULL && pUnit1->getTeam() == eOther)
 	{
-		FirstContactData fcData = *pData;
-		CvMap const& m = GC.getMap();
-		CvPlot const* pAt1 = m.plot(fcData.x1, fcData.y1);
-		CvPlot const* pAt2 = m.plot(fcData.x2, fcData.y2);
-		CvUnit const* pUnit1 = ::getUnit(fcData.u1);
-		CvUnit const* pUnit2 = ::getUnit(fcData.u2);
-		CvUnit const* pUnitMet = NULL;
-		CvPlot const* pAt = NULL;
-		PlayerTypes ePlayerMet = NO_PLAYER;
-		if (pUnit1 != NULL && pUnit1->getTeam() == eOther)
-		{
-			ePlayerMet = pUnit1->getOwner();
-			if (pUnit1->getPlot().isVisible(getID()))
-				pUnitMet = pUnit1;
-		}
-		if (pUnit2 != NULL && pUnit2->getTeam() == eOther)
-		{
-			if (ePlayerMet == NO_PLAYER)
-				ePlayerMet = pUnit2->getOwner();
-			if (pUnit2->getPlot().isVisible(getID()))
-				pUnitMet = pUnit2;
-		}
-		if (pAt1 != NULL && pAt1->isOwned() && pAt1->getTeam() == eOther)
-		{
-			if (pAt1->isVisible(getID()))
-				pAt = pAt1;
-			if (ePlayerMet == NO_PLAYER)
-				ePlayerMet = pAt1->getOwner();
-		}
-		if (pAt2 != NULL && pAt2->isOwned() && pAt2->getTeam() == eOther)
-		{
-			if (pAt2->isVisible(getID()))
-				pAt = pAt2;
-			if (ePlayerMet == NO_PLAYER)
-				ePlayerMet = pAt2->getOwner();
-		}
+		ePlayerMet = pUnit1->getOwner();
+		if (pUnit1->getPlot().isVisible(getID()))
+			pUnitMet = pUnit1;
+	}
+	if (pUnit2 != NULL && pUnit2->getTeam() == eOther)
+	{
 		if (ePlayerMet == NO_PLAYER)
-			ePlayerMet = GET_TEAM(eOther).getLeaderID();
-		if (pUnitMet != NULL && pUnitMet->getPlot().isVisible(getID()))
-			pAt = pUnitMet->plot();
-		if (pAt == NULL) // We can't see any of their tiles or units, but they see ours.
+			ePlayerMet = pUnit2->getOwner();
+		if (pUnit2->getPlot().isVisible(getID()))
+			pUnitMet = pUnit2;
+	}
+	if (pAt1 != NULL && pAt1->isOwned() && pAt1->getTeam() == eOther)
+	{
+		if (pAt1->isVisible(getID()))
+			pAt = pAt1;
+		if (ePlayerMet == NO_PLAYER)
+			ePlayerMet = pAt1->getOwner();
+	}
+	if (pAt2 != NULL && pAt2->isOwned() && pAt2->getTeam() == eOther)
+	{
+		if (pAt2->isVisible(getID()))
+			pAt = pAt2;
+		if (ePlayerMet == NO_PLAYER)
+			ePlayerMet = pAt2->getOwner();
+	}
+	if (ePlayerMet == NO_PLAYER)
+		ePlayerMet = GET_TEAM(eOther).getLeaderID();
+	if (pUnitMet != NULL && pUnitMet->getPlot().isVisible(getID()))
+		pAt = pUnitMet->plot();
+	if (pAt == NULL) // We can't see any of their tiles or units, but they see ours.
+	{
+		if (pAt1 != NULL && pAt1->isOwned() && pAt1->getTeam() == getID())
+			pAt = pAt1;
+		else if (pAt2 != NULL && pAt2->isOwned() && pAt2->getTeam() == getID())
+			pAt = pAt2;
+		else if (pUnit1 != NULL && pUnit1->getTeam() == getID())
 		{
-			if (pAt1 != NULL && pAt1->isOwned() && pAt1->getTeam() == getID())
-				pAt = pAt1;
-			else if (pAt2 != NULL && pAt2->isOwned() && pAt2->getTeam() == getID())
-				pAt = pAt2;
-			else if (pUnit1 != NULL && pUnit1->getTeam() == getID())
-			{
-				//pUnitMet = pUnit1; // Better not to show our own unit's icon
-				pAt = pUnit1->plot();
-			}
-			else if (pUnit2 != NULL && pUnit2->getTeam() == getID())
-			{
-				//pUnitMet = pUnit2;
-				pAt = pUnit2->plot();
-			}
+			//pUnitMet = pUnit1; // Better not to show our own unit's icon
+			pAt = pUnit1->plot();
 		}
-		CvWString szMsg = gDLL->getText("TXT_KEY_MISC_TEAM_MET",
-				GET_PLAYER(ePlayerMet).getCivilizationAdjectiveKey());
-		ColorTypes ePlayerColor = GET_PLAYER(ePlayerMet).getPlayerTextColor();
-		LPCSTR icon = (pUnitMet == NULL ? GC.getInfo(GET_PLAYER(ePlayerMet).
-				getLeaderType()).getButton() : pUnitMet->getButton());
-		for (PlayerIter<HUMAN,MEMBER_OF> it(getID()); it.hasNext(); ++it)
+		else if (pUnit2 != NULL && pUnit2->getTeam() == getID())
 		{
-			gDLL->UI().addMessage(it->getID(), false, -1, szMsg, NULL,
-					MESSAGE_TYPE_MINOR_EVENT, icon, ePlayerColor,
-					pAt == NULL ? -1 : pAt->getX(), pAt == NULL ? -1 : pAt->getY(),
-					pAt != NULL, pAt != NULL);
+			//pUnitMet = pUnit2;
+			pAt = pUnit2->plot();
 		}
+	}
+	CvWString szMsg = gDLL->getText("TXT_KEY_MISC_TEAM_MET",
+			GET_PLAYER(ePlayerMet).getCivilizationAdjectiveKey());
+	ColorTypes ePlayerColor = GET_PLAYER(ePlayerMet).getPlayerTextColor();
+	LPCSTR icon = (pUnitMet == NULL ? GC.getInfo(GET_PLAYER(ePlayerMet).
+			getLeaderType()).getButton() : pUnitMet->getButton());
+	for (PlayerIter<HUMAN,MEMBER_OF> it(getID()); it.hasNext(); ++it)
+	{
+		gDLL->UI().addMessage(it->getID(), false, -1, szMsg, NULL,
+				MESSAGE_TYPE_MINOR_EVENT, icon, ePlayerColor,
+				pAt == NULL ? -1 : pAt->getX(), pAt == NULL ? -1 : pAt->getY(),
+				pAt != NULL, pAt != NULL);
 	} // </advc.071>
 }
 

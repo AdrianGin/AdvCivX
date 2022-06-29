@@ -27,7 +27,7 @@
 ## PerfectWorld_v2.06.py (for Civ4)
 ##
 ## Copyright 2007-2010 Rich Marinaccio aka Cephalo
-## Used with Permission
+## Used [by Kenny Welch] with Permission
 ##
 ##############################################################################
 ##
@@ -3366,7 +3366,7 @@ class TerrainMap:
 		peakMap = []
 		for i in range(em.length):
 			hillMap.append(0.0)
-			peakMap.append(0.0) #</advc>
+			peakMap.append(0.0) # </advc>
 		#zero out water tiles so percent is percent of land
 		for y in range(mc.height):
 			for x in range(mc.width):

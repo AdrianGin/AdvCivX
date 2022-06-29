@@ -7808,12 +7808,12 @@ int CvCityAI::AI_getImprovementValue(CvPlot const& kPlot, ImprovementTypes eImpr
 		FOR_EACH_ENUM(Build)
 		{
 			if (GC.getInfo(eLoopBuild).getImprovement() != eImprovement)
-				continue; // advc
+				continue;
 			if (kOwner.canBuild(kPlot, eLoopBuild, false))
 			{
 				int iValue = 10000;
 				iValue /= (GC.getInfo(eLoopBuild).getTime() + 1);
-				// XXX feature production???  // advc: I think the chop decision (AI_updateBestBuild) will handle that
+				// XXX feature production???  // (advc: I think the chop decision in AI_updateBestBuild will handle that)
 				if (iValue > iBestTempBuildValue)
 				{
 					iBestTempBuildValue = iValue;

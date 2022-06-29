@@ -2209,7 +2209,7 @@ void InvasionGraph::simulateComponent(Node& kStart)
 	{
 	#if !DISABLE_UWAI_REPORT
 		m_kReport.log("*Cycle*");
-		std::string szMsg = "";
+		std::string szMsg;
 		for (size_t i = 0; i < aCycle.size(); i++)
 		{
 			szMsg += m_kReport.leaderName(aCycle[i]->getPlayer());

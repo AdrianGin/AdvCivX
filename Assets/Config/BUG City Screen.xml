@@ -107,7 +107,9 @@
 			
 			<!-- Specialist Stacker by TheLopez -->
 			<!-- Specialist Chevrons by Ruff_Hi -->
-			<!-- advc.004: "Default" renamed to "BtS" -->
+			<!-- advc.004: "Default" renamed to "BtS".
+				 Caveat: The order of the choices - specifically Stacker being
+				 at position 1 - is hardcoded in the DLL -->
 			<list   id="Specialists" key="City Specialists" 
 					type="int" default="2" listType="string" 
 					values="BtS|Stacker|Chevron" 

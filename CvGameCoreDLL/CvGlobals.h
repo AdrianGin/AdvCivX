@@ -399,6 +399,7 @@ public:
 	// advc: Need a const version
 	FVariableSystem const* getDefinesVarSystem() const { return m_VarSystem; }
 	void cacheGlobals();
+	bool isCachingDone() const { return (m_aiGlobalDefinesCache != NULL); } // advc.003c
 
 	// ***** EXPOSED TO PYTHON *****
 	DllExport int getDefineINT(char const* szName) const
@@ -797,7 +798,7 @@ public:
 	int getNUM_COMMERCE_TYPES() const;*/ // advc
 
 	void deleteInfoArrays();
-	bool isCachingDone() const; // advc.003c
+
 	void setHoFScreenUp(bool b); // advc.106i
 
 protected:

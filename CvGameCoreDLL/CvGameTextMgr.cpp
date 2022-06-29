@@ -17180,7 +17180,7 @@ void CvGameTextMgr::setCommerceHelp(CvWStringBuffer &szBuffer, CvCity const& kCi
 
 	// <advc.004p>
 	int iBaseCommerceRate = 0;
-	CvWString szRate = "";
+	CvWString szRate;
 	if (kOwner.getCommercePercent(eCommerce) > 0) // </advc.004p>
 	{
 		setYieldHelp(szBuffer, kCity, YIELD_COMMERCE);

@@ -65,7 +65,10 @@ public:
 	DllExport void resetPlayer(PlayerTypes eID, CvInitCore* pSource, bool bClear = true, bool bSaveSlotInfo = false);
 
 
-	// Member access ...
+	/*	Member access ... (advc.003k, note: The non-exported getters aren't called
+		by the EXE but were originally exported and have, apparently, been
+		inline-expanded. I.e. the EXE will access the respective members directly
+		through a memory offset.) */
 
 	const CvWString& getGameName() const { return m_szGameName; }
 	DllExport void setGameName(const CvWString& szGameName);
@@ -276,9 +279,9 @@ public:
 
 protected:
 	/* advc.003k (caveat): It's not safe to add data members to this class
-		nor to reorder the existing data members. At least not in the upper half
-		of the member declarations; after the declaration of m_eMode, it seems
-		to be OK to add and rearrange stuff. Weird. */
+		nor to reorder the existing data members, probably due to inlined
+		getter functions. After the declaration of m_eMode, it seems to be OK
+		to add and rearrange stuff. */
 	// CORE GAME INIT DATA ...
 
 	// Game type

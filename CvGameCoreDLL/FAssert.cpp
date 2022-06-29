@@ -47,7 +47,7 @@ namespace
 #define IDC_ABORT                       1004
 #define IDC_ASSERTION_TEXT              1005
 #define IDC_COPY_TO_CLIPBOARD           1006
-#define IDC_STOP                        1007 // advc.106l
+#define IDC_STOP                        1007 // advc.006l
 
 	INT_PTR CALLBACK AssertDlgProc(HWND hDlg, UINT msg,WPARAM wParam, LPARAM lParam)
 	{
