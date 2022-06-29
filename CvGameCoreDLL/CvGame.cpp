@@ -344,8 +344,17 @@ void CvGame::regenerateMap(/* advc.tsl: */ bool bAutomated)
 		autosave in CvGame::update if I hadn't added a re-gen check there. */
 	setTurnSlice(0);
 	CvEventReporter::getInstance().resetStatistics();
-
-	m_iMapRegens++; // advc.tsl
+	// <advc.tsl>
+	m_iMapRegens++;
+	if (isOption(GAMEOPTION_TRUE_STARTS))
+	{	// Civ may have changed; don't accumulate starting techs.
+		FOR_EACH_ENUM(Team)
+		{
+			FOR_EACH_ENUM(Tech)
+				GET_TEAM(eLoopTeam).setHasTech(eLoopTech, false, NO_PLAYER, false, false);
+		}
+	} // </advc.tsl>
+	m_eInitialActivePlayer = NO_PLAYER; // advc.106h
 	setInitialItems();
 	// <advc.tsl>
 	if (bAutomated)
