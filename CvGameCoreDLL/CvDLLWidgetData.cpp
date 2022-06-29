@@ -3425,8 +3425,9 @@ void CvDLLWidgetData::parseChangePercentHelp(CvWidgetDataStruct &widgetDataStruc
 	// <advc.004> Hint about right-click behavior
 	if (!BUGOption::isEnabled("MainInterface__MinMax_Commerce", false))
 	{
-		szBuffer.append(iChange > 0 ?
-				"TXT_KEY_MISC_INCREASE_RATE_HINT" : "TXT_KEY_MISC_DECREASE_RATE_HINT");
+		szBuffer.append(gDLL->getText(iChange > 0 ?
+				"TXT_KEY_MISC_INCREASE_RATE_HINT" :
+				"TXT_KEY_MISC_DECREASE_RATE_HINT"));
 	} // </advc.004>
 }
 
