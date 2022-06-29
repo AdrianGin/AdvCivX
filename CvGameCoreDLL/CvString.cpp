@@ -1,5 +1,3 @@
-// advc: New implementation file for function definitions moved from CvString.h
-
 #include "CvGameCoreDLL.h"
 #include "CvString.h"
 
@@ -9,17 +7,16 @@
 
 void CvWString::Copy(const char* s)
 {
-	if (s == NULL)
-		return;
-
-	int iLen = strlen(s);
-	if (iLen > 0)
+	// <advc.001> (from C2C)
+	if (s == NULL || s[0] == '\0')
 	{
-		wchar *w = new wchar[iLen+1];
-		swprintf(w, L"%S", s);	// convert
-		assign(w);
-		delete [] w;
-	}
+		clear();
+		return;
+	} // </advc.001>
+	wchar *w = new wchar[strlen(s) + 1];
+	swprintf(w, L"%S", s); // convert
+	assign(w);
+	delete [] w;
 }
 
 
@@ -59,18 +56,16 @@ void CvWStringBuffer::ensureCapacity(int newCapacity)
 
 
 void CvString::Copy(const wchar* w)
-{
-	if (w == NULL)
-		return;
-
-	int iLen = wcslen(w);
-	if (iLen > 0)
+{	// <advc.001> (from C2C)
+	if (w == NULL || w[0] == '\0')
 	{
-		char *s = new char[iLen+1];
-		sprintf(s, "%S", w);	// convert
-		assign(s);
-		delete [] s;
-	}
+		clear();
+		return;
+	} // </advc.001>
+	char *s = new char[wcslen(w) + 1];
+	sprintf(s, "%S", w); // convert
+	assign(s);
+	delete [] s;
 }
 
 
