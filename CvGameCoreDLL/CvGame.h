@@ -630,7 +630,7 @@ public:
 	{
 		return GC.getInitCore().getOption(eIndex);
 	}
-	void setOption(GameOptionTypes eIndex, bool bEnabled);
+	void setOption(GameOptionTypes eIndex, bool bEnabled);												// Exposed to Python
 
 	DllExport bool isMPOption(MultiplayerOptionTypes eIndex) const										// Exposed to Python
 	{

@@ -4,7 +4,7 @@
 
 /*	advc.106i: Small class for caching the mod's name and install location.
 	(Could be expanded to also modify the name stored by the EXE; see the
-	the ModName class in the Taurus mod.) */
+	ModName class in the Taurus mod.) */
 
 class ModName
 {

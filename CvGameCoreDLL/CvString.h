@@ -197,7 +197,7 @@ public:
 };
 // DON'T add any data members or virtual functions to these classes,
 // so they stay the same size as their stl counterparts
-/*	<advc.003k> This is also advisable b/c this header has been compiled into
+/*	<advc.003k> This is advisable also b/c this header has been compiled into
 	the EXE and its classes are used in the interfaces between EXE and DLL */
 BOOST_STATIC_ASSERT(sizeof(CvWString) == sizeof(std::wstring));
 BOOST_STATIC_ASSERT(sizeof(CvString) == sizeof(std::string));

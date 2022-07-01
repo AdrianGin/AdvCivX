@@ -9,15 +9,17 @@ class FDataStreamBase;
 	(WtP) prior to its Jan 2022 rewrite.
 	Internally, keys and values may be represented more compactly through
 	information from the enum_traits struct. For V, a compact representation
-	can be set through an optional class template parameter CV. V can be any type
-	so long as 0 can be assigned to CV variables. A default value can be set
-	through a fourth template parameter iDEFAULT. If iDEFAULT isn't set,
-	then the values default to -1 if V is an enum type, 0 otherwise.
+	can be set through an optional template parameter CV. V and CV can be any
+	types so long as V values and 0 can be cast to CV. A default value can be
+	set through a fourth template parameter iDEFAULT. The default value serves
+	as the initial value and gets used by the reset and resetVal functions.
+	If iDEFAULT isn't set, then the values default to -1 if V is an enum type,
+	0 otherwise.
 	Example: ArrayEnumMap<UnitTypes,DomainTypes,void*,DOMAIN_LAND>
 			maps UnitTypes keys - represented internally as short int -
 			to DomainTypes values - represented internally as signed char.
-			CV=void* is a hack for setting iDEFAULT while leaving the choice
-			of CV up to enum_traits.
+			CV=void* is a hack for setting iDEFAULT (to DOMAIN_LAND) while
+			leaving the choice of CV up to enum_traits.
 	The public interface of the enum map classes (not easy to see at a glance
 	in the code) consists of:
 		default constructor, copy constructor and assignment operator
@@ -27,7 +29,7 @@ class FDataStreamBase;
 		setAll(V)
 		reset() -- Resets all values to the map's default value.
 		resetVal(E) -- Resets the value stored for the given enum key.
-		int numNonDefault() const -- Number of stored non-default values.
+		int numNonDefault() const -- Number of keys with a non-default value.
 		bool isAnyNonDefault() const
 		write(FDataStream*) const -- serialize
 		read(FDataStream*) -- deserialize
@@ -56,7 +58,7 @@ class FDataStreamBase;
 /*	Example:
 FOR_EACH_NON_DEFAULT_PAIR(m_aiBlockadedCount, Team, int)
 	expands to
-int iAnonNonDefaultIter_L3947 = 0;
+int iAnonNonDefaultIter_L3947 = 0; // (or sth. like that)
 for (std::pair<TeamTypes,int> perTeamVal;
 	m_aiBlockadedCount.nextNonDefaultPair<int>(iAnonNonDefaultIter_L3947, perTeamVal); )*/
 

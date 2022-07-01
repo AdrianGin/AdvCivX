@@ -3383,7 +3383,7 @@ scaled CvPlayerAI::AI_assetVal(CvCityAI const& c, bool bConquest) const
 }
 
 
-CvCityAI* CvPlayerAI::AI_findTargetCity(CvArea const& kArea) const // advc.003u: return CvCityAI
+CvCityAI* CvPlayerAI::AI_findTargetCity(CvArea const& kArea) const
 {
 	FAssert(!isBarbarian()); // advc.300
 	CvCityAI* pBestCity = NULL;
