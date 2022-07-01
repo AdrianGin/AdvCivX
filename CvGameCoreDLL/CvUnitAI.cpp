@@ -3259,14 +3259,38 @@ void CvUnitAI::AI_attackCityMove()
 			return;
 		}
 	} // K-Mod end
-
-	//if (AI_groupMergeRange(UNITAI_ATTACK_CITY, 2, true, true, bIgnoreFaster))
-	if (AI_omniGroup(UNITAI_ATTACK_CITY, -1, -1, true, eMoveFlags, 2,
-		true, false, bIgnoreFaster))
 	{
-		return;
+		int iMaxGroupPath = 2;
+		/*	<advc.083> Increase the range for joining another group when
+			getting ready to attack takes long. Might be that everyone else
+			is gathering at a different staging city. */
+		if (getPlot().isCity() && GET_TEAM(getTeam()).AI_isAnyChosenWar() &&
+			(eAreaAI == AREAAI_OFFENSIVE || eAreaAI == AREAAI_MASSING))
+		{
+			int iMaxWPAge = 0;
+			for (TeamIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itEnemy(getTeam());
+				itEnemy.hasNext(); ++itEnemy)
+			{
+				iMaxWPAge = std::max(iMaxWPAge,
+						GET_TEAM(getTeam()).AI_getWarPlanStateCounter(itEnemy->getID()));
+			}
+			if (iMaxWPAge > 0)
+			{
+				/*	I think we want to check this periodically, not totally
+					at random. */
+				int iIntervalRand = (scaled::hash(getGroup()->getID(), getOwner()) * 5).
+						floor();
+				if (iMaxWPAge % iIntervalRand + 7 == 1)
+					iMaxGroupPath += 1 + SyncRandNum(3);
+			}
+		} // </advc.083>
+		//if (AI_groupMergeRange(UNITAI_ATTACK_CITY, iMaxGroupPath, true, true, bIgnoreFaster))
+		if (AI_omniGroup(UNITAI_ATTACK_CITY, -1, -1, true, eMoveFlags, iMaxGroupPath,
+			true, false, bIgnoreFaster))
+		{
+			return;
+		}
 	}
-
 	if (AI_heal(30, 1))
 		return;
 
