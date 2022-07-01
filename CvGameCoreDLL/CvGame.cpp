@@ -2336,7 +2336,7 @@ void CvGame::normalizeAddExtras(/* advc.027: */ NormalizationTarget const* pTarg
 		// <advc.108>
 		if (m_eNormalizationLevel <= NORMALIZE_LOW)
 			rTargetValue = fixp(0.75) * iBestValue; // </advc.108>
-		logBBAI("Adding extras to normalize starting positions. (target value: %d)", rTargetValue.round()); // K-Mod
+		if (gMapLogLevel > 0) logBBAI("Adding extras to normalize starting positions. (target value: %d)", rTargetValue.round()); // K-Mod
 	}
 
 	for (PlayerAIIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
@@ -7063,7 +7063,8 @@ void CvGame::createBarbarianCity(bool bSkipCivAreas, int iProbModifierPercent)
 	{
 		FAssert(iBestValue > 0); // advc.300
 		GET_PLAYER(BARBARIAN_PLAYER).found(pBestPlot->getX(), pBestPlot->getY());
-		logBBAI("Barbarian city created at plot %d, %d", pBestPlot->getX(), pBestPlot->getY()); // advc.300 (from MNAI)
+		// advc.300 (from MNAI):
+		if (gPlayerLogLevel > 0 || /* advc.031c: */ gFoundLogLevel > 0) logBBAI("Barbarian city created at plot %d, %d", pBestPlot->getX(), pBestPlot->getY());
 	}
 }
 
