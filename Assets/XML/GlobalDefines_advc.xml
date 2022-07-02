@@ -7,6 +7,14 @@
 
 <Civ4Defines xmlns="x-schema:CIV4GlobalDefinesSchema.xml">
 
+	<!-- advc: 000 in BtS - which makes sense because mods can be compatible
+		 with outdated versions of BtS. AdvCiv, however, requires v3.19.
+		 If the MIN_VERSION check (in the EXE) fails, a warning is displayed. -->
+	<Define> <!-- redefine -->
+		<DefineName>MIN_VERSION</DefineName>
+		<iDefineIntVal>319</iDefineIntVal>
+	</Define>
+
 	<!-- advc.002b: The DLL needs to know (well, it's not crucial ...) the
 		 font size of Size1_Normal in Civ4Theme_Common.thm. AdvCiv sets that
 		 to 14. If a mod-mod changes Size1_Normal, then FONT_SIZE_FACTOR should
