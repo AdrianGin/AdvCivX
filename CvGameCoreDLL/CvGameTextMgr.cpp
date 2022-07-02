@@ -2619,13 +2619,15 @@ bool CvGameTextMgr::setCombatPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
 	if (pAttacker == NULL)
 		return false;
 
-	CvUnit* pDefender = pPlot->getBestDefender(NO_PLAYER, pAttacker->getOwner(),
-			pAttacker, !bForceHostile);
+	CvUnit* pDefender = pPlot->getBestDefender(NO_PLAYER,
+			pAttacker->getOwner(), pAttacker, !bForceHostile);
 	// <advc.089>
 	if (pDefender == NULL)
 	{
-		pDefender = pPlot->getBestDefender(NO_PLAYER, pAttacker->getOwner(), pAttacker,
-				!bForceHostile, false, false, false);
+		CvPlot::DefenderFilters defFilters(pAttacker->getOwner(), pAttacker,
+				!bForceHostile);
+		defFilters.m_bTestCanAttack = false;
+		pDefender = pPlot->getBestDefender(NO_PLAYER, defFilters);
 		if (pDefender != NULL)
 		{
 			setCannotAttackHelp(szString, *pAttacker, *pDefender);
@@ -2636,7 +2638,7 @@ bool CvGameTextMgr::setCombatPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
 	bool bCaptureHelpOnly = false;
 	if (pDefender == NULL)
 	{
-		pDefender = pPlot->getBestDefender(NO_PLAYER, pAttacker->getOwner(), pAttacker, false);
+		pDefender = pPlot->getBestDefender(NO_PLAYER, pAttacker->getOwner(), pAttacker);
 		if (pDefender != NULL)
 			bCaptureHelpOnly = true;
 		else return false;
@@ -2687,19 +2689,19 @@ bool CvGameTextMgr::setCombatPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
 		return false; // </advc.010>
 	// <advc.048>
 	bool bBestOddsHelp = false;
-	if(!bMaxSurvival && GC.getDefineINT("GROUP_ATTACK_BEST_ODDS_HELP") > 0)
+	if (!bMaxSurvival && GC.getDefineINT("GROUP_ATTACK_BEST_ODDS_HELP") > 0)
 	{
 		CvUnit* pBestOddsAttacker = kSelectionList.AI_getBestGroupAttacker(pPlot, false, iOddsDummy,
 				false, false, false, true);
-		if(pBestOddsAttacker == NULL)
+		if (pBestOddsAttacker == NULL)
 		{
 			pBestOddsAttacker = kSelectionList.AI_getBestGroupAttacker(pPlot, false, iOddsDummy,
 					true, false, false, true);
 		}
-		if(pBestOddsAttacker != pAttacker)
+		if (pBestOddsAttacker != pAttacker)
 			bBestOddsHelp = true;
 	}
-	if(!ACO_enabled && bBestOddsHelp)
+	if (!ACO_enabled && bBestOddsHelp)
 	{
 		szString.append(gDLL->getText("TXT_KEY_GROUP_ATTACK_BEST_ODDS_HELP"));
 		szString.append(NEWLINE);

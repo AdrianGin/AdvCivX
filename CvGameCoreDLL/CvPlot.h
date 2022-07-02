@@ -136,21 +136,45 @@ public:
 			CvPlot const* pCityPlot = NULL, PlayerTypes eCityOwner = NO_PLAYER) const; // advc.031
 
 	DllExport CvUnit* getBestDefender(PlayerTypes eOwner, PlayerTypes eAttackingPlayer = NO_PLAYER,	// Exposed to Python
-		const CvUnit* pAttacker = NULL, bool bTestAtWar = false, bool bTestPotentialEnemy = false,
-		/*  advc.028: Replacing unused bTestCanMove. False by default b/c invisible units are
-			generally able to defend - they just choose not to (CvUnit::isBetterDefenderThan). */
-		bool bTestVisible = false) const  // <advc> Need some more params
+		CvUnit const* pAttacker = NULL, bool bTestAtWar = false, bool bTestPotentialEnemy = false,
+		/*  advc.028: Replacing bTestCanMove. False by default b/c invisible units are generally
+			able to defend - they just choose not to (CvUnit::isBetterDefenderThan). */
+		bool bTestVisible = false) const
+	// <advc> Need some more params
 	{
-		return getBestDefender(eOwner, eAttackingPlayer, pAttacker, bTestAtWar,
-				bTestPotentialEnemy, bTestVisible,
-				// advc.089: bTestCanAttack=true by default
-				true, false);
+		DefenderFilters defFilters(eAttackingPlayer, pAttacker,
+				bTestAtWar, bTestPotentialEnemy,
+				bTestVisible); // advc.028
+		return getBestDefender(eOwner, defFilters);
 	}
-	CvUnit* getBestDefender(PlayerTypes eOwner,
-			PlayerTypes eAttackingPlayer, CvUnit const* pAttacker,
-			bool bTestEnemy, bool bTestPotentialEnemy,
-			bool bTestVisible, // advc.028
-			bool bTestCanAttack, bool bTestAny = false) const; // </advc>
+	struct DefenderFilters
+	{
+		DefenderFilters(
+			PlayerTypes eAttackingPlayer = NO_PLAYER, CvUnit const* pAttacker = NULL,
+			bool bTestEnemy = false, bool bTestPotentialEnemy = false,
+			bool bTestVisible = false, // advc.028
+			/*	advc: New params to allow hasDefender checks.
+				advc.089: bTestCanAttack=true by default. */
+			bool bTestCanAttack = true, bool bTestAny = false,
+			/*	(Ideally, this should be swapped with bTestVisible to stay closer
+				to the original code. bTestCanMove had been unused for a while.
+				Not going to change this now, too error-prone.) */
+			bool bTestCanMove = false)
+		:	m_eAttackingPlayer(eAttackingPlayer), m_pAttacker(pAttacker),
+			m_bTestEnemy(bTestEnemy), m_bTestPotentialEnemy(bTestPotentialEnemy),
+			m_bTestVisible(bTestVisible), // advc.028
+			m_bTestCanAttack(bTestCanAttack), m_bTestAny(bTestAny), // advc
+			m_bTestCanMove(bTestCanMove)
+		{}
+		PlayerTypes m_eAttackingPlayer;
+		CvUnit const* m_pAttacker;
+		bool m_bTestEnemy, m_bTestPotentialEnemy,
+			 m_bTestVisible, // advc.028
+			 m_bTestCanAttack, m_bTestAny, // advc
+			 m_bTestCanMove;
+	};
+	CvUnit* getBestDefender(PlayerTypes eOwner, DefenderFilters& kFilters) const;
+	// </advc>
 	// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000:
 	bool hasDefender(bool bTestCanAttack, PlayerTypes eOwner,
 			PlayerTypes eAttackingPlayer = NO_PLAYER, const CvUnit* pAttacker = NULL,
@@ -690,7 +714,7 @@ public:
 
 	DllExport CvUnit* getCenterUnit() const { return m_pCenterUnit; }
 	DllExport CvUnit* getDebugCenterUnit() const;
-	void setCenterUnit(CvUnit* pNewValue);
+	bool setCenterUnit(CvUnit* pNewValue);
 
 	int getCultureRangeCities(PlayerTypes eOwnerIndex,												// Exposed to Python
 		CultureLevelTypes eRangeIndex) const // advc.enum

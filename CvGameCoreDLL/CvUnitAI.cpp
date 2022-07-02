@@ -657,11 +657,11 @@ int CvUnitAI::AI_attackOdds(const CvPlot* pPlot, bool bPotentialEnemy) const
 {
 	PROFILE_FUNC();
 
-	CvUnit* pDefender = pPlot->getBestDefender(NO_PLAYER, getOwner(), this,
+	CvPlot::DefenderFilters defFilters(getOwner(), this,
 			!bPotentialEnemy, bPotentialEnemy,
 			true, // advc.028: bTestVisible
 			false); // advc.089: bTestCanAttack - attack isn't necessarily imminent here
-
+	CvUnit* pDefender = pPlot->getBestDefender(NO_PLAYER, defFilters); 
 	if (pDefender == NULL)
 		return 100;
 

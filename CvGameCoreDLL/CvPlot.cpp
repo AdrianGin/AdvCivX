@@ -631,46 +631,53 @@ void CvPlot::updateCenterUnit()
 		return;
 	}
 
-	setCenterUnit(getSelectedUnit());
+	if (setCenterUnit(getSelectedUnit()))
+		return;
 
-	/*if (getCenterUnit() == NULL) {
-		setCenterUnit(getBestDefender(getActivePlayer(), NO_PLAYER,
-				NULL, false, false, true));
-	}*/
-	PlayerTypes eActivePlayer = getActivePlayer();
-	if (getCenterUnit() == NULL)
-		setCenterUnit(getBestDefender(eActivePlayer));
+	PlayerTypes const eActivePlayer = getActivePlayer();
 
-	if (getCenterUnit() == NULL)
-	{	// <advc.028>
-		CvUnit* pBestDef = getBestDefender(NO_PLAYER, eActivePlayer,
-				gDLL->UI().getHeadSelectedUnit(), true,
-				false, true); // advc.061
-		if(pBestDef != NULL)
-			setCenterUnit(pBestDef); // </advc.028>
-	} // disabled by K-Mod. I don't think it's relevant whether or not the best defender can move.
-	/*  advc.001: Enabled again, instead disabled the one with bTestCanMove=true --
-		I think that's the one karadoc had meant to disable. */
-
-	if (getCenterUnit() == NULL)
+	//setCenterUnit(getBestDefender(eActivePlayer, NO_PLAYER, NULL, false, false, true))
+	/*	advc.001: karadoc had meant to disable this (see K-Mod comment below).
+		Perhaps he wasn't aware that the center unit is also the unit that gets
+		selected when the active player clicks on a tile. I am disabling the
+		code during AI turns (when the active player can't select units). */
+	if (!GC.getGame().isInBetweenTurns())
 	{
-		//setCenterUnit(getBestDefender(NO_PLAYER, getActivePlayer(), gDLL->UI().getHeadSelectedUnit()));
-		// <advc.028> Replacing the above
-		CvUnit* pBestDef = getBestDefender(NO_PLAYER, eActivePlayer,
-				gDLL->UI().getHeadSelectedUnit(), false,
-				false, true); // advc.061
-		if(pBestDef != NULL)
-			setCenterUnit(pBestDef); // </advc.028>
+		DefenderFilters defFilters;
+		defFilters.m_bTestCanMove = true;
+		if (setCenterUnit(getBestDefender(eActivePlayer, defFilters)))
+			return;
 	}
-
-	if (getCenterUnit() == NULL)
+	if (setCenterUnit(getBestDefender(eActivePlayer)))
+		return;
 	{
-		//setCenterUnit(getBestDefender(NO_PLAYER, getActivePlayer()));
-		// <advc.028> Replacing the above
-		CvUnit* pBestDef = getBestDefender(NO_PLAYER, eActivePlayer, NULL, false,
-				false, true); // advc.061
-		if(pBestDef != NULL)
-			setCenterUnit(pBestDef); // </advc.028>
+		//setCenterUnit(getBestDefender(NO_PLAYER, eActivePlayer, gDLL->UI().getHeadSelectedUnit(), true));
+		/*	disabled by K-Mod. I don't think it's relevant
+			whether or not the best defender can move. */
+		/*	advc.001: Restored the code (with some changes for advc.028).
+			This is not the code that karadoc had meant to disable. */
+		// <advc.028>
+		DefenderFilters defFilters(eActivePlayer, gDLL->UI().getHeadSelectedUnit(),
+				true);
+		defFilters.m_bTestVisible = true; // advc.061
+		if (setCenterUnit(getBestDefender(NO_PLAYER, defFilters)))
+			return; // </advc.028>
+	}
+	{
+		//setCenterUnit(getBestDefender(NO_PLAYER, eActivePlayer, gDLL->UI().getHeadSelectedUnit()));
+		// <advc.028>
+		DefenderFilters defFilters(eActivePlayer, gDLL->UI().getHeadSelectedUnit());
+		defFilters.m_bTestVisible = true; // advc.061
+		if (setCenterUnit(getBestDefender(NO_PLAYER, defFilters)))
+			return; // </advc.028>
+	}
+	{
+		//setCenterUnit(getBestDefender(NO_PLAYER, eActivePlayer));
+		// <advc.028>
+		DefenderFilters defFilters(eActivePlayer);
+		defFilters.m_bTestVisible = true; // advc.061
+		if (setCenterUnit(getBestDefender(NO_PLAYER, defFilters)))
+			return; // </advc.028>
 	}
 }
 
@@ -2483,19 +2490,17 @@ int CvPlot::getFeatureProduction(BuildTypes eBuild, TeamTypes eTeam, CvCity** pp
 }
 
 
-CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner, PlayerTypes eAttackingPlayer,
-	CvUnit const* pAttacker, bool bTestEnemy, bool bTestPotentialEnemy,
-	/* advc.028: */ bool bTestVisible,
-	bool bTestCanAttack, bool bTestAny) const // advc: new params (for CvPlot::hasDefender)
+CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner,
+	/* <advc> */ DefenderFilters& kFilters) const
 {
-	// <advc> Ensure consistency of parameters
-	if (pAttacker != NULL)
+	// Ensure consistency of parameters
+	if (kFilters.m_pAttacker != NULL)
 	{
-		FAssert(pAttacker->getOwner() == eAttackingPlayer);
-		eAttackingPlayer = pAttacker->getOwner();
+		FAssert(kFilters.m_pAttacker->getOwner() == kFilters.m_eAttackingPlayer);
+		kFilters.m_eAttackingPlayer = kFilters.m_pAttacker->getOwner();
 	}
 	// isEnemy implies isPotentialEnemy
-	FAssert(!bTestEnemy || !bTestPotentialEnemy); // </advc>
+	FAssert(!kFilters.m_bTestEnemy || !kFilters.m_bTestPotentialEnemy); // </advc>
 	// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000
 	int iBestUnitRank = -1;
 	CvUnit* pBestUnit = NULL;
@@ -2504,18 +2509,22 @@ CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner, PlayerTypes eAttackingPlayer
 		CvUnit& kUnit = *pLoopUnit;
 		if (eOwner != NO_PLAYER && kUnit.getOwner() != eOwner)
 			continue;
-		if (kUnit.isCargo()) // advc: Was previously only checked with bTestCanMove - i.e. never.
+		if (kUnit.isCargo()) // advc: Was previously only checked with TestCanMove
+			continue;
+		if (kFilters.m_bTestCanMove && !kUnit.canMove())
 			continue;
 		// <advc> Moved the other conditions into CvUnit::canBeAttackedBy (new function)
-		if(eAttackingPlayer == NO_PLAYER || kUnit.canBeAttackedBy(eAttackingPlayer,
-			pAttacker, bTestEnemy, bTestPotentialEnemy, /* advc.028: */ bTestVisible,
-			bTestCanAttack))
+		if (kFilters.m_eAttackingPlayer == NO_PLAYER ||
+			kUnit.canBeAttackedBy(kFilters.m_eAttackingPlayer,
+			kFilters.m_pAttacker, kFilters.m_bTestEnemy, kFilters.m_bTestPotentialEnemy,
+			kFilters.m_bTestVisible, // advc.028
+			kFilters.m_bTestCanAttack))
 		{
-			if (bTestAny)
+			if (kFilters.m_bTestAny)
 				return &kUnit; // </advc>
-			if (kUnit.isBetterDefenderThan(pBestUnit, pAttacker,
+			if (kUnit.isBetterDefenderThan(pBestUnit, kFilters.m_pAttacker,
 				&iBestUnitRank, // UncutDragon
-				bTestVisible)) // advc.061
+				kFilters.m_bTestVisible)) // advc.061
 			{
 				pBestUnit = &kUnit;
 			}
@@ -6672,18 +6681,21 @@ CvUnit* CvPlot::getDebugCenterUnit() const
 	return pCenterUnit;
 }
 
-
-void CvPlot::setCenterUnit(CvUnit* pNewValue)
+/*	advc: Return false if center unit set to NULL, true otherwise.
+	This is convenient for updateCenterUnit. */
+bool CvPlot::setCenterUnit(CvUnit* pNewValue)
 {
+	bool bRet = (pNewValue != NULL);
 	CvUnit* pOldValue = getCenterUnit();
 	if (pOldValue == pNewValue)
-		return; // advc
+		return bRet;
 
 	m_pCenterUnit = pNewValue;
 	updateMinimapColor();
 	setFlagDirty(true);
 	if (getCenterUnit() != NULL)
 		getCenterUnit()->setInfoBarDirty(true);
+	return bRet;
 }
 
 
@@ -8341,15 +8353,16 @@ void CvPlot::killRandomUnit(PlayerTypes eOwner, DomainTypes eDomain)
 }
 
 
-// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000: START
+// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000:
 bool CvPlot::hasDefender(bool bTestCanAttack, PlayerTypes eOwner, PlayerTypes eAttackingPlayer,
 	CvUnit const* pAttacker, bool bTestEnemy, bool bTestPotentialEnemy) const
 {
 	/*  advc: BBAI had repeated parts of getBestDefender here. To avoid that, I've moved
 		bTestAttack into getBestDefender and gave that function a "bTestAny" param. */
-	return (getBestDefender(eOwner, eAttackingPlayer, pAttacker, bTestEnemy,
-			bTestPotentialEnemy, false, bTestCanAttack, /*bTestAny=*/true) != NULL);
-} // BETTER_BTS_AI_MOD: END
+	CvPlot::DefenderFilters defFilters(eAttackingPlayer, pAttacker, bTestEnemy,
+			bTestPotentialEnemy, false, bTestCanAttack, /*bTestAny=*/true);
+	return (getBestDefender(eOwner, defFilters) != NULL);
+}
 
 // <advc.500a>
 #if 0 // disabled for now

@@ -306,9 +306,10 @@ int CvSelectionGroupAI::AI_getWeightedOdds(CvPlot const* pPlot, bool bPotentialE
 	CvUnitAI const* pAttacker = AI_getBestGroupAttacker(pPlot, bPotentialEnemy, iOdds);
 	if (pAttacker == NULL)
 		return 0;
-	CvUnit const* pDefender = pPlot->getBestDefender(NO_PLAYER, getOwner(), pAttacker,
+	CvPlot::DefenderFilters defFilters(getOwner(), pAttacker,
 			!bPotentialEnemy, bPotentialEnemy,
 			true, false); // advc.028, advc.089 (same as in CvUnitAI::AI_attackOdds)
+	CvUnit const* pDefender = pPlot->getBestDefender(NO_PLAYER, defFilters);
 	if (pDefender == NULL)
 		return 100;
 
