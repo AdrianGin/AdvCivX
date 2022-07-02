@@ -688,7 +688,7 @@ void CvUnit::doTurn()
 	//setReconPlot(NULL); // advc.029: Handled at end of turn now
 	// <advc.001b> Allow double spent moves to carry over to the next turn
 	if (getMoves() >= 2 * maxMoves())
-		setMoves(maxMoves()); // </advc.001b>
+		finishMoves(); // </advc.001b>
 	else setMoves(0);
 }
 
@@ -2825,7 +2825,7 @@ void CvUnit::move(CvPlot& kPlot, bool bShow, /* advc.163: */ bool bJump, bool bG
 	CvPlot& kOldPlot = *plot();
 	// <advc.163>
 	if (bJump)
-		setMoves(maxMoves()); // </advc.163>
+		finishMoves(); // </advc.163>
 	else changeMoves(kPlot.movementCost(*this, kOldPlot));
 	// <advc.162>
 	if(isInvasionMove(kOldPlot, kPlot))

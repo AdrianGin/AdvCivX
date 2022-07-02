@@ -6176,17 +6176,11 @@ void CvGame::doTurn()
 	// </advc.044>
 }
 
-// <advc.106b>
-bool CvGame::isInBetweenTurns() const
-{
-	return m_bInBetweenTurns;
-}
-
-
+// advc.106b:
 void CvGame::setInBetweenTurns(bool b)
 {
 	m_bInBetweenTurns = b;
-} // </advc.106b>
+}
 
 
 void CvGame::doDeals()

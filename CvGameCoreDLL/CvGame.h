@@ -545,7 +545,7 @@ public:
 	   way to determine whether it's during a human turn.
 	   (Or would CvPlayer::isTurnActive work? But that's not as convenient ...) */
 	// Also used for various other AdvCiv changes
-	bool isInBetweenTurns() const;
+	bool isInBetweenTurns() const { return m_bInBetweenTurns; }
 	void setInBetweenTurns(bool b); // </advc.106b>
 
 	HandicapTypes getHandicapType() const { return m_eHandicap; }										// Exposed to Python
