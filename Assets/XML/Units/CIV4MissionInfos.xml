@@ -56,7 +56,8 @@
 			<bShiftDownAlt>0</bShiftDownAlt>
 			<bCtrlDownAlt>0</bCtrlDownAlt>
 			<iHotKeyPriorityAlt>0</iHotKeyPriorityAlt>
-			<iOrderPriority>13</iOrderPriority>
+			<!-- advc.004k: was 13 -->
+			<iOrderPriority>11</iOrderPriority>
 			<bVisible>1</bVisible>
 			<Button>,Art/Interface/Buttons/Actions/SkipUnit.dds,Art/Interface/Buttons/Actions_Builds_LeaderHeads_Specialists_Atlas.dds,5,4</Button>
 		</MissionInfo>
@@ -151,7 +152,8 @@
 			<bShiftDownAlt>0</bShiftDownAlt>
 			<bCtrlDownAlt>0</bCtrlDownAlt>
 			<iHotKeyPriorityAlt>0</iHotKeyPriorityAlt>
-			<iOrderPriority>14</iOrderPriority>
+			<!-- advc.004k: was 14 -->
+			<iOrderPriority>12</iOrderPriority>
 			<bVisible>1</bVisible>
 			<Button>,Art/Interface/Buttons/Actions/Intercept.dds,Art/Interface/Buttons/Actions_Builds_LeaderHeads_Specialists_Atlas.dds,3,2</Button>
 		</MissionInfo>
@@ -174,7 +176,8 @@
 			<bShiftDownAlt>0</bShiftDownAlt>
 			<bCtrlDownAlt>1</bCtrlDownAlt>
 			<iHotKeyPriorityAlt>0</iHotKeyPriorityAlt>
-			<iOrderPriority>12</iOrderPriority>
+			<!-- advc.004k: Commented out -->
+			<!--iOrderPriority>12</iOrderPriority-->
 			<bVisible>1</bVisible>
 			<Button>,Art/Interface/Buttons/TechTree/Corporation.dds,Art/Interface/Buttons/Beyond_the_Sword_Atlas.dds,6,16</Button>
 		</MissionInfo>
@@ -198,7 +201,8 @@
 			<bShiftDownAlt>0</bShiftDownAlt>
 			<bCtrlDownAlt>0</bCtrlDownAlt>
 			<iHotKeyPriorityAlt>0</iHotKeyPriorityAlt>
-			<iOrderPriority>11</iOrderPriority>
+			<!-- advc.004k: was 11 -->
+			<iOrderPriority>14</iOrderPriority>
 			<bVisible>1</bVisible>
 			<Button>,Art/Interface/Buttons/Actions/Heal.dds,Art/Interface/Buttons/Actions_Builds_LeaderHeads_Specialists_Atlas.dds,2,2</Button>
 		</MissionInfo>
@@ -217,7 +221,8 @@
 			<bShiftDown>0</bShiftDown>
 			<bCtrlDown>0</bCtrlDown>
 			<iHotKeyPriority>0</iHotKeyPriority>
-			<iOrderPriority>12</iOrderPriority>
+			<!-- advc.004k: was 12 -->
+			<iOrderPriority>13</iOrderPriority>
 			<bVisible>1</bVisible>
 			<Button>,Art/Interface/Buttons/Actions/Sentry.dds,Art/Interface/Buttons/Actions_Builds_LeaderHeads_Specialists_Atlas.dds,4,4</Button>
 		</MissionInfo>
@@ -844,7 +849,8 @@
 			<bShiftDownAlt>0</bShiftDownAlt>
 			<bCtrlDownAlt>0</bCtrlDownAlt>
 			<iHotKeyPriorityAlt>0</iHotKeyPriorityAlt>
-			<iOrderPriority>11</iOrderPriority>
+			<!-- (advc.004k: Same as HEAL) -->
+			<iOrderPriority>14</iOrderPriority>
 			<bVisible>1</bVisible>
 			<Button>,Art/Interface/Buttons/Actions/Heal.dds,Art/Interface/Buttons/Actions_Builds_LeaderHeads_Specialists_Atlas.dds,2,2</Button>
 		</MissionInfo>

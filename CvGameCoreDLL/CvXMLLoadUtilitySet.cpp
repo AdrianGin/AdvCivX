@@ -982,18 +982,19 @@ void CvXMLLoadUtility::SetGlobalActionInfo()
 		}
 	/*	The order of these calls serves as a tie-breaker for action priorities
 		(which determine the order in which actions are displayed on the HUD. */
-	SET_ACTION_DATA(Command, COMMAND);
 	SET_ACTION_DATA(InterfaceMode, INTERFACEMODE);
+	SET_ACTION_DATA(Mission, MISSION); // advc.004k: Moved up (from after AUTOMATE)
 	SET_ACTION_DATA(Build, BUILD);
-	SET_ACTION_DATA(Promotion, PROMOTION);
-	SET_ACTION_DATA(Unit, UNIT);
 	SET_ACTION_DATA(Religion, RELIGION);
 	SET_ACTION_DATA(Corporation, CORPORATION);
 	SET_ACTION_DATA(Specialist, SPECIALIST);
 	SET_ACTION_DATA(Building, BUILDING);
 	SET_ACTION_DATA(Control, CONTROL);
 	SET_ACTION_DATA(Automate, AUTOMATE);
-	SET_ACTION_DATA(Mission, MISSION);
+	SET_ACTION_DATA(Command, COMMAND); // advc.004k: Moved down (was first)
+	// <advc.004k> Moved down from before RELIGION
+	SET_ACTION_DATA(Promotion, PROMOTION); 
+	SET_ACTION_DATA(Unit, UNIT); // </advc.004k>
 	#undef SET_ACTION_DATA
 	/*	Bugfix? Was std::sort. That runs counter to the idea of breaking ties
 		in a deliberate way. */

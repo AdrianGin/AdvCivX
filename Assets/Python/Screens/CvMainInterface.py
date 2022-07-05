@@ -1997,15 +1997,19 @@ class CvMainInterface:
 		except AttributeError:
 			pass
 
-	def updateBottomButtonList(self):
+	# advc.004k Cut from updateBottomButtonList
+	def bottomListBtnSize(self):
 # BUG - Build/Action Icon Size - start
 		if MainOpt.isBuildIconSizeLarge():
-			iButtonSize = 64
+			return 64
 		elif MainOpt.isBuildIconSizeMedium():
-			iButtonSize = 48
-		else:
-			iButtonSize = 36
+			return 48
+		return 36
+# BUG - Build/Action Icon Size - end
 
+	def updateBottomButtonList(self):
+# BUG - Build/Action Icon Size - start
+		iButtonSize = self.bottomListBtnSize()
 		# EF: minimum icon size for disabled buttons to work is 33 so these sizes won't fly
 		# iButtonSize=32, iHeight=102
 		# iButtonSize=24, iHeight=104
@@ -3418,19 +3422,41 @@ class CvMainInterface:
 				if (pHeadSelectedUnit and
 						pHeadSelectedUnit.getOwner() == gc.getGame().getActivePlayer() and
 						bHeadSelectionChanged):
+					# <advc.004k>
+					bGroupButtonsDone = False
+					iMaxCols = int((gRect("BottomButtonList").width()
+							# (Safety margin - not sure if MultiListControl can use its entire width.)
+							-5) / self.bottomListBtnSize())
+					# Can display any number of them, but we don't want a scrollbar.
+					iMaxRows = int((gRect("BottomButtonList").height() - 5) /
+							self.bottomListBtnSize())
+					# </advc.004k>
 					iCount = 0
 					actions = CyInterface().getActionsToShow()
-					# advc.004: Hide the Skip button while asleep, but keep the hotkey available? Maybe better not ...
-					#bWaiting = pHeadSelectedUnit.isWaiting()
 					for i in actions:
-						# <advc.004> See above
-						#if bWaiting and gc.getActionInfo(i).getHotKey() == "KB_SPACE":
-						#	continue # </advc.004>
+						# <advc.004k>
+						# Show grouping commands before promotions, upgrades
+						if (not bGroupButtonsDone and
+								(gc.getActionInfo(i).getCommandType() == CommandTypes.COMMAND_PROMOTION or
+								gc.getActionInfo(i).getCommandType() == CommandTypes.COMMAND_UPGRADE)):
+							bGroupButtonsDone = True
+							iCount += self.appendGroupBottomButtons()
+						# Put promotions, upgrades on a separate row -
+						# if we haven't exceeded a full row already and can
+						# fit all promos and upgrades in the 2nd row.
+						if (bGroupButtonsDone and iMaxRows >= 2 and
+								iCount <= iMaxCols and
+								len(actions) - iCount <= iMaxCols):
+							iRow = 1
+						else:
+							iRow = 0
+						# </advc.004k>
 						screen.appendMultiListButton("BottomButtonList",
-								gc.getActionInfo(i).getButton(), 0,
+								gc.getActionInfo(i).getButton(),
+								iRow, # advc.004k: was 0
 								WidgetTypes.WIDGET_ACTION, i, -1, False)
 						screen.show("BottomButtonList")
-						if (not CyInterface().canHandleAction(i, False)):
+						if not CyInterface().canHandleAction(i, False):
 							screen.disableMultiListButton("BottomButtonList",
 									0, iCount, gc.getActionInfo(i).getButton())
 						if (pHeadSelectedUnit.isActionRecommended(i)
@@ -3439,24 +3465,12 @@ class CvMainInterface:
 							screen.enableMultiListPulse("BottomButtonList", True, 0, iCount)
 						else:
 							screen.enableMultiListPulse("BottomButtonList", False, 0, iCount)
-
 						iCount += 1
-
-					if (CyInterface().canCreateGroup()):
-						screen.appendMultiListButton("BottomButtonList",
-								ArtFileMgr.getInterfaceArtInfo("INTERFACE_BUTTONS_CREATEGROUP").getPath(), 0,
-								WidgetTypes.WIDGET_CREATE_GROUP, -1, -1, False)
-						screen.show("BottomButtonList")
-
-						iCount += 1
-
-					if (CyInterface().canDeleteGroup()):
-						screen.appendMultiListButton("BottomButtonList",
-								ArtFileMgr.getInterfaceArtInfo("INTERFACE_BUTTONS_SPLITGROUP").getPath(), 0,
-								WidgetTypes.WIDGET_DELETE_GROUP, -1, -1, False)
-						screen.show("BottomButtonList")
-
-						iCount += 1
+					# <advc.004k>
+					if not bGroupButtonsDone: # If no promotions, upgrades.
+						# Moved into new method
+						iCount += self.appendGroupBottomButtons()
+						screen.show("BottomButtonList") # </advc.004k>
 				# <advc.154>
 				pUnit = None
 				if bHeadSelectionChanged:
@@ -3467,6 +3481,21 @@ class CvMainInterface:
 			self.setMinimapButtonVisibility(True)
 
 		return 0
+	# advc.004k: Moved from updateSelectionButtons above
+	def appendGroupBottomButtons(self):
+		iAppended = 0
+		if CyInterface().canCreateGroup():
+			self.screen.appendMultiListButton("BottomButtonList",
+					ArtFileMgr.getInterfaceArtInfo("INTERFACE_BUTTONS_CREATEGROUP").getPath(), 0,
+					WidgetTypes.WIDGET_CREATE_GROUP, -1, -1, False)
+			iAppended += 1
+		if CyInterface().canDeleteGroup():
+			self.screen.appendMultiListButton("BottomButtonList",
+					ArtFileMgr.getInterfaceArtInfo("INTERFACE_BUTTONS_SPLITGROUP").getPath(), 0,
+					WidgetTypes.WIDGET_DELETE_GROUP, -1, -1, False)
+			iAppended += 1
+		return iAppended
+
 	# <advc.154>
 	def hideUnitCyclingButtons(self):
 		self.hideUnitCycleButtonGFC("UnitCycle")

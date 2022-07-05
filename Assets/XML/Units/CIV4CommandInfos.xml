@@ -7,16 +7,43 @@
 <Civ4CommandInfos xmlns="x-schema:CIV4UnitSchema.xml">
 	<!--Changes must be reflected in CvEnums.h-->
 	<CommandInfos>
+		<!-- advc.004k: DELETE and GIFT swapped with PROMOTE, UPGRADE -->
 		<CommandInfo>
-			<Type>COMMAND_PROMOTION</Type>
-			<Description>TXT_KEY_COMMAND_PROMOTION</Description>
-			<Help/>
+			<Type>COMMAND_DELETE</Type>
+			<Description>TXT_KEY_COMMAND_DELETE</Description>
+			<Help>TXT_KEY_COMMAND_DELETE_HELP</Help>
+			<HotKey>KB_DELETE</HotKey>
+			<bAltDown>0</bAltDown>
+			<bShiftDown>0</bShiftDown>
+			<bCtrlDown>0</bCtrlDown>
+			<iHotKeyPriority>0</iHotKeyPriority>
+			<HotKeyAlt/>
+			<bAltDownAlt>0</bAltDownAlt>
+			<bShiftDownAlt>0</bShiftDownAlt>
+			<bCtrlDownAlt>0</bCtrlDownAlt>
+			<iHotKeyPriorityAlt>0</iHotKeyPriorityAlt>
+			<!-- advc.004k: Commented out -->
+			<!--iOrderPriority>16</iOrderPriority-->
+			<bConfirmCommand>1</bConfirmCommand>
+			<bVisible>1</bVisible>
+			<Button>Art/Interface/Buttons/Actions/Delete.dds</Button>
 		</CommandInfo>
 		<CommandInfo>
-			<Type>COMMAND_UPGRADE</Type>
-			<Description>TXT_KEY_COMMAND_UPGRADE</Description>
-			<Help/>
-			<bAll>1</bAll>
+			<Type>COMMAND_GIFT</Type>
+			<Description>TXT_KEY_COMMAND_GIFT</Description>
+			<Help>TXT_KEY_COMMAND_GIFT_HELP</Help>
+			<HotKey/>
+			<bAltDown>0</bAltDown>
+			<bShiftDown>0</bShiftDown>
+			<bCtrlDown>0</bCtrlDown>
+			<iHotKeyPriority>0</iHotKeyPriority>
+			<HotKeyAlt/>
+			<bAltDownAlt>0</bAltDownAlt>
+			<bShiftDownAlt>0</bShiftDownAlt>
+			<bCtrlDownAlt>0</bCtrlDownAlt>
+			<iHotKeyPriorityAlt>0</iHotKeyPriorityAlt>
+			<bVisible>1</bVisible>
+			<Button>Art/Interface/Buttons/Actions/GiveUnits.dds</Button>
 		</CommandInfo>
 		<CommandInfo>
 			<Type>COMMAND_AUTOMATE</Type>
@@ -97,42 +124,24 @@
 			<bAll>1</bAll>
 			<Button>Art/Interface/Buttons/Actions/Cancel.dds</Button>
 		</CommandInfo>
+		<!-- advc.004k: Swapped position of PROMOTION, UPGRADE with
+			 DELETE, GIFT -->
 		<CommandInfo>
-			<Type>COMMAND_DELETE</Type>
-			<Description>TXT_KEY_COMMAND_DELETE</Description>
-			<Help>TXT_KEY_COMMAND_DELETE_HELP</Help>
-			<HotKey>KB_DELETE</HotKey>
-			<bAltDown>0</bAltDown>
-			<bShiftDown>0</bShiftDown>
-			<bCtrlDown>0</bCtrlDown>
-			<iHotKeyPriority>0</iHotKeyPriority>
-			<HotKeyAlt/>
-			<bAltDownAlt>0</bAltDownAlt>
-			<bShiftDownAlt>0</bShiftDownAlt>
-			<bCtrlDownAlt>0</bCtrlDownAlt>
-			<iHotKeyPriorityAlt>0</iHotKeyPriorityAlt>
-			<iOrderPriority>16</iOrderPriority>
-			<bConfirmCommand>1</bConfirmCommand>
-			<bVisible>1</bVisible>
-			<Button>Art/Interface/Buttons/Actions/Delete.dds</Button>
+			<Type>COMMAND_PROMOTION</Type>
+			<Description>TXT_KEY_COMMAND_PROMOTION</Description>
+			<Help/>
+			<!-- advc.004k -->
+			<iOrderPriority>4</iOrderPriority>
 		</CommandInfo>
 		<CommandInfo>
-			<Type>COMMAND_GIFT</Type>
-			<Description>TXT_KEY_COMMAND_GIFT</Description>
-			<Help>TXT_KEY_COMMAND_GIFT_HELP</Help>
-			<HotKey/>
-			<bAltDown>0</bAltDown>
-			<bShiftDown>0</bShiftDown>
-			<bCtrlDown>0</bCtrlDown>
-			<iHotKeyPriority>0</iHotKeyPriority>
-			<HotKeyAlt/>
-			<bAltDownAlt>0</bAltDownAlt>
-			<bShiftDownAlt>0</bShiftDownAlt>
-			<bCtrlDownAlt>0</bCtrlDownAlt>
-			<iHotKeyPriorityAlt>0</iHotKeyPriorityAlt>
-			<bVisible>1</bVisible>
-			<Button>Art/Interface/Buttons/Actions/GiveUnits.dds</Button>
+			<Type>COMMAND_UPGRADE</Type>
+			<Description>TXT_KEY_COMMAND_UPGRADE</Description>
+			<Help/>
+			<!-- advc.004k -->
+			<iOrderPriority>3</iOrderPriority>
+			<bAll>1</bAll>
 		</CommandInfo>
+
 		<CommandInfo>
 			<Type>COMMAND_LOAD</Type>
 			<Description>TXT_KEY_COMMAND_LOAD</Description>
