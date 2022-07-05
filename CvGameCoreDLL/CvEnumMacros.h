@@ -258,10 +258,9 @@ DEFINE_INCREMENT_OPERATORS(Name##Types)
 	/*{*/ \
 	/*	return *m_pa##Name##Info[e##Name];*/ \
 	/*}*/ \
-	/* Deprecated: */ \
-	inline Cv##Name##Info& get##Name##Info(Name##Types e##Name) const \
+	inline Cv##Name##Info& get##Name##Info(int i##Name) const \
 	{ \
-		return getInfo(e##Name); \
+		return getInfo(static_cast<Name##Types>(i##Name)); \
 	}
 #define MAKE_INFO_ACCESSORS_INT(Name, Dummy) \
 	inline int getNum##Name##Infos() const \
@@ -284,10 +283,9 @@ DEFINE_INCREMENT_OPERATORS(Name##Types)
 	/*{*/ \
 	/*	return *m_pa##Name##Info[e##Name];*/ \
 	/*}*/ \
-	/* Deprecated: */ \
-	inline Cv##Name##Info& get##Name##Info(Name##Types e##Name) const \
+	inline Cv##Name##Info& get##Name##Info(int i##Name) const \
 	{ \
-		return getInfo(e##Name); \
+		return getInfo(static_cast<Name##Types>(i##Name)); \
 	}
 
 #endif

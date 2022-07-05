@@ -325,9 +325,9 @@ public:
 	{
 		return (int)m_paWorldInfo.size();
 	}
-	CvWorldInfo& getWorldInfo(WorldSizeTypes eWorld) const // deprecated
+	CvWorldInfo& getWorldInfo(int iWorld) const
 	{
-		return getInfo(eWorld);
+		return getInfo(static_cast<WorldSizeTypes>(iWorld));
 	}
 #pragma endregion InfoAccessors
 	// </advc.enum>
