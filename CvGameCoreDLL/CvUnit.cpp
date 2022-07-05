@@ -3444,11 +3444,8 @@ bool CvUnit::canAirPatrol(const CvPlot* pPlot) const
 }
 
 
-bool CvUnit::canSeaPatrol(const CvPlot* pPlot) const
+bool CvUnit::canSeaPatrol(CvPlot const* pPlot) const
 {
-	// <advc.004k> To avoid sync issues with the BUG option
-	if (GC.getGame().isNetworkMultiPlayer())
-		return false; // </advc.004k>
 	if (!pPlot->isWater())
 		return false;
 
@@ -3461,8 +3458,7 @@ bool CvUnit::canSeaPatrol(const CvPlot* pPlot) const
 	//if (isWaiting())
 	if (getGroup()->getActivityType() == ACTIVITY_PATROL) // K-Mod
 		return false;
-	// advc.004k: (Do the cheaper checks first)
-	return BUGOption::isEnabled("MainInterface__SeaPatrol", false);
+	return true;
 }
 
 
@@ -4554,8 +4550,7 @@ bool CvUnit::pillage()
 				return false;
 		}
 	}
-	if (kPlot.isWater() &&
-		BUGOption::isEnabled("MainInterface__SeaPatrol", false)) // advc.004k
+	if (kPlot.isWater())
 	{
 		CvUnit* pInterceptor = bestSeaPillageInterceptor(this, GC.getCOMBAT_DIE_SIDES() / 2);
 		if (pInterceptor != NULL)
@@ -7800,8 +7795,8 @@ CvUnit* CvUnit::bestSeaPillageInterceptor(CvUnit* pPillager, int iMinOdds) const
 		FOR_EACH_UNIT_VAR_IN(pLoopUnit, kLoopPlot)
 		{
 			if (pLoopUnit == NULL)
-			{	// advc.test: (would have to enable sea patrol mission to test it though)
-				FAssertMsg(pLoopUnit != NULL, "Can this happen?");
+			{
+				FAssertMsg(pLoopUnit != NULL, "Can this happen?"); // advc.test
 				continue;
 			}
 			//if (pLoopUnit->sameArea(*pPillager))

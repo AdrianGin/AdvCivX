@@ -3435,6 +3435,12 @@ class CvMainInterface:
 					actions = CyInterface().getActionsToShow()
 					for i in actions:
 						# <advc.004k>
+						if (gc.getActionInfo(i).getMissionType() == MissionTypes.MISSION_SEAPATROL and
+								not MainOpt.isShowSeaPatrol()):
+							continue
+						if (gc.getActionInfo(i).getAutomateType() == AutomateTypes.AUTOMATE_EXPLORE and
+								not MainOpt.isShowAutoExplore()):
+							continue
 						# Show grouping commands before promotions, upgrades
 						if (not bGroupButtonsDone and
 								(gc.getActionInfo(i).getCommandType() == CommandTypes.COMMAND_PROMOTION or
