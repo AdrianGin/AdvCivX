@@ -239,14 +239,15 @@
 			<option id="SimpleSelection" key="Simple Selection"
 					type="boolean" default="True"/>
 
+			<!-- (I don't think these two are needed after all) -->
 			<!-- advc.004k -->
-			<option id="SeaPatrol" key="Sea Patrol"
+			<!--option id="SeaPatrol" key="Sea Patrol"
 					get="isShowSeaPatrol"
-					type="boolean" default="True" dirtyBit="SelectionButtons"/>
+					type="boolean" default="True" dirtyBit="SelectionButtons"/-->
 			<!-- advc.004k -->
-			<option id="AutoExplore" key="Auto Explore"
+			<!--option id="AutoExplore" key="Auto Explore"
 					get="isShowAutoExplore"
-					type="boolean" default="True" dirtyBit="SelectionButtons"/>
+					type="boolean" default="True" dirtyBit="SelectionButtons"/-->
 			
 			<!-- advc.004z -->
 			<option id="ScoresInGlobeView" key="Scores in Globe View" 
