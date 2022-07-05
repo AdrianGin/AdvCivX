@@ -5991,6 +5991,15 @@
 		<Italian>Questo ordine far&#224; in modo che l'unit&#224; attacchi le navi nemiche che cercano di saccheggiare le caselle circostanti</Italian>
 		<Spanish>Esta orden le dir&#225; a la unidad que ataque a los barcos enemigos que intenten saquear las casillas adyacentes.</Spanish>
 	</TEXT>
+	<!-- Based on TXT_KEY_MISSION_SEAPATROL (CIV4GameText_BTS.xml) -->
+	<TEXT>
+		<Tag>TXT_KEY_PLOT_SEA_PATROLLED</Tag>
+		<English>Guarded by Sea Patrol</English>
+		<French>Gardé par patrouille des mers</French>
+		<German>Bewacht durch Seepatrouille</German>
+		<Italian>Sorvegliato da pattuglia marina</Italian>
+		<Spanish>Vigilado por patrulla mar&#237;tima</Spanish>
+	</TEXT>
 
 	<!-- advc.057 -->
 	<TEXT>

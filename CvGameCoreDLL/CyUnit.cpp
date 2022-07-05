@@ -170,7 +170,9 @@ bool CyUnit::canAirPatrol(CyPlot* pPlot)
 
 bool CyUnit::canSeaPatrol(CyPlot* pPlot)
 {
-	return m_pUnit ? m_pUnit->canSeaPatrol(pPlot->getPlot()) : false;
+	return m_pUnit ? m_pUnit->canSeaPatrol(pPlot->getPlot(),
+			true) // advc.004k: For the same behavior as in K-Mod
+			: false;
 }
 
 bool CyUnit::canHeal(CyPlot* pPlot)

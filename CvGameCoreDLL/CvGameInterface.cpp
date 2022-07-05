@@ -381,13 +381,17 @@ void CvGame::updateBlockadedPlots()
 
 void CvGame::updateSelectionList()
 {
+	CvDLLInterfaceIFaceBase& kUI = gDLL->UI();
+	CvUnit* pHeadSelectedUnit = kUI.getHeadSelectedUnit();
+	// <advc.004k> (Needed for dealing with all units becoming unselected)
+	if (pHeadSelectedUnit == NULL)
+		gDLL->getEngineIFace()->clearAreaBorderPlots(AREA_BORDER_LAYER_PATROLLED);
+	// </advc.004k>
 	if (GC.suppressCycling() || // K-Mod
 		GET_PLAYER(getActivePlayer()).isOption(PLAYEROPTION_NO_UNIT_CYCLING))
 	{
 		return;
 	}
-	CvDLLInterfaceIFaceBase& kUI = gDLL->UI();
-	CvUnit* pHeadSelectedUnit = kUI.getHeadSelectedUnit();
 	if (pHeadSelectedUnit == NULL || !pHeadSelectedUnit->getGroup()->readyToSelect(true))
 	{
 		if (kUI.getOriginalPlot() == NULL ||
@@ -2211,6 +2215,24 @@ bool CvGame::updateNukeAreaOfEffect(CvPlot const* pCenter) const
 				kColor, AREA_BORDER_LAYER_NUKE);
 	}
 	return true;
+}
+
+// advc.004k:
+void CvGame::updateSeaPatrolColors(CvUnit const& kSelectedUnit)
+{
+	gDLL->getEngineIFace()->clearAreaBorderPlots(AREA_BORDER_LAYER_PATROLLED);
+	if (!kSelectedUnit.isSeaPatrolling())
+		return;
+	for (SquareIter itPlot(kSelectedUnit, GC.getMAX_SEA_PATROL_RANGE(), false);
+		itPlot.hasNext(); ++itPlot)
+	{
+		if (kSelectedUnit.canReachBySeaPatrol(*itPlot))
+		{
+			gDLL->getEngineIFace()->fillAreaBorderPlot(itPlot->getX(), itPlot->getY(),
+					GC.getColorInfo(GC.getInfoTypeForString("COLOR_CITY_BLUE")).getColor(),
+					AREA_BORDER_LAYER_PATROLLED);
+		}
+	}
 }
 
 void CvGame::loadBuildQueue(const CvString& strItem) const

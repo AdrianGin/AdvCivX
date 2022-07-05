@@ -607,6 +607,9 @@ public:
 	int getCOMBAT_DIE_SIDES() const { return getDefineINT(COMBAT_DIE_SIDES); }
 	int getCOMBAT_DAMAGE() const { return getDefineINT(COMBAT_DAMAGE); }
 	// BETTER_BTS_AI_MOD: END
+	/*	advc.004k: Future-proofing. This could be a global define, but, so far,
+		1 is the only supported value. */
+	int getMAX_SEA_PATROL_RANGE() const { return 1; }
 	/*  <advc.opt> (TextVals can't be loaded by cacheGlobals. Hence also won't be
 		updated when a setDefine... function is called.) */
 	ImprovementTypes getRUINS_IMPROVEMENT() const

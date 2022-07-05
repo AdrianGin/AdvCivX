@@ -3565,6 +3565,15 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot const& kPlot)
 		szString.append(gDLL->getText("TXT_KEY_PLOT_BLOCKADED"));
 		szString.append(CvWString::format(ENDCOLR));
 	}
+	// <advc.004k>
+	if (pHeadSelectedUnit != NULL && pHeadSelectedUnit->isSeaPatrolling() &&
+		pHeadSelectedUnit->canReachBySeaPatrol(kPlot))
+	{
+		szString.append(CvWString::format(SETCOLR, TEXT_COLOR("COLOR_CITY_BLUE_TEXT")));
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText("TXT_KEY_PLOT_SEA_PATROLLED"));
+		szString.append(CvWString::format(ENDCOLR));
+	} // </advc.004k>
 
 	if (kPlot.isFeature())
 	{

@@ -130,6 +130,15 @@
 			<fBlue>0.88</fBlue>
 			<fAlpha>1.00</fAlpha>
 		</ColorVal>
+		<!-- advc.004k: Use that color also for the Sea Patrol mission.
+			 But it's too dark for game text, so ... -->
+		<ColorVal>
+			<Type>COLOR_CITY_BLUE_TEXT</Type>
+			<fRed>0.2</fRed>
+			<fGreen>0.6</fGreen>
+			<fBlue>1.00</fBlue>
+			<fAlpha>1.00</fAlpha>
+		</ColorVal>
 		<ColorVal>
 			<Type>COLOR_CITY_GREY</Type>
 			<fRed>0.35</fRed>

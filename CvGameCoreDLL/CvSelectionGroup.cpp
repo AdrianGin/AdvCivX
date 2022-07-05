@@ -3358,7 +3358,7 @@ bool CvSelectionGroup::canDoMission(MissionTypes eMission, int iData1, int iData
 			break;
 
 		case MISSION_SEAPATROL:
-			if (!bValid && pUnit->canSeaPatrol(pPlot))
+			if (!bValid && pUnit->canSeaPatrol(pPlot, true))
 			{
 				if (!bCheckMoves)
 					return true;

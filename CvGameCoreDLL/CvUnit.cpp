@@ -629,7 +629,9 @@ void CvUnit::doTurn()
 			getGroup()->setActivityType(ACTIVITY_AWAKE);
 		} // </advc.033>
 	}
-
+	// <advc.004k>
+	if (isSeaPatrolling() && !canSeaPatrol())
+		getGroup()->setActivityType(ACTIVITY_AWAKE); // </advc.004k>
 	if (isSpy() && isIntruding() && !isCargo())
 	{
 		TeamTypes eTeam = getPlot().getTeam();
@@ -1235,7 +1237,8 @@ void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible)
 }
 
 
-void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted)
+void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted,
+	bool bSeaPatrol) // advc.004k
 {
 	if (pbIntercepted != NULL)
 		*pbIntercepted = false; // </advc.004c>
@@ -1302,7 +1305,8 @@ void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted)
 	}
 
 	//check if quick combat
-	bool const bVisible = (bQuick ? false : isCombatVisible(pDefender));
+	bool const bVisible = (bQuick ? false : isCombatVisible(pDefender,
+			bSeaPatrol)); // advc.004k
 
 	//FAssertMsg((pPlot == pDefender->plot()), "There is not expected to be a defender or the defender's plot is expected to be pPlot (the attack plot)");
 
@@ -1881,6 +1885,7 @@ void CvUnit::onActiveSelection()
 	// <advc.004h>
 	if (isFound())
 		updateFoundingBorder(); // </advc.004h>
+	GC.getGame().updateSeaPatrolColors(*this); // advc.004k
 }
 
 // advc.004h:
@@ -2681,13 +2686,15 @@ bool CvUnit::isInvasionMove(CvPlot const& kFrom, CvPlot const& kTo) const
 }
 
 
-void CvUnit::attack(CvPlot* pPlot, bool bQuick, /* advc.004c: */ bool* pbIntercepted)
+void CvUnit::attack(CvPlot* pPlot, bool bQuick, /* advc.004c: */ bool* pbIntercepted,
+	bool bSeaPatrol) // advc
 {
-	// Note: this assertion could fail in certain situations involving sea-patrol - Karadoc
-	FAssert(canMoveInto(*pPlot, true));
+	FAssert(canMoveInto(*pPlot, true)
+			// K-Mod (note): could fail in certain situations involving sea-patrol
+			|| bSeaPatrol); // advc
 	FAssert(getCombatTimer() == 0);
 	setAttackPlot(pPlot, false);
-	updateCombat(bQuick, pbIntercepted);
+	updateCombat(bQuick, pbIntercepted, /* advc: */ bSeaPatrol);
 }
 
 void CvUnit::fightInterceptor(CvPlot const& kPlot, bool bQuick) // advc: was CvPlot const*
@@ -3451,21 +3458,46 @@ bool CvUnit::canAirPatrol(const CvPlot* pPlot) const
 }
 
 
-bool CvUnit::canSeaPatrol(CvPlot const* pPlot) const
+bool CvUnit::canSeaPatrol(CvPlot const* pPlot, /* advc: */ bool bCheckActivity) const
 {
-	if (!pPlot->isWater())
+	CvPlot const& kPlot = (pPlot == NULL ? getPlot() : *pPlot); // advc
+	if (!kPlot.isWater())
 		return false;
-
 	if (getDomainType() != DOMAIN_SEA)
 		return false;
-
 	if (!canFight() || isOnlyDefensive())
 		return false;
-
-	//if (isWaiting())
-	if (getGroup()->getActivityType() == ACTIVITY_PATROL) // K-Mod
+	// <advc.004k>
+	bool bValid = false;
+	for (SquareIter itOther(kPlot, GC.getMAX_SEA_PATROL_RANGE(), false);
+		!bValid && itOther.hasNext(); ++itOther)
+	{
+		if (canReachBySeaPatrol(*itOther, &kPlot))
+			bValid = true;
+	}
+	if (!bValid)
+		return false; // </advc.004k>
+	if (bCheckActivity && isSeaPatrolling()) // advc
 		return false;
 	return true;
+}
+
+// advc: Cut from canSeaPatrol
+bool CvUnit::isSeaPatrolling() const
+{
+	return //isWaiting() // BtS
+			(getGroup()->getActivityType() == ACTIVITY_PATROL); // K-Mod
+}
+
+// advc.004k:
+bool CvUnit::canReachBySeaPatrol(CvPlot const& kDest, CvPlot const* pFrom) const
+{
+	CvPlot const& kFrom = (pFrom == NULL ? getPlot() : *pFrom);
+	int iDist = stepDistance(&kFrom, &kDest);
+	return (iDist <= GC.getMAX_SEA_PATROL_RANGE() && iDist > 0 &&
+			kDest.isWater() && kDest.getTeam() == getTeam() &&
+			kDest.getRevealedImprovementType(getTeam()) != NO_IMPROVEMENT &&
+			kDest.getArea().canBeEntered(getArea())); // advc.030
 }
 
 
@@ -4565,7 +4597,7 @@ bool CvUnit::pillage()
 			setMadeAttack(false);
 			int iWithdrawal = withdrawalProbability();
 			changeExtraWithdrawal(-iWithdrawal); // no withdrawal since we are really the defender
-			attack(pInterceptor->plot(), false);
+			attack(pInterceptor->plot(), false, /* advc: */ NULL, true);
 			changeExtraWithdrawal(iWithdrawal);
 			return false;
 		}
@@ -7796,7 +7828,8 @@ CvUnit* CvUnit::bestSeaPillageInterceptor(CvUnit* pPillager, int iMinOdds) const
 {
 	CvUnit* pBestUnit = NULL;
 	int iBestUnitRank = -1; // BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000
-	for (SquareIter it(*pPillager, 1); it.hasNext(); ++it)
+	for (SquareIter it(*pPillager, GC.getMAX_SEA_PATROL_RANGE(), false);
+		it.hasNext(); ++it)
 	{
 		CvPlot const& kLoopPlot = *it;
 		FOR_EACH_UNIT_VAR_IN(pLoopUnit, kLoopPlot)
@@ -7806,14 +7839,12 @@ CvUnit* CvUnit::bestSeaPillageInterceptor(CvUnit* pPillager, int iMinOdds) const
 				FAssertMsg(pLoopUnit != NULL, "Can this happen?"); // advc.test
 				continue;
 			}
-			//if (pLoopUnit->sameArea(*pPillager))
-			// advc.030: Replacing the above (and negated)
-			if(!pPillager->getArea().canBeEntered(pLoopUnit->getArea()))
-				continue;
-			if (!pLoopUnit->isInvisible(getTeam(), false) &&
-				isEnemy(pLoopUnit->getTeam()) &&
-				pLoopUnit->getDomainType() == DOMAIN_SEA &&
-				pLoopUnit->getGroup()->getActivityType() == ACTIVITY_PATROL)
+			// <advc>
+			if (pLoopUnit->isSeaPatrolling() &&
+				pLoopUnit->canSeaPatrol(pLoopUnit->plot()) && // <advc>
+				pLoopUnit->canReachBySeaPatrol(getPlot()) && // advc.004k
+				!pLoopUnit->isInvisible(getTeam(), false) &&
+				isEnemy(pLoopUnit->getTeam()))
 			{
 				if (pBestUnit == NULL || pLoopUnit->isBetterDefenderThan(pBestUnit, this,
 					// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000:
@@ -11452,7 +11483,8 @@ bool CvUnit::verifyStackValid()
 }
 
 //check if quick combat (in which case false is returned)
-bool CvUnit::isCombatVisible(const CvUnit* pDefender) const
+bool CvUnit::isCombatVisible(CvUnit const* pDefender,
+	bool bSeaPatrol) const // advc.004k
 {
 	bool bVisible = false;
 	if (!m_pUnitInfo->isQuickCombat())
@@ -11461,8 +11493,15 @@ bool CvUnit::isCombatVisible(const CvUnit* pDefender) const
 		{
 			if (isHuman())
 			{
-				if (!GET_PLAYER(getOwner()).isOption(PLAYEROPTION_QUICK_ATTACK))
+				if (!GET_PLAYER(getOwner()).isOption(PLAYEROPTION_QUICK_ATTACK) ||
+					/*	<advc.004k> Attacker/ defender role is a bit jumbled when
+						a sea patrol is triggered. Err on the side of slow combat. */
+					(bSeaPatrol &&
+					!GET_PLAYER(getOwner()).isOption(PLAYEROPTION_QUICK_DEFENSE)))
+					// </advc.004k>
+				{
 					bVisible = true;
+				}
 			}
 			else if (pDefender != NULL && pDefender->isHuman())
 			{

@@ -29,7 +29,8 @@ public:
 
 	void doTurn();
 	void doTurnPost(); // advc.029
-	void updateCombat(bool bQuick = false, /* advc.004c: */ bool* pbIntercepted = NULL);
+	void updateCombat(bool bQuick = false, /* advc.004c: */ bool* pbIntercepted = NULL,
+			bool bSeaPatrol = false); // advc.004k
 	void updateAirCombat(bool bQuick = false);
 	bool updateAirStrike(CvPlot& kPlot, bool bQuick, bool bFinish);
 
@@ -89,7 +90,8 @@ public:
 	bool isPlotValid(CvPlot const& kPlot) const;											// Exposed to Python (via CyPlot::isFriendlyCity)
 	bool isRevealedPlotValid(CvPlot const& kPlot) const; // </advc>
 	bool isInvasionMove(CvPlot const& kFrom, CvPlot const& kTo) const; // advc.162
-	void attack(CvPlot* pPlot, bool bQuick, /* advc.004c: */ bool* pbIntercepted = NULL);
+	void attack(CvPlot* pPlot, bool bQuick, /* advc.004c: */ bool* pbIntercepted = NULL,
+			bool bSeaPatrol = false); // advc
 	void attackForDamage(CvUnit *pDefender, int attackerDamageChange, int defenderDamageChange);
 	void fightInterceptor(CvPlot const& kPlot, bool bQuick);
 	void move(CvPlot& kPlot, bool bShow, // advc: 1st param was CvPlot* (not const b/c of possible feature change)
@@ -127,7 +129,10 @@ public:
 	bool canAirPatrol(const CvPlot* pPlot) const;															// Exposed to Python
 	void airCircle(bool bStart);
 
-	bool canSeaPatrol(const CvPlot* pPlot) const;															// Exposed to Python
+	bool canSeaPatrol(CvPlot const* pPlot																	// Exposed to Python
+			= NULL, bool bCheckActivity = false) const; // advc
+	bool isSeaPatrolling() const; // advc
+	bool canReachBySeaPatrol(CvPlot const& kDest, CvPlot const* pFrom = NULL) const; // advc.004k
 
 	bool canHeal(const CvPlot* pPlot) const;																// Exposed to Python
 	bool canSentryHeal(const CvPlot* pPlot) const; // advc.004l
@@ -1204,7 +1209,8 @@ protected:
 	bool verifyRoundsValid(const CvBattleDefinition & battleDefinition) const;
 	void increaseBattleRounds(CvBattleDefinition & battleDefinition) const;
 	int computeWaveSize(bool bRangedRound, int iAttackerMax, int iDefenderMax) const;
-	bool isCombatVisible(const CvUnit* pDefender) const;
+	bool isCombatVisible(const CvUnit* pDefender,
+			bool bSeaPatrol = false) const; // advc.004k
 	//void resolveCombat(CvUnit* pDefender, CvPlot* pPlot, CvBattleDefinition& kBattle);
 	void resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible); // K-Mod
 	void addAttackSuccessMessages(CvUnit const& kDefender, bool bFought) const; // advc.010
