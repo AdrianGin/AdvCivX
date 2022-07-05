@@ -991,7 +991,7 @@ ENUM_START(Command, COMMAND)
 	COMMAND_UNLOAD,
 	COMMAND_UNLOAD_ALL,
 	COMMAND_HOTKEY,
-	// Any additions need to be reflected in Civ4CommandInfos.xml
+	// Any changes need to be reflected in Civ4CommandInfos.xml
 ENUM_END(Command, COMMAND)
 
 ENUM_START(Control, CONTROL)

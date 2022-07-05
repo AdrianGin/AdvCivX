@@ -940,59 +940,48 @@ namespace // advc: To get rid of some duplicate code in SetGlobalActionInfo
 				hotkeyDescr::hotKeyFromDescription(kInfo.getHotKey(),
 				kInfo.isShiftDown(), kInfo.isAltDown(), kInfo.isCtrlDown()));
 	}
-}
-
-
-struct OrderIndex {int m_iPriority; int m_iIndex;}; // helper sort predicate
-bool sortHotkeyPriority(OrderIndex const orderIndex1, OrderIndex const orderIndex2)
-{
-	return (orderIndex1.m_iPriority > orderIndex2.m_iPriority);
+	// Replacing OrderIndex struct, sortHotkeyPriority function.
+	struct ActionData
+	{
+		ActionData(int iPriority, ActionSubTypes eSubType, int iSubID)
+			:	m_iPriority(iPriority), m_eSubType(eSubType), m_iSubID(iSubID) {}
+		int m_iPriority;
+		ActionSubTypes m_eSubType; // e.g. ACTIONSUBTYPE_MISSION
+		int m_iSubID; // e.g. MISSION_SLEEP
+	};
+	bool operator<(ActionData const& kFirst, ActionData const& kSecond)
+	{
+		// Let stable_sort handle ties
+		return (kFirst.m_iPriority > kSecond.m_iPriority);
+	}
 }
 
 /*	Looks for szTagName in XML and, if it exists, loads its value into ppActionInfo
-	and sets iNumVals to the total number of occurrences of szTagName in XML.
-	advc: Refactored using vectors, macros. */
+	and sets iNumVals to the total number of occurrences of szTagName in XML. */
 void CvXMLLoadUtility::SetGlobalActionInfo()
 {
+	/*	advc: Pasted the body of orderHotkeyInfo here, then deleted that function.
+		Also deleted the pre-BtS functions (already commented out) orderHotkeyInfoOld,
+		sortHotkeyPriorityOld. Then rewrote SetGlobalActionInfo in a less clumsy way.
+		With CvActionInfo::getSubType exported from the DLL, the approach of
+		explicitly storing (sub-)type IDs can't easily be abandoned. */
 	PROFILE_FUNC();
 	logMsg("SetGlobalActionInfo\n");
 
-	int const iOldActionInfos = GC.getNumActionInfos();
-	int const iActionInfos = iOldActionInfos +
-			NUM_INTERFACEMODE_TYPES +
-			GC.getNumBuildInfos() +
-			GC.getNumPromotionInfos() +
-			GC.getNumReligionInfos() +
-			GC.getNumCorporationInfos() +
-			GC.getNumUnitInfos() +
-			GC.getNumSpecialistInfos() +
-			GC.getNumBuildingInfos() +
-			NUM_CONTROL_TYPES +
-			NUM_COMMAND_TYPES +
-			NUM_AUTOMATE_TYPES +
-			NUM_MISSION_TYPES;
-	std::vector<int> aiIndexList(iActionInfos);
-	std::vector<int> aiPriorityList(iActionInfos);
-	std::vector<int> aiActionInfoTypeList(iActionInfos);
-	int iTotalActionInfos = 0;
+	// Originally named "iOldActionInfos". Not sure what this is for, modular loading?
+	int const iMissionOffset = GC.getNumActionInfos();
+
+	std::vector<ActionData> aActionData;
 	#define SET_ACTION_DATA(EnumName, ActionSubTypeName) \
 		FOR_EACH_ENUM(EnumName) \
 		{ \
-		int iLength = enum_traits<EnumName##Types>::length(); \
-			if (iLength <= 0) \
-			{ \
-				char szMessage[1024]; \
-				sprintf(szMessage, \
-						"%d is not greater than zero in CvXMLLoadUtility::SetGlobalActionInfo.\nCurrent XML file is: %s", \
-						iLength, GC.getCurrentXMLFile().GetCString()); \
-				errorMessage(szMessage); \
-			} \
-			/* Safer to use vector::at here (rather than operator[]) */ \
-			aiIndexList.at(iTotalActionInfos) = eLoop##EnumName; \
-			aiPriorityList.at(iTotalActionInfos) = GC.getInfo(eLoop##EnumName).getOrderPriority(); \
-			aiActionInfoTypeList.at(iTotalActionInfos) = ACTIONSUBTYPE_##ActionSubTypeName; \
-			iTotalActionInfos++; \
+			aActionData.push_back(ActionData( \
+					GC.getInfo(eLoop##EnumName).getOrderPriority(), \
+					ACTIONSUBTYPE_##ActionSubTypeName, \
+					eLoop##EnumName)); \
 		}
+	/*	The order of these calls serves as a tie-breaker for action priorities
+		(which determine the order in which actions are displayed on the HUD. */
 	SET_ACTION_DATA(Command, COMMAND);
 	SET_ACTION_DATA(InterfaceMode, INTERFACEMODE);
 	SET_ACTION_DATA(Build, BUILD);
@@ -1006,97 +995,85 @@ void CvXMLLoadUtility::SetGlobalActionInfo()
 	SET_ACTION_DATA(Automate, AUTOMATE);
 	SET_ACTION_DATA(Mission, MISSION);
 	#undef SET_ACTION_DATA
-	FAssert(iTotalActionInfos == iActionInfos);
-
-	/*	advc: Cut from deleted function orderHotkeyInfo. Also deleted
-		pre-BtS functions orderHotkeyInfoOld, sortHotkeyPriorityOld that had
-		already been commented out. */
-	std::vector<int> aiOrderedIndex(iActionInfos);
-	std::vector<OrderIndex> aiOrderPriority;
-	aiOrderPriority.resize(aiOrderedIndex.size());
-	for (size_t i = 0; i < aiOrderPriority.size(); i++)
-	{
-		aiOrderPriority[i].m_iPriority = aiPriorityList[i];
-		aiOrderPriority[i].m_iIndex = i;
-	}
-	std::sort(aiOrderPriority.begin(), aiOrderPriority.end(), sortHotkeyPriority);
-	for (size_t i = 0; i < aiOrderedIndex.size(); i++)
-		aiOrderedIndex[i] = aiOrderPriority[i].m_iIndex;
-
-	for (int i = 0; i < iActionInfos; i++)
+	/*	Bugfix? Was std::sort. That runs counter to the idea of breaking ties
+		in a deliberate way. */
+	std::stable_sort(aActionData.begin(), aActionData.end());
+	for (int iAction = 0; iAction < (int)aActionData.size(); iAction++)
 	{
 		CvActionInfo* pActionInfo = new CvActionInfo;
-		int const iOrdered = aiOrderedIndex[i];
-		int const iInfo = aiIndexList[iOrdered];
-		pActionInfo->setOriginalIndex(iInfo);
-		pActionInfo->setSubType((ActionSubTypes)aiActionInfoTypeList[iOrdered]);
-		if ((ActionSubTypes)aiActionInfoTypeList[iOrdered] == ACTIONSUBTYPE_COMMAND)
+		pActionInfo->setSubID(aActionData[iAction].m_iSubID);
+		pActionInfo->setSubType(aActionData[iAction].m_eSubType);
+		int const iSubID = pActionInfo->getSubID();
+		switch (pActionInfo->getSubType())
 		{
-			GC.getInfo((CommandTypes)iInfo).setActionInfoIndex(i);
-		}
-		else if ((ActionSubTypes)aiActionInfoTypeList[iOrdered] == ACTIONSUBTYPE_INTERFACEMODE)
+		case ACTIONSUBTYPE_COMMAND:
+			GC.getInfo((CommandTypes)iSubID).setActionInfoIndex(iAction);
+			break;
+		case ACTIONSUBTYPE_INTERFACEMODE:
+			GC.getInfo((InterfaceModeTypes)iSubID).setActionInfoIndex(iAction);
+			break;
+		case ACTIONSUBTYPE_BUILD:
+			GC.getInfo((BuildTypes)iSubID).setMissionType(FindInInfoClass("MISSION_BUILD"));
+			GC.getInfo((BuildTypes)iSubID).setActionInfoIndex(iAction);
+			break;
+		case ACTIONSUBTYPE_CONTROL:
+			GC.getControlInfo((ControlTypes)iSubID).setActionInfoIndex(iAction);
+			break;
+		case ACTIONSUBTYPE_AUTOMATE:
+			GC.getAutomateInfo((AutomateTypes)iSubID).setActionInfoIndex(iAction);
+			break;
+		case ACTIONSUBTYPE_MISSION:
+			GC.getMissionInfo((MissionTypes)iSubID).setActionInfoIndex(iAction + iMissionOffset);
+			break;
+		case ACTIONSUBTYPE_PROMOTION:
 		{
-			GC.getInfo((InterfaceModeTypes)iInfo).setActionInfoIndex(i);
-		}
-		else if ((ActionSubTypes)aiActionInfoTypeList[iOrdered] == ACTIONSUBTYPE_BUILD)
-		{
-			GC.getInfo((BuildTypes)iInfo).setMissionType(FindInInfoClass("MISSION_BUILD"));
-			GC.getInfo((BuildTypes)iInfo).setActionInfoIndex(i);
-		}
-		else if ((ActionSubTypes)aiActionInfoTypeList[iOrdered] == ACTIONSUBTYPE_CONTROL)
-		{
-			GC.getControlInfo((ControlTypes)iInfo).setActionInfoIndex(i);
-		}
-		else if ((ActionSubTypes)aiActionInfoTypeList[iOrdered] == ACTIONSUBTYPE_AUTOMATE)
-		{
-			GC.getAutomateInfo((AutomateTypes)iInfo).setActionInfoIndex(i);
-		}
-		else if ((ActionSubTypes)aiActionInfoTypeList[iOrdered] == ACTIONSUBTYPE_MISSION)
-		{
-			GC.getMissionInfo((MissionTypes)iInfo).setActionInfoIndex(i + iOldActionInfos);
-		}
-		else if ((ActionSubTypes)aiActionInfoTypeList[iOrdered] == ACTIONSUBTYPE_PROMOTION)
-		{
-			CvPromotionInfo& kPromo = GC.getInfo((PromotionTypes)iInfo);
+			CvPromotionInfo& kPromo = GC.getInfo((PromotionTypes)iSubID);
 			kPromo.setCommandType(FindInInfoClass("COMMAND_PROMOTION"));
-			setActionData(kPromo, i, (CommandTypes)kPromo.getCommandType());
+			setActionData(kPromo, iAction, (CommandTypes)kPromo.getCommandType());
+			break;
 		}
-		else if ((ActionSubTypes)aiActionInfoTypeList[iOrdered] == ACTIONSUBTYPE_UNIT)
+		case ACTIONSUBTYPE_UNIT:
 		{
-			CvUnitInfo& kUnit = GC.getInfo((UnitTypes)iInfo);
+			CvUnitInfo& kUnit = GC.getInfo((UnitTypes)iSubID);
 			kUnit.setCommandType((CommandTypes)FindInInfoClass("COMMAND_UPGRADE"));
-			kUnit.setActionInfoIndex(i);
-			setActionData(kUnit, i, kUnit.getCommandType());
+			kUnit.setActionInfoIndex(iAction);
+			setActionData(kUnit, iAction, kUnit.getCommandType());
+			break;
 		}
-		else if ((ActionSubTypes)aiActionInfoTypeList[iOrdered] == ACTIONSUBTYPE_RELIGION)
+		case ACTIONSUBTYPE_RELIGION:
 		{
-			CvReligionInfo& kReligion = GC.getInfo((ReligionTypes)iInfo);
+			CvReligionInfo& kReligion = GC.getInfo((ReligionTypes)iSubID);
 			kReligion.setMissionType(FindInInfoClass("MISSION_SPREAD"));
-			kReligion.setActionInfoIndex(i);
-			setActionData(kReligion, i, (MissionTypes)kReligion.getMissionType());
+			kReligion.setActionInfoIndex(iAction);
+			setActionData(kReligion, iAction, kReligion.getMissionType());
+			break;
 		}
-		else if ((ActionSubTypes)aiActionInfoTypeList[iOrdered] == ACTIONSUBTYPE_CORPORATION)
+		case ACTIONSUBTYPE_CORPORATION:
 		{
-			CvCorporationInfo& kCorp = GC.getInfo((CorporationTypes)iInfo);
+			CvCorporationInfo& kCorp = GC.getInfo((CorporationTypes)iSubID);
 			kCorp.setMissionType(FindInInfoClass("MISSION_SPREAD_CORPORATION"));
-			kCorp.setActionInfoIndex(i);
-			setActionData(kCorp, i, (MissionTypes)kCorp.getMissionType());
+			kCorp.setActionInfoIndex(iAction);
+			setActionData(kCorp, iAction, kCorp.getMissionType());
+			break;
 		}
-		else if ((ActionSubTypes)aiActionInfoTypeList[iOrdered] == ACTIONSUBTYPE_SPECIALIST)
+		case ACTIONSUBTYPE_SPECIALIST:
 		{
-			CvSpecialistInfo& kSpecialist = GC.getInfo((SpecialistTypes)iInfo);
+			CvSpecialistInfo& kSpecialist = GC.getInfo((SpecialistTypes)iSubID);
 			kSpecialist.setMissionType(FindInInfoClass("MISSION_JOIN"));
-			kSpecialist.setActionInfoIndex(i);
-			setActionData(kSpecialist, i, (MissionTypes)kSpecialist.getMissionType());
+			kSpecialist.setActionInfoIndex(iAction);
+			setActionData(kSpecialist, iAction, (MissionTypes)kSpecialist.getMissionType());
+			break;
 		}
-		else if ((ActionSubTypes)aiActionInfoTypeList[iOrdered] == ACTIONSUBTYPE_BUILDING)
+		case ACTIONSUBTYPE_BUILDING:
 		{
-			CvBuildingInfo& kBuilding = GC.getInfo((BuildingTypes)iInfo);
+			CvBuildingInfo& kBuilding = GC.getInfo((BuildingTypes)iSubID);
 			kBuilding.setMissionType((MissionTypes)FindInInfoClass("MISSION_CONSTRUCT"));
-			kBuilding.setActionInfoIndex(i);
-			//setActionData(kBuilding, i, (MissionTypes)kBuilding.getMissionType());
+			kBuilding.setActionInfoIndex(iAction);
+			setActionData(kBuilding, iAction, kBuilding.getMissionType());
+			break;
 		}
-
+		default: FErrorMsg("Unrecognized action subtype");
+		}
 		GC.m_paActionInfo.push_back(pActionInfo);
 	}
 }

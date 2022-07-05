@@ -1096,6 +1096,18 @@
 		<Spanish>Nueva l&#237;nea</Spanish>
 	</TEXT>
 
+	<!-- advc.004g: Originally in CIV4GameTextInfos.xml, saying "creates a group"
+		 which I find confusing as only one unit is selected. Translations based
+		 on TXT_KEY_WIDGET_DELETE_GROUP in the same original file. -->
+	<TEXT> <!-- redefine -->
+		<Tag>TXT_KEY_WIDGET_CREATE_GROUP</Tag>
+		<English>Separate from Group</English>
+		<French>Séparer du groupe</French>
+		<German>Aus der Gruppe lösen</German>
+		<Italian>Separa dal gruppo</Italian>
+		<Spanish>Separa del grupo</Spanish>
+	</TEXT>
+
 	<!-- advc.004: To be appended to TXT_KEY_MISC_*CREASE_RATE_HINT -->
 	<TEXT>
 		<Tag>TXT_KEY_MISC_INCREASE_RATE_HINT</Tag>
