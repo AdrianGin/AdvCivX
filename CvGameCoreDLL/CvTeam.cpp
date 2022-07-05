@@ -5057,17 +5057,17 @@ bool CvTeam::isBonusRevealed(BonusTypes eBonus) const // K-Mod
 	return (isHasTech(GC.getInfo(eBonus).getTechReveal()) || isForceRevealedBonus(eBonus));
 }
 
-// <advc.108> Based on CvPlayer::initFreeUnits
+// advc.108: Based on CvPlayer::initFreeUnits
 void CvTeam::revealSurroundingPlots(CvPlot const& kCenter, int iRange) const
 {
 	CvMap const& kMap = GC.getMap();
-	for(int i = 0; i < kMap.numPlots(); i++)
+	for (int i = 0; i < kMap.numPlots(); i++)
 	{
 		CvPlot& kPlot = kMap.getPlotByIndex(i);
-		if(plotDistance(&kPlot, &kCenter) <= iRange)
+		if (plotDistance(&kPlot, &kCenter) <= iRange)
 			kPlot.setRevealed(getID(), true, false, NO_TEAM, false);
 	}
-} // </advc.108>
+}
 
 int CvTeam::countNumHumanGameTurnActive() const
 {

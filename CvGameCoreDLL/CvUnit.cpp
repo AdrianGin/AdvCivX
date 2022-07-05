@@ -1693,25 +1693,9 @@ bool CvUnit::isActionRecommended(int iAction)
 {
 	if (!isActiveOwned() || /* advc.127: */ !isHuman())
 		return false;
-	/*  <advc.002e> This needs to be done in some CvUnit function that gets called
-		by the EXE after read, after isPromotionReady and late enough for IsSelected
-		to work. (E.g. setupGraphical and shouldShowEnemyGlow are too early.) */
-	if (iAction == 0 && !BUGOption::isEnabled("PLE__ShowPromotionGlow", false))
-	{
-		FOR_EACH_UNIT_VAR_IN(pUnit, *getGroup())
-		{
-			if(pUnit != NULL)
-			{
-				bool bGlow = pUnit->isPromotionReady();
-				gDLL->getEntityIFace()->showPromotionGlow(pUnit->getEntity(), bGlow);
-			}
-		}
-	} // </advc.002e>
-
-	// <advc.004h> Hack for replacing the founding borders shown around Settlers
-	if (iAction == 0 && isFound())
-		updateFoundingBorder(); // </advc.004h>
-
+	// <advc> (Don't know how else the DLL could tell)
+	if (iAction == 0)
+		onActiveSelection(); // </advc>
 	if (GET_PLAYER(getOwner()).isOption(PLAYEROPTION_NO_UNIT_RECOMMENDATIONS))
 		return false;
 
@@ -1875,6 +1859,28 @@ bool CvUnit::isActionRecommended(int iAction)
 	}
 
 	return false;
+}
+
+// advc: Called when the active player selects a unit
+void CvUnit::onActiveSelection()
+{
+	/*  <advc.002e> This needs to happen in some CvUnit function that gets called
+		by the EXE after read, after isPromotionReady and late enough for IsSelected
+		to work. (E.g. setupGraphical and shouldShowEnemyGlow are too early.) */
+	if (!BUGOption::isEnabled("PLE__ShowPromotionGlow", false))
+	{
+		FOR_EACH_UNIT_VAR_IN(pUnit, *getGroup())
+		{
+			if (pUnit != NULL)
+			{
+				bool bGlow = pUnit->isPromotionReady();
+				gDLL->getEntityIFace()->showPromotionGlow(pUnit->getEntity(), bGlow);
+			}
+		}
+	} // </advc.002e>
+	// <advc.004h>
+	if (isFound())
+		updateFoundingBorder(); // </advc.004h>
 }
 
 // advc.004h:
@@ -2691,7 +2697,8 @@ void CvUnit::fightInterceptor(CvPlot const& kPlot, bool bQuick) // advc: was CvP
 	updateAirCombat(bQuick);
 }
 
-void CvUnit::attackForDamage(CvUnit *pDefender, int attackerDamageChange, int defenderDamageChange)
+void CvUnit::attackForDamage(CvUnit *pDefender,
+	int attackerDamageChange, int defenderDamageChange)
 {
 	FAssert(getCombatTimer() == 0);
 	FAssert(pDefender != NULL);
@@ -4792,7 +4799,7 @@ void CvUnit::updatePlunder(int iChange, bool bUpdatePlotGroups)
 	}*/
 	// <advc.033>
 	// Update colors -- unless we're about to unit-cycle
-	if(isHuman() && ((iChange == -1 && gDLL->UI().getHeadSelectedUnit() == this) ||
+	if (isHuman() && ((iChange == -1 && gDLL->UI().getHeadSelectedUnit() == this) ||
 		GC.suppressCycling()))
 	{
 		GC.getGame().updateColoredPlots();
@@ -7486,10 +7493,10 @@ bool CvUnit::isBetterDefenderThan(const CvUnit* pDefender, const CvUnit* pAttack
 		bool bFound = false;
 		FOR_EACH_UNIT_IN(pUnit, getPlot())
 		{
-			if(pUnit->getTeam() == getTeam() && !pUnit->isInvisible(eAttackerTeam, false))
+			if (pUnit->getTeam() == getTeam() && !pUnit->isInvisible(eAttackerTeam, false))
 				bFound = true;
 		}
-		if(!bFound)
+		if (!bFound)
 			return false;
 	}
 	// Moved down: // </advc.028>

@@ -2012,8 +2012,7 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct,
 	{
 		MissionTypes eMission = (MissionTypes)kAction.getMissionType();
 		if (eMission != NO_MISSION)
-		{
-			// advc: Moved into subroutine
+		{	// advc: Moved into subroutine
 			parseActionHelp_Mission(kAction, *pHeadSelectedUnit, eMission, szBuffer);
 		}
 		if (kAction.getCommandType() != NO_COMMAND)

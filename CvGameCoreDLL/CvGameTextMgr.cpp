@@ -3563,7 +3563,7 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot const& kPlot)
 		szString.append(CvWString::format(SETCOLR, TEXT_COLOR("COLOR_NEGATIVE_TEXT")));
 		szString.append(NEWLINE);
 		szString.append(gDLL->getText("TXT_KEY_PLOT_BLOCKADED"));
-		szString.append(CvWString::format( ENDCOLR));
+		szString.append(CvWString::format(ENDCOLR));
 	}
 
 	if (kPlot.isFeature())

@@ -34,6 +34,7 @@ public:
 	bool updateAirStrike(CvPlot& kPlot, bool bQuick, bool bFinish);
 
 	bool isActionRecommended(int iAction);
+	void onActiveSelection(); // advc
 	void updateFoundingBorder(bool bForceClear = false) const; // advc.004h
 
 	bool isUnowned() const; // advc.061

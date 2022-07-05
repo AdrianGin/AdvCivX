@@ -210,8 +210,7 @@ void CvSelectionGroup::doTurn()
 				setActivityType(ACTIVITY_AWAKE); // time to wake up!
 			}
 		}
-	}
-	// K-Mod end
+	} // K-Mod end
 
 	// do unit's turns (checking for damage)
 	bool bHurt = false;

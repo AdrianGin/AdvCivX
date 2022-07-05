@@ -10429,7 +10429,7 @@ bool CvUnitAI::AI_guardCityAirlift()
 	return false;
 }
 
-// K-Mod.
+// K-Mod:
 // This function will use our naval unit to block the coast outside our cities.
 bool CvUnitAI::AI_guardCoast(bool bPrimaryOnly, MovementFlags eFlags, int iMaxPath)
 {
@@ -10525,7 +10525,7 @@ bool CvUnitAI::AI_guardCoast(bool bPrimaryOnly, MovementFlags eFlags, int iMaxPa
 	}
 
 	return false;
-} // K-Mod end
+}
 
 
 bool CvUnitAI::AI_guardBonus(int iMinValue)
@@ -10585,7 +10585,8 @@ bool CvUnitAI::AI_guardBonus(int iMinValue)
 	{
 		if (at(*pBestGuardPlot))
 		{
-			getGroup()->pushMission(  // <K-Mod>
+			getGroup()->pushMission(
+					// <K-Mod>
 					canSeaPatrol(pBestGuardPlot) ? MISSION_SEAPATROL :
 					(isFortifyable() ? MISSION_FORTIFY : MISSION_SKIP), // </K-Mod>
 					-1, -1, NO_MOVEMENT_FLAGS, false, false, MISSIONAI_GUARD_BONUS,
