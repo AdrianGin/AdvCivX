@@ -131,7 +131,7 @@
 			<fAlpha>1.00</fAlpha>
 		</ColorVal>
 		<!-- advc.004k: Use that color also for the Sea Patrol mission.
-			 But it's too dark for game text, so ... -->
+			 But it's still too dark for hover text, so ... -->
 		<ColorVal>
 			<Type>COLOR_CITY_BLUE_TEXT</Type>
 			<fRed>0.2</fRed>

@@ -1865,7 +1865,10 @@ bool CvUnit::isActionRecommended(int iAction)
 	return false;
 }
 
-// advc: Called when the active player selects a unit
+/*	advc: Called when the active player selects a unit.
+	(For responding to a unit becoming _unselected_ and no other unit
+	becoming selected, CvGame::updateSelectionList is my best bet - though it
+	doesn't learn which unit has become unselected.) */
 void CvUnit::onActiveSelection()
 {
 	/*  <advc.002e> This needs to happen in some CvUnit function that gets called

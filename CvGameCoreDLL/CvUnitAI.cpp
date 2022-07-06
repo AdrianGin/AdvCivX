@@ -651,8 +651,9 @@ int CvUnitAI::AI_groupSecondVal() /* advc: */ const
 
 /*	Returns attack odds out of 100 (the higher, the better...)
 	Withdrawal odds included in returned value
-	advc (note): Mostly obsoleted by LFBgetBetterAttacker and AI_getWeightedOdds;
-	I think only AI_paradrop still uses CvUnitAI::AI_attackOdds. */
+	advc (note): Mostly supplanted by LFBgetBetterAttacker and AI_getWeightedOdds -
+	though the latter calls AI_attackOdds indirectly. I think only AI_paradrop
+	still uses CvUnitAI::AI_attackOdds directly. */
 int CvUnitAI::AI_attackOdds(const CvPlot* pPlot, bool bPotentialEnemy) const
 {
 	PROFILE_FUNC();
