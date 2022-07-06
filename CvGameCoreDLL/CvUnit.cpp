@@ -3471,6 +3471,9 @@ bool CvUnit::canSeaPatrol(CvPlot const* pPlot, /* advc: */ bool bCheckActivity) 
 	if (!canFight() || isOnlyDefensive())
 		return false;
 	// <advc.004k>
+	// Will need pillager to attack us, unlikely to work under Ice.
+	if (kPlot.isImpassable())
+		return false;
 	bool bValid = false;
 	for (SquareIter itOther(kPlot, GC.getMAX_SEA_PATROL_RANGE(), false);
 		!bValid && itOther.hasNext(); ++itOther)
@@ -3485,11 +3488,13 @@ bool CvUnit::canSeaPatrol(CvPlot const* pPlot, /* advc: */ bool bCheckActivity) 
 	return true;
 }
 
-// advc: Cut from canSeaPatrol
+// advc:
 bool CvUnit::isSeaPatrolling() const
 {
-	return //isWaiting() // BtS
-			(getGroup()->getActivityType() == ACTIVITY_PATROL); // K-Mod
+	return (//isWaiting() // BtS
+			// K-Mod: (advc - cut from canSeaPatrol)
+			getGroup()->getActivityType() == ACTIVITY_PATROL &&
+			getDomainType() == DOMAIN_SEA);
 }
 
 // advc.004k:
@@ -3500,7 +3505,7 @@ bool CvUnit::canReachBySeaPatrol(CvPlot const& kDest, CvPlot const* pFrom) const
 	return (iDist <= GC.getMAX_SEA_PATROL_RANGE() && iDist > 0 &&
 			kDest.isWater() && kDest.getTeam() == getTeam() &&
 			kDest.getRevealedImprovementType(getTeam()) != NO_IMPROVEMENT &&
-			kDest.getArea().canBeEntered(getArea())); // advc.030
+			!GC.getMap().isSeparatedByIsthmus(kFrom, kDest));
 }
 
 
