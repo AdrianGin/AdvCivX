@@ -1698,8 +1698,12 @@ bool CvUnit::isActionRecommended(int iAction)
 	if (!isActiveOwned() || /* advc.127: */ !isHuman())
 		return false;
 	// <advc> (Don't know how else the DLL could tell)
-	if (iAction == 0)
-		onActiveSelection(); // </advc>
+	static int iLastUnitID = -1;
+	if (getID() != iLastUnitID)
+	{
+		iLastUnitID = getID();
+		onActiveSelection();
+	} // </advc>
 	if (GET_PLAYER(getOwner()).isOption(PLAYEROPTION_NO_UNIT_RECOMMENDATIONS))
 		return false;
 
