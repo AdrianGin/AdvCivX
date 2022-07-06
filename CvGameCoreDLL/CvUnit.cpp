@@ -7518,9 +7518,10 @@ bool CvUnit::isBetterDefenderThan(const CvUnit* pDefender, const CvUnit* pAttack
 	{
 		return false;
 	}
-	/*  and if there is some visible team unit that could get attacked otherwise
-		(better: check if our team has the best visible defender; tbd.): */
-	if (bInvisible)
+	/*  ... and if there is some visible team unit that could get attacked otherwise
+		(better: check if our team has the best visible defender; tbd.) ... */
+	if (bInvisible &&
+		!isSeaPatrolling()) // ... or when we're sea patrolling.
 	{
 		bool bFound = false;
 		FOR_EACH_UNIT_IN(pUnit, getPlot())
@@ -7843,7 +7844,8 @@ CvUnit* CvUnit::bestSeaPillageInterceptor(CvUnit* pPillager, int iMinOdds) const
 			if (pLoopUnit->isSeaPatrolling() &&
 				pLoopUnit->canSeaPatrol(pLoopUnit->plot()) && // <advc>
 				pLoopUnit->canReachBySeaPatrol(getPlot()) && // advc.004k
-				!pLoopUnit->isInvisible(getTeam(), false) &&
+				// advc.028: Allow submarines to patrol. What could go wrong?
+				//!pLoopUnit->isInvisible(getTeam(), false) &&
 				isEnemy(pLoopUnit->getTeam()))
 			{
 				if (pBestUnit == NULL || pLoopUnit->isBetterDefenderThan(pBestUnit, this,
