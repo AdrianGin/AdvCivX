@@ -9,6 +9,12 @@
 		<DefineName>SAVE_VERSION</DefineName>
 		<iDefineIntVal>303</iDefineIntVal>
 	</Define>
+	<!-- f1rpo: 000 in BtS. Setting the MIN_VERSION to 3.19 causes a warning
+		 to be shown when BtS isn't fully patched. -->
+	<Define>
+		<DefineName>MIN_VERSION</DefineName>
+		<iDefineIntVal>319</iDefineIntVal>
+	</Define>
 	<Define>
 		<DefineName>INITIAL_GOLD_PER_UNIT</DefineName>
 		<iDefineIntVal>100</iDefineIntVal> <!-- this is now percent cost, so I've changed it from 1 to 100 -->
