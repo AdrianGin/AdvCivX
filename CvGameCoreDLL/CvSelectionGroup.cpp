@@ -339,36 +339,52 @@ bool CvSelectionGroup::showMoves(/* advc.102: */ CvPlot const& kFromPlot) const
 	static bool const bShowShips = GC.getDefineBOOL("SHOW_FRIENDLY_SEA_MOVES");
 	// Also refers to Executives; those have the same Unit AI.
 	static bool const bShowMissionaries = GC.getDefineBOOL("SHOW_FRIENDLY_MISSIONARY_MOVES");
-	// </advc.102>
-	for (PlayerIter<HUMAN> it; it.hasNext(); ++it)
+	CvPlot const& kToPlot = getPlot();
+	PlayerTypes const eFromOwner = kFromPlot.getOwner();
+	PlayerTypes const eToOwner = kToPlot.getOwner();
+	PlayerTypes const eGroupOwner = getOwner();
+	DomainTypes const eGroupDomain = getDomainType();
+	bool const bAwayFromHome = (eGroupOwner != eToOwner ||
+			eGroupOwner != eFromOwner);
+	bool const bWaterPatrol = (getDomainType() == DOMAIN_SEA &&
+			AI().AI_getMissionAIType() == MISSIONAI_PATROL);
+	// </advc.102>  <advc.102b>
+	int const iFriendlyStackThresh = BUGOption::getValue(
+			"MainInterface__ShowFriendlyMovesThresh", 0); // </advc.102b>
+	for (PlayerIter<HUMAN> itHuman; itHuman.hasNext(); ++itHuman)
 	{
-		CvPlayer& kLoopPlayer = *it;
 		CvUnit const* pHeadUnit = getHeadUnit();
 		if(pHeadUnit == NULL)
 			continue;
-		if (pHeadUnit->isEnemy(kLoopPlayer.getTeam()))
+		if (pHeadUnit->isEnemy(itHuman->getTeam()))
 		{
-			if (kLoopPlayer.isOption(PLAYEROPTION_SHOW_ENEMY_MOVES))
+			if (itHuman->isOption(PLAYEROPTION_SHOW_ENEMY_MOVES))
 				return true;
 			continue;
 		}
-		if(!kLoopPlayer.isOption(PLAYEROPTION_SHOW_FRIENDLY_MOVES))
+		if(!itHuman->isOption(PLAYEROPTION_SHOW_FRIENDLY_MOVES))
 			continue;
+		// <advc.102b>
+		if (std::max(1, /*	kToPlot may not be visible at all,
+							but the move still gets animated. */
+			kToPlot.plotCount(PUF_isVisible, itHuman->getID(), -1, eGroupOwner)) <
+			iFriendlyStackThresh)
+		{
+			if (eGroupDomain != DOMAIN_SEA || // just to save time
+				getCargoSpace() <= 1)
+			{
+				continue;
+			}
+		} // </advc.102b>
 		// <advc.102> Hide uninteresting friendly moves
-		PlayerTypes eGroupOwner = m_eOwner;
-		TeamTypes eObs = kLoopPlayer.getTeam();
-		CvPlot const& kToPlot = *plot();
-		PlayerTypes eFromOwner = kFromPlot.getOwner();
-		PlayerTypes eToOwner = kToPlot.getOwner();
-		bool bAwayFromHome = (eGroupOwner != eToOwner || eGroupOwner != eFromOwner);
-		bool bInSpectatorsBorders = ((eFromOwner != NO_PLAYER &&
+		TeamTypes const eObs = itHuman->getTeam();
+		bool const bInSpectatorsBorders = ((eFromOwner != NO_PLAYER &&
 				eObs == TEAMID(eFromOwner)) || (eToOwner != NO_PLAYER &&
 				eObs == TEAMID(eToOwner)));
-		bool bEnteringOrLeaving = (getPlot().isVisible(eObs) != kFromPlot.isVisible(eObs));
-		bool bSeaPatrol = (getDomainType() == DOMAIN_SEA &&
-				AI().AI_getMissionAIType() == MISSIONAI_PATROL);
+		bool const bEnteringOrLeaving = (getPlot().isVisible(eObs) !=
+				kFromPlot.isVisible(eObs));
 		// Just to avoid cycling through the units
-		if(bInSpectatorsBorders && (bEnteringOrLeaving || !bSeaPatrol))
+		if(bInSpectatorsBorders && (bEnteringOrLeaving || !bWaterPatrol))
 			return true;
 		if(bShowWorkers && bShowShips && bShowMissionaries)
 			return true;
@@ -387,7 +403,7 @@ bool CvSelectionGroup::showMoves(/* advc.102: */ CvPlot const& kFromPlot) const
 			bool bWorker = (u.AI_getUnitAIType() == UNITAI_WORKER ||
 					u.AI_getUnitAIType() == UNITAI_WORKER_SEA);
 			bool bNonTransportShip = (bSeaUnit && !u.isHuman() &&
-					(u.cargoSpace() <= 1 || bSeaPatrol));
+					(u.cargoSpace() <= 1 || bWaterPatrol));
 			bool bMissionary = (u.AI_getUnitAIType() == UNITAI_MISSIONARY);
 			if(!bMissionary && bAwayFromHome && (!bSeaUnit ||
 				!bNonTransportShip || bShowShips || bEnteringOrLeaving))
@@ -2205,6 +2221,15 @@ int CvSelectionGroup::getCargo() const
 		iCargoCount += pUnit->getCargo();
 	}
 	return iCargoCount;
+}
+
+// advc.102b: Cargo capacity, whether used or not.
+int CvSelectionGroup::getCargoSpace() const
+{
+	int iSpace = 0;
+	FOR_EACH_UNIT_IN(pUnit, *this)
+		iSpace += pUnit->cargoSpace();
+	return iSpace;
 }
 
 // K-Mod:

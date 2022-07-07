@@ -98,6 +98,7 @@ public:
 	bool isFull() const;																																											// Exposed to Python
 	bool hasCargo() const;																																										// Exposed to Python
 	int getCargo() const;
+	int getCargoSpace() const; // advc.102b
 	int cargoSpaceAvailable(SpecialUnitTypes eSpecialCargo = NO_SPECIALUNIT, DomainTypes eDomainCargo = NO_DOMAIN) const; // K-Mod
 	DllExport bool canAllMove()																																				// Exposed to Python
 	// <advc> Need a const version fo this

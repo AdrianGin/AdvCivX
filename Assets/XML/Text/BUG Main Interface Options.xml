@@ -350,6 +350,23 @@
 		<German>Auto|Nah|Mittel|Weit|XML-Wert</German>
 	</TEXT>
 
+	<!-- advc.102b: (Would've preferred
+		 "Ignore Friendly Stacks &lt;"
+		 but labels can't include angle brackets, and "smaller than" or even
+		 "smaller" is too long.) -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__SHOWFRIENDLYMOVESTHRESH_TEXT</Tag>
+		<English>Friendly Moves Threshold</English>
+		<German>Zeige Freundliche Bew. ab</German>
+	</TEXT>
+	<!-- (Would be nice to mention that transports are assumed to be full when
+		 counting units, but the text is already quite long.) -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__SHOWFRIENDLYMOVESTHRESH_HOVER</Tag>
+		<English>When a unit owned by a non-hostile civ has moved, and that civ has fewer units in the destination tile than this threshold, then the [COLOR_HIGHLIGHT_TEXT]Show Friendly Moves[COLOR_REVERT] option (Ctrl+O screen) ignores the move. As the moving unit is included in the count, a threshold of [COLOR_HIGHLIGHT_TEXT]1[COLOR_REVERT] corresponds to the BtS behavior of showing all moves - except that AdvCiv always excludes worker moves and some other uninteresting moves. The threshold has no effect when [COLOR_HIGHLIGHT_TEXT]Show Friendly Moves[COLOR_REVERT] isn't enabled.</English>
+		<German>Schwelle für die BtS-Option [COLOR_HIGHLIGHT_TEXT]Freundliche Bewegungen zeigen[COLOR_REVERT] (Strg+O). Wenn eine nicht-feindliche Zivilisation eine Einheit bewegt und diese Zivilisation im Ziel-Feld dann weniger Einheiten Einheiten besitzt als der Schwellwert, dann wird diese Bewegung nicht per Kamerasprung angezeigt. Da die bewegte Einheit mitzählt, bedeutet eine Schwelle von [COLOR_HIGHLIGHT_TEXT]1[COLOR_REVERT], dass alle Bewegungen angezeigt werden, wie in BtS - abgesehen davon, dass AdvCiv bestimmte, wahrscheinlich uninteressante Bewegungen nie anzeigt, insbesondere Bautrupp-Bewegungen.</German>
+	</TEXT>
+
 	<!-- advc.002a: -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__MINIMAP_TEXT</Tag>
@@ -383,8 +400,8 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__UNITSONMINIMAP_HOVER</Tag>
-		<English>If checked, units outside their owners' borders are shown as colored blips on the main screen minimap.</English>
-		<German>Zeigt Einheiten, die sich außerhalb ihres Territoriums befinden, als Farbkleckse auf der Mini-Karte (Hauptbildschirm) an.</German>
+		<English>If checked, units outside their owners' borders are shown as colored blips on the main screen minimap (as in BtS).</English>
+		<German>Zeigt Einheiten, die sich außerhalb ihres Territoriums befinden, als Farbkleckse auf der Mini-Karte (Hauptbildschirm) an - wie in BtS.</German>
 	</TEXT>
 
 	<!-- advc.savem: -->
