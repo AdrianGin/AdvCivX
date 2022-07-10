@@ -9023,7 +9023,8 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 18; // advc.130c: change in rank hate calc
 	//uiFlag = 19; // advc.500c: Update citizen assignments
 	//uiFlag = 20; // advc.130r: Update war attitude
-	uiFlag = 21; // advc.enum
+	//uiFlag = 21; // advc.enum
+	uiFlag = 22; // advc.130n: Bugfix in fave-civic attitude calc
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9239,7 +9240,7 @@ void CvGame::onAllGameDataRead()
 		SAFE_DELETE_ARRAY(m_pLegacyOrgSeatData);
 	} // </advc.enum>
 	// <advc.130n>, advc.148, advc.130x
-	if (m_uiSaveFlag < 18 ||
+	if (m_uiSaveFlag < 22 ||
 		// <advc.127> Save created during AI Auto Play
 		(m_iAIAutoPlay != 0 && !isNetworkMultiPlayer()))
 	{

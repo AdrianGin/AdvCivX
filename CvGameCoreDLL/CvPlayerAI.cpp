@@ -8303,8 +8303,9 @@ int CvPlayerAI::AI_getFavoriteCivicAttitude(PlayerTypes ePlayer) const
 	if (eFavCivic != NO_CIVIC &&
 		isCivic(eFavCivic) && GET_PLAYER(ePlayer).isCivic(eFavCivic))
 	{
-		// advc.130n: Moved into new function
-		return AI_ideologyAttitudeChange(ePlayer, SAME_CIVIC,
+		return kPersonality.getFavoriteCivicAttitudeChange() +
+				// advc.130n: Moved into new function
+				AI_ideologyAttitudeChange(ePlayer, SAME_CIVIC,
 				AI_getFavoriteCivicCounter(ePlayer),
 				kPersonality.getFavoriteCivicAttitudeDivisor(),
 				kPersonality.getFavoriteCivicAttitudeChangeLimit());
