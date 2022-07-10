@@ -1697,13 +1697,28 @@ bool CvUnit::isActionRecommended(int iAction)
 {
 	if (!isActiveOwned() || /* advc.127: */ !isHuman())
 		return false;
+	bool bUpdateFoundBorder = false; // advc.004h
 	// <advc> (Don't know how else the DLL could tell)
 	static int iLastUnitID = -1;
 	if (getID() != iLastUnitID)
 	{
 		iLastUnitID = getID();
 		onActiveSelection();
+		bUpdateFoundBorder = true; // advc.004h
 	} // </advc>
+	// <advc.004h>
+	{	// Update founding border also when go-to plot changes
+		static CvPlot const* pLastGoToPlot = NULL;
+		CvPlot const* pGoToPlot = gDLL->UI().getGotoPlot();
+		if (pGoToPlot != NULL && pGoToPlot != pLastGoToPlot)
+		{
+			bUpdateFoundBorder = true;
+			pLastGoToPlot = pGoToPlot;
+		}
+	}
+	if (bUpdateFoundBorder && isFound())
+		updateFoundingBorder();
+	// </advc.004h>
 	if (GET_PLAYER(getOwner()).isOption(PLAYEROPTION_NO_UNIT_RECOMMENDATIONS))
 		return false;
 
@@ -1889,9 +1904,6 @@ void CvUnit::onActiveSelection()
 			}
 		}
 	} // </advc.002e>
-	// <advc.004h>
-	if (isFound())
-		updateFoundingBorder(); // </advc.004h>
 	GC.getGame().updateSeaPatrolColors(*this); // advc.004k
 }
 
