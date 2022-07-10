@@ -257,6 +257,33 @@
         <DefineName>ENABLE_STARTING_POSITION_ITERATION</DefineName>
         <iDefineIntVal>1</iDefineIntVal>
     </Define>
+	<!-- If the number of plots exceeds this threshold, then the
+		 BtS algorithm sets the starting locations, regardless of whether
+		 ENABLE_STARTING_POSITION_ITERATION is set. Recommended: 12000
+		 (At Huge world size, most map scripts create about 10000 plots.)
+		 Could go a bit higher w/o becoming prohibitively slow, but it's
+		 doubtful that the iterative algorithm will do much good on super-huge
+		 maps unless the time limit (see below) is (generously) extended. -->
+	<Define>
+        <DefineName>SPI_PLOT_LIMIT</DefineName>
+        <iDefineIntVal>12000</iDefineIntVal>
+    </Define>
+	<!-- Multiplier for the maximal number of steps considered by the
+		 Starting Position Iteration (SPI) algorithm. Each such step corresponds
+		 to a re-evaluation of the fairness (and other properties) of all
+		 starting locations assuming that one or two locations are moved.
+		 Each iteration considers several alternative steps.
+		 SPI stops once it either finds a very good position or when the
+		 maximal number of steps to be considered has been reached.
+		 This time limit is set based on the number of plots and civs
+		 and gets adjusted by this percentage. Recommended: 100.
+		 Especially for large maps, increasing the limit substantially may
+		 increase the fairness of the starting locations - at the expense of
+		 (proportionally) longer computing times. -->
+	<Define>
+        <DefineName>SPI_TIME_LIMIT_PERCENT</DefineName>
+        <iDefineIntVal>100</iDefineIntVal>
+    </Define>
 
 	<!-- advc.137: 12 in BtS. Recommended: 10 to match the
 		 higher default player counts in AdvCiv. -->
