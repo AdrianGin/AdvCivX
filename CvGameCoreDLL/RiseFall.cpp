@@ -572,8 +572,7 @@ void RiseFall::welcomeToNextChapter(int pos) {
 	p.verifyCivics();
 	resetProductionDecay(p.getID());
 	// Doing this in setUIHidden has no effect
-	if(gDLL->getEngineIFace()->isGlobeviewUp())
-		gDLL->getEngineIFace()->toggleGlobeview();
+	GC.getGame().setGlobeView(false);
 	centerCamera(p.getID());
 	abandonPlans(p.getID()); // Also tries to move the camera
 	GC.getGame().showDawnOfMan();
@@ -1013,7 +1012,7 @@ void RiseFall::handleDefeatPopup(int buttonClicked, int pos) {
 	if(buttonClicked == 1) {
 		setUIHidden(false);
 		CvPlot::setAllFog(false);
-		gDLL->UI().exitingToMainMenu();
+		GC.getGame().exitToMenu();
 		return;
 	}
 	if(pos < 0 || pos >= (int)(chapters.size() - 1)) {

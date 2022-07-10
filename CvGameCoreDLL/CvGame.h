@@ -135,6 +135,8 @@ public:
 	// <K-Mod>
 	void retire();
 	void enterWorldBuilder(); // </K-Mod>
+	void exitToMenu(); // advc
+	void setGlobeView(bool b); // advc
 
 	DllExport void implementDeal(PlayerTypes eWho, PlayerTypes eOtherWho,
 			CLinkList<TradeData>* pOurList, CLinkList<TradeData>* pTheirList,

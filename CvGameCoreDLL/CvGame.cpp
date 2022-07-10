@@ -5155,7 +5155,8 @@ bool CvGame::isSimultaneousTeamTurns() const
 	return true;
 }
 
-// advc (note): Not called when loading a savegame from the opening menu
+/*	advc (note): Not called when loading a savegame from the opening menu.
+	Not set to false upon returning to the main menu. */
 void CvGame::setFinalInitialized(bool bNewValue)
 {
 	PROFILE_FUNC();
@@ -5165,7 +5166,6 @@ void CvGame::setFinalInitialized(bool bNewValue)
 	m_bFinalInitialized = bNewValue;
 	if (!isFinalInitialized())
 		return;
-
 	updatePlotGroups();
 	GC.getMap().updateIrrigated();
 	// <advc.158> Replacing K-Mod code. If spawned later, CvPlayer::initInGame will handle it.

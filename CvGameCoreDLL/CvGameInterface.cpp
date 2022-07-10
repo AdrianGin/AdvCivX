@@ -1573,31 +1573,31 @@ void CvGame::doControl(ControlTypes eControl)
 		break;
 
 	case CONTROL_QUICK_LOAD:
-		if (!isNetworkMultiPlayer()) // SP only!
-		{	// <advc.003d>
-			/*  Loading works fine in windowed mode, and when a debugger is
-				attached, exitingToMainMenu can actually be quite slow.
-				(Fullscreen pretty much rules out that a debugger is attached.) */
-			if (gDLL->getGraphicOption(GRAPHICOPTION_FULLSCREEN))
+		if (isNetworkMultiPlayer()) // SP only!
+			break;
+		// <advc.003d>
+		/*  Loading works fine in windowed mode, and when a debugger is
+			attached, exitingToMainMenu can actually be quite slow.
+			(Fullscreen pretty much rules out that a debugger is attached.) */
+		if (gDLL->getGraphicOption(GRAPHICOPTION_FULLSCREEN))
+		{
+			/*  On my system, it's "C:\\Users\\Administrator\\Documents\\My Games\\Beyond the Sword\\Saves\\single\\quick\\QuickSave.CivBeyondSwordSave";
+				the user directory can vary. */
+			CvString szQuickSavePath(BUGOption::userDirPath());
+			if (!szQuickSavePath.empty())
 			{
-				/*  On my system, it's "C:\\Users\\Administrator\\Documents\\My Games\\Beyond the Sword\\Saves\\single\\quick\\QuickSave.CivBeyondSwordSave";
-					the user directory can vary. */
-				CvString szQuickSavePath(BUGOption::userDirPath());
-				if (!szQuickSavePath.empty())
+				szQuickSavePath += "\\Beyond the Sword\\Saves\\single\\quick\\QuickSave.CivBeyondSwordSave";
+				// CTD if loading fails, so let's make sure that the file is good.
+				std::ifstream quickSaveFile(szQuickSavePath);
+				if (quickSaveFile.good())
 				{
-					szQuickSavePath += "\\Beyond the Sword\\Saves\\single\\quick\\QuickSave.CivBeyondSwordSave";
-					// CTD if loading fails, so let's make sure that the file is good.
-					std::ifstream quickSaveFile(szQuickSavePath);
-					if (quickSaveFile.good())
-					{
-						kUI.exitingToMainMenu(szQuickSavePath.c_str());
-						break;
-					}
+					kUI.exitingToMainMenu(szQuickSavePath.c_str());
+					break;
 				}
-				FErrorMsg("Failed to find quicksave");
-			} // </advc.003d>
-			gDLL->QuickLoad();
-		}
+			}
+			FErrorMsg("Failed to find quicksave");
+		} // </advc.003d>
+		gDLL->QuickLoad();
 		break;
 
 	case CONTROL_ORTHO_CAMERA:
@@ -1782,7 +1782,7 @@ void CvGame::retire()
 		if (isNetworkMultiPlayer())
 		{
 			gDLL->sendMPRetire();
-			gDLL->UI().exitingToMainMenu();
+			GC.getGame().exitToMenu();
 		}
 		else gDLL->handleRetirement(getActivePlayer());
 	}
@@ -1811,6 +1811,20 @@ void CvGame::enterWorldBuilder()
 		}
 	}
 } // K-Mod end
+
+/*	advc: Wrapper for CvDLLInterfaceIFaceBase::exitingToMainMenu.
+	In case that there's something we want to do beforehand. */
+void CvGame::exitToMenu()
+{
+	gDLL->UI().exitingToMainMenu();
+}
+
+// advc:
+void CvGame::setGlobeView(bool b)
+{
+	if (gDLL->getEngineIFace()->isGlobeviewUp() != b)
+		gDLL->getEngineIFace()->toggleGlobeview();
+}
 
 
 void CvGame::getGlobeLayers(std::vector<CvGlobeLayerData>& aLayers) const
