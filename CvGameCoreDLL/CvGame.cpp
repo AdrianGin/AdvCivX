@@ -310,6 +310,11 @@ void CvGame::regenerateMap(/* advc.tsl: */ bool bAutomated)
 	gDLL->getEngineIFace()->clearSigns();
 	kMap.erasePlots();
 
+	// <advc.001>
+	if (m_iNumSessions > 1)
+	{	// Will not have been called when regenerating from a savegame
+		GC.getPythonCaller()->callMapFunction("beforeInit");
+	} // </advc.001>
 	/*	advc.027b: Mustn't overwrite m_initialRandSeed.uiSync if we want to
 		preserve the civ selection when reproducing a map after a restart.
 		normalizeStartingPlots now uses MapRand exclusively. */
