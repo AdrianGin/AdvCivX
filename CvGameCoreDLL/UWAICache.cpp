@@ -1183,7 +1183,7 @@ scaled UWAICache::teamThreat(TeamTypes eRival) const
 			kRival.AI_getAttitude(eOwnerTeam));
 	if (kRival.isAVassal() || eTowardOwner >= ATTITUDE_FRIENDLY ||
 		// Don't worry about long-term threat if they're already close to victory
-		kRival.AI_anyMemberAtVictoryStage3())
+		kRival.AI_anyMemberAtVictoryStage4())
 	{
 		return 0;
 	}

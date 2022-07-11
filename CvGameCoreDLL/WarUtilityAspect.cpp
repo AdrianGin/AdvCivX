@@ -1727,7 +1727,6 @@ void Assistance::evaluate()
 		rUtility = rOBUtil;
 		log("Utility raised to %d for strategic value of OB", rUtility.round());
 	}
-	// DogPileWarRand also factors in through the military analysis
 	scaled rPersonalityMult = kWeAI.protectiveInstinct();
 	log("Personality multiplier: %d percent", rPersonalityMult.getPercent());
 	/*	Assistance really counts the negative utility from losses
@@ -2184,8 +2183,7 @@ void PreEmptiveWar::evaluate()
 {
 	/*	If an unfavorable war with them seems likely in the long run,
 		we rather take our chances now. */
-	/*	Don't worry about long-term threat if already in the endgame;
-		Kingmaking handles that. */
+	// Don't worry about long-term threat when getting close to victory
 	if (kOurTeam.AI_anyMemberAtVictoryStage3() || militAnalyst().isEliminated(eWe) ||
 		militAnalyst().hasCapitulated(kOurTeam.getID()))
 	{
@@ -2282,6 +2280,12 @@ void PreEmptiveWar::evaluate()
 		rThreatChange.flipSign();
 	log("Change in threat: %d percent", rThreatChange.getPercent());
 	scaled rUtility = -90 * rCurrThreat * rThreatChange;
+	// Kingmaking should handle the endgame (but not quite there yet)
+	if (rUtility.abs().uround() >= 1 && kTheirTeam.AI_anyMemberAtVictoryStage3())
+	{
+		log("Util from pre-emptive war reduced b/c they're close to victory");
+		rUtility *= fixp(0.6);
+	}
 	scaled rDistrustFactor = kWeAI.distrustRating();
 	log("Our distrust: %d percent", rDistrustFactor.getPercent());
 	m_iU += (rUtility * rDistrustFactor).round();
