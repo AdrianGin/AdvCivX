@@ -42,22 +42,6 @@
 		<iDefineIntVal>14223</iDefineIntVal>
 	</Define>
 
-	<!-- advc.106i: If set to 1, replay files are written in such a way that
-		 they appear like unmodded replays to BtS, meaning that AdvCiv replays
-		 will show up on the Hall of Fame screen even when no mod is loaded.
-		 If any player colors are added to CIV4ColorVals.xml beyond those in
-		 BtS, then this option is automatically disabled (as if set to 0)
-		 because BtS is unable to show replays that use unfamiliar color
-		 values. AdvCiv does not add such colors, but derived mods might.
-		 Additional map sizes, victory conditions, handicap or game speed
-		 settings will also cause problems, and therefore cause this option to be
-		 disabled.
-		 Mod-mods may also want to change TXT_KEY_REPLAY_PREFIX_ADVC in
-		 Civ4GameText_advc.xml. -->
-	<Define>
-		<DefineName>HOF_STORE_REPLAYS_AS_BTS</DefineName>
-		<iDefineIntVal>1</iDefineIntVal>
-	</Define>
 	<!-- advc.106i: If set to 1, replays from unmodded BtS can be viewed
 		 through AdvCiv's Hall of Fame screen. If set to 0, unmodded replays
 		 are filtered out. -->
@@ -83,8 +67,8 @@
 		 main screen, Military Advisor and Replay screen.
 		 Recommended: 512 as in BtS. A higher value (e.g. 1024) looks
 		 better on the (maximized) replay screen, but is incompatible
-		 with HOF_STORE_REPLAYS_AS_BTS=1. Higher values also increase
-		 the size of replay files.
+		 with the "Mod Name in Replays" option (System tab of the BUG menu).
+		 Higher values also increase the size of replay files.
 		 AdvCiv (since version 0.97) stores MINIMAP_RENDER_SIZE in
 		 replay files, so compatibility between within AdvCiv isn't
 		 an issue, but BtS can only read size 512. -->

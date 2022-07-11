@@ -29,6 +29,10 @@
 			<option id="OptionsButton" key="Options Button" 
 					type="boolean" default="False"
 					get="isShowOptionsButton" set="setShowOptionsButton"/>
+
+			<!-- advc.106i -->
+			<option id="ModNameInReplays" key="Mod Name In Replays" 
+					type="boolean" default="True" />
 					
 			<!-- advc.106b -->
 			<option id="AutoOpenEventLog" key="Auto Open Event Log" 

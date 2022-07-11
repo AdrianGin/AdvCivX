@@ -34,7 +34,6 @@
 		<Italian>Dottone Opzioni</Italian>
 		<Spanish>Botón Opciones</Spanish>
 	</TEXT>
-	
 	<!-- advc.004, advc.002g: Some extra info added (incl. restart) -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__OPTIONSBUTTON_HOVER</Tag>
@@ -42,6 +41,18 @@
 		<German>Zeigt (nach dem nächsten Neustart) eine Schaltfläche zum Öffnen des BUG-Menüs in der oberen linken Ecke des Hauptbildschirms an (neben der Ereignis-Log-Schaltfläche). Das BUG-Menü lässt sich in jedem Fall vom Spielmenü [ESC] und Spieleroptionsmenü [STRG+O] aus aufrufen, und direkt per [CTRL+ALT+O].</German>
 		<Italian>Quando è selezionato, mostra il bottone della schermata opzioni del BUG.</Italian>
 		<Spanish>Permite mostrar el botón de opciones BUG en la pantalla.</Spanish>
+	</TEXT>
+
+	<!-- advc.106i -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__MODNAMEINREPLAYS_TEXT</Tag>
+		<English>Mod Name in Replays</English>
+		<German>Mod-Name in Replays</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__MODNAMEINREPLAYS_HOVER</Tag>
+		<English>When checked, the name of the mod's folder (normally "AdvCiv") is written into your replay files, which excludes them from the Hall of Fame screen when BtS is run without mods. (As for showing replays created by BtS or other mods on the AdvCiv Hall of Fame screen, see the [COLOR_BUILDING_TEXT]HOF_...[COLOR_REVERT] variables in [COLOR_BUILDING_TEXT]GlobalDefines_advc.xml[COLOR_REVERT].)</English>
+		<German>Speichert den Ordner-Namen des Mods (standardmäßig "AdvCiv") in [COLOR_BUILDING_TEXT]Civ4BeyondSwordReplay[COLOR_REVERT]-Dateien (Wiederholungen). Dies verhindert, dass die BtS-Ruhmeshalle AdvCiv-Replays aufführt, wenn kein Mod geladen ist. (Was die Anzeige von BtS-Replays und Replays anderer Mods in der AdvCiv-Ruhmeshalle angeht, siehe die COLOR_BUILDING_TEXT]HOF_...[COLOR_REVERT]-Variablen in [COLOR_BUILDING_TEXT]GlobalDefines_advc.xml[COLOR_REVERT].)</German>
 	</TEXT>
 
 	<!-- advc.106b -->

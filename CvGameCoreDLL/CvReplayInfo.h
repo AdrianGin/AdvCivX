@@ -88,7 +88,7 @@ protected:
 	void addSettingsMsg(); // advc.106h
 	// <advc.106i>
 	bool checkBounds(int iValue, int iLower, int iUpper) const;
-	static bool STORE_REPLAYS_AS_BTS;
+	bool isStoringReplaysAsBtS() const;
 	// </advc.106i>
 	static int REPLAY_VERSION;
 
