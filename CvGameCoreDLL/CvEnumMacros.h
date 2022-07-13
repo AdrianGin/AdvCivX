@@ -59,10 +59,6 @@
 	DO(Bonus, BONUS) \
 	DO(LeaderHead, LEADER) \
 	DO(Civilization, CIVILIZATION) \
-	/* <advc.tsl> (not exposed to Python) */ \
-	DO(TruCiv, TRUCIV) \
-	DO(TruLeader, TRULEADER) \
-	DO(TruBonus, TRUBONUS) /* </advc.tsl> */ \
 	DO(Cursor, CURSOR) \
 	/* internal only */ \
 	DO(BuildingClass, BUILDINGCLASS) \
@@ -81,7 +77,11 @@
 	DO(Event, EVENT) \
 	DO(EventTrigger, EVENTTRIGGER) \
 	DO(EspionageMission, ESPIONAGEMISSION) \
-	DO(UnitArtStyle, UNIT_ARTSTYLE)
+	DO(UnitArtStyle, UNIT_ARTSTYLE) \
+	/* <advc.tsl> (not exposed to Python) */ \
+	DO(TruCiv, TRUCIV) \
+	DO(TruLeader, TRULEADER) \
+	DO(TruBonus, TRUBONUS) /* </advc.tsl> */
 
 // Number of instances not known at compile time
 #define DO_FOR_EACH_DYN_INFO_TYPE(DO) \

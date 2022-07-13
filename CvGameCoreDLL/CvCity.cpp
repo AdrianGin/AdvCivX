@@ -3725,7 +3725,6 @@ int CvCity::totalBadBuildingHealth() const
 		return (getBuildingBadHealth() + getArea().getBuildingBadHealth(getOwner()) +
 				GET_PLAYER(getOwner()).getBuildingBadHealth() + getExtraBuildingBadHealth());
 	}
-
 	return 0;
 }
 
@@ -3811,7 +3810,7 @@ int CvCity::badHealth(bool bNoAngry, int iExtra) const
 
 int CvCity::healthRate(bool bNoAngry, int iExtra) const
 {
-	return std::min(0, (goodHealth() - badHealth(bNoAngry, iExtra)));
+	return std::min(0, goodHealth() - badHealth(bNoAngry, iExtra));
 }
 
 
@@ -3826,7 +3825,6 @@ int CvCity::foodDifference(bool bBottom, bool bIgnoreProduction) const
 {
 	if (isDisorder())
 		return 0;
-
 	int iDifference;
 	//if (isFoodProduction())
 	if (!bIgnoreProduction && isFoodProduction()) // K-Mod
@@ -3838,7 +3836,6 @@ int CvCity::foodDifference(bool bBottom, bool bIgnoreProduction) const
 		if (getPopulation() == 1 && getFood() == 0)
 			iDifference = std::max(0, iDifference);
 	}
-
 	return iDifference;
 }
 
@@ -5133,7 +5130,7 @@ void CvCity::goodBadHealthHappyChange(CvPlot const& kPlot, ImprovementTypes eNew
 	std::pair<int,int> iiOldHealth = calculateSurroundingHealth();
 	iGoodHealthChange = iiNewHealth.first - iiOldHealth.first;
 	iBadHealthChange = iiNewHealth.second - iiOldHealth.second;
-}// </advc.901>
+} // </advc.901>
 
 // BUG - Actual Effects - start
 /*	Returns the additional angry population caused by the given happiness changes.
