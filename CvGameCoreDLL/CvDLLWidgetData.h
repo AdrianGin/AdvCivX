@@ -213,15 +213,6 @@ protected:
 	// K-Mod end  <advc.ctr>
 	bool parseCityTradeHelp(CvWidgetDataStruct const& kWidget, CvCity*& pCity,
 			PlayerTypes& eWhoTo) const; // </advc.ctr>
-	// <advc.004a> Additional help text:
-	 // Discover ("bulb") button
-	CvWString getDiscoverPathText(UnitTypes eUnit, PlayerTypes ePlayer) const;
-	// </advc.004a> <advc.004b> Found button
-	CvWString getFoundCostText(CvPlot const& p, PlayerTypes eOwner) const;
-	CvWString getHomePlotYieldText(CvPlot const& p, PlayerTypes eOwner) const;
-	CvWString getNetFeatureHealthText(CvPlot const& kCityPlot, PlayerTypes eOwner) const;
-	// </advc.004b>
-
 };
 
-#endif//_CVDLLWIDGETDATA_H_
+#endif

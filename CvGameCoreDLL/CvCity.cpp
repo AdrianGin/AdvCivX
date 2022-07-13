@@ -3731,80 +3731,35 @@ int CvCity::totalBadBuildingHealth() const
 
 int CvCity::goodHealth() const
 {
-	int iTotalHealth = 0;
-	int iHealth = getFreshWaterGoodHealth();
-	if (iHealth > 0)
-		iTotalHealth += iHealth;
-
-	iHealth = getSurroundingGoodHealth();
-	if (iHealth > 0)
-		iTotalHealth += iHealth;
-
-	iHealth = getPowerGoodHealth();
-	if (iHealth > 0)
-		iTotalHealth += iHealth;
-
-	iHealth = getBonusGoodHealth();
-	if (iHealth > 0)
-		iTotalHealth += iHealth;
-
-	iHealth = totalGoodBuildingHealth();
-	if (iHealth > 0)
-		iTotalHealth += iHealth;
-
-	iHealth = GET_PLAYER(getOwner()).getExtraHealth() + getExtraHealth();
-	if (iHealth > 0)
-		iTotalHealth += iHealth;
-
-	iHealth = GC.getInfo(getHandicapType()).getHealthBonus();
-	if (iHealth > 0)
-		iTotalHealth += iHealth;
-
-	return iTotalHealth;
+	int iHealth = 0;
+	iHealth += std::max(0, getFreshWaterGoodHealth());
+	iHealth += std::max(0, getSurroundingGoodHealth());
+	iHealth += std::max(0, getPowerGoodHealth());
+	iHealth += std::max(0, getBonusGoodHealth());
+	iHealth += std::max(0, totalGoodBuildingHealth());
+	iHealth += std::max(0,
+			GET_PLAYER(getOwner()).getExtraHealth() + getExtraHealth());
+	iHealth += std::max(0, GC.getInfo(getHandicapType()).getHealthBonus());
+	return iHealth;
 }
 
 
 int CvCity::badHealth(bool bNoAngry, int iExtra) const
 {
-	int iTotalHealth = 0;
-	int iHealth = getEspionageHealthCounter();
-	if (iHealth > 0)
-		iTotalHealth -= iHealth;
-
-	iHealth = getFreshWaterBadHealth();
-	if (iHealth < 0)
-		iTotalHealth += iHealth;
-
-	iHealth = getSurroundingBadHealth();
-	if (iHealth < 0)
-		iTotalHealth += iHealth;
-
-	iHealth = getPowerBadHealth();
-	if (iHealth < 0)
-		iTotalHealth += iHealth;
-
-	iHealth = getBonusBadHealth();
-	if (iHealth < 0)
-		iTotalHealth += iHealth;
-
-	iHealth = totalBadBuildingHealth();
-	if (iHealth < 0)
-		iTotalHealth += iHealth;
-
-	iHealth = GET_PLAYER(getOwner()).getExtraHealth() + getExtraHealth();
-	if (iHealth < 0)
-		iTotalHealth += iHealth;
-
-	iHealth = GC.getInfo(getHandicapType()).getHealthBonus();
-	if (iHealth < 0)
-		iTotalHealth += iHealth;
+	int iHealth = 0;
+	iHealth -= std::max(0, getEspionageHealthCounter());
+	iHealth += std::min(0, getFreshWaterBadHealth());
+	iHealth += std::min(0, getSurroundingBadHealth());
+	iHealth += std::min(0, getPowerBadHealth());
+	iHealth += std::min(0, getBonusBadHealth());
+	iHealth += std::min(0, totalBadBuildingHealth());
+	iHealth += std::min(0,
+			GET_PLAYER(getOwner()).getExtraHealth() + getExtraHealth());
+	iHealth += std::min(0, GC.getInfo(getHandicapType()).getHealthBonus());
 	/*	advc.001 (from Better BUG AI, fix by Fuyu):
 		Already counted by totalBadBuildingHealth. */
-	/*iHealth = getExtraBuildingBadHealth();
-	if (iHealth < 0)
-		iTotalHealth += iHealth;*/
-
-	return (unhealthyPopulation(bNoAngry, iExtra) - iTotalHealth);
+	//iHealth += std::min(0, getExtraBuildingBadHealth());
+	return (unhealthyPopulation(bNoAngry, iExtra) - iHealth);
 }
 
 

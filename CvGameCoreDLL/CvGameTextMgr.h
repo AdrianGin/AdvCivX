@@ -101,6 +101,8 @@ public:
 			bool bPlayerContext = false, bool bStrategyText = false,
 			bool bTreeInfo = true, TechTypes eFromTech = NO_TECH);
 // BULL - Trade Denial - end
+	// advc.004a:
+	void setDiscoverPathHelp(CvWStringBuffer& szBuffer, UnitTypes eUnit);
 	// <advc.ctr>
 	void setCityTradeHelp(CvWStringBuffer& szBuffer, CvCity const& kCity,
 			PlayerTypes eWhoTo, bool bListMore); // </advc.ctr>
@@ -115,8 +117,13 @@ public:
 	void setProcessHelp(CvWStringBuffer &szBuffer, ProcessTypes eProcess);
 	// BULL - Production Decay: (advc.094)
 	void setProductionDecayHelp(CvWStringBuffer &szBuffer, int iTurnsLeft, int iThreshold, int iDecay, bool bProducing);
-	void setGoodHealthHelp(CvWStringBuffer &szBuffer, CvCity& city);
-	void setBadHealthHelp(CvWStringBuffer &szBuffer, CvCity& city);
+	void setGoodHealthHelp(CvWStringBuffer &szBuffer, CvCity const& kCity);
+	void setBadHealthHelp(CvWStringBuffer &szBuffer, CvCity const& kCity);
+	// <advc.004b>
+	void setFoundHealthHelp(CvWStringBuffer& szBuffer, CvPlot const& kCityPlot);
+	void setFoundCostHelp(CvWStringBuffer& szBuffer, CvPlot const& kCityPlot);
+	void setHomePlotYieldHelp(CvWStringBuffer& szBuffer, CvPlot const& kCityPlot);
+	// </advc.004b>
 // BUG - Building Additional Health - start
 	bool setBuildingAdditionalHealthHelp(CvWStringBuffer &szBuffer, const CvCity& city, const CvWString& szStart, bool bStarted = false);
 // BUG - Building Additional Health - end
