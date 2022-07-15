@@ -5090,6 +5090,11 @@ class CvMainInterface:
 				or pHeadSelectedCity.getBuildingOriginalTime(iBuilding))
 				+ iBuilding) # id as tiebreaker
 		'''
+		# Let's at least put free and obsolete buildings at the end
+		aCityBldgs = sorted(aCityBldgs, key=lambda iBuilding:
+				iBuilding 
+				- 2000 * pHeadSelectedCity.getNumActiveBuilding(iBuilding)
+				+ 1000 * pHeadSelectedCity.getNumFreeBuilding(iBuilding))
 		# </advc.097>
 		for iBuilding in aCityBldgs:
 			for k in range(pHeadSelectedCity.getNumBuilding(iBuilding)):
