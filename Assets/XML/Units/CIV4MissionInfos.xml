@@ -452,6 +452,8 @@
 			<bShiftDownAlt>0</bShiftDownAlt>
 			<bCtrlDownAlt>0</bCtrlDownAlt>
 			<iHotKeyPriorityAlt>0</iHotKeyPriorityAlt>
+			<!-- advc.004k: To keep this button all the way to the right -->
+			<iOrderPriority>4</iOrderPriority>
 			<bVisible>1</bVisible>
 			<Button>,Art/Interface/Buttons/Actions/FoundCity.dds,Art/Interface/Buttons/Actions_Builds_LeaderHeads_Specialists_Atlas.dds,1,4</Button>
 		</MissionInfo>
