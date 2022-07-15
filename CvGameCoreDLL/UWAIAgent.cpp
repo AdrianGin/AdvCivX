@@ -2698,11 +2698,11 @@ scaled UWAI::Player::tradeValUtilityConversionRate() const
 			getTrainPercent();
 	if (iTrainPercent > 0)
 		rSpeedFactor = scaled(100, iTrainPercent);
-	return (3 * rSpeedFactor) /
+	return std::max(scaled::epsilon(), (3 * rSpeedFactor) /
 			(scaled::max(10,
 			GET_TEAM(m_eAgent).AI_estimateYieldRate(m_eAgent, YIELD_COMMERCE))
 			+ 2 * scaled::max(1,
-			GET_TEAM(m_eAgent).AI_estimateYieldRate(m_eAgent, YIELD_PRODUCTION)));
+			GET_TEAM(m_eAgent).AI_estimateYieldRate(m_eAgent, YIELD_PRODUCTION))));
 	/*  Note that change advc.004s excludes espionage and culture from the
 		Economy history, and estimateYieldRate(YIELD_COMMERCE) doesn't account
 		for these yields either. Not a problem for culture, I think, which is
