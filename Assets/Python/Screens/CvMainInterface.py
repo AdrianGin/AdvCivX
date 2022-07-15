@@ -5282,7 +5282,10 @@ class CvMainInterface:
 				- 1000 * pHeadSelectedCity.getNumBonuses(iBonus)
 				+ iBonus) # </advc.004>
 		# <advc.092>
-		if self.bCityBonusButtons or gRect("Top").height() > 900:
+		if (self.bCityBonusButtons or
+				gRect("Top").height() > 900
+				# Quick adjustment for mod-mods that add resources
+				+ max(0, gc.getNumBonusInfos() - 35) * 12):
 			iFontSize = 3
 		else:
 			iFontSize = 1 # (2 doesn't really increase the size of icons)
