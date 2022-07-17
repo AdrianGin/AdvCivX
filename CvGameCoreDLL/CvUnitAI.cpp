@@ -3266,6 +3266,7 @@ void CvUnitAI::AI_attackCityMove()
 			getting ready to attack takes long. Might be that everyone else
 			is gathering at a different staging city. */
 		if (getPlot().isCity() && GET_TEAM(getTeam()).AI_isAnyChosenWar() &&
+			!isBarbarian() &&
 			(eAreaAI == AREAAI_OFFENSIVE || eAreaAI == AREAAI_MASSING))
 		{
 			int iMaxWPAge = 0;
