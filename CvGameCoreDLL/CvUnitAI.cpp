@@ -3399,7 +3399,7 @@ void CvUnitAI::AI_attackCityMove()
 			// K-Mod. If the target city is close, be less likely to wait for backup.
 			int iPathTurns = 10;
 			int iMaxWaitTurns = 3;
-			if (pTargetCity!= NULL &&
+			if (pTargetCity != NULL &&
 				generatePath(pTargetCity->getPlot(), eMoveFlags, true,
 				&iPathTurns, iPathTurns))
 			{
