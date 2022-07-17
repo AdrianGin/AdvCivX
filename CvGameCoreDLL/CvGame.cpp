@@ -7583,6 +7583,19 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 	case UNITAI_ATTACK: bSea = false; break;
 	default: return NO_UNIT;
 	}
+	/*	<advc.301> Era numbers are just too coarse. Going by tech costs
+		isn't great for mod-mods (which may completely overhaul tech costs),
+		don't know how to do this more properly with reasonable effort. */
+	bool bAnyExpensiveTech = false;
+	FOR_EACH_ENUM(Tech)
+	{
+		if (GET_TEAM(BARBARIAN_TEAM).isHasTech(eLoopTech) &&
+			GC.getInfo(eLoopTech).getResearchCost() > 100)
+		{
+			bAnyExpensiveTech = true;
+			break;
+		}
+	} // </advc.301>
 	UnitTypes eR = NO_UNIT;
 	int iBestValue = 0;
 	CvCivilization const& kCiv = GET_PLAYER(BARBARIAN_PLAYER).getCivilization();
@@ -7622,25 +7635,12 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 			if (!bValid || !kArea.hasAnyAreaPlayerBonus(eAndBonus))
 				continue;
 		}
-		/*	No units from more than 1 era ago (obsolescence too difficult to test).
-			hasTech already tested by canTrain, but era shouldn't be tested there
-			b/c it's OK for Barbarian cities to train outdated units
-			(they only will if they can't train anything better). */
-		TechTypes const eAndTech = kUnit.getPrereqAndTech();
-		int iUnitEra = 0;
-		if (eAndTech != NO_TECH)
-			iUnitEra = GC.getInfo(eAndTech).getEra();
-		for (size_t j = 0; j < aeAndBonusTechs.size(); j++)
-		{
-			iUnitEra = std::max<int>(iUnitEra,
-					GC.getInfo(aeAndBonusTechs[j]).getEra());
-		}
-		if (iUnitEra + 1 < getCurrentEra())
-			continue; // </advc.301>
-		bool bFound = false;
+		//bool bFound = false;
+		// Store these techs for the era check below
+		std::vector<TechTypes> aeOrBonusTechsFound;
+		// </advc.301>
 		bool bRequires = false;
-		for (int j = 0; j < kUnit.getNumPrereqOrBonuses() &&
-			!bFound; j++)
+		for (int j = 0; j < kUnit.getNumPrereqOrBonuses(); j++)
 		{
 			bRequires = true;
 			BonusTypes const eOrBonus = kUnit.getPrereqOrBonuses(j);
@@ -7648,16 +7648,69 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 			if (GET_TEAM(BARBARIAN_TEAM).isHasTech(kOrBonus.getTechCityTrade()) &&
 				// <advc.301>
 				GET_TEAM(BARBARIAN_TEAM).isHasTech(kOrBonus.getTechReveal()) &&
-				kArea.hasAnyAreaPlayerBonus(eOrBonus)) // </advc.301>
+				kArea.hasAnyAreaPlayerBonus(eOrBonus))
 			{
-				bFound = true;
+				//bFound = true;
+				aeOrBonusTechsFound.push_back(kOrBonus.getTechCityTrade());
+				aeOrBonusTechsFound.push_back(kOrBonus.getTechReveal());
+				// </advc.301>
 			}
 		}
-		if (bRequires && !bFound)
+		if (bRequires && aeOrBonusTechsFound.empty())
 			continue;
-		int iValue = 1 + SyncRandNum(1000);
+		int iDieSides = 1000;
+		// <advc.301>
+		TechTypes const eAndTech = kUnit.getPrereqAndTech();
+		int iUnitEra = 0;
+		if (eAndTech != NO_TECH)
+			iUnitEra = GC.getInfo(eAndTech).getEra();
+		// No units from more than 1 era behind the civs
+		if (iUnitEra + 1 < getCurrentEra())
+			continue;
+		// Treat Warrior as pre-Ancient in the following
+		if (eAndTech == NO_TECH)
+			iUnitEra = -1;
+		// Higher chance for non-outdated units w/o resource reqs (i.e. Archer)
+		scaled const rNoBonusReqDieSidesMult = fixp(1.3);
+		if ((!bRequires && eAndBonus == NO_BONUS &&
+			/*	Want Warrior to be as likely as Archer until Axes and Spears
+				become available. The game era is usually already Classical
+				when Archers become available. */
+			(!bAnyExpensiveTech || iUnitEra + 1 >= getCurrentEra())) ||
+			kUnit.getMoves() > 1) // Horse Archers can also use a little buff
+		{
+			iDieSides = (iDieSides * rNoBonusReqDieSidesMult).uround();
+		} // </advc.301>
+		int iValue = 1 + SyncRandNum(iDieSides);
 		if (kUnit.getUnitAIType(eUnitAI))
-			iValue += 200;
+		{
+			//iValue += 200;
+			// <advc.301>
+			iValue += (rNoBonusReqDieSidesMult + 1).getPercent();
+		}
+		for (size_t j = 0; j < aeAndBonusTechs.size(); j++)
+		{
+			iUnitEra = std::max<int>(iUnitEra,
+					GC.getInfo(aeAndBonusTechs[j]).getEra());
+		}
+		{
+			int iOrBonusEra = MAX_INT;
+			for (size_t j = 0; j < aeOrBonusTechsFound.size(); j++)
+			{
+				iOrBonusEra = std::min<int>(iOrBonusEra,
+						GC.getInfo(aeOrBonusTechsFound[j]).getEra());
+			}
+			if (iOrBonusEra < MAX_INT)
+				iUnitEra = std::max(iUnitEra, iOrBonusEra);
+		}
+		/*	Absolute preference for units of the current or previous era
+			of the Barbarians. Due to the game era check above and Barbarians
+			normally being behind the game era, this will matter mainly just
+			for Warrior, which we're treating as pre-Ancient here:
+			No more Warriors once Swords are available. */
+		iValue += 10000 * (1 + std::min(iUnitEra,
+				GET_TEAM(BARBARIAN_TEAM).getCurrentEra() - 1));
+		// </advc.301>
 		if (iValue > iBestValue)
 		{
 			eR = eUnit;
