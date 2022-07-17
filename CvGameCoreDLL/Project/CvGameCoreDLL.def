@@ -26,3 +26,4 @@ EXPORTS
 ?getHeadUnit@CvSelectionGroup@@QBEPAVCvUnit@@XZ=?getHeadUnitExternal@CvSelectionGroup@@QBEPAVCvUnit@@XZ
 ?nextUnitNode@CvPlot@@QBEPAV?$CLLNode@UIDInfo@@@@PAV2@@Z=?nextUnitNodeExternal@CvPlot@@QBEPAV?$CLLNode@UIDInfo@@@@PAV2@@Z
 ?shuffle@@YAPAHHAAVCvRandom@@@Z=?shuffleExternal@@YAPAHHAAVCvRandom@@@Z
+?getDefineINT@CvGlobals@@QBEHPBD@Z=?getDefineINTExternal@CvGlobals@@QBEHPBD@Z

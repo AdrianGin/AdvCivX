@@ -333,8 +333,8 @@ void CvUnit::finalizeInit() // advc.003u: Body cut from init
 
 		CvWString szBuffer(gDLL->getText("TXT_KEY_MISC_SOMEONE_CREATED_UNIT",
 				kOwner.getNameKey(), getNameKey()));
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, kOwner.getID(),
-				szBuffer, getX(), getY(), GC.getColorType("UNIT_TEXT"));
+		GC.getGame().addReplayMessage(getPlot(), REPLAY_MESSAGE_MAJOR_EVENT,
+				kOwner.getID(), szBuffer, GC.getColorType("UNIT_TEXT"));
 	}
 
 	CvEventReporter::getInstance().unitCreated(this);
@@ -629,7 +629,9 @@ void CvUnit::doTurn()
 			getGroup()->setActivityType(ACTIVITY_AWAKE);
 		} // </advc.033>
 	}
-
+	// <advc.004k>
+	if (isSeaPatrolling() && !canSeaPatrol())
+		getGroup()->setActivityType(ACTIVITY_AWAKE); // </advc.004k>
 	if (isSpy() && isIntruding() && !isCargo())
 	{
 		TeamTypes eTeam = getPlot().getTeam();
@@ -688,7 +690,7 @@ void CvUnit::doTurn()
 	//setReconPlot(NULL); // advc.029: Handled at end of turn now
 	// <advc.001b> Allow double spent moves to carry over to the next turn
 	if (getMoves() >= 2 * maxMoves())
-		setMoves(maxMoves()); // </advc.001b>
+		finishMoves(); // </advc.001b>
 	else setMoves(0);
 }
 
@@ -1235,7 +1237,8 @@ void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible)
 }
 
 
-void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted)
+void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted,
+	bool bSeaPatrol) // advc.004k
 {
 	if (pbIntercepted != NULL)
 		*pbIntercepted = false; // </advc.004c>
@@ -1302,7 +1305,8 @@ void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted)
 	}
 
 	//check if quick combat
-	bool const bVisible = (bQuick ? false : isCombatVisible(pDefender));
+	bool const bVisible = (bQuick ? false : isCombatVisible(pDefender,
+			bSeaPatrol)); // advc.004k
 
 	//FAssertMsg((pPlot == pDefender->plot()), "There is not expected to be a defender or the defender's plot is expected to be pPlot (the attack plot)");
 
@@ -1693,25 +1697,28 @@ bool CvUnit::isActionRecommended(int iAction)
 {
 	if (!isActiveOwned() || /* advc.127: */ !isHuman())
 		return false;
-	/*  <advc.002e> This needs to be done in some CvUnit function that gets called
-		by the EXE after read, after isPromotionReady and late enough for IsSelected
-		to work. (E.g. setupGraphical and shouldShowEnemyGlow are too early.) */
-	if (iAction == 0 && !BUGOption::isEnabled("PLE__ShowPromotionGlow", false))
+	bool bUpdateFoundBorder = false; // advc.004h
+	// <advc> (Don't know how else the DLL could tell)
+	static int iLastUnitID = -1;
+	if (getID() != iLastUnitID)
 	{
-		FOR_EACH_UNIT_VAR_IN(pUnit, *getGroup())
+		iLastUnitID = getID();
+		onActiveSelection();
+		bUpdateFoundBorder = true; // advc.004h
+	} // </advc>
+	// <advc.004h>
+	{	// Update founding border also when go-to plot changes
+		static CvPlot const* pLastGoToPlot = NULL;
+		CvPlot const* pGoToPlot = gDLL->UI().getGotoPlot();
+		if (pGoToPlot != NULL && pGoToPlot != pLastGoToPlot)
 		{
-			if(pUnit != NULL)
-			{
-				bool bGlow = pUnit->isPromotionReady();
-				gDLL->getEntityIFace()->showPromotionGlow(pUnit->getEntity(), bGlow);
-			}
+			bUpdateFoundBorder = true;
+			pLastGoToPlot = pGoToPlot;
 		}
-	} // </advc.002e>
-
-	// <advc.004h> Hack for replacing the founding borders shown around Settlers
-	if (iAction == 0 && isFound())
-		updateFoundingBorder(); // </advc.004h>
-
+	}
+	if (bUpdateFoundBorder && isFound())
+		updateFoundingBorder();
+	// </advc.004h>
 	if (GET_PLAYER(getOwner()).isOption(PLAYEROPTION_NO_UNIT_RECOMMENDATIONS))
 		return false;
 
@@ -1875,6 +1882,29 @@ bool CvUnit::isActionRecommended(int iAction)
 	}
 
 	return false;
+}
+
+/*	advc: Called when the active player selects a unit.
+	(For responding to a unit becoming _unselected_ and no other unit
+	becoming selected, CvGame::updateSelectionList is my best bet - though it
+	doesn't learn which unit has become unselected.) */
+void CvUnit::onActiveSelection()
+{
+	/*  <advc.002e> This needs to happen in some CvUnit function that gets called
+		by the EXE after read, after isPromotionReady and late enough for IsSelected
+		to work. (E.g. setupGraphical and shouldShowEnemyGlow are too early.) */
+	if (!BUGOption::isEnabled("PLE__ShowPromotionGlow", false))
+	{
+		FOR_EACH_UNIT_VAR_IN(pUnit, *getGroup())
+		{
+			if (pUnit != NULL)
+			{
+				bool bGlow = pUnit->isPromotionReady();
+				gDLL->getEntityIFace()->showPromotionGlow(pUnit->getEntity(), bGlow);
+			}
+		}
+	} // </advc.002e>
+	GC.getGame().updateSeaPatrolColors(*this); // advc.004k
 }
 
 // advc.004h:
@@ -2675,13 +2705,15 @@ bool CvUnit::isInvasionMove(CvPlot const& kFrom, CvPlot const& kTo) const
 }
 
 
-void CvUnit::attack(CvPlot* pPlot, bool bQuick, /* advc.004c: */ bool* pbIntercepted)
+void CvUnit::attack(CvPlot* pPlot, bool bQuick, /* advc.004c: */ bool* pbIntercepted,
+	bool bSeaPatrol) // advc
 {
-	// Note: this assertion could fail in certain situations involving sea-patrol - Karadoc
-	FAssert(canMoveInto(*pPlot, true));
+	FAssert(canMoveInto(*pPlot, true)
+			// K-Mod (note): could fail in certain situations involving sea-patrol
+			|| bSeaPatrol); // advc
 	FAssert(getCombatTimer() == 0);
 	setAttackPlot(pPlot, false);
-	updateCombat(bQuick, pbIntercepted);
+	updateCombat(bQuick, pbIntercepted, /* advc: */ bSeaPatrol);
 }
 
 void CvUnit::fightInterceptor(CvPlot const& kPlot, bool bQuick) // advc: was CvPlot const*
@@ -2691,7 +2723,8 @@ void CvUnit::fightInterceptor(CvPlot const& kPlot, bool bQuick) // advc: was CvP
 	updateAirCombat(bQuick);
 }
 
-void CvUnit::attackForDamage(CvUnit *pDefender, int attackerDamageChange, int defenderDamageChange)
+void CvUnit::attackForDamage(CvUnit *pDefender,
+	int attackerDamageChange, int defenderDamageChange)
 {
 	FAssert(getCombatTimer() == 0);
 	FAssert(pDefender != NULL);
@@ -2825,7 +2858,7 @@ void CvUnit::move(CvPlot& kPlot, bool bShow, /* advc.163: */ bool bJump, bool bG
 	CvPlot& kOldPlot = *plot();
 	// <advc.163>
 	if (bJump)
-		setMoves(maxMoves()); // </advc.163>
+		finishMoves(); // </advc.163>
 	else changeMoves(kPlot.movementCost(*this, kOldPlot));
 	// <advc.162>
 	if(isInvasionMove(kOldPlot, kPlot))
@@ -3444,25 +3477,51 @@ bool CvUnit::canAirPatrol(const CvPlot* pPlot) const
 }
 
 
-bool CvUnit::canSeaPatrol(const CvPlot* pPlot) const
+bool CvUnit::canSeaPatrol(CvPlot const* pPlot, /* advc: */ bool bCheckActivity) const
 {
-	// <advc.004k> To avoid sync issues with the BUG option
-	if (GC.getGame().isNetworkMultiPlayer())
-		return false; // </advc.004k>
-	if (!pPlot->isWater())
+	CvPlot const& kPlot = (pPlot == NULL ? getPlot() : *pPlot); // advc
+	if (!kPlot.isWater())
 		return false;
-
 	if (getDomainType() != DOMAIN_SEA)
 		return false;
-
 	if (!canFight() || isOnlyDefensive())
 		return false;
-
-	//if (isWaiting())
-	if (getGroup()->getActivityType() == ACTIVITY_PATROL) // K-Mod
+	// <advc.004k>
+	// Will need pillager to attack us, unlikely to work under Ice.
+	if (kPlot.isImpassable())
 		return false;
-	// advc.004k: (Do the cheaper checks first)
-	return BUGOption::isEnabled("MainInterface__SeaPatrol", false);
+	bool bValid = false;
+	for (SquareIter itOther(kPlot, GC.getMAX_SEA_PATROL_RANGE(), false);
+		!bValid && itOther.hasNext(); ++itOther)
+	{
+		if (canReachBySeaPatrol(*itOther, &kPlot))
+			bValid = true;
+	}
+	if (!bValid)
+		return false; // </advc.004k>
+	if (bCheckActivity && isSeaPatrolling()) // advc
+		return false;
+	return true;
+}
+
+// advc:
+bool CvUnit::isSeaPatrolling() const
+{
+	return (//isWaiting() // BtS
+			// K-Mod: (advc - cut from canSeaPatrol)
+			getGroup()->getActivityType() == ACTIVITY_PATROL &&
+			getDomainType() == DOMAIN_SEA);
+}
+
+// advc.004k:
+bool CvUnit::canReachBySeaPatrol(CvPlot const& kDest, CvPlot const* pFrom) const
+{
+	CvPlot const& kFrom = (pFrom == NULL ? getPlot() : *pFrom);
+	int iDist = stepDistance(&kFrom, &kDest);
+	return (iDist <= GC.getMAX_SEA_PATROL_RANGE() && iDist > 0 &&
+			kDest.isWater() && kDest.getTeam() == getTeam() &&
+			kDest.getRevealedImprovementType(getTeam()) != NO_IMPROVEMENT &&
+			!GC.getMap().isSeparatedByIsthmus(kFrom, kDest));
 }
 
 
@@ -3695,7 +3754,8 @@ bool CvUnit::airlift(int iX, int iY)
 }
 
 // advc (comment): Says whether eTeam is a victim of this (nuke) unit if it nukes pPlot
-bool CvUnit::isNukeVictim(const CvPlot* pPlot, TeamTypes eTeam) const
+bool CvUnit::isNukeVictim(const CvPlot* pPlot, TeamTypes eTeam,
+	TeamTypes eObs) const // kekm.7 (advc)
 {
 	// kekm.7 (advc): Not OK to nuke our own cities or units
 	if (!GET_TEAM(eTeam).isAlive()/* || eTeam == getTeam()*/)
@@ -3704,13 +3764,26 @@ bool CvUnit::isNukeVictim(const CvPlot* pPlot, TeamTypes eTeam) const
 	for (SquareIter it(*pPlot, nukeRange()); it.hasNext(); ++it)
 	{
 		CvPlot const& kLoopPlot	= *it;
-		if (kLoopPlot.getTeam() == eTeam &&
+		// <kekm.7> (advc): Respect the fog of war
+		TeamTypes const ePlotTeam = (eObs == NO_TEAM ? kLoopPlot.getTeam() :
+				kLoopPlot.getRevealedTeam(eObs, false)); // </kekm.7>
+		if (ePlotTeam == eTeam &&
 			// kekm.7 (advc): OK to nuke our own land
 			(eTeam != getTeam() || kLoopPlot.isCity()))
 		{
 			return true;
 		}
-		// <kekm.7> (advc): Not OK to nuke our own units
+		// <kekm.7> (advc)
+		// Can't nuke too much non-enemy population
+		if (kLoopPlot.isCity() && !isEnemy(eTeam) &&
+			((eTeam == getTeam() &&
+			kLoopPlot.calculateFriendlyCulturePercent(eTeam) >=
+			GC.getDefineINT(CvGlobals::CITY_NUKE_CULTURE_THRESH)) ||
+			eTeam == TEAMID(kLoopPlot.calculateCulturalOwner(true))))
+		{
+			return true;
+		}
+		// Not OK to nuke our own units
 		if (eTeam == getTeam() && kLoopPlot.plotCheck(NULL, -1, -1, NO_PLAYER, getTeam()))
 			return true; // </kekm.7>
 		if (kLoopPlot.plotCheck(PUF_isCombatTeam, eTeam, getTeam()) != NULL &&
@@ -3723,7 +3796,8 @@ bool CvUnit::isNukeVictim(const CvPlot* pPlot, TeamTypes eTeam) const
 }
 
 
-bool CvUnit::canNukeAt(CvPlot const& kFrom, int iX, int iY) const
+bool CvUnit::canNukeAt(CvPlot const& kFrom, int iX, int iY,
+	TeamTypes eObs) const // kekm.7 (advc)
 {
 	if (!canNuke(&kFrom))
 		return false;
@@ -3734,26 +3808,33 @@ bool CvUnit::canNukeAt(CvPlot const& kFrom, int iX, int iY) const
 
 	if (airRange() > 0 && iDistance > airRange())
 		return false;
+	// <kekm.7> (advc) Can't nuke blindly
+	for (SquareIter itPlot(iX, iY, nukeRange()); itPlot.hasNext(); ++itPlot)
+	{
+		if (!itPlot->isRevealed(getTeam()))
+			return false;
+	} // </kekm.7>
 
 	CvPlot* pTargetPlot = GC.getMap().plot(iX, iY);
 	for (TeamIter<MAJOR_CIV> itTeam; itTeam.hasNext(); ++itTeam)
 	{
-		if (isNukeVictim(pTargetPlot, itTeam->getID()) &&
+		if (isNukeVictim(pTargetPlot, itTeam->getID(), eObs) &&
 			!isEnemy(itTeam->getID(), kFrom))
 		{
 			return false;
 		}
 	}
-
 	return true;
 }
 
 
 bool CvUnit::nuke(int iX, int iY)
 {
-	if(!canNukeAt(getPlot(), iX, iY))
+	if (!canNukeAt(getPlot(), iX, iY,
+		getTeam())) // kekm.7 (advc)
+	{
 		return false;
-
+	}
 	CvWString szBuffer;
 	CvPlot& kPlot = GC.getMap().getPlot(iX, iY);
 
@@ -3766,14 +3847,14 @@ bool CvUnit::nuke(int iX, int iY)
 		if (abTeamsAffected.get(it->getID()) && !isEnemy(it->getID()))
 		{
 			//GET_TEAM(getTeam()).declareWar(it->getID(), false, WARPLAN_LIMITED);
-			// kekm.26:
-			CvTeam::queueWar(getTeam(), it->getID(), false, WARPLAN_LIMITED);
+			CvTeam::queueWar(getTeam(), it->getID(), false, WARPLAN_LIMITED); // kekm.26
 		}
 		CvTeam::triggerWars(); // kekm.26
 	}
 	// <advc.650> Moved into subroutine
 	TeamTypes eBestTeam=NO_TEAM;
-	int iBestInterception = nukeInterceptionChance(kPlot, &eBestTeam, &abTeamsAffected);
+	int iBestInterception = nukeInterceptionChance(kPlot, NO_TEAM,
+			&eBestTeam, &abTeamsAffected);
 	// </advc.650>
 	setReconPlot(&kPlot);
 	// <advc.002m>
@@ -3945,25 +4026,24 @@ bool CvUnit::nuke(int iX, int iY)
 		}
 	}
 	// <advc.106>
-	if(pReplayCity != NULL)
+	if (pReplayCity != NULL)
 	{
 		szBuffer = gDLL->getText("TXT_KEY_MISC_CITY_NUKED",
 				pReplayCity->getNameKey(), GET_PLAYER(
 				pReplayCity->getOwner()).getNameKey(),
 				GET_PLAYER(getOwner()).getNameKey());
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
-				getOwner(), szBuffer, getX(), getY(),
-				GC.getColorType("WARNING_TEXT"));
+		GC.getGame().addReplayMessage(getPlot(), REPLAY_MESSAGE_MAJOR_EVENT,
+				getOwner(), szBuffer, GC.getColorType("WARNING_TEXT"));
 	} // </advc.106>
 
-	if(isSuicide())
+	if (isSuicide())
 		kill(true);
 
 	return true;
 }
 
 // advc.650:
-int CvUnit::nukeInterceptionChance(CvPlot const& kTarget,
+int CvUnit::nukeInterceptionChance(CvPlot const& kTarget, TeamTypes eObs,
 	TeamTypes* pBestTeam, // Optional out-param
 	// Allow caller to provide set of affected teams (just to save time)
 	EagerEnumMap<TeamTypes,bool> const* pTeamsAffected) const
@@ -3973,7 +4053,7 @@ int CvUnit::nukeInterceptionChance(CvPlot const& kTarget,
 	if (pTeamsAffected == NULL)
 	{
 		for (TeamIter<ALIVE> it; it.hasNext(); ++it)
-			abTeamsAffected_local.set(it->getID(), isNukeVictim(&kTarget, it->getID()));
+			abTeamsAffected_local.set(it->getID(), isNukeVictim(&kTarget, it->getID(), eObs));
 	}
 	EagerEnumMap<TeamTypes,bool> const& abTeamsAffected = (pTeamsAffected == NULL ?
 			abTeamsAffected_local : *pTeamsAffected);
@@ -3993,7 +4073,7 @@ int CvUnit::nukeInterceptionChance(CvPlot const& kTarget,
 		{
 			int iMasterChance = GET_TEAM(kInterceptTeam.getMasterTeam()).
 					getNukeInterception();
-			if(iMasterChance > iBestInterception)
+			if (iMasterChance > iBestInterception)
 			{
 				iBestInterception = iMasterChance;
 				eBestTeam = kInterceptTeam.getMasterTeam();
@@ -4533,8 +4613,7 @@ bool CvUnit::pillage()
 				return false;
 		}
 	}
-	if (kPlot.isWater() &&
-		BUGOption::isEnabled("MainInterface__SeaPatrol", false)) // advc.004k
+	if (kPlot.isWater())
 	{
 		CvUnit* pInterceptor = bestSeaPillageInterceptor(this, GC.getCOMBAT_DIE_SIDES() / 2);
 		if (pInterceptor != NULL)
@@ -4542,7 +4621,7 @@ bool CvUnit::pillage()
 			setMadeAttack(false);
 			int iWithdrawal = withdrawalProbability();
 			changeExtraWithdrawal(-iWithdrawal); // no withdrawal since we are really the defender
-			attack(pInterceptor->plot(), false);
+			attack(pInterceptor->plot(), false, /* advc: */ NULL, true);
 			changeExtraWithdrawal(iWithdrawal);
 			return false;
 		}
@@ -4776,7 +4855,7 @@ void CvUnit::updatePlunder(int iChange, bool bUpdatePlotGroups)
 	}*/
 	// <advc.033>
 	// Update colors -- unless we're about to unit-cycle
-	if(isHuman() && ((iChange == -1 && gDLL->UI().getHeadSelectedUnit() == this) ||
+	if (isHuman() && ((iChange == -1 && gDLL->UI().getHeadSelectedUnit() == this) ||
 		GC.suppressCycling()))
 	{
 		GC.getGame().updateColoredPlots();
@@ -5561,7 +5640,7 @@ bool CvUnit::discover()
 }
 
 
-int CvUnit::getMaxHurryProduction(CvCity const* pCity) const // advc: const CvCity*
+int CvUnit::getMaxHurryProduction(CvCity const* pCity) const
 {
 	int iProduction = m_pUnitInfo->getBaseHurry() +
 			m_pUnitInfo->getHurryMultiplier() * pCity->getPopulation();
@@ -7322,12 +7401,12 @@ bool CvUnit::canSiege(TeamTypes eTeam) const
 	return true;
 }
 
-// <kekm.8> "Added function for checking whether a unit is a combat unit."
+// kekm.8: "Added function for checking whether a unit is a combat unit."
 bool CvUnit::canCombat() const
 {
 	// avdc: Check m_pUnitInfo->isMilitaryProduction() instead?
 	return (baseCombatStr() > 0 || airBaseCombatStr() > 0 || isNuke());
-} // </kekm.8>
+}
 
 
 bool CvUnit::canAttack() const
@@ -7463,17 +7542,18 @@ bool CvUnit::isBetterDefenderThan(const CvUnit* pDefender, const CvUnit* pAttack
 	{
 		return false;
 	}
-	/*  and if there is some visible team unit that could get attacked otherwise
-		(better: check if our team has the best visible defender; tbd.): */
-	if (bInvisible)
+	/*  ... and if there is some visible team unit that could get attacked otherwise
+		(better: check if our team has the best visible defender; tbd.) ... */
+	if (bInvisible &&
+		!isSeaPatrolling()) // ... or when we're sea patrolling.
 	{
 		bool bFound = false;
 		FOR_EACH_UNIT_IN(pUnit, getPlot())
 		{
-			if(pUnit->getTeam() == getTeam() && !pUnit->isInvisible(eAttackerTeam, false))
+			if (pUnit->getTeam() == getTeam() && !pUnit->isInvisible(eAttackerTeam, false))
 				bFound = true;
 		}
-		if(!bFound)
+		if (!bFound)
 			return false;
 	}
 	// Moved down: // </advc.028>
@@ -7773,24 +7853,24 @@ CvUnit* CvUnit::bestSeaPillageInterceptor(CvUnit* pPillager, int iMinOdds) const
 {
 	CvUnit* pBestUnit = NULL;
 	int iBestUnitRank = -1; // BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000
-	for (SquareIter it(*pPillager, 1); it.hasNext(); ++it)
+	for (SquareIter it(*pPillager, GC.getMAX_SEA_PATROL_RANGE(), false);
+		it.hasNext(); ++it)
 	{
 		CvPlot const& kLoopPlot = *it;
 		FOR_EACH_UNIT_VAR_IN(pLoopUnit, kLoopPlot)
 		{
 			if (pLoopUnit == NULL)
-			{	// advc.test: (would have to enable sea patrol mission to test it though)
-				FAssertMsg(pLoopUnit != NULL, "Can this happen?");
+			{
+				FAssertMsg(pLoopUnit != NULL, "Can this happen?"); // advc.test
 				continue;
 			}
-			//if (pLoopUnit->sameArea(*pPillager))
-			// advc.030: Replacing the above (and negated)
-			if(!pPillager->getArea().canBeEntered(pLoopUnit->getArea()))
-				continue;
-			if (!pLoopUnit->isInvisible(getTeam(), false) &&
-				isEnemy(pLoopUnit->getTeam()) &&
-				pLoopUnit->getDomainType() == DOMAIN_SEA &&
-				pLoopUnit->getGroup()->getActivityType() == ACTIVITY_PATROL)
+			// <advc>
+			if (pLoopUnit->isSeaPatrolling() &&
+				pLoopUnit->canSeaPatrol(pLoopUnit->plot()) && // <advc>
+				pLoopUnit->canReachBySeaPatrol(getPlot()) && // advc.004k
+				// advc.028: Allow submarines to patrol. What could go wrong?
+				//!pLoopUnit->isInvisible(getTeam(), false) &&
+				isEnemy(pLoopUnit->getTeam()))
 			{
 				if (pBestUnit == NULL || pLoopUnit->isBetterDefenderThan(pBestUnit, this,
 					// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000:
@@ -11429,7 +11509,8 @@ bool CvUnit::verifyStackValid()
 }
 
 //check if quick combat (in which case false is returned)
-bool CvUnit::isCombatVisible(const CvUnit* pDefender) const
+bool CvUnit::isCombatVisible(CvUnit const* pDefender,
+	bool bSeaPatrol) const // advc.004k
 {
 	bool bVisible = false;
 	if (!m_pUnitInfo->isQuickCombat())
@@ -11438,8 +11519,15 @@ bool CvUnit::isCombatVisible(const CvUnit* pDefender) const
 		{
 			if (isHuman())
 			{
-				if (!GET_PLAYER(getOwner()).isOption(PLAYEROPTION_QUICK_ATTACK))
+				if (!GET_PLAYER(getOwner()).isOption(PLAYEROPTION_QUICK_ATTACK) ||
+					/*	<advc.004k> Attacker/ defender role is a bit jumbled when
+						a sea patrol is triggered. Err on the side of slow combat. */
+					(bSeaPatrol &&
+					!GET_PLAYER(getOwner()).isOption(PLAYEROPTION_QUICK_DEFENSE)))
+					// </advc.004k>
+				{
 					bVisible = true;
+				}
 			}
 			else if (pDefender != NULL && pDefender->isHuman())
 			{

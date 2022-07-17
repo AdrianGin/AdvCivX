@@ -631,46 +631,53 @@ void CvPlot::updateCenterUnit()
 		return;
 	}
 
-	setCenterUnit(getSelectedUnit());
+	if (setCenterUnit(getSelectedUnit()))
+		return;
 
-	/*if (getCenterUnit() == NULL) {
-		setCenterUnit(getBestDefender(getActivePlayer(), NO_PLAYER,
-				NULL, false, false, true));
-	}*/
-	PlayerTypes eActivePlayer = getActivePlayer();
-	if (getCenterUnit() == NULL)
-		setCenterUnit(getBestDefender(eActivePlayer));
+	PlayerTypes const eActivePlayer = getActivePlayer();
 
-	if (getCenterUnit() == NULL)
-	{	// <advc.028>
-		CvUnit* pBestDef = getBestDefender(NO_PLAYER, eActivePlayer,
-				gDLL->UI().getHeadSelectedUnit(), true,
-				false, true); // advc.061
-		if(pBestDef != NULL)
-			setCenterUnit(pBestDef); // </advc.028>
-	} // disabled by K-Mod. I don't think it's relevant whether or not the best defender can move.
-	/*  advc.001: Enabled again, instead disabled the one with bTestCanMove=true --
-		I think that's the one karadoc had meant to disable. */
-
-	if (getCenterUnit() == NULL)
+	//setCenterUnit(getBestDefender(eActivePlayer, NO_PLAYER, NULL, false, false, true))
+	/*	advc.001: karadoc had meant to disable this (see K-Mod comment below).
+		Perhaps he wasn't aware that the center unit is also the unit that gets
+		selected when the active player clicks on a tile. I am disabling the
+		code during AI turns (when the active player can't select units). */
+	if (!GC.getGame().isInBetweenTurns())
 	{
-		//setCenterUnit(getBestDefender(NO_PLAYER, getActivePlayer(), gDLL->UI().getHeadSelectedUnit()));
-		// <advc.028> Replacing the above
-		CvUnit* pBestDef = getBestDefender(NO_PLAYER, eActivePlayer,
-				gDLL->UI().getHeadSelectedUnit(), false,
-				false, true); // advc.061
-		if(pBestDef != NULL)
-			setCenterUnit(pBestDef); // </advc.028>
+		DefenderFilters defFilters;
+		defFilters.m_bTestCanMove = true;
+		if (setCenterUnit(getBestDefender(eActivePlayer, defFilters)))
+			return;
 	}
-
-	if (getCenterUnit() == NULL)
+	if (setCenterUnit(getBestDefender(eActivePlayer)))
+		return;
 	{
-		//setCenterUnit(getBestDefender(NO_PLAYER, getActivePlayer()));
-		// <advc.028> Replacing the above
-		CvUnit* pBestDef = getBestDefender(NO_PLAYER, eActivePlayer, NULL, false,
-				false, true); // advc.061
-		if(pBestDef != NULL)
-			setCenterUnit(pBestDef); // </advc.028>
+		//setCenterUnit(getBestDefender(NO_PLAYER, eActivePlayer, gDLL->UI().getHeadSelectedUnit(), true));
+		/*	disabled by K-Mod. I don't think it's relevant
+			whether or not the best defender can move. */
+		/*	advc.001: Restored the code (with some changes for advc.028).
+			This is not the code that karadoc had meant to disable. */
+		// <advc.028>
+		DefenderFilters defFilters(eActivePlayer, gDLL->UI().getHeadSelectedUnit(),
+				true);
+		defFilters.m_bTestVisible = true; // advc.061
+		if (setCenterUnit(getBestDefender(NO_PLAYER, defFilters)))
+			return; // </advc.028>
+	}
+	{
+		//setCenterUnit(getBestDefender(NO_PLAYER, eActivePlayer, gDLL->UI().getHeadSelectedUnit()));
+		// <advc.028>
+		DefenderFilters defFilters(eActivePlayer, gDLL->UI().getHeadSelectedUnit());
+		defFilters.m_bTestVisible = true; // advc.061
+		if (setCenterUnit(getBestDefender(NO_PLAYER, defFilters)))
+			return; // </advc.028>
+	}
+	{
+		//setCenterUnit(getBestDefender(NO_PLAYER, eActivePlayer));
+		// <advc.028>
+		DefenderFilters defFilters(eActivePlayer);
+		defFilters.m_bTestVisible = true; // advc.061
+		if (setCenterUnit(getBestDefender(NO_PLAYER, defFilters)))
+			return; // </advc.028>
 	}
 }
 
@@ -2483,19 +2490,17 @@ int CvPlot::getFeatureProduction(BuildTypes eBuild, TeamTypes eTeam, CvCity** pp
 }
 
 
-CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner, PlayerTypes eAttackingPlayer,
-	CvUnit const* pAttacker, bool bTestEnemy, bool bTestPotentialEnemy,
-	/* advc.028: */ bool bTestVisible,
-	bool bTestCanAttack, bool bTestAny) const // advc: new params (for CvPlot::hasDefender)
+CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner,
+	/* <advc> */ DefenderFilters& kFilters) const
 {
-	// <advc> Ensure consistency of parameters
-	if (pAttacker != NULL)
+	// Ensure consistency of parameters
+	if (kFilters.m_pAttacker != NULL)
 	{
-		FAssert(pAttacker->getOwner() == eAttackingPlayer);
-		eAttackingPlayer = pAttacker->getOwner();
+		FAssert(kFilters.m_pAttacker->getOwner() == kFilters.m_eAttackingPlayer);
+		kFilters.m_eAttackingPlayer = kFilters.m_pAttacker->getOwner();
 	}
 	// isEnemy implies isPotentialEnemy
-	FAssert(!bTestEnemy || !bTestPotentialEnemy); // </advc>
+	FAssert(!kFilters.m_bTestEnemy || !kFilters.m_bTestPotentialEnemy); // </advc>
 	// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000
 	int iBestUnitRank = -1;
 	CvUnit* pBestUnit = NULL;
@@ -2504,18 +2509,22 @@ CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner, PlayerTypes eAttackingPlayer
 		CvUnit& kUnit = *pLoopUnit;
 		if (eOwner != NO_PLAYER && kUnit.getOwner() != eOwner)
 			continue;
-		if (kUnit.isCargo()) // advc: Was previously only checked with bTestCanMove - i.e. never.
+		if (kUnit.isCargo()) // advc: Was previously only checked with TestCanMove
+			continue;
+		if (kFilters.m_bTestCanMove && !kUnit.canMove())
 			continue;
 		// <advc> Moved the other conditions into CvUnit::canBeAttackedBy (new function)
-		if(eAttackingPlayer == NO_PLAYER || kUnit.canBeAttackedBy(eAttackingPlayer,
-			pAttacker, bTestEnemy, bTestPotentialEnemy, /* advc.028: */ bTestVisible,
-			bTestCanAttack))
+		if (kFilters.m_eAttackingPlayer == NO_PLAYER ||
+			kUnit.canBeAttackedBy(kFilters.m_eAttackingPlayer,
+			kFilters.m_pAttacker, kFilters.m_bTestEnemy, kFilters.m_bTestPotentialEnemy,
+			kFilters.m_bTestVisible, // advc.028
+			kFilters.m_bTestCanAttack))
 		{
-			if (bTestAny)
+			if (kFilters.m_bTestAny)
 				return &kUnit; // </advc>
-			if (kUnit.isBetterDefenderThan(pBestUnit, pAttacker,
+			if (kUnit.isBetterDefenderThan(pBestUnit, kFilters.m_pAttacker,
 				&iBestUnitRank, // UncutDragon
-				bTestVisible)) // advc.061
+				kFilters.m_bTestVisible)) // advc.061
 			{
 				pBestUnit = &kUnit;
 			}
@@ -2704,18 +2713,6 @@ int CvPlot::movementCost(CvUnit const& kUnit, CvPlot const& kFrom,
 	}
 
 	return std::max(1, std::min(iRegularCost, std::min(iRouteCost, iRouteFlatCost)));
-}
-
-
-int CvPlot::getExtraMovePathCost() const
-{
-	return GC.getGame().getPlotExtraCost(getX(), getY());
-}
-
-
-void CvPlot::changeExtraMovePathCost(int iChange)
-{
-	GC.getGame().changePlotExtraCost(getX(), getY(), iChange);
 }
 
 
@@ -4052,7 +4049,7 @@ void CvPlot::setOwner(PlayerTypes eNewValue, bool bCheckUnits, bool bUpdatePlotG
 	if(getOwner() == eNewValue)
 		return;
 	PlayerTypes eOldOwner = getOwner(); // advc.ctr
-	GC.getGame().addReplayMessage(REPLAY_MESSAGE_PLOT_OWNER_CHANGE, eNewValue, (char*)NULL, getX(), getY());
+	GC.getGame().addReplayMessage(*this, REPLAY_MESSAGE_PLOT_OWNER_CHANGE, eNewValue);
 
 	CvCity* pOldCity = getPlotCity();
 	if (pOldCity != NULL)  // advc: Removed some assertions and NULL/NO_... checks in this block
@@ -4096,8 +4093,8 @@ void CvPlot::setOwner(PlayerTypes eNewValue, bool bCheckUnits, bool bUpdatePlotG
 		szBuffer = gDLL->getText("TXT_KEY_MISC_CITY_REVOLTS_JOINS", pOldCity->getNameKey(),
 				GET_PLAYER(eNewValue).getCivilizationDescriptionKey(),
 				szOldOwnerDescr); // advc.101
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getOwner(),
-				szBuffer, getX(), getY());
+		GC.getGame().addReplayMessage(*this, REPLAY_MESSAGE_MAJOR_EVENT,
+				getOwner(), szBuffer);
 				// advc.106: Use ALT_HIGHLIGHT for research-related stuff now
 				//,GC.getColorType("ALT_HIGHLIGHT_TEXT")
 		FAssert(pOldCity->getOwner() != eNewValue);
@@ -4452,6 +4449,10 @@ void CvPlot::setPlotType(PlotTypes eNewValue, bool bRecalculate, bool bRebuildGr
 	if (bRebuildGraphics && GC.IsGraphicsInitialized())
 	{
 		//Update terrain graphical
+		/*	advc (note): Calling RebuildAllPlots here would get rid of artifacts
+			in terrain surfaces - but it's too slow. Just rebuilding surrounding
+			plots doesn't do the trick; there's sth. else, apparently, that
+			RebuildAllPlots does. (Or perhaps a delayed RebuildPlot call would do?) */
 		gDLL->getEngineIFace()->RebuildPlot(getX(), getY(), true, true);
 		//gDLL->getEngineIFace()->SetDirty(MinimapTexture_DIRTY_BIT, true); //minimap does a partial update
 		//gDLL->getEngineIFace()->SetDirty(GlobeTexture_DIRTY_BIT, true);
@@ -4620,11 +4621,11 @@ BonusTypes CvPlot::getNonObsoleteBonusType(TeamTypes eTeam,
 	bool bCheckConnected) const // K-Mod
 {
 	FAssert(eTeam != NO_TEAM);
-	FAssert(GET_TEAM(eTeam).isAlive()); // K-Mod
+	FAssertMsg(GET_TEAM(eTeam).isAlive(), "advc.064d: OK if eTeam has just died"); // K-Mod
 
 	BonusTypes eBonus = getBonusType(eTeam);
 	if (eBonus == NO_BONUS)
-		return NO_BONUS; // advc
+		return NO_BONUS;
 	if (GET_TEAM(eTeam).isBonusObsolete(eBonus))
 		return NO_BONUS;
 
@@ -5132,27 +5133,27 @@ int CvPlot::calculateNatureYield(YieldTypes eYield, TeamTypes eTeam, bool bIgnor
 	bool bIgnoreHills) const // advc.300
 {
 	// advc.016: Cut from calculateYield
-	int iYield = GC.getGame().getPlotExtraYield(getX(), getY(), eYield);
+	int iYieldRate = GC.getMap().getPlotExtraYield(*this, eYield);
 	if (isImpassable())
 	{
 		//return 0;
 		/*  advc.016: Impassable tiles with extra yields can be worked -
 			as in BtS. This allows Python modders to make peaks workable. */
-		return iYield;
+		return iYieldRate;
 	}
-	iYield += GC.getInfo(getTerrainType()).getYield(eYield);
+	iYieldRate += GC.getInfo(getTerrainType()).getYield(eYield);
 	bool const bHills = (isHills() /* advc.300 */ && !bIgnoreHills);
 	if (bHills)
-		iYield += GC.getInfo(eYield).getHillsChange();
+		iYieldRate += GC.getInfo(eYield).getHillsChange();
 	else if (isPeak())
-		iYield += GC.getInfo(eYield).getPeakChange();
+		iYieldRate += GC.getInfo(eYield).getPeakChange();
 	else if (isLake())
-		iYield += GC.getInfo(eYield).getLakeChange();
+		iYieldRate += GC.getInfo(eYield).getLakeChange();
 	if (eTeam != NO_TEAM)
 	{
 		BonusTypes eBonus = getBonusType(eTeam);
 		if (eBonus != NO_BONUS)
-			iYield += GC.getInfo(eBonus).getYieldChange(eYield);
+			iYieldRate += GC.getInfo(eBonus).getYieldChange(eYield);
 	}
 	if (isRiver())
 	{
@@ -5164,12 +5165,12 @@ int CvPlot::calculateNatureYield(YieldTypes eYield, TeamTypes eTeam, bool bIgnor
 		int iRivers = 1;
 		/*if(isConnectRiverSegments()) // Disabled for now
 			iRivers++;*/
-		iYield += iRivers * iYieldPerRiver; // </advc.500a>
+		iYieldRate += iRivers * iYieldPerRiver; // </advc.500a>
 	}
 
 	if (bHills)
 	{
-		iYield += ((bIgnoreFeature || !isFeature()) ?
+		iYieldRate += ((bIgnoreFeature || !isFeature()) ?
 				GC.getInfo(getTerrainType()).getHillsYieldChange(eYield) :
 				GC.getInfo(getFeatureType()).getHillsYieldChange(eYield));
 	}
@@ -5177,10 +5178,10 @@ int CvPlot::calculateNatureYield(YieldTypes eYield, TeamTypes eTeam, bool bIgnor
 	if (!bIgnoreFeature)
 	{
 		if (isFeature())
-			iYield += GC.getInfo(getFeatureType()).getYieldChange(eYield);
+			iYieldRate += GC.getInfo(getFeatureType()).getYieldChange(eYield);
 	}
 
-	return std::max(0, iYield);
+	return std::max(0, iYieldRate);
 }
 
 
@@ -5488,6 +5489,21 @@ int CvPlot::calculateTeamCulturePercent(TeamTypes eTeam) const
 		iTeamCulturePercent += calculateCulturePercent(itMember->getID());
 	}
 	return iTeamCulturePercent;
+}
+
+// kekm.7 (advc): Including vassals or master
+int CvPlot::calculateFriendlyCulturePercent(TeamTypes eTeam) const
+{
+	// Dead teams don't have vassal/ master relationships
+	if (!GET_TEAM(eTeam).isAlive())
+		return calculateTeamCulturePercent(eTeam);
+	int iR = 0;
+	for (PlayerIter<ALIVE,NOT_A_RIVAL_OF> itPlayer(eTeam);
+		itPlayer.hasNext(); ++itPlayer)
+	{
+		iR += calculateCulturePercent(itPlayer->getID());
+	}
+	return iR;
 }
 
 
@@ -6098,7 +6114,8 @@ bool CvPlot::isRevealed(TeamTypes eTeam, bool bDebug) const
 }
 
 
-void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly, TeamTypes eFromTeam, bool bUpdatePlotGroup)
+void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly,
+	TeamTypes eFromTeam, bool bUpdatePlotGroup)
 {
 	FAssertBounds(0, MAX_TEAMS, eTeam);
 
@@ -6664,18 +6681,21 @@ CvUnit* CvPlot::getDebugCenterUnit() const
 	return pCenterUnit;
 }
 
-
-void CvPlot::setCenterUnit(CvUnit* pNewValue)
+/*	advc: Return false if center unit set to NULL, true otherwise.
+	This is convenient for updateCenterUnit. */
+bool CvPlot::setCenterUnit(CvUnit* pNewValue)
 {
+	bool bRet = (pNewValue != NULL);
 	CvUnit* pOldValue = getCenterUnit();
 	if (pOldValue == pNewValue)
-		return; // advc
+		return bRet;
 
 	m_pCenterUnit = pNewValue;
 	updateMinimapColor();
 	setFlagDirty(true);
 	if (getCenterUnit() != NULL)
 		getCenterUnit()->setInfoBarDirty(true);
+	return bRet;
 }
 
 
@@ -6875,7 +6895,7 @@ void CvPlot::doFeature()
 					if (pCity != NULL &&
 						/*	advc.106: K-Mod had added an isVisible check,
 							but features aren't affected by fog of war. */
-						isRevealed(TEAMID(pCity->getOwner())))
+						isRevealed(pCity->getTeam()))
 					{
 						// Tell the owner of this city.
 						CvWString szBuffer(gDLL->getText("TXT_KEY_MISC_FEATURE_GROWN_NEAR_CITY",
@@ -7935,11 +7955,11 @@ void CvPlot::applyEvent(EventTypes eEvent)
 	else if (kEvent.getRouteChange() < 0)
 		setRouteType(NO_ROUTE, true);
 
-	for (int i = 0; i < NUM_YIELD_TYPES; ++i)
+	FOR_EACH_ENUM(Yield)
 	{
-		int iChange = kEvent.getPlotExtraYield(i);
+		int iChange = kEvent.getPlotExtraYield(eLoopYield);
 		if (iChange != 0)
-			GC.getGame().setPlotExtraYield(m_iX, m_iY, (YieldTypes)i, iChange);
+			GC.getMap().setPlotExtraYield(*this, eLoopYield, iChange);
 	}
 }
 
@@ -8333,15 +8353,16 @@ void CvPlot::killRandomUnit(PlayerTypes eOwner, DomainTypes eDomain)
 }
 
 
-// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000: START
+// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000:
 bool CvPlot::hasDefender(bool bTestCanAttack, PlayerTypes eOwner, PlayerTypes eAttackingPlayer,
 	CvUnit const* pAttacker, bool bTestEnemy, bool bTestPotentialEnemy) const
 {
 	/*  advc: BBAI had repeated parts of getBestDefender here. To avoid that, I've moved
 		bTestAttack into getBestDefender and gave that function a "bTestAny" param. */
-	return (getBestDefender(eOwner, eAttackingPlayer, pAttacker, bTestEnemy,
-			bTestPotentialEnemy, false, bTestCanAttack, /*bTestAny=*/true) != NULL);
-} // BETTER_BTS_AI_MOD: END
+	CvPlot::DefenderFilters defFilters(eAttackingPlayer, pAttacker, bTestEnemy,
+			bTestPotentialEnemy, false, bTestCanAttack, /*bTestAny=*/true);
+	return (getBestDefender(eOwner, defFilters) != NULL);
+}
 
 // <advc.500a>
 #if 0 // disabled for now

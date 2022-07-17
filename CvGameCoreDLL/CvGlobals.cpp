@@ -738,6 +738,7 @@ void CvGlobals::cacheGlobalFloats(
 	if (fNewFoV != m_fFIELD_OF_VIEW)
 	{
 		m_fFIELD_OF_VIEW = fNewFoV;
+		updateCityCamDist();
 		if (bAllowRecursion && IsGraphicsInitialized())
 		{
 			GC.getPythonCaller()->callScreenFunction("updateCameraStartDistance");
@@ -788,6 +789,19 @@ void CvGlobals::setDEFAULT_SPECIALIST(int iValue)
 {
 	m_eDEFAULT_SPECIALIST = (SpecialistTypes)iValue;
 } // </advc.opt>
+
+/*	advc: The EXE constantly polls stagger time while idle.
+	That's annoying when debugging/ reverse-engineering. */
+int CvGlobals::getDefineINTExternal(char const* szName) const
+{
+	/*	This address for the "EVENT_MESSAGE_STAGGER_TIME" string is hardcoded in
+		the EXE. Checking for that is obviously faster than a string comparison.
+		(And it's not really a problem if the check fails for some strange version
+		of the EXE.) */
+	if (szName == reinterpret_cast<char const*>(0x00C9C868))
+		return getDefineINT(EVENT_MESSAGE_STAGGER_TIME);
+	return getDefineINT(szName);
+}
 
 int CvGlobals::getDefineINT(char const* szName,
 	// BETTER_BTS_AI_MOD, 02/21/10, jdog5000: START
@@ -854,7 +868,7 @@ void CvGlobals::setDefineSTRING(char const* szName, char const* szValue, /* advc
 	FAssertMsg(!bUpdateCache, "No strings to update"); // advc.opt
 }
 
-// advc.004m:
+// <advc.004m>
 void CvGlobals::updateCameraStartDistance(bool bReset)
 {
 	static float m_fCAMERA_START_DISTANCE_Override = std::max(1000.f,
@@ -882,6 +896,24 @@ void CvGlobals::updateCameraStartDistance(bool bReset)
 	cacheGlobalFloats(false);
 }
 
+void CvGlobals::updateCityCamDist()
+{
+	float fCityCamDist = getDefineFLOAT("CAMERA_BASE_CITY_DISTANCE");
+	/*	Exponentiate to let the player yet exert _some_ control (through the FoV)
+		over the city-screen camera distance. */
+	fCityCamDist *= std::pow(40 / GC.getFIELD_OF_VIEW(), 0.85f);
+	float fDefaultAspectRatio = 8/5.f;
+	int const iW = getGame().getScreenWidth();
+	int const iH = getGame().getScreenHeight();
+	float fAspectRatio = (iH <= 0 ? fDefaultAspectRatio : iW / (float)iH);
+	float fScreenDimMult = fAspectRatio / fDefaultAspectRatio;
+	// On small screens, width can be the limiting dimension.
+	if (iW > 0 && iW < 1400)
+		fScreenDimMult *= std::pow(1280.f / getGame().getScreenWidth(), 0.85f);
+	fCityCamDist *= ::range(fScreenDimMult, 2/3.f, 1.5f);
+	setDefineFLOAT("CAMERA_CITY_ZOOM_IN_DISTANCE", fCityCamDist);
+}
+
 int CvGlobals::getMaxCivPlayers() const
 {
 	return MAX_CIV_PLAYERS;
@@ -899,6 +931,13 @@ int CvGlobals::getUSE_FINISH_TEXT_CALLBACK()
 
 void CvGlobals::setDLLIFace(CvDLLUtilityIFaceBase* pDll)
 {
+	// <advc.106i>
+	if (pDll != m_pDLL && pDll != NULL)
+	{
+		m_modName.update(
+				pDll->getExternalModName(true),
+				pDll->getExternalModName(false));
+	} // </advc.106i>
 	m_pDLL = pDll;
 }
 
@@ -947,12 +986,6 @@ void CvGlobals::setTypesEnum(const char* szType, int iEnum)
 	FAssertMsg(szType, "null type string");
 	FAssertMsg(m_typesMap.find(szType)==m_typesMap.end(), "types entry already exists");
 	m_typesMap[szType] = iEnum;
-}
-
-// advc.003c:
-bool CvGlobals::isCachingDone() const
-{
-	return m_aiGlobalDefinesCache != NULL;
 }
 
 // advc.106i:

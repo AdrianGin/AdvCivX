@@ -59,10 +59,6 @@
 	DO(Bonus, BONUS) \
 	DO(LeaderHead, LEADER) \
 	DO(Civilization, CIVILIZATION) \
-	/* <advc.tsl> (not exposed to Python) */ \
-	DO(TruCiv, TRUCIV) \
-	DO(TruLeader, TRULEADER) \
-	DO(TruBonus, TRUBONUS) /* </advc.tsl> */ \
 	DO(Cursor, CURSOR) \
 	/* internal only */ \
 	DO(BuildingClass, BUILDINGCLASS) \
@@ -81,7 +77,11 @@
 	DO(Event, EVENT) \
 	DO(EventTrigger, EVENTTRIGGER) \
 	DO(EspionageMission, ESPIONAGEMISSION) \
-	DO(UnitArtStyle, UNIT_ARTSTYLE)
+	DO(UnitArtStyle, UNIT_ARTSTYLE) \
+	/* <advc.tsl> (not exposed to Python) */ \
+	DO(TruCiv, TRUCIV) \
+	DO(TruLeader, TRULEADER) \
+	DO(TruBonus, TRUBONUS) /* </advc.tsl> */
 
 // Number of instances not known at compile time
 #define DO_FOR_EACH_DYN_INFO_TYPE(DO) \
@@ -258,10 +258,9 @@ DEFINE_INCREMENT_OPERATORS(Name##Types)
 	/*{*/ \
 	/*	return *m_pa##Name##Info[e##Name];*/ \
 	/*}*/ \
-	/* Deprecated: */ \
-	inline Cv##Name##Info& get##Name##Info(Name##Types e##Name) const \
+	inline Cv##Name##Info& get##Name##Info(int i##Name) const \
 	{ \
-		return getInfo(e##Name); \
+		return getInfo(static_cast<Name##Types>(i##Name)); \
 	}
 #define MAKE_INFO_ACCESSORS_INT(Name, Dummy) \
 	inline int getNum##Name##Infos() const \
@@ -284,10 +283,9 @@ DEFINE_INCREMENT_OPERATORS(Name##Types)
 	/*{*/ \
 	/*	return *m_pa##Name##Info[e##Name];*/ \
 	/*}*/ \
-	/* Deprecated: */ \
-	inline Cv##Name##Info& get##Name##Info(Name##Types e##Name) const \
+	inline Cv##Name##Info& get##Name##Info(int i##Name) const \
 	{ \
-		return getInfo(e##Name); \
+		return getInfo(static_cast<Name##Types>(i##Name)); \
 	}
 
 #endif

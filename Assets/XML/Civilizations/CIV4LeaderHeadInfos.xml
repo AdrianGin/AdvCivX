@@ -4031,7 +4031,7 @@
 					<iMemoryAttitudePercent>0</iMemoryAttitudePercent>
 				</MemoryAttitudePercent>
 			</MemoryAttitudePercents>
-			<!-- advc.005a: was 0/30/70/100 -->
+			<!-- advc.005a: was 0/30/70/100/100 -->
 			<NoWarAttitudeProbs>
 				<NoWarAttitudeProb>
 					<AttitudeType>ATTITUDE_FURIOUS</AttitudeType>
@@ -4043,11 +4043,15 @@
 				</NoWarAttitudeProb>
 				<NoWarAttitudeProb>
 					<AttitudeType>ATTITUDE_CAUTIOUS</AttitudeType>
-					<iNoWarProb>80</iNoWarProb>
+					<iNoWarProb>85</iNoWarProb>
 				</NoWarAttitudeProb>
 				<NoWarAttitudeProb>
 					<AttitudeType>ATTITUDE_PLEASED</AttitudeType>
-					<iNoWarProb>100</iNoWarProb>
+					<iNoWarProb>110</iNoWarProb>
+				</NoWarAttitudeProb>
+				<NoWarAttitudeProb>
+					<AttitudeType>ATTITUDE_PLEASED</AttitudeType>
+					<iNoWarProb>115</iNoWarProb>
 				</NoWarAttitudeProb>
 			</NoWarAttitudeProbs>
 			<!-- advc.005a: Was Worker 100. India cleared large areas of

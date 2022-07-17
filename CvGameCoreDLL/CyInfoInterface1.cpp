@@ -188,6 +188,7 @@ void CyInfoPythonInterface1()
 		.def("getMissionType", &CvActionInfo::getMissionType, "int ()")
 		.def("getCommandType", &CvActionInfo::getCommandType, "int ()")
 		.def("getControlType", &CvActionInfo::getControlType, "int ()")
+		.def("getAutomateType", &CvActionInfo::getAutomateType, "int ()") // advc.004k
 
 		.def("isConfirmCommand", &CvActionInfo::isConfirmCommand, "bool ()")
 		.def("isVisible", &CvActionInfo::isVisible, "bool ()")

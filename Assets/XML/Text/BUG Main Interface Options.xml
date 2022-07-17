@@ -34,7 +34,6 @@
 		<Italian>Dottone Opzioni</Italian>
 		<Spanish>Botón Opciones</Spanish>
 	</TEXT>
-	
 	<!-- advc.004, advc.002g: Some extra info added (incl. restart) -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__OPTIONSBUTTON_HOVER</Tag>
@@ -42,6 +41,18 @@
 		<German>Zeigt (nach dem nächsten Neustart) eine Schaltfläche zum Öffnen des BUG-Menüs in der oberen linken Ecke des Hauptbildschirms an (neben der Ereignis-Log-Schaltfläche). Das BUG-Menü lässt sich in jedem Fall vom Spielmenü [ESC] und Spieleroptionsmenü [STRG+O] aus aufrufen, und direkt per [CTRL+ALT+O].</German>
 		<Italian>Quando è selezionato, mostra il bottone della schermata opzioni del BUG.</Italian>
 		<Spanish>Permite mostrar el botón de opciones BUG en la pantalla.</Spanish>
+	</TEXT>
+
+	<!-- advc.106i -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__MODNAMEINREPLAYS_TEXT</Tag>
+		<English>Mod Name in Replays</English>
+		<German>Mod-Name in Replays</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__MODNAMEINREPLAYS_HOVER</Tag>
+		<English>When checked, the name of the mod's folder (normally "AdvCiv") is written into your replay files, which excludes them from the Hall of Fame screen when BtS is run without mods. (As for showing replays created by BtS or other mods on the AdvCiv Hall of Fame screen, see the [COLOR_BUILDING_TEXT]HOF_...[COLOR_REVERT] variables in [COLOR_BUILDING_TEXT]GlobalDefines_advc.xml[COLOR_REVERT].)</English>
+		<German>Speichert den Ordner-Namen des Mods (standardmäßig "AdvCiv") in [COLOR_BUILDING_TEXT]Civ4BeyondSwordReplay[COLOR_REVERT]-Dateien (Wiederholungen). Dies verhindert, dass die BtS-Ruhmeshalle AdvCiv-Replays aufführt, wenn kein Mod geladen ist. (Was die Anzeige von BtS-Replays und Replays anderer Mods in der AdvCiv-Ruhmeshalle angeht, siehe die COLOR_BUILDING_TEXT]HOF_...[COLOR_REVERT]-Variablen in [COLOR_BUILDING_TEXT]GlobalDefines_advc.xml[COLOR_REVERT].)</German>
 	</TEXT>
 
 	<!-- advc.106b -->
@@ -218,6 +229,18 @@
 		<German>Die Fortschrittsbalken für [COLOR_HIGHLIGHT_TEXT]Große Persönlichkeiten[COLOR_REVERT] and [COLOR_HIGHLIGHT_TEXT]Große Generäle[COLOR_REVERT] (falls überhaupt aktiviert) erscheinen erst, wenn entsprechender Fortschritt besteht.</German>
 	</TEXT>
 
+	<!-- advc.092: New option -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__ENLARGEHUD_TEXT</Tag>
+		<English>Scale Up HUD</English>
+		<German>Anzeige vergrößern</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__ENLARGEHUD_HOVER</Tag>
+		<English>When checked, the size of panels, buttons and the minimap is increased based on the rendering resolution. No effect when the resolution is set to the minimum (1024 x 768). Changes won't apply properly until Civ 4 is restarted.</English>
+		<German>Vergrößert Schaltflächen, die Minimap und andere Bedienelemente, wenn eine höhere Bildauflösung als 1024x768 Pixel eingestellt ist. Neustart von Civ 4 erforderlich.</German>
+	</TEXT>
+
 	<!-- advc.120c: Under the new heading, "Max/Min Buttons" should be clear
 		 enough. (Put "max" first to match the "+/-" order.) -->
 	<TEXT>
@@ -318,10 +341,7 @@
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__CAMERA_TEXT</Tag>
 		<English>Camera</English>
-		<French>Camera</French>
-		<German>Camera</German>
-		<Italian>Camera</Italian>
-		<Spanish>Camera</Spanish>
+		<German>Kamera</German>
 	</TEXT>
 	<!-- Sadly has to be abbreviated in order to make room for advc.002f
 		 in the center column -->
@@ -332,13 +352,30 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__DEFAULTCAMDISTANCE_HOVER</Tag>
-		<English>The camera distance at the start of a new game and after loading a savegame. Also affects the volume of music and sound effects.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Automatic[COLOR_REVERT] - Set the default distance based on the Field-of-View value. The greater the field of view, the smaller the default distance.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Close[COLOR_REVERT] - 2200 meters; as in the original game.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Medium[COLOR_REVERT] - 4100 meters[NEWLINE][COLOR_HIGHLIGHT_TEXT]Far[COLOR_REVERT] - 6000 meters; close to the Globe view boundary.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Custom[COLOR_REVERT] - Use the 'CAMERA_START_DISTANCE' value set in XML (GlobalDefines_advc.xml)</English>
-		<German>Der Kameraabstand nach dem Erstellen oder Laden eines Spiels. Wirkt sich auch auf die Lautstärke von Musik und Effekten aus.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Auto[COLOR_REVERT] - Entsprechend dem Sichtfeld-Wert. Je größer das Sichtfeld, desto kleiner der Standardabstand.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Nah[COLOR_REVERT] - 2200m; wie im Originalspiel.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Mittel[COLOR_REVERT] - 4100m[NEWLINE][COLOR_HIGHLIGHT_TEXT]Weit[COLOR_REVERT] - 6000m; nahe am Übergang zur Weltansicht.[NEWLINE][COLOR_HIGHLIGHT_TEXT]XML-Wert[COLOR_REVERT] - Verwendet den 'CAMERA_START_DISTANCE'-Wert in GlobalDefines_advc.xml.</German>
+		<English>The camera distance at the start of a new game and after loading a savegame. Also affects the volume of music and sound effects.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Automatic[COLOR_REVERT] - Set the default distance based on the Field-of-View value. The greater the field of view, the smaller the default distance.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Close[COLOR_REVERT] - 2200 meters; as in the original game.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Medium[COLOR_REVERT] - 4100 meters[NEWLINE][COLOR_HIGHLIGHT_TEXT]Far[COLOR_REVERT] - 6000 meters; close to the Globe view boundary.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Custom[COLOR_REVERT] - Use the 'CAMERA_START_DISTANCE' value set in XML ([COLOR_BUILDING_TEXT]GlobalDefines_advc.xml[COLOR_REVERT])</English>
+		<German>Der Kameraabstand nach dem Erstellen oder Laden eines Spiels. Wirkt sich auch auf die Lautstärke von Musik und Effekten aus.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Auto[COLOR_REVERT] - Entsprechend dem Sichtfeld-Wert. Je größer das Sichtfeld, desto kleiner der Standardabstand.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Nah[COLOR_REVERT] - 2200m; wie im Originalspiel.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Mittel[COLOR_REVERT] - 4100m[NEWLINE][COLOR_HIGHLIGHT_TEXT]Weit[COLOR_REVERT] - 6000m; nahe am Übergang zur Weltansicht.[NEWLINE][COLOR_HIGHLIGHT_TEXT]XML-Wert[COLOR_REVERT] - Verwendet den 'CAMERA_START_DISTANCE'-Wert in [COLOR_BUILDING_TEXT]GlobalDefines_advc.xml[COLOR_REVERT].</German>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__DEFAULTCAMDISTANCE_LIST</Tag>
 		<English>Automatic|Close|Medium|Far|Custom (XML)</English>
 		<German>Auto|Nah|Mittel|Weit|XML-Wert</German>
+	</TEXT>
+
+	<!-- advc.102b: (Would've preferred
+		 "Ignore Friendly Stacks &lt;"
+		 but labels can't include angle brackets, and "smaller than" or even
+		 "smaller" is too long.) -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__SHOWFRIENDLYMOVESTHRESH_TEXT</Tag>
+		<English>Friendly Moves Threshold</English>
+		<German>Zeige Freundliche Bew. ab</German>
+	</TEXT>
+	<!-- (Would be nice to mention that transports are assumed to be full when
+		 counting units, but the text is already quite long.) -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__SHOWFRIENDLYMOVESTHRESH_HOVER</Tag>
+		<English>When a unit owned by a non-hostile civ has moved, and that civ has fewer units in the destination tile than this threshold, then the [COLOR_HIGHLIGHT_TEXT]Show Friendly Moves[COLOR_REVERT] option (Ctrl+O screen) ignores the move. As the moving unit is included in the count, a threshold of [COLOR_HIGHLIGHT_TEXT]1[COLOR_REVERT] corresponds to the BtS behavior of showing all moves - except that AdvCiv always excludes worker moves and some other uninteresting moves. The threshold has no effect when [COLOR_HIGHLIGHT_TEXT]Show Friendly Moves[COLOR_REVERT] isn't enabled.</English>
+		<German>Schwelle für die BtS-Option [COLOR_HIGHLIGHT_TEXT]Freundliche Bewegungen zeigen[COLOR_REVERT] (Strg+O). Wenn eine nicht-feindliche Zivilisation eine Einheit bewegt und diese Zivilisation im Ziel-Feld dann weniger Einheiten Einheiten besitzt als der Schwellwert, dann wird diese Bewegung nicht per Kamerasprung angezeigt. Da die bewegte Einheit mitzählt, bedeutet eine Schwelle von [COLOR_HIGHLIGHT_TEXT]1[COLOR_REVERT], dass alle Bewegungen angezeigt werden, wie in BtS - abgesehen davon, dass AdvCiv bestimmte, wahrscheinlich uninteressante Bewegungen nie anzeigt, insbesondere Bautrupp-Bewegungen.</German>
 	</TEXT>
 
 	<!-- advc.002a: -->
@@ -374,8 +411,8 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__UNITSONMINIMAP_HOVER</Tag>
-		<English>If checked, units outside their owners' borders are shown as colored blips on the main screen minimap.</English>
-		<German>Zeigt Einheiten, die sich außerhalb ihres Territoriums befinden, als Farbkleckse auf der Mini-Karte (Hauptbildschirm) an.</German>
+		<English>If checked, units outside their owners' borders are shown as colored blips on the main screen minimap (as in BtS).</English>
+		<German>Zeigt Einheiten, die sich außerhalb ihres Territoriums befinden, als Farbkleckse auf der Mini-Karte (Hauptbildschirm) an - wie in BtS.</German>
 	</TEXT>
 
 	<!-- advc.savem: -->
@@ -534,12 +571,12 @@
 		<German>Diese Farbe wird anstatt der obigen verwendet, wenn eine Beförderung allen Einheiten des Verbandes gemeinsam ist.</German>
 	</TEXT>
 	
-	<!-- advc.061 -->
+	<!-- advc.061 (German: not enough space for "Einheiten nach Besitzer gruppieren") -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__LISTUNITSPEROWNER_TEXT</Tag>
 		<English>List Units per Owner</English>
 		<French>Grouper les unités par propriétaire</French>
-		<German>Einheiten nach Besitzer gruppieren</German>
+		<German>Einheiten pro Besitzer</German>
 		<Italian>Elenca unità per proprietario</Italian>
 		<Spanish>Agrupar unidades por propietario</Spanish>
 	</TEXT>
@@ -562,10 +599,11 @@
 		<Italian>Dimensione Icona Costruisci/Azione</Italian>
 		<Spanish>Tamaño de Iconos de acción/construcción</Spanish>
 	</TEXT>
+	<!-- advc.092: Mention interaction with enlarge-HUD option. -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__BUILDICONSIZE_HOVER</Tag>
-		<English>Determines the size of the build and action buttons in the bottom center of the screen.</English>
-		<German>Bestimmt die Größe der Bau- und Befehlssymbole im Menü am unteren Bildschirmrand</German>
+		<English>Determines the size of the order and action buttons in the bottom center of the screen. The size of those buttons is additionally affected by [COLOR_HIGHLIGHT_TEXT]Scale Up HUD[COLOR_REVERT] if that option is enabled.</English>
+		<German>Bestimmt die Größe der Befehls-Schaltflächen am unteren Bildschirmrand. Die Größe wird ggf. zusätzlich von der Option [COLOR_HIGHLIGHT_TEXT]Anzeige vergrößern[COLOR_REVERT] beeinflusst.</German>
 		<Italian>Determina la dimensione delle icone per i tasti di costruzione e azione nella parte bassa e centrale dello schermo.</Italian>
 		<Spanish>Determina el tamaño de los iconos de construir y acción en los botones de la parte inferior central de la pantalla.</Spanish>
 	</TEXT>
@@ -639,7 +677,8 @@
 		<Spanish>Activada, seleccionando unidades con la tecla [Mayús] sólo añadir una unidad cada vez.</Spanish>
 	</TEXT>
 
-	<!-- advc.004k: same as TXT_KEY_MISSION_SEAPATROL (CIV4GameText_BTS.xml) -->
+	<!-- advc.004k -->
+	<!-- Same as TXT_KEY_MISSION_SEAPATROL (CIV4GameText_BTS.xml) -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__SEAPATROL_TEXT</Tag>
 		<English>Sea Patrol</English>
@@ -650,11 +689,19 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__SEAPATROL_HOVER</Tag>
-		<English>Enables the "Sea Patrol" mission (except in network games). When disabled, the mission button is removed and the AI won't use the mission either.</English>
-		<French>Enables the "Patrouille des mers" mission. When unchecked, the mission button is removed and the AI won't use the mission either.</French>
-		<German>Erlaubt den Einheiten-Befehl "Seepatrouille" (außer in Netzwerk-Spielen)</German>
-		<Italian>Enables the "Pattuglia marina" mission. When unchecked, the mission button is removed and the AI won't use the mission either.</Italian>
-		<Spanish>Enables the "Patrulla mar&#237;tima" mission. When unchecked, the mission button is removed and the AI won't use the mission either.</Spanish>
+		<English>Uncheck this option to hide the (rarely used) Sea Patrol command button. You will still be able to issue the command through the [COLOR_HIGHLIGHT_TEXT]P[COLOR_REVERT] key.</English>
+		<German>Deaktivieren Sie diese Option, um den (selten gebrauchten) Einheiten-Befehl "Seepatrouille" auszublenden. Das Tataturkürzel [COLOR_HIGHLIGHT_TEXT]P[COLOR_REVERT] ist davon nicht betroffen.</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__AUTOEXPLORE_TEXT</Tag>
+		<English>Auto-Explore</English>
+		<German>Auto-Erkundung</German>
+	</TEXT>
+	<!-- Based on TXT_KEY_ACTION_AUTOMATE_EXPLORE (CIV4GameText_BTS.xml) -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__AUTOEXPLORE_HOVER</Tag>
+		<English>Uncheck this option to hide the "Explore (Automated)" command button. You will still be able to issue the command through the [COLOR_HIGHLIGHT_TEXT]E[COLOR_REVERT] key. (Recommended if you never automate exploration or sometimes press that button by accident.)</English>
+		<German>Deaktivieren Sie diese Option, um den Automatisierungs-Befehl "Erkunden" auszublenden. Das Tataturkürzel [COLOR_HIGHLIGHT_TEXT]E[COLOR_REVERT] ist davon nicht betroffen.</German>
 	</TEXT>
 	
 	<!-- advc.004z -->
@@ -732,6 +779,37 @@
 		<German>Aktiviert die Ressourcenanzeige zu Spielbeginn.</German>
 		<Italian>Abilita la segnalazione delle risorse all'inizio del gioco.</Italian>
 		<Spanish>Activa las marcas de recursos al inicio del juego.</Spanish>
+	</TEXT>
+
+	<!-- advc.092b: Plot indicator size options -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__PLOTINDICATORSIZE_TEXT</Tag>
+		<English>Balloon Size</English>
+		<German>Ballon-Größe</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__PLOTINDICATORSIZE_LIST</Tag>
+		<English>Auto|BtS|25|30|35|40|45|50|55|60|65</English>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__PLOTINDICATORSIZE_HOVER</Tag>
+		<English>The size of the balloon icons that the game uses for the Resource and Unit Display and for indicating tiles where some event has occurred. [COLOR_HIGHLIGHT_TEXT]Auto[COLOR_REVERT] sets the size based on the camera's [COLOR_HIGHLIGHT_TEXT]Field of View[COLOR_REVERT] value, [COLOR_HIGHLIGHT_TEXT]BtS[COLOR_REVERT] sets it based on the screen resolution. The other choices aim at (approximately) a specific diameter in pixels.</English>
+		<German>Die Größe der "Sprechblasen" in denen Ressourcen-, Einheiten- und Ereignis-Symbole angezeigt werden. [COLOR_HIGHLIGHT_TEXT]Auto[COLOR_REVERT] bedeutet, dass die Größe abhängig von der [COLOR_HIGHLIGHT_TEXT]Sichtfeld[COLOR_REVERT]-Größe gewählt wird, [COLOR_HIGHLIGHT_TEXT]BtS[COLOR_REVERT], dass sie von der Bildauflösung abhängt. Es kann auch ein bestimmter Durchmesser in Pixeln (ungefähr) eingestellt werden.</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__OFFSCREENUNITSIZEMULT_TEXT</Tag>
+		<English>Off-Screen Balloon Size</English>
+		<German>Ballon-Größe Bildrand</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__OFFSCREENUNITSIZEMULT_LIST</Tag>
+		<English>0.8|1.0|1.2|1.4|1.6|1.8|2.0|Disable</English>
+		<German>0.8|1.0|1.2|1.4|1.6|1.8|2.0|Keine</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__OFFSCREENUNITSIZEMULT_HOVER</Tag>
+		<English>Multiplier for the [COLOR_HIGHLIGHT_TEXT]Balloon Size[COLOR_REVERT] when the currently selected unit is off-screen. (Off-screen indicators shown for certain events are not affected by this multiplier.) [COLOR_HIGHLIGHT_TEXT]1.4[COLOR_REVERT] is the AdvCiv default, [COLOR_HIGHLIGHT_TEXT]1.6[COLOR_REVERT] is closest to the original behavior. [COLOR_HIGHLIGHT_TEXT]Disable[COLOR_REVERT] means that no balloon is shown for off-screen units. Changes won't take effect until a different unit is selected.</English>
+		<German>Faktor, mit dem die [COLOR_HIGHLIGHT_TEXT]Ballon-Größe[COLOR_REVERT] multipliziert wird, wenn die derzeit ausgewählte Einheit nicht im Bild ist. Standard in AdvCiv ist [COLOR_HIGHLIGHT_TEXT]1.4[COLOR_REVERT], in BtS betrug der Faktor ca. [COLOR_HIGHLIGHT_TEXT]1.6[COLOR_REVERT]. Die Einheiten-Ballons am Bildrand können auch ganz deaktiviert werden ([COLOR_HIGHLIGHT_TEXT]Keine[COLOR_REVERT]). Änderungen werden erst nach Auswahl einer anderen Einheit wirksam. (Ein Ballon am Bildrand wird auch bei manchen Ereignis-Meldungen angezeigt; diese Option hier betrifft aber nur Einheiten.)</German>
 	</TEXT>
 	
 	<!-- advc.002f: -->
@@ -872,7 +950,7 @@
 	<!-- advc.101 -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__REVOLTCHANCEICON_TEXT</Tag>
-		<English>Revolt Icon</English>
+		<English>Revolt Possible</English>
 		<German>Revolte droht</German>
 	</TEXT>
 	<TEXT>

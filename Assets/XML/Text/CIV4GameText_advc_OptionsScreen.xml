@@ -388,7 +388,8 @@
 		 visible tile into the Fog of War, the unit may already be gone when
 		 the camera jumps to the visible tile.)" (and remove the "or leave").
 		 Too long, and I guess most players will figure that out on their own.
-		 -->
+		 Could also mention that the show-moves options are ignored in games
+		 with simultaneous turns. -->
 	<TEXT>
 		<Tag>TXT_KEY_PLAYER_OPTION_SHOW_ENEMY_MOVES_HELP</Tag>
 		<English>Movement animations are shown for hostile units when they enter or leave a visible tile.</English>

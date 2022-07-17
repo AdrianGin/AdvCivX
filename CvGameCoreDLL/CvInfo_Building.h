@@ -65,7 +65,7 @@ public: // All the const functions are exposed to Python
 	bool isMonument() const { return m_bMonument; }
 	/*  advc (note): Unused in XML. Number of buildings of this class required for
 		team victory as a necessary (not sufficient) condition. No AI code for this. */
-	DEF_INFO_ENUM_MAP(VictoryThreshold, Victory, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(VictoryThreshold, Victory, int, short, NonDefaultEnumMap);
 
 	bool read(CvXMLLoadUtility* pXML);
 	bool readPass3();
@@ -269,13 +269,13 @@ public:
 	DEF_SHORT_INFO_ENUM_MAP(StateReligionCommerce, Commerce, CommerceChangeMap);
 	DEF_SHORT_INFO_ENUM_MAP(CommerceHappiness, Commerce, CommercePercentMap);
 
-	DEF_INFO_ENUM_MAP(ReligionChange, Religion, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(ReligionChange, Religion, int, char, NonDefaultEnumMap);
 	DEF_INFO_ENUM_MAP(SpecialistCount, Specialist, int, char, ArrayEnumMap);
-	DEF_INFO_ENUM_MAP(FreeSpecialistCount, Specialist, int, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(BonusHealthChanges, Bonus, int, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(BonusHappinessChanges, Bonus, int, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(BonusProductionModifier, Bonus, int, short, ListEnumMap);
-	DEF_INFO_ENUM_MAP(UnitCombatFreeExperience, UnitCombat, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(FreeSpecialistCount, Specialist, int, char, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(BonusHealthChanges, Bonus, int, char, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(BonusHappinessChanges, Bonus, int, char, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(BonusProductionModifier, Bonus, int, short, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(UnitCombatFreeExperience, UnitCombat, int, char, NonDefaultEnumMap);
 	DEF_INFO_ENUM_MAP(DomainFreeExperience, Domain, int, char, ArrayEnumMap);
 	DEF_INFO_ENUM_MAP(DomainProductionModifier, Domain, int, short, ArrayEnumMap);
 
@@ -294,18 +294,18 @@ public:
 	int py_getPrereqAndTechs(int i) const;
 	int py_getPrereqOrBonuses(int i) const;
 
-	DEF_INFO_ENUM_MAP(ProductionTraits, Trait, int, short, ListEnumMap);
-	DEF_INFO_ENUM_MAP(HappinessTraits, Trait, int, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(BuildingHappinessChanges, BuildingClass, int, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(PrereqNumOfBuildingClass, BuildingClass, int, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(FlavorValue, Flavor, int, short, ListEnumMap);
-	DEF_INFO_ENUM_MAP(ImprovementFreeSpecialist, Improvement, int, char, ListEnumMap);
+	DEF_INFO_ENUM_MAP(ProductionTraits, Trait, int, short, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(HappinessTraits, Trait, int, char, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(BuildingHappinessChanges, BuildingClass, int, char, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(PrereqNumOfBuildingClass, BuildingClass, int, char, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(FlavorValue, Flavor, int, short, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(ImprovementFreeSpecialist, Improvement, int, char, NonDefaultEnumMap);
 	DEF_INFO_ENUM_MAP_BOOL(CommerceFlexible, Commerce, ArrayEnumMap);
 	DEF_INFO_ENUM_MAP_BOOL(CommerceChangeOriginalOwner, Commerce, ArrayEnumMap);
 	DEF_INFO_ENUM_SET(BuildingClassNeededInCity, BuildingClass);
 	// (Replacing optimizations by UNOFFICIAL_PATCH, 06/27/10, Afforess & jdog5000)
-	DEF_INFO_ENUM2SHORT_MAP(SpecialistYieldChange, Specialist, Yield, YieldChangeMap, ListEnumMap);
-	DEF_INFO_ENUM2SHORT_MAP(BonusYieldModifier, Bonus, Yield, YieldPercentMap, ListEnumMap);
+	DEF_INFO_ENUM2SHORT_MAP(SpecialistYieldChange, Specialist, Yield, YieldChangeMap, NonDefaultEnumMap);
+	DEF_INFO_ENUM2SHORT_MAP(BonusYieldModifier, Bonus, Yield, YieldPercentMap, NonDefaultEnumMap);
 	// <advc.003w> for convenience
 	bool isWorldWonder() const
 	{
@@ -487,7 +487,7 @@ public: // All the const functions are exposed to Python
 
 	bool isValid() const { return m_bValid; }
 
-	DEF_INFO_ENUM_MAP(ProductionTraits, Trait, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(ProductionTraits, Trait, int, short, NonDefaultEnumMap);
 
 	bool read(CvXMLLoadUtility* pXML);
 
@@ -669,10 +669,10 @@ public: // All const functions are exposed to Python
 	bool nameNeedsArticle() const;
 
 	// Arrays access ...
-	DEF_INFO_ENUM_MAP(BonusProductionModifier, Bonus, int, short, ListEnumMap);
-	DEF_INFO_ENUM_MAP(VictoryThreshold, Victory, int, short, ListEnumMap);
-	DEF_INFO_ENUM_MAP(VictoryMinThreshold, Victory, int, short, ListEnumMap);
-	DEF_INFO_ENUM_MAP(ProjectsNeeded, Project, int, short, ListEnumMap);
+	DEF_INFO_ENUM_MAP(BonusProductionModifier, Bonus, int, short, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(VictoryThreshold, Victory, int, short, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(VictoryMinThreshold, Victory, int, short, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(ProjectsNeeded, Project, int, short, NonDefaultEnumMap);
 
 	bool read(CvXMLLoadUtility* pXML);
 	bool readPass2(CvXMLLoadUtility* pXML);

@@ -35,6 +35,7 @@ public:
 	// Only for the EXE:
 	DllExport static CvPlayerAI& getPlayerNonInl(PlayerTypes ePlayer);
 	DllExport static bool areStaticsInitialized();
+	static void AI_updateAttitudes(); // advc
 	// <advc> Moved from CvDefines
 	static int const DANGER_RANGE = 4;
 	static int const BORDER_DANGER_RANGE = 2; // </advc>
@@ -206,7 +207,7 @@ public:
 	bool AI_demandRebukedWar(PlayerTypes ePlayer) const;
 	bool AI_hasTradedWithTeam(TeamTypes eTeam) const;
 
-	void AI_updateAttitude(); // K-Mod (for all players)
+	void AI_updateAttitude(); // K-Mod (toward all other players)
 	void AI_updateAttitude(PlayerTypes ePlayer,		// K-Mod
 			bool bUpdateWorstEnemy = true); // advc.130e
 	void AI_changeCachedAttitude(PlayerTypes ePlayer, int iChange); // K-Mod

@@ -172,6 +172,7 @@
     <ClCompile Include="..\FAStarFunc.cpp" />
     <ClCompile Include="..\GroupPathFinder.cpp" />
     <ClCompile Include="..\KmodPathFinderLegacy.cpp" />
+    <ClCompile Include="..\ModName.cpp" />
     <ClCompile Include="..\PlayerHistory.cpp" />
     <ClCompile Include="..\ReproTest.cpp" />
     <ClCompile Include="..\FDialogTemplate.cpp" />
@@ -187,6 +188,7 @@
     <ClCompile Include="..\RFTotalScore.cpp" />
     <ClCompile Include="..\RiseFall.cpp" />
     <ClCompile Include="..\ScaledNumTest.cpp" />
+    <ClCompile Include="..\SelfMod.cpp" />
     <ClCompile Include="..\Shelf.cpp" />
     <ClCompile Include="..\StartingPositionIteration.cpp" />
     <ClCompile Include="..\StartPointsAsHandicap.cpp" />
@@ -338,6 +340,7 @@
     <ClInclude Include="..\KmodPathFinder.h" />
     <ClInclude Include="..\KmodPathFinderLegacy.h" />
     <ClInclude Include="..\LinkedListTraversal.h" />
+    <ClInclude Include="..\ModName.h" />
     <ClInclude Include="..\PlayerHistory.h" />
     <ClInclude Include="..\PlotAdjListTraversal.h" />
     <ClInclude Include="..\PragmaWarnings.h" />
@@ -359,6 +362,7 @@
     <ClInclude Include="..\PlotRange.h" />
     <ClInclude Include="..\ScaledNum.h" />
     <ClInclude Include="..\ScaledNumFwd.h" />
+    <ClInclude Include="..\SelfMod.h" />
     <ClInclude Include="..\StartingPositionIteration.h" />
     <ClInclude Include="..\TeamPathFinder.h" />
     <ClInclude Include="..\Trigonometry.h" />

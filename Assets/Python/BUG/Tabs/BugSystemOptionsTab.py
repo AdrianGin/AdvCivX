@@ -21,10 +21,12 @@ class BugSystemOptionsTab(BugOptionsTab.BugOptionsTab):
 		panel = self.createMainPanel(screen)
 		column = self.addOneColumnLayout(screen, panel)
 
-		left, right = self.addTwoColumnLayout(screen, column, "Bottom", False)
+		# advc.106i: center column added
+		left, center, right = self.addThreeColumnLayout(screen, column, "Bottom")
 		# advc.004: Removed
 		#self.addCheckbox(screen, left, "MainInterface__OptionsKey")
 		self.addCheckbox(screen, left, "MainInterface__OptionsButton")
+		self.addCheckbox(screen, center, "MainInterface__ModNameInReplays") # advc.106i
 		screen.setLayoutFlag(right, "LAYOUT_RIGHT")
 		screen.setLayoutFlag(right, "LAYOUT_SIZE_HPREFERREDEXPANDING")
 		self.addLabel(screen, right, "Version", 

@@ -1871,12 +1871,9 @@ void CvCityAI::AI_chooseProduction()
 						break;
 					}
 				}
-				if(!bAssaultTargetFound)
+				if (!bAssaultTargetFound)
 					pAssaultWaterArea = NULL;
-				if(bAssaultTargetFound && // </advc.030b>
-					/*	BBAI TODO: faster to switch to checking path for some selection group?
-						^advc: That's a can of worms, and unnecessary.
-						See comment in  AI_isHasPathToEnemyCity. */
+				if (bAssaultTargetFound && // </advc.030b>
 					!GET_TEAM(getTeam()).AI_isHasPathToEnemyCity(getPlot()))
 				{
 					bBuildAssault = true;
@@ -4917,7 +4914,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 							else eTowardThem = kOwner.AI_getAttitude(kBrother.getID());
 						}
 						bool bTheyAhead = (kGame.getPlayerRank(kBrother.getID()) <
-								std::min(kGame.getPlayerRank(kOwner.getID()),
+								std::min<int>(kGame.getPlayerRank(kOwner.getID()),
 								iEverAlive / 2));
 						// Don't care if they benefit from ReligionYield then
 						if(!bTheyAhead && eTowardThem <= ATTITUDE_CAUTIOUS &&
@@ -7811,12 +7808,12 @@ int CvCityAI::AI_getImprovementValue(CvPlot const& kPlot, ImprovementTypes eImpr
 		FOR_EACH_ENUM(Build)
 		{
 			if (GC.getInfo(eLoopBuild).getImprovement() != eImprovement)
-				continue; // advc
+				continue;
 			if (kOwner.canBuild(kPlot, eLoopBuild, false))
 			{
 				int iValue = 10000;
 				iValue /= (GC.getInfo(eLoopBuild).getTime() + 1);
-				// XXX feature production???  // advc: I think the chop decision (AI_updateBestBuild) will handle that
+				// XXX feature production???  // (advc: I think the chop decision in AI_updateBestBuild will handle that)
 				if (iValue > iBestTempBuildValue)
 				{
 					iBestTempBuildValue = iValue;

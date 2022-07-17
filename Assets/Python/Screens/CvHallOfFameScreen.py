@@ -255,7 +255,8 @@ class CvHallOfFameScreen:
 		screen.addTableControlGFC(self.TABLE_ID, 10, 2, 2 * self.DROPDOWN_SPACING_Y + self.DROPDOWN_Y, 1018, 545, True, True, 16, 16, TableStyles.TABLE_STYLE_STANDARD);
 		screen.enableSelect(self.TABLE_ID, False)
 		screen.enableSort(self.TABLE_ID)
-		# <advc.106i> Don't show replay button column when game has just ended (replays are disabled then)
+		# <advc.106i> Don't show replay button column when game has just ended;
+		# replays don't work at that point. (Why is that? Issue introduced by AdvCiv? Oh well ...)
 		bAllowReplay = (gc.getGame().getGameState() != GameStateTypes.GAMESTATE_OVER)
 		iColumn = 0 # Replacing hardcoded column numbers
 		if bAllowReplay:
@@ -317,25 +318,21 @@ class CvHallOfFameScreen:
 				elif self.iSortBy == SORT_BY_GAME_SCORE:
 					iValue = -replayInfo.getFinalScore()
 				# <advc.106i>  (also legacy support for advc.250a)
-				szHandicap = ""
 				iHandicap = replayInfo.getDifficulty()
 				if iHandicap >= 0 and iHandicap < gc.getNumHandicapInfos():
 					szHandicap = gc.getHandicapInfo(iHandicap).getDescription()
 				else:
 					szHandicap = szUnknown
-				szWorldSize = ""
 				iWorldSize = replayInfo.getWorldSize()
 				if iWorldSize >= 0 and iWorldSize < gc.getNumWorldInfos():
 					szWorldSize = gc.getWorldInfo(iWorldSize).getDescription()
 				else:
 					szWorldSize = szUnknown
-				szStartEra = ""
 				iStartEra = replayInfo.getEra()
 				if iStartEra >= 0 and iStartEra < gc.getNumEraInfos():
 					szStartEra = gc.getEraInfo(iStartEra).getDescription()
 				else:
 					szStartEra = szUnknown
-				szSpeed = ""
 				iSpeed = replayInfo.getGameSpeed()
 				if iSpeed >= 0 and iSpeed < gc.getNumGameSpeedInfos():
 					szSpeed = gc.getGameSpeedInfo(iSpeed).getDescription()
@@ -413,7 +410,7 @@ class CvHallOfFameScreen:
 		while msgNum >= 0:
 			msg = replay.getReplayMessageText(msgNum)
 			if count > 25: # advc.opt: was 100
-				BugUtil.debug("no victory message in first 100; skipping")
+				BugUtil.debug("no victory message found; skipping")
 				break
 			matches = reWinText.match(msg)
 			if matches:

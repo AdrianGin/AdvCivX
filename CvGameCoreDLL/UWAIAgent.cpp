@@ -100,7 +100,7 @@ void UWAI::Team::doWar()
 	if (!getUWAI().isReady())
 		return;
 	CvTeamAI& kAgent = GET_TEAM(m_eAgent);
-	if (!kAgent.isAlive() || kAgent.isBarbarian() || kAgent.isMinorCiv())
+	if (!kAgent.isAlive() || !kAgent.isMajorCiv())
 		return;
 	FAssertMsg(!kAgent.isAVassal() || kAgent.getNumWars() > 0 ||
 			kAgent.AI_getNumWarPlans(WARPLAN_DOGPILE) +
@@ -1764,7 +1764,7 @@ DenialTypes UWAI::Team::makePeaceTrade(TeamTypes eEnemy, TeamTypes eBroker) cons
 		{
 			CvGameAI const& kGame = GC.AI_getGame();
 			scaled rScoreRatio(kGame.getTeamScore(m_eAgent),
-					kGame.getTeamScore(kGame.getRankTeam(0)));
+					kGame.getTeamScore(kGame.getRankTeam((TeamTypes)0)));
 			scaled const rGameEra = kGame.AI_getCurrEraFactor();
 			if (rGameEra > 0 &&
 				rScoreRatio < ((rGameEra - 1) / rGameEra + fixp(2/3.)) / 2)
@@ -2698,11 +2698,11 @@ scaled UWAI::Player::tradeValUtilityConversionRate() const
 			getTrainPercent();
 	if (iTrainPercent > 0)
 		rSpeedFactor = scaled(100, iTrainPercent);
-	return (3 * rSpeedFactor) /
+	return std::max(scaled::epsilon(), (3 * rSpeedFactor) /
 			(scaled::max(10,
 			GET_TEAM(m_eAgent).AI_estimateYieldRate(m_eAgent, YIELD_COMMERCE))
 			+ 2 * scaled::max(1,
-			GET_TEAM(m_eAgent).AI_estimateYieldRate(m_eAgent, YIELD_PRODUCTION)));
+			GET_TEAM(m_eAgent).AI_estimateYieldRate(m_eAgent, YIELD_PRODUCTION))));
 	/*  Note that change advc.004s excludes espionage and culture from the
 		Economy history, and estimateYieldRate(YIELD_COMMERCE) doesn't account
 		for these yields either. Not a problem for culture, I think, which is

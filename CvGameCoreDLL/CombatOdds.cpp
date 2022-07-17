@@ -617,7 +617,7 @@ int LFBcalculateCombatOdds(Combatant const& att, Combatant const& def)
 	Returns true if the attacker wins. Reaching its damage limit counts as a win. */
 bool simulateCombat(CvUnit const& kAttacker, CvUnit const& kDefender)
 {
-	// Odds of defender destroying attacker, per-round damage to(!) attacker, to defender.
+	// Odds of defender hitting attacker, per-round damage to(!) attacker, to defender.
 	int iDefenderOdds=0, iAttackerDamage=0, iDefenderDamage=0;
 	{
 		int iDefenderStrength=0;

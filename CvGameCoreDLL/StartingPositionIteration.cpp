@@ -37,10 +37,7 @@ StartingPositionIteration::StartingPositionIteration() :
 	if (!GC.getDefineBOOL("ENABLE_STARTING_POSITION_ITERATION"))
 		return;
 	CvMap const& kMap = GC.getMap();
-	/*	Could go a bit higher w/o becoming prohibitively slow, but I doubt
-		that the algorithm will do much good on super-huge maps unless the
-		limit on the number of iterations is increased. */
-	if (kMap.numPlots() > 12000)
+	if (kMap.numPlots() > GC.getDefineINT("SPI_PLOT_LIMIT"))
 		return;
 	/*	Bail on extremely overcrowded maps? SPI can't really deal with
 		overlapping city radii, but neither can the BtS algorithm. */
@@ -1789,6 +1786,13 @@ void StartingPositionIteration::doIterations(PotentialSites& kPotentialSites)
 	int iMaxSteps = (1000000 /
 			scaled(iPlots * PlayerIter<CIV_ALIVE>::count()).
 			pow(fixp(0.61))).round();
+	iMaxSteps *= GC.getDefineINT("SPI_TIME_LIMIT_PERCENT");
+	iMaxSteps /= 100;
+	if (iMaxSteps <= 0)
+	{
+		FAssert(iMaxSteps > 0);
+		return;
+	}
 	while (iStepsConsidered < iMaxSteps)
 	{
 		vector<pair<scaled,PlayerTypes> > currSitesByOutlierVal;

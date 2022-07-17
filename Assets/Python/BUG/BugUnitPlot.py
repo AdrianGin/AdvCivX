@@ -20,12 +20,18 @@ ArtFileMgr = CyArtFileMgr()
 localText = CyTranslator()
 
 sBupStringBase = "BUGUnitPlotString"
-cBupCellSize = 34
+#cBupCellSize = 34
+# advc.092: Obtain this from CvMainInterface instead
+from CvScreensInterface import mainInterface
 cBupCellSpacing = 3
+from LayoutDict import HSPACE, BTNSZ, gRect # advc.092
 
 class BupPanel:
-	def __init__(self, screen, xRes, yRes, iMulti, iVanCols, iVanRows):
-		self.CellSpacing = cBupCellSpacing
+	def __init__(self, screen, #xRes, yRes, iMulti, # advc.092
+			iVanCols, iVanRows):
+		self.CellSpacing = HSPACE(cBupCellSpacing) # advc.092:
+		# advc.092: Replacing cBupCellSize
+		self.CellSize = mainInterface.plotListUnitButtonSize()
 		self.MaxCells = iVanCols * iVanRows
 		self.Rows = iVanRows
 		self.Cols = iVanCols
@@ -42,10 +48,11 @@ class BupPanel:
 
 		# however, the panel location values are still used to help locate the cells
 		# SO DON'T DELETE THEM!
-		self.xPanel = 315 - cBupCellSpacing
-		self.yPanel = yRes - 169 + (1 - iVanRows) * cBupCellSize - cBupCellSpacing
-		self.wPanel = iVanCols * cBupCellSize + cBupCellSpacing
-		self.hPanel = iVanRows * cBupCellSize + cBupCellSpacing
+		# <advc.092>
+		self.xPanel = gRect("PlotListPanel0").x() + cBupCellSpacing
+		self.yPanel = gRect("PlotListPanel0").y() + cBupCellSpacing # </advc.092>
+		self.wPanel = iVanCols * self.CellSize + cBupCellSpacing
+		self.hPanel = iVanRows * self.CellSize + cBupCellSpacing
 
 #		BugUtil.debug("BupPanel %i %i %i %i", self.xPanel, self.yPanel, self.wPanel, self.hPanel)
 
@@ -61,22 +68,32 @@ class BupPanel:
 			iY = self._getY(self._getRow(iIndex))
 
 #			BugUtil.debug("BupPanel MaxCells %i %i %i %i %i", iIndex, self._getCol(iIndex), self._getRow(iIndex), self._getX(self._getCol(iIndex)), self._getY(self._getRow(iIndex)))
-
+			# <advc.092>
+			iSizeDiff = 2
+			iFrameSize = self.CellSize - iSizeDiff # </advc.092>
 			# place/init the promotion frame.
 			# Important to have it at first place within the for loop
 			# so that it sits behind the unit icon button
 			szStringPromoFrame = szBupCell + "PromoFrame"
-			screen.addDDSGFC(szStringPromoFrame, sPromoFrame, iX, iY, 32, 32, WidgetTypes.WIDGET_GENERAL, iIndex, -1 )
+			screen.addDDSGFC(szStringPromoFrame, sPromoFrame,
+					iX, iY, iFrameSize, iFrameSize,
+					WidgetTypes.WIDGET_GENERAL, iIndex, -1 )
 			screen.hide(szStringPromoFrame)
 
 
 			# unit icon
-			screen.addCheckBoxGFC(szBupCell, sTexture, sHiLiteTexture, iX, iY, 32, 32, WidgetTypes.WIDGET_PLOT_LIST, iIndex, -1, ButtonStyles.BUTTON_STYLE_LABEL)
+			screen.addCheckBoxGFC(szBupCell, sTexture, sHiLiteTexture,
+					iX, iY, iFrameSize, iFrameSize,
+					WidgetTypes.WIDGET_PLOT_LIST, iIndex, -1,
+					ButtonStyles.BUTTON_STYLE_LABEL)
 			screen.hide(szBupCell)
 
 			# health bar
 			szStringHealth = szBupCell + "Health"
-			screen.addStackedBarGFC(szStringHealth, iX, iY + 23, 32, 11, InfoBarTypes.NUM_INFOBAR_TYPES, WidgetTypes.WIDGET_GENERAL, iIndex, -1 )
+			screen.addStackedBarGFC(szStringHealth,
+					iX, iY + (23 * iFrameSize) / 32, iFrameSize, (11 * iFrameSize) / 32,
+					InfoBarTypes.NUM_INFOBAR_TYPES,
+					WidgetTypes.WIDGET_GENERAL, iIndex, -1 )
 			screen.hide(szStringHealth)
 
 			self.BupCell_Displayed.append(False)
@@ -90,10 +107,21 @@ class BupPanel:
 #VOID addStackedBarGFC(STRING szName, INT iX, INT iY, INT iWidth, INT iHeight, INT iNumBars, WidgetType eWidgetType, INT iData1, INT iData2)
 
 
-
-		# the little white arrows?
-		screen.setButtonGFC(sBupStringBase + "Minus", u"", "", 315 + (xRes - (iMulti) - 68), yRes - 171, 32, 32, WidgetTypes.WIDGET_PLOT_LIST_SHIFT, -1, -1, ButtonStyles.BUTTON_STYLE_ARROW_LEFT)
-		screen.setButtonGFC(sBupStringBase + "Plus", u"", "",  298 + (xRes - (iMulti) - 34), yRes - 171, 32, 32, WidgetTypes.WIDGET_PLOT_LIST_SHIFT, 1, -1, ButtonStyles.BUTTON_STYLE_ARROW_RIGHT)
+		# the little white arrows
+		screen.setButtonGFC(sBupStringBase + "Minus", u"", "",
+				# <advc.092>
+				gRect("PlotListMinus").x() + (3 * self.CellSize) / 4, gRect("PlotListMinus").y(),
+				gRect("PlotListMinus").width(), gRect("PlotListMinus").height(),
+				# </advc.092>
+				WidgetTypes.WIDGET_PLOT_LIST_SHIFT, -1, -1,
+				ButtonStyles.BUTTON_STYLE_ARROW_LEFT)
+		screen.setButtonGFC(sBupStringBase + "Plus", u"", "", 
+				# <advc.092>
+				gRect("PlotListPlus").x() + self.CellSize / 4, gRect("PlotListPlus").y(),
+				gRect("PlotListPlus").width(), gRect("PlotListPlus").height(),
+				# </advc.092>
+				WidgetTypes.WIDGET_PLOT_LIST_SHIFT, 1, -1,
+				ButtonStyles.BUTTON_STYLE_ARROW_RIGHT)
 		screen.hide(sBupStringBase + "Minus")
 		screen.hide(sBupStringBase + "Plus")
 
@@ -348,22 +376,29 @@ class BupPanel:
 			self._drawDot(BupUnit, szCell, iCount, x, y)
 
 	def _drawDot(self, BupUnit, szCell, iCount, x, y):
+		xOffset = -3
+		yOffset = -7
 		# handles the display of the colored buttons in the upper left corner of each unit icon.
 		# Units lead by a GG will get a star instead of a dot - and the location and size of star differs
 		if (PleOpt.isShowGreatGeneralIndicator()
 		and BupUnit.isLeadByGreatGeneral):
-			xSize = 16
-			ySize = 16
-			xOffset = -3
-			yOffset = -3
+			xSize = BTNSZ(16) # advc.092
+			ySize = xSize
+			xOffset -= 3
+			yOffset -= 3
 		else:
-			xSize = 12
-			ySize = 12
-			xOffset = 0
-			yOffset = 0
+			xSize = mainInterface.unitButtonOverlaySize() # advc.092
+			ySize = xSize
+		# <advc.092>
+		xOffset *= self.CellSize
+		xOffset /= 34
+		yOffset *= self.CellSize
+		yOffset /= 34 # </advc.092>
 
 		# display the colored spot icon
-		self.screen.addDDSGFC(szCell + "Dot", getArt(BupUnit.DotStatus), x-3+xOffset, y-7+yOffset, xSize, ySize, WidgetTypes.WIDGET_GENERAL, iCount, -1 )
+		self.screen.addDDSGFC(szCell + "Dot", getArt(BupUnit.DotStatus),
+				x + xOffset, y + yOffset, xSize, ySize,
+				WidgetTypes.WIDGET_GENERAL, iCount, -1 )
 
 
 ############## promotion available ##############
@@ -398,8 +433,14 @@ class BupPanel:
 
 	def _drawUpgrade(self, BupUnit, szCell, iCount, x, y):
 		if (BupUnit.isCanUpgrade):
+			# <advc.092>
+			iHeight = mainInterface.unitButtonOverlaySize()
+			iWidth = iHeight / 2 # </advc.092>
 			# place the upgrade arrow
-			self.screen.addDDSGFC(szCell + "Upgrade", getArt("OVERLAY_UPGRADE"), x+2, y+14, 8, 16, WidgetTypes.WIDGET_GENERAL, iCount, -1 )
+			self.screen.addDDSGFC(szCell + "Upgrade", getArt("OVERLAY_UPGRADE"),
+					x + (2 * self.CellSize) / 34, y + (14 * self.CellSize) / 34, # advc.092
+					iWidth, iHeight,
+					WidgetTypes.WIDGET_GENERAL, iCount, -1 )
 		else:
 			self.screen.hide(szCell + "Upgrade")
 
@@ -418,7 +459,11 @@ class BupPanel:
 	def _drawMission(self, BupUnit, szCell, iCount, x, y):
 		if PleOpt.isShowMissionInfo():
 			if BupUnit.Mission != "":
-				self.screen.addDDSGFC(szCell + "Mission", getArt(BupUnit.Mission), x+20, y+20, 12, 12, WidgetTypes.WIDGET_GENERAL, iCount, -1)
+				iSize = mainInterface.unitButtonOverlaySize() # advc.092
+				self.screen.addDDSGFC(szCell + "Mission", getArt(BupUnit.Mission),
+						x + (20 * self.CellSize) / 34, y + (20 * self.CellSize) / 34, # advc.092
+						iSize, iSize,
+						WidgetTypes.WIDGET_GENERAL, iCount, -1)
 			else:
 				self.screen.hide(szCell + "Mission")
 
@@ -475,10 +520,10 @@ class BupPanel:
 		return i % self._getMaxCols()
 
 	def _getX(self, nCol): # measures from the top left of screen!
-		return nCol * cBupCellSize + self.xPanel
+		return nCol * self.CellSize + self.xPanel
 
 	def _getY(self, nRow): # measures from the top left of screen!
-		return nRow * cBupCellSize + self.yPanel
+		return nRow * self.CellSize + self.yPanel
 
 	def _getCellWidget(self, index):
 		return sBupStringBase + "Cell" + str(index)

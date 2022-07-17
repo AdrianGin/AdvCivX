@@ -43,7 +43,9 @@ class CvDiplomacy:
 
 		# If this is the first time we are being contacted by the AI
 		# Or if the AI is no longer a vassal
-		elif (self.isComment(eComment, "AI_DIPLOCOMMENT_FIRST_CONTACT") or self.isComment(eComment, "AI_DIPLOCOMMENT_NO_VASSAL")):
+		elif (self.isComment(eComment, "AI_DIPLOCOMMENT_FIRST_CONTACT") or
+				self.isComment(eComment, "AI_DIPLOCOMMENT_NO_VASSAL",
+				True)): # advc.062
 
 			# if you are on different teams and NOT at war, give the user the option to declare war
 			if (gc.getTeam(gc.getGame().getActiveTeam()).canDeclareWar(gc.getPlayer(self.diploScreen.getWhoTradingWith()).getTeam())):
@@ -771,11 +773,16 @@ class CvDiplomacy:
 		
 		return
 
-	def isComment(self, eComment, strComment):
+	def isComment(self, eComment, strComment,
+			bStartsWith = False): # advc.062
 		'bool - comment matching'
-		if ( gc.getDiplomacyInfo(eComment).getType() == strComment ):
-			return True
-		return False
+		strType = gc.getDiplomacyInfo(eComment).getType()
+		# <advc.062>
+		if bStartsWith:
+			return strType.startswith(strComment)
+		else: # </advc.062>
+			return strType == strComment
+		
 	
 	def getCommentID(self, strComment):
 		'int - ID for DiploCommentType'

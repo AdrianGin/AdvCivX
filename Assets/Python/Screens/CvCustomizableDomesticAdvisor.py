@@ -758,7 +758,7 @@ class CvCustomizableDomesticAdvisor:
 
 		# Location of Text Buttons
 		self.X_EXIT = self.nTableX + self.nTableWidth
-		self.Y_EXIT = self.nPanelLength + self.nPanelY - 32
+		self.Y_EXIT = self.nPanelLength + self.nPanelY - 37 # advc.913: was -32
 		self.Y_TEXT = self.nPanelLength + self.nPanelY - 27
 		self.Z_TEXT = -0.1
 		self.DX_TEXT = -200
@@ -903,7 +903,14 @@ class CvCustomizableDomesticAdvisor:
 		#screen.addDDSGFC( self.BACKGROUND_ID, ArtFileMgr.getInterfaceArtInfo("SCREEN_BG").getPath(), 0, 29, 1024, 592, WidgetTypes.WIDGET_GENERAL, -1, -1 )
 
 		# Text Buttons
-		screen.setText(self.EXIT_NAME, "Background", localText.getText("TXT_KEY_PEDIA_SCREEN_EXIT", ()).upper(), CvUtil.FONT_RIGHT_JUSTIFY, self.X_EXIT, self.Y_EXIT, self.Z_TEXT, FontTypes.TITLE_FONT, WidgetTypes.WIDGET_CLOSE_SCREEN, -1, -1 )
+		screen.setText(self.EXIT_NAME, "Background",
+				u"<font=4>" + # advc.193
+				localText.getText("TXT_KEY_PEDIA_SCREEN_EXIT", ()).upper()
+				+ u"</font>", # advc.193
+				CvUtil.FONT_RIGHT_JUSTIFY,
+				self.X_EXIT, self.Y_EXIT, self.Z_TEXT,
+				FontTypes.TITLE_FONT,
+				WidgetTypes.WIDGET_CLOSE_SCREEN, -1, -1 )
 
 		x = self.X_SPECIAL + self.PAGES_DD_W + 10
 
@@ -2248,13 +2255,33 @@ class CvCustomizableDomesticAdvisor:
 			iBuildingButtonX = self.nTableX + 30
 			iBuildingButtonY = self.nTableY
 			civInfo = gc.getCivilizationInfo(gc.getActivePlayer().getCivilizationType())
-			
+
+			# <advc.193> For adjusting column widths to available space
+			iTotalColW = 0
+			for value, key in columns:
+				iTotalColW += self.columnWidth[key]
+			# Filling up nTableWidth entirely makes the columns too wide
+			# for some reason(?).
+			fHScaleFactor = min(2, max((self.nTableWidth - 50.0) / iTotalColW,
+					# I don't think we should shrink columns when player
+					# configures too many
+					1))
+			if fHScaleFactor > 1.36:
+				iCellFontSize = 3
+			else:
+				iCellFontSize = 2
+			# (The three uses of these tags in the code below aren't tagged w/ comments)
+			szFontTagOpen = u"<font=" + unicode(iCellFontSize) + u">"
+			szFontTagClose = u"</font>"
+			# </advc.193>
+
 			# Loop through the columns first. This is unintuitive, but faster.
 			for value, key in columns:
-				
+
 				try:
 					columnDef = self.COLUMNS_LIST[self.COLUMNS_INDEX[key]]
 					type = columnDef[2]
+					iColW = int(round(self.columnWidth[key] * fHScaleFactor)) # advc.193
 					if (type == "bldg" or type == "bldgclass"):
 						if (type == "bldg"):
 							building = columnDef[7]
@@ -2267,16 +2294,16 @@ class CvCustomizableDomesticAdvisor:
 							buildingClass = columnDef[7]
 							building = civInfo.getCivilizationBuildings(buildingClass)
 							buildingInfo = self.BUILDING_INFO_LIST[building]
-						screen.setTableColumnHeader (page, value + 1, "", self.columnWidth[key])
+						screen.setTableColumnHeader (page, value + 1, "", iColW)
 						szName = "BLDG_BTN_%d" % building
-						x = iBuildingButtonX + (self.columnWidth[key] - self.BUILDING_BUTTON_X_SIZE) / 2
+						x = iBuildingButtonX + (iColW - self.BUILDING_BUTTON_X_SIZE) / 2
 						screen.setImageButton (szName, buildingInfo.getButton(), 
 											   x, iBuildingButtonY, self.BUILDING_BUTTON_X_SIZE, self.BUILDING_BUTTON_Y_SIZE, 
 											   WidgetTypes.WIDGET_PEDIA_JUMP_TO_BUILDING, building, -1)
 					else:
-						screen.setTableColumnHeader (page, value + 1, "<font=2>" + self.HEADER_DICT[key] + "</font>", self.columnWidth[key] )
+						screen.setTableColumnHeader (page, value + 1, szFontTagOpen + self.HEADER_DICT[key] + szFontTagClose, iColW )
 
-					iBuildingButtonX += self.columnWidth[key]
+					iBuildingButtonX += iColW
 
 					# And the correct writing function.
 					if (type == "text"):
@@ -2309,7 +2336,7 @@ class CvCustomizableDomesticAdvisor:
 						calcFunc = columnDef[3]
 						# Loop through the cities
 						for i in cityRange:
-							szValue = colorFunc(unicode(calcFunc(cityList[i].city)), key)
+							szValue = szFontTagOpen + colorFunc(unicode(calcFunc(cityList[i].city)), key) + szFontTagClose
 							wd1,wd2,wd3 = widgetDataForCity(cityList[i].city)
 							funcTableWrite (page, value + 1, i, szValue, "", wd1, wd2, wd3, justify)
 						
@@ -2317,7 +2344,7 @@ class CvCustomizableDomesticAdvisor:
 						calcFunc = columnDef[4]
 						# Loop through the cities
 						for i in cityRange:
-							szValue = colorFunc(unicode(calcFunc(cityList[i].city, columnDef[5])), key)
+							szValue = szFontTagOpen + colorFunc(unicode(calcFunc(cityList[i].city, columnDef[5])), key) + szFontTagClose
 							wd1,wd2,wd3 = widgetDataForCity(cityList[i].city)
 							funcTableWrite (page, value + 1, i, szValue, "", wd1, wd2, wd3, justify)
 
@@ -2326,7 +2353,7 @@ class CvCustomizableDomesticAdvisor:
 						
 						# Loop through the cities
 						for i in cityRange:
-							szValue = colorFunc(unicode(calcFunc(cityList[i].city, key, columnDef[7])), key)
+							szValue = szFontTagOpen + colorFunc(unicode(calcFunc(cityList[i].city, key, columnDef[7])), key) + szFontTagClose
 							wd1,wd2,wd3 = widgetDataForCity(cityList[i].city)
 							funcTableWrite (page, value + 1, i, szValue, "", wd1, wd2, wd3, justify)
 

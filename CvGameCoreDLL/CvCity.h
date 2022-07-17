@@ -235,7 +235,10 @@ public:
 	bool isNoMaintenance() const; //advc
 	bool isHolyCity(ReligionTypes eReligion) const;																// Exposed to Python
 	bool isHolyCity() const;																					// Exposed to Python
-	bool hasShrine(ReligionTypes eReligion) const;
+	bool hasShrine(ReligionTypes eReligion) const
+	{	// advc.enum: Replacing implementation based on a cache at CvGame
+		return (m_aiShrine.get(eReligion) > 0);
+	}
 	bool isHeadquarters(CorporationTypes eCorp) const;															// Exposed to Python
 	bool isHeadquarters() const;																				// Exposed to Python
 	void setHeadquarters(CorporationTypes eCorp);
@@ -1469,6 +1472,7 @@ protected:
 	ListEnumMap<ImprovementTypes,int,char> m_aiImprovementFreeSpecialists;
 	ArrayEnumMap<ReligionTypes,int,char> m_aiReligionInfluence;
 	ArrayEnumMap<ReligionTypes,int,char> m_aiStateReligionHappiness;
+	ArrayEnumMap<ReligionTypes,int,char> m_aiShrine; // advc.enum
 	ArrayEnumMap<UnitCombatTypes,int,char> m_aiUnitCombatFreeExperience;
 	ListEnumMap<PromotionTypes,int,char> m_aiFreePromotionCount;
 

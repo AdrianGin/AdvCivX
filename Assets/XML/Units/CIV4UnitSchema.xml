@@ -41,6 +41,7 @@
 	<ElementType name="bShiftDownAlt" content="textOnly" dt:type="boolean"/>
 	<ElementType name="bCtrlDownAlt" content="textOnly" dt:type="boolean"/>
 	<ElementType name="iHotKeyPriorityAlt" content="textOnly" dt:type="int"/>
+	<!-- advc (note): Set to 5 by default in the DLL -->
 	<ElementType name="iOrderPriority" content="textOnly" dt:type="int"/>
 	<ElementType name="BuildInfo" content="eltOnly">
 		<element type="Type"/>

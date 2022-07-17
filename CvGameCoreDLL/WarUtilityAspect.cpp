@@ -689,7 +689,7 @@ void GreedForAssets::evaluate()
 	/*	(Count non-wonder buildings for rPresentScore? May construct those
 		in the conquered cities too eventually ...) */
 	scaled rUtility = scaled::min(650, 350 * rConqScore /
-			(rPresentScore + scaled::epsilon()));
+			scaled::max(rPresentScore, 1));
 	log("Base utility from assets: %d", rUtility.round());
 	scaled const rTeamSzMult = teamSizeMultiplier();
 	if (rTeamSzMult != 1)
@@ -834,8 +834,6 @@ scaled GreedForAssets::medianDistFromOurConquests(PlayerTypes ePlayer) const
 {
 	CvPlayerAI const& kPlayer = GET_PLAYER(ePlayer);
 	vector<scaled> arDistances;
-	CvArea const* pCapitalArea = (GET_PLAYER(ePlayer).hasCapital() ?
-			GET_PLAYER(ePlayer).getCapital()->area() : NULL);
 	for (size_t i = 0; i < ourConquestsFromThem().size(); i++)
 	{
 		/*	For a human, it's almost always easy to tell whether one civ is
@@ -851,9 +849,6 @@ scaled GreedForAssets::medianDistFromOurConquests(PlayerTypes ePlayer) const
 		if (iDist < 0) // unreachable
 			iDist = 1000;
 		arDistances.push_back(iDist);
-		// Double weight for cities in capital area
-		if (pCacheCity->city().area() == pCapitalArea)
-			arDistances.push_back(iDist);
 	}
 	scaled r = 1000;
 	if (!arDistances.empty())
@@ -1732,7 +1727,6 @@ void Assistance::evaluate()
 		rUtility = rOBUtil;
 		log("Utility raised to %d for strategic value of OB", rUtility.round());
 	}
-	// DogPileWarRand also factors in through the military analysis
 	scaled rPersonalityMult = kWeAI.protectiveInstinct();
 	log("Personality multiplier: %d percent", rPersonalityMult.getPercent());
 	/*	Assistance really counts the negative utility from losses
@@ -2189,8 +2183,7 @@ void PreEmptiveWar::evaluate()
 {
 	/*	If an unfavorable war with them seems likely in the long run,
 		we rather take our chances now. */
-	/*	Don't worry about long-term threat if already in the endgame;
-		Kingmaking handles that. */
+	// Don't worry about long-term threat when getting close to victory
 	if (kOurTeam.AI_anyMemberAtVictoryStage3() || militAnalyst().isEliminated(eWe) ||
 		militAnalyst().hasCapitulated(kOurTeam.getID()))
 	{
@@ -2287,6 +2280,12 @@ void PreEmptiveWar::evaluate()
 		rThreatChange.flipSign();
 	log("Change in threat: %d percent", rThreatChange.getPercent());
 	scaled rUtility = -90 * rCurrThreat * rThreatChange;
+	// Kingmaking should handle the endgame (but not quite there yet)
+	if (rUtility.abs().uround() >= 1 && kTheirTeam.AI_anyMemberAtVictoryStage3())
+	{
+		log("Util from pre-emptive war reduced b/c they're close to victory");
+		rUtility *= fixp(0.6);
+	}
 	scaled rDistrustFactor = kWeAI.distrustRating();
 	log("Our distrust: %d percent", rDistrustFactor.getPercent());
 	m_iU += (rUtility * rDistrustFactor).round();
@@ -4166,7 +4165,10 @@ void TacticalSituation::evalEngagement()
 			if (!kPlot.isVisible(eOurTeam) || !kPlot.sameArea(kGroupPlot) ||
 				!kPlot.isUnit() || // shortcut
 				// Could do without this if it's too slow
-				!pHeadUnit->canMoveInto(kPlot, true, false, false, true, false))
+				!pHeadUnit->canMoveInto(kPlot, true, false, false, true,
+				/*	We're about to move our units, but their movement points haven't
+					been restored yet, so it's important not to check for moves. */
+				/*bDangerCheck=*/true))
 			{
 				continue;
 			}
@@ -4204,17 +4206,29 @@ void TacticalSituation::evalEngagement()
 			// Akin to CvPlayerAI::AI_enemyTargetMissions
 			MissionAITypes const eMission = pGroup->AI_getMissionAIType();
 			CvPlot const* pMissionPlot = pGroup->AI_getMissionAIPlot();
-			/*	K-Mod uses MISSIONAI_ASSAULT also for land-based assaults on cities.
-				This should be more helpful than CvPlayerAI::AI_enemyTargetMission,
-				which counts all missions that target a hostile tile, i.e. also
-				reinforcements. (CvTeamAI::AI_endWarVal relies on that function.) */
-			if ((eMission == MISSIONAI_PILLAGE && ePlotOwner == eThey) ||
-				(eMission == MISSIONAI_ASSAULT && pMissionPlot != NULL &&
-				pMissionPlot->getOwner() == eThey))
+			bool const bPillage = (eMission == MISSIONAI_PILLAGE && ePlotOwner == eThey);
+			if (bPillage ||
+				// (K-Mod uses MISSIONAI_ASSAULT also for land-based assaults on cities)
+				((eMission == MISSIONAI_ASSAULT || eMission == MISSIONAI_GROUP ||
+				eMission == MISSIONAI_REINFORCE) &&
+				pMissionPlot != NULL && pMissionPlot->getOwner() == eThey &&
+				// Don't count besiegers
+				(!pMissionPlot->isCity() || stepDistance(&kGroupPlot, pMissionPlot) > 1)))
 			{
-				iOurMissions += iGroupSize + pGroup->getCargo();
+				int iMissionScore = pGroup->getNumUnits() + pGroup->getCargo();
+				if (bPillage)
+					iMissionScore = intdiv::uround(iMissionScore, 2);
+				iOurMissions += iMissionScore;
 			}
 		}
+	}
+	if (iOurMissions > 0 && kOurTeam.AI_isPushover(eTheirTeam))
+	{
+		/*	If the target is weak, even a small fraction of our military en route
+			could have a big impact once it arrives. */
+		iOurMissions *= 3;
+		iOurMissions /= 2;
+		log("Mission count increased b/c target is short work");
 	}
 	/*	So long as we check canMoveInto with bAttack=true above, this here
 		probably won't save time. */
@@ -4270,16 +4284,6 @@ void TacticalSituation::evalEngagement()
 		iTheirExposed += iTheirDamaged;
 	}
 	} // (end of profile scope)
-	// Don't count entangled units on missions
-	iOurMissions = std::max(0, iOurMissions - iEntangled);
-	if (iOurMissions > 0 && kOurTeam.AI_isPushover(eTheirTeam))
-	{
-		/*	If the target is weak, even a small fraction of our military en route
-			could have a big impact once it arrives. */
-		iOurMissions *= 3;
-		iOurMissions /= 2;
-		log("Mission count increased b/c target is short work");
-	}
 	int const iOurEvac = evacPop(eWe, eThey);
 	int const iTheirEvac = evacPop(eThey, eWe);
 	/*	If a human is involved or if it's our turn, then we shouldn't worry too
