@@ -65,9 +65,10 @@
 					type="color" default="COLOR_WARNING_TEXT"
 					get="getGoldRateBrokeColor" dirtyBit="GameData"/>
 			
-			<!-- Great Person Progress Bar by Impaler[WrG], EmperorFool -->
+			<!-- Great Person Progress Bar by Impaler[WrG], EmperorFool
+				 advc.092: Default was False in K-Mod, True in BUG. -->
 			<option id="GPBar" key="GP Progress Bar" 
-					type="boolean" default="False" 
+					type="boolean" default="True" 
 					get="isShowGPProgressBar" dirtyBit="GameData"/>
 			<list   id="GPBar_Types" key="GP Progress Bar Types" 
 					type="int" default="2" listType="string" 
@@ -78,9 +79,10 @@
 				<choice id="Maximum" get="isGPBarTypesMax"/>
 			</list>
 			
-			<!-- Great General Progress Bar by NeverMind -->
+			<!-- Great General Progress Bar by NeverMind
+				 advc.092: Default was False in K-Mod, True in BUG. -->
 			<option id="Combat_Counter" key="Combat Counter" 
-					type="boolean" default="False" 
+					type="boolean" default="True" 
 					get="isShowGGProgressBar" dirtyBit="GameData"/>
 			
 			<!-- Min/Max Commerce Buttons by codewarrior -->
