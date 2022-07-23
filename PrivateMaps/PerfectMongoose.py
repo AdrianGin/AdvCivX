@@ -408,10 +408,8 @@ class MapConstants:
 		#noise(smooth).
 		self.hmNoiseLevel = 2.0
 
-		#Number of tectonic plates
+		#Number of tectonic plates. advc: Set in PerformTectonics.
 		#self.hmNumberOfPlates = int(float(self.hmWidth * self.hmHeight) * 0.0016)
-		# advc:
-		self.hmNumberOfPlates = int(round(math.sqrt(self.hmWidth * self.hmHeight) / 8))
 
 		#Influence of the plate map, or how much of it is added to the height map.
 		self.plateMapScale = 1.1
@@ -441,14 +439,15 @@ class MapConstants:
 		self.rippleFrequency = 0.5
 
 		#This is the amplitude of the ripples near plate boundaries.
-		self.rippleAmplitude = 0.25 # advc: was 0.75
+		# advc: Was 0.75; will increase with world size. Also randomized a little.
+		self.rippleAmplitude = 0.25
 
 		#This is the amount of noise added to the plate map.
 		self.plateNoiseFactor = 1.2
 
 		#Filter size for altitude smoothing and distance finding. Must be odd number.
-		# advc: Was 5 (15 in Totestra). Also randomized now.
-		self.distanceFilterSize = 11
+		# advc: Was 5; also randomized now.
+		self.distanceFilterSize = 9
 
 		#It is necessary to eliminate small inland lakes during the initial
 		#heightmap generation. Keep in mind this number is in relation to
@@ -1777,13 +1776,21 @@ class ElevationMap2(FloatMap):
 		self.plateHeightMap = array('d')
 		preSmoothMap        = array('d')
 		# <advc>
-		plateGrowthChanceRand = PRand.random() * 0.3 - 0.15
-		mc.plateGrowthChanceX += plateGrowthChanceRand
-		mc.plateGrowthChanceY += plateGrowthChanceRand
-		mc.distanceFilterSize += 2 * int(PRand.random() * 4 - 2)
-		assert mc.distanceFilterSize % 2 == 1
+		# Sounds like this should have a big impact on the shape of the landmasses
+		# and mountain chains, but I find it hard to tell a difference. I guess
+		# a larger map should have more plates.
+		fPlates = math.pow(mc.width * mc.height, 0.33) * mc.SeaLevelFactor / 2
+		fPlates *= 0.75 + PRand.random() * 0.5
+		mc.hmNumberOfPlates = int(round(fPlates))
+		plateGrowthChanceRand = PRand.random() * 0.24 - 0.12
+		plateGrowthChanceX = mc.plateGrowthChanceX + plateGrowthChanceRand
+		plateGrowthChanceY = mc.plateGrowthChanceY + plateGrowthChanceRand
+		distanceFilterSize = mc.distanceFilterSize + 2 * int(PRand.random() * 4 - 2)
+		assert distanceFilterSize % 2 == 1
+		rippleAmplitude = mc.rippleAmplitude + max(0, CyMap().getWorldSize() - 3) * 0.2
+		rippleAmplitude += PRand.random() * 0.2 - 0.1
 		# </advc>
-		maxDistance = math.sqrt(pow(float(mc.distanceFilterSize / 2), 2) + pow(float(mc.distanceFilterSize / 2), 2))
+		maxDistance = math.sqrt(pow(float(distanceFilterSize / 2), 2) + pow(float(distanceFilterSize / 2), 2))
 		#initialize maps
 		for y in range(mc.hmHeight):
 			for x in range(mc.hmWidth):
@@ -1824,8 +1831,8 @@ class ElevationMap2(FloatMap):
 			iterations += 1
 			if iterations > 200000:
 				# <advc>
-				print("plateGrowthChance=" + str(mc.plateGrowthChanceY))
-				print("distanceFilterSize=" + str(mc.distanceFilterSize))
+				print("plateGrowthChance=" + str(plateGrowthChanceY))
+				print("distanceFilterSize=" + str(distanceFilterSize))
 				# </advc>
 				raise ValueError, "endless loop in plate growth"
 			plot = growthPlotList[0]
@@ -1844,9 +1851,9 @@ class ElevationMap2(FloatMap):
 				elif self.plateMap[ii].plateID == 0:
 					roomLeft = True
 					if direction == mc.N or direction == mc.S:
-						growthChance = mc.plateGrowthChanceY
+						growthChance = plateGrowthChanceY
 					else:
-						growthChance = mc.plateGrowthChanceX
+						growthChance = plateGrowthChanceX
 					if PRand.random() < growthChance:
 						self.plateMap[ii].plateID = plateID
 						xx, yy = CoordsFromIndex(ii, self.width) # advc.001
@@ -1896,8 +1903,8 @@ class ElevationMap2(FloatMap):
 				if borderMap[i]:
 					isBorder = True
 				plateID = self.plateMap[i].plateID
-				for yy in range(y - mc.distanceFilterSize / 2, y + mc.distanceFilterSize / 2 + 1, 1):
-					for xx in range(x - mc.distanceFilterSize / 2, x + mc.distanceFilterSize / 2 + 1, 1):
+				for yy in range(y - distanceFilterSize / 2, y + distanceFilterSize / 2 + 1, 1):
+					for xx in range(x - distanceFilterSize / 2, x + distanceFilterSize / 2 + 1, 1):
 						ii = GetHmIndex(xx, yy)
 						if ii == -1:
 							continue
@@ -1920,7 +1927,7 @@ class ElevationMap2(FloatMap):
 					angleDifference = AngleDifference(plateList[self.plateMap[i].plateID].angle, plateList[plateID].angle)
 				else:
 					angleDifference = AngleDifference(plateList[plateID].angle, plateList[self.plateMap[i].plateID].angle)
-				ripple = (pow(math.cos(mc.rippleFrequency * self.plateMap[i].distanceList[plateID]) * (-self.plateMap[i].distanceList[plateID] / maxDistance + 1), 2) + (-self.plateMap[i].distanceList[plateID] / maxDistance + 1)) * mc.rippleAmplitude * math.sin(math.radians(angleDifference))
+				ripple = (pow(math.cos(mc.rippleFrequency * self.plateMap[i].distanceList[plateID]) * (-self.plateMap[i].distanceList[plateID] / maxDistance + 1), 2) + (-self.plateMap[i].distanceList[plateID] / maxDistance + 1)) * rippleAmplitude * math.sin(math.radians(angleDifference))
 				avgRippleTop += (ripple * distanceWeight)
 				avgRippleBottom += distanceWeight
 			if avgRippleBottom == 0.0:
