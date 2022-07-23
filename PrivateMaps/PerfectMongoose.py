@@ -619,7 +619,7 @@ class MapConstants:
 		if self.SeaLevelFactor > 1.2:
 			self.maximumMeteorCount += 1
 		elif self.SeaLevelFactor < 0.85:
-			self.maximumMeteorCount += 1
+			self.maximumMeteorCount -= 1
 		# Caveat: Need to keep an eye on isHmWaterMatch when adjusting the min. meteor size. Smaller meteors affect fewer plots but are also more likely to create peaks and hills through steep slopes.
 		self.minimumMeteorSize = 1
 		if mmap.getWorldSize() > 0:
@@ -3398,10 +3398,15 @@ class TerrainMap:
 				else:
 					self.pData[i] = mc.PEAK
 		#break up large clusters of hills and peaks
+		# advc: Disable this. Had no b/c of bugs, but it's still bad with the
+		# bugs fixed. Certain patterns should arguably be broken up probabi-
+		# listically, but that'll require more thought.
+		'''
 		for y in range(mc.height):
 			for x in range(mc.width):
 				i = em.GetIndex(x, y)
-				if self.pData == mc.HILLS:
+				# advc.001: Fix missing index (from Totestra)
+				if self.pData[i] == mc.HILLS:
 					allHills = True
 					for direction in range(1, 9):
 						xx, yy = GetNeighbor(x, y, direction)
@@ -3410,7 +3415,8 @@ class TerrainMap:
 							allHills = False
 					if allHills:
 						self.pData[i] = mc.LAND
-				if self.pData == mc.PEAK:
+				# advc.001: Fix missing index (from Totestra)
+				if self.pData[i] == mc.PEAK:
 					allPeaks = True
 					for direction in range(1, 9):
 						xx, yy = GetNeighbor(x, y, direction)
@@ -3419,7 +3425,7 @@ class TerrainMap:
 							allPeaks = False
 					if allPeaks:
 						self.pData[i] = mc.HILLS
-
+		'''
 
 	def GenerateTerrainMap(self):
 		print "----------------------"
@@ -3565,7 +3571,7 @@ class PangaeaBreaker:
 
 	def breakPangaeas(self):
 		if mc.AllowPangaeas:
-			print "Pangaeas are allowed on this map and will not be suppressed."
+			#print "Pangaeas are allowed on this map and will not be suppressed."
 			return
 		''' # advc: Should be OK now (will at most throw a couple of small ones)
 		gc = CyGlobalContext()
