@@ -169,7 +169,7 @@ class MapConstants:
 		self.BonusBonus = 1.0
 
 		#This value modifies LakeSizePerDrainage when a lake begins in desert
-		self.DesertLakeModifier = 0.6
+		self.DesertLakeModifier = 0.4 # advc: was 0.6
 
 		#This value controls the amount of siltification in lakes when using the Default Civ4 SDK River Generator
 		self.maxSiltPanSizeSDK = 5
@@ -368,9 +368,13 @@ class MapConstants:
 
 		#This value controls the number of mid-altitude lake depressions per map square.
 		#It will become a lake if enough water flows into the depression.
+		# (advc: Gets set based on world size now)
 		self.numberOfLakesPerPlot3 = 0.008
+		# advc: Was 3 (as a magic constant)
+		self.expandedLakeMinSize = 1
 
 		#How many squares are added to a lake for each unit of drainage flowing into it.
+		# (advc: Gets set based on world size now)
 		self.LakeSizePerDrainage3 = 30.0
 
 		#This value is used to decide if enough water has accumulated to form a river.
@@ -643,6 +647,8 @@ class MapConstants:
 		if self.LandmassGenerator < 2:
 			self.JungleFactor -= 0.03
 			self.JunglePercent += 0.03
+		self.numberOfLakesPerPlot3 = (0.024 / self.SeaLevelFactor) - mmap.getWorldSize() * 0.0028
+		self.LakeSizePerDrainage3 = (50.0 / self.SeaLevelFactor) - mmap.getWorldSize() * 4
 		# </advc>
 		# advc: Deleted; can be looked up in-game in AdvCiv. And it's tedious to keep it up to date here.
 		#self.optionsString = 
@@ -6673,9 +6679,11 @@ def expandLake(x, y, riversIntoLake, oceanMap):
 	else:
 		desertModifier = 1.0
 	if mc.ClimateSystem == 0:
-		lakeSize = max(3, int(rm.drainageMap[i] * mc.LakeSizePerDrainage3 * desertModifier))
+		lakeSize = max(mc.expandedLakeMinSize,
+				int(rm.drainageMap[i] * mc.LakeSizePerDrainage3 * desertModifier))
 	else:
-		lakeSize = max(3, int(rm.drainageMap[i] * mc.LakeSizePerDrainage2 * desertModifier))
+		lakeSize = max(mc.expandedLakeMinSize,
+				int(rm.drainageMap[i] * mc.LakeSizePerDrainage2 * desertModifier))
 	start = LakePlot(x, y, em.data[i])
 	lakeNeighbors.append(start)
 	while lakeSize > 0 and len(lakeNeighbors) > 0:
