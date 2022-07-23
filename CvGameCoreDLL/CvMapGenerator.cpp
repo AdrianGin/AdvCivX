@@ -182,20 +182,46 @@ void CvMapGenerator::addLakes()
 		return;
 
 	gDLL->NiTextOut("Adding Lakes...");
-	int const iLAKE_PLOT_RAND = GC.getDefineINT("LAKE_PLOT_RAND"); // advc.opt
-	for (int i = 0; i < GC.getMap().numPlots(); i++)
+	// <advc.129e>
+	int const iLAKE_PLOT_RAND = GC.getDefineINT("LAKE_PLOT_RAND");
+	int iLakeRollSides = iLAKE_PLOT_RAND;
+	TerrainTypes const eDesert = (TerrainTypes)GC.getDefineINT("BARREN_TERRAIN");
+	int iDesert = 0;
+	std::vector<std::pair<CvPlot*,bool> > apbCandidates;
+	FOR_EACH_ENUM(PlotNum)
 	{
-		//gDLL->callUpdater(); // advc.opt: Not needed I reckon
-		CvPlot& p = GC.getMap().getPlotByIndex(i);
+		CvPlot& p = GC.getMap().getPlotByIndex(eLoopPlotNum);
+		// (Same condition as in BtS)
 		if (!p.isWater() && !p.isCoastalLand() && !p.isRiver())
 		{
-			if (MapRandNum(iLAKE_PLOT_RAND) == 0)
-				p.setPlotType(PLOT_OCEAN);
+			bool bDesert = (p.getTerrainType() == eDesert);
+			apbCandidates.push_back(std::make_pair(&p, bDesert));
+			if (bDesert)
+				iDesert++;
 		}
 	}
+	scaled rDesertProbMult = fixp(1/4.);
+	int const iCandidates = (int)apbCandidates.size();
+	if (iCandidates > 0)
+	{	// This keeps the expected number of lakes the same as in BtS
+		iLakeRollSides = ((iLakeRollSides *
+				(iDesert * rDesertProbMult + iCandidates - iDesert)) / iCandidates)
+				.round();
+	}
+	gDLL->callUpdater(); // Moved out of the loop
+	for (int i = 0; i < iCandidates; i++)
+	{
+		CvPlot& p = *apbCandidates[i].first;
+		if (MapRandOneChanceIn(iLakeRollSides) &&
+			(!apbCandidates[i].second ||
+			MapRandSuccess(rDesertProbMult)))
+		{
+			p.setPlotType(PLOT_OCEAN); // (as in BtS)
+		}
+	} // </advc.129e>
 }
 
-void CvMapGenerator::addRivers()  // advc: refactored
+void CvMapGenerator::addRivers()
 {
 	PROFILE_FUNC();
 
