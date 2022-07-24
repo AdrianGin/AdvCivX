@@ -5315,7 +5315,7 @@ void CvUnitAI::AI_greatPersonMove()
 				{
 					int iRelativeWaitTime = iMinTurns + (kGame.getGameTurn() - getGameTurnCreated());
 					iRelativeWaitTime *= 100;
-					iRelativeWaitTime /= GC.getInfo(kGame.getGameSpeedType()).getVictoryDelayPercent();
+					iRelativeWaitTime /= kGame.getSpeedPercent();
 					// lets say 1% per turn.
 					iScoreThreshold = std::max(iScoreThreshold, it->first * (100 - iRelativeWaitTime) / 100);
 				}
@@ -5592,8 +5592,7 @@ void CvUnitAI::AI_spyMove()
 				but with greatly diminished probability. */
 			// scale for game speed
 			iSpontaneousChance *= 100;
-			iSpontaneousChance /= GC.getInfo(GC.getGame().getGameSpeedType()).
-					getVictoryDelayPercent();
+			iSpontaneousChance /= GC.getGame().getSpeedPercent();
 			if (SyncRandNum(1500) < iSpontaneousChance)
 			{
 				if (AI_espionageSpy())
@@ -5695,7 +5694,7 @@ void CvUnitAI::AI_spyMove()
 		iAttackChance /= 100;
 		// scale for game speed
 		iAttackChance *= 100;
-		iAttackChance /= GC.getInfo(GC.getGame().getGameSpeedType()).getVictoryDelayPercent();
+		iAttackChance /= GC.getGame().getSpeedPercent();
 
 		iTransportChance = (100 * iTotalPoints - 130 * iLocalPoints) / std::max(1, iTotalPoints);
 	}

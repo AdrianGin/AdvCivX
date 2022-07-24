@@ -5647,13 +5647,14 @@ scaled CvTeamAI::AI_getOpenBordersCounterIncrement(TeamTypes eOther) const
 	Result is capped at iUpperCap; -1: none. */
 int CvTeamAI::AI_randomCounterChange(int iUpperCap, scaled rProb) const
 {
-	CvGameSpeedInfo const& kSpeed = GC.getInfo(GC.getGame().getGameSpeedType());
-	int iSpeedPercent = kSpeed.get(CvGameSpeedInfo::AIMemoryRandPercent);
+	CvGame const& kGame = GC.getGame();
+	int iSpeedPercent = GC.getInfo(kGame.getGameSpeedType()).get(
+				CvGameSpeedInfo::AIMemoryRandPercent);
 	scaled rOurEra = AI_getCurrEraFactor();
 	if (rOurEra < fixp(0.5))
-		iSpeedPercent = kSpeed.getVictoryDelayPercent();
+		iSpeedPercent = kGame.getSpeedPercent();
 	else if (rOurEra < fixp(1.5))
-		iSpeedPercent = (kSpeed.getVictoryDelayPercent() + iSpeedPercent) / 2;
+		iSpeedPercent = (kGame.getSpeedPercent() + iSpeedPercent) / 2;
 	rProb *= scaled(100, std::max(50, iSpeedPercent));
 	int iR = 0;
 	if (SyncRandSuccess(rProb))
@@ -6105,7 +6106,8 @@ void CvTeamAI::AI_doWar()
 				continue;
 
 			if (AI_getAtWarCounter(eEnemy) > std::max(10,
-				(14 * GC.getInfo(kGame.getGameSpeedType()).getVictoryDelayPercent()) / 100))
+				// advc.252: Was VictoryDelay. I don't think we should be this patient.
+				(14 * GC.getInfo(kGame.getGameSpeedType()).getTrainPercent()) / 100))
 			{
 				// If nothing is happening in war
 				if (AI_getWarSuccess(eEnemy) + GET_TEAM(eEnemy).AI_getWarSuccess(getID()) <
@@ -6146,7 +6148,8 @@ void CvTeamAI::AI_doWar()
 
 				// Fought to a long draw
 				if (AI_getAtWarCounter(eEnemy) > ((AI_getWarPlan(eEnemy) == WARPLAN_TOTAL ? 40 : 30) *
-					GC.getInfo(kGame.getGameSpeedType()).getVictoryDelayPercent()) / 100)
+					// advc.252: was VictoryDelay
+					GC.getInfo(kGame.getGameSpeedType()).getTrainPercent()) / 100)
 				{
 					int iOurValue = AI_endWarVal(eEnemy);
 					int iTheirValue = GET_TEAM(eEnemy).AI_endWarVal(getID());
@@ -6190,9 +6193,12 @@ void CvTeamAI::AI_doWar()
 	/*	Second condition: don't consider war very early in the game. It would be unfair
 		on human players to rush them with our extra starting units and techs! */
 	bConsiderWar = (bConsiderWar &&
-		(kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ||
-		 kGame.getElapsedGameTurns() >= GC.getInfo(kGame.getGameSpeedType()).getBarbPercent() * 30 / 100 ||
-		 kGame.getNumCivCities() > GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities() * kGame.countCivPlayersAlive()/2));
+			(kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ||
+			 kGame.getElapsedGameTurns() * 100 >=
+			 GC.getInfo(kGame.getGameSpeedType()).getBarbPercent() * 30 ||
+			 kGame.getNumCivCities() * 2 >
+			 GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities() *
+			 kGame.countCivPlayersAlive()));
 	/*	(Perhaps the no-war turn threshold should depend on the game difficulty level;
 		but I don't think it would make much difference.) */
 

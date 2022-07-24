@@ -10943,13 +10943,14 @@ void CvCity::doMeltdown()
 		BuildingTypes eDangerBuilding = kCiv.buildingAt(i);
 		if (!isMeltdownBuilding(eDangerBuilding))
 			continue;
-		// advc.opt: Roll the dice before checking for a safe power source.
-		int const iOddsDivisor = GC.getInfo(eDangerBuilding).getNukeExplosionRand();
+		// advc.opt: Roll the dice before checking for a safe power source
 		{
-			// advc.652: Adjust to game speed
-			scaled rNukeProb = 1 / (iOddsDivisor * GC.getGame().gameSpeedMultiplier());
-			if (!SyncRandSuccess(rNukeProb) ||
-				isMeltdownBuildingSuperseded(eDangerBuilding)) // kekm5
+			int iOddsDivisor = GC.getInfo(eDangerBuilding).getNukeExplosionRand();
+			// <advc.652>
+			iOddsDivisor *= GC.getGame().getSpeedPercent();
+			iOddsDivisor /= 100; // </advc.652>
+			if (!SyncRandOneChanceIn(iOddsDivisor) ||
+				isMeltdownBuildingSuperseded(eDangerBuilding)) // kekm.5
 			{
 				continue;
 			}

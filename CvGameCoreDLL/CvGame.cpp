@@ -246,7 +246,7 @@ void CvGame::setInitialItems()
 		{
 			iStartTurn += ((kGameHandicap.getAIStartingUnitMultiplier() * 10 +
 					kGameHandicap.getAIStartingWorkerUnits() * 10) *
-					GC.getInfo(getGameSpeedType()).getGrowthPercent()) / 100;
+					getSpeedPercent()) / 100;
 		} // <advc.250c>
 		if (getStartTurn() != iStartTurn)
 		{
@@ -4012,12 +4012,15 @@ int CvGame::getImprovementUpgradeTime(ImprovementTypes eImprovement) const
 	return iTime;
 }
 
-/*	advc: 3 for Marathon, 0.67 for Quick. Based on VictoryDelay. For cases where
-	there isn't a more specific game speed modifier that could be applied. (E.g.
-	tech costs should be adjusted based on iResearchPercent, not on this function.) */
-scaled CvGame::gameSpeedMultiplier() const
+/*	advc.252: Default modifier for fully adjusting minor aspects of the rules or AI
+	to the game speed setting (i.e. when adding an element to CvGameSpeedInfo isn't
+	worth the trouble).
+	Call locations not tagged with comments; had mostly used VictoryDelay before. */
+int CvGame::getSpeedPercent() const
 {
-	return per100(GC.getInfo(getGameSpeedType()).getVictoryDelayPercent());
+	/*	The relation of unit movement (not affected by game speed) to tech pace
+		is what characterizes the game speed settings best in my book */
+	return GC.getInfo(getGameSpeedType()).getResearchPercent();
 }
 
 bool CvGame::canTrainNukes() const
@@ -4174,17 +4177,13 @@ void CvGame::incrementElapsedGameTurns()
 // advc.251:
 int CvGame::AIHandicapAdjustment() const
 {
-	int iGameTurn = getGameTurn();
-	int iVictoryDelayPercent = GC.getInfo(getGameSpeedType()).getVictoryDelayPercent();
-	if (iVictoryDelayPercent > 0)
-		iGameTurn = (iGameTurn * 100) / iVictoryDelayPercent;
 	int iIncrementTurns = GC.getInfo(getHandicapType()).getAIHandicapIncrementTurns();
 	if (iIncrementTurns == 0)
 		return 0;
 	/*	Flip sign b/c we're dealing with cost modifiers that are supposed to decrease.
 		Only if a negative AIHandicapIncrement is set in XML, the modifiers are
 		supposed to increase. */
-	return -iGameTurn / iIncrementTurns;
+	return (-getGameTurn() * 100) / (iIncrementTurns * getSpeedPercent());
 }
 
 
@@ -4618,7 +4617,7 @@ int CvGame::getGlobalWarmingChances() const
 		probability per chance, I hope to get roughly the same number of
 		actual events per game. */
 	scaled rIndexPerChance = GC.getDefineINT("GLOBAL_WARMING_INDEX_PER_CHANCE");
-	rIndexPerChance *= per100(GC.getInfo(getGameSpeedType()).getVictoryDelayPercent());
+	rIndexPerChance *= per100(getSpeedPercent());
 	/*	advc.055: The more teams there are, the less evenly the world tends to
 		develop. GW causes the most damage when much of the world has a similar
 		tech level in the middle of the Industrial era. */
@@ -4708,8 +4707,7 @@ int CvGame::calculateGwSeverityRating() const
 	/*	advc: Was long, which is equivalent to int. Could use long long,
 		but it looks like 32 bit should suffice. */
 	int const x = GC.getDefineINT("GLOBAL_WARMING_PROB") * getGlobalWarmingIndex() /
-			std::max(1, GC.getMap().getLandPlots() * 4 *
-			GC.getInfo(getGameSpeedType()).getVictoryDelayPercent());
+			(GC.getMap().getLandPlots() * 4 * getSpeedPercent());
 	// shape parameter. Lower values result in the function being steeper earlier.
 	int const b = 55; // advc.055: was 70
 	return 100 - (b * 100) / (b + SQR(x));
@@ -6289,7 +6287,7 @@ void CvGame::doGlobalWarming()
 	for (int i = 0; i < iGlobalWarmingRolls; i++)
 	{
 		// note, warming prob out of 1000, not percent.
-		int iLeftOdds = 10 * GC.getInfo(getGameSpeedType()).getVictoryDelayPercent();
+		int iLeftOdds = 10 * getSpeedPercent();
 		if (SyncRandNum(iLeftOdds) >= GC.getDefineINT("GLOBAL_WARMING_PROB"))
 			continue;
 		//CvPlot* pPlot = GC.getMap().syncRandPlot(RANDPLOT_LAND | RANDPLOT_NOT_CITY);
@@ -9729,7 +9727,7 @@ int CvGame::getCultureThreshold(CultureLevelTypes eLevel) const
 int CvGame::freeCityCultureFromTrait(TraitTypes eTrait) const
 {
 	return (GC.getInfo(eTrait).get(CvTraitInfo::FREE_CITY_CULTURE) *
-			gameSpeedMultiplier()).floor();
+			getSpeedPercent()) / 100;
 }
 
 
@@ -10506,13 +10504,13 @@ scaled CvGame::goodyHutEffectFactor(
 	static int const iGOODY_BUFF_START_TURN = GC.getDefineINT("GOODY_BUFF_START_TURN");
 	static int const iGOODY_BUFF_PEAK_TURN = GC.getDefineINT("GOODY_BUFF_PEAK_TURN");
 	static int const iGOODY_BUFF_PEAK_MULTIPLIER = GC.getDefineINT("GOODY_BUFF_PEAK_MULTIPLIER");
-	CvGameSpeedInfo const& kSpeed = GC.getInfo(getGameSpeedType());
-	scaled rTurnsSpeedFactor = per100(kSpeed.getGrowthPercent());
+	scaled rTurnsSpeedFactor = per100(GC.getGame().getSpeedPercent());
 	scaled rWorldFactor = 1;
 		// Not sure if map-size adjustment is a good idea
 		//=per100(GC.getInfo(GC.getMap().getWorldSize()).getResearchPercent());
-	scaled rFinalSpeedFactor = (bSpeedAdjust ?
-			per100(kSpeed.getTrainPercent()) * rWorldFactor : 1);
+	scaled rFinalSpeedFactor = (!bSpeedAdjust ? 1 :
+			per100(GC.getInfo(GC.getGame().getGameSpeedType()).getTrainPercent()) *
+			rWorldFactor);
 	scaled rStartTurn = scaled::max(0, iGOODY_BUFF_START_TURN * rTurnsSpeedFactor);
 	scaled rPeakTurn = scaled::max(rStartTurn, iGOODY_BUFF_PEAK_TURN * rTurnsSpeedFactor);
 	scaled rPeakMult = std::max(1, iGOODY_BUFF_PEAK_MULTIPLIER);

@@ -393,7 +393,7 @@ void CvPlot::doImprovement()
 			//Afforess: check for valid terrains for this bonus before discovering it
 			if (!canHaveBonus(eLoopBonus), false, /* advc.129: */ true)
 				continue; // </advc.rom3>
-			iOdds *= GC.getInfo(GC.getGame().getGameSpeedType()).getVictoryDelayPercent();
+			iOdds *= GC.getGame().getSpeedPercent();
 			iOdds /= 100;
 			if (SyncRandOneChanceIn(iOdds))
 			{	// UNOFFICIAL_PATCH: END
@@ -6841,8 +6841,7 @@ void CvPlot::doFeature()
 		if (iProbability > 0)
 		{	//if (SyncRandNum(10000) < iProbability)
 			// UNOFFICIAL_PATCH, Gamespeed scaling, 03/04/10, jdog5000
-			int iRoll = (10000 * GC.getInfo(GC.getGame().getGameSpeedType()).
-					getVictoryDelayPercent()) / 100;
+			int iRoll = 100 * GC.getGame().getSpeedPercent();
 			if (SyncRandNum(iRoll) < iProbability) // UNOFFICIAL_PATCH: END
 				setFeatureType(NO_FEATURE);
 		}
@@ -6884,8 +6883,7 @@ void CvPlot::doFeature()
 			{
 				//if (SyncRandNum(10000) < iProbability)
 				// UNOFFICIAL_PATCH, Gamespeed scaling, 03/04/10, jdog5000: START
-				int iRoll = (10000 * GC.getInfo(GC.getGame().getGameSpeedType()).
-						getVictoryDelayPercent()) / 100;
+				int iRoll = 100 * GC.getGame().getSpeedPercent();
 				if (syncRand().get(iRoll, "CvPlot::doFeature",
 					getX(), getY()) < iProbability) // advc.007: Log coordinates
 				// UNOFFICIAL_PATCH: END

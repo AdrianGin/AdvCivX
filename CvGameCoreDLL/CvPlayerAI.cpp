@@ -6053,7 +6053,6 @@ int CvPlayerAI::AI_techBuildingValue(TechTypes eTech, bool bConstCache, bool& bE
 		still present in the BBAI code, must've been lost in the K-Mod rewrite. */
 	bEnablesWonder = false;
 	int iTotalValue = 0;
-	CvGameSpeedInfo const& kGameSpeed = GC.getInfo(kGame.getGameSpeedType());
 	// (this will be populated when we find a building that needs to be evaluated)
 	std::vector<const CvCityAI*> relevant_cities;
 
@@ -6092,7 +6091,7 @@ int CvPlayerAI::AI_techBuildingValue(TechTypes eTech, bool bConstCache, bool& bE
 			FOR_EACH_CITY(pLoopCity, *this)
 				iEarliestTurn = std::min(iEarliestTurn, pLoopCity->getGameTurnAcquired());
 			int iCutoffTurn = (kGame.getGameTurn() + iEarliestTurn) /
-					2 + kGameSpeed.getVictoryDelayPercent() * 30 / 100;
+					2 + (kGame.getSpeedPercent() * 30) / 100;
 			/*	iCutoffTurn corresponds 50% of the time since our first city was aquired,
 				with a 30 turn (scaled) buffer. */
 			FOR_EACH_CITYAI(pLoopCity, *this)
@@ -6169,8 +6168,8 @@ int CvPlayerAI::AI_techBuildingValue(TechTypes eTech, bool bConstCache, bool& bE
 					iScale *= std::min((int)relevant_cities.size(),
 							GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities());
 				}
-				// adjust for game speed
-				iScale = iScale * kGameSpeed.getBuildPercent() / 100;
+				iScale *= GC.getInfo(kGame.getGameSpeedType()).getBuildPercent();
+				iScale /= 100;
 				// use the multiplier we calculated earlier
 				iScale = iScale * (100 + iMultiplier) / 100;
 				//
@@ -22006,8 +22005,7 @@ bool CvPlayerAI::AI_demandTribute(PlayerTypes eHuman, AIDemandTypes eDemand)
 			rMinVal = uwai().utilityToTradeVal(rWarUtility) / 2;
 		}
 		else rMinVal = 70 * scaled(2).pow(getCurrentEra());
-		rMinVal *= per100(GC.getInfo(GC.getGame().
-				getGameSpeedType()).getVictoryDelayPercent());
+		rMinVal *= per100(GC.getGame().getSpeedPercent());
 	} // </advc.104m>
 	CLinkList<TradeData> humanGives;
 	switch(eDemand)
@@ -22550,8 +22548,7 @@ bool CvPlayerAI::AI_intendsToCede(CvCityAI const& kCity, PlayerTypes eToPlayer,
 			// Don't help them too much (depending on relations)
 			// Same crude formula as in AI_demandTribute
 			scaled const rEraFactor = scaled(2).pow(getCurrentEra()) *
-					per100(GC.getInfo(GC.getGame().getGameSpeedType()).
-					getVictoryDelayPercent());
+					per100(GC.getGame().getSpeedPercent());
 			if (bGreatEnmity)
 				iAttitudeLevel--;
 			if (iAcquireVal * rEnemyTradeFactor >
@@ -23042,8 +23039,7 @@ int CvPlayerAI::AI_eventValue(EventTypes eEvent,
 
 	//Proportional to #turns in the game...
 	//(AI evaluation will generally assume proper game speed scaling!)
-	int const iGameSpeedPercent = GC.getInfo(GC.getGame().getGameSpeedType()).
-			getVictoryDelayPercent();
+	int const iGameSpeedPercent = GC.getGame().getSpeedPercent();
 
 	int iValue = SyncRandNum(kEvent.getAIValue());
 	iValue += (getEventCost(eEvent, kTriggeredData.m_eOtherPlayer, false) +
@@ -23802,7 +23798,7 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 	int iHighCultureMark = 300; // turns
 	iHighCultureMark *= (3 * GC.getNumEraInfos() - 2 * getCurrentEra());
 	iHighCultureMark /= std::max(1, 3 * GC.getNumEraInfos());
-	iHighCultureMark *= GC.getInfo(kGame.getGameSpeedType()).getVictoryDelayPercent();
+	iHighCultureMark *= kGame.getSpeedPercent();
 	iHighCultureMark /= 100;
 
 	int iGoldCommercePercent = AI_estimateBreakEvenGoldPercent();
@@ -24021,8 +24017,7 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 				// and a little bit of personal variation.
 				iDemoninator += 50 - GC.getInfo(getPersonalityType()).
 						getCultureVictoryWeight();
-				iCountdownTarget *= GC.getInfo(kGame.getGameSpeedType()).
-						getVictoryDelayPercent();
+				iCountdownTarget *= kGame.getSpeedPercent();
 				iCountdownTarget /= std::max(1, iDemoninator);
 			}
 			if (iWinningCountdown < iCountdownTarget)

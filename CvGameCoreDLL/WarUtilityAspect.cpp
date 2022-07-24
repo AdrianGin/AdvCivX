@@ -2350,7 +2350,7 @@ void KingMaking::addWinning(std::set<PlayerTypes>& kWinning, bool bPredict) cons
 	}
 	int const iMaxTurns = m_kGame.getMaxTurns();
 	int const iTurnsRemaining = ((iMaxTurns - m_kGame.getElapsedGameTurns()) * 100) /
-			m_kSpeed.getVictoryDelayPercent();
+			m_kGame.getSpeedPercent(); // normalized turns
 	/*	If we're already past the turn limit, then apparently time victory is disabled.
 		(Would be safer but slower to check m_kGame.isVictoryValid in addition.) */
 	bool const bTimeVictoryImminent = (iMaxTurns > 0 && iTurnsRemaining > 0 &&
@@ -2863,7 +2863,7 @@ int Effort::preEvaluate()
 	int iExtraDuration = iDuration - iGiveWarAChanceDuration;
 	if (iExtraDuration > 0)
 	{
-		scaled rGameSpeedDiv = per100(m_kSpeed.getResearchPercent());
+		scaled rGameSpeedDiv = per100(m_kGame.getSpeedPercent());
 		scaled const rVagueOpportunityWeight = fixp(2.3); // pretty arbitrary
 		rGoldPerProduction = scaled::min(5, rGoldPerProduction *
 				(1 + rVagueOpportunityWeight * fixp(0.025) *
@@ -4818,7 +4818,7 @@ int DramaticArc::preEvaluate()
 	m_rTensionIncrease = 0;
 	if (kOurTeam.isAVassal())
 		return 0;
-	scaled const rSpeedMult = 2 / per100(m_kSpeed.getVictoryDelayPercent() +
+	scaled const rSpeedMult = 2 / per100(m_kGame.getSpeedPercent() +
 			m_kSpeed.getTrainPercent());
 	int const iElapsedTurns = m_kGame.getElapsedGameTurns();
 	if (iElapsedTurns * rSpeedMult < 25) // (Even when starting in a later era)
