@@ -12074,13 +12074,13 @@ void CvCityAI::AI_barbChooseProduction()
 				getDomainFreeExperience(DOMAIN_LAND);
 		iBuildUnitProb += (3 * iFreeLandExperience);
 	}
-	bool bRepelColonists = false;
+	//bool bRepelColonists = false; // advc.300: no longer used
 	if (getArea().getNumCities() > getArea().getCitiesPerPlayer(BARBARIAN_PLAYER) + 2)
 	{
 		if (getArea().getCitiesPerPlayer(BARBARIAN_PLAYER) > getArea().getNumCities()/3)
 		{
+			//bRepelColonists = true;
 			// New world scenario with invading colonists ... fight back!
-			bRepelColonists = true;
 			iBuildUnitProb += 8*(getArea().getNumCities() - getArea().getCitiesPerPlayer(BARBARIAN_PLAYER));
 		}
 	}
@@ -12171,11 +12171,27 @@ void CvCityAI::AI_barbChooseProduction()
 	}
 
 	UnitTypeWeightArray barbarianTypes;
-	barbarianTypes.push_back(std::make_pair(UNITAI_ATTACK, 125));
-	barbarianTypes.push_back(std::make_pair(UNITAI_ATTACK_CITY, (bRepelColonists ? 100 : 50)));
-	barbarianTypes.push_back(std::make_pair(UNITAI_COUNTER, 100));
-	barbarianTypes.push_back(std::make_pair(UNITAI_CITY_DEFENSE, 50));
-
+	barbarianTypes.push_back(std::make_pair(UNITAI_ATTACK, //125
+			// <advc.300>
+			std::max(65, 100 - 15 *
+			getPlot().plotCount(PUF_isUnitAIType, UNITAI_ATTACK, -1, getOwner()))));
+	AreaAITypes const eAreaAI = getArea().getAreaAIType(getTeam()); // </advc.300>
+	barbarianTypes.push_back(std::make_pair(UNITAI_ATTACK_CITY,
+			//bRepelColonists ? 100 : 50
+			/*	advc.300: (Note that naval invaders for existing transports have
+				already been considered above) */
+			eAreaAI == AREAAI_OFFENSIVE ? 100 : (eAreaAI != AREAAI_ASSAULT ? 60 : 30)));
+	barbarianTypes.push_back(std::make_pair(UNITAI_COUNTER, //100
+			// <advc.300>
+			std::max(25, 100 - 20 *
+			getPlot().plotCount(PUF_isUnitAIType, UNITAI_COUNTER, -1, getOwner()))));
+			// </advc.300>
+	barbarianTypes.push_back(std::make_pair(UNITAI_CITY_DEFENSE, //50
+			// <advc.300>
+			25 + 10 * std::max(0,
+			GC.getInfo(GC.getGame().getHandicapType()).getBarbarianInitialDefenders() -
+			getPlot().plotCount(PUF_isMissionAIType, MISSIONAI_GUARD_CITY, -1, getOwner()))));
+			// </advc.300>
 	if (AI_chooseLeastRepresentedUnit(barbarianTypes))
 		return;
 
