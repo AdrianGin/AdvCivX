@@ -1197,7 +1197,7 @@ protected:
 			Shelf const* pShelf = NULL);
 	bool killBarbarian(int iUnitsPresent, int iTiles, int iPop,
 			CvArea& kArea, Shelf* pShelf = NULL);
-	UnitTypes randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea);
+	UnitTypes randomBarbarianUnit(UnitAITypes eUnitAI, CvPlot const& kPlot);
 	scaled barbarianPeakLandRatio() const;
 	// </advc.300>
 

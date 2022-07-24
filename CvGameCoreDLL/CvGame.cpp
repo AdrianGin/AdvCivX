@@ -7422,7 +7422,8 @@ int CvGame::createBarbarianUnits(int iUnitsToCreate, int iUnitsPresent,
 			UnitAITypes eLoadAI = UNITAI_ATTACK;
 			for (int i = 0; i < 2; i++)
 			{
-				UnitTypes eLoadUnit = randomBarbarianUnit(eLoadAI, kArea);
+				UnitTypes eLoadUnit = randomBarbarianUnit(eLoadAI,
+						pTransport->getPlot());
 				if (eLoadUnit == NO_UNIT)
 					break;
 				CvUnit* pLoadUnit = GET_PLAYER(BARBARIAN_PLAYER).initUnit(
@@ -7480,7 +7481,7 @@ int CvGame::createBarbarianUnits(int iUnitsToCreate, int iUnitsPresent,
 		if (pShelf != NULL)
 			eUnitAI = UNITAI_ATTACK_SEA;
 		// Original code moved into new function:
-		UnitTypes eUnitType = randomBarbarianUnit(eUnitAI, kArea);
+		UnitTypes eUnitType = randomBarbarianUnit(eUnitAI, *pPlot);
 		if (eUnitType == NO_UNIT)
 			return iCreated;
 		CvUnit* pNewUnit = GET_PLAYER(BARBARIAN_PLAYER).initUnit(eUnitType,
@@ -7574,7 +7575,7 @@ bool CvGame::killBarbarian(int iUnitsPresent, int iTiles, int iPop,
 }
 
 // Based on BtS code originally in createBarbarianUnits
-UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
+UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvPlot const& kPlot)
 {
 	bool bSea;
 	switch (eUnitAI)
@@ -7632,7 +7633,7 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 					break;
 				}
 			}
-			if (!bValid || !kArea.hasAnyAreaPlayerBonus(eAndBonus))
+			if (!bValid || !kPlot.getArea().hasAnyAreaPlayerBonus(eAndBonus))
 				continue;
 		}
 		//bool bFound = false;
@@ -7648,7 +7649,7 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 			if (GET_TEAM(BARBARIAN_TEAM).isHasTech(kOrBonus.getTechCityTrade()) &&
 				// <advc.301>
 				GET_TEAM(BARBARIAN_TEAM).isHasTech(kOrBonus.getTechReveal()) &&
-				kArea.hasAnyAreaPlayerBonus(eOrBonus))
+				kPlot.getArea().hasAnyAreaPlayerBonus(eOrBonus))
 			{
 				//bFound = true;
 				aeOrBonusTechsFound.push_back(kOrBonus.getTechCityTrade());
@@ -7670,6 +7671,27 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 		// Treat Warrior as pre-Ancient in the following
 		if (eAndTech == NO_TECH)
 			iUnitEra = -1;
+		// Mounted units only in open terrain
+		static UnitCombatTypes const eMounted = (UnitCombatTypes)
+				GC.getInfoTypeForString("UNITCOMBAT_MOUNTED");
+		bool const bMounted = (kUnit.getUnitCombatType() == eMounted);
+		if (bMounted)
+		{
+			if (kPlot.isWater() || kPlot.defenseModifier(NO_TEAM, true) > 0)
+				continue;
+			// Don't place them is disease-ridden land either
+			int iBadHealth = 0;
+			for (SquareIter it(kPlot, 1); it.hasNext(); ++it)
+			{
+				if (it->isFeature())
+				{
+					iBadHealth += std::min(0,
+							GC.getInfo(it->getFeatureType()).getHealthPercent());
+				}
+			}
+			if (iBadHealth <= -100)
+				continue;
+		}
 		// Higher chance for non-outdated units w/o resource reqs (i.e. Archer)
 		scaled const rNoBonusReqDieSidesMult = fixp(1.3);
 		if ((!bRequires && eAndBonus == NO_BONUS &&
@@ -7677,7 +7699,7 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 				become available. The game era is usually already Classical
 				when Archers become available. */
 			(!bAnyExpensiveTech || iUnitEra + 1 >= getCurrentEra())) ||
-			kUnit.getMoves() > 1) // Horse Archers can also use a little buff
+			bMounted) // To make up for the terrain restriction
 		{
 			iDieSides = (iDieSides * rNoBonusReqDieSidesMult).uround();
 		} // </advc.301>
