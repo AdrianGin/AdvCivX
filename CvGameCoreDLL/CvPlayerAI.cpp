@@ -20904,7 +20904,7 @@ void CvPlayerAI::AI_doDiplo()
 							getContactRand(CONTACT_ASK_FOR_HELP);
 					// BETTER_BTS_AI_MOD, Diplomacy, 02/12/10, jdog5000: START
 					int iTechPerc = kOurTeam.getBestKnownTechScorePercent();
-					if (iTechPerc < 90)
+					if (iTechPerc < 90) // Check more often if behind
 					{
 						iRand *= std::max(1, iTechPerc - 60);
 						iRand /= 30;
