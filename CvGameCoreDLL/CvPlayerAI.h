@@ -724,8 +724,9 @@ public:
 	bool AI_isUnitNeedingOpenBorders(TeamTypes eTarget) const; // advc.124
 	bool AI_isDefenseFocusOnBarbarians(CvArea const& kArea) const; // advc.300
 	bool AI_hasSharedPrimaryArea(PlayerTypes eOther) const; // advc
-
-	int AI_getContactDelay(ContactTypes eContact) const; // advc.130r
+	// <advc.130r>
+	int AI_getContactDelay(ContactTypes eContact) const;
+	bool AI_contactRoll(ContactTypes eContact, scaled rMult = 1); // </advc.130r>
 	// <advc.104m>
 	bool AI_proposeEmbargo(PlayerTypes eHuman);
 	bool AI_contactReligion(PlayerTypes eHuman);

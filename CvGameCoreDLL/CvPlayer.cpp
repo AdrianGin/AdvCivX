@@ -16597,12 +16597,19 @@ void CvPlayer::doEvents()
 			}
 		}
 	}
+	// <advc.252>
+	int const iSpeedAdjustPercent = GC.getInfo(GC.getGame().getGameSpeedType()).
+			get(CvGameSpeedInfo::EventRollSidesPercent); // </advc.252>
 	bool bNewEventEligible = true;
-	if (GC.getGame().getElapsedGameTurns() < GC.getDefineINT("FIRST_EVENT_DELAY_TURNS"))
+	if (GC.getGame().getElapsedGameTurns() /* <advc.252> */ * 100 <
+		GC.getDefineINT("FIRST_EVENT_DELAY_TURNS") * iSpeedAdjustPercent)
+		// </advc.252>
+	{
 		bNewEventEligible = false;
-
+	}
 	if (bNewEventEligible &&
-		SyncRandNum(GC.getDefineINT("EVENT_PROBABILITY_ROLL_SIDES")) >=
+		SyncRandNum(GC.getDefineINT("EVENT_PROBABILITY_ROLL_SIDES")
+		* iSpeedAdjustPercent) >= 100 * // advc.252
 		GC.getInfo(getCurrentEra()).getEventChancePerTurn())
 	{
 		bNewEventEligible = false;

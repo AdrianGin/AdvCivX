@@ -4494,8 +4494,8 @@ scaled CvTeamAI::AI_getDiploDecay() const
 {
 	/*  On Normal speed, this decay rate halves a value in about 50 turns:
 		0.9865^50 = 0.507 */
-	return fixp(1.45) / GC.getInfo(GC.getGame().getGameSpeedType()).
-			getGoldenAgePercent();
+	return fixp(1.45) / GC.getInfo(GC.getGame().getGameSpeedType()).get(
+			CvGameSpeedInfo::AIMemoryRandPercent); // advc.130r
 }
 
 // Needed for both RivalTrade and "fair trade"
@@ -5648,12 +5648,12 @@ scaled CvTeamAI::AI_getOpenBordersCounterIncrement(TeamTypes eOther) const
 int CvTeamAI::AI_randomCounterChange(int iUpperCap, scaled rProb) const
 {
 	CvGameSpeedInfo const& kSpeed = GC.getInfo(GC.getGame().getGameSpeedType());
-	int iSpeedPercent = kSpeed.getGoldenAgePercent();
+	int iSpeedPercent = kSpeed.get(CvGameSpeedInfo::AIMemoryRandPercent);
 	scaled rOurEra = AI_getCurrEraFactor();
-	if(rOurEra < fixp(0.5))
-		iSpeedPercent = kSpeed.getGrowthPercent();
+	if (rOurEra < fixp(0.5))
+		iSpeedPercent = kSpeed.getVictoryDelayPercent();
 	else if (rOurEra < fixp(1.5))
-		iSpeedPercent = (kSpeed.getGrowthPercent() + kSpeed.getGoldenAgePercent()) / 2;
+		iSpeedPercent = (kSpeed.getVictoryDelayPercent() + iSpeedPercent) / 2;
 	rProb *= scaled(100, std::max(50, iSpeedPercent));
 	int iR = 0;
 	if (SyncRandSuccess(rProb))

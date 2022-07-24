@@ -10317,7 +10317,9 @@ void CvGame::doVoteSelection()
 			continue;
 		}
 		setVoteTimer(eVS, (GC.getInfo(eVS).getVoteInterval() *
-				GC.getInfo(getGameSpeedType()).getVictoryDelayPercent()) / 100);
+				// advc.252: Had used VictoryDelayPercent
+				GC.getInfo(getGameSpeedType()).get(
+				CvGameSpeedInfo::VoteIntervalPercent)) / 100);
 
 		for (TeamIter<MAJOR_CIV> itTeam1; itTeam1.hasNext(); ++itTeam1)
 		{

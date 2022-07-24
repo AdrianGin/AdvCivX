@@ -710,11 +710,8 @@ void CvPlayerAI::AI_doPeace()
 			AI_offerCapitulation(eTarget);
 			return;
 		}
-		if (!SyncRandOneChanceIn(
-			GC.getInfo(getPersonalityType()).getContactRand(CONTACT_PEACE_TREATY)))
-		{
+		if (!AI_contactRoll(CONTACT_PEACE_TREATY))
 			continue;
-		}
 		// advc: Replacing two canTradeItem calls
 		if (getTradeDenial(eTarget, TradeData(TRADE_PEACE_TREATY)) != NO_DENIAL ||
 			kTarget.getTradeDenial(getID(), TradeData(TRADE_PEACE_TREATY)) != NO_DENIAL)
@@ -5896,13 +5893,14 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 					getContactRand(CONTACT_TRADE_TECH);
 			/*	<advc.550h> Apply groundbreaking modifier more often -
 				except for Alphabet. Don't want that tech prioritized too much. */
-			if (kTeam.isTechTrading())
+			if (kTeam.isTechTrading() && iModulus > 1)
 			{
 				iModulus *= 3;
 				iModulus /= 5;
 			} // </advc.550h>
-			iModulus = std::max(1, iModulus);
-			if (AI_getStrategyRand(GC.getGame().getGameTurn()) % iModulus == 0)
+			//iModulus = std::max(1, iModulus);
+			if (iModulus > 0 && // advc.130r: 0 ContactRand means infinity now
+				AI_getStrategyRand(GC.getGame().getGameTurn()) % iModulus == 0)
 			{
 				int iAlreadyKnown = 0;
 				scaled rPotentialTrade;
@@ -7339,7 +7337,8 @@ DiploCommentTypes CvPlayerAI::AI_getGreeting(PlayerTypes ePlayer) const
 	{
 		int iDemandRand = GC.getInfo(getPersonalityType()).
 				getContactRand(CONTACT_DEMAND_TRIBUTE);
-		if (iDemandRand < 400)
+		if (iDemandRand < 400 &&
+			iDemandRand > 0) // advc.130r: 0 means infinity now
 		{
 			if (!GET_PLAYER(ePlayer).canSeeTech(getID()) ||
 				!GET_PLAYER(ePlayer).canTradeNetworkWith(getID()))
@@ -10002,6 +10001,8 @@ bool CvPlayerAI::AI_considerOffer(PlayerTypes ePlayer,
 scaled CvPlayerAI::AI_prDenyHelp() const
 {
 	scaled r = GC.getInfo(getPersonalityType()).getContactRand(CONTACT_GIVE_HELP);
+	if (r <= 0)
+		return 1;
 	r.exponentiate(fixp(0.5));
 	r /= 100;
 	r.decreaseTo(fixp(0.5));
@@ -19080,8 +19081,8 @@ void CvPlayerAI::AI_doCounter()
 	CvGame& kGame = GC.getGame();
 	CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
 	CvLeaderHeadInfo const& kPersonality = GC.getInfo(getPersonalityType());
-	scaled rDecayFactor = 1 - GET_TEAM(getTeam()).AI_getDiploDecay(); // advc.130k
 	// <advc.130k>
+	scaled rDecayFactor = 1 - GET_TEAM(getTeam()).AI_getDiploDecay();
 	for (PlayerAIIter<MAJOR_CIV,KNOWN_TO> it(getTeam()); it.hasNext(); ++it)
 	{
 		CvPlayerAI const& kPlayer = *it;
@@ -20680,8 +20681,7 @@ void CvPlayerAI::AI_doDiplo()
 				AI_getContactTimer(ePlayer, CONTACT_PERMANENT_ALLIANCE) == 0)
 			{
 				bool bOffered = false;
-				if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
-					getContactRand(CONTACT_PERMANENT_ALLIANCE)))
+				if (AI_contactRoll(CONTACT_PERMANENT_ALLIANCE))
 				{
 					TradeData item(TRADE_PERMANENT_ALLIANCE);
 					if (canTradeItem(ePlayer, item, true) &&
@@ -20718,17 +20718,11 @@ void CvPlayerAI::AI_doDiplo()
 				if (bOffered)
 					continue;
 				// <advc.112>
-				int iDiv = GC.getInfo(getPersonalityType()).
-						getContactRand(CONTACT_PERMANENT_ALLIANCE);
-				scaled rVassalProb;
-				if(iDiv > 0)
-				{
-					rVassalProb = scaled(8, iDiv) * scaled::clamp(scaled(kGame.getPlayerRank(ePlayer),
-							kGame.countCivPlayersAlive()), fixp(0.25), fixp(0.5));
-					if(kOurTeam.getNumWars() > 0)
-						rVassalProb *= 4;
-				}
-				if (SyncRandSuccess(rVassalProb))
+				scaled rContactProbMult = 8 * scaled::clamp(scaled(kGame.getPlayerRank(ePlayer),
+						kGame.countCivPlayersAlive()), fixp(0.25), fixp(0.5));
+				if (kOurTeam.getNumWars() > 0)
+					rContactProbMult *= 4;
+				if (AI_contactRoll(CONTACT_PERMANENT_ALLIANCE, rContactProbMult))
 				{	// </advc.112>
 					TradeData item(TRADE_VASSAL);
 					if (canTradeItem(ePlayer, item, true))
@@ -20762,21 +20756,15 @@ void CvPlayerAI::AI_doDiplo()
 			if (kPlayer.isHuman() && kOurTeam.getLeaderID() == getID() &&
 				!kOurTeam.isVassal(kPlayer.getTeam()))
 			{
-				if (!abContacted[kPlayer.getTeam()])
+				if (!abContacted[kPlayer.getTeam()] &&
+					AI_contactRoll(CONTACT_RELIGION_PRESSURE))
 				{
-					if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
-						getContactRand(CONTACT_RELIGION_PRESSURE)))
-					{
-						abContacted[kPlayer.getTeam()] = AI_contactReligion(ePlayer);
-					}
+					abContacted[kPlayer.getTeam()] = AI_contactReligion(ePlayer);
 				}
-				if (!abContacted[kPlayer.getTeam()])
+				if (!abContacted[kPlayer.getTeam()] &&
+					AI_contactRoll(CONTACT_CIVIC_PRESSURE))
 				{
-					if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
-						getContactRand(CONTACT_CIVIC_PRESSURE)))
-					{
-						abContacted[kPlayer.getTeam()] = AI_contactCivics(ePlayer);
-					}
+					abContacted[kPlayer.getTeam()] = AI_contactCivics(ePlayer);
 				}
 			}
 
@@ -20792,8 +20780,7 @@ void CvPlayerAI::AI_doDiplo()
 			if (kPlayer.isHuman() && kOurTeam.getLeaderID() == getID() &&
 				!kOurTeam.isVassal(kPlayer.getTeam()))
 			{
-				if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
-					getContactRand(CONTACT_STOP_TRADING)))
+				if (AI_contactRoll(CONTACT_STOP_TRADING))
 				{	// <advc> Moved into new function
 					if (!abContacted[kPlayer.getTeam()])
 						abContacted[kPlayer.getTeam()] = AI_proposeEmbargo(ePlayer);
@@ -20818,31 +20805,28 @@ void CvPlayerAI::AI_doDiplo()
 					{
 						if (AI_getContactTimer(ePlayer, CONTACT_GIVE_HELP) == 0)
 						{	// <advc.130z>
-							int iRandMax = GC.getInfo(getPersonalityType()).
-									getContactRand(CONTACT_GIVE_HELP);
-							scaled rDiv = fixp(0.85);
+							scaled rContactProbMult = fixp(0.85);
 							if(GC.getInfo(kPlayer.getHandicapType()).getDifficulty() < 30 ||
 								AI_getAttitude(ePlayer) >= ATTITUDE_FRIENDLY)
 							{
-								rDiv = fixp(1.25);
+								rContactProbMult = fixp(1.25);
 							}
 							else if (AI_atVictoryStage(AI_VICTORY_DIPLOMACY1))
 							{
-								rDiv += fixp(0.1);
+								rContactProbMult += fixp(0.1);
 								if (AI_atVictoryStage(AI_VICTORY_DIPLOMACY2))
 								{
-									rDiv += fixp(0.1);
+									rContactProbMult += fixp(0.1);
 									if (AI_atVictoryStage(AI_VICTORY_DIPLOMACY3))
 									{
-										rDiv += fixp(0.1);
+										rContactProbMult += fixp(0.1);
 										if (AI_atVictoryStage(AI_VICTORY_DIPLOMACY4))
-											rDiv += fixp(0.1);
+											rContactProbMult += fixp(0.1);
 									}
 								}
-							}
-							iRandMax = (iRandMax / rDiv).round();
-							// </advc.130z>
-							if (SyncRandOneChanceIn(iRandMax))
+							} // </advc.130z>
+							if (AI_contactRoll(CONTACT_GIVE_HELP,
+								rContactProbMult)) // advc.130z
 							{	// XXX maybe do gold instead???
 								/*  advc.130z: The values are going to be negative.
 									Btw the XXX above is a bad idea I think. */
@@ -20900,19 +20884,20 @@ void CvPlayerAI::AI_doDiplo()
 					// advc.130v:
 					(!isAVassal() || kOurTeam.getMasterTeam() == kPlayer.getTeam()))
 				{
-					int iRand = GC.getInfo(getPersonalityType()).
-							getContactRand(CONTACT_ASK_FOR_HELP);
 					// BETTER_BTS_AI_MOD, Diplomacy, 02/12/10, jdog5000: START
-					int iTechPerc = kOurTeam.getBestKnownTechScorePercent();
-					if (iTechPerc < 90) // Check more often if behind
-					{
-						iRand *= std::max(1, iTechPerc - 60);
-						iRand /= 30;
+					scaled rContactProbMult;
+					{	// Check more often if behind
+						int iTechPerc = kOurTeam.getBestKnownTechScorePercent();
+						if (iTechPerc < 90)
+						{
+							rContactProbMult.mulDiv(30, std::max(6, // advc.144: was 1
+									iTechPerc - 60));
+						}
 					} // BETTER_BTS_AI_MOD: END
-					// <advc.104m> Reduce pr to 80% b/c UWAI also calls AI_askHelp
+					// <advc.104m> Reduce prob b/c UWAI also calls AI_askHelp
 					if (getUWAI().isEnabled())
-						iRand = (iRand * 5) / 4; // </advc.104m>
-					if (SyncRandOneChanceIn(iRand))
+						rContactProbMult *= fixp(0.8); // </advc.104m>
+					if (AI_contactRoll(CONTACT_ASK_FOR_HELP, rContactProbMult))
 						abContacted[kPlayer.getTeam()] = AI_askHelp(ePlayer);
 				}
 				if (kOurTeam.canDeclareWar(kPlayer.getTeam()) &&
@@ -20931,10 +20916,9 @@ void CvPlayerAI::AI_doDiplo()
 					{
 						if (!abContacted[kPlayer.getTeam()])
 						{
-							if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
-								getContactRand(CONTACT_DEMAND_TRIBUTE) *
-								// advc.104m: Probability halved b/c UWAI also calls AI_demandTribute
-								(getUWAI().isEnabled() ? 2 : 1)))
+							if (AI_contactRoll(CONTACT_DEMAND_TRIBUTE,
+								// advc.104m: Lower pro b/c UWAI also calls AI_demandTribute
+								getUWAI().isEnabled() ? fixp(0.5) : 1))
 							{
 								FOR_EACH_ENUM_RAND(AIDemand, syncRand()) // advc.104m
 								{
@@ -20952,8 +20936,7 @@ void CvPlayerAI::AI_doDiplo()
 			if(kOurTeam.getLeaderID() == getID())
 			{
 				if (AI_getContactTimer(ePlayer, CONTACT_OPEN_BORDERS) == 0 &&
-					SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
-					getContactRand(CONTACT_OPEN_BORDERS)))
+					AI_contactRoll(CONTACT_OPEN_BORDERS))
 				{
 					TradeData item(TRADE_OPEN_BORDERS);
 					if (canTradeItem(ePlayer, item, true) &&
@@ -20980,16 +20963,22 @@ void CvPlayerAI::AI_doDiplo()
 				}
 
 				if (AI_getContactTimer(ePlayer, CONTACT_DEFENSIVE_PACT) == 0)
-				{	// <cdtw.5>
-					int iRand = GC.getInfo(getPersonalityType()).getContactRand(CONTACT_DEFENSIVE_PACT);
-					if (AI_isDoStrategy(AI_STRATEGY_ALERT2) && !AI_isFocusWar() &&
-						!kPlayer.isHuman())
+				{
+					scaled rContactProbMult = 1;
+					// <cdtw.5>
+					if (!kOurTeam.AI_isAnyChosenWar() &&
+						AI_isDoStrategy(AI_STRATEGY_ALERT1))
 					{
-						iRand = iRand / std::max(1, 10 - 2 * kOurTeam.getDefensivePactCount());
-					}
-					if (SyncRandOneChanceIn(iRand))
-					// Replacing this: // </cdtw.5>
-					//if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).getContactRand(CONTACT_DEFENSIVE_PACT)))
+						int const iDPs = kOurTeam.getDefensivePactCount();
+						if (AI_isDoStrategy(AI_STRATEGY_ALERT2) &&
+							!kPlayer.isHuman()) // advc
+						{
+							rContactProbMult = std::max(2, 10 - 2 * iDPs);
+						}  // <advc> Small adjustment even for Alert1 and human
+						else if (iDPs <= 0)
+							rContactProbMult = 2; // </advc>
+					} // </cdtw.5>
+					if (AI_contactRoll(CONTACT_DEFENSIVE_PACT, rContactProbMult))
 					{
 						TradeData item(TRADE_DEFENSIVE_PACT);
 						if (canTradeItem(ePlayer, item, true) &&
@@ -21025,25 +21014,21 @@ void CvPlayerAI::AI_doDiplo()
 				if (AI_getContactTimer(ePlayer, CONTACT_TRADE_TECH) == 0)
 				{
 					// BETTER_BTS_AI_MOD, Diplomacy, 04/24/10, jdog5000: START
-					int iRand = GC.getInfo(getPersonalityType()).getContactRand(CONTACT_TRADE_TECH);
+					scaled rContactProbMult = 1;
 					int iTechPerc = kOurTeam.getBestKnownTechScorePercent();
 					if (iTechPerc < 90)
 					{
-						/*iRand *= std::max(1, iTechPerc - 60);
-						iRand /= 30;*/ // BBAI
+						//rContactProbMult.mulDiv(30, std::max(1, iTechPerc - 60));
 						// K-Mod: not so extreme.
-						iRand = intdiv::uround(iRand * (10 + iTechPerc), 100);
+						rContactProbMult.mulDiv(100, 10 + iTechPerc);
 					}
 
 					if (AI_atVictoryStage(AI_VICTORY_SPACE1))
-					{
-						//iRand /= 2;
-						/*  advc.550a: That seems like a bit of an unfair advantage
-							for civs pursuing a Space victory */
-						iRand = intdiv::uround(3 * iRand, 4);
+					{	/*	advc.550a: Was times 2; seemed like too much of an
+							unfair advantage for civs pursuing a Space victory. */
+						rContactProbMult.mulDiv(4, 3);
 					}
-					iRand = std::max(1, iRand);
-					if (SyncRandOneChanceIn(iRand))
+					if (AI_contactRoll(CONTACT_TRADE_TECH))
 					{	// BETTER_BTS_AI_MOD: END
 						TechTypes eBestReceiveTech = NO_TECH;
 						/*  advc.550f: This is normally going to be
@@ -21210,22 +21195,16 @@ void CvPlayerAI::AI_doDiplo()
 					}
 				}
 			}
-			int iContactRand = GC.getInfo(getPersonalityType()).
-					getContactRand(CONTACT_TRADE_BONUS);
-			// <advc.036> Make AI to human offers a bit more frequent
-			if (iContactRand >= 8 && kPlayer.isHuman())
-				iContactRand = (iContactRand * 4) / 5; // </advc.036>
 			/*  <advc.133> Moved the cheap abContacted check up, and the rest
 				of the resource trade code into a new function. */
 			if ((!abContacted[kPlayer.getTeam()] || !kPlayer.isHuman()) &&
-				SyncRandOneChanceIn(iContactRand))
+				AI_contactRoll(CONTACT_TRADE_BONUS))
 			{
 				abContacted[kPlayer.getTeam()] = AI_proposeResourceTrade(ePlayer);
 			} // </advc.133>
 			if (AI_getContactTimer(ePlayer, CONTACT_TRADE_MAP) == 0)
 			{
-				if (SyncRandOneChanceIn(GC.getInfo(getPersonalityType()).
-					getContactRand(CONTACT_TRADE_MAP)))
+				if (AI_contactRoll(CONTACT_TRADE_MAP))
 				{
 					TradeData item(TRADE_MAPS);
 					if (kPlayer.canTradeItem(getID(), item, true) &&
@@ -21321,10 +21300,8 @@ bool CvPlayerAI::AI_proposeJointWar(PlayerTypes eHuman)
 		rMeanAtWarTurns = scaled::max(1, rTotalAtWarTurns /
 				std::max(1, iWars));
 	}
-	if (!SyncRandOneChanceIn((GC.getInfo(getPersonalityType()).
-		/*  That's one tenth of the BtS probability on turn one of a war,
-			the BtS probability after 10 turns, and then grows to twice that. */
-		getContactRand(CONTACT_JOIN_WAR) * 10 / rMeanAtWarTurns).round())) // </advc.130m>
+	if (!AI_contactRoll(CONTACT_JOIN_WAR,
+		rMeanAtWarTurns / 10)) // </advc.130m>
 	{
 		return false;
 	}
@@ -29289,13 +29266,39 @@ bool CvPlayerAI::AI_hasSharedPrimaryArea(PlayerTypes eOther) const
 	return false;
 }
 
-// advc.130r: Speed adjustment
+// <advc.130r> Speed adjustments
 int CvPlayerAI::AI_getContactDelay(ContactTypes eContact) const
 {
 	int iDelay = GC.getInfo(getPersonalityType()).getContactDelay(eContact);
-	iDelay *= GC.getInfo(GC.getGame().getGameSpeedType()).getGoldenAgePercent();
+	iDelay *= GC.getInfo(GC.getGame().getGameSpeedType()).get(
+			CvGameSpeedInfo::AIContactDelayPercent);
 	return iDelay / 100;
 }
+
+/*	rMult is a multiplier for the success probability, i.e. values greater than 1
+	make us likelier to return true, values less than 1 make us likelier to
+	return false. */
+bool CvPlayerAI::AI_contactRoll(ContactTypes eContact, scaled rMult)
+{
+	int iDiv = GC.getInfo(getPersonalityType()).getContactRand(eContact);
+	if (iDiv <= 0)
+	{
+		FAssertMsg(iDiv == 0, "Negative contact rand - intentional?");
+		return false;
+	}
+	if (eContact != CONTACT_PEACE_TREATY && eContact != CONTACT_JOIN_WAR) // exempt
+	{
+		iDiv *= GC.getInfo(GC.getGame().getGameSpeedType()).get(
+				CvGameSpeedInfo::AIContactRandPercent);
+		iDiv /= 100;
+	}
+	// (Rounding to 0 is OK here, same effect as 1.)
+	if (rMult == 1) // (Avoid loss of precision from conversion to ScaledNum)
+		return SyncRandOneChanceIn(iDiv);
+	ScaledNum<1024*32> rContactProb(1, std::max(1, iDiv));
+	rContactProb *= rMult;
+	return SyncRandSuccess(rContactProb);
+} // </advc.130r>
 
 // advc.127:
 void CvPlayerAI::AI_setHuman(bool b)
