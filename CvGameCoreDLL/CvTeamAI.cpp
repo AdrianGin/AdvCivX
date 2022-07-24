@@ -6182,16 +6182,19 @@ void CvTeamAI::AI_doWar()
 
 	//if (getAnyWarPlanCount(true) == 0 || iEnemyPowerPercent < 45)
 	// K-Mod. Some more nuance to the conditions for considering war
-	// First condition: only consider a new war if there are no current wars that need more attention. (local total war, or a war we aren't winning)
+	/*	First condition: only consider a new war if there are no current wars
+		that need more attention. (local total war, or a war we aren't winning) */
 	bool bConsiderWar = (!bAnyWarPlan ||
 			(iEnemyPowerPercent < 45 && !(bLocalWarPlan && bTotalWarPlan) &&
 			AI_getWarSuccessRating() > (bTotalWarPlan ? 40 : 15)));
-	// Second condition: don't consider war very early in the game. It would be unfair on human players to rush them with our extra starting units and techs!
+	/*	Second condition: don't consider war very early in the game. It would be unfair
+		on human players to rush them with our extra starting units and techs! */
 	bConsiderWar = (bConsiderWar &&
 		(kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ||
 		 kGame.getElapsedGameTurns() >= GC.getInfo(kGame.getGameSpeedType()).getBarbPercent() * 30 / 100 ||
 		 kGame.getNumCivCities() > GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities() * kGame.countCivPlayersAlive()/2));
-	// (Perhaps the no-war turn threshold should depend on the game difficulty level; but I don't think it would make much difference.)
+	/*	(Perhaps the no-war turn threshold should depend on the game difficulty level;
+		but I don't think it would make much difference.) */
 
 	if (bConsiderWar)
 	// K-Mod end

@@ -7679,7 +7679,7 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvPlot const& kPlot)
 		{
 			if (kPlot.isWater() || kPlot.defenseModifier(NO_TEAM, true) > 0)
 				continue;
-			// Don't place them is disease-ridden land either
+			// Don't place them in disease-ridden land either
 			int iBadHealth = 0;
 			for (SquareIter it(kPlot, 1); it.hasNext(); ++it)
 			{
