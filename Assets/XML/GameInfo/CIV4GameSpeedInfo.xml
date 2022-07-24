@@ -37,6 +37,24 @@
 			<iInflationPercent>10</iInflationPercent>
 			<iInflationOffset>-270</iInflationOffset>
 			<iVictoryDelayPercent>300</iVictoryDelayPercent>
+			<!-- advc.130r: start -->
+			<iAIMemoryRandPercent>200</iAIMemoryRandPercent>
+			<iAIContactRandPercent>167</iAIContactRandPercent>
+			<iAIContactDelayPercent>200</iAIContactDelayPercent>
+			<!-- advc.130r: end -->
+			<!-- advc.130k -->
+			<iFullTradeCreditPercent>200</iFullTradeCreditPercent>
+			<!-- advc.101 -->
+			<iRevoltDivPercent>200</iRevoltDivPercent>
+			<!-- advc.173: Spread through Missionaries will benefit from
+				 TrainPercent, but I don't think passive spread should
+				 match that. Units having a bigger role is normal for
+				 Marathon. -->
+			<iReligionSpreadDivPercent>300</iReligionSpreadDivPercent>
+			<!-- advc.252: start -->
+			<iEventRollSidesPercent>200</iEventRollSidesPercent>
+			<iVoteIntervalPercent>300</iVoteIntervalPercent>
+			<!-- advc.252: end -->
 			<!-- advc.910: Changed all of the turn counts -->
 			<GameTurnInfos>
 				<GameTurnInfo>
@@ -99,6 +117,21 @@
 			<iInflationPercent>20</iInflationPercent>
 			<iInflationOffset>-135</iInflationOffset>
 			<iVictoryDelayPercent>150</iVictoryDelayPercent>
+			<!-- advc.130r: start -->
+			<iAIMemoryRandPercent>125</iAIMemoryRandPercent>
+			<iAIContactRandPercent>115</iAIContactRandPercent>
+			<iAIContactDelayPercent>125</iAIContactDelayPercent>
+			<!-- advc.130r: end -->
+			<!-- advc.130k -->
+			<iFullTradeCreditPercent>125</iFullTradeCreditPercent>
+			<!-- advc.101 -->
+			<iRevoltDivPercent>125</iRevoltDivPercent>
+			<!-- advc.173 -->
+			<iReligionSpreadDivPercent>150</iReligionSpreadDivPercent>
+			<!-- advc.252: start -->
+			<iEventRollSidesPercent>125</iEventRollSidesPercent>
+			<iVoteIntervalPercent>150</iVoteIntervalPercent>
+			<!-- advc.252: end -->
 			<!-- advc.910: Changed all of the turn counts,
 				 some of the increments. -->
 			<GameTurnInfos>
@@ -231,6 +264,21 @@
 			<iInflationPercent>45</iInflationPercent>
 			<iInflationOffset>-60</iInflationOffset>
 			<iVictoryDelayPercent>67</iVictoryDelayPercent>
+			<!-- advc.130r: start -->
+			<iAIMemoryRandPercent>80</iAIMemoryRandPercent>
+			<iAIContactRandPercent>90</iAIContactRandPercent>
+			<iAIContactDelayPercent>80</iAIContactDelayPercent>
+			<!-- advc.130r: end -->
+			<!-- advc.130k -->
+			<iFullTradeCreditPercent>80</iFullTradeCreditPercent>
+			<!-- advc.101 -->
+			<iRevoltDivPercent>80</iRevoltDivPercent>
+			<!-- advc.173 -->
+			<iReligionSpreadDivPercent>67</iReligionSpreadDivPercent>
+			<!-- advc.252: start -->
+			<iEventRollSidesPercent>80</iEventRollSidesPercent>
+			<iVoteIntervalPercent>67</iVoteIntervalPercent>
+			<!-- advc.252: end -->
 			<!-- advc.910: Changed most of the turn count. Now sum up to a
 				 max turn of 335 instead of 330. -->
 			<GameTurnInfos>
