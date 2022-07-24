@@ -2042,12 +2042,18 @@ void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity
 		{
 			PlayerTypes const eLiberationPlayer = kCity.getLiberationPlayer(true);
 			if (eLiberationPlayer != NO_PLAYER &&
-				canTradeItem(eLiberationPlayer, TradeData(TRADE_CITIES, kCity.getID())) &&
-				/*	Don't check trade denial b/c that includes conditions for refusal
-					by recipient. Recipient has no choice here. */
-				AI_intendsToCede(kCity, eLiberationPlayer, true))
+				/*	(Don't check trade denial b/c that includes conditions for refusal
+					by recipient. Recipient has no choice here.) */
+				canTradeItem(eLiberationPlayer, TradeData(TRADE_CITIES, kCity.getID())) /*&&
+				AI_intendsToCede(kCity, eLiberationPlayer, true)*/)
 			{
 				FErrorMsg("Just to test AI liberation upon conquest"); // advc.test
+				/*	advc.test: Seems to return true only extremely rarely.
+					Should better step through this a few times to verify that
+					it's working as intended. Should then move this check
+					back into the condition above. */
+				if (AI_intendsToCede(kCity, eLiberationPlayer, true))
+				{
 				bool bLiberate = true;
 				/*	Don't liberate (not for free anyway) if they're
 					holding one of our cities hostage */
@@ -2066,6 +2072,7 @@ void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity
 					kCity.liberate(true);
 				}
 				return;
+				}
 			}
 		} // </advc.ctr>
 		if (iRazeValue > 0/*SyncRandNum(100)*/) // advc.116
@@ -19114,7 +19121,7 @@ void CvPlayerAI::AI_doCounter()
 				AI_setFavoriteCivicCounter(ePlayer,
 						(AI_getFavoriteCivicCounter(ePlayer) * rDecayFactor).floor());
 			}
-		} // <advc.130p>
+		}  // <advc.130p>
 		AI_setPeacetimeGrantValue(ePlayer,
 				(AI_getPeacetimeGrantValue(ePlayer) * rDecayFactor).floor());
 		AI_setPeacetimeTradeValue(ePlayer,
@@ -20708,7 +20715,7 @@ void CvPlayerAI::AI_doDiplo()
 						}
 					}
 				}
-				if(bOffered)
+				if (bOffered)
 					continue;
 				// <advc.112>
 				int iDiv = GC.getInfo(getPersonalityType()).
@@ -20884,11 +20891,13 @@ void CvPlayerAI::AI_doDiplo()
 						}
 					}
 				}
-			} /* advc.130z: Same condition as in BtS, but no longer applied to
-				 to the part above. */
+			}
+			/*	advc.130z: Same condition as in BtS, but no longer applied to
+				to the part above. */
 			if (kPlayer.isHuman() && kOurTeam.getLeaderID() == getID())
 			{
-				if (!abContacted[kPlayer.getTeam()] &&   // advc.130v:
+				if (!abContacted[kPlayer.getTeam()] &&
+					// advc.130v:
 					(!isAVassal() || kOurTeam.getMasterTeam() == kPlayer.getTeam()))
 				{
 					int iRand = GC.getInfo(getPersonalityType()).
@@ -21300,7 +21309,7 @@ bool CvPlayerAI::AI_proposeJointWar(PlayerTypes eHuman)
 					kOurTeam.AI_getAtWarCounter(itEnemy->getID()));
 			/*  Already sharing a war with eHuman makes us reluctant
 				to ask them to join another war. */
-			if(itEnemy->isAtWar(TEAMID(eHuman)))
+			if (itEnemy->isAtWar(TEAMID(eHuman)))
 			{
 				rAtWarTurns.flipSign();
 				rAtWarTurns /= 2;

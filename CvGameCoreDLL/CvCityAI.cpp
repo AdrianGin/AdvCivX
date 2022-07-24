@@ -11993,7 +11993,7 @@ void CvCityAI::AI_buildGovernorChooseProduction()
 		return;
 }
 
-/*	K-Mod. This is a chunk of code that I moved out of AI_chooseProduction.
+/*	K-Mod: This is a chunk of code that I moved out of AI_chooseProduction.
 	The only reason I've moved it is to reduce clutter in the other function. */
 void CvCityAI::AI_barbChooseProduction()
 {
@@ -12088,10 +12088,12 @@ void CvCityAI::AI_barbChooseProduction()
 	if (!bDanger && !SyncRandSuccess100(iBuildUnitProb))
 	{
 		int iBarbarianFlags = 0;
-		if (getPopulation() < 4) iBarbarianFlags |= BUILDINGFOCUS_FOOD;
+		if (getPopulation() < 4)
+			iBarbarianFlags |= BUILDINGFOCUS_FOOD;
 		iBarbarianFlags |= BUILDINGFOCUS_PRODUCTION;
 		iBarbarianFlags |= BUILDINGFOCUS_EXPERIENCE;
-		if (getPopulation() > 3) iBarbarianFlags |= BUILDINGFOCUS_DEFENSE;
+		if (getPopulation() > 3)
+			iBarbarianFlags |= BUILDINGFOCUS_DEFENSE;
 
 		if (AI_chooseBuilding(iBarbarianFlags, 15))
 		{
@@ -12179,7 +12181,7 @@ void CvCityAI::AI_barbChooseProduction()
 
 	if (AI_chooseUnit())
 		return;
-} // K-Mod end
+}
 
 
 int CvCityAI::AI_calculateWaterWorldPercent()

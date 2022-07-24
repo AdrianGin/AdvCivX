@@ -1899,8 +1899,8 @@ void CvUnit::onActiveSelection()
 		{
 			if (pUnit != NULL)
 			{
-				bool bGlow = pUnit->isPromotionReady();
-				gDLL->getEntityIFace()->showPromotionGlow(pUnit->getEntity(), bGlow);
+				gDLL->getEntityIFace()->showPromotionGlow(pUnit->getEntity(),
+						pUnit->isPromotionReady());
 			}
 		}
 	} // </advc.002e>

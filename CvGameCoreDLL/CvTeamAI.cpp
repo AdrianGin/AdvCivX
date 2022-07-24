@@ -4381,6 +4381,18 @@ void CvTeamAI::AI_setWarSuccess(TeamTypes eTeam, scaled rNewValue)
 	FAssert(AI_getWarSuccess(eTeam) >= 0);
 }
 
+// advc:
+scaled CvTeamAI::AI_countEnemyWarSuccess() const
+{
+	scaled r;
+	for (TeamAIIter<CIV_ALIVE,ENEMY_OF> itEnemy(getID());
+		itEnemy.hasNext(); ++itEnemy)
+	{
+		r += itEnemy->AI_getWarSuccess(getID());
+	}
+	return r;
+}
+
 
 void CvTeamAI::AI_changeWarSuccess(TeamTypes eTeam, scaled rChange)
 {
@@ -4402,18 +4414,6 @@ void CvTeamAI::AI_changeWarSuccess(TeamTypes eTeam, scaled rChange)
 		if(!kWarAlly.isAtWar(eTeam) && kWarAlly.isAtWar(getID()))
 			kWarAlly.AI_reportSharedWarSuccess(rChange, eTeam, getID());
 	}
-}
-
-// advc:
-scaled CvTeamAI::AI_countEnemyWarSuccess() const
-{
-	scaled r;
-	for (TeamAIIter<CIV_ALIVE,ENEMY_OF> itEnemy(getID());
-		itEnemy.hasNext(); ++itEnemy)
-	{
-		r += itEnemy->AI_getWarSuccess(getID());
-	}
-	return r;
 }
 
 /*  eEnemy is a war enemy that this team and eWarAlly have in common.
@@ -5640,7 +5640,7 @@ scaled CvTeamAI::AI_getOpenBordersCounterIncrement(TeamTypes eOther) const
 	return scaled::clamp(rFromTrade + rFromCloseness, fixp(1/6.), fixp(8/6.));
 } // </advc.130i>
 
-/*  <advc.130k> Random number to add or subtract from state counters
+/*  advc.130k: Random number to add or subtract from state counters
 	(instead of just incrementing or decrementing). Binomial distribution
 	with 2 trials and a probability of pr.
 	Non-negative result, caller will have to multiply by -1 to decrease a counter.
@@ -5660,10 +5660,10 @@ int CvTeamAI::AI_randomCounterChange(int iUpperCap, scaled rProb) const
 		iR++;
 	if (SyncRandSuccess(rProb))
 		iR++;
-	if(iUpperCap < 0)
+	if (iUpperCap < 0)
 		return iR;
 	return std::min(iR, iUpperCap);
-} // </advc.130k>
+}
 
 
 void CvTeamAI::AI_doCounter()
@@ -5883,7 +5883,8 @@ void CvTeamAI::AI_doWar()
 		{
 			FAssert(isAtWar(eLoopTeam));
 
-			if (AI_getAtWarCounter(eLoopTeam) > ((GET_TEAM(eLoopTeam).AI_isLandTarget(getID())) ? 9 : 3))
+			if (AI_getAtWarCounter(eLoopTeam) >
+				(GET_TEAM(eLoopTeam).AI_isLandTarget(getID()) ? 9 : 3))
 			{
 				if (gTeamLogLevel >= 1) logBBAI("    Team %d (%S) switching WARPLANS against team %d (%S) from ATTACKED_RECENT to ATTACKED with enemy power percent %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eLoopTeam, GET_PLAYER(GET_TEAM(eLoopTeam).getLeaderID()).getCivilizationDescription(0), iEnemyPowerPercent);
 				AI_setWarPlan(eLoopTeam, WARPLAN_ATTACKED);
@@ -6112,7 +6113,7 @@ void CvTeamAI::AI_doWar()
 				{
 					if (SyncRandOneChanceIn(8))
 					{
-						bool bNoFighting = true; // advc: Refactored the computation of this
+						bool bNoFighting = true;
 						for (MemberAIIter itOurMember(getID());
 							itOurMember.hasNext(); ++itOurMember)
 						{
@@ -6315,7 +6316,7 @@ void CvTeamAI::AI_doWar()
 							(!bVassal || iNoWarRoll >= AI_noWarAttitudeProb(AI_getAttitude(eLoopMasterTeam))))
 						{
 							int iDefensivePower = (GET_TEAM(eTarget).getDefensivePower(getID()) * 2) / 3;
-							if (iDefensivePower < ((iOurPower * ((iPass > 1) ?
+							if (iDefensivePower < ((iOurPower * (iPass > 1 ?
 								AI_maxWarDistantPowerRatio() : AI_maxWarNearbyPowerRatio())) / 100))
 							{
 								// XXX make sure they share an area....
