@@ -741,8 +741,9 @@ int CvUnitAI::AI_attackOdds(const CvPlot* pPlot, bool bPotentialEnemy) const
 }
 
 // Returns true if the unit found a build for this city...
-bool CvUnitAI::AI_bestCityBuild(CvCityAI const& kCity, CvPlot** ppBestPlot, BuildTypes* peBestBuild, // advc.003u: first param was CvCity const*
-	CvPlot* pIgnorePlot, CvUnit* pUnit) const // advc: const and const CvCityÜ
+bool CvUnitAI::AI_bestCityBuild(CvCityAI const& kCity,
+	CvPlot** ppBestPlot, BuildTypes* peBestBuild,
+	CvPlot* pIgnorePlot, CvUnit* pUnit) const
 {
 	PROFILE_FUNC();
 
@@ -13683,7 +13684,6 @@ bool CvUnitAI::AI_pillageAroundCity(CvCity* pTargetCity, int iBonusValueThreshol
 	for (CityPlotIter it(*pTargetCity); it.hasNext(); ++it)
 	{
 		CvPlot& kPlot = *it;
-		// advc: Reduce indentation
 		if (/*AI_plotValid(kPlot)*/AI_canEnterByLand(kPlot.getArea()) && // advc.opt
 			kPlot.getTeam() == pTargetCity->getTeam() && // advc.opt: Moved up
 			!kPlot.isBarbarian() && AI_mayAttack(kPlot) &&
@@ -21270,7 +21270,7 @@ bool CvUnitAI::AI_defendPlot(CvPlot* pPlot)
 	return false;
 }
 
-int CvUnitAI::AI_pillageValue(CvPlot const& kPlot, int iBonusValueThreshold) // advc: param was CvPlot*
+int CvUnitAI::AI_pillageValue(CvPlot const& kPlot, int iBonusValueThreshold)
 {
 	FAssert(canPillage(kPlot) || canAirBombAt(plot(), kPlot.getX(), kPlot.getY()) || (getGroup()->getCargo() > 0));
 
@@ -21317,7 +21317,7 @@ int CvUnitAI::AI_pillageValue(CvPlot const& kPlot, int iBonusValueThreshold) // 
 					iValue += 10;
 				//if (!pAdj->isRoute())
 				// advc.001i:
-				if(pAdj->getRevealedRouteType(getTeam()) == NO_ROUTE)
+				if (pAdj->getRevealedRouteType(getTeam()) == NO_ROUTE)
 				{
 					if (!pAdj->isWater() && !pAdj->isImpassable())
 						iValue += 2;
@@ -21329,8 +21329,8 @@ int CvUnitAI::AI_pillageValue(CvPlot const& kPlot, int iBonusValueThreshold) // 
 	/*if (kPlot.getImprovementDuration() > ((kPlot.isWater()) ? 20 : 5))
 		eImprovement = kPlot.getImprovementType();
 	else eImprovement = kPlot.getRevealedImprovementType(getTeam(), false);*/
-	ImprovementTypes eImprovement = kPlot.getImprovementDuration() > 20 ?
-			kPlot.getImprovementType() : kPlot.getRevealedImprovementType(getTeam());
+	ImprovementTypes eImprovement = (kPlot.getImprovementDuration() > 20 ?
+			kPlot.getImprovementType() : kPlot.getRevealedImprovementType(getTeam()));
 	if (eImprovement != NO_IMPROVEMENT)
 	{
 		if (kPlot.getWorkingCity() != NULL)
@@ -21690,9 +21690,9 @@ bool CvUnitAI::AI_stackAttackCity(int iPowerThreshold)
 	FAssert(canMove());
 
 	CvPlot const* pCityPlot = NULL;
-	for (SquareIter it(*this, 1); it.hasNext(); ++it)
+	FOR_EACH_ADJ_PLOT(getPlot())
 	{
-		CvPlot const& p = *it;
+		CvPlot const& p = *pAdj;
 		//if (!AI_plotValid(p)) continue; // advc.opt: We're a land unit looking for an adjacent city
 		if (!p.isCity()) // K-Mod. We want to attack a city. We don't care about guarded forts!
 			//|| (pLoopPlot->isCity(true) && pLoopPlot->isVisibleEnemyUnit(this)))
@@ -21701,8 +21701,8 @@ bool CvUnitAI::AI_stackAttackCity(int iPowerThreshold)
 		}
 		if (AI_mayAttack(p.getTeam(), p))
 		{
-			if (!at(p) &&
-				// ((bFollow) ? canMoveInto(pLoopPlot, /*bAttack*/ true, /*bDeclareWar*/ true) : (generatePath(pLoopPlot, 0, true, &iPathTurns) && (iPathTurns <= iRange))))
+			if (//!at(p) && // advc: Exclude this from the beginning
+				//((bFollow) ? canMoveInto(pLoopPlot, /*bAttack*/ true, /*bDeclareWar*/ true) : (generatePath(pLoopPlot, 0, true, &iPathTurns) && (iPathTurns <= iRange))))
 				getGroup()->canMoveOrAttackInto(p, true, true))
 			{
 				// K-Mod
@@ -21961,7 +21961,7 @@ bool CvUnitAI::AI_choke(int iRange, bool bDefensive, MovementFlags eFlags)
 		}
 	}
 	if (pBestPlot == NULL)
-		return false; // advc
+		return false;
 
 	FAssert(pBestPlot->getWorkingCity());
 	CvPlot* pChokedCityPlot = pBestPlot->getWorkingCity()->plot();

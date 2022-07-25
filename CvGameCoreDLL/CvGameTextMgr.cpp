@@ -6025,7 +6025,7 @@ void CvGameTextMgr::parseTraits(CvWStringBuffer &szHelpString, TraitTypes eTrait
 				if (iFreeCityCulture < iThresh)
 					continue;
 				/*	This only works because (and so long as) the thresholds set in
-					CultureLevel XML correspond to freeCityCultureFromTrait.
+					CultureLevel XML correspond to CvGame::freeCityCultureFromTrait.
 					(Clean solution would be a separate XML tag for free culture level.) */
 				if (iFreeCityCulture == iThresh)
 					eFreeLevel = eLoopCultureLevel;
