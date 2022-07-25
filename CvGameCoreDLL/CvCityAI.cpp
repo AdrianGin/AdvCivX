@@ -6863,9 +6863,10 @@ int CvCityAI::AI_minDefenders() const
 			the training modifier decreases as the game progresses, so things get
 			a little fuzzy (which is fine with me). */
 		scaled rExtraDefenderEraFactor = fixp(2.5);
-		scaled rHandicapModifier = kOwner.trainingModifierFromHandicap();
-		if (rHandicapModifier < 1)
-			rExtraDefenderEraFactor *= SQR(rHandicapModifier);
+		scaled rTrainModifier = kOwner.trainingModifierFromHandicap() /
+				kOwner.AI_trainUnitSpeedAdustment(); // advc.253
+		if (rTrainModifier < 1)
+			rExtraDefenderEraFactor *= SQR(rTrainModifier);
 		if (kOwner.AI_getCurrEraFactor() > rExtraDefenderEraFactor)
 		{	// </advc.107>
 			iDefenders++;
@@ -11224,9 +11225,12 @@ int CvCityAI::AI_buildUnitProb(bool bDraft)
 	if (bDraft)
 		iXPWeight /= 2;
 	r += per100(iXPWeight);
-	bool bGreatlyReduced = false;
 	// </advc.017>
 	CvPlayerAI const& kOwner = GET_PLAYER(getOwner());
+	// <advc.253>
+	if (kOwner.AI_getCurrEraFactor() >= 1)
+		r *= kOwner.AI_trainUnitSpeedAdustment(); // <advc.253>
+	bool bGreatlyReduced = false; // advc.017
 	// BETTER_BTS_AI_MOD, 05/29/10, jdog5000: City AI, Barbarian AI
 	if (!isBarbarian() && kOwner.AI_isFinancialTrouble())
 	{

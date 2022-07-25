@@ -707,6 +707,7 @@ public:
 	// k146: Used in conjuction with canTrain
 	bool AI_haveResourcesToTrain(UnitTypes eUnit) const;
 	UnitTypes AI_getBestAttackUnit() const; // advc.079
+	scaled AI_trainUnitSpeedAdustment() const; // advc.253
 
 	// <advc.104>
 	UWAI::Player& uwai() { return *m_pUWAI; }

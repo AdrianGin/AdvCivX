@@ -2720,10 +2720,14 @@ scaled UWAI::Player::amortizationMultiplier() const
 
 scaled UWAI::Player::buildUnitProb() const
 {
+	scaled r;
 	if (GET_PLAYER(m_eAgent).isHuman())
-		return humanBuildUnitProb();
-	return per100(GC.getInfo(GET_PLAYER(m_eAgent).getPersonalityType()).
+		r = humanBuildUnitProb();
+	else r = per100(GC.getInfo(GET_PLAYER(m_eAgent).getPersonalityType()).
 			getBuildUnitProb());
+	// Accounting for advc.253
+	r *= GET_PLAYER(m_eAgent).AI_trainUnitSpeedAdustment();
+	return r;
 }
 
 // (Sort of duplicated in UWAI::Team::canReach)

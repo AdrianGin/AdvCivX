@@ -21642,6 +21642,7 @@ int CvUnitAI::AI_stackOfDoomExtra() const
 		scaled rTrainMod = kOwner.trainingModifierFromHandicap();
 		rTrainMod.increaseTo(fixp(0.7));
 		rMult /= rTrainMod;
+		rMult *= kOwner.AI_trainUnitSpeedAdustment(); // advc.253
 	}
 	// A little extra for naval assault
 	if (getArea().getAreaAIType(kOurTeam.getID()) == AREAAI_ASSAULT)

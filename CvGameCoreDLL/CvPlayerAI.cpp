@@ -26592,6 +26592,7 @@ int CvPlayerAI::AI_getTotalFloatingDefendersNeeded(CvArea const& kArea, // advc:
 		if (kGame.getCurrentEra() <= 1 + iStartEra)
 			rDefenders += 1 + iStartEra;
 	} // </advc.107>
+	rDefenders *= AI_trainUnitSpeedAdustment(); // advc.253
 
 	if (hasCapital() && !getCapital()->isArea(kArea))
 	{
@@ -28958,6 +28959,18 @@ UnitTypes CvPlayerAI::AI_getBestAttackUnit() const
 			break;
 	}
 	return eBestUnit;
+}
+
+// advc.253: For adjusting unit training to game speed modifiers
+scaled CvPlayerAI::AI_trainUnitSpeedAdustment() const
+{
+	/*	Only a half-way adjustment b/c units being relatively cheap doesn't
+		imply that we'll have good uses for additional units */
+	scaled r(2 * GC.getGame().getSpeedPercent(), std::max(1,
+			GC.getGame().getSpeedPercent() +
+			GC.getInfo(GC.getGame().getGameSpeedType()).getTrainPercent()));
+	r.clamp(fixp(4/5.), fixp(5/4.));
+	return r;
 }
 
 // advc.033: Are we willing to attack/pillage them with hidden-nationality units
