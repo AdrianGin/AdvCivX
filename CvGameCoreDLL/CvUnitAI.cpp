@@ -3282,7 +3282,7 @@ void CvUnitAI::AI_attackCityMove()
 					at random. */
 				int iIntervalRand = (scaled::hash(getGroup()->getID(), getOwner()) * 5).
 						floor();
-				if (iMaxWPAge % (iIntervalRand + 7) == 1)
+				if (iMaxWPAge % (iIntervalRand + 8) == 0)
 					iMaxGroupPath += 1 + SyncRandNum(3);
 			}
 		} // </advc.083>
