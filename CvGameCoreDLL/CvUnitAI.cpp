@@ -3480,7 +3480,7 @@ void CvUnitAI::AI_attackCityMove()
 			return;
 	}
 
-	if (bReadyToAttack)
+	if (bReadyToAttack /* advc.083: */ && !bTargetTooStrong)
 	{	// advc.opt: Moved into the bReadyToAttack branch
 		bool bAnyWarPlan = GET_TEAM(getTeam()).AI_isAnyWarPlan();
 		/* BBAI code
@@ -3569,6 +3569,10 @@ void CvUnitAI::AI_attackCityMove()
 
 				if (bAnyWarPlan)
 				{
+					/*	advc.083: This can no longer occur. We shouldn't
+						"just wait for reinforcements" paying supply costs and
+						possibly leaving our own cities exposed. */
+				#if 0
 					/*	We're at war, but we failed to walk to the target.
 						Before we start wigging out, lets just check one more thing... */
 					if (bTargetTooStrong && iStepDistToTarget == 1)
@@ -3581,6 +3585,7 @@ void CvUnitAI::AI_attackCityMove()
 						getGroup()->pushMission(MISSION_SKIP);
 						return;
 					}
+				#endif
 
 					//CvCity* pTargetCity =
 					/*  advc: Don't shadow the pTargetCity variable that the rest of
@@ -13694,6 +13699,9 @@ bool CvUnitAI::AI_pillageAroundCity(CvCity* pTargetCity, int iBonusValueThreshol
 				if (iPathTurns <= iMaxPathTurns)
 				{
 					int iValue = AI_pillageValue(kPlot, iBonusValueThreshold);
+					// <advc.083> Don't use a big stack to pillage every road
+					if (iValue <= getGroup()->getNumUnits() * 4)
+						continue; // </advc.083> 
 					iValue *= (1000 + 30 *
 							/*  advc.012: This seems to be about a single unit, so
 								noDefensiveBonus should be checked.
@@ -21890,7 +21898,9 @@ bool CvUnitAI::AI_choke(int iRange, bool bDefensive, MovementFlags eFlags)
 
 	CvPlot* pBestPlot = 0;
 	CvPlot* pEndTurnPlot = 0;
-	int iBestValue = 0;
+	int iBestValue = //0
+			// advc.083: Don't park a big stack for little gain
+			(bDefensive ? 0 : 6 * getGroup()->getNumUnits());
 	// <advc.300> Don't use more than a couple of units for choking Barbarians
 	bool const bSmallGroup = (getGroup()->getNumUnits() <=
 			GET_PLAYER(getOwner()).AI_getCurrEraFactor() + 1); // </advc.300>
