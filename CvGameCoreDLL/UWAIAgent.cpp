@@ -1045,6 +1045,10 @@ bool UWAI::Team::considerAbandonPreparations(TeamTypes eTarget, int iU,
 	FAssert(iWarRand >= 0);
 	// WarRand is between 40 (aggro) and 400 (chilled)
 	scaled rAbandonProb(-iU * iWarRand, 7500);
+	// Slight adjustment to training speed
+	rAbandonProb *= 2;
+	rAbandonProb /= per100(GC.getInfo(GC.getGame().getGameSpeedType()).
+			getTrainPercent()) + 1;
 	rAbandonProb.decreaseTo(1);
 	m_pReport->log("Abandoning preparations with probability %d percent (warRand=%d)",
 			rAbandonProb.getPercent(), iWarRand);
@@ -1104,6 +1108,13 @@ bool UWAI::Team::considerSwitchTarget(TeamTypes eTarget, int iU,
 	if (std::min(iU, iBestUtility) < 20)
 		iPadding += 20 - std::min(iU, iBestUtility);
 	scaled rSwitchProb = fixp(0.75) * (1 - scaled(iU + iPadding, iBestUtility + iPadding));
+	// Slight adjustment to training speed
+	if (rSwitchProb.isPositive())
+	{
+		rSwitchProb *= 2;
+		rSwitchProb /= per100(GC.getInfo(GC.getGame().getGameSpeedType()).
+				getTrainPercent()) + 1;
+	}
 	if (bQualms && !bAltQualms)
 		rSwitchProb += fixp(1.8);
 	m_pReport->log("Switching target for war preparations to %s (u=%d) with pr=%d percent",
