@@ -26590,7 +26590,7 @@ int CvPlayerAI::AI_getTotalFloatingDefendersNeeded(CvArea const& kArea, // advc:
 	{
 		int iStartEra = kGame.getStartEra();
 		if (kGame.getCurrentEra() <= 1 + iStartEra)
-			rDefenders += 1 + iStartEra;
+			rDefenders += 1 + std::min(2, iStartEra);
 	} // </advc.107>
 	rDefenders *= AI_trainUnitSpeedAdustment(); // advc.253
 
