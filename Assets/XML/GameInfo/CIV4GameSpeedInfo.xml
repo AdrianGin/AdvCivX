@@ -39,7 +39,8 @@
 			<iHurryConscriptAngerPercent>300</iHurryConscriptAngerPercent>
 			<iInflationPercent>10</iInflationPercent>
 			<iInflationOffset>-270</iInflationOffset>
-			<iVictoryDelayPercent>300</iVictoryDelayPercent>
+			<!-- advc.252: was 300 -->
+			<iVictoryDelayPercent>100</iVictoryDelayPercent>
 			<!-- advc.130r: start -->
 			<iAIMemoryRandPercent>200</iAIMemoryRandPercent>
 			<iAIContactRandPercent>167</iAIContactRandPercent>
@@ -119,7 +120,8 @@
 			<iHurryConscriptAngerPercent>150</iHurryConscriptAngerPercent>
 			<iInflationPercent>20</iInflationPercent>
 			<iInflationOffset>-135</iInflationOffset>
-			<iVictoryDelayPercent>150</iVictoryDelayPercent>
+			<!-- advc.252: was 150 -->
+			<iVictoryDelayPercent>100</iVictoryDelayPercent>
 			<!-- advc.130r: start -->
 			<iAIMemoryRandPercent>125</iAIMemoryRandPercent>
 			<iAIContactRandPercent>115</iAIContactRandPercent>
@@ -266,7 +268,8 @@
 			<iHurryConscriptAngerPercent>67</iHurryConscriptAngerPercent>
 			<iInflationPercent>45</iInflationPercent>
 			<iInflationOffset>-60</iInflationOffset>
-			<iVictoryDelayPercent>67</iVictoryDelayPercent>
+			<!-- advc.252: was 67 -->
+			<iVictoryDelayPercent>100</iVictoryDelayPercent>
 			<!-- advc.130r: start -->
 			<iAIMemoryRandPercent>80</iAIMemoryRandPercent>
 			<iAIContactRandPercent>90</iAIContactRandPercent>
