@@ -7432,12 +7432,15 @@ int CvGame::createBarbarianUnits(int iUnitsToCreate, int iUnitsPresent,
 				if (pLoadUnit == NULL)
 					break;
 				pLoadUnit->setTransportUnit(pTransport);
+				// <advc.304>
+				getBarbarianWeightMap().getActivityMap().change(pLoadUnit->getPlot(),
+						BarbarianActivityMap::maxStrength() / 2, 2); // </advc.304>
 				iCreated++;
 				/*	Only occasionally spawn two units at once. Prefer the natural
 					way, i.e. a ship receiving a second passenger while travelling
 					to its target through fog of war. (I don't think that happens
-					often enough though ...) */
-				if (pTransport->getCargo() > 1 || SyncRandSuccess100(70))
+					often though ...) */
+				if (pTransport->getCargo() > 1 || SyncRandSuccess100(73))
 					break;
 			}
 		}
