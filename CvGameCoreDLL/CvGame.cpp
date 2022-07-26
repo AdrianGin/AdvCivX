@@ -9728,7 +9728,8 @@ int CvGame::getCultureThreshold(CultureLevelTypes eLevel) const
 int CvGame::freeCityCultureFromTrait(TraitTypes eTrait) const
 {
 	return (GC.getInfo(eTrait).get(CvTraitInfo::FREE_CITY_CULTURE) *
-			getSpeedPercent()) / 100;
+			// advc.251: No longer fully adjusted to game speed
+			GC.getInfo(getGameSpeedType()).getTrainPercent()) / 100;
 }
 
 

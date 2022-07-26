@@ -23790,7 +23790,7 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 	/*	some (arbitrary) fraction of the game, after which we get more serious.
 		(cf. old code) */
 	int iEraThresholdPercent = 80 - (AI_getStrategyRand(1) % 2) * 20;
-	CvGame const& kGame = GC.getGame();
+	CvGameAI const& kGame = GC.AI_getGame();
 	int iLegendaryCulture = kGame.getCultureThreshold(
 			CvCultureLevelInfo::finalCultureLevel());
 	int iVictoryCities = kGame.culturalVictoryNumCultureCities();
@@ -23798,7 +23798,7 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 	int iHighCultureMark = 300; // turns
 	iHighCultureMark *= (3 * GC.getNumEraInfos() - 2 * getCurrentEra());
 	iHighCultureMark /= std::max(1, 3 * GC.getNumEraInfos());
-	iHighCultureMark *= kGame.getSpeedPercent();
+	iHighCultureMark *= kGame.AI_getMaxCultureLevelPercent();
 	iHighCultureMark /= 100;
 
 	int iGoldCommercePercent = AI_estimateBreakEvenGoldPercent();
@@ -24017,7 +24017,7 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 				// and a little bit of personal variation.
 				iDemoninator += 50 - GC.getInfo(getPersonalityType()).
 						getCultureVictoryWeight();
-				iCountdownTarget *= kGame.getSpeedPercent();
+				iCountdownTarget *= kGame.AI_getMaxCultureLevelPercent();
 				iCountdownTarget /= std::max(1, iDemoninator);
 			}
 			if (iWinningCountdown < iCountdownTarget)

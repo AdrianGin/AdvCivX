@@ -11,34 +11,35 @@
 			<Type>GAMESPEED_MARATHON</Type>
 			<Description>TXT_KEY_GAMESPEED_MARATHON</Description>
 			<Help>TXT_KEY_GAMESPEED_MARATHON_HELP</Help>
-			<iGrowthPercent>300</iGrowthPercent>
+			<!-- advc.252: all 300 percentages reduced to 250 -->
+			<iGrowthPercent>250</iGrowthPercent>
 			<iTrainPercent>200</iTrainPercent>
-			<iConstructPercent>300</iConstructPercent>
-			<iCreatePercent>300</iCreatePercent>
-			<iResearchPercent>300</iResearchPercent>
-			<iBuildPercent>300</iBuildPercent>
-			<iImprovementPercent>300</iImprovementPercent>
-			<iGreatPeoplePercent>300</iGreatPeoplePercent>
+			<iConstructPercent>250</iConstructPercent>
+			<iCreatePercent>250</iCreatePercent>
+			<iResearchPercent>250</iResearchPercent>
+			<iBuildPercent>250</iBuildPercent>
+			<iImprovementPercent>250</iImprovementPercent>
+			<iGreatPeoplePercent>250</iGreatPeoplePercent>
 			<!-- advc (note): Unused; the DLL doesn't even read it. (This goes
 				 for all iCulturePercent values in this file.) Handled by
-				 CvCultureLevelInfo instead.
-				 advc.252: As a shortcut, when dealing with culture victory,
-				 some AI code uses CvGame::getSpeedPercent, which, currently,
-				 is based on iResearchPercent. -->
-			<iCulturePercent>300</iCulturePercent>
+				 CvCultureLevelInfo instead. -->
+			<iCulturePercent>200</iCulturePercent>
 			<iAnarchyPercent>200</iAnarchyPercent>
 			<!-- advc.300: was 400 -->
-			<iBarbPercent>250</iBarbPercent>
-			<iFeatureProductionPercent>300</iFeatureProductionPercent>
-			<iUnitDiscoverPercent>300</iUnitDiscoverPercent>
-			<iUnitHurryPercent>300</iUnitHurryPercent>
-			<iUnitTradePercent>300</iUnitTradePercent>
-			<iUnitGreatWorkPercent>300</iUnitGreatWorkPercent>
+			<iBarbPercent>225</iBarbPercent>
+			<iFeatureProductionPercent>250</iFeatureProductionPercent>
+			<iUnitDiscoverPercent>250</iUnitDiscoverPercent>
+			<iUnitHurryPercent>250</iUnitHurryPercent>
+			<iUnitTradePercent>250</iUnitTradePercent>
+			<iUnitGreatWorkPercent>250</iUnitGreatWorkPercent>
 			<iGoldenAgePercent>200</iGoldenAgePercent>
-			<iHurryPercent>33</iHurryPercent>
-			<iHurryConscriptAngerPercent>300</iHurryConscriptAngerPercent>
-			<iInflationPercent>10</iInflationPercent>
-			<iInflationOffset>-270</iInflationOffset>
+			<!-- advc.252: was 33 -->
+			<iHurryPercent>40</iHurryPercent>
+			<iHurryConscriptAngerPercent>250</iHurryConscriptAngerPercent>
+			<!-- advc.252: was 10 -->
+			<iInflationPercent>12</iInflationPercent>
+			<!-- advc.252: was -270 -->
+			<iInflationOffset>-225</iInflationOffset>
 			<!-- advc.252: was 300 -->
 			<iVictoryDelayPercent>100</iVictoryDelayPercent>
 			<!-- advc.130r: start -->
@@ -54,13 +55,15 @@
 				 TrainPercent, but I don't think passive spread should
 				 match that. Units having a bigger role is normal for
 				 Marathon. -->
-			<iReligionSpreadDivPercent>300</iReligionSpreadDivPercent>
+			<iReligionSpreadDivPercent>250</iReligionSpreadDivPercent>
 			<!-- advc.252: start -->
 			<iEventRollSidesPercent>200</iEventRollSidesPercent>
-			<iVoteIntervalPercent>300</iVoteIntervalPercent>
+			<iVoteIntervalPercent>250</iVoteIntervalPercent>
 			<!-- advc.252: end -->
 			<!-- advc.910: Changed all of the turn counts -->
-			<GameTurnInfos>
+			<!-- advc.252: Pogression for 1500 game turns - kept in case that
+				 the 300% modifiers need to be restored. -->
+			<!--GameTurnInfos>
 				<GameTurnInfo>
 					<iMonthIncrement>180</iMonthIncrement>
 					<iTurnsPerIncrement>150</iTurnsPerIncrement>
@@ -92,6 +95,40 @@
 				<GameTurnInfo>
 					<iMonthIncrement>1</iMonthIncrement>
 					<iTurnsPerIncrement>180</iTurnsPerIncrement>
+				</GameTurnInfo>
+			</GameTurnInfos-->
+			<GameTurnInfos>
+				<GameTurnInfo>
+					<iMonthIncrement>240</iMonthIncrement>
+					<iTurnsPerIncrement>130</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>120</iMonthIncrement>
+					<iTurnsPerIncrement>205</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>60</iMonthIncrement>
+					<iTurnsPerIncrement>200</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>24</iMonthIncrement>
+					<iTurnsPerIncrement>65</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>12</iMonthIncrement>
+					<iTurnsPerIncrement>100</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>6</iMonthIncrement>
+					<iTurnsPerIncrement>210</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>3</iMonthIncrement>
+					<iTurnsPerIncrement>220</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>1</iMonthIncrement>
+					<iTurnsPerIncrement>120</iTurnsPerIncrement>
 				</GameTurnInfo>
 			</GameTurnInfos>
 		</GameSpeedInfo>

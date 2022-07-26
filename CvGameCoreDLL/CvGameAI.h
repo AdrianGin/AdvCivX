@@ -32,6 +32,7 @@ public:
 	// </advc.erai>
 	scaled AI_exclusiveRadiusWeight(int iDist = -1) const; // advc.099b
 	void AI_updateVictoryWeights(); // advc.115f
+	int AI_getMaxCultureLevelPercent() const { return m_iMaxCultureLevelPercent; } // advc.251
 
 	void read(FDataStreamBase* pStream);
 	void write(FDataStreamBase* pStream);
@@ -41,6 +42,7 @@ public:
 protected:
 
 	int m_iPad;
+	int m_iMaxCultureLevelPercent; // advc.251
 	// <advc.104>
 	UWAI m_uwai;
 	void AI_sortOutUWAIOptions(bool bFromSaveGame);
@@ -50,6 +52,7 @@ protected:
 
 	void AI_updateExclusiveRadiusWeight(); // advc.009b
 	void AI_updateVoteSourceEras(); // advc.erai
+	void AI_updateMaxCultureLevelPercent(); // advc.251
 };
 
 #endif
