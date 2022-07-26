@@ -28964,7 +28964,7 @@ UnitTypes CvPlayerAI::AI_getBestAttackUnit() const
 // advc.253: For adjusting unit training to game speed modifiers
 scaled CvPlayerAI::AI_trainUnitSpeedAdustment() const
 {
-	/*	Only a half-way adjustment b/c units being relatively cheap doesn't
+	/*	Only a halfway adjustment b/c units being relatively cheap doesn't
 		imply that we'll have good uses for additional units */
 	scaled r(2 * GC.getGame().getSpeedPercent(), std::max(1,
 			GC.getGame().getSpeedPercent() +

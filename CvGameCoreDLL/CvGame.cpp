@@ -7426,9 +7426,9 @@ int CvGame::createBarbarianUnits(int iUnitsToCreate, int iUnitsPresent,
 					break;
 				CvUnit* pLoadUnit = GET_PLAYER(BARBARIAN_PLAYER).initUnit(
 						eLoadUnit, pTransport->getX(), pTransport->getY(), eLoadAI);
-				/*	Don't set pTransport to UNITAI_ASSAULT_SEA -- that's for
+				/*	(Don't set pTransport to UNITAI_ASSAULT_SEA -- that's for
 					medium-/large-scale invasions, and too laborious to adjust.
-					Instead add an unload routine to CvUnitAI::barbAttackSeaMove. */
+					Instead add an unload routine to CvUnitAI::barbAttackSeaMove.) */
 				if (pLoadUnit == NULL)
 					break;
 				pLoadUnit->setTransportUnit(pTransport);
