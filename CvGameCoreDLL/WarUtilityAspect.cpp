@@ -3349,7 +3349,8 @@ void IllWill::evalAngeredPartners()
 	bool const bWillDisplease = (kThey.AI_getAttitudeFromValue(
 			// -1 b/c barely Pleased could quickly tip to Cautious
 			diploTowardUs() - rPenalties.floor() - 1) <= ATTITUDE_CAUTIOUS);
-	scaled const rTheirToOurPow = theirToOurPowerRatio();
+	scaled rTheirToOurPow = theirToOurPowerRatio();
+	rTheirToOurPow.decreaseTo(1000); // avoid overflow
 	scaled rCostPerPenalty =
 			partnerUtilFromTrade() + partnerUtilFromTech() +
 			partnerUtilFromMilitary() +
