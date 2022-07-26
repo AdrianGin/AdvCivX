@@ -6895,10 +6895,9 @@ void CvGame::createBarbarianCities()
 	if (getNumCivCities() < countCivPlayersAlive() * 2)
 			return;
 
-	if (getElapsedGameTurns() * (getStartEra() + 1) * 200 <=
+	if (getElapsedGameTurns() * (getStartEra() + 1) * 100 <=
 		kGameHandicap.getBarbarianCityCreationTurnsElapsed() *
-		// advc.300: Add 100 to dilute effect (and times 200 on the left side)
-		(GC.getInfo(getGameSpeedType()).getBarbPercent() + 100))
+		GC.getInfo(getGameSpeedType()).getBarbPercent())
 	{
 		return;
 	}
@@ -7314,14 +7313,10 @@ bool CvGame::isBarbarianCreationEra() const
 int CvGame::getBarbarianStartTurn() const
 {
 	int iTargetElapsed = GC.getInfo(getHandicapType()).
-			getBarbarianCreationTurnsElapsed();
-	// Dilute impact of game speed on start turn
-	iTargetElapsed *= GC.getInfo(getGameSpeedType()).getBarbPercent() + 100;
-	int iDivisor = 200;
-	/*	This term is new. Well, not entirely, it's also applied to
-		BarbarianCityCreationTurnsElapsed. */
-	iDivisor *= std::max(1, (int)getStartEra());
-	iTargetElapsed /= iDivisor;
+			getBarbarianCreationTurnsElapsed() *
+			GC.getInfo(getGameSpeedType()).getBarbPercent();
+	// Akin to the era adjustment in createBarbarianCities
+	iTargetElapsed /= (100 * std::max(1, (int)getStartEra()));
 	int iStartTurn = getStartTurn();
 	// Have Barbarians appear earlier in Ancient Advanced Start
 	if (isOption(GAMEOPTION_ADVANCED_START) && getStartEra() <= 0 &&

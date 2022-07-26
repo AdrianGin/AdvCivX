@@ -28,7 +28,7 @@
 			<iCulturePercent>300</iCulturePercent>
 			<iAnarchyPercent>200</iAnarchyPercent>
 			<!-- advc.300: was 400 -->
-			<iBarbPercent>300</iBarbPercent>
+			<iBarbPercent>250</iBarbPercent>
 			<iFeatureProductionPercent>300</iFeatureProductionPercent>
 			<iUnitDiscoverPercent>300</iUnitDiscoverPercent>
 			<iUnitHurryPercent>300</iUnitHurryPercent>
