@@ -679,7 +679,9 @@ public:
 	int getExperience() const { return m_iExperience; }														// Exposed to Python
 	void setExperience(int iNewValue, int iMax = -1);														// Exposed to Python
 	void changeExperience(int iChange, int iMax = -1, bool bFromCombat = false,								// Exposed to Python
-			bool bInBorders = false, bool bUpdateGlobal = false);
+			bool bInBorders = false, //bool bUpdateGlobal = false
+			int iGlobalPercent = 0); // advc.312
+	int getGlobalXPPercent() const; // advc.312
 
 	int getLevel() const { return m_iLevel; }																// Exposed to Python
 	void setLevel(int iNewValue);

@@ -840,7 +840,9 @@ void CvUnit::resolveAirCombat(CvUnit* pInterceptor, CvPlot* pPlot, CvAirMissionD
 			iExperience = (iExperience * iOurStrength) / std::max(1, iTheirStrength);
 			iExperience = range(iExperience, GC.getDefineINT(CvGlobals::MIN_EXPERIENCE_PER_COMBAT),
 					GC.getDefineINT(CvGlobals::MAX_EXPERIENCE_PER_COMBAT));
-			pInterceptor->changeExperience(iExperience, maxXPValue(), true, pPlot->getOwner() == pInterceptor->getOwner(), !isBarbarian());
+			pInterceptor->changeExperience(iExperience, maxXPValue(), true,
+					pPlot->getOwner() == pInterceptor->getOwner(), //!isBarbarian()
+					getGlobalXPPercent()); // advc.312
 		}
 	}
 	else if (pInterceptor->isDead())
@@ -849,20 +851,26 @@ void CvUnit::resolveAirCombat(CvUnit* pInterceptor, CvPlot* pPlot, CvAirMissionD
 		iExperience = (iExperience * iTheirStrength) / std::max(1, iOurStrength);
 		iExperience = range(iExperience, GC.getDefineINT(CvGlobals::MIN_EXPERIENCE_PER_COMBAT),
 				GC.getDefineINT(CvGlobals::MAX_EXPERIENCE_PER_COMBAT));
-		changeExperience(iExperience, pInterceptor->maxXPValue(), true, pPlot->getOwner() == getOwner(), !pInterceptor->isBarbarian());
+		changeExperience(iExperience, pInterceptor->maxXPValue(), true,
+				pPlot->getOwner() == getOwner(), //!pInterceptor->isBarbarian()
+				pInterceptor->getGlobalXPPercent()); // advc.312
 	}
 	else if (iOurDamage > 0)
 	{
 		if (iTheirRoundDamage > 0)
 		{
 			pInterceptor->changeExperience(GC.getDefineINT(CvGlobals::EXPERIENCE_FROM_WITHDRAWL),
-					maxXPValue(), true, pPlot->getOwner() == pInterceptor->getOwner(), !isBarbarian());
+					maxXPValue(), true,
+					pPlot->getOwner() == pInterceptor->getOwner(), //!isBarbarian()
+					getGlobalXPPercent()); // advc.312
 		}
 	}
 	else if (iTheirDamage > 0)
 	{
 		changeExperience(GC.getDefineINT(CvGlobals::EXPERIENCE_FROM_WITHDRAWL),
-				pInterceptor->maxXPValue(), true, pPlot->getOwner() == getOwner(), !pInterceptor->isBarbarian());
+				pInterceptor->maxXPValue(), true,
+				pPlot->getOwner() == getOwner(), //!pInterceptor->isBarbarian()
+				pInterceptor->getGlobalXPPercent()); // advc.312
 	}
 
 	kBattle.setDamage(BATTLE_UNIT_ATTACKER, iOurDamage);
@@ -1093,8 +1101,9 @@ void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible)
 					flankingStrikeCombat(pPlot, iAttackerStrength, iAttackerFirepower,
 							iAttackerKillOdds, iDefenderDamage, pDefender);
 					changeExperience(GC.getDefineINT(CvGlobals::EXPERIENCE_FROM_WITHDRAWL),
-							pDefender->maxXPValue(), true, pPlot->getOwner() == getOwner(),
-							!pDefender->isBarbarian());
+							pDefender->maxXPValue(), true,
+							pPlot->getOwner() == getOwner(), //!pDefender->isBarbarian()
+							pDefender->getGlobalXPPercent()); // advc.312
 					combat_log.push_back(0); // K-Mod
 					break;
 				}
@@ -1139,8 +1148,9 @@ void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible)
 						now that it's guaranteed to be a proper hit (positive damage). */
 					// </advc.001l>
 					changeExperience(GC.getDefineINT(CvGlobals::EXPERIENCE_FROM_WITHDRAWL),
-							pDefender->maxXPValue(), true, pPlot->getOwner() == getOwner(),
-							!pDefender->isBarbarian());
+							pDefender->maxXPValue(), true,
+							pPlot->getOwner() == getOwner(), //!pDefender->isBarbarian()
+							pDefender->getGlobalXPPercent()); // advc.312
 				}
 				pDefender->changeDamage(iDamage, getOwner());
 				combat_log.push_back(iDamage); // K-Mod
@@ -1182,9 +1192,10 @@ void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible)
 				iExperience = range(iExperience,
 						GC.getDefineINT(CvGlobals::MIN_EXPERIENCE_PER_COMBAT),
 						GC.getDefineINT(CvGlobals::MAX_EXPERIENCE_PER_COMBAT)
-						- (isBarbarian() ? 4 : 0)); // advc.312
+						- (isBarbarian() && !isAnimal() ? 4 : 0)); // advc.312
 				pDefender->changeExperience(iExperience, maxXPValue(), true,
-						pPlot->getOwner() == pDefender->getOwner(), !isBarbarian());
+						pPlot->getOwner() == pDefender->getOwner(), //!isBarbarian()
+						getGlobalXPPercent()); // advc.312
 			}
 			else
 			{
@@ -1196,9 +1207,11 @@ void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible)
 				iExperience = range(iExperience,
 						GC.getDefineINT(CvGlobals::MIN_EXPERIENCE_PER_COMBAT),
 						GC.getDefineINT(CvGlobals::MAX_EXPERIENCE_PER_COMBAT)
-						/ (pDefender->isBarbarian() ? 2 : 1)); // advc.312
+						// advc.312:
+						/ (pDefender->isBarbarian() && !pDefender->isAnimal() ? 2 : 1));
 				changeExperience(iExperience, pDefender->maxXPValue(), true,
-						pPlot->getOwner() == getOwner(), !pDefender->isBarbarian());
+						pPlot->getOwner() == getOwner(), //!pDefender->isBarbarian()
+						pDefender->getGlobalXPPercent());
 			}
 			GET_PLAYER(getOwner()).AI_attackMadeAgainst(*pDefender); // advc.139
 			break;
@@ -7936,7 +7949,7 @@ int CvUnit::experienceNeeded() const
 int CvUnit::attackXPValue() const
 {
 	return m_pUnitInfo->getXPValueAttack()
-			- (isBarbarian() ? 1 : 0); // advc.312
+			- (isBarbarian() && !isAnimal() ? 1 : 0); // advc.312
 }
 
 
@@ -8966,28 +8979,25 @@ void CvUnit::setExperience(int iNewValue, int iMax)
 	}
 }
 
-void CvUnit::changeExperience(int iChange, int iMax, bool bFromCombat, bool bInBorders, bool bUpdateGlobal)
+void CvUnit::changeExperience(int iChange, int iMax, bool bFromCombat, bool bInBorders,
+	int iGlobalPercent) // advc.312: was bUpdateGlobal
 {
 	int iUnitExperience = iChange;
 	if (bFromCombat)
 	{
 		CvPlayer& kPlayer = GET_PLAYER(getOwner());
-
 		int iCombatExperienceMod = 100 + kPlayer.getGreatGeneralRateModifier();
-
 		if (bInBorders)
 		{
-			iCombatExperienceMod += kPlayer.getDomesticGreatGeneralRateModifier() + kPlayer.getExpInBorderModifier();
+			iCombatExperienceMod += kPlayer.getDomesticGreatGeneralRateModifier() +
+					kPlayer.getExpInBorderModifier();
 			// advc (comment): ExpInBorderModifier is a currently unused Civic effect
 			iUnitExperience += (iChange * kPlayer.getExpInBorderModifier()) / 100;
 		}
-
-		if (bUpdateGlobal)
-			kPlayer.changeCombatExperience((iChange * iCombatExperienceMod) / 100);
-		/*  advc.312: 50% from Barbarians. NB: XP from e.g. Barracks also sets
-			bUpdateGlobal to false, but that isn't combat XP; this change
-			really only applies to XP from Barbarian combat. */
-		else kPlayer.changeCombatExperience((iChange * iCombatExperienceMod) / 200);
+		//if (bUpdateGlobal)
+		kPlayer.changeCombatExperience((iChange * iCombatExperienceMod
+				* iGlobalPercent) / SQR( // advc.312
+				100));
 
 		if (getExperiencePercent() != 0)
 		{
@@ -8995,9 +9005,19 @@ void CvUnit::changeExperience(int iChange, int iMax, bool bFromCombat, bool bInB
 			iUnitExperience /= 100;
 		}
 	}
-
 	setExperience((getExperience() + iUnitExperience), iMax);
 }
+
+// advc.312:
+int CvUnit::getGlobalXPPercent() const
+{
+	if (isAnimal())
+		return 0;
+	if (isBarbarian())
+		return 50;
+	return 100;
+}
+
 
 void CvUnit::setLevel(int iNewValue)
 {
