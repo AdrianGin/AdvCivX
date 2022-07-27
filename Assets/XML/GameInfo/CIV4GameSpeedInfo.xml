@@ -41,7 +41,7 @@
 			<!-- advc.252: was -270 -->
 			<iInflationOffset>-225</iInflationOffset>
 			<!-- advc.252: was 300 -->
-			<iVictoryDelayPercent>100</iVictoryDelayPercent>
+			<iVictoryDelayPercent>200</iVictoryDelayPercent>
 			<!-- advc.130r: start -->
 			<iAIMemoryRandPercent>200</iAIMemoryRandPercent>
 			<iAIContactRandPercent>167</iAIContactRandPercent>
@@ -158,7 +158,7 @@
 			<iInflationPercent>20</iInflationPercent>
 			<iInflationOffset>-135</iInflationOffset>
 			<!-- advc.252: was 150 -->
-			<iVictoryDelayPercent>100</iVictoryDelayPercent>
+			<iVictoryDelayPercent>125</iVictoryDelayPercent>
 			<!-- advc.130r: start -->
 			<iAIMemoryRandPercent>125</iAIMemoryRandPercent>
 			<iAIContactRandPercent>115</iAIContactRandPercent>
@@ -306,7 +306,7 @@
 			<iInflationPercent>45</iInflationPercent>
 			<iInflationOffset>-60</iInflationOffset>
 			<!-- advc.252: was 67 -->
-			<iVictoryDelayPercent>100</iVictoryDelayPercent>
+			<iVictoryDelayPercent>80</iVictoryDelayPercent>
 			<!-- advc.130r: start -->
 			<iAIMemoryRandPercent>80</iAIMemoryRandPercent>
 			<iAIContactRandPercent>90</iAIContactRandPercent>
