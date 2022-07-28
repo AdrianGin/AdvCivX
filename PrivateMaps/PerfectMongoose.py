@@ -647,7 +647,7 @@ class MapConstants:
 			self.JungleFactor -= 0.03
 			self.JunglePercent += 0.03
 		self.numberOfLakesPerPlot3 = (0.024 / self.SeaLevelFactor) - mmap.getWorldSize() * 0.0028
-		self.LakeSizePerDrainage3 = (50.0 / self.SeaLevelFactor) - mmap.getWorldSize() * 4
+		self.LakeSizePerDrainage3 = (50.0 / self.SeaLevelFactor) - mmap.getWorldSize() * 3
 		# </advc>
 		# advc: Deleted; can be looked up in-game in AdvCiv. And it's tedious to keep it up to date here.
 		#self.optionsString = 
@@ -6688,15 +6688,15 @@ def expandLake(x, y, riversIntoLake, oceanMap):
 	lakeNeighbors = list()
 	i = oceanMap.getIndex(x, y)
 	if tm.tData[i] == mc.DESERT:
-		desertModifier = mc.DesertLakeModifier
+		terrainModifier = mc.DesertLakeModifier
 	else:
-		desertModifier = 1.0
+		terrainModifier = 1.0
 	if mc.ClimateSystem == 0:
 		lakeSize = max(mc.expandedLakeMinSize,
-				int(rm.drainageMap[i] * mc.LakeSizePerDrainage3 * desertModifier))
+				int(rm.drainageMap[i] * mc.LakeSizePerDrainage3 * terrainModifier))
 	else:
 		lakeSize = max(mc.expandedLakeMinSize,
-				int(rm.drainageMap[i] * mc.LakeSizePerDrainage2 * desertModifier))
+				int(rm.drainageMap[i] * mc.LakeSizePerDrainage2 * terrainModifier))
 	start = LakePlot(x, y, em.data[i])
 	lakeNeighbors.append(start)
 	while lakeSize > 0 and len(lakeNeighbors) > 0:
