@@ -7549,25 +7549,43 @@ bool CvGame::killBarbarian(int iUnitsPresent, int iTiles, int iPop,
 	// Don't want large Barbarian continents crawling with units
 	rDivisor.exponentiate(fixp(0.7));
 	rDivisor *= 5;
-	if (SyncRandSuccess(iUnitsPresent / rDivisor))
+	if (!SyncRandSuccess(iUnitsPresent / rDivisor))
+		return false;
+	if (pShelf != NULL)
+		return pShelf->killBarbarian();
+	CvUnit* pVictim = NULL;
+	int iBestValue = 0;
+	/*	Same order as for animal culling. Should result in
+		first-in-first-out behavior; fair enough for breaking ties. */
+	FOR_EACH_UNIT_VAR(pUnit, GET_PLAYER(BARBARIAN_PLAYER))
 	{
-		if (pShelf != NULL)
-			return pShelf->killBarbarian();
-		/*	The same method as for animal culling. Should result
-			in first-in-first-out behavior; fair enough. */
-		FOR_EACH_UNIT_VAR(pUnit, GET_PLAYER(BARBARIAN_PLAYER))
+		CvUnit& u = *pUnit;
+		if (u.isAnimal() || !u.isArea(kArea) ||
+			u.getUnitCombatType() == NO_UNITCOMBAT)
 		{
-			CvUnit& u = *pUnit;
-			if (u.isAnimal() || !u.isArea(kArea) ||
-				u.getUnitCombatType() == NO_UNITCOMBAT)
-			{
-				continue;
-			}
-			u.kill(false);
-			return true;
+			continue;
+		}
+		int iKillValue = 1;
+		if (!u.getPlot().isVisibleToWatchingHuman())
+			iKillValue += 100;
+		if (!u.getPlot().isVisibleToCivTeam())
+			iKillValue += 10;
+		if (u.getPlot().isCity() &&
+			u.getPlot().getNumDefenders(BARBARIAN_PLAYER) >
+			GC.getInfo(getHandicapType()).getBarbarianInitialDefenders())
+		{
+			iKillValue += 5;
+		}
+		if (iKillValue > iBestValue)
+		{
+			iBestValue = iKillValue;
+			pVictim = &u;
 		}
 	}
-	return false;
+	if (pVictim == NULL)
+		return false;
+	pVictim->kill(false);
+	return true;
 }
 
 // Based on BtS code originally in createBarbarianUnits
