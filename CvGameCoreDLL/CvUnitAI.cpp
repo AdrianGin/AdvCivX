@@ -13748,8 +13748,11 @@ bool CvUnitAI::AI_pillageAroundCity(CvCity* pTargetCity, int iBonusValueThreshol
 		} // K-Mod end
 		if (at(*pBestPillagePlot))
 		{
-			//if (isEnemy(pBestPillagePlot->getTeam()))
-			FAssert(isEnemy(*pBestPillagePlot)); // K-Mod
+			/*	advc.083: K-Mod had turned this check into an assertion.
+				Seems that it can fail in rare situations when passing through
+				foreign borders while war is (becomes?) imminent, and then it's
+				better to keep moving and delay the DoW. */
+			if (isEnemy(*pBestPillagePlot))
 			{
 				getGroup()->pushMission(MISSION_PILLAGE, -1, -1, NO_MOVEMENT_FLAGS,
 						false, false, MISSIONAI_PILLAGE, pBestPillagePlot);
