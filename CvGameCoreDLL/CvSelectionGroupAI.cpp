@@ -845,7 +845,7 @@ bool CvSelectionGroupAI::AI_isDeclareWar(
 
 	CvUnit const* pHeadUnit = getHeadUnit();
 	if (pHeadUnit == NULL)
-		return false; // advc
+		return false;
 
 	switch (pHeadUnit->AI_getUnitAIType())
 	{

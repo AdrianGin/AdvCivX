@@ -3203,9 +3203,9 @@ bool CvPlot::isVisibleEnemyCityAttacker(PlayerTypes eDefender, TeamTypes eAssume
 	return false;
 }
 
-/*	advc (note): Not used internally. Some of the getPlotList... functions
-	(available to the DLL through CvDLLInterfaceIFaceBase) call it, and it seems
-	that the EXE also exposes it to Python. */
+/*	advc (note): Some of the getPlotList... functions (available to the DLL
+	through CvDLLInterfaceIFaceBase) call this function, and it seems that
+	the EXE also exposes those to Python. */
 int CvPlot::getNumVisibleUnits(PlayerTypes ePlayer) const
 {
 	return plotCount(PUF_isVisibleDebug, ePlayer);
