@@ -5,6 +5,7 @@
 #include "UWAIAgent.h"
 #include "CvInfo_GameOption.h"
 #include "CvInfo_Building.h" // advc.erai
+#include "CvInfo_City.h" // advc.251
 
 // <advc.007c>
 #undef CVGAME_INSTANCE_FOR_RNG
@@ -109,10 +110,12 @@ void CvGameAI::AI_reset(/* advc (as in CvGame): */ bool bConstructor)
 {
 	AI_uninit();
 	m_iPad = 0;
+	m_iMaxCultureLevelPercent = 0; // advc.251
 	if (!bConstructor)
 	{
 		AI_updateExclusiveRadiusWeight(); // advc.099b
 		AI_updateVoteSourceEras(); // advc.erai
+		AI_updateMaxCultureLevelPercent(); // advc.251
 	}
 }
 
@@ -217,6 +220,35 @@ void CvGameAI::AI_updateVoteSourceEras()
 		m_aeVoteSourceEras.set(eVS, eMaxEra);
 	}
 } // </advc.erai>
+
+// advc.251:
+void CvGameAI::AI_updateMaxCultureLevelPercent()
+{
+	int iThresh = GC.getInfo(CvCultureLevelInfo::finalCultureLevel()).
+			getSpeedThreshold(getGameSpeedType());
+	int iNormalThresh = 50000; // fallback
+	GameSpeedTypes eNormal = NO_GAMESPEED;
+	FOR_EACH_ENUM(GameSpeed)
+	{
+		if (GC.getInfo(eLoopGameSpeed).getResearchPercent() == 100)
+		{
+			if (eNormal != NO_GAMESPEED) // More than one is unexpected
+			{
+				eNormal = NO_GAMESPEED;
+				break;
+			}
+			eNormal = eLoopGameSpeed;
+		}
+	}
+	if (eNormal != NO_GAMESPEED)
+	{
+		int iTmp = GC.getInfo(CvCultureLevelInfo::finalCultureLevel()).
+				getSpeedThreshold(eNormal);
+		if (iTmp > 0)
+			iNormalThresh = iTmp;
+	}
+	m_iMaxCultureLevelPercent = (iThresh * 100) / iNormalThresh;
+}
 
 
 /*	advc.099b: Between 0 and 1. Expresses AI confidence about winning culturally

@@ -2337,11 +2337,11 @@ bool CvSelectionGroup::canMoveInto(CvPlot const& kPlot, bool bAttack) const
 
 
 bool CvSelectionGroup::canMoveOrAttackInto(CvPlot const& kPlot, bool bDeclareWar,
-		bool bCheckMoves, bool bAssumeVisible) const // K-Mod
+	bool bCheckMoves, bool bAssumeVisible) const // K-Mod
 {
 	if (getNumUnits() <= 0)
 		return false;
-	bool const bVisible = bAssumeVisible || kPlot.isVisible(getHeadTeam()); // K-Mod
+	bool const bVisible = (bAssumeVisible || kPlot.isVisible(getHeadTeam())); // K-Mod
 	FOR_EACH_UNIT_IN(pUnit, *this)
 	{
 		//if (pUnit->canMoveOrAttackInto(pPlot, bDeclareWar))

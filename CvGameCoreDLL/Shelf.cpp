@@ -3,6 +3,7 @@
 #include "CvGameCoreDLL.h"
 #include "Shelf.h"
 #include "CvGame.h"
+#include "BarbarianWeightMap.h"
 #include "CvMap.h"
 #include "CvUnit.h"
 #include "CvPlayer.h"
@@ -102,6 +103,7 @@ bool Shelf::killBarbarian()
 CvUnit* Shelf::randomBarbarianTransport() const
 {
 	std::vector<CvUnit*> apValid;
+	std::vector<int> aiWeights;
 	for (size_t i = 0; i < m_apPlots.size(); i++)
 	{
 		CvPlot const& p = *m_apPlots[i];
@@ -113,14 +115,21 @@ CvUnit* Shelf::randomBarbarianTransport() const
 			int iCargo = std::min(2, GC.getInfo(pTransport->getUnitType()).getCargoSpace());
 			iCargo -= std::max(0, pTransport->getCargo());
 			if (iCargo > 0 && !p.isVisibleToCivTeam())
+			{
 				apValid.push_back(pTransport);
+				aiWeights.push_back(GC.getGame().getBarbarianWeightMap().get(p));
+			}
 		}
 	}
-	if (apValid.empty())
+	int iTotalWeight = 0;
+	for (size_t i = 0; i < aiWeights.size(); i++)
+		iTotalWeight += aiWeights[i];
+	if (iTotalWeight <= 0)
 		return NULL;
-	int iValid = apValid.size();
-	scaled rNoneProb = fixp(0.2) + scaled(iValid, 10);
-	if (!SyncRandSuccess(rNoneProb))
+	scaled const rBaseProb = fixp(0.22);
+	scaled rNoneProb = 1 - (std::min(per100(iTotalWeight) * rBaseProb, rBaseProb) +
+			per100(iTotalWeight).pow(fixp(0.6)) / 10);
+	if (SyncRandSuccess(rNoneProb))
 		return NULL;
-	return apValid[SyncRandNum(iValid)];
+	return GC.getGame().getSorenRand().weightedChoice(apValid, &aiWeights);
 }

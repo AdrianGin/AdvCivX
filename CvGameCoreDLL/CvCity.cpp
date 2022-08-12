@@ -7004,15 +7004,16 @@ int CvCity::getPeaceTradeModifier(TeamTypes eTeam) const
 
 	static int const iFOREIGN_TRADE_FULL_CREDIT_PEACE_TURNS = GC.getDefineINT("FOREIGN_TRADE_FULL_CREDIT_PEACE_TURNS"); // advc.opt
 	static int const iFOREIGN_TRADE_MODIFIER = GC.getDefineINT("FOREIGN_TRADE_MODIFIER"); // advc.opt
-	int iPeaceTurns = std::min(iFOREIGN_TRADE_FULL_CREDIT_PEACE_TURNS, GET_TEAM(getTeam()).
-			//AI_getAtPeaceCounter(eTeam)
-			getTurnsAtPeace(eTeam)); // advc.130k
-
+	int const iFullTurns = std::max(1, (iFOREIGN_TRADE_FULL_CREDIT_PEACE_TURNS *
+			// <advc.130k>
+			GC.getInfo(GC.getGame().getGameSpeedType()).get(
+			CvGameSpeedInfo::FullTradeCreditPercent)) / 100);
+	int iPeaceTurns = std::min(iFullTurns,
+			GET_TEAM(getTeam()).getTurnsAtPeace(eTeam)); // was AI_getAtPeaceCounter
+			// </advc.130k>
 	if (GC.getGame().getElapsedGameTurns() <= iPeaceTurns)
 		return iFOREIGN_TRADE_MODIFIER;
-
-	return (iFOREIGN_TRADE_MODIFIER * iPeaceTurns) /
-			std::max(1, iFOREIGN_TRADE_FULL_CREDIT_PEACE_TURNS);
+	return (iFOREIGN_TRADE_MODIFIER * iPeaceTurns) / iFullTurns;
 }
 
 
@@ -7879,6 +7880,10 @@ scaled CvCity::probabilityOccupationDecrement() const
 	}
 	scaled r;
 	scaled rRevoltProb = revoltProbability(true, false, true);
+	/*	Cancel out the speed adjustment included in rRevoltProb
+		(because the countdown length is not speed-adjusted) */
+	rRevoltProb *= per100(GC.getInfo(GC.getGame().getGameSpeedType()).get(
+			CvGameSpeedInfo::RevoltDivPercent));
 	if (rRevoltProb < 1)
 		r = (1 - rRevoltProb).pow(GC.getDefineINT(CvGlobals::OCCUPATION_COUNTDOWN_EXPONENT));
 	// Don't use probabilities that are too small to be displayed
@@ -8002,8 +8007,10 @@ scaled CvCity::getRevoltTestProbability() const // advc.101: Return type was int
 {
 	// <advc.101>
 	CvGame const& kGame = GC.getGame();
-	// Was based on getVictoryDelayPercent() in K-Mod
-	scaled rSpeedFactor = per100(GC.getInfo(kGame.getGameSpeedType()).getGoldenAgePercent());
+	scaled rSpeedFactor = std::max(scaled::epsilon(),
+			per100(GC.getInfo(kGame.getGameSpeedType()).get(
+			// K-Mod had used VictoryDelayPercent
+			CvGameSpeedInfo::RevoltDivPercent)));
 	// Need to cut cities recently acquired by Barbarians some slack
 	if (isBarbarian() && kGame.getGameTurn() - getGameTurnAcquired() < 8 * rSpeedFactor)
 		return 0; // </advc.101>
@@ -10806,21 +10813,20 @@ void CvCity::doReligion()
 			if (iCities > iTargetCities) // Many cities: decrease spread prob
 				rSpreadProb *= scaled(iTargetCities, iCities);
 		} // </advc.173>
-		/*	advc.173 (note): Missionaries only get slowed down by getTrainPercent().
-			But I don't think we want to double down on quicker proselytization
-			by making natural spread faster as well. Units having a bigger role
-			is normal for Marathon. */
-		rSpreadProb /= GC.getGame().gameSpeedMultiplier();
 		// K-Mod. Give a bonus for the first few cities?
 		/*int iReligionCities = GC.getGame().countReligionLevels(eLoopReligion);
 		if (iReligionCities < 3) {
 			iChancePercent *= 2 + iReligionCities;
 			iChancePercent /= 1 + iReligionCities;
 		}*/
-		// <advc> (No functional change)
+		// <advc>
 		static scaled const rRELIGION_SPREAD_DIV = std::max(scaled::epsilon(),
 				per100(GC.getDefineINT("RELIGION_SPREAD_RAND")));
-		rSpreadProb /= rRELIGION_SPREAD_DIV;
+		rSpreadProb /= std::max(scaled::epsilon(),
+				rRELIGION_SPREAD_DIV * per100(
+				GC.getInfo(GC.getGame().getGameSpeedType()).get(
+				// advc.173: Had used VictoryDelayPercent
+				CvGameSpeedInfo::ReligionSpreadDivPercent)));
 		if (SyncRandSuccess(rSpreadProb))
 		{	// </advc>
 			setHasReligion(eLoopReligion, true, true, true);
@@ -10937,13 +10943,14 @@ void CvCity::doMeltdown()
 		BuildingTypes eDangerBuilding = kCiv.buildingAt(i);
 		if (!isMeltdownBuilding(eDangerBuilding))
 			continue;
-		// advc.opt: Roll the dice before checking for a safe power source.
-		int const iOddsDivisor = GC.getInfo(eDangerBuilding).getNukeExplosionRand();
+		// advc.opt: Roll the dice before checking for a safe power source
 		{
-			// advc.652: Adjust to game speed
-			scaled rNukeProb = 1 / (iOddsDivisor * GC.getGame().gameSpeedMultiplier());
-			if (!SyncRandSuccess(rNukeProb) ||
-				isMeltdownBuildingSuperseded(eDangerBuilding)) // kekm5
+			int iOddsDivisor = GC.getInfo(eDangerBuilding).getNukeExplosionRand();
+			// <advc.652>
+			iOddsDivisor *= GC.getGame().getSpeedPercent();
+			iOddsDivisor /= 100; // </advc.652>
+			if (!SyncRandOneChanceIn(iOddsDivisor) ||
+				isMeltdownBuildingSuperseded(eDangerBuilding)) // kekm.5
 			{
 				continue;
 			}

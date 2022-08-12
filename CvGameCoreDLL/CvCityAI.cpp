@@ -6863,9 +6863,10 @@ int CvCityAI::AI_minDefenders() const
 			the training modifier decreases as the game progresses, so things get
 			a little fuzzy (which is fine with me). */
 		scaled rExtraDefenderEraFactor = fixp(2.5);
-		scaled rHandicapModifier = kOwner.trainingModifierFromHandicap();
-		if (rHandicapModifier < 1)
-			rExtraDefenderEraFactor *= SQR(rHandicapModifier);
+		scaled rTrainModifier = kOwner.trainingModifierFromHandicap() /
+				kOwner.AI_trainUnitSpeedAdustment(); // advc.253
+		if (rTrainModifier < 1)
+			rExtraDefenderEraFactor *= SQR(rTrainModifier);
 		if (kOwner.AI_getCurrEraFactor() > rExtraDefenderEraFactor)
 		{	// </advc.107>
 			iDefenders++;
@@ -11224,9 +11225,12 @@ int CvCityAI::AI_buildUnitProb(bool bDraft)
 	if (bDraft)
 		iXPWeight /= 2;
 	r += per100(iXPWeight);
-	bool bGreatlyReduced = false;
 	// </advc.017>
 	CvPlayerAI const& kOwner = GET_PLAYER(getOwner());
+	// <advc.253>
+	if (kOwner.AI_getCurrEraFactor() >= 1)
+		r *= kOwner.AI_trainUnitSpeedAdustment(); // <advc.253>
+	bool bGreatlyReduced = false; // advc.017
 	// BETTER_BTS_AI_MOD, 05/29/10, jdog5000: City AI, Barbarian AI
 	if (!isBarbarian() && kOwner.AI_isFinancialTrouble())
 	{
@@ -11993,7 +11997,7 @@ void CvCityAI::AI_buildGovernorChooseProduction()
 		return;
 }
 
-/*	K-Mod. This is a chunk of code that I moved out of AI_chooseProduction.
+/*	K-Mod: This is a chunk of code that I moved out of AI_chooseProduction.
 	The only reason I've moved it is to reduce clutter in the other function. */
 void CvCityAI::AI_barbChooseProduction()
 {
@@ -12074,13 +12078,13 @@ void CvCityAI::AI_barbChooseProduction()
 				getDomainFreeExperience(DOMAIN_LAND);
 		iBuildUnitProb += (3 * iFreeLandExperience);
 	}
-	bool bRepelColonists = false;
+	//bool bRepelColonists = false; // advc.300: no longer used
 	if (getArea().getNumCities() > getArea().getCitiesPerPlayer(BARBARIAN_PLAYER) + 2)
 	{
 		if (getArea().getCitiesPerPlayer(BARBARIAN_PLAYER) > getArea().getNumCities()/3)
 		{
+			//bRepelColonists = true;
 			// New world scenario with invading colonists ... fight back!
-			bRepelColonists = true;
 			iBuildUnitProb += 8*(getArea().getNumCities() - getArea().getCitiesPerPlayer(BARBARIAN_PLAYER));
 		}
 	}
@@ -12088,10 +12092,12 @@ void CvCityAI::AI_barbChooseProduction()
 	if (!bDanger && !SyncRandSuccess100(iBuildUnitProb))
 	{
 		int iBarbarianFlags = 0;
-		if (getPopulation() < 4) iBarbarianFlags |= BUILDINGFOCUS_FOOD;
+		if (getPopulation() < 4)
+			iBarbarianFlags |= BUILDINGFOCUS_FOOD;
 		iBarbarianFlags |= BUILDINGFOCUS_PRODUCTION;
 		iBarbarianFlags |= BUILDINGFOCUS_EXPERIENCE;
-		if (getPopulation() > 3) iBarbarianFlags |= BUILDINGFOCUS_DEFENSE;
+		if (getPopulation() > 3)
+			iBarbarianFlags |= BUILDINGFOCUS_DEFENSE;
 
 		if (AI_chooseBuilding(iBarbarianFlags, 15))
 		{
@@ -12169,17 +12175,33 @@ void CvCityAI::AI_barbChooseProduction()
 	}
 
 	UnitTypeWeightArray barbarianTypes;
-	barbarianTypes.push_back(std::make_pair(UNITAI_ATTACK, 125));
-	barbarianTypes.push_back(std::make_pair(UNITAI_ATTACK_CITY, (bRepelColonists ? 100 : 50)));
-	barbarianTypes.push_back(std::make_pair(UNITAI_COUNTER, 100));
-	barbarianTypes.push_back(std::make_pair(UNITAI_CITY_DEFENSE, 50));
-
+	barbarianTypes.push_back(std::make_pair(UNITAI_ATTACK, //125
+			// <advc.300>
+			std::max(65, 100 - 15 *
+			getPlot().plotCount(PUF_isUnitAIType, UNITAI_ATTACK, -1, getOwner()))));
+	AreaAITypes const eAreaAI = getArea().getAreaAIType(getTeam()); // </advc.300>
+	barbarianTypes.push_back(std::make_pair(UNITAI_ATTACK_CITY,
+			//bRepelColonists ? 100 : 50
+			/*	advc.300: (Note that naval invaders for existing transports have
+				already been considered above) */
+			eAreaAI == AREAAI_OFFENSIVE ? 100 : (eAreaAI != AREAAI_ASSAULT ? 60 : 30)));
+	barbarianTypes.push_back(std::make_pair(UNITAI_COUNTER, //100
+			// <advc.300>
+			std::max(25, 100 - 20 *
+			getPlot().plotCount(PUF_isUnitAIType, UNITAI_COUNTER, -1, getOwner()))));
+			// </advc.300>
+	barbarianTypes.push_back(std::make_pair(UNITAI_CITY_DEFENSE, //50
+			// <advc.300>
+			25 + 10 * std::max(0,
+			GC.getInfo(GC.getGame().getHandicapType()).getBarbarianInitialDefenders() -
+			getPlot().plotCount(PUF_isMissionAIType, MISSIONAI_GUARD_CITY, -1, getOwner()))));
+			// </advc.300>
 	if (AI_chooseLeastRepresentedUnit(barbarianTypes))
 		return;
 
 	if (AI_chooseUnit())
 		return;
-} // K-Mod end
+}
 
 
 int CvCityAI::AI_calculateWaterWorldPercent()

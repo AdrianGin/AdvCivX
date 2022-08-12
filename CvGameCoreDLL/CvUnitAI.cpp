@@ -741,8 +741,9 @@ int CvUnitAI::AI_attackOdds(const CvPlot* pPlot, bool bPotentialEnemy) const
 }
 
 // Returns true if the unit found a build for this city...
-bool CvUnitAI::AI_bestCityBuild(CvCityAI const& kCity, CvPlot** ppBestPlot, BuildTypes* peBestBuild, // advc.003u: first param was CvCity const*
-	CvPlot* pIgnorePlot, CvUnit* pUnit) const // advc: const and const CvCityÜ
+bool CvUnitAI::AI_bestCityBuild(CvCityAI const& kCity,
+	CvPlot** ppBestPlot, BuildTypes* peBestBuild,
+	CvPlot* pIgnorePlot, CvUnit* pUnit) const
 {
 	PROFILE_FUNC();
 
@@ -3266,6 +3267,7 @@ void CvUnitAI::AI_attackCityMove()
 			getting ready to attack takes long. Might be that everyone else
 			is gathering at a different staging city. */
 		if (getPlot().isCity() && GET_TEAM(getTeam()).AI_isAnyChosenWar() &&
+			!isBarbarian() &&
 			(eAreaAI == AREAAI_OFFENSIVE || eAreaAI == AREAAI_MASSING))
 		{
 			int iMaxWPAge = 0;
@@ -3281,7 +3283,7 @@ void CvUnitAI::AI_attackCityMove()
 					at random. */
 				int iIntervalRand = (scaled::hash(getGroup()->getID(), getOwner()) * 5).
 						floor();
-				if (iMaxWPAge % (iIntervalRand + 7) == 1)
+				if (iMaxWPAge % (iIntervalRand + 8) == 0)
 					iMaxGroupPath += 1 + SyncRandNum(3);
 			}
 		} // </advc.083>
@@ -3399,7 +3401,7 @@ void CvUnitAI::AI_attackCityMove()
 			// K-Mod. If the target city is close, be less likely to wait for backup.
 			int iPathTurns = 10;
 			int iMaxWaitTurns = 3;
-			if (pTargetCity!= NULL &&
+			if (pTargetCity != NULL &&
 				generatePath(pTargetCity->getPlot(), eMoveFlags, true,
 				&iPathTurns, iPathTurns))
 			{
@@ -3479,7 +3481,7 @@ void CvUnitAI::AI_attackCityMove()
 			return;
 	}
 
-	if (bReadyToAttack)
+	if (bReadyToAttack /* advc.083: */ && !bTargetTooStrong)
 	{	// advc.opt: Moved into the bReadyToAttack branch
 		bool bAnyWarPlan = GET_TEAM(getTeam()).AI_isAnyWarPlan();
 		/* BBAI code
@@ -3568,6 +3570,10 @@ void CvUnitAI::AI_attackCityMove()
 
 				if (bAnyWarPlan)
 				{
+					/*	advc.083: This can no longer occur. We shouldn't
+						"just wait for reinforcements" paying supply costs and
+						possibly leaving our own cities exposed. */
+				#if 0
 					/*	We're at war, but we failed to walk to the target.
 						Before we start wigging out, lets just check one more thing... */
 					if (bTargetTooStrong && iStepDistToTarget == 1)
@@ -3580,6 +3586,7 @@ void CvUnitAI::AI_attackCityMove()
 						getGroup()->pushMission(MISSION_SKIP);
 						return;
 					}
+				#endif
 
 					//CvCity* pTargetCity =
 					/*  advc: Don't shadow the pTargetCity variable that the rest of
@@ -5314,7 +5321,7 @@ void CvUnitAI::AI_greatPersonMove()
 				{
 					int iRelativeWaitTime = iMinTurns + (kGame.getGameTurn() - getGameTurnCreated());
 					iRelativeWaitTime *= 100;
-					iRelativeWaitTime /= GC.getInfo(kGame.getGameSpeedType()).getVictoryDelayPercent();
+					iRelativeWaitTime /= kGame.getSpeedPercent();
 					// lets say 1% per turn.
 					iScoreThreshold = std::max(iScoreThreshold, it->first * (100 - iRelativeWaitTime) / 100);
 				}
@@ -5591,8 +5598,7 @@ void CvUnitAI::AI_spyMove()
 				but with greatly diminished probability. */
 			// scale for game speed
 			iSpontaneousChance *= 100;
-			iSpontaneousChance /= GC.getInfo(GC.getGame().getGameSpeedType()).
-					getVictoryDelayPercent();
+			iSpontaneousChance /= GC.getGame().getSpeedPercent();
 			if (SyncRandNum(1500) < iSpontaneousChance)
 			{
 				if (AI_espionageSpy())
@@ -5694,7 +5700,7 @@ void CvUnitAI::AI_spyMove()
 		iAttackChance /= 100;
 		// scale for game speed
 		iAttackChance *= 100;
-		iAttackChance /= GC.getInfo(GC.getGame().getGameSpeedType()).getVictoryDelayPercent();
+		iAttackChance /= GC.getGame().getSpeedPercent();
 
 		iTransportChance = (100 * iTotalPoints - 130 * iLocalPoints) / std::max(1, iTotalPoints);
 	}
@@ -13678,7 +13684,6 @@ bool CvUnitAI::AI_pillageAroundCity(CvCity* pTargetCity, int iBonusValueThreshol
 	for (CityPlotIter it(*pTargetCity); it.hasNext(); ++it)
 	{
 		CvPlot& kPlot = *it;
-		// advc: Reduce indentation
 		if (/*AI_plotValid(kPlot)*/AI_canEnterByLand(kPlot.getArea()) && // advc.opt
 			kPlot.getTeam() == pTargetCity->getTeam() && // advc.opt: Moved up
 			!kPlot.isBarbarian() && AI_mayAttack(kPlot) &&
@@ -13694,6 +13699,9 @@ bool CvUnitAI::AI_pillageAroundCity(CvCity* pTargetCity, int iBonusValueThreshol
 				if (iPathTurns <= iMaxPathTurns)
 				{
 					int iValue = AI_pillageValue(kPlot, iBonusValueThreshold);
+					// <advc.083> Don't use a big stack to pillage every road
+					if (iValue <= getGroup()->getNumUnits() * 4)
+						continue; // </advc.083> 
 					iValue *= (1000 + 30 *
 							/*  advc.012: This seems to be about a single unit, so
 								noDefensiveBonus should be checked.
@@ -13704,8 +13712,9 @@ bool CvUnitAI::AI_pillageAroundCity(CvCity* pTargetCity, int iBonusValueThreshol
 							//iValue /= (iPathTurns + 1);
 							iValue /= std::max(1, iPathTurns); // K-Mod
 
-					// if not at war with this plot owner, then devalue plot if we already inside this owner's borders
-					// (because declaring war will pop us some unknown distance away)
+					/*	if not at war with this plot owner, then devalue plot
+						if we are already inside this owner's borders
+						(because declaring war will pop us some unknown distance away) */
 					if (!isEnemy(kPlot) && getPlot().getTeam() == kPlot.getTeam())
 						iValue /= 10;
 					if (iValue > iBestValue)
@@ -13725,7 +13734,7 @@ bool CvUnitAI::AI_pillageAroundCity(CvCity* pTargetCity, int iBonusValueThreshol
 			//getGroup()->groupDeclareWar(pBestPillagePlot, true);
 			// rather than declare war, just find something else to do, since we may already be deep in enemy territory
 			return false;
-		} */ // BtS - disabled by K-Mod. (also see new code at top.)
+		}*/ // BtS - disabled by K-Mod. (also see new code at top.)
 		// K-Mod
 		FAssert(AI_getGroup()->AI_isDeclareWar(/* advc: */ *pBestPillagePlot));
 		if (AI_considerPathDOW(*pBestPlot, eFlags))
@@ -13739,8 +13748,11 @@ bool CvUnitAI::AI_pillageAroundCity(CvCity* pTargetCity, int iBonusValueThreshol
 		} // K-Mod end
 		if (at(*pBestPillagePlot))
 		{
-			//if (isEnemy(pBestPillagePlot->getTeam()))
-			FAssert(isEnemy(*pBestPillagePlot)); // K-Mod
+			/*	advc.083: K-Mod had turned this check into an assertion.
+				Seems that it can fail in rare situations when passing through
+				foreign borders while war is (becomes?) imminent, and then it's
+				better to keep moving and delay the DoW. */
+			if (isEnemy(*pBestPillagePlot))
 			{
 				getGroup()->pushMission(MISSION_PILLAGE, -1, -1, NO_MOVEMENT_FLAGS,
 						false, false, MISSIONAI_PILLAGE, pBestPillagePlot);
@@ -21262,7 +21274,7 @@ bool CvUnitAI::AI_defendPlot(CvPlot* pPlot)
 	return false;
 }
 
-int CvUnitAI::AI_pillageValue(CvPlot const& kPlot, int iBonusValueThreshold) // advc: param was CvPlot*
+int CvUnitAI::AI_pillageValue(CvPlot const& kPlot, int iBonusValueThreshold)
 {
 	FAssert(canPillage(kPlot) || canAirBombAt(plot(), kPlot.getX(), kPlot.getY()) || (getGroup()->getCargo() > 0));
 
@@ -21309,7 +21321,7 @@ int CvUnitAI::AI_pillageValue(CvPlot const& kPlot, int iBonusValueThreshold) // 
 					iValue += 10;
 				//if (!pAdj->isRoute())
 				// advc.001i:
-				if(pAdj->getRevealedRouteType(getTeam()) == NO_ROUTE)
+				if (pAdj->getRevealedRouteType(getTeam()) == NO_ROUTE)
 				{
 					if (!pAdj->isWater() && !pAdj->isImpassable())
 						iValue += 2;
@@ -21321,8 +21333,8 @@ int CvUnitAI::AI_pillageValue(CvPlot const& kPlot, int iBonusValueThreshold) // 
 	/*if (kPlot.getImprovementDuration() > ((kPlot.isWater()) ? 20 : 5))
 		eImprovement = kPlot.getImprovementType();
 	else eImprovement = kPlot.getRevealedImprovementType(getTeam(), false);*/
-	ImprovementTypes eImprovement = kPlot.getImprovementDuration() > 20 ?
-			kPlot.getImprovementType() : kPlot.getRevealedImprovementType(getTeam());
+	ImprovementTypes eImprovement = (kPlot.getImprovementDuration() > 20 ?
+			kPlot.getImprovementType() : kPlot.getRevealedImprovementType(getTeam()));
 	if (eImprovement != NO_IMPROVEMENT)
 	{
 		if (kPlot.getWorkingCity() != NULL)
@@ -21642,6 +21654,7 @@ int CvUnitAI::AI_stackOfDoomExtra() const
 		scaled rTrainMod = kOwner.trainingModifierFromHandicap();
 		rTrainMod.increaseTo(fixp(0.7));
 		rMult /= rTrainMod;
+		rMult *= kOwner.AI_trainUnitSpeedAdustment(); // advc.253
 	}
 	// A little extra for naval assault
 	if (getArea().getAreaAIType(kOurTeam.getID()) == AREAAI_ASSAULT)
@@ -21681,9 +21694,9 @@ bool CvUnitAI::AI_stackAttackCity(int iPowerThreshold)
 	FAssert(canMove());
 
 	CvPlot const* pCityPlot = NULL;
-	for (SquareIter it(*this, 1); it.hasNext(); ++it)
+	FOR_EACH_ADJ_PLOT(getPlot())
 	{
-		CvPlot const& p = *it;
+		CvPlot const& p = *pAdj;
 		//if (!AI_plotValid(p)) continue; // advc.opt: We're a land unit looking for an adjacent city
 		if (!p.isCity()) // K-Mod. We want to attack a city. We don't care about guarded forts!
 			//|| (pLoopPlot->isCity(true) && pLoopPlot->isVisibleEnemyUnit(this)))
@@ -21692,8 +21705,8 @@ bool CvUnitAI::AI_stackAttackCity(int iPowerThreshold)
 		}
 		if (AI_mayAttack(p.getTeam(), p))
 		{
-			if (!at(p) &&
-				// ((bFollow) ? canMoveInto(pLoopPlot, /*bAttack*/ true, /*bDeclareWar*/ true) : (generatePath(pLoopPlot, 0, true, &iPathTurns) && (iPathTurns <= iRange))))
+			if (//!at(p) && // advc: Exclude this from the beginning
+				//((bFollow) ? canMoveInto(pLoopPlot, /*bAttack*/ true, /*bDeclareWar*/ true) : (generatePath(pLoopPlot, 0, true, &iPathTurns) && (iPathTurns <= iRange))))
 				getGroup()->canMoveOrAttackInto(p, true, true))
 			{
 				// K-Mod
@@ -21889,7 +21902,9 @@ bool CvUnitAI::AI_choke(int iRange, bool bDefensive, MovementFlags eFlags)
 
 	CvPlot* pBestPlot = 0;
 	CvPlot* pEndTurnPlot = 0;
-	int iBestValue = 0;
+	int iBestValue = //0
+			// advc.083: Don't park a big stack for little gain
+			(bDefensive ? 0 : 6 * getGroup()->getNumUnits());
 	// <advc.300> Don't use more than a couple of units for choking Barbarians
 	bool const bSmallGroup = (getGroup()->getNumUnits() <=
 			GET_PLAYER(getOwner()).AI_getCurrEraFactor() + 1); // </advc.300>
@@ -21950,7 +21965,7 @@ bool CvUnitAI::AI_choke(int iRange, bool bDefensive, MovementFlags eFlags)
 		}
 	}
 	if (pBestPlot == NULL)
-		return false; // advc
+		return false;
 
 	FAssert(pBestPlot->getWorkingCity());
 	CvPlot* pChokedCityPlot = pBestPlot->getWorkingCity()->plot();

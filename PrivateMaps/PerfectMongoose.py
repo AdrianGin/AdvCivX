@@ -169,7 +169,7 @@ class MapConstants:
 		self.BonusBonus = 1.0
 
 		#This value modifies LakeSizePerDrainage when a lake begins in desert
-		self.DesertLakeModifier = 0.6
+		self.DesertLakeModifier = 0.4 # advc: was 0.6
 
 		#This value controls the amount of siltification in lakes when using the Default Civ4 SDK River Generator
 		self.maxSiltPanSizeSDK = 5
@@ -368,9 +368,13 @@ class MapConstants:
 
 		#This value controls the number of mid-altitude lake depressions per map square.
 		#It will become a lake if enough water flows into the depression.
+		# (advc: Gets set based on world size now)
 		self.numberOfLakesPerPlot3 = 0.008
+		# advc: Was 3 (as a magic constant)
+		self.expandedLakeMinSize = 1
 
 		#How many squares are added to a lake for each unit of drainage flowing into it.
+		# (advc: Gets set based on world size now)
 		self.LakeSizePerDrainage3 = 30.0
 
 		#This value is used to decide if enough water has accumulated to form a river.
@@ -404,10 +408,14 @@ class MapConstants:
 		#noise(smooth).
 		self.hmNoiseLevel = 2.0
 
-		#Number of tectonic plates
+		#Number of tectonic plates. advc: Set in PerformTectonics.
 		#self.hmNumberOfPlates = int(float(self.hmWidth * self.hmHeight) * 0.0016)
-		# advc:
-		self.hmNumberOfPlates = int(round(math.sqrt(self.hmWidth * self.hmHeight) / 8))
+
+		# advc: Exponent for the chance of re-rolling plate seeds near a
+		# wrapping(!) edge of the map. A higher exponent makes such re-rolls
+		# less likely. Use 0 to disable re-rolls, i.e. to use an entirely
+		# uniform distribution of plate seeds across the map.
+		self.plateSeedRerollExp = 8
 
 		#Influence of the plate map, or how much of it is added to the height map.
 		self.plateMapScale = 1.1
@@ -437,14 +445,15 @@ class MapConstants:
 		self.rippleFrequency = 0.5
 
 		#This is the amplitude of the ripples near plate boundaries.
-		self.rippleAmplitude = 0.25 # advc: was 0.75
+		# advc: Was 0.75; will increase with world size. Also randomized a little.
+		self.rippleAmplitude = 0.25
 
 		#This is the amount of noise added to the plate map.
 		self.plateNoiseFactor = 1.2
 
 		#Filter size for altitude smoothing and distance finding. Must be odd number.
-		# advc: Was 5 (15 in Totestra). Also randomized now.
-		self.distanceFilterSize = 11
+		# advc: Was 5; also randomized now.
+		self.distanceFilterSize = 9
 
 		#It is necessary to eliminate small inland lakes during the initial
 		#heightmap generation. Keep in mind this number is in relation to
@@ -615,7 +624,7 @@ class MapConstants:
 		if self.SeaLevelFactor > 1.2:
 			self.maximumMeteorCount += 1
 		elif self.SeaLevelFactor < 0.85:
-			self.maximumMeteorCount += 1
+			self.maximumMeteorCount -= 1
 		# Caveat: Need to keep an eye on isHmWaterMatch when adjusting the min. meteor size. Smaller meteors affect fewer plots but are also more likely to create peaks and hills through steep slopes.
 		self.minimumMeteorSize = 1
 		if mmap.getWorldSize() > 0:
@@ -643,6 +652,8 @@ class MapConstants:
 		if self.LandmassGenerator < 2:
 			self.JungleFactor -= 0.03
 			self.JunglePercent += 0.03
+		self.numberOfLakesPerPlot3 = (0.024 / self.SeaLevelFactor) - mmap.getWorldSize() * 0.0028
+		self.LakeSizePerDrainage3 = (50.0 / self.SeaLevelFactor) - mmap.getWorldSize() * 3
 		# </advc>
 		# advc: Deleted; can be looked up in-game in AdvCiv. And it's tedious to keep it up to date here.
 		#self.optionsString = 
@@ -1771,13 +1782,21 @@ class ElevationMap2(FloatMap):
 		self.plateHeightMap = array('d')
 		preSmoothMap        = array('d')
 		# <advc>
-		plateGrowthChanceRand = PRand.random() * 0.3 - 0.15
-		mc.plateGrowthChanceX += plateGrowthChanceRand
-		mc.plateGrowthChanceY += plateGrowthChanceRand
-		mc.distanceFilterSize += 2 * int(PRand.random() * 4 - 2)
-		assert mc.distanceFilterSize % 2 == 1
+		# Sounds like this should have a big impact on the shape of the landmasses
+		# and mountain chains, but I find it hard to tell a difference. I guess
+		# a larger map should have more plates.
+		fPlates = math.pow(mc.width * mc.height, 0.33) * mc.SeaLevelFactor / 2
+		fPlates *= 0.75 + PRand.random() * 0.5
+		mc.hmNumberOfPlates = int(round(fPlates))
+		plateGrowthChanceRand = PRand.random() * 0.24 - 0.12
+		plateGrowthChanceX = mc.plateGrowthChanceX + plateGrowthChanceRand
+		plateGrowthChanceY = mc.plateGrowthChanceY + plateGrowthChanceRand
+		distanceFilterSize = mc.distanceFilterSize + 2 * int(PRand.random() * 4 - 2)
+		assert distanceFilterSize % 2 == 1
+		rippleAmplitude = mc.rippleAmplitude + max(0, CyMap().getWorldSize() - 3) * 0.2
+		rippleAmplitude += PRand.random() * 0.2 - 0.1
 		# </advc>
-		maxDistance = math.sqrt(pow(float(mc.distanceFilterSize / 2), 2) + pow(float(mc.distanceFilterSize / 2), 2))
+		maxDistance = math.sqrt(pow(float(distanceFilterSize / 2), 2) + pow(float(distanceFilterSize / 2), 2))
 		#initialize maps
 		for y in range(mc.hmHeight):
 			for x in range(mc.hmWidth):
@@ -1797,6 +1816,16 @@ class ElevationMap2(FloatMap):
 					raise ValueError, "endless loop in region seed placement"
 				seedX = PRand.randint(0, mc.hmWidth  + 1)
 				seedY = PRand.randint(0, mc.hmHeight + 1)
+				# <advc>
+				if mc.plateSeedRerollExp > 0:
+					if mc.WrapX and PRand.random() < pow(
+							1.0 - min(mc.hmWidth + 1 - seedX, seedX) / (mc.hmWidth + 1.0),
+							mc.plateSeedRerollExp):
+						continue
+					elif mc.WrapY and PRand.random() < pow(
+							1.0 - min(mc.hmHeight + 1 - seedY, seedY) / (mc.hmHeight + 1.0),
+							mc.plateSeedRerollExp):
+						continue # </advc>
 				n = GetHmIndex(seedX, seedY)
 				if not self.isSeedBlocked(plateList, seedX, seedY):
 					self.plateMap[n].plateID = i
@@ -1818,8 +1847,8 @@ class ElevationMap2(FloatMap):
 			iterations += 1
 			if iterations > 200000:
 				# <advc>
-				print("plateGrowthChance=" + str(mc.plateGrowthChanceY))
-				print("distanceFilterSize=" + str(mc.distanceFilterSize))
+				print("plateGrowthChance=" + str(plateGrowthChanceY))
+				print("distanceFilterSize=" + str(distanceFilterSize))
 				# </advc>
 				raise ValueError, "endless loop in plate growth"
 			plot = growthPlotList[0]
@@ -1838,15 +1867,15 @@ class ElevationMap2(FloatMap):
 				elif self.plateMap[ii].plateID == 0:
 					roomLeft = True
 					if direction == mc.N or direction == mc.S:
-						growthChance = mc.plateGrowthChanceY
+						growthChance = plateGrowthChanceY
 					else:
-						growthChance = mc.plateGrowthChanceX
+						growthChance = plateGrowthChanceX
 					if PRand.random() < growthChance:
 						self.plateMap[ii].plateID = plateID
 						xx, yy = CoordsFromIndex(ii, self.width) # advc.001
 						newPlot = (xx, yy, plateID)
 						growthPlotList.append(newPlot)
-			#move plot to the end of the list if room left, otherwise
+			#move plot to the end of the list if room left,
 			#delete it if no room left
 			if roomLeft:
 				growthPlotList.append(plot)
@@ -1890,8 +1919,8 @@ class ElevationMap2(FloatMap):
 				if borderMap[i]:
 					isBorder = True
 				plateID = self.plateMap[i].plateID
-				for yy in range(y - mc.distanceFilterSize / 2, y + mc.distanceFilterSize / 2 + 1, 1):
-					for xx in range(x - mc.distanceFilterSize / 2, x + mc.distanceFilterSize / 2 + 1, 1):
+				for yy in range(y - distanceFilterSize / 2, y + distanceFilterSize / 2 + 1, 1):
+					for xx in range(x - distanceFilterSize / 2, x + distanceFilterSize / 2 + 1, 1):
 						ii = GetHmIndex(xx, yy)
 						if ii == -1:
 							continue
@@ -1914,7 +1943,7 @@ class ElevationMap2(FloatMap):
 					angleDifference = AngleDifference(plateList[self.plateMap[i].plateID].angle, plateList[plateID].angle)
 				else:
 					angleDifference = AngleDifference(plateList[plateID].angle, plateList[self.plateMap[i].plateID].angle)
-				ripple = (pow(math.cos(mc.rippleFrequency * self.plateMap[i].distanceList[plateID]) * (-self.plateMap[i].distanceList[plateID] / maxDistance + 1), 2) + (-self.plateMap[i].distanceList[plateID] / maxDistance + 1)) * mc.rippleAmplitude * math.sin(math.radians(angleDifference))
+				ripple = (pow(math.cos(mc.rippleFrequency * self.plateMap[i].distanceList[plateID]) * (-self.plateMap[i].distanceList[plateID] / maxDistance + 1), 2) + (-self.plateMap[i].distanceList[plateID] / maxDistance + 1)) * rippleAmplitude * math.sin(math.radians(angleDifference))
 				avgRippleTop += (ripple * distanceWeight)
 				avgRippleBottom += distanceWeight
 			if avgRippleBottom == 0.0:
@@ -3392,10 +3421,15 @@ class TerrainMap:
 				else:
 					self.pData[i] = mc.PEAK
 		#break up large clusters of hills and peaks
+		# advc: Disable this. Had no b/c of bugs, but it's still bad with the
+		# bugs fixed. Certain patterns should arguably be broken up probabi-
+		# listically, but that'll require more thought.
+		'''
 		for y in range(mc.height):
 			for x in range(mc.width):
 				i = em.GetIndex(x, y)
-				if self.pData == mc.HILLS:
+				# advc.001: Fix missing index (from Totestra)
+				if self.pData[i] == mc.HILLS:
 					allHills = True
 					for direction in range(1, 9):
 						xx, yy = GetNeighbor(x, y, direction)
@@ -3404,7 +3438,8 @@ class TerrainMap:
 							allHills = False
 					if allHills:
 						self.pData[i] = mc.LAND
-				if self.pData == mc.PEAK:
+				# advc.001: Fix missing index (from Totestra)
+				if self.pData[i] == mc.PEAK:
 					allPeaks = True
 					for direction in range(1, 9):
 						xx, yy = GetNeighbor(x, y, direction)
@@ -3413,7 +3448,7 @@ class TerrainMap:
 							allPeaks = False
 					if allPeaks:
 						self.pData[i] = mc.HILLS
-
+		'''
 
 	def GenerateTerrainMap(self):
 		print "----------------------"
@@ -3559,7 +3594,7 @@ class PangaeaBreaker:
 
 	def breakPangaeas(self):
 		if mc.AllowPangaeas:
-			print "Pangaeas are allowed on this map and will not be suppressed."
+			#print "Pangaeas are allowed on this map and will not be suppressed."
 			return
 		''' # advc: Should be OK now (will at most throw a couple of small ones)
 		gc = CyGlobalContext()
@@ -6669,13 +6704,15 @@ def expandLake(x, y, riversIntoLake, oceanMap):
 	lakeNeighbors = list()
 	i = oceanMap.getIndex(x, y)
 	if tm.tData[i] == mc.DESERT:
-		desertModifier = mc.DesertLakeModifier
+		terrainModifier = mc.DesertLakeModifier
 	else:
-		desertModifier = 1.0
+		terrainModifier = 1.0
 	if mc.ClimateSystem == 0:
-		lakeSize = max(3, int(rm.drainageMap[i] * mc.LakeSizePerDrainage3 * desertModifier))
+		lakeSize = max(mc.expandedLakeMinSize,
+				int(rm.drainageMap[i] * mc.LakeSizePerDrainage3 * terrainModifier))
 	else:
-		lakeSize = max(3, int(rm.drainageMap[i] * mc.LakeSizePerDrainage2 * desertModifier))
+		lakeSize = max(mc.expandedLakeMinSize,
+				int(rm.drainageMap[i] * mc.LakeSizePerDrainage2 * terrainModifier))
 	start = LakePlot(x, y, em.data[i])
 	lakeNeighbors.append(start)
 	while lakeSize > 0 and len(lakeNeighbors) > 0:

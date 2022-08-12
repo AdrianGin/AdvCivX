@@ -6024,10 +6024,9 @@ void CvGameTextMgr::parseTraits(CvWStringBuffer &szHelpString, TraitTypes eTrait
 						GC.getInfo(eLoopCultureLevel).getSpeedThreshold(kGame.getGameSpeedType()));
 				if (iFreeCityCulture < iThresh)
 					continue;
-				/*	This only works because (and so long as) the thresholds
-					set in CultureLevel XML correspond to the VictoryDelay
-					modifier set in GameSpeed XML. (Clean solution would be a
-					separate XML tag for free culture level.) */
+				/*	This only works because (and so long as) the thresholds set in
+					CultureLevel XML correspond to CvGame::freeCityCultureFromTrait.
+					(Clean solution would be a separate XML tag for free culture level.) */
 				if (iFreeCityCulture == iThresh)
 					eFreeLevel = eLoopCultureLevel;
 				break;
@@ -19234,7 +19233,7 @@ void CvGameTextMgr::setEventHelp(CvWStringBuffer& szBuffer,
 			if (!szTemp.isEmpty())
 			{
 				CvWString szDelay = gDLL->getText("TXT_KEY_EVENT_DELAY_TURNS",
-						(GC.getInfo(GC.getGame().getGameSpeedType()).getGrowthPercent() *
+						(GC.getGame().getSpeedPercent() *
 						kEvent.getAdditionalEventTime(eLoopEvent)) / 100);
 				if (kEvent.getAdditionalEventChance(eLoopEvent) > 0)
 				{

@@ -137,6 +137,9 @@ bool CvSelectionGroupAI::AI_update()
 	int iAttempts = 0;
 	int iMaxAttempts = 6 * (GET_PLAYER(getOwner()).getCurrentEra() + 1) +
 			std::max(getNumUnits(), 4);
+#ifdef _DEBUG
+	iMaxAttempts += 4; // Extra iterations for debugging
+#endif
 	// </advc.001y>
 	bool bDead = false;
 	bool bFailedAlreadyFighting = false;
@@ -149,14 +152,22 @@ bool CvSelectionGroupAI::AI_update()
 		/*  <advc.001y> Moved out of the block below so I can see what the loop does
 			before it terminates. Debugger stops in CvSelectionGroup::pushMission,
 			startMission and in CvUnitAI::AI_update have been helpful to me. */
-		FAssertMsg(iAttempts != iMaxAttempts - 5, "Unit stuck in a loop");
-		if(iAttempts >= iMaxAttempts) // was > 100 </advc.001y>
+	#ifdef _DEBUG
+		iMaxAttempts -= 4; // Trigger assert early
+	#endif
+		FAssertMsg(iAttempts != iMaxAttempts, "Unit stuck in a loop");
+	#ifdef _DEBUG
+		iMaxAttempts += 4; // Restore extra iterations
+	#endif
+		if (iAttempts >= iMaxAttempts) // was > 100 </advc.001y>
 		{
 			CvUnit* pHeadUnit = getHeadUnit();
 			if (pHeadUnit != NULL)
-			{
-				if (iAttempts == iMaxAttempts) // advc.001y: Don't spam the log
+			{	// <advc.001y>
+			#ifndef _DEBUG
+				if (iAttempts == iMaxAttempts) // Don't spam the log </advc.004y>
 					GC.getLogger().logUnitStuck(*pHeadUnit); // advc.003t
+			#endif
 				pHeadUnit->finishMoves();
 			}
 			break;
@@ -834,7 +845,7 @@ bool CvSelectionGroupAI::AI_isDeclareWar(
 
 	CvUnit const* pHeadUnit = getHeadUnit();
 	if (pHeadUnit == NULL)
-		return false; // advc
+		return false;
 
 	switch (pHeadUnit->AI_getUnitAIType())
 	{

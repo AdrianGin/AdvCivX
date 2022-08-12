@@ -1202,7 +1202,10 @@ void CyUnit::setExperience(int iNewValue, int iMax)
 void CyUnit::changeExperience(int iChange, int iMax, bool bFromCombat, bool bInBorders, bool bUpdateGlobal)
 {
 	if (m_pUnit)
-		m_pUnit->changeExperience(iChange, iMax, bFromCombat, bInBorders, bUpdateGlobal);
+	{
+		m_pUnit->changeExperience(iChange, iMax, bFromCombat, bInBorders, //bUpdateGlobal
+				bUpdateGlobal ? 100 : 0); // advc.312
+	}
 }
 
 int CyUnit::getLevel()

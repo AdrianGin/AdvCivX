@@ -201,7 +201,7 @@ public:
 	int goldenAgeLength() const;																		// Exposed to Python
 	int victoryDelay(VictoryTypes eVictory) const;														// Exposed to Python
 	int getImprovementUpgradeTime(ImprovementTypes eImprovement) const;									// Exposed to Python
-	scaled gameSpeedMultiplier() const; // advc
+	int getSpeedPercent() const; // advc.252
 
 	bool canTrainNukes() const;																			// Exposed to Python
 	EraTypes getCurrentEra() const;																		// Exposed to Python
@@ -1197,7 +1197,7 @@ protected:
 			Shelf const* pShelf = NULL);
 	bool killBarbarian(int iUnitsPresent, int iTiles, int iPop,
 			CvArea& kArea, Shelf* pShelf = NULL);
-	UnitTypes randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea);
+	UnitTypes randomBarbarianUnit(UnitAITypes eUnitAI, CvPlot const& kPlot);
 	scaled barbarianPeakLandRatio() const;
 	// </advc.300>
 

@@ -3425,13 +3425,14 @@ class CvMainInterface:
 					# <advc.004k>
 					bGroupButtonsDone = False
 					iMaxCols = int((gRect("BottomButtonList").width()
-							# (Safety margin - not sure if MultiListControl can use its entire width.)
-							-5) / self.bottomListBtnSize())
+							# (Safety margin - seems that MultiListControl can't use its entire width.)
+							-10) / self.bottomListBtnSize())
 					# Can display any number of them, but we don't want a scrollbar.
 					iMaxRows = int((gRect("BottomButtonList").height() - 5) /
 							self.bottomListBtnSize())
-					# </advc.004k>
-					iCount = 0
+					iRow0Count = 0
+					iRow1Count = 0
+					#iCount = 0 # </advc.004k>
 					actions = CyInterface().getActionsToShow()
 					for i in actions:
 						# <advc.004k>
@@ -3449,36 +3450,46 @@ class CvMainInterface:
 								(gc.getActionInfo(i).getCommandType() == CommandTypes.COMMAND_PROMOTION or
 								gc.getActionInfo(i).getCommandType() == CommandTypes.COMMAND_UPGRADE)):
 							bGroupButtonsDone = True
-							iCount += self.appendGroupBottomButtons()
+							iRow0Count += self.appendGroupBottomButtons()
 						# Put promotions, upgrades on a separate row -
 						# if we haven't exceeded a full row already and can
 						# fit all promos and upgrades in the 2nd row.
 						if (bGroupButtonsDone and iMaxRows >= 2 and
-								iCount <= iMaxCols and
-								len(actions) - iCount <= iMaxCols):
+								iRow0Count <= iMaxCols and
+								len(actions) - iRow0Count <= iMaxCols and
+								# When space is very limited, then there's a danger
+								# of about half of the units using a single (wrapped)
+								# row and half using separate rows, which is awkward.
+								iMaxCols >= 8):
 							iRow = 1
+							iCount = iRow1Count
 						else:
 							iRow = 0
+							iCount = iRow0Count
+							# And changed listId args below from 0 to iRow
 						# </advc.004k>
 						screen.appendMultiListButton("BottomButtonList",
-								gc.getActionInfo(i).getButton(),
-								iRow, # advc.004k: was 0
+								gc.getActionInfo(i).getButton(), iRow,
 								WidgetTypes.WIDGET_ACTION, i, -1, False)
 						screen.show("BottomButtonList")
 						if not CyInterface().canHandleAction(i, False):
 							screen.disableMultiListButton("BottomButtonList",
-									0, iCount, gc.getActionInfo(i).getButton())
+									iRow, iCount, gc.getActionInfo(i).getButton())
 						if (pHeadSelectedUnit.isActionRecommended(i)
 								#or gc.getActionInfo(i).getCommandType() == CommandTypes.COMMAND_PROMOTION
 								):
-							screen.enableMultiListPulse("BottomButtonList", True, 0, iCount)
+							screen.enableMultiListPulse("BottomButtonList", True, iRow, iCount)
 						else:
-							screen.enableMultiListPulse("BottomButtonList", False, 0, iCount)
-						iCount += 1
-					# <advc.004k>
+							screen.enableMultiListPulse("BottomButtonList", False, iRow, iCount)
+						#iCount += 1
+						# <advc.004k>
+						if iRow == 0:
+							iRow0Count += 1
+						else:
+							iRow1Count += 1
 					if not bGroupButtonsDone: # If no promotions, upgrades.
 						# Moved into new method
-						iCount += self.appendGroupBottomButtons()
+						iRow0Count += self.appendGroupBottomButtons()
 						screen.show("BottomButtonList") # </advc.004k>
 				# <advc.154>
 				pUnit = None
