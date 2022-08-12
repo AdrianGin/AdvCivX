@@ -1793,6 +1793,10 @@ void StartingPositionIteration::doIterations(PotentialSites& kPotentialSites)
 		FAssert(iMaxSteps > 0);
 		return;
 	}
+	/*	Just so that players can check whether SPI was used - the preconditions
+		are pretty complex. Not a Python thing, but I don't want to create a
+		separate logfile just for this one message. */
+	gDLL->logMsg("PythonDbg.log", "\nRunning Starting Position Iteration (AdvCiv mod)\n");
 	while (iStepsConsidered < iMaxSteps)
 	{
 		vector<pair<scaled,PlayerTypes> > currSitesByOutlierVal;
