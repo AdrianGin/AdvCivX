@@ -1579,8 +1579,11 @@ class CvInfoScreen:
 				# </advc.077>
 				
 				#iValue = pCurrPlayer.calculateTotalCommerce()
-				# advc.077: Use the current value only for the active player
-				iValue = self.computeHistory(self.ECONOMY_SCORE, iPlayerLoop, iGameTurn)
+				# <advc.077> Use the current value only for the active player
+				if iGameTurn >= 0:
+					iValue = self.computeHistory(self.ECONOMY_SCORE, iPlayerLoop, iGameTurn)
+				else:
+					iValue = 0 # </advc.077>
 				if iPlayerLoop == self.iActivePlayer:
 					iValue = pCurrPlayer.calculateTotalCommerce() # advc.077
 					iEconomy = iValue
@@ -1593,7 +1596,11 @@ class CvInfoScreen:
 				aiGroupEconomy.append((iValue, iPlayerLoop))
 				
 				#iValue = pCurrPlayer.calculateTotalYield(YieldTypes.YIELD_PRODUCTION)
-				iValue = self.computeHistory(self.INDUSTRY_SCORE, iPlayerLoop, iGameTurn) # advc.077
+				# <advc.077>
+				if iGameTurn >= 0:
+					iValue = self.computeHistory(self.INDUSTRY_SCORE, iPlayerLoop, iGameTurn)
+				else:
+					iValue = 0 # </advc.077>
 				if iPlayerLoop == self.iActivePlayer:
 					iValue = pCurrPlayer.calculateTotalYield(YieldTypes.YIELD_PRODUCTION) # advc.077
 					iIndustry = iValue
@@ -1602,7 +1609,11 @@ class CvInfoScreen:
 				aiGroupIndustry.append((iValue, iPlayerLoop))
 
 				#iValue = pCurrPlayer.calculateTotalYield(YieldTypes.YIELD_FOOD)
-				iValue = self.computeHistory(self.AGRICULTURE_SCORE, iPlayerLoop, iGameTurn) # advc.077
+				# <advc.077>
+				if iGameTurn >= 0:
+					iValue = self.computeHistory(self.AGRICULTURE_SCORE, iPlayerLoop, iGameTurn)
+				else:
+					iValue = 0 # </advc.077>
 				if iPlayerLoop == self.iActivePlayer:
 					iValue = pCurrPlayer.calculateTotalYield(YieldTypes.YIELD_FOOD) # advc.077
 					iAgriculture = iValue

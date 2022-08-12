@@ -13039,8 +13039,7 @@ namespace
 	int adjustAdvStartPtsToSpeed(int iPoints)
 	{
 		iPoints *= 100;
-		return std::max(0, iPoints / GC.getInfo(GC.getGame().getGameSpeedType()).
-				getGrowthPercent());
+		return std::max(0, iPoints / GC.getGame().getSpeedPercent());
 	}
 }
 
@@ -16457,8 +16456,9 @@ void CvPlayer::applyEvent(EventTypes eEvent, int iEventTriggeredId, bool bUpdate
 			if (bSetTimer)
 			{
 				EventTriggeredData kTriggered = *pTriggeredData;
-				kTriggered.m_iTurn = (GC.getInfo(GC.getGame().getGameSpeedType()).getGrowthPercent() *
-						kEvent.getAdditionalEventTime(eLoopEvent)) / 100 + GC.getGame().getGameTurn();
+				kTriggered.m_iTurn = (GC.getGame().getSpeedPercent() *
+						kEvent.getAdditionalEventTime(eLoopEvent)) / 100 +
+						GC.getGame().getGameTurn();
 				EventTriggeredData const* pExistingTriggered = getEventCountdown(eLoopEvent);
 				if (pExistingTriggered != NULL)
 				{
@@ -16597,12 +16597,19 @@ void CvPlayer::doEvents()
 			}
 		}
 	}
+	// <advc.252>
+	int const iSpeedAdjustPercent = GC.getInfo(GC.getGame().getGameSpeedType()).
+			get(CvGameSpeedInfo::EventRollSidesPercent); // </advc.252>
 	bool bNewEventEligible = true;
-	if (GC.getGame().getElapsedGameTurns() < GC.getDefineINT("FIRST_EVENT_DELAY_TURNS"))
+	if (GC.getGame().getElapsedGameTurns() /* <advc.252> */ * 100 <
+		GC.getDefineINT("FIRST_EVENT_DELAY_TURNS") * iSpeedAdjustPercent)
+		// </advc.252>
+	{
 		bNewEventEligible = false;
-
+	}
 	if (bNewEventEligible &&
-		SyncRandNum(GC.getDefineINT("EVENT_PROBABILITY_ROLL_SIDES")) >=
+		SyncRandNum(GC.getDefineINT("EVENT_PROBABILITY_ROLL_SIDES")
+		* iSpeedAdjustPercent) >= 100 * // advc.252
 		GC.getInfo(getCurrentEra()).getEventChancePerTurn())
 	{
 		bNewEventEligible = false;
@@ -18291,7 +18298,7 @@ int CvPlayer::getNewCityProductionValue() const
 	iValue /= 100;
 
 	iValue += (GC.getDefineINT("ADVANCED_START_CITY_COST") *
-			GC.getInfo(GC.getGame().getGameSpeedType()).getGrowthPercent()) / 100;
+			GC.getGame().getSpeedPercent()) / 100;
 
 	int iPopulation = GC.getDefineINT("INITIAL_CITY_POPULATION") +
 			GC.getInfo(GC.getGame().getStartEra()).getFreePopulation();
@@ -18321,7 +18328,7 @@ int CvPlayer::getGrowthThreshold(int iPopulation) const
 			(iPopulation * iCITY_GROWTH_MULTIPLIER);
 	// <advc.251>
 	int iAIModifier = 100;
-	if(!isHuman()) // Also apply it to Barbarians
+	if (!isHuman()) // Also apply it to Barbarians
 	{
 		CvHandicapInfo const& h = GC.getInfo(kGame.getHandicapType());
 		iAIModifier = h.getAIGrowthPercent() +

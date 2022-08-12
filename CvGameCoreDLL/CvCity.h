@@ -796,11 +796,7 @@ public:
 	int getBuildingCommerceByBuilding(CommerceTypes eCommerce, BuildingTypes eBuilding) const;					// Exposed to Python
 	void updateBuildingCommerce();
 	void updateBuildingCommerce(CommerceTypes eCommerce); // advc.opt
-	// BUG - Building Additional Commerce - start
-	int getAdditionalCommerceByBuilding(CommerceTypes eCommerce, BuildingTypes eBuilding) const
-	{
-		return getAdditionalCommerceTimes100ByBuilding(eCommerce, eBuilding) / 100;
-	}
+	// BUG - Building Additional Commerce - start (advc: unused getAdditionalCommerceByBuilding removed)
 	int getAdditionalCommerceTimes100ByBuilding(CommerceTypes eCommerce, BuildingTypes eBuilding) const;
 	int getAdditionalBaseCommerceRateByBuilding(CommerceTypes eCommerce, BuildingTypes eBuilding) const;
 	int getAdditionalBaseCommerceRateByBuildingImpl(CommerceTypes eCommerce, BuildingTypes eBuilding) const;
@@ -1017,7 +1013,8 @@ public:
 	}
 	void setUnitProductionTime(UnitTypes eUnit, int iNewValue);
 	void changeUnitProductionTime(UnitTypes eUnit, int iChange);
-	// BULL - Production Decay - start (advc.094)
+	/*	BULL - Production Decay - start (advc.094 -
+		NB: defined through IMPLEMENT_BUG_PRODUCTION_DECAY_GETTERS macro) */
 	bool isBuildingProductionDecay(BuildingTypes eBuilding) const;												// Exposed to Python
 	int getBuildingProductionDecay(BuildingTypes eBuilding) const;												// Exposed to Python
 	int getBuildingProductionDecayTurns(BuildingTypes eBuilding) const;											// Exposed to Python

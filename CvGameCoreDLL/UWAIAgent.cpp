@@ -587,10 +587,12 @@ bool UWAI::Team::considerPeace(TeamTypes eTarget, int iU)
 	int iTheirReluct = MIN_INT; // Costly, don't compute this sooner than necessary.
 	if (bHuman)
 	{
-		int iContactDelay = kAgentPlayer.AI_getContactTimer(kTargetPlayer.getID(),
-				CONTACT_PEACE_TREATY);
+		int const iContactDelay = kAgentPlayer.
+				AI_getContactTimer(kTargetPlayer.getID(), CONTACT_PEACE_TREATY);
+		int const iContactRand = GC.getInfo(kAgentPlayer.
+				getPersonalityType()).getContactRand(CONTACT_PEACE_TREATY);
 		int iAtWarCounter = kAgent.AI_getAtWarCounter(eTarget);
-		if (iContactDelay > 0 ||
+		if (iContactDelay > 0 || iContactRand <= 0 ||
 			kAgent.AI_getWarPlan(eTarget) == WARPLAN_ATTACKED_RECENT ||
 			kAgentPlayer.AI_refuseToTalkTurns(kTargetPlayer.getID()) > iAtWarCounter)
 		{
@@ -599,15 +601,20 @@ bool UWAI::Team::considerPeace(TeamTypes eTarget, int iU)
 				m_pReport->log("No peace with human sought b/c of contact delay: %d",
 						iContactDelay);
 			}
+			else if (iContactRand <= 0)
+			{
+				m_pReport->log("No peace sought b/c %s never seeks peace",
+						m_pReport->leaderName(kAgentPlayer.getID()));
+			}
 			else m_pReport->log("No peace sought b/c war too recent: %d turns", iAtWarCounter);
 			rPeaceProb = 0; // Don't return; capitulation always needs to be checked.
 			bOfferPeace = false;
 		}
 		else
 		{
-			// 5 to 10%
-			rPeaceProb = scaled(1, std::max(1, GC.getInfo(kTargetPlayer.
-					getPersonalityType()).getContactRand(CONTACT_PEACE_TREATY)));
+			/*	(Going through CvPlayerAI::AI_contactRoll gets too complicated here,
+				and wouldn't matter b/c we don't speed-adjust peace rolls.) */
+			rPeaceProb = scaled(1, iContactRand); // 5 to 10%
 			// Adjust probability based on whether peace looks like win-win or zero-sum
 			iTheirReluct = kTarget.uwai().reluctanceToPeace(kAgent.getID(), false);
 			scaled rWinWinFactor = scaled(iTheirReluct + iU, -15);
@@ -1038,6 +1045,10 @@ bool UWAI::Team::considerAbandonPreparations(TeamTypes eTarget, int iU,
 	FAssert(iWarRand >= 0);
 	// WarRand is between 40 (aggro) and 400 (chilled)
 	scaled rAbandonProb(-iU * iWarRand, 7500);
+	// Slight adjustment to training speed
+	rAbandonProb *= 2;
+	rAbandonProb /= per100(GC.getInfo(GC.getGame().getGameSpeedType()).
+			getTrainPercent()) + 1;
 	rAbandonProb.decreaseTo(1);
 	m_pReport->log("Abandoning preparations with probability %d percent (warRand=%d)",
 			rAbandonProb.getPercent(), iWarRand);
@@ -1097,6 +1108,13 @@ bool UWAI::Team::considerSwitchTarget(TeamTypes eTarget, int iU,
 	if (std::min(iU, iBestUtility) < 20)
 		iPadding += 20 - std::min(iU, iBestUtility);
 	scaled rSwitchProb = fixp(0.75) * (1 - scaled(iU + iPadding, iBestUtility + iPadding));
+	// Slight adjustment to training speed
+	if (rSwitchProb.isPositive())
+	{
+		rSwitchProb *= 2;
+		rSwitchProb /= per100(GC.getInfo(GC.getGame().getGameSpeedType()).
+				getTrainPercent()) + 1;
+	}
 	if (bQualms && !bAltQualms)
 		rSwitchProb += fixp(1.8);
 	m_pReport->log("Switching target for war preparations to %s (u=%d) with pr=%d percent",
@@ -2505,66 +2523,47 @@ bool UWAI::Player::amendTensions(PlayerTypes eHuman)
 	{
 		FOR_EACH_ENUM(AIDemand)
 		{
-			int const iContactRand = kPersonality.getContactRand(CONTACT_DEMAND_TRIBUTE);
-			if (iContactRand > 0)
+			if (GET_PLAYER(m_eAgent).AI_contactRoll(CONTACT_DEMAND_TRIBUTE,
+				(fixp(8.5) - rEra) / 2) &&
+				GET_PLAYER(m_eAgent).AI_demandTribute(eHuman, eLoopAIDemand))
 			{
-				scaled rContactProb = (fixp(8.5) - rEra) / (2 * iContactRand);
-				// Exclude Gandhi (iContactRand=10000 => rAcceptProb<0.0005)
-				if (rContactProb * 1000 > 1 && SyncRandSuccess(rContactProb) &&
-					GET_PLAYER(m_eAgent).AI_demandTribute(eHuman, eLoopAIDemand))
-				{
-					return true;
-				}
+				return true;
 			}
 		}
 	}
 	else
 	{
-		int const iContactRand = kPersonality.getContactRand(CONTACT_ASK_FOR_HELP);
-		if (iContactRand > 0)
+		if (GET_PLAYER(m_eAgent).AI_contactRoll(CONTACT_ASK_FOR_HELP,
+			(fixp(5.5) - rEra) / fixp(1.25)) &&
+			GET_PLAYER(m_eAgent).AI_askHelp(eHuman))
 		{
-			scaled rContactProb = (fixp(5.5) - rEra) / (fixp(1.25) * iContactRand);
-			if (SyncRandSuccess(rContactProb) &&
-				GET_PLAYER(m_eAgent).AI_askHelp(eHuman))
-			{
-				return true;
-			}
+			return true;
 		}
 	}
-	int const iContactRandReligion = kPersonality.getContactRand(CONTACT_RELIGION_PRESSURE);
-	int const iContactRandCivics = kPersonality.getContactRand(CONTACT_CIVIC_PRESSURE);
-	if (iContactRandReligion <= iContactRandCivics)
+	if (kPersonality.getContactRand(CONTACT_RELIGION_PRESSURE) <=
+		kPersonality.getContactRand(CONTACT_CIVIC_PRESSURE))
 	{
-		if (iContactRandReligion > 0)
+		if (GET_PLAYER(m_eAgent).AI_contactRoll(CONTACT_RELIGION_PRESSURE,
+			8 - rEra) &&
+			GET_PLAYER(m_eAgent).AI_contactReligion(eHuman))
 		{
-			scaled rContactProb = (8 - rEra) / iContactRandReligion;
-			if (SyncRandSuccess(rContactProb) &&
-				GET_PLAYER(m_eAgent).AI_contactReligion(eHuman))
-			{
-				return true;
-			}
+			return true;
 		}
 	} 
 	else
 	{
-		if (iContactRandCivics > 0)
+		if (GET_PLAYER(m_eAgent).AI_contactRoll(CONTACT_CIVIC_PRESSURE,
+			fixp(2.5)) &&
+			GET_PLAYER(m_eAgent).AI_contactCivics(eHuman))
 		{
-			scaled rContactProb = fixp(2.5) / iContactRandCivics;
-			// Exclude Saladin (contact rand 10000)
-			if (rContactProb * 1000 > 1 && SyncRandSuccess(rContactProb) &&
-				GET_PLAYER(m_eAgent).AI_contactCivics(eHuman))
-			{
-				return true;
-			}
-		}
-	}
-	//  Embargo request - too unlikely to succeed I think.
-	/*int const iContactRand = kPersonality.getContactRand(CONTACT_STOP_TRADING);
-	if (iContactRand > 0) {
-		scaled rContactProb = ?;
-		if (SyncRandSuccess(rContactProb) && GET_PLAYER(m_eAgent).AI_proposeEmbargo(eHuman)) {
 			return true;
 		}
+	}
+	// Embargo request - too unlikely to succeed I think.
+	/*if (GET_PLAYER(m_eAgent).AI_contactRoll(CONTACT_STOP_TRADING, ?) &&
+		GET_PLAYER(m_eAgent).AI_proposeEmbargo(eHuman))
+	{
+		return true;
 	}*/
 	return false;
 }
@@ -2721,10 +2720,14 @@ scaled UWAI::Player::amortizationMultiplier() const
 
 scaled UWAI::Player::buildUnitProb() const
 {
+	scaled r;
 	if (GET_PLAYER(m_eAgent).isHuman())
-		return humanBuildUnitProb();
-	return per100(GC.getInfo(GET_PLAYER(m_eAgent).getPersonalityType()).
+		r = humanBuildUnitProb();
+	else r = per100(GC.getInfo(GET_PLAYER(m_eAgent).getPersonalityType()).
 			getBuildUnitProb());
+	// Accounting for advc.253
+	r *= GET_PLAYER(m_eAgent).AI_trainUnitSpeedAdustment();
+	return r;
 }
 
 // (Sort of duplicated in UWAI::Team::canReach)
@@ -3005,15 +3008,15 @@ scaled UWAI::Player::diploWeight() const
 	CvLeaderHeadInfo const& kPersonality = GC.getInfo(GET_PLAYER(m_eAgent).
 			getPersonalityType());
 	int const iCR = kPersonality.getContactRand(CONTACT_TRADE_TECH);
+	if (iCR <= 0 || iCR > 15)
+		return fixp(0.25);
 	if (iCR <= 1)
 		return fixp(1.75);
 	if (iCR <= 3)
 		return fixp(1.5);
 	if (iCR <= 7)
 		return 1;
-	if (iCR <= 15)
-		return fixp(0.5);
-	return fixp(0.25);
+	return fixp(0.5);
 }
 
 

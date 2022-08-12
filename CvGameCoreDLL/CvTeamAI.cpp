@@ -4381,6 +4381,18 @@ void CvTeamAI::AI_setWarSuccess(TeamTypes eTeam, scaled rNewValue)
 	FAssert(AI_getWarSuccess(eTeam) >= 0);
 }
 
+// advc:
+scaled CvTeamAI::AI_countEnemyWarSuccess() const
+{
+	scaled r;
+	for (TeamAIIter<CIV_ALIVE,ENEMY_OF> itEnemy(getID());
+		itEnemy.hasNext(); ++itEnemy)
+	{
+		r += itEnemy->AI_getWarSuccess(getID());
+	}
+	return r;
+}
+
 
 void CvTeamAI::AI_changeWarSuccess(TeamTypes eTeam, scaled rChange)
 {
@@ -4402,18 +4414,6 @@ void CvTeamAI::AI_changeWarSuccess(TeamTypes eTeam, scaled rChange)
 		if(!kWarAlly.isAtWar(eTeam) && kWarAlly.isAtWar(getID()))
 			kWarAlly.AI_reportSharedWarSuccess(rChange, eTeam, getID());
 	}
-}
-
-// advc:
-scaled CvTeamAI::AI_countEnemyWarSuccess() const
-{
-	scaled r;
-	for (TeamAIIter<CIV_ALIVE,ENEMY_OF> itEnemy(getID());
-		itEnemy.hasNext(); ++itEnemy)
-	{
-		r += itEnemy->AI_getWarSuccess(getID());
-	}
-	return r;
 }
 
 /*  eEnemy is a war enemy that this team and eWarAlly have in common.
@@ -4494,8 +4494,8 @@ scaled CvTeamAI::AI_getDiploDecay() const
 {
 	/*  On Normal speed, this decay rate halves a value in about 50 turns:
 		0.9865^50 = 0.507 */
-	return fixp(1.45) / GC.getInfo(GC.getGame().getGameSpeedType()).
-			getGoldenAgePercent();
+	return fixp(1.45) / GC.getInfo(GC.getGame().getGameSpeedType()).get(
+			CvGameSpeedInfo::AIMemoryRandPercent); // advc.130r
 }
 
 // Needed for both RivalTrade and "fair trade"
@@ -5640,30 +5640,31 @@ scaled CvTeamAI::AI_getOpenBordersCounterIncrement(TeamTypes eOther) const
 	return scaled::clamp(rFromTrade + rFromCloseness, fixp(1/6.), fixp(8/6.));
 } // </advc.130i>
 
-/*  <advc.130k> Random number to add or subtract from state counters
+/*  advc.130k: Random number to add or subtract from state counters
 	(instead of just incrementing or decrementing). Binomial distribution
 	with 2 trials and a probability of pr.
 	Non-negative result, caller will have to multiply by -1 to decrease a counter.
 	Result is capped at iUpperCap; -1: none. */
 int CvTeamAI::AI_randomCounterChange(int iUpperCap, scaled rProb) const
 {
-	CvGameSpeedInfo const& kSpeed = GC.getInfo(GC.getGame().getGameSpeedType());
-	int iSpeedPercent = kSpeed.getGoldenAgePercent();
+	CvGame const& kGame = GC.getGame();
+	int iSpeedPercent = GC.getInfo(kGame.getGameSpeedType()).get(
+				CvGameSpeedInfo::AIMemoryRandPercent);
 	scaled rOurEra = AI_getCurrEraFactor();
-	if(rOurEra < fixp(0.5))
-		iSpeedPercent = kSpeed.getGrowthPercent();
+	if (rOurEra < fixp(0.5))
+		iSpeedPercent = kGame.getSpeedPercent();
 	else if (rOurEra < fixp(1.5))
-		iSpeedPercent = (kSpeed.getGrowthPercent() + kSpeed.getGoldenAgePercent()) / 2;
+		iSpeedPercent = (kGame.getSpeedPercent() + iSpeedPercent) / 2;
 	rProb *= scaled(100, std::max(50, iSpeedPercent));
 	int iR = 0;
 	if (SyncRandSuccess(rProb))
 		iR++;
 	if (SyncRandSuccess(rProb))
 		iR++;
-	if(iUpperCap < 0)
+	if (iUpperCap < 0)
 		return iR;
 	return std::min(iR, iUpperCap);
-} // </advc.130k>
+}
 
 
 void CvTeamAI::AI_doCounter()
@@ -5883,7 +5884,8 @@ void CvTeamAI::AI_doWar()
 		{
 			FAssert(isAtWar(eLoopTeam));
 
-			if (AI_getAtWarCounter(eLoopTeam) > ((GET_TEAM(eLoopTeam).AI_isLandTarget(getID())) ? 9 : 3))
+			if (AI_getAtWarCounter(eLoopTeam) >
+				(GET_TEAM(eLoopTeam).AI_isLandTarget(getID()) ? 9 : 3))
 			{
 				if (gTeamLogLevel >= 1) logBBAI("    Team %d (%S) switching WARPLANS against team %d (%S) from ATTACKED_RECENT to ATTACKED with enemy power percent %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eLoopTeam, GET_PLAYER(GET_TEAM(eLoopTeam).getLeaderID()).getCivilizationDescription(0), iEnemyPowerPercent);
 				AI_setWarPlan(eLoopTeam, WARPLAN_ATTACKED);
@@ -6104,7 +6106,8 @@ void CvTeamAI::AI_doWar()
 				continue;
 
 			if (AI_getAtWarCounter(eEnemy) > std::max(10,
-				(14 * GC.getInfo(kGame.getGameSpeedType()).getVictoryDelayPercent()) / 100))
+				// advc.252: Was VictoryDelay. I don't think we should be this patient.
+				(14 * GC.getInfo(kGame.getGameSpeedType()).getTrainPercent()) / 100))
 			{
 				// If nothing is happening in war
 				if (AI_getWarSuccess(eEnemy) + GET_TEAM(eEnemy).AI_getWarSuccess(getID()) <
@@ -6112,7 +6115,7 @@ void CvTeamAI::AI_doWar()
 				{
 					if (SyncRandOneChanceIn(8))
 					{
-						bool bNoFighting = true; // advc: Refactored the computation of this
+						bool bNoFighting = true;
 						for (MemberAIIter itOurMember(getID());
 							itOurMember.hasNext(); ++itOurMember)
 						{
@@ -6145,7 +6148,8 @@ void CvTeamAI::AI_doWar()
 
 				// Fought to a long draw
 				if (AI_getAtWarCounter(eEnemy) > ((AI_getWarPlan(eEnemy) == WARPLAN_TOTAL ? 40 : 30) *
-					GC.getInfo(kGame.getGameSpeedType()).getVictoryDelayPercent()) / 100)
+					// advc.252: was VictoryDelay
+					GC.getInfo(kGame.getGameSpeedType()).getTrainPercent()) / 100)
 				{
 					int iOurValue = AI_endWarVal(eEnemy);
 					int iTheirValue = GET_TEAM(eEnemy).AI_endWarVal(getID());
@@ -6181,16 +6185,22 @@ void CvTeamAI::AI_doWar()
 
 	//if (getAnyWarPlanCount(true) == 0 || iEnemyPowerPercent < 45)
 	// K-Mod. Some more nuance to the conditions for considering war
-	// First condition: only consider a new war if there are no current wars that need more attention. (local total war, or a war we aren't winning)
+	/*	First condition: only consider a new war if there are no current wars
+		that need more attention. (local total war, or a war we aren't winning) */
 	bool bConsiderWar = (!bAnyWarPlan ||
 			(iEnemyPowerPercent < 45 && !(bLocalWarPlan && bTotalWarPlan) &&
 			AI_getWarSuccessRating() > (bTotalWarPlan ? 40 : 15)));
-	// Second condition: don't consider war very early in the game. It would be unfair on human players to rush them with our extra starting units and techs!
+	/*	Second condition: don't consider war very early in the game. It would be unfair
+		on human players to rush them with our extra starting units and techs! */
 	bConsiderWar = (bConsiderWar &&
-		(kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ||
-		 kGame.getElapsedGameTurns() >= GC.getInfo(kGame.getGameSpeedType()).getBarbPercent() * 30 / 100 ||
-		 kGame.getNumCivCities() > GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities() * kGame.countCivPlayersAlive()/2));
-	// (Perhaps the no-war turn threshold should depend on the game difficulty level; but I don't think it would make much difference.)
+			(kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ||
+			 kGame.getElapsedGameTurns() * 100 >=
+			 GC.getInfo(kGame.getGameSpeedType()).getBarbPercent() * 30 ||
+			 kGame.getNumCivCities() * 2 >
+			 GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities() *
+			 kGame.countCivPlayersAlive()));
+	/*	(Perhaps the no-war turn threshold should depend on the game difficulty level;
+		but I don't think it would make much difference.) */
 
 	if (bConsiderWar)
 	// K-Mod end
@@ -6315,7 +6325,7 @@ void CvTeamAI::AI_doWar()
 							(!bVassal || iNoWarRoll >= AI_noWarAttitudeProb(AI_getAttitude(eLoopMasterTeam))))
 						{
 							int iDefensivePower = (GET_TEAM(eTarget).getDefensivePower(getID()) * 2) / 3;
-							if (iDefensivePower < ((iOurPower * ((iPass > 1) ?
+							if (iDefensivePower < ((iOurPower * (iPass > 1 ?
 								AI_maxWarDistantPowerRatio() : AI_maxWarNearbyPowerRatio())) / 100))
 							{
 								// XXX make sure they share an area....

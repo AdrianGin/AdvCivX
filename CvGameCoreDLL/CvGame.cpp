@@ -246,7 +246,7 @@ void CvGame::setInitialItems()
 		{
 			iStartTurn += ((kGameHandicap.getAIStartingUnitMultiplier() * 10 +
 					kGameHandicap.getAIStartingWorkerUnits() * 10) *
-					GC.getInfo(getGameSpeedType()).getGrowthPercent()) / 100;
+					getSpeedPercent()) / 100;
 		} // <advc.250c>
 		if (getStartTurn() != iStartTurn)
 		{
@@ -4012,12 +4012,15 @@ int CvGame::getImprovementUpgradeTime(ImprovementTypes eImprovement) const
 	return iTime;
 }
 
-/*	advc: 3 for Marathon, 0.67 for Quick. Based on VictoryDelay. For cases where
-	there isn't a more specific game speed modifier that could be applied. (E.g.
-	tech costs should be adjusted based on iResearchPercent, not on this function.) */
-scaled CvGame::gameSpeedMultiplier() const
+/*	advc.252: Default modifier for fully adjusting minor aspects of the rules or AI
+	to the game speed setting (i.e. when adding an element to CvGameSpeedInfo isn't
+	worth the trouble).
+	Call locations not tagged with comments; had mostly used VictoryDelay before. */
+int CvGame::getSpeedPercent() const
 {
-	return per100(GC.getInfo(getGameSpeedType()).getVictoryDelayPercent());
+	/*	The relation of unit movement (not affected by game speed) to tech pace
+		is what characterizes the game speed settings best in my book */
+	return GC.getInfo(getGameSpeedType()).getResearchPercent();
 }
 
 bool CvGame::canTrainNukes() const
@@ -4174,17 +4177,13 @@ void CvGame::incrementElapsedGameTurns()
 // advc.251:
 int CvGame::AIHandicapAdjustment() const
 {
-	int iGameTurn = getGameTurn();
-	int iVictoryDelayPercent = GC.getInfo(getGameSpeedType()).getVictoryDelayPercent();
-	if (iVictoryDelayPercent > 0)
-		iGameTurn = (iGameTurn * 100) / iVictoryDelayPercent;
 	int iIncrementTurns = GC.getInfo(getHandicapType()).getAIHandicapIncrementTurns();
 	if (iIncrementTurns == 0)
 		return 0;
 	/*	Flip sign b/c we're dealing with cost modifiers that are supposed to decrease.
 		Only if a negative AIHandicapIncrement is set in XML, the modifiers are
 		supposed to increase. */
-	return -iGameTurn / iIncrementTurns;
+	return (-getGameTurn() * 100) / (iIncrementTurns * getSpeedPercent());
 }
 
 
@@ -4618,7 +4617,7 @@ int CvGame::getGlobalWarmingChances() const
 		probability per chance, I hope to get roughly the same number of
 		actual events per game. */
 	scaled rIndexPerChance = GC.getDefineINT("GLOBAL_WARMING_INDEX_PER_CHANCE");
-	rIndexPerChance *= per100(GC.getInfo(getGameSpeedType()).getVictoryDelayPercent());
+	rIndexPerChance *= per100(getSpeedPercent());
 	/*	advc.055: The more teams there are, the less evenly the world tends to
 		develop. GW causes the most damage when much of the world has a similar
 		tech level in the middle of the Industrial era. */
@@ -4708,8 +4707,7 @@ int CvGame::calculateGwSeverityRating() const
 	/*	advc: Was long, which is equivalent to int. Could use long long,
 		but it looks like 32 bit should suffice. */
 	int const x = GC.getDefineINT("GLOBAL_WARMING_PROB") * getGlobalWarmingIndex() /
-			std::max(1, GC.getMap().getLandPlots() * 4 *
-			GC.getInfo(getGameSpeedType()).getVictoryDelayPercent());
+			(GC.getMap().getLandPlots() * 4 * getSpeedPercent());
 	// shape parameter. Lower values result in the function being steeper earlier.
 	int const b = 55; // advc.055: was 70
 	return 100 - (b * 100) / (b + SQR(x));
@@ -6289,7 +6287,7 @@ void CvGame::doGlobalWarming()
 	for (int i = 0; i < iGlobalWarmingRolls; i++)
 	{
 		// note, warming prob out of 1000, not percent.
-		int iLeftOdds = 10 * GC.getInfo(getGameSpeedType()).getVictoryDelayPercent();
+		int iLeftOdds = 10 * getSpeedPercent();
 		if (SyncRandNum(iLeftOdds) >= GC.getDefineINT("GLOBAL_WARMING_PROB"))
 			continue;
 		//CvPlot* pPlot = GC.getMap().syncRandPlot(RANDPLOT_LAND | RANDPLOT_NOT_CITY);
@@ -6897,10 +6895,9 @@ void CvGame::createBarbarianCities()
 	if (getNumCivCities() < countCivPlayersAlive() * 2)
 			return;
 
-	if (getElapsedGameTurns() * (getStartEra() + 1) * 200 <=
+	if (getElapsedGameTurns() * (getStartEra() + 1) * 100 <=
 		kGameHandicap.getBarbarianCityCreationTurnsElapsed() *
-		// advc.300: Add 100 to dilute effect (and times 200 on the left side)
-		(GC.getInfo(getGameSpeedType()).getBarbPercent() + 100))
+		GC.getInfo(getGameSpeedType()).getBarbPercent())
 	{
 		return;
 	}
@@ -7316,14 +7313,10 @@ bool CvGame::isBarbarianCreationEra() const
 int CvGame::getBarbarianStartTurn() const
 {
 	int iTargetElapsed = GC.getInfo(getHandicapType()).
-			getBarbarianCreationTurnsElapsed();
-	// Dilute impact of game speed on start turn
-	iTargetElapsed *= GC.getInfo(getGameSpeedType()).getBarbPercent() + 100;
-	int iDivisor = 200;
-	/*	This term is new. Well, not entirely, it's also applied to
-		BarbarianCityCreationTurnsElapsed. */
-	iDivisor *= std::max(1, (int)getStartEra());
-	iTargetElapsed /= iDivisor;
+			getBarbarianCreationTurnsElapsed() *
+			GC.getInfo(getGameSpeedType()).getBarbPercent();
+	// Akin to the era adjustment in createBarbarianCities
+	iTargetElapsed /= (100 * std::max(1, (int)getStartEra()));
 	int iStartTurn = getStartTurn();
 	// Have Barbarians appear earlier in Ancient Advanced Start
 	if (isOption(GAMEOPTION_ADVANCED_START) && getStartEra() <= 0 &&
@@ -7422,23 +7415,27 @@ int CvGame::createBarbarianUnits(int iUnitsToCreate, int iUnitsPresent,
 			UnitAITypes eLoadAI = UNITAI_ATTACK;
 			for (int i = 0; i < 2; i++)
 			{
-				UnitTypes eLoadUnit = randomBarbarianUnit(eLoadAI, kArea);
+				UnitTypes eLoadUnit = randomBarbarianUnit(eLoadAI,
+						pTransport->getPlot());
 				if (eLoadUnit == NO_UNIT)
 					break;
 				CvUnit* pLoadUnit = GET_PLAYER(BARBARIAN_PLAYER).initUnit(
 						eLoadUnit, pTransport->getX(), pTransport->getY(), eLoadAI);
-				/*	Don't set pTransport to UNITAI_ASSAULT_SEA -- that's for
+				/*	(Don't set pTransport to UNITAI_ASSAULT_SEA -- that's for
 					medium-/large-scale invasions, and too laborious to adjust.
-					Instead add an unload routine to CvUnitAI::barbAttackSeaMove. */
+					Instead add an unload routine to CvUnitAI::barbAttackSeaMove.) */
 				if (pLoadUnit == NULL)
 					break;
 				pLoadUnit->setTransportUnit(pTransport);
+				// <advc.304>
+				getBarbarianWeightMap().getActivityMap().change(pLoadUnit->getPlot(),
+						BarbarianActivityMap::maxStrength() / 2, 2); // </advc.304>
 				iCreated++;
 				/*	Only occasionally spawn two units at once. Prefer the natural
 					way, i.e. a ship receiving a second passenger while travelling
 					to its target through fog of war. (I don't think that happens
-					often enough though ...) */
-				if (pTransport->getCargo() > 1 || SyncRandSuccess100(70))
+					often though ...) */
+				if (pTransport->getCargo() > 1 || SyncRandSuccess100(73))
 					break;
 			}
 		}
@@ -7480,7 +7477,7 @@ int CvGame::createBarbarianUnits(int iUnitsToCreate, int iUnitsPresent,
 		if (pShelf != NULL)
 			eUnitAI = UNITAI_ATTACK_SEA;
 		// Original code moved into new function:
-		UnitTypes eUnitType = randomBarbarianUnit(eUnitAI, kArea);
+		UnitTypes eUnitType = randomBarbarianUnit(eUnitAI, *pPlot);
 		if (eUnitType == NO_UNIT)
 			return iCreated;
 		CvUnit* pNewUnit = GET_PLAYER(BARBARIAN_PLAYER).initUnit(eUnitType,
@@ -7552,29 +7549,47 @@ bool CvGame::killBarbarian(int iUnitsPresent, int iTiles, int iPop,
 	// Don't want large Barbarian continents crawling with units
 	rDivisor.exponentiate(fixp(0.7));
 	rDivisor *= 5;
-	if (SyncRandSuccess(iUnitsPresent / rDivisor))
+	if (!SyncRandSuccess(iUnitsPresent / rDivisor))
+		return false;
+	if (pShelf != NULL)
+		return pShelf->killBarbarian();
+	CvUnit* pVictim = NULL;
+	int iBestValue = 0;
+	/*	Same order as for animal culling. Should result in
+		first-in-first-out behavior; fair enough for breaking ties. */
+	FOR_EACH_UNIT_VAR(pUnit, GET_PLAYER(BARBARIAN_PLAYER))
 	{
-		if (pShelf != NULL)
-			return pShelf->killBarbarian();
-		/*	The same method as for animal culling. Should result
-			in first-in-first-out behavior; fair enough. */
-		FOR_EACH_UNIT_VAR(pUnit, GET_PLAYER(BARBARIAN_PLAYER))
+		CvUnit& u = *pUnit;
+		if (u.isAnimal() || !u.isArea(kArea) ||
+			u.getUnitCombatType() == NO_UNITCOMBAT)
 		{
-			CvUnit& u = *pUnit;
-			if (u.isAnimal() || !u.isArea(kArea) ||
-				u.getUnitCombatType() == NO_UNITCOMBAT)
-			{
-				continue;
-			}
-			u.kill(false);
-			return true;
+			continue;
+		}
+		int iKillValue = 1;
+		if (!u.getPlot().isVisibleToWatchingHuman())
+			iKillValue += 100;
+		if (!u.getPlot().isVisibleToCivTeam())
+			iKillValue += 10;
+		if (u.getPlot().isCity() &&
+			u.getPlot().getNumDefenders(BARBARIAN_PLAYER) >
+			GC.getInfo(getHandicapType()).getBarbarianInitialDefenders())
+		{
+			iKillValue += 5;
+		}
+		if (iKillValue > iBestValue)
+		{
+			iBestValue = iKillValue;
+			pVictim = &u;
 		}
 	}
-	return false;
+	if (pVictim == NULL)
+		return false;
+	pVictim->kill(false);
+	return true;
 }
 
 // Based on BtS code originally in createBarbarianUnits
-UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
+UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvPlot const& kPlot)
 {
 	bool bSea;
 	switch (eUnitAI)
@@ -7583,6 +7598,19 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 	case UNITAI_ATTACK: bSea = false; break;
 	default: return NO_UNIT;
 	}
+	/*	<advc.301> Era numbers are just too coarse. Going by tech costs
+		isn't great for mod-mods (which may completely overhaul tech costs),
+		don't know how to do this more properly with reasonable effort. */
+	bool bAnyExpensiveTech = false;
+	FOR_EACH_ENUM(Tech)
+	{
+		if (GET_TEAM(BARBARIAN_TEAM).isHasTech(eLoopTech) &&
+			GC.getInfo(eLoopTech).getResearchCost() > 100)
+		{
+			bAnyExpensiveTech = true;
+			break;
+		}
+	} // </advc.301>
 	UnitTypes eR = NO_UNIT;
 	int iBestValue = 0;
 	CvCivilization const& kCiv = GET_PLAYER(BARBARIAN_PLAYER).getCivilization();
@@ -7619,28 +7647,15 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 					break;
 				}
 			}
-			if (!bValid || !kArea.hasAnyAreaPlayerBonus(eAndBonus))
+			if (!bValid || !kPlot.getArea().hasAnyAreaPlayerBonus(eAndBonus))
 				continue;
 		}
-		/*	No units from more than 1 era ago (obsolescence too difficult to test).
-			hasTech already tested by canTrain, but era shouldn't be tested there
-			b/c it's OK for Barbarian cities to train outdated units
-			(they only will if they can't train anything better). */
-		TechTypes const eAndTech = kUnit.getPrereqAndTech();
-		int iUnitEra = 0;
-		if (eAndTech != NO_TECH)
-			iUnitEra = GC.getInfo(eAndTech).getEra();
-		for (size_t j = 0; j < aeAndBonusTechs.size(); j++)
-		{
-			iUnitEra = std::max<int>(iUnitEra,
-					GC.getInfo(aeAndBonusTechs[j]).getEra());
-		}
-		if (iUnitEra + 1 < getCurrentEra())
-			continue; // </advc.301>
-		bool bFound = false;
+		//bool bFound = false;
+		// Store these techs for the era check below
+		std::vector<TechTypes> aeOrBonusTechsFound;
+		// </advc.301>
 		bool bRequires = false;
-		for (int j = 0; j < kUnit.getNumPrereqOrBonuses() &&
-			!bFound; j++)
+		for (int j = 0; j < kUnit.getNumPrereqOrBonuses(); j++)
 		{
 			bRequires = true;
 			BonusTypes const eOrBonus = kUnit.getPrereqOrBonuses(j);
@@ -7648,16 +7663,90 @@ UnitTypes CvGame::randomBarbarianUnit(UnitAITypes eUnitAI, CvArea const& kArea)
 			if (GET_TEAM(BARBARIAN_TEAM).isHasTech(kOrBonus.getTechCityTrade()) &&
 				// <advc.301>
 				GET_TEAM(BARBARIAN_TEAM).isHasTech(kOrBonus.getTechReveal()) &&
-				kArea.hasAnyAreaPlayerBonus(eOrBonus)) // </advc.301>
+				kPlot.getArea().hasAnyAreaPlayerBonus(eOrBonus))
 			{
-				bFound = true;
+				//bFound = true;
+				aeOrBonusTechsFound.push_back(kOrBonus.getTechCityTrade());
+				aeOrBonusTechsFound.push_back(kOrBonus.getTechReveal());
+				// </advc.301>
 			}
 		}
-		if (bRequires && !bFound)
+		if (bRequires && aeOrBonusTechsFound.empty())
 			continue;
-		int iValue = 1 + SyncRandNum(1000);
+		int iDieSides = 1000;
+		// <advc.301>
+		TechTypes const eAndTech = kUnit.getPrereqAndTech();
+		int iUnitEra = 0;
+		if (eAndTech != NO_TECH)
+			iUnitEra = GC.getInfo(eAndTech).getEra();
+		// No units from more than 1 era behind the civs
+		if (iUnitEra + 1 < getCurrentEra())
+			continue;
+		// Treat Warrior as pre-Ancient in the following
+		if (eAndTech == NO_TECH)
+			iUnitEra = -1;
+		// Mounted units only in open terrain
+		static UnitCombatTypes const eMounted = (UnitCombatTypes)
+				GC.getInfoTypeForString("UNITCOMBAT_MOUNTED");
+		bool const bMounted = (kUnit.getUnitCombatType() == eMounted);
+		if (bMounted)
+		{
+			if (kPlot.isWater() || kPlot.defenseModifier(NO_TEAM, true) > 0)
+				continue;
+			// Don't place them in disease-ridden land either
+			int iBadHealth = 0;
+			for (SquareIter it(kPlot, 1); it.hasNext(); ++it)
+			{
+				if (it->isFeature())
+				{
+					iBadHealth += std::min(0,
+							GC.getInfo(it->getFeatureType()).getHealthPercent());
+				}
+			}
+			if (iBadHealth <= -100)
+				continue;
+		}
+		// Higher chance for non-outdated units w/o resource reqs (i.e. Archer)
+		scaled const rNoBonusReqDieSidesMult = fixp(1.3);
+		if ((!bRequires && eAndBonus == NO_BONUS &&
+			/*	Want Warrior to be as likely as Archer until Axes and Spears
+				become available. The game era is usually already Classical
+				when Archers become available. */
+			(!bAnyExpensiveTech || iUnitEra + 1 >= getCurrentEra())) ||
+			bMounted) // To make up for the terrain restriction
+		{
+			iDieSides = (iDieSides * rNoBonusReqDieSidesMult).uround();
+		} // </advc.301>
+		int iValue = 1 + SyncRandNum(iDieSides);
 		if (kUnit.getUnitAIType(eUnitAI))
-			iValue += 200;
+		{
+			//iValue += 200;
+			// <advc.301>
+			iValue += (rNoBonusReqDieSidesMult + 1).getPercent();
+		}
+		for (size_t j = 0; j < aeAndBonusTechs.size(); j++)
+		{
+			iUnitEra = std::max<int>(iUnitEra,
+					GC.getInfo(aeAndBonusTechs[j]).getEra());
+		}
+		{
+			int iOrBonusEra = MAX_INT;
+			for (size_t j = 0; j < aeOrBonusTechsFound.size(); j++)
+			{
+				iOrBonusEra = std::min<int>(iOrBonusEra,
+						GC.getInfo(aeOrBonusTechsFound[j]).getEra());
+			}
+			if (iOrBonusEra < MAX_INT)
+				iUnitEra = std::max(iUnitEra, iOrBonusEra);
+		}
+		/*	Absolute preference for units of the current or previous era
+			of the Barbarians. Due to the game era check above and Barbarians
+			normally being behind the game era, this will matter mainly just
+			for Warrior, which we're treating as pre-Ancient here:
+			No more Warriors once Swords are available. */
+		iValue += 10000 * (1 + std::min(iUnitEra,
+				GET_TEAM(BARBARIAN_TEAM).getCurrentEra() - 1));
+		// </advc.301>
 		if (iValue > iBestValue)
 		{
 			eR = eUnit;
@@ -7730,8 +7819,11 @@ void CvGame::updateMoves()
 			aiShuffle[iI] = iI;
 		}
 	} // <advc.001y>
-	int const iMaxUnitUpdateAttempts = 18;
-	FAssertMsg(m_iUnitUpdateAttempts != iMaxUnitUpdateAttempts - 5, "Unit stuck in a loop");
+	int iMaxUnitUpdateAttempts = 18;
+	FAssertMsg(m_iUnitUpdateAttempts != iMaxUnitUpdateAttempts, "Unit stuck in a loop");
+#ifdef _DEBUG
+	iMaxUnitUpdateAttempts += 4; // Extra iterations for debugging
+#endif
 	// </advc.001y>
 	for (int iI = 0; iI < MAX_PLAYERS; iI++)
 	{
@@ -9654,7 +9746,8 @@ int CvGame::getCultureThreshold(CultureLevelTypes eLevel) const
 int CvGame::freeCityCultureFromTrait(TraitTypes eTrait) const
 {
 	return (GC.getInfo(eTrait).get(CvTraitInfo::FREE_CITY_CULTURE) *
-			gameSpeedMultiplier()).floor();
+			// advc.251: No longer fully adjusted to game speed
+			GC.getInfo(getGameSpeedType()).getTrainPercent()) / 100;
 }
 
 
@@ -10242,7 +10335,9 @@ void CvGame::doVoteSelection()
 			continue;
 		}
 		setVoteTimer(eVS, (GC.getInfo(eVS).getVoteInterval() *
-				GC.getInfo(getGameSpeedType()).getVictoryDelayPercent()) / 100);
+				// advc.252: Had used VictoryDelayPercent
+				GC.getInfo(getGameSpeedType()).get(
+				CvGameSpeedInfo::VoteIntervalPercent)) / 100);
 
 		for (TeamIter<MAJOR_CIV> itTeam1; itTeam1.hasNext(); ++itTeam1)
 		{
@@ -10429,13 +10524,13 @@ scaled CvGame::goodyHutEffectFactor(
 	static int const iGOODY_BUFF_START_TURN = GC.getDefineINT("GOODY_BUFF_START_TURN");
 	static int const iGOODY_BUFF_PEAK_TURN = GC.getDefineINT("GOODY_BUFF_PEAK_TURN");
 	static int const iGOODY_BUFF_PEAK_MULTIPLIER = GC.getDefineINT("GOODY_BUFF_PEAK_MULTIPLIER");
-	CvGameSpeedInfo const& kSpeed = GC.getInfo(getGameSpeedType());
-	scaled rTurnsSpeedFactor = per100(kSpeed.getGrowthPercent());
+	scaled rTurnsSpeedFactor = per100(GC.getGame().getSpeedPercent());
 	scaled rWorldFactor = 1;
 		// Not sure if map-size adjustment is a good idea
 		//=per100(GC.getInfo(GC.getMap().getWorldSize()).getResearchPercent());
-	scaled rFinalSpeedFactor = (bSpeedAdjust ?
-			per100(kSpeed.getTrainPercent()) * rWorldFactor : 1);
+	scaled rFinalSpeedFactor = (!bSpeedAdjust ? 1 :
+			per100(GC.getInfo(GC.getGame().getGameSpeedType()).getTrainPercent()) *
+			rWorldFactor);
 	scaled rStartTurn = scaled::max(0, iGOODY_BUFF_START_TURN * rTurnsSpeedFactor);
 	scaled rPeakTurn = scaled::max(rStartTurn, iGOODY_BUFF_PEAK_TURN * rTurnsSpeedFactor);
 	scaled rPeakMult = std::max(1, iGOODY_BUFF_PEAK_MULTIPLIER);
