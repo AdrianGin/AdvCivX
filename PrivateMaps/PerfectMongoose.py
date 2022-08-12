@@ -411,6 +411,12 @@ class MapConstants:
 		#Number of tectonic plates. advc: Set in PerformTectonics.
 		#self.hmNumberOfPlates = int(float(self.hmWidth * self.hmHeight) * 0.0016)
 
+		# advc: Exponent for the chance of re-rolling plate seeds near a
+		# wrapping(!) edge of the map. A higher exponent makes such re-rolls
+		# less likely. Use 0 to disable re-rolls, i.e. to use an entirely
+		# uniform distribution of plate seeds across the map.
+		self.plateSeedRerollExp = 8
+
 		#Influence of the plate map, or how much of it is added to the height map.
 		self.plateMapScale = 1.1
 
@@ -1810,6 +1816,16 @@ class ElevationMap2(FloatMap):
 					raise ValueError, "endless loop in region seed placement"
 				seedX = PRand.randint(0, mc.hmWidth  + 1)
 				seedY = PRand.randint(0, mc.hmHeight + 1)
+				# <advc>
+				if mc.plateSeedRerollExp > 0:
+					if mc.WrapX and PRand.random() < pow(
+							1.0 - min(mc.hmWidth + 1 - seedX, seedX) / (mc.hmWidth + 1.0),
+							mc.plateSeedRerollExp):
+						continue
+					elif mc.WrapY and PRand.random() < pow(
+							1.0 - min(mc.hmHeight + 1 - seedY, seedY) / (mc.hmHeight + 1.0),
+							mc.plateSeedRerollExp):
+						continue # </advc>
 				n = GetHmIndex(seedX, seedY)
 				if not self.isSeedBlocked(plateList, seedX, seedY):
 					self.plateMap[n].plateID = i
@@ -1859,7 +1875,7 @@ class ElevationMap2(FloatMap):
 						xx, yy = CoordsFromIndex(ii, self.width) # advc.001
 						newPlot = (xx, yy, plateID)
 						growthPlotList.append(newPlot)
-			#move plot to the end of the list if room left, otherwise
+			#move plot to the end of the list if room left,
 			#delete it if no room left
 			if roomLeft:
 				growthPlotList.append(plot)
