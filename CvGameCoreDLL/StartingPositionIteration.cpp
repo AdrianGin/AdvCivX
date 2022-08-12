@@ -1928,9 +1928,9 @@ void StartingPositionIteration::doIterations(PotentialSites& kPotentialSites)
 		gDLL->callUpdater();
 		kPotentialSites.updateCurrSites(true); // Also ensures that we never return to a site
 	}
-	#ifdef SPI_LOG
-		gDLL->logMsg("StartingPos.log", "Terminated b/c of time limit", false, false);
-	#endif
+#ifdef SPI_LOG
+	gDLL->logMsg("StartingPos.log", "Terminated b/c of time limit", false, false);
+#endif
 }
 
 
