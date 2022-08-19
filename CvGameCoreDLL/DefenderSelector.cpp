@@ -204,9 +204,12 @@ void RandomizedSelector::cacheDefenders(PlayerTypes eAttackerOwner) const
 
 int RandomizedSelector::biasValue(CvUnit const& kUnit) const
 {
-	return kUnit.currHitPoints();
-		// Bias for units with higher AI power value?
-		//+ 2 * kUnit.getUnitInfo().getPower()
+	// Prefer high defensive modifier (but exclude generic extra combat modifier)
+	CombatDetails cd;
+	kUnit.maxCombatStr(kUnit.plot(), NULL, &cd);
+	return kUnit.currHitPoints() * (100 + cd.iModifierTotal - cd.iExtraCombatPercent);
+		// Minor bias for strong units?
+		//+ cd.iBaseCombatStr
 }
 
 int RandomizedSelector::randomValue(CvUnit const& kUnit, PlayerTypes eAttackerOwner) const
