@@ -2496,47 +2496,10 @@ int CvPlot::getFeatureProduction(BuildTypes eBuild, TeamTypes eTeam, CvCity** pp
 
 
 CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner,
-	/* <advc> */ DefenderFilters& kFilters) const
+	DefenderFilters& kFilters) const // advc
 {
-	// Ensure consistency of parameters
-	if (kFilters.m_pAttacker != NULL)
-	{
-		FAssert(kFilters.m_pAttacker->getOwner() == kFilters.m_eAttackingPlayer);
-		kFilters.m_eAttackingPlayer = kFilters.m_pAttacker->getOwner();
-	}
-	// isEnemy implies isPotentialEnemy
-	FAssert(!kFilters.m_bTestEnemy || !kFilters.m_bTestPotentialEnemy); // </advc>
-	// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000
-	int iBestUnitRank = -1;
-	CvUnit* pBestUnit = NULL;
-	FOR_EACH_UNIT_VAR_IN(pLoopUnit, *this)
-	{
-		CvUnit& kUnit = *pLoopUnit;
-		if (eOwner != NO_PLAYER && kUnit.getOwner() != eOwner)
-			continue;
-		if (kUnit.isCargo()) // advc: Was previously only checked with TestCanMove
-			continue;
-		if (kFilters.m_bTestCanMove && !kUnit.canMove())
-			continue;
-		// <advc> Moved the other conditions into CvUnit::canBeAttackedBy (new function)
-		if (kFilters.m_eAttackingPlayer == NO_PLAYER ||
-			kUnit.canBeAttackedBy(kFilters.m_eAttackingPlayer,
-			kFilters.m_pAttacker, kFilters.m_bTestEnemy, kFilters.m_bTestPotentialEnemy,
-			kFilters.m_bTestVisible, // advc.028
-			kFilters.m_bTestCanAttack))
-		{
-			if (kFilters.m_bTestAny)
-				return &kUnit; // </advc>
-			if (kUnit.isBetterDefenderThan(pBestUnit, kFilters.m_pAttacker,
-				&iBestUnitRank, // UncutDragon
-				kFilters.m_bTestVisible)) // advc.061
-			{
-				pBestUnit = &kUnit;
-			}
-		}
-	}
-	// BETTER_BTS_AI_MOD: END
-	return pBestUnit;
+	// advco.defr: BtS/LfB code moved into BestDefenderSelector::getDefender
+	return m_pDefenderSelector->getDefender(eOwner, kFilters);
 }
 
 /*	advco.defr: Set of units that the UI should gray out b/c they're unavailable
@@ -2546,10 +2509,10 @@ CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner,
 void CvPlot::unavailableDefendersVsActivePlayer(std::set<CvUnit const*>& apDef) const
 {
 	std::vector<CvUnit*> availableVector;
-	DefenderSelector::Settings settings(NO_PLAYER, getActivePlayer(),
+	DefenderFilters filters(getActivePlayer(),
 			gDLL->getInterfaceIFace()->getHeadSelectedUnit(),
 			true, true, !GC.getGame().isDebugMode());
-	m_pDefenderSelector->getDefenders(availableVector, settings);
+	m_pDefenderSelector->getDefenders(availableVector, NO_PLAYER, filters);
 	if (availableVector.empty()) // Meaning that all are available
 		return;
 	std::set<CvUnit*> availableSet;
@@ -8387,7 +8350,7 @@ bool CvPlot::hasDefender(bool bTestCanAttack, PlayerTypes eOwner, PlayerTypes eA
 {
 	/*  advc: BBAI had repeated parts of getBestDefender here. To avoid that, I've moved
 		bTestAttack into getBestDefender and gave that function a "bTestAny" param. */
-	CvPlot::DefenderFilters defFilters(eAttackingPlayer, pAttacker, bTestEnemy,
+	DefenderFilters defFilters(eAttackingPlayer, pAttacker, bTestEnemy,
 			bTestPotentialEnemy, false, bTestCanAttack, /*bTestAny=*/true);
 	return (getBestDefender(eOwner, defFilters) != NULL);
 }

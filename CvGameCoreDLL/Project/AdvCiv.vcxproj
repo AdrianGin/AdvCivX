@@ -168,7 +168,7 @@
     <ClCompile Include="..\CyTeamInterface.cpp" />
     <ClCompile Include="..\CyUnit.cpp" />
     <ClCompile Include="..\CyUnitInterface1.cpp" />
-	<ClCompile Include="..\DefenderSelector.cpp" />
+    <ClCompile Include="..\DefenderSelector.cpp" />
     <ClCompile Include="..\EnumMapTest.cpp" />
     <ClCompile Include="..\FAStarFunc.cpp" />
     <ClCompile Include="..\GroupPathFinder.cpp" />
@@ -330,7 +330,8 @@
     <ClInclude Include="..\CySelectionGroup.h" />
     <ClInclude Include="..\CyTeam.h" />
     <ClInclude Include="..\CyUnit.h" />
-	<ClCompile Include="..\DefenderSelector.h" />
+    <ClCompile Include="..\DefenderSelector.h" />
+    <ClInclude Include="..\DefenderFilters.h" />
     <ClInclude Include="..\EnumMap.h" />
     <ClInclude Include="..\EnumTraits.h" />
     <ClInclude Include="..\FAStarFunc.h" />

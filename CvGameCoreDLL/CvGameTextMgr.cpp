@@ -2675,8 +2675,7 @@ bool CvGameTextMgr::setCombatPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
 	// <advc.089>
 	if (pDefender == NULL)
 	{
-		CvPlot::DefenderFilters defFilters(pAttacker->getOwner(), pAttacker,
-				!bForceHostile);
+		DefenderFilters defFilters(pAttacker->getOwner(), pAttacker, !bForceHostile);
 		defFilters.m_bTestCanAttack = false;
 		pDefender = pPlot->getBestDefender(NO_PLAYER, defFilters);
 		if (pDefender != NULL)

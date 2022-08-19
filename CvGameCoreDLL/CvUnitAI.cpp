@@ -658,7 +658,7 @@ int CvUnitAI::AI_attackOdds(const CvPlot* pPlot, bool bPotentialEnemy) const
 {
 	PROFILE_FUNC();
 
-	CvPlot::DefenderFilters defFilters(getOwner(), this,
+	DefenderFilters defFilters(getOwner(), this,
 			!bPotentialEnemy, bPotentialEnemy,
 			true, // advc.028: bTestVisible
 			false); // advc.089: bTestCanAttack - attack isn't necessarily imminent here

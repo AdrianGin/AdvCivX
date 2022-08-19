@@ -14,52 +14,57 @@ void DefenderSelector::uninit() {}
 void DefenderSelector::update() {}
 
 void DefenderSelector::getDefenders(std::vector<CvUnit*>& apDef,
-		Settings const& param) const {}
+		PlayerTypes eOwner, DefenderFilters& kFilters) const {}
 
 BestDefenderSelector::BestDefenderSelector(CvPlot const& kPlot)
 :	DefenderSelector(kPlot) {}
 
 BestDefenderSelector::~BestDefenderSelector() {}
 
-// Cut from CvPlot::getBestDefender; functionally equivalent.
-CvUnit* BestDefenderSelector::getDefender(Settings const& param) const
+/*	Cut from CvPlot::getBestDefender; functionally equivalent unless
+	a comment says otherwise. */
+CvUnit* BestDefenderSelector::getDefender(PlayerTypes eOwner, 
+	DefenderFilters& kFilters) const
 {
-	// <advc> Ensure consistency of parameters
-	FAssert(param.pAttUnit == NULL || param.pAttUnit->getOwner() == param.eAttOwner);
+	// Ensure consistency of parameters
+	if (kFilters.m_pAttacker != NULL)
+	{
+		FAssert(kFilters.m_pAttacker->getOwner() == kFilters.m_eAttackingPlayer);
+		kFilters.m_eAttackingPlayer = kFilters.m_pAttacker->getOwner();
+	}
 	// isEnemy implies isPotentialEnemy
-	FAssert(!param.bTestAtWar || !param.bTestPotentialEnemy); // </advc>
-	CvUnit* pBestDefender = NULL;
+	FAssert(!kFilters.m_bTestEnemy || !kFilters.m_bTestPotentialEnemy); // </advc>
+	// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000
 	int iBestUnitRank = -1;
+	CvUnit* pBestUnit = NULL;
 	FOR_EACH_UNIT_VAR_IN(pLoopUnit, m_kPlot)
 	{
 		CvUnit& kUnit = *pLoopUnit;
-		if (param.eDefOwner != NO_PLAYER &&
-			kUnit.getOwner() != param.eDefOwner)
-		{
+		if (eOwner != NO_PLAYER && kUnit.getOwner() != eOwner)
 			continue;
-		}
-		// advc: Was previously only checked with bTestCanMove - i.e. never.
-		if (kUnit.isCargo())
+		if (kUnit.isCargo()) // advc: Was previously only checked with TestCanMove
+			continue;
+		if (kFilters.m_bTestCanMove && !kUnit.canMove())
 			continue;
 		// <advc> Moved the other conditions into CvUnit::canBeAttackedBy (new function)
-		if (param.eAttOwner == NO_PLAYER ||
-			kUnit.canBeAttackedBy(param.eAttOwner, param.pAttUnit,
-			param.bTestAtWar, param.bTestPotentialEnemy,
-			param.bTestVisible, // advc.028
-			param.bTestCanAttack))
+		if (kFilters.m_eAttackingPlayer == NO_PLAYER ||
+			kUnit.canBeAttackedBy(kFilters.m_eAttackingPlayer,
+			kFilters.m_pAttacker, kFilters.m_bTestEnemy, kFilters.m_bTestPotentialEnemy,
+			kFilters.m_bTestVisible, // advc.028
+			kFilters.m_bTestCanAttack))
 		{
-			if (param.bTestAny)
+			if (kFilters.m_bTestAny)
 				return &kUnit; // </advc>
-			if (kUnit.isBetterDefenderThan(pBestDefender, param.pAttUnit,
+			if (kUnit.isBetterDefenderThan(pBestUnit, kFilters.m_pAttacker,
 				&iBestUnitRank, // UncutDragon
-				param.bTestVisible)) // advc.061
+				kFilters.m_bTestVisible)) // advc.061
 			{
-				pBestDefender = &kUnit;
+				pBestUnit = &kUnit;
 			}
 		}
 	}
 	// BETTER_BTS_AI_MOD: END
-	return pBestDefender;
+	return pBestUnit;
 }
 
 RandomizedSelector::RandomizedSelector(CvPlot const& kPlot) : BestDefenderSelector(kPlot) {}
@@ -76,20 +81,21 @@ void RandomizedSelector::update()
 	m_cache.setValid(false); // Recompute only on demand
 }
 
-CvUnit* RandomizedSelector::getDefender(Settings const& param) const
+CvUnit* RandomizedSelector::getDefender(PlayerTypes eOwner, 
+	DefenderFilters& kFilters) const
 {
 	CvUnit* pRandDefender = NULL;
 	std::vector<CvUnit*> defenders;
-	getDefenders(defenders, param);
+	getDefenders(defenders, eOwner, kFilters);
 	if (defenders.empty())
 	{	// If everyone is available, use the BtS algorithm.
-		return BestDefenderSelector::getDefender(param);
+		return BestDefenderSelector::getDefender(eOwner, kFilters);
 	}
 	int iBestUnitRank = -1;
 	for (size_t i = 0; i < defenders.size(); i++)
 	{
-		if (defenders[i]->isBetterDefenderThan(pRandDefender, param.pAttUnit,
-			&iBestUnitRank, param.bTestVisible))
+		if (defenders[i]->isBetterDefenderThan(pRandDefender, kFilters.m_pAttacker,
+			&iBestUnitRank, kFilters.m_bTestVisible))
 		{
 			pRandDefender = defenders[i];
 		}
@@ -98,15 +104,15 @@ CvUnit* RandomizedSelector::getDefender(Settings const& param) const
 }
 
 void RandomizedSelector::getDefenders(std::vector<CvUnit*>& apDef,
-	Settings const& param) const
+	PlayerTypes eOwner, DefenderFilters& kFilters) const
 {
 	FAssert(apDef.empty());
-	if (param.eAttOwner == NO_PLAYER)
+	if (kFilters.m_eAttackingPlayer == NO_PLAYER)
 	{	// Only valid in async code for plots that the active player can't attack
 		return;
 	}
 	//PROFILE_FUNC(); // Ca. 1.5 permille of the running time
-	validateCache(param.eAttOwner);
+	validateCache(kFilters.m_eAttackingPlayer);
 	for (int i = 0; i < m_cache.size() &&
 		apDef.size() < (size_t)maxAvailableDefenders(); i++)
 	{
@@ -116,16 +122,17 @@ void RandomizedSelector::getDefenders(std::vector<CvUnit*>& apDef,
 			FAssertMsg(pUnit != NULL, "Cache out of date?");
 			continue;
 		}
-		if (param.eDefOwner != NO_PLAYER && pUnit->getOwner() != param.eDefOwner)
+		if (eOwner != NO_PLAYER && pUnit->getOwner() != eOwner)
 			continue;
-		if (pUnit->canBeAttackedBy(param.eAttOwner, param.pAttUnit,
-			param.bTestAtWar, param.bTestPotentialEnemy,
-			param.bTestVisible, // advc.028
-			param.bTestCanAttack))
+		if (pUnit->canBeAttackedBy(kFilters.m_eAttackingPlayer,
+			kFilters.m_pAttacker,
+			kFilters.m_bTestEnemy, kFilters.m_bTestPotentialEnemy,
+			kFilters.m_bTestVisible, // advc.028
+			kFilters.m_bTestCanAttack))
 		{
 			/*	Noncombatants are unavailable unless no proper defender is available:
 				empty apDef means all are available. */
-			if (canCombat(*pUnit, param))
+			if (canCombat(*pUnit, kFilters))
 				apDef.push_back(pUnit);
 		}
 	}
@@ -137,16 +144,17 @@ int RandomizedSelector::maxAvailableDefenders()
 	return 4; // GC.getMAX_AVAILABLE_DEFENDERS()
 }
 
-bool RandomizedSelector::canCombat(CvUnit const& kDefUnit, Settings const& param) const
+bool RandomizedSelector::canCombat(CvUnit const& kDefUnit,
+	DefenderFilters const& kFilters) const
 {
 	if (!kDefUnit.canFight())
 		return false;
-	if (!kDefUnit.isEnemy(TEAMID(param.eAttOwner)))
+	if (!kDefUnit.isEnemy(TEAMID(kFilters.m_eAttackingPlayer)))
 		return false;
 	/*	Assume a land attacker unless a sea attacker is given. In particular,
 		assume a land attacker when an air attacker is given. */
-	bool bSeaAttacker = (param.pAttUnit != NULL &&
-		param.pAttUnit->getDomainType() == DOMAIN_SEA);
+	bool bSeaAttacker = (kFilters.m_pAttacker != NULL &&
+		kFilters.m_pAttacker->getDomainType() == DOMAIN_SEA);
 	if (!bSeaAttacker && !m_kPlot.isWater() &&
 		(kDefUnit.getDomainType() != DOMAIN_LAND || kDefUnit.isCargo()))
 	{
