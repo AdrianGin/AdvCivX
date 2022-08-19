@@ -63,7 +63,7 @@ void CvTeamAI::AI_reset(bool bConstructor)
 	m_aiOpenBordersCounter.reset();
 	m_aiDefensivePactCounter.reset();
 	m_aiShareWarCounter.reset();
-	m_aiWarSuccess.reset();
+	m_arWarSuccess.reset();
 	m_aiSharedWarSuccess.reset(); // advc.130m
 	m_aiEnemyPeacetimeTradeValue.reset();
 	m_aiEnemyPeacetimeGrantValue.reset();
@@ -80,7 +80,7 @@ void CvTeamAI::AI_reset(bool bConstructor)
 			kLoopTeam.m_aiOpenBordersCounter.set(getID(), 0);
 			kLoopTeam.m_aiDefensivePactCounter.set(getID(), 0);
 			kLoopTeam.m_aiShareWarCounter.set(getID(), 0);
-			kLoopTeam.m_aiWarSuccess.set(getID(), 0);
+			kLoopTeam.m_arWarSuccess.set(getID(), 0);
 			kLoopTeam.m_aiSharedWarSuccess.set(getID(), 0); // advc.130m
 			kLoopTeam.m_aiEnemyPeacetimeTradeValue.set(getID(), 0);
 			kLoopTeam.m_aiEnemyPeacetimeGrantValue.set(getID(), 0);
@@ -200,11 +200,8 @@ int CvTeamAI::AI_countMilitaryWeight(CvArea const* pArea) const
 	return iCount;
 }
 
-/*	advc.104: Replacing AI_estimateTotalYieldRate. This is a team function
-	so that we could check for visible demographics. (But we don't b/c the AI
-	routinely cheats in that respect.) */
-scaled CvTeamAI::AI_estimateYieldRate(PlayerTypes ePlayer, YieldTypes eYield,
-	int iSamples) const
+scaled CvTeamAI::AI_estimateDemographic(PlayerTypes ePlayer,
+	PlayerHistoryTypes eDemographic, int iSamples) const
 {
 	//PROFILE_FUNC(); // Called very frequently; about 1.5% of the turn times (July 2019).
 	CvPlayer const& kPlayer = GET_PLAYER(ePlayer);
@@ -221,20 +218,7 @@ scaled CvTeamAI::AI_estimateYieldRate(PlayerTypes ePlayer, YieldTypes eYield,
 		for (int i = 1; i <= iSamples; i++)
 		{
 			int iSampleIndex = iGameTurn - i;
-			int iHist = 0;
-			switch (eYield)
-			{
-			case YIELD_COMMERCE:
-				iHist = kPlayer.getHistory(PLAYER_HISTORY_ECONOMY, iSampleIndex);
-				break;
-			case YIELD_PRODUCTION:
-				iHist = kPlayer.getHistory(PLAYER_HISTORY_INDUSTRY, iSampleIndex);
-				break;
-			case YIELD_FOOD:
-				iHist = kPlayer.getHistory(PLAYER_HISTORY_AGRICULTURE, iSampleIndex);
-				break;
-			default: FAssert(false);
-			}
+			int iHist = kPlayer.getHistory(eDemographic, iSampleIndex);
 			if (iHist > 0) // Omit revolution turns
 				arSamples.push_back(iHist);
 		}
@@ -243,6 +227,29 @@ scaled CvTeamAI::AI_estimateYieldRate(PlayerTypes ePlayer, YieldTypes eYield,
 	if (arSamples.empty())
 		return 0;
 	return stats::median(arSamples);
+}
+
+/*	advc.104: Replacing AI_estimateTotalYieldRate. This is a team function
+	so that we could check for visible demographics. (But we don't b/c the AI
+	routinely cheats in that respect.) */
+scaled CvTeamAI::AI_estimateYieldRate(PlayerTypes ePlayer,
+	YieldTypes eYield, int iSamples) const
+{
+	PlayerHistoryTypes eHistory = NO_PLAYER_HISTORY;
+	switch (eYield)
+	{
+	case YIELD_COMMERCE:
+		eHistory = PLAYER_HISTORY_ECONOMY;
+		break;
+	case YIELD_PRODUCTION:
+		eHistory = PLAYER_HISTORY_INDUSTRY;
+		break;
+	case YIELD_FOOD:
+		eHistory = PLAYER_HISTORY_AGRICULTURE;
+		break;
+	}
+	FAssert(eHistory != NO_PLAYER_HISTORY);
+	return AI_estimateDemographic(ePlayer, eHistory, iSamples);;
 }
 
 /*	K-Mod: return the total yield of the team, estimated by averaging
@@ -262,7 +269,8 @@ int CvTeamAI::AI_estimateTotalYieldRate(YieldTypes eYield) const
 		CvPlayerAI const& kMember = *it;
 		int iSubTotal = 0;
 		int iBase = 0;
-		for (int j = 0; j < iSampleSize; j++)
+		// advc.004s: Out-of-bounds accesses no longer allowed
+		for (int j = 0; j < std::min(iSampleSize, iTurn); j++)
 		{
 			int iSample = 0;
 			switch (eYield)
@@ -404,9 +412,9 @@ AreaAITypes CvTeamAI::AI_calculateAreaAIType(CvArea const& kArea, bool bPreparin
 
 	if (isBarbarian())
 	{
-		if (kArea.getNumCities() - kArea.getCitiesPerPlayer(BARBARIAN_PLAYER) == 0 ||
-			// advc.300: Make (New World) Barbarians relatively peaceable unless outnumbered
-			kArea.getNumCivCities() < kArea.getCitiesPerPlayer(BARBARIAN_PLAYER))
+		if (//kArea.getNumCities() == kArea.getCitiesPerPlayer(BARBARIAN_PLAYER)
+			// advc.300: Relatively peaceable (New World) Barbarians until outnumbered
+			kArea.getTotalPopulation() <= kArea.getPopulationPerPlayer(BARBARIAN_PLAYER) * 2)
 		{
 			return AREAAI_ASSAULT;
 		}
@@ -746,60 +754,53 @@ bool CvTeamAI::AI_isLandTarget(TeamTypes eTarget,
 }
 
 /*	BETTER_BTS_AI_MOD, General AI, 01/10/10, jdog5000: START
-	advc.pf: Moved from CvPlot, refactored. At least the first one cares about
-	war plans and is therefore AI code. The second one doesn't have a plausible
-	use for human players either, and I want to keep them together. */
+	advc.pf: Moved from CvPlot. At least the first one cares about war plans and
+	is therefore AI code. The second one doesn't have a plausible use for
+	human players either, and I want to keep them together. */
 bool CvTeamAI::AI_isHasPathToEnemyCity(CvPlot const& kFrom, bool bIgnoreBarb) const
 {
 	PROFILE_FUNC();
 
-	if (kFrom.getArea().getNumCities() == countNumCitiesByArea(kFrom.getArea()))
-		false;
-	/*	advc: I guess it's important for performance to check capitals first;
-		So continue doing that, but compute the enemy players only in one place. */
-	std::vector<CvPlayer const*> apEnemies;
-	for (PlayerIter<ALIVE,KNOWN_POTENTIAL_ENEMY_OF> itEnemy(getID());
+	// Imitate instatiation of irrigated finder ...
+	/*std::vector<TeamTypes> teamVec;
+	teamVec.push_back(getID());
+	teamVec.push_back(NO_TEAM);*/
+	/*	advc.001: This is wrong - we need to set a target team. (Thx to spqkfk
+		for making me aware.) Checking all enemy capitals upfront (to save time)
+		is then (if we do it correctly) also a bad idea. Typically, there
+		won't be a high number of enemy capitals anyway. */
+	// advc.pf: Deleted remaining BBAI code on 21 Oct 2020. Replacement:
+	for (TeamIter<ALIVE,KNOWN_POTENTIAL_ENEMY_OF> itEnemy(getID());
 		itEnemy.hasNext(); ++itEnemy)
 	{
 		if (bIgnoreBarb && (itEnemy->isBarbarian() || itEnemy->isMinorCiv()))
 			continue;
-		if (AI_getWarPlan(itEnemy->getTeam()) != NO_WARPLAN)
-		apEnemies.push_back(&*itEnemy);
-	} 
-	// Imitate instatiation of irrigated finder ...
-	// advc.pf: Deleted on 21 Oct 2020, replaced with TeamStepfinder.
-	TeamPathFinder<TeamPath::LAND> pathFinder(*this, NULL, /*iMaxPath=*/18);
-	for (size_t i = 0; i < apEnemies.size(); i++)
-	{
-		CvCity* pCapital = apEnemies[i]->getCapital();
-		if (pCapital != NULL && pathFinder.generatePath(kFrom, pCapital->getPlot()))
-			return true;
-	}
-	for (size_t i = 0; i < apEnemies.size(); i++) // Check all other enemy cities
-	{
-		FOR_EACH_CITY(pCity, *apEnemies[i])
+		if (AI_getWarPlan(itEnemy->getID()) != NO_WARPLAN &&
+			AI_isHasPathToEnemyCity(kFrom, *itEnemy))
 		{
-			if (!pCity->isCapital() &&pathFinder.generatePath(kFrom, pCity->getPlot()))
-				return true;
+			return true;
 		}
-	}
+	} 
 	return false;
 }
 
-// (currently unused)
-bool CvTeamAI::AI_isHasPathToPlayerCity(CvPlot const& kFrom, PlayerTypes eOtherPlayer) const
+// advc: Was "isHasPathToPlayerCity" and was only used for debug info
+bool CvTeamAI::AI_isHasPathToEnemyCity(CvPlot const& kFrom,
+	CvTeam const& kEnemy) const
 {
 	PROFILE_FUNC();
-
-	if (kFrom.getArea().getCitiesPerPlayer(eOtherPlayer) == 0)
-		return false;
 	// Imitate instatiation of irrigated finder ...
 	// advc.pf: Deleted on 21 Oct 2020, replaced with TeamStepfinder.
-	TeamPathFinder<TeamPath::LAND> pathFinder(*this, &GET_TEAM(eOtherPlayer), 18);
-	FOR_EACH_CITY(pCity, GET_PLAYER(eOtherPlayer))
+	TeamPathFinder<TeamPath::LAND> pathFinder(*this, &kEnemy, 18);
+	for (MemberIter itMember(kEnemy.getID()); itMember.hasNext(); ++itMember)
 	{
-		if (pathFinder.generatePath(kFrom, pCity->getPlot()))
-			return true;
+		if (kFrom.getArea().getCitiesPerPlayer(itMember->getID()) <= 0)
+			continue;
+		FOR_EACH_CITY(pCity, *itMember)
+		{
+			if (pathFinder.generatePath(kFrom, pCity->getPlot()))
+				return true;
+		}
 	}
 	return false;
 } // BETTER_BTS_AI_MOD: END
@@ -1579,7 +1580,8 @@ int CvTeamAI::AI_warCommitmentCost(TeamTypes eTarget, WarPlanTypes eWarPlan,
 		}
 
 		// increase the cost for distant targets...
-		if (0 == AI_teamCloseness(eTarget, /* advc.001n: */ -1, false, bConstCache))
+		if (0 == AI_teamCloseness(eTarget,
+			DEFAULT_PLAYER_CLOSENESS, false, bConstCache)) // advc.001n
 		{
 			// ... in the early game.
 			if (getNumCities() < GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities() * getAliveCount())
@@ -1746,7 +1748,7 @@ int CvTeamAI::AI_warDiplomacyCost(TeamTypes eTarget) const
 	This function computes the value of starting a war against eTeam.
 	The returned value should be compared against other possible targets
 	to pick the best target. */ // advc.104: UWAI bypasses this function
-// K-Mod. Complete remake of the function.
+// K-Mod: Complete remake of the function.
 int CvTeamAI::AI_startWarVal(TeamTypes eTarget, WarPlanTypes eWarPlan,
 	bool bConstCache) const // advc.001n
 {
@@ -1782,7 +1784,7 @@ int CvTeamAI::AI_startWarVal(TeamTypes eTarget, WarPlanTypes eWarPlan,
 		}
 	}
 	return iTotalValue;
-} // K-Mod end
+}
 
 
 int CvTeamAI::AI_endWarVal(TeamTypes eTeam) const // XXX this should consider area power...
@@ -1790,32 +1792,27 @@ int CvTeamAI::AI_endWarVal(TeamTypes eTeam) const // XXX this should consider ar
 	FAssert(eTeam != getID());
 	FAssert(isAtWar(eTeam));
 
-	const CvTeamAI& kWarTeam = GET_TEAM(eTeam); // K-Mod
+	CvTeamAI const& kWarTeam = GET_TEAM(eTeam); // K-Mod
 
 	int iValue = 100;
-
-	iValue += (getNumCities() * 3);
-	iValue += (kWarTeam.getNumCities() * 3);
-
+	iValue += getNumCities() * 3;
+	iValue += kWarTeam.getNumCities() * 3;
 	iValue += getTotalPopulation();
 	iValue += kWarTeam.getTotalPopulation();
+	iValue += (kWarTeam.AI_getWarSuccess(getID()) * 20).uround();
 
-	iValue += (kWarTeam.AI_getWarSuccess(getID()) * 20);
-
-	int iOurPower = std::max(1, getPower(true));
-	int iTheirPower = std::max(1, kWarTeam.getDefensivePower(getID()));
-
-	iValue *= iTheirPower + 10;
-	iValue /= std::max(1, iOurPower + iTheirPower + 10);
-
+	int const iOurPower = std::max(1, getPower(true));
+	int const iTheirPower = std::max(1, kWarTeam.getDefensivePower(getID()));
+	{	// <kekm.39> Multiplying by iTheirPower can overflow
+		scaled rPowMult(iTheirPower + 10, iOurPower + iTheirPower + 10);
+		iValue = (iValue * rPowMult).uround(); // </kekm.39>
+	}
 	WarPlanTypes const eWarPlan = AI_getWarPlan(eTeam);
-
-	// if we are not human, do we want to continue war for strategic reasons?
-	// only check if our power is at least 120% of theirs
+	/*	if we are not human, do we want to continue war for strategic reasons?
+		only check if our power is at least 120% of theirs */
 	if (!isHuman() && iOurPower > 120 * iTheirPower / 100)
 	{
 		bool bDagger = false;
-
 		bool bAnyFinancialTrouble = false;
 		for (MemberAIIter it(getID()); it.hasNext(); ++it)
 		{
@@ -1825,16 +1822,14 @@ int CvTeamAI::AI_endWarVal(TeamTypes eTeam) const // XXX this should consider ar
 			if (kMember.AI_isFinancialTrouble())
 				bAnyFinancialTrouble = true;
 		}
-
-		// if dagger, value peace at 90% * power ratio
 		if (bDagger)
 		{
 			iValue *= 9 * iTheirPower;
 			iValue /= 10 * iOurPower;
 		}
 
-		// for now, we will always do the land mass check for domination
-		// if we have more than half the land, then value peace at 90% * land ratio
+		/*	for now, we will always do the land mass check for domination
+			if we have more than half the land, then value peace at 90% * land ratio */
 		int iLandRatio = getTotalLand(true) * 100 / std::max(1, kWarTeam.getTotalLand(true));
 		if (iLandRatio > 120)
 		{
@@ -1901,7 +1896,8 @@ int CvTeamAI::AI_endWarVal(TeamTypes eTeam) const // XXX this should consider ar
 		iValue *= 2;
 	}
 	else if ((!isHuman() && eWarPlan == WARPLAN_DOGPILE && kWarTeam.getNumWars() > 1) ||
-			(!kWarTeam.isHuman() && kWarTeam.AI_getWarPlan(getID()) == WARPLAN_DOGPILE && getNumWars() > 1))
+		(!kWarTeam.isHuman() &&
+		kWarTeam.AI_getWarPlan(getID()) == WARPLAN_DOGPILE && getNumWars() > 1))
 	{
 		iValue *= 3;
 		iValue /= 2;
@@ -2004,8 +2000,9 @@ int CvTeamAI::AI_techTradeVal(TechTypes eTech, TeamTypes eFromTeam,
 		CvGame const& kGame = GC.getGame();
 		scaled rGameProgress(kGame.getGameTurn() - kGame.getStartTurn(),
 				std::max(1, kGame.getEstimateEndTurn() - kGame.getStartTurn()));
-		// Too big a discount too early this way? Could do:
-		//rGameProgress = 1 / (1 + 1 / rGameProgress);
+		// Too big a discount too early this way? Let's try this:
+		if (rGameProgress.isPositive())
+			rGameProgress = 1 / (1 + 1 / rGameProgress);
 		rGameProgress.clamp(0, fixp(0.5));
 		rPowRatio.clamp(1 - rGameProgress, 1 + rGameProgress);
 		rTechRatio.clamp(1 - rGameProgress, 1 + rGameProgress);
@@ -2050,9 +2047,13 @@ int CvTeamAI::AI_techTradeVal(TechTypes eTech, TeamTypes eFromTeam,
 			FAssert(!rTeamRank.isNegative() && rTeamRank <= 1);
 			scaled rModifier = 1;
 			if (rTeamRank < scaled(1, 2))
-				rModifier += rTeamRank / 2;
+			{	// Add at most 0.275
+				rModifier += (11 * rTeamRank) / 20;
+			}
 			else if (rTeamRank > scaled(1, 2))
-				rModifier -= (2 * (rTeamRank - scaled(1, 2))) / 3;
+			{	// Subtract at most 5/12
+				rModifier -= (5 * (rTeamRank - scaled(1, 2))) / 6;
+			}
 			rValue *= rModifier;
 		}
 	} // </advc.550g>
@@ -2520,7 +2521,8 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 	scaled128_t rMasterPower = kMasterTeam.getPower(false);
 	// <advc.112>
 	if(bFaraway ||
-		(getNumWars() <= 0 && AI_teamCloseness(eMasterTeam, -1, false, true) <= 0))
+		(getNumWars() <= 0 &&
+		AI_teamCloseness(eMasterTeam, DEFAULT_PLAYER_CLOSENESS, false, true) <= 0))
 	{
 		rMasterPower *= fixp(0.7); // </advc.112>
 	}
@@ -2578,28 +2580,25 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 			std::max(1, itMember.nextIndex())));
 	if (bWar)
 	{
-		int iTheirSuccess = std::max(10, kMasterTeam.AI_getWarSuccess(getID()));
-		int iOurSuccess = std::max(10, AI_getWarSuccess(eMasterTeam));
-		int iOthersBestSuccess = 0;
+		scaled rTheirSuccess = scaled::max(10, kMasterTeam.AI_getWarSuccess(getID()));
+		scaled rOurSuccess = scaled::max(10, AI_getWarSuccess(eMasterTeam));
+		scaled rOthersBestSuccess;
 		for (TeamAIIter<MAJOR_CIV,ENEMY_OF> it(getID()); it.hasNext(); ++it)
 		{
 			CvTeamAI const& kEnemy = *it;
 			/*  advc.112: War success of a vassal shouldn't spoil its
 				master's chances of winning another vassal. */
 			if (kEnemy.getMasterTeam() != eMasterTeam)
-			{
-				iOthersBestSuccess = std::max(iOthersBestSuccess,
-						kEnemy.AI_getWarSuccess(getID()));
-			}
+				rOthersBestSuccess.increaseTo(kEnemy.AI_getWarSuccess(getID()));
 		}
 
 		// Discourage capitulation to a team that has not done the most damage
-		if (iTheirSuccess < iOthersBestSuccess)
-			iOurSuccess += iOthersBestSuccess - iTheirSuccess;
+		if (rTheirSuccess < rOthersBestSuccess)
+			rOurSuccess += rOthersBestSuccess - rTheirSuccess;
 		// <advc.112> Instead multiply VassalPower by the inverse factor
 		//rMasterPower = (2 * rMasterPower * iTheirSuccess) / (iTheirSuccess + iOurSuccess);
-		rVassalPower *= (iTheirSuccess + iOurSuccess) /
-				(fixp(1.8) * iTheirSuccess); // Slightly reduce the coefficient
+		rVassalPower *= (rTheirSuccess + rOurSuccess) /
+				(fixp(1.8) * rTheirSuccess); // Slightly reduce the coefficient
 		// FURIOUS clause added; WorstEnemy doesn't say much when at war.
 		if (AI_getWorstEnemy() == eMasterTeam && eTowardMaster <= ATTITUDE_FURIOUS)
 			rMasterPower *= per100(90); // was 75%
@@ -2738,7 +2737,7 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 			the vassal feels. (Originally more based on what chances the vassal
 			still has to win the game). */
 		int iAttitudeModifier = -2;
-		int iLosingWars = 0;
+		int iLosingWarModifier = 0;
 		for (TeamAIIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itThreat(getID());
 			itThreat.hasNext(); ++itThreat)
 		{
@@ -2748,14 +2747,24 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 			{
 				continue;
 			}
+			bool const bMasterAtWar = kMasterTeam.isAtWar(kThreat.getID());
 			// Immediate threat from ongoing wars
-			WarPlanTypes eWarPlan = AI_getWarPlan(kThreat.getID());
-			if (kThreat.getID() != eMasterTeam && (eWarPlan == WARPLAN_ATTACKED_RECENT ||
-				eWarPlan == WARPLAN_ATTACKED || AI_getWarSuccessRating() <= -30))
+			if (isAtWar(kThreat.getID()))
 			{
-				iLosingWars++;
+				WarPlanTypes eWarPlan = AI_getWarPlan(kThreat.getID());
+				if (kThreat.getID() != eMasterTeam &&
+					(eWarPlan == WARPLAN_ATTACKED_RECENT ||
+					eWarPlan == WARPLAN_ATTACKED ||
+					AI_getWarSuccessRating() <= -30))
+				{
+					/*	Ensuring that kMaster doesn't drop out of the war
+						ought to be worth something */
+					iLosingWarModifier += (bMasterAtWar ? 2 : 4);
+				}
 				continue;
 			}
+			if (bMasterAtWar)
+				continue;
 			// Threat from future wars. kMasterTeam can contribute to this.
 			AttitudeTypes eTowardUs = NO_ATTITUDE;
 			if (kThreat.isHuman()) // Assume that human likes or hates us back
@@ -2773,16 +2782,15 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 			}
 			iAttitudeModifier += std::max(0, (int)(ATTITUDE_PLEASED - eTowardUs));
 		}
-		/*  In large games, there tend to be alternative targets for dangerous civs
-			to attack. */
-		iAttitudeModifier = (7 * iAttitudeModifier) / kGame.countCivPlayersAlive();
-		if(iLosingWars > 0)
-			iAttitudeModifier += 4;
-		// No matter how much we like kMasterTeam, when we can safely go it alone, we do.
-		// Master might not like it (and need sth. to prevent oscillation)
-		if(isAVassal()) // (should perhaps check master's NoWarProb at Pleased)
+		// Adjust to the number of potential alt. war targets
+		iAttitudeModifier = (iAttitudeModifier * scaled(4, std::max(1,
+				TeamIter<CIV_ALIVE,OTHER_KNOWN_TO>::count(getID()))).sqrt()).round();
+		iAttitudeModifier += std::min(iLosingWarModifier, 5);
+		/*	No matter how much we like kMasterTeam, when we can safely go it alone,
+			we do. Master might not like it (and need sth. to prevent oscillation). */
+		if (isAVassal()) // (should perhaps check master's NoWarProb at Pleased)
 			iAttitudeModifier += 3;
-		if(iAttitudeModifier <= 2 &&
+		if (iAttitudeModifier <= 2 &&
 			4 * rVassalPower > 3 * rAveragePower &&
 			4 * rVassalPower > 3 * rMedianPow &&
 			// Exception: stick to our colonial master
@@ -2823,8 +2831,8 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 		/*  BETTER_BTS_AI_MOD, Diplomacy AI, 12/07/09, jdog5000: START
 			Scale better for small empires, particularly necessary if WAR_SUCCESS_CITY_CAPTURING > 10 */
 		// <advc> For debugger:
-		int iVassalSuccess = AI_getWarSuccess(eMasterTeam);
-		int iMasterSuccess = kMasterTeam.AI_getWarSuccess(getID());
+		scaled rVassalSuccess = AI_getWarSuccess(eMasterTeam);
+		scaled rMasterSuccess = kMasterTeam.AI_getWarSuccess(getID());
 		int iTargetDelta = std::min(getNumCities(), 4) *
 				GC.getWAR_SUCCESS_CITY_CAPTURING(); // </advc>
 		// <advc.104>
@@ -2848,7 +2856,7 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 			if (iPastWarScore < 0)
 				iTargetDelta = fmath::round(iTargetDelta * 2 / 3.0);
 		} // </advc.104o>
-		if (iVassalSuccess + iTargetDelta > iMasterSuccess)
+		if (rVassalSuccess + iTargetDelta > rMasterSuccess)
 			return DENIAL_POWER_US;
 		if(!kMasterTeam.isHuman())
 		{
@@ -2978,11 +2986,11 @@ int CvTeamAI::AI_getWarSuccessRating() const
 
 	for (TeamAIIter<FREE_MAJOR_CIV,ENEMY_OF> itEnemy(getID()); itEnemy.hasNext(); ++itEnemy)
 	{
-		int iThisTeamSuccess = AI_getWarSuccess(itEnemy->getID());
-		int iOtherTeamSuccess = itEnemy->AI_getWarSuccess(getID());
+		scaled rThisTeamSuccess = AI_getWarSuccess(itEnemy->getID());
+		scaled rOtherTeamSuccess = itEnemy->AI_getWarSuccess(getID());
 		int iOtherTeamPower = itEnemy->getPower(true);
-		iScore += (iThisTeamSuccess + iSuccessScale) * iThisTeamPower;
-		iScore -= (iOtherTeamSuccess + iSuccessScale) * iOtherTeamPower;
+		iScore += (rThisTeamSuccess + iSuccessScale).uround() * iThisTeamPower;
+		iScore -= (rOtherTeamSuccess + iSuccessScale).uround() * iOtherTeamPower;
 	}
 	iScore = range((100 * iScore) / std::max(1, iThisTeamPower * iSuccessScale * 5),
 			-99, 99);
@@ -3230,8 +3238,8 @@ bool CvTeamAI::AI_acceptSurrender(TeamTypes eSurrenderTeam) const
 					kSurrenderMember.getTeam(), DOMAIN_LAND, 2, true, false, true);
 			int iOurPower = GET_PLAYER(getLeaderID()).AI_localAttackStrength(
 					kCity.plot(), getID());
-			int iOtherPower = kSurrenderMember.AI_localAttackStrength(
-					kCity.plot(), NO_TEAM) - iOurPower;
+			int iOtherPower = kSurrenderMember.AI_localAttackStrength(kCity.plot())
+					- iOurPower;
 			// K-Mod end
 			if (iOtherPower > iOwnerPower)
 				iCitiesThreatenedByOthers++;
@@ -3732,7 +3740,7 @@ int CvTeamAI::AI_declareWarTradeValLegacy(TeamTypes eWarTeam, TeamTypes eTeam) c
 	else
 	{
 		iValue *= 150;
-		iValue /= 100 + (50 * std::min(100, (100 * AI_getWarSuccess(eWarTeam)) /
+		iValue /= 100 + (50 * std::min(100, AI_getWarSuccess(eWarTeam).getPercent() /
 				(8 + getTotalPopulation(false)))) / 100;
 	}
 
@@ -3919,21 +3927,21 @@ DenialTypes CvTeamAI::AI_declareWarTrade(
 				}
 			}
 		}
-		if(eClosestWarEnemy != NO_TEAM)
+		if (eClosestWarEnemy != NO_TEAM)
 		{
 			/*  If any fighting occurred or recently declared, don't treat closeness
 				as 0. (And don't be willing to attack teams with 0 closeness.) */
-			if(iHighestCloseness <= 0 && (GET_TEAM(eClosestWarEnemy).
+			if (iHighestCloseness <= 0 && (GET_TEAM(eClosestWarEnemy).
 				AI_getWarPlan(getID()) == WARPLAN_ATTACKED_RECENT ||
 				AI_getWarPlan(eClosestWarEnemy) == WARPLAN_ATTACKED_RECENT ||
 				AI_getWarSuccess(eClosestWarEnemy) +
-				GET_TEAM(eClosestWarEnemy).AI_getWarSuccess(getID()) > 0))
+				GET_TEAM(eClosestWarEnemy).AI_getWarSuccess(getID()) >= 1))
 			{
 				iHighestCloseness = 1;
 			}
 			int iCloseness = AI_teamCloseness(eTarget, DEFAULT_PLAYER_CLOSENESS,
 					true, true);
-			if(iCloseness < iHighestCloseness)
+			if (iCloseness < iHighestCloseness)
 				return DENIAL_TOO_MANY_WARS;
 		}
 		return uwai().declareWarTrade(
@@ -4361,58 +4369,58 @@ void CvTeamAI::AI_setShareWarCounter(TeamTypes eIndex, int iNewValue)
 }
 
 
-void CvTeamAI::AI_changeShareWarCounter(TeamTypes eIndex, int iChange)
+void CvTeamAI::AI_changeShareWarCounter(TeamTypes eTeam, int iChange)
 {
-	AI_setShareWarCounter(eIndex, (AI_getShareWarCounter(eIndex) + iChange));
+	AI_setShareWarCounter(eTeam, AI_getShareWarCounter(eTeam) + iChange);
 }
 
 
-void CvTeamAI::AI_setWarSuccess(TeamTypes eIndex, int iNewValue)
+void CvTeamAI::AI_setWarSuccess(TeamTypes eTeam, scaled rNewValue)
 {
-	m_aiWarSuccess.set(eIndex, iNewValue);
-	FAssert(AI_getWarSuccess(eIndex) >= 0);
+	m_arWarSuccess.set(eTeam, rNewValue);
+	FAssert(AI_getWarSuccess(eTeam) >= 0);
+}
+
+// advc:
+scaled CvTeamAI::AI_countEnemyWarSuccess() const
+{
+	scaled r;
+	for (TeamAIIter<CIV_ALIVE,ENEMY_OF> itEnemy(getID());
+		itEnemy.hasNext(); ++itEnemy)
+	{
+		r += itEnemy->AI_getWarSuccess(getID());
+	}
+	return r;
 }
 
 
-void CvTeamAI::AI_changeWarSuccess(TeamTypes eIndex, int iChange)
+void CvTeamAI::AI_changeWarSuccess(TeamTypes eTeam, scaled rChange)
 {
-	AI_setWarSuccess(eIndex, (AI_getWarSuccess(eIndex) + iChange));
+	AI_setWarSuccess(eTeam, AI_getWarSuccess(eTeam) + rChange);
 	// <advc.130m>
-	if(iChange <= 0 || eIndex == BARBARIAN_TEAM)
+	if (rChange <= 0 || eTeam == BARBARIAN_TEAM || isBarbarian())
 		return;
 
 	for (TeamAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
 	{
 		CvTeamAI& kWarAlly = *it;
-		if(eIndex == kWarAlly.getID() || kWarAlly.getID() == getID())
+		if (eTeam == kWarAlly.getID() || kWarAlly.getID() == getID())
 			continue;
 		// Let our allies know that we've had a war success
-		if(kWarAlly.isAtWar(eIndex) && !kWarAlly.isAtWar(getID()))
-			kWarAlly.AI_reportSharedWarSuccess(iChange, getID(), eIndex);
+		if(kWarAlly.isAtWar(eTeam) && !kWarAlly.isAtWar(getID()))
+			kWarAlly.AI_reportSharedWarSuccess(rChange, getID(), eTeam);
 		/*  Let the allies of our enemy know that their ally has suffered a loss
 			from us, their shared enemy */
-		if(!kWarAlly.isAtWar(eIndex) && kWarAlly.isAtWar(getID()))
-			kWarAlly.AI_reportSharedWarSuccess(iChange, eIndex, getID());
+		if(!kWarAlly.isAtWar(eTeam) && kWarAlly.isAtWar(getID()))
+			kWarAlly.AI_reportSharedWarSuccess(rChange, eTeam, getID());
 	}
-}
-
-// advc:
-int CvTeamAI::AI_countEnemyWarSuccess() const
-{
-	int iR = 0;
-	for (TeamAIIter<CIV_ALIVE,ENEMY_OF> itEnemy(getID());
-		itEnemy.hasNext(); ++itEnemy)
-	{
-		iR += itEnemy->AI_getWarSuccess(getID());
-	}
-	return iR;
 }
 
 /*  eEnemy is a war enemy that this team and eWarAlly have in common.
 	Either eWarAlly has inflicted a war success on eEnemy or vice versa.
 	This team is being informed about the war success, and
-	iIntensity says how significant the war success was. */
-void CvTeamAI::AI_reportSharedWarSuccess(int iIntensity, TeamTypes eWarAlly,
+	rIntensity says how significant the war success was. */
+void CvTeamAI::AI_reportSharedWarSuccess(scaled rIntensity, TeamTypes eWarAlly,
 	TeamTypes eEnemy, // (doesn't currently matter)
 	// True means: don't check if this team needs the assistance
 	bool bIgnoreDistress)
@@ -4448,7 +4456,7 @@ void CvTeamAI::AI_reportSharedWarSuccess(int iIntensity, TeamTypes eWarAlly,
 	scaled rBrakeFactor = scaled::max(0, 1 - scaled(iOldValue, 5000));
 	int const iPrecision = 100; // Precision of what we'll store (in an int)
 	int iNewValue = iOldValue +
-			((rBrakeFactor * iPrecision * rDistress * iIntensity) /
+			((rBrakeFactor * iPrecision * rDistress * rIntensity) /
 			/*  Use number of cities as an indicator of how capable the war ally is
 				militarily - how difficult was this war success to accomplish, or
 				how big a sacrifice was the loss. */
@@ -4486,8 +4494,8 @@ scaled CvTeamAI::AI_getDiploDecay() const
 {
 	/*  On Normal speed, this decay rate halves a value in about 50 turns:
 		0.9865^50 = 0.507 */
-	return fixp(1.45) / GC.getInfo(GC.getGame().getGameSpeedType()).
-			getGoldenAgePercent();
+	return fixp(1.45) / GC.getInfo(GC.getGame().getGameSpeedType()).get(
+			CvGameSpeedInfo::AIMemoryRandPercent); // advc.130r
 }
 
 // Needed for both RivalTrade and "fair trade"
@@ -4893,10 +4901,6 @@ int CvTeamAI::AI_teamCloseness(TeamTypes eIndex, int iMaxDistance,
 	bool bConstCache) const // advc.001n
 {
 	//PROFILE_FUNC(); // advc.003o (the cache seems to be very effective)
-
-	if (iMaxDistance == -1)
-		iMaxDistance = DEFAULT_PLAYER_CLOSENESS;
-
 	FAssert(eIndex != getID());
 	int iValue = 0;
 	for (MemberAIIter itOurMember(getID()); itOurMember.hasNext(); ++itOurMember)
@@ -4932,7 +4936,16 @@ void CvTeamAI::read(FDataStreamBase* pStream)
 		m_aiOpenBordersCounter.read(pStream);
 		m_aiDefensivePactCounter.read(pStream);
 		m_aiShareWarCounter.read(pStream);
-		m_aiWarSuccess.read(pStream);
+		if (uiFlag >= 9) // advc.130r
+			m_arWarSuccess.read(pStream);
+		// <advc.130r>
+		else
+		{
+			ArrayEnumMap<TeamTypes,int> aiWarSuccess;
+			aiWarSuccess.read(pStream);
+			FOR_EACH_ENUM(Team)
+				m_arWarSuccess.set(eLoopTeam, aiWarSuccess.get(eLoopTeam));
+		} // </advc.130r>
 		m_aiSharedWarSuccess.read(pStream); // advc.130m
 	}
 	else
@@ -4944,9 +4957,21 @@ void CvTeamAI::read(FDataStreamBase* pStream)
 		m_aiOpenBordersCounter.readArray<int>(pStream);
 		m_aiDefensivePactCounter.readArray<int>(pStream);
 		m_aiShareWarCounter.readArray<int>(pStream);
-		m_aiWarSuccess.readArray<int>(pStream);
+		// <advc.130r>
+		ArrayEnumMap<TeamTypes,int> aiWarSuccess;
+		aiWarSuccess.readArray<int>(pStream);
+		FOR_EACH_ENUM(Team)
+			m_arWarSuccess.set(eLoopTeam, aiWarSuccess.get(eLoopTeam));
+		// </advc.130r>
 		m_aiSharedWarSuccess.readArray<int>(pStream); // advc.130m
 	}
+	/*	<advc.130k> CvTeam keeps an accurate count now, our count is randomized.
+		Still, better than nothing when loading an old save. */
+	if (uiFlag < 8)
+	{
+		FOR_EACH_ENUM(Team)
+			m_aiTurnsAtPeace.set(eLoopTeam, m_aiAtPeaceCounter.get(eLoopTeam));
+	} // </advc.130k>
 	// <advc.130n>
 	if (uiFlag < 7)
 	{	// Discard data b/c obsolete
@@ -5033,7 +5058,9 @@ void CvTeamAI::write(FDataStreamBase* pStream)
 	//uiFlag = 4; // advc.158
 	//uiFlag = 5; // advc.650
 	//uiFlag = 6; // advc.enum: new enum map save behavior
-	uiFlag = 7; // advc.130n (Now handled w/o extra data)
+	//uiFlag = 7; // advc.130n (Now handled w/o extra data)
+	//uiFlag = 8; // advc.130k: To support CvTeam::m_aiTurnsAtPeace
+	uiFlag = 9; // advc.130r
 	pStream->Write(uiFlag);
 
 	m_aiWarPlanStateCounter.write(pStream);
@@ -5043,7 +5070,7 @@ void CvTeamAI::write(FDataStreamBase* pStream)
 	m_aiOpenBordersCounter.write(pStream);
 	m_aiDefensivePactCounter.write(pStream);
 	m_aiShareWarCounter.write(pStream);
-	m_aiWarSuccess.write(pStream);
+	m_arWarSuccess.write(pStream);
 	m_aiSharedWarSuccess.write(pStream); // advc.130m
 	m_aiEnemyPeacetimeTradeValue.write(pStream);
 	m_aiEnemyPeacetimeGrantValue.write(pStream);
@@ -5057,11 +5084,11 @@ void CvTeamAI::write(FDataStreamBase* pStream)
 	if (!m_aeNukeExplosions.empty())
 		pStream->Write((int)m_aeNukeExplosions.size(), (int*)&m_aeNukeExplosions[0]);
 	// </advc.650>
+	REPRO_TEST_END_WRITE();
 	m_strengthMemory.write(pStream); // advc.158
 	// <advc.104>
-	if(isEverAlive() && !isBarbarian() && !isMinorCiv())
+	if (isEverAlive() && !isBarbarian() && !isMinorCiv())
 		uwai().write(pStream); // </advc.104>
-	REPRO_TEST_END_WRITE();
 }
 
 // advc.012:
@@ -5119,7 +5146,7 @@ void CvTeamAI::AI_forgiveEnemy(TeamTypes eEnemyTeam, bool bCapitulated, bool bFr
 	bCapitulated = (bCapitulated || GET_TEAM(eEnemyTeam).isCapitulated());
 	if(bCapitulated)
 		iDelta--;
-	int iWS = GET_TEAM(eEnemyTeam).AI_getWarSuccess(getID());
+	scaled rWS = GET_TEAM(eEnemyTeam).AI_getWarSuccess(getID());
 	for (MemberAIIter itMember(getID()); itMember.hasNext(); ++itMember)
 	{
 		CvPlayerAI& kMember = *itMember;
@@ -5134,7 +5161,8 @@ void CvTeamAI::AI_forgiveEnemy(TeamTypes eEnemyTeam, bool bCapitulated, bool bFr
 			// </advc.130f>
 		} // </advc.104i>
 		// No vassal-related forgiveness when war success high
-		iDelta = std::min(0, iDelta + iWS / kMember.warSuccessAttitudeDivisor());
+		iDelta = std::min(0, iDelta +
+				(rWS / kMember.warSuccessAttitudeDivisor()).round());
 		for (MemberIter itEnemy(eEnemyTeam); itEnemy.hasNext(); ++itEnemy)
 		{
 			CvPlayer const& kEnemyMember = *itEnemy;
@@ -5144,7 +5172,7 @@ void CvTeamAI::AI_forgiveEnemy(TeamTypes eEnemyTeam, bool bCapitulated, bool bFr
 				no other forgiveness condition applies, and not (times 0) in the
 				Ancient era (attacks on Workers and Settlers). */
 			if (iLimit <= -3 && iDelta >= 0 &&
-				iWS < fixp(0.3) * AI_getCurrEraFactor() * GC.getWAR_SUCCESS_CITY_CAPTURING())
+				rWS < fixp(0.3) * AI_getCurrEraFactor() * GC.getWAR_SUCCESS_CITY_CAPTURING())
 			{
 				iDeltaLoop--;
 			}
@@ -5183,7 +5211,7 @@ void CvTeamAI::AI_thankLiberator(TeamTypes eLiberator)
 		{
 			CvPlayerAI& kLiberatorMember = *itLib;
 			int iMemory = std::max(0, 2 -
-					GET_TEAM(eLiberator).AI_getWarSuccess(getID()) / iWSDivisor);
+					(GET_TEAM(eLiberator).AI_getWarSuccess(getID()) / iWSDivisor).round());
 			kOurMember.AI_changeMemoryCount(kLiberatorMember.getID(), MEMORY_INDEPENDENCE,
 					2 * iMemory); // advc.130j: doubled
 		}
@@ -5224,9 +5252,9 @@ VoteSourceTypes CvTeamAI::AI_getLatestVictoryVoteSource() const
 int CvTeamAI::AI_countVSNonMembers(VoteSourceTypes eVS) const
 {
 	int iCount = 0;
-	for(PlayerIter<MAJOR_CIV,KNOWN_TO> itPlayer(getID()); itPlayer.hasNext(); ++itPlayer)
+	for(PlayerIter<MAJOR_CIV> itPlayer(getID()); itPlayer.hasNext(); ++itPlayer)
 	{
-		if(!itPlayer->isVotingMember(eVS))
+		if (!itPlayer->isVotingMember(eVS) || !isHasMet(itPlayer->getTeam()))
 			iCount++;
 	}
 	return iCount;
@@ -5538,9 +5566,9 @@ int CvTeamAI::AI_noWarAttitudeProb(AttitudeTypes eAttitude) const
 int CvTeamAI::AI_noWarProbAdjusted(TeamTypes eOther) const
 {
 	AttitudeTypes eTowardThem = AI_getAttitude(eOther, true);
-	int r = AI_noWarAttitudeProb(eTowardThem);
-	if(r < 100 || isOpenBorders(eOther) || eTowardThem == ATTITUDE_FURIOUS)
-		return r;
+	int iR = AI_noWarAttitudeProb(eTowardThem);
+	if (iR < 100 || isOpenBorders(eOther) || eTowardThem == 0)
+		return iR;
 	return AI_noWarAttitudeProb((AttitudeTypes)(eTowardThem - 1));
 }
 
@@ -5603,7 +5631,7 @@ scaled CvTeamAI::AI_getOpenBordersCounterIncrement(TeamTypes eOther) const
 	int iTheirCities = GET_TEAM(eOther).getNumCities();
 	if (iOurCities > 0 && iTheirCities > 0)
 	{
-		rFromCloseness = AI_teamCloseness(eOther, DEFAULT_PLAYER_CLOSENESS) /
+		rFromCloseness = AI_teamCloseness(eOther) /
 				(scaled(iOurCities + iTheirCities).sqrt() * 20);
 	}
 	/*  Would be nice to add another, say, 0.25 if any of our units w/o
@@ -5612,30 +5640,31 @@ scaled CvTeamAI::AI_getOpenBordersCounterIncrement(TeamTypes eOther) const
 	return scaled::clamp(rFromTrade + rFromCloseness, fixp(1/6.), fixp(8/6.));
 } // </advc.130i>
 
-/*  <advc.130k> Random number to add or subtract from state counters
+/*  advc.130k: Random number to add or subtract from state counters
 	(instead of just incrementing or decrementing). Binomial distribution
 	with 2 trials and a probability of pr.
 	Non-negative result, caller will have to multiply by -1 to decrease a counter.
 	Result is capped at iUpperCap; -1: none. */
 int CvTeamAI::AI_randomCounterChange(int iUpperCap, scaled rProb) const
 {
-	CvGameSpeedInfo const& kSpeed = GC.getInfo(GC.getGame().getGameSpeedType());
-	int iSpeedPercent = kSpeed.getGoldenAgePercent();
+	CvGame const& kGame = GC.getGame();
+	int iSpeedPercent = GC.getInfo(kGame.getGameSpeedType()).get(
+				CvGameSpeedInfo::AIMemoryRandPercent);
 	scaled rOurEra = AI_getCurrEraFactor();
-	if(rOurEra < fixp(0.5))
-		iSpeedPercent = kSpeed.getGrowthPercent();
+	if (rOurEra < fixp(0.5))
+		iSpeedPercent = kGame.getSpeedPercent();
 	else if (rOurEra < fixp(1.5))
-		iSpeedPercent = (kSpeed.getGrowthPercent() + kSpeed.getGoldenAgePercent()) / 2;
+		iSpeedPercent = (kGame.getSpeedPercent() + iSpeedPercent) / 2;
 	rProb *= scaled(100, std::max(50, iSpeedPercent));
 	int iR = 0;
 	if (SyncRandSuccess(rProb))
 		iR++;
 	if (SyncRandSuccess(rProb))
 		iR++;
-	if(iUpperCap < 0)
+	if (iUpperCap < 0)
 		return iR;
 	return std::min(iR, iUpperCap);
-} // </advc.130k>
+}
 
 
 void CvTeamAI::AI_doCounter()
@@ -5643,24 +5672,24 @@ void CvTeamAI::AI_doCounter()
 	// advc (note): Attitude isn't updated here. Should be soon enough in AI_doTurnPost.
 	for (TeamIter<ALIVE> it(getID()); it.hasNext(); ++it)
 	{
-		// <advc.130k>
 		TeamTypes const eOther = it->getID();
-		if(eOther == getID())
+		if (eOther == getID())
 			continue;
 		/*  advc.001: Guard added. NO_WARPLAN should imply that the state counter
 			is at 0, rather than some arbitrary value. advc.104 relies on this. */
-		if(AI_getWarPlan(eOther) != NO_WARPLAN)
+		if (AI_getWarPlan(eOther) != NO_WARPLAN)
 			AI_changeWarPlanStateCounter(eOther, 1);
 		/*  No randomization for atWar and hasMet. These are used by the AI in
 			several places that more or less assume an exact count. */
-		if(isAtWar(eOther))
+		if (isAtWar(eOther))
 			AI_changeAtWarCounter(eOther, 1);
-		else // Better count to 1 deterministically
+		else
 		{
-			AI_changeAtPeaceCounter(eOther, AI_getAtPeaceCounter(eOther) == 0 ?
-					1 : AI_randomCounterChange());
-		} 
-		if(!isHasMet(eOther) || isBarbarian() || GET_TEAM(eOther).isBarbarian())
+			AI_changeAtPeaceCounter(eOther,  // <advc.130k>
+					// Better count to 1 deterministically
+					AI_getAtPeaceCounter(eOther) == 0 ? 1 : AI_randomCounterChange());
+		}  // </advc.130k>
+		if (!isHasMet(eOther) || isBarbarian() || GET_TEAM(eOther).isBarbarian())
 			continue;
 		AI_changeHasMetCounter(eOther, 1);
 		// <advc>
@@ -5704,10 +5733,9 @@ void CvTeamAI::AI_doCounter()
 		// </advc.130p>
 		// <advc.130r>
 		{	// Double decay rate for war success
-			int iWSOld = AI_getWarSuccess(eOther);
-			int iWSNew = (iWSOld * std::max(fixp(0.5),
-					1 - 2 * AI_getDiploDecay())).floor();
-			AI_setWarSuccess(eOther, iWSNew);
+			scaled rWSOld = AI_getWarSuccess(eOther);
+			scaled rWSNew = rWSOld * std::max(fixp(0.5), 1 - 2 * AI_getDiploDecay());
+			AI_setWarSuccess(eOther, rWSNew);
 		} // </advc.130r>
 	}
 }
@@ -5856,7 +5884,8 @@ void CvTeamAI::AI_doWar()
 		{
 			FAssert(isAtWar(eLoopTeam));
 
-			if (AI_getAtWarCounter(eLoopTeam) > ((GET_TEAM(eLoopTeam).AI_isLandTarget(getID())) ? 9 : 3))
+			if (AI_getAtWarCounter(eLoopTeam) >
+				(GET_TEAM(eLoopTeam).AI_isLandTarget(getID()) ? 9 : 3))
 			{
 				if (gTeamLogLevel >= 1) logBBAI("    Team %d (%S) switching WARPLANS against team %d (%S) from ATTACKED_RECENT to ATTACKED with enemy power percent %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eLoopTeam, GET_PLAYER(GET_TEAM(eLoopTeam).getLeaderID()).getCivilizationDescription(0), iEnemyPowerPercent);
 				AI_setWarPlan(eLoopTeam, WARPLAN_ATTACKED);
@@ -6077,7 +6106,8 @@ void CvTeamAI::AI_doWar()
 				continue;
 
 			if (AI_getAtWarCounter(eEnemy) > std::max(10,
-				(14 * GC.getInfo(kGame.getGameSpeedType()).getVictoryDelayPercent()) / 100))
+				// advc.252: Was VictoryDelay. I don't think we should be this patient.
+				(14 * GC.getInfo(kGame.getGameSpeedType()).getTrainPercent()) / 100))
 			{
 				// If nothing is happening in war
 				if (AI_getWarSuccess(eEnemy) + GET_TEAM(eEnemy).AI_getWarSuccess(getID()) <
@@ -6085,7 +6115,7 @@ void CvTeamAI::AI_doWar()
 				{
 					if (SyncRandOneChanceIn(8))
 					{
-						bool bNoFighting = true; // advc: Refactored the computation of this
+						bool bNoFighting = true;
 						for (MemberAIIter itOurMember(getID());
 							itOurMember.hasNext(); ++itOurMember)
 						{
@@ -6118,7 +6148,8 @@ void CvTeamAI::AI_doWar()
 
 				// Fought to a long draw
 				if (AI_getAtWarCounter(eEnemy) > ((AI_getWarPlan(eEnemy) == WARPLAN_TOTAL ? 40 : 30) *
-					GC.getInfo(kGame.getGameSpeedType()).getVictoryDelayPercent()) / 100)
+					// advc.252: was VictoryDelay
+					GC.getInfo(kGame.getGameSpeedType()).getTrainPercent()) / 100)
 				{
 					int iOurValue = AI_endWarVal(eEnemy);
 					int iTheirValue = GET_TEAM(eEnemy).AI_endWarVal(getID());
@@ -6154,16 +6185,22 @@ void CvTeamAI::AI_doWar()
 
 	//if (getAnyWarPlanCount(true) == 0 || iEnemyPowerPercent < 45)
 	// K-Mod. Some more nuance to the conditions for considering war
-	// First condition: only consider a new war if there are no current wars that need more attention. (local total war, or a war we aren't winning)
+	/*	First condition: only consider a new war if there are no current wars
+		that need more attention. (local total war, or a war we aren't winning) */
 	bool bConsiderWar = (!bAnyWarPlan ||
 			(iEnemyPowerPercent < 45 && !(bLocalWarPlan && bTotalWarPlan) &&
 			AI_getWarSuccessRating() > (bTotalWarPlan ? 40 : 15)));
-	// Second condition: don't consider war very early in the game. It would be unfair on human players to rush them with our extra starting units and techs!
+	/*	Second condition: don't consider war very early in the game. It would be unfair
+		on human players to rush them with our extra starting units and techs! */
 	bConsiderWar = (bConsiderWar &&
-		(kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ||
-		 kGame.getElapsedGameTurns() >= GC.getInfo(kGame.getGameSpeedType()).getBarbPercent() * 30 / 100 ||
-		 kGame.getNumCivCities() > GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities() * kGame.countCivPlayersAlive()/2));
-	// (Perhaps the no-war turn threshold should depend on the game difficulty level; but I don't think it would make much difference.)
+			(kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ||
+			 kGame.getElapsedGameTurns() * 100 >=
+			 GC.getInfo(kGame.getGameSpeedType()).getBarbPercent() * 30 ||
+			 kGame.getNumCivCities() * 2 >
+			 GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities() *
+			 kGame.countCivPlayersAlive()));
+	/*	(Perhaps the no-war turn threshold should depend on the game difficulty level;
+		but I don't think it would make much difference.) */
 
 	if (bConsiderWar)
 	// K-Mod end
@@ -6288,7 +6325,7 @@ void CvTeamAI::AI_doWar()
 							(!bVassal || iNoWarRoll >= AI_noWarAttitudeProb(AI_getAttitude(eLoopMasterTeam))))
 						{
 							int iDefensivePower = (GET_TEAM(eTarget).getDefensivePower(getID()) * 2) / 3;
-							if (iDefensivePower < ((iOurPower * ((iPass > 1) ?
+							if (iDefensivePower < ((iOurPower * (iPass > 1 ?
 								AI_maxWarDistantPowerRatio() : AI_maxWarNearbyPowerRatio())) / 100))
 							{
 								// XXX make sure they share an area....

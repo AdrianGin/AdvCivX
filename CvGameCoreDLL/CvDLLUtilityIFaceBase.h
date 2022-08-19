@@ -251,10 +251,11 @@ public:
 	virtual bool ChangeINIKeyValue(const char* szGroupKey, const char* szKeyValue, const char* szOut) = 0;
 
 	virtual char* md5String(char* szString) = 0;
-
-	virtual const char* getModName(bool bFullPath = true) const = 0;
+	/*	advc.106i: Renamed from "getModName". Should generally use the name
+		cached by the DLL instead (CvGlobals::getModName). */
+	virtual const char* getExternalModName(bool bFullPath = true) const = 0;
 	virtual bool hasSkippedSaveChecksum() const = 0;
 	virtual void reportStatistics() = 0;
 };
 
-#endif	// CvDLLUtilityIFaceBase_h
+#endif

@@ -69,7 +69,7 @@ bool CvBuildInfo::isFeatureRemove(FeatureTypes eFeature) const
 
 bool CvBuildInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvHotkeyInfo::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetInfoIDFromChildXmlVal(m_iTechPrereq, "PrereqTech");

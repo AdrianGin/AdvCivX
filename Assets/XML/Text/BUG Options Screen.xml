@@ -11,11 +11,13 @@
 
 <!-- Title and Buttons -->
 
+	<!-- advc.004: Was "BUG Mod Options". The menu is from BUG,
+		 many of the options are not. -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_TITLE</Tag>
-		<English>BUG Mod Options</English>
+		<English>BUG Menu</English>
 		<French>Options du BUG Mod</French>
-		<German>Optionen der BUG Mod</German>
+		<German>BUG-Men&#252;</German>
 		<Italian>Opzioni BUG Mod</Italian>
 		<Spanish>Opciones de BUG Mod</Spanish>
 	</TEXT>
@@ -29,27 +31,30 @@
 		<Italian>Guida del BUG Mod</Italian>
 		<Spanish>Ayuda BUG Mod</Spanish>
 	</TEXT>
-	
+
+	<!-- advc.004: Make clearer that help is external -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPTBUTTON_HELP_HOVER</Tag>
-		<English>Opens the BUG Mod help file. You can hit [ALT + CTRL + F1] from the main interface.</English>
+		<English>Opens the (external) BUG help file. Also reachable through [ALT + CTRL + F1] from the main screen.</English>
 		<French>Ouvre le fichier d'aide du BUG Mod. Vous pouvez aussi utiliser [ALT + CTRL + F1] dans l'écran principal du jeu.</French>
 		<German>Öffnet die Hilfe-Datei der BUG Mod (Tastenkombination [STRG + ALT + F1] im Hauptbildschirm)</German>
 		<Italian>Apre il file della Guida del BUG Mod. Puoi utilizzare la scorciatoia [ALT + CTRL + F1] dall'interfaccia principale.</Italian>
 		<Spanish>Abre la ayuda de BUG Mod. También puedes pulsar [ALT + CTRL + F1] desde la pantalla principal.</Spanish>
 	</TEXT>
+
+	<!-- advc.004: was "BUG Options screen" -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPTBUTTON_EXIT_HOVER</Tag>
-		<English>Exits the BUG Options screen.</English>
+		<English>Closes the BUG menu</English>
 		<French>Sortir de l'écran d'options du BUG.</French>
-		<German>Den Optionensbildschirm der BUG Mod verlassen</German>
+		<German>BUG-Menü schließen</German>
 		<Italian>Esci dalla schermata delle Opzioni del BUG Mod.</Italian>
 		<Spanish>Sale de la pantalla de opciones de BUG.</Spanish>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPTIONS_SCREEN_HOVER</Tag>
-		<English>Shows the BUG Option Screen.</English>
-		<German>Ruft den Optionsbildschirm der BUG Mod auf</German>
+		<English>Opens the BUG menu</English>
+		<German>Ruft das BUG-Menü auf</German>
 		<Italian>Mostra le opzioni del BUG Mod.</Italian>
 		<Spanish>Muestra la pantalla de opciones de BUG.</Spanish>
 	</TEXT>
@@ -158,6 +163,12 @@
 		<German>Sonstiges:</German>
 		<Italian>Varie:</Italian>
 		<Spanish>Misceláneo:</Spanish>
+	</TEXT>
+	<!-- advc.004: New label -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPTLABEL_LAYOUT</Tag>
+		<English>Layout:</English>
+		<German>Darstellung:</German>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPTLABEL_INIFILENOTFOUND</Tag>

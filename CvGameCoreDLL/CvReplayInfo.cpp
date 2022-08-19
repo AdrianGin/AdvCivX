@@ -7,9 +7,9 @@
 #include "CvReplayMessage.h"
 #include "CvGameTextMgr.h"
 #include "StartPointsAsHandicap.h" // advc.250b
+#include "CvBugOptions.h" // advc.106i
 
 int CvReplayInfo::REPLAY_VERSION = 6; // advc.707, advc.106i: 4 in BtS
-bool CvReplayInfo::STORE_REPLAYS_AS_BTS = false; // advc.106i
 
 CvReplayInfo::CvReplayInfo() :
 	m_eActivePlayer(NO_PLAYER), // (advc: was 0)
@@ -35,22 +35,8 @@ CvReplayInfo::CvReplayInfo() :
 	m->iNormalizedScore = 0, // </advc.003k>
 	m->iFinalScore = -1; // advc.707
 	// <advc.106i>
-	m->szPurportedModName = gDLL->getModName(); // Local copy; not sure if necessary.
 	m->iVersionRead = -1;
-	m->bDisplayOtherMods = false;
-	// See comment in GlobalDefines_advc.xml
-	STORE_REPLAYS_AS_BTS = (GC.getDefineINT("HOF_STORE_REPLAYS_AS_BTS") > 0 &&
-			(GC.getNumPlayerColorInfos() <= 44 ||
-			/*  If no colors are added beyond those in BtS, then the new
-				player colors are apparently all old colors; no problem then. */
-			GC.getNumColorInfos() <= 127) &&
-			/*  This replay object may well not use any of the added world sizes etc.,
-				but I want the same replay format for all replays written by the mod. */
-			GC.getNumWorldInfos() <= 6 && GC.getNumVictoryInfos() >= 7 &&
-			GC.getNumHandicapInfos() >= 9 && GC.getNumGameSpeedInfos() >= 4);
-	// </advc.106i>
-	// advc.106m:
-	FAssert(!STORE_REPLAYS_AS_BTS || GC.getDefineINT(CvGlobals::MINIMAP_RENDER_SIZE) == 512);
+	m->bDisplayOtherMods = false; // </advc.106i>
 }
 /*	advc.003k: Needs to have a copy-constructor b/c of its Python counterpart,
 	but I don't think it'll actually get called. Copying m_pcMinimapPixels
@@ -72,8 +58,8 @@ CvReplayInfo::~CvReplayInfo()
 
 void CvReplayInfo::createInfo(PlayerTypes ePlayer)
 {
-	if(!STORE_REPLAYS_AS_BTS) // advc.106i (and moved up)
-		m_szModName = gDLL->getModName();
+	if (!isStoringReplaysAsBtS()) // advc.106i (and moved up)
+		m_szModName = GC.getModName().getFullPath();
 	CvGame const& kGame = GC.getGame();
 	CvMap const& kMap = GC.getMap();
 	/*  <advc>: createInfo gets called when Python scripts are (re-)loaded.
@@ -361,7 +347,7 @@ void CvReplayInfo::appendSettingsMsg(CvWString& szSettings, PlayerTypes ePlayer)
 	}
 	if(iOptions > 0)
 		szSettings = szSettings.substr(0, szSettings.length() - 2) + L"\n";
-	// CvWString szModName(gDLL->getModName(false)) // I'd like the prefix to be optional
+	//CvWString szModName(GC.getModName().getName) // I'd like the prefix to be configurable
 	CvWString const szKey = "TXT_KEY_REPLAY_PREFIX";
 	CvWString szModName = gDLL->getText(szKey);
 	// Don't list mod name if the tag isn't present
@@ -520,11 +506,11 @@ void CvReplayInfo::clearReplayMessageMap()
 	}
 	m_listReplayMessages.clear();
 }
-// <advc> To reduce code duplication
+// advc: To reduce code duplication
 bool CvReplayInfo::isReplayMsgValid(uint i) const
 {
 	return (i < m_listReplayMessages.size() && m_listReplayMessages[i] != NULL);
-} // </advc>
+}
 
 int CvReplayInfo::getReplayMessageTurn(uint i) const
 {
@@ -678,17 +664,11 @@ int CvReplayInfo::getMinimapSize() const
 }
 
 const char* CvReplayInfo::getModName() const
-{	/*  <advc.106i> Pretend to the EXE that every replay is an AdvCiv replay.
-		(Let CvReplayInfo::read decide which ones to show in HoF.) */
-	if(STORE_REPLAYS_AS_BTS || GC.getDefineINT("HOF_DISPLAY_BTS_REPLAYS") > 0 ||
-		GC.getDefineINT("HOF_DISPLAY_OTHER_MOD_REPLAYS") > 0 ||
-		/*  It seems that some earlier version of AdvCiv has written an empty string
-			as the mod name. (I don't remember if this was on purpose.) */
-		m_szModName.empty())
-	{
-		return m->szPurportedModName;
-	} // </advc.106i>
-	return m_szModName;
+{
+	//return m_szModName;s
+	/*	advc.106i: Pretend to the EXE that every replay is an AdvCiv replay.
+		Let CvReplayInfo::read decide which ones to show in HoF. */
+	return GC.getModName().getFullPath();
 }
 
 
@@ -716,8 +696,12 @@ bool CvReplayInfo::read(FDataStreamBase& stream)
 		} /* Replay from another mod that has increased the replay version;
 			 won't be able to parse that. (Actually, it might be OK - if the mod
 			 only appends additional data at the end of the stream.) */
-		if(iVersion > REPLAY_VERSION)
+		if(iVersion > REPLAY_VERSION &&
+			// Taurus replays set a single bit in the version number
+			(iVersion & ~(1 << 7)) > REPLAY_VERSION)
+		{
 			return false;
+		}
 		m->iVersionRead = iVersion; // For the checkBounds function
 		// </advc.106i>
 		if (iVersion < 2)
@@ -738,13 +722,19 @@ bool CvReplayInfo::read(FDataStreamBase& stream)
 		m_eDifficulty = (HandicapTypes)iType;
 		if(!checkBounds(m_eDifficulty, 0, GC.getNumHandicapInfos())) return false; // advc.106i  (not -1 b/c of advc.250a)
 		stream.ReadString(m_szLeaderName);
+		if(!checkBounds(m_szLeaderName.length(), 0, 128)) return false; // advc.106i
 		stream.ReadString(m_szCivDescription);
+		if(!checkBounds(m_szCivDescription.length(), 0, 128)) return false; // advc.106i
 		stream.ReadString(m_szShortCivDescription);
+		if(!checkBounds(m_szShortCivDescription.length(), 0, 128)) return false; // advc.106i
 		stream.ReadString(m_szCivAdjective);
+		if(!checkBounds(m_szCivAdjective.length(), 0, 128)) return false; // advc.106i
 		if(iVersion > 3)
+		{
 			stream.ReadString(m_szMapScriptName);
+			if(!checkBounds(m_szMapScriptName.length(), 0, 128)) return false; // advc.106i
+		}
 		else m_szMapScriptName = gDLL->getText("TXT_KEY_TRAIT_PLAYER_UNKNOWN");
-		if(!checkBounds(m_szLeaderName.length() + m_szCivDescription.length() + m_szShortCivDescription.length() + m_szCivAdjective.length() + m_szMapScriptName.length(), 5, 250)) return false; // advc.106i
 		stream.Read(&iType);
 		m_eWorldSize = (WorldSizeTypes)iType;
 		if(!checkBounds(m_eWorldSize, 0, GC.getNumWorldInfos() - 1)) return false; // advc.106i
@@ -863,9 +853,10 @@ bool CvReplayInfo::read(FDataStreamBase& stream)
 					return false;
 			}
 			else if(!m->bDisplayOtherMods &&
-					std::strcmp(m_szModName.GetCString(), gDLL->getModName()) != 0)
+				std::strcmp(m_szModName.c_str(), GC.getModName().getFullPath()) != 0)
+			{
 				return false; // Replay from a different mod
-			// </advc.106i>
+			} // </advc.106i>
 		} // <advc.707>
 		if(iVersion == 5)
 			stream.Read(&m->iFinalScore);
@@ -888,7 +879,7 @@ void CvReplayInfo::write(FDataStreamBase& stream)
 	// <advc.106i> Fold AdvCiv's (hopefully) globally unique id into the replay version
 	stream.Write(GC.getDefineINT("SAVE_VERSION") * 100 + REPLAY_VERSION);
 	// <advc.106m> Fold minimap resolution into active player ID
-	if (!STORE_REPLAYS_AS_BTS)
+	if (!isStoringReplaysAsBtS())
 	{
 		setMinimapSizeFromXML();
 		FAssert(m_iMinimapSize > 0);
@@ -985,7 +976,8 @@ void CvReplayInfo::setDefaultMinimapSize()
 {
 	m_iMinimapSize = 512; // As in BtS GlobalDefines
 } // </advc.106m>
-// advc.106i:
+
+// <advc.106i>
 bool CvReplayInfo::checkBounds(int iValue, int iLower, int iUpper) const
 {
 	/*  If CvReplayInfo::read encounters a replay from another mod, it won't be able
@@ -1008,3 +1000,55 @@ bool CvReplayInfo::checkBounds(int iValue, int iLower, int iUpper) const
 	}
 	return true;
 }
+
+bool CvReplayInfo::isStoringReplaysAsBtS() const
+{
+	if (BUGOption::isEnabled("MainInterface__ModNameInReplays", false,
+		false)) // BUG not being available is OK, we'll get another call later.
+	{
+		return false;
+	}
+	// <advc.106m>
+	if (GC.getDefineINT(CvGlobals::MINIMAP_RENDER_SIZE) != 512)
+	{
+		FErrorMsg("MINIMAP_RENDER_SIZE incompatible with BtS replay format;"
+				" Mod-Name-in-Replays option ignored");
+		return false;
+	} // </advc.106m>
+	/*	The option says to store as BtS, but we'll ignore that if running the replay
+		might crash BtS. AdvCiv won't have that problem, but a mod-mod might. */
+	if (getWorldSize() > 5)
+	{
+		FErrorMsg("World size incompatible with BtS replay format");
+		return false;
+	}
+	if (getGameSpeed() > 3)
+	{
+		FErrorMsg("Game speed incompatible with BtS replay format");
+		return false;
+	}
+	for (int iVictory = 7; iVictory < GC.getNumVictoryInfos(); iVictory++)
+	{
+		if (isVictoryCondition((VictoryTypes)iVictory))
+		{
+			FErrorMsg("Enabled victory incompatible with BtS replay format");
+			return false;
+		}
+	}
+	if (getDifficulty() > 8)
+	{
+		FErrorMsg("Difficulty level (handicap) incompatible with BtS replay format");
+		return false;
+	}
+	FOR_EACH_ENUM(Player)
+	{
+		if (GET_PLAYER(eLoopPlayer).isEverAlive() && getColor(eLoopPlayer) > 126)
+		{
+			FErrorMsg("Player (text) color incompatible with BtS replay format");
+			return false;
+		}
+	}
+	/*	(Not going to check getReplayMessageColor for every replay message;
+		there can be a lot of messages, seems a little excessive.) */
+	return true;		
+} // </advc.106i>

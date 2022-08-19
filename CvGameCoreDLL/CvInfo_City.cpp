@@ -24,7 +24,7 @@ int CvProcessInfo::getProductionToCommerceModifier(CommerceTypes eCommerce) cons
 
 bool CvProcessInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetInfoIDFromChildXmlVal(m_eTechPrereq, "TechPrereq");
@@ -117,7 +117,7 @@ const TCHAR* CvSpecialistInfo::getTexture() const
 
 bool CvSpecialistInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvHotkeyInfo::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(m_szTexture, "Texture");
@@ -162,7 +162,7 @@ int CvCultureLevelInfo::getSpeedThreshold(int i) const
 
 bool CvCultureLevelInfo::read(CvXMLLoadUtility* pXml)
 {
-	if (!CvInfoBase::read(pXml))
+	if (!base_t::read(pXml))
 		return false;
 
 	pXml->GetChildXmlValByName(&m_iCityDefenseModifier, "iCityDefenseModifier");
@@ -208,7 +208,7 @@ int CvEmphasizeInfo::getCommerceChange(int i) const
 
 bool CvEmphasizeInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->GetChildXmlValByName(&m_bAvoidGrowth, "bAvoidGrowth");

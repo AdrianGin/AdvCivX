@@ -40,11 +40,11 @@ typedef wchar_t				wchar;
 inline float DWtoF( dword n ) { return *(float*)&n; }
 inline float MaxFloat() { return DWtoF(0x7f7fffff); }*/
 
-/*	advc: Structs that get the limits of an integer type (bool is integral -
-	but not integer). Replacing boost/integer_traits, so that the
-	constants above are used and not e.g. INT_MAX. (I don't see why we have
-	those custom constants, but, since I'm not sure and since some of them
-	are widely used now, I'm not going to throw them out.) */
+/*	advc: Structs that get the limits of an integer type.
+	Replacing boost/integer_traits, so that the constants above are used
+	and not e.g. INT_MAX. (I don't see why we have those custom constants,
+	but, since I'm not sure and since some of them are widely used now,
+	I'm not going to throw them out.) */
 template<typename T>
 struct integer_limits
 {

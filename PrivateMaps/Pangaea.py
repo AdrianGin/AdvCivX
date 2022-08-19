@@ -19,22 +19,41 @@ from CvMapGeneratorUtil import BonusBalancer
 
 balancer = BonusBalancer()
 
-# <advc.165>
+'''
 def getGridSize(argsList):
+	# Reduce grid sizes by one level.
+	grid_sizes = {
+		WorldSizeTypes.WORLDSIZE_DUEL:		(8,5),
+		WorldSizeTypes.WORLDSIZE_TINY:		(10,6),
+		WorldSizeTypes.WORLDSIZE_SMALL:		(13,8),
+		WorldSizeTypes.WORLDSIZE_STANDARD:	(16,10),
+		WorldSizeTypes.WORLDSIZE_LARGE:		(21,13),
+		WorldSizeTypes.WORLDSIZE_HUGE:		(26,16)
+	}
+
+	if (argsList[0] == -1): # (-1,) is passed to function on loads
+		return []
+	[eWorldSize] = argsList
+	return grid_sizes[eWorldSize]
+'''
+# advc.165: Adjust, don't overwrite the defaults.
+def getNumPlotsPercent(argsList):
 	[iWorldSize] = argsList
 	if iWorldSize < 0:
-		return ()
+		return 100
 	sizeModifiers = {
-		WorldSizeTypes.WORLDSIZE_DUEL:		(2, 0),
-		WorldSizeTypes.WORLDSIZE_TINY:		(2, 0),
-		WorldSizeTypes.WORLDSIZE_SMALL:		(2, 0),
-		WorldSizeTypes.WORLDSIZE_STANDARD:	(2, 0),
-		WorldSizeTypes.WORLDSIZE_LARGE:		(2, 1),
-		WorldSizeTypes.WORLDSIZE_HUGE:		(3, 2)
+		WorldSizeTypes.WORLDSIZE_DUEL:		88,
+		WorldSizeTypes.WORLDSIZE_TINY:		83,
+		WorldSizeTypes.WORLDSIZE_SMALL:		78,
+		WorldSizeTypes.WORLDSIZE_STANDARD:	73,
+		WorldSizeTypes.WORLDSIZE_LARGE:		67,
+		WorldSizeTypes.WORLDSIZE_HUGE:		60
 	}
-	wi = CyGlobalContext().getWorldInfo(iWorldSize)
-	return (sizeModifiers[iWorldSize][0] + wi.getGridWidth(), sizeModifiers[iWorldSize][1] + wi.getGridHeight())
-# </advc.165>
+	r = sizeModifiers[iWorldSize]
+	# Low sea level doesn't have as much impact on this map. Adjust the grid size in order to compensate.
+	if CyGlobalContext().getSeaLevelInfo(CyMap().getSeaLevel()).getSeaLevelChange() < 0:
+		r = (r * 6) // 5
+	return r
 
 def getDescription():
 	return "TXT_KEY_MAP_SCRIPT_PANGAEA_DESCR"
@@ -132,22 +151,6 @@ def isAdvancedMap():
 	"This map should show up in simple mode"
 	return 0
 
-def getGridSize(argsList):
-	# Reduce grid sizes by one level.
-	grid_sizes = {
-		WorldSizeTypes.WORLDSIZE_DUEL:		(8,5),
-		WorldSizeTypes.WORLDSIZE_TINY:		(10,6),
-		WorldSizeTypes.WORLDSIZE_SMALL:		(13,8),
-		WorldSizeTypes.WORLDSIZE_STANDARD:	(16,10),
-		WorldSizeTypes.WORLDSIZE_LARGE:		(21,13),
-		WorldSizeTypes.WORLDSIZE_HUGE:		(26,16)
-	}
-
-	if (argsList[0] == -1): # (-1,) is passed to function on loads
-		return []
-	[eWorldSize] = argsList
-	return grid_sizes[eWorldSize]
-
 def beforeGeneration():
 	# Detect whether this game is primarily a team game or not. (1v1 treated as a team game!)
 	# Team games, everybody starts on the coast. Otherwise, start anywhere on the pangaea.
@@ -227,8 +230,15 @@ class PangaeaMultilayeredFractal(CvMapGeneratorUtil.MultilayeredFractal):
 		
 		# Sea Level adjustment (from user input), limited to value of 5%.
 		sea = self.gc.getSeaLevelInfo(self.map.getSeaLevel()).getSeaLevelChange()
-		sea = min(sea, 5)
-		sea = max(sea, -5)
+		#sea = min(sea, 5)
+		#sea = max(sea, -5)
+		# <advc.165> A hard limit makes it dificult to adjust the grid size.
+		if sea < 0:
+			sea = (sea * 5) / 8
+		# I don't think High sea level is problematic. Based on tests, actually
+		# needs to be reinforced, I guess b/c the normal sea level is so low.
+		elif sea > 0:
+			sea = (sea * 3) / 2 # </advc.165>
 
 		# The following regions are specific to Pangaea.py
 		mainWestLon = 0.2

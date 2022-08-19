@@ -29,6 +29,10 @@
 			<option id="OptionsButton" key="Options Button" 
 					type="boolean" default="False"
 					get="isShowOptionsButton" set="setShowOptionsButton"/>
+
+			<!-- advc.106i -->
+			<option id="ModNameInReplays" key="Mod Name In Replays" 
+					type="boolean" default="True" />
 					
 			<!-- advc.106b -->
 			<option id="AutoOpenEventLog" key="Auto Open Event Log" 
@@ -61,9 +65,10 @@
 					type="color" default="COLOR_WARNING_TEXT"
 					get="getGoldRateBrokeColor" dirtyBit="GameData"/>
 			
-			<!-- Great Person Progress Bar by Impaler[WrG], EmperorFool -->
+			<!-- Great Person Progress Bar by Impaler[WrG], EmperorFool
+				 advc.092: Default was False in K-Mod, True in BUG. -->
 			<option id="GPBar" key="GP Progress Bar" 
-					type="boolean" default="False" 
+					type="boolean" default="True" 
 					get="isShowGPProgressBar" dirtyBit="GameData"/>
 			<list   id="GPBar_Types" key="GP Progress Bar Types" 
 					type="int" default="2" listType="string" 
@@ -74,9 +79,10 @@
 				<choice id="Maximum" get="isGPBarTypesMax"/>
 			</list>
 			
-			<!-- Great General Progress Bar by NeverMind -->
+			<!-- Great General Progress Bar by NeverMind
+				 advc.092: Default was False in K-Mod, True in BUG. -->
 			<option id="Combat_Counter" key="Combat Counter" 
-					type="boolean" default="False" 
+					type="boolean" default="True" 
 					get="isShowGGProgressBar" dirtyBit="GameData"/>
 			
 			<!-- Min/Max Commerce Buttons by codewarrior -->
@@ -114,6 +120,11 @@
 					type="boolean" default="False" 
 					get="isShowOnlyOnceProgress" dirtyBit="GameData"/>
 
+			<!-- advc.092: New option -->
+			<option id="EnlargeHUD" key="Enlarge HUD" 
+					type="boolean" default="True" 
+					get="isEnlargeHUD"/>
+
 			<!-- Field of View -->
 			<option id="FieldOfView" key="Field of View" 
 					type="boolean" default="False" 
@@ -137,6 +148,11 @@
 				<choice id="Far"/>
 				<choice id="Custom"/>
 			</list>
+
+			<!-- advc.102b: -->
+			<list   id="ShowFriendlyMovesThresh" key="Show Friendly Moves Thresh" 
+					type="int" default="0" listType="int" 
+					values="1, 2, 3, 4, 5, 6, 7, 8"/>
 
 			<!-- advc.002a: -->
 			<list   id="MinimapWaterColor" key="Minimap Water Color" 
@@ -234,9 +250,15 @@
 			<option id="SimpleSelection" key="Simple Selection"
 					type="boolean" default="True"/>
 
+			<!-- (I don't think these two are needed after all) -->
 			<!-- advc.004k -->
-			<option id="SeaPatrol" key="Sea Patrol"
-					type="boolean" default="False" dirtyBit="SelectionButtons"/>
+			<!--option id="SeaPatrol" key="Sea Patrol"
+					get="isShowSeaPatrol"
+					type="boolean" default="True" dirtyBit="SelectionButtons"/-->
+			<!-- advc.004k -->
+			<!--option id="AutoExplore" key="Auto Explore"
+					get="isShowAutoExplore"
+					type="boolean" default="True" dirtyBit="SelectionButtons"/-->
 			
 			<!-- advc.004z -->
 			<option id="ScoresInGlobeView" key="Scores in Globe View" 
@@ -263,6 +285,26 @@
 				<choice id="None"/>
 				<choice id="Adjacent"/>
 				<choice id="CityCross"/>
+			</list>
+
+			<!-- advc.092b (Caveat: The DLL doesn't have access to the IDs
+				 of these choices. The behavior is implemented only based on
+				 the order of the choices.) -->
+			<list   id="PlotIndicatorSize" key="Plot Indicator Size"
+					type="int" default="0" listType="string"
+					dirtyBit="GlobeLayer">
+				<change module="InputUtil" function="updatePlotIndicatorSize"/>
+				<choice id="Auto"/> <choice id="BtS"/>
+				<choice id="25"/> <choice id="30"/> <choice id="35"/>
+				<choice id="40"/> <choice id="45"/> <choice id="50"/> <choice id="55"/>
+				<choice id="60"/> <choice id="65"/>
+			</list>
+			<list   id="OffScreenUnitSizeMult" key="Off Screen Unit Size Mult"
+					type="int" default="3" listType="string">
+				<change module="InputUtil" function="updatePlotIndicatorSize"/>
+				<choice id="0.8"/> <choice id="1.0"/> <choice id="1.2"/> <choice id="1.4"/>
+				<choice id="1.6"/> <choice id="1.8"/> <choice id="2.0"/> <choice id="2.2"/>
+				<choice id="Disable"/>
 			</list>
 
 			<!-- advc.002f: -->

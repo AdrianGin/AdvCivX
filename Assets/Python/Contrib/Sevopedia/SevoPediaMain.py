@@ -602,8 +602,8 @@ class SevoPediaMain(CvPediaScreen.CvPediaScreen):
 		self.placeItems(WidgetTypes.WIDGET_PEDIA_JUMP_TO_IMPROVEMENT, gc.getImprovementInfo)
 	
 	def getImprovementList(self):
-		# <advc.004y>
 		imprList = self.getSortedList(gc.getNumImprovementInfos(), gc.getImprovementInfo)
+		# <advc.004y>
 		r = []
 		for descr,i in imprList:
 			info = gc.getImprovementInfo(i)
@@ -618,7 +618,21 @@ class SevoPediaMain(CvPediaScreen.CvPediaScreen):
 		self.placeItems(WidgetTypes.WIDGET_PEDIA_JUMP_TO_CIV, gc.getCivilizationInfo)
 	
 	def getCivilizationList(self):
-		return self.getSortedList(gc.getNumCivilizationInfos(), gc.getCivilizationInfo)
+		civList = self.getSortedList(gc.getNumCivilizationInfos(), gc.getCivilizationInfo)
+		# <advc.004y> Filter out minor civ, but not Barbarians (which do have
+		# sensible strategy text). Distinguish b/w them by checking for
+		# free Palace. Not sure if that's really better than using
+		# gc.getInfoTypeForString("CIVILIZATION_MINOR")
+		r = []
+		for descr,i in civList:
+			info = gc.getCivilizationInfo(i)
+			if not info.isPlayable():
+				iCapitalBuildingClass = gc.getDefineINT("CAPITAL_BUILDINGCLASS")
+				if (iCapitalBuildingClass >= 0 and
+				info.isCivilizationFreeBuildingClass(iCapitalBuildingClass)):
+					continue
+			r.append((descr,i))
+		return r # </advc.004y>
 
 
 	def placeLeaders(self):

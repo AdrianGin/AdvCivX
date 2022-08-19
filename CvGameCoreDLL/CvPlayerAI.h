@@ -35,6 +35,7 @@ public:
 	// Only for the EXE:
 	DllExport static CvPlayerAI& getPlayerNonInl(PlayerTypes ePlayer);
 	DllExport static bool areStaticsInitialized();
+	static void AI_updateAttitudes(); // advc
 	// <advc> Moved from CvDefines
 	static int const DANGER_RANGE = 4;
 	static int const BORDER_DANGER_RANGE = 2; // </advc>
@@ -126,6 +127,7 @@ public:
 	// Obsoleted by K-Mod:
 	/*int AI_getOurPlotStrength(CvPlot* pPlot, int iRange, bool bDefensiveBonuses, bool bTestMoves) const;
 	int AI_getEnemyPlotStrength(CvPlot* pPlot, int iRange, bool bDefensiveBonuses, bool bTestMoves) const;*/ // BtS
+	bool AI_isEasyCulture(bool* pbFromTrait = NULL) const; // advc
 
 	bool AI_isAreaAlone(CvArea const& kArea) const;
 	bool AI_isCapitalAreaAlone() const;
@@ -188,6 +190,10 @@ public:
 	// BETTER_BTS_AI_MOD: END
 	// k146:
 	int AI_techProjectValue(TechTypes eTech, int iPathLength, bool &bEnablesProjectWonder) const;
+	// <advc>
+	int AI_techReligionValue(TechTypes eTech, int iPathLength,
+			int iRaceModifier, int iCityTarget,
+			CvRandom& kRand, int& iRandomMax, bool bRandomize) const; // </advc>
 	int AI_cultureVictoryTechValue(TechTypes eTech) const;
 
 	void AI_chooseFreeTech(/* advc.121: */ bool bEndOfTurn = false);
@@ -201,7 +207,7 @@ public:
 	bool AI_demandRebukedWar(PlayerTypes ePlayer) const;
 	bool AI_hasTradedWithTeam(TeamTypes eTeam) const;
 
-	void AI_updateAttitude(); // K-Mod (for all players)
+	void AI_updateAttitude(); // K-Mod (toward all other players)
 	void AI_updateAttitude(PlayerTypes ePlayer,		// K-Mod
 			bool bUpdateWorstEnemy = true); // advc.130e
 	void AI_changeCachedAttitude(PlayerTypes ePlayer, int iChange); // K-Mod
@@ -241,9 +247,9 @@ public:
 	int AI_getTeamSizeAttitude(PlayerTypes ePlayer) const;
 	// advc.sha: One function for both BetterRank and WorseRank
 	int AI_getRankDifferenceAttitude(PlayerTypes ePlayer) const;
-	//int AI_getLowRankAttitude(PlayerTypes ePlayer) const; // advc.sha
+	/*int AI_getLowRankAttitude(PlayerTypes ePlayer) const;
 	int AI_getLostWarAttitude(PlayerTypes ePlayer) const;
-	//int AI_getKnownPlayerRank(PlayerTypes ePlayer) const; // advc.sha
+	int AI_getKnownPlayerRank(PlayerTypes ePlayer) const;*/ // advc.sha
 	// END: Show Hidden Attitude Mod
 	int AI_getExpansionistAttitude(PlayerTypes ePlayer) const; // advc.130w
 	void AI_updateIdeologyAttitude(int iChange, CvCity const& kCity); // advc.130n
@@ -434,10 +440,12 @@ public:
 	int AI_wakePlotTargetMissionAIs(CvPlot const& kPlot, MissionAITypes eMissionAI,
 			CvSelectionGroup* pSkipSelectionGroup = NULL) const;
 	// K-Mod start
-	int AI_localDefenceStrength(const CvPlot* pDefencePlot, TeamTypes eDefenceTeam, DomainTypes eDomainType = DOMAIN_LAND,
+	int AI_localDefenceStrength(const CvPlot* pDefencePlot,
+			TeamTypes eDefenceTeam = NO_TEAM, DomainTypes eDomainType = DOMAIN_LAND,
 			int iRange = 0, bool bMoveToTarget = true, bool bCheckMoves = false, bool bNoCache = false,
 			bool bPredictPromotions = false) const; // advc.139
-	int AI_localAttackStrength(const CvPlot* pTargetPlot, TeamTypes eAttackTeam, DomainTypes eDomainType = DOMAIN_LAND,
+	int AI_localAttackStrength(const CvPlot* pTargetPlot,
+			TeamTypes eAttackTeam = NO_TEAM, DomainTypes eDomainType = DOMAIN_LAND,
 			int iRange = 2, bool bUseTarget = true, bool bCheckMoves = false, bool bCheckCanAttack = false,
 			int* piAttackerCount = NULL) const; // advc.139
 	int AI_cityTargetStrengthByPath(CvCity const* pCity, CvSelectionGroup* pSkipSelectionGroup, int iMaxPathTurns) const;
@@ -566,6 +574,12 @@ public:
 	bool AI_atVictoryStage4() const;
 	bool AI_atVictoryStage3() const;
 	AIVictoryStage AI_getVictoryStageHash() const { return m_eVictoryStageHash; }
+	// advc.115f:
+	int AI_getVictoryWeight(VictoryTypes eVictory) const
+	{
+		return m_aiVictoryWeights.get(eVictory);
+	}
+	void AI_updateVictoryWeights(); // advc.115f
 	void AI_updateVictoryStageHash(); // K-Mod
 	void AI_initStrategyRand(); // K-Mod
 	int AI_getStrategyRand(int iShift) const;
@@ -604,8 +618,12 @@ public:
 	int AI_averageCulturePressure() const; // K-Mod
 	int AI_averageCommerceExchange(CommerceTypes eCommerce) const;
 
-	int AI_playerCloseness(PlayerTypes eIndex, int iMaxDistance,
+	int AI_playerCloseness(PlayerTypes eIndex,
+			int iMaxDistance /* advc: */ = DEFAULT_PLAYER_CLOSENESS,
 			bool bConstCache = false) const; // advc.001n
+	int AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow, // advc
+			// advc.104:
+			bool bReduceWhenHopeless = true, bool bConstCache = false) const;
 
 	int AI_getTotalCityThreat() const;
 	int AI_getTotalFloatingDefenseNeeded() const;
@@ -689,6 +707,7 @@ public:
 	// k146: Used in conjuction with canTrain
 	bool AI_haveResourcesToTrain(UnitTypes eUnit) const;
 	UnitTypes AI_getBestAttackUnit() const; // advc.079
+	scaled AI_trainUnitSpeedAdustment() const; // advc.253
 
 	// <advc.104>
 	UWAI::Player& uwai() { return *m_pUWAI; }
@@ -706,8 +725,9 @@ public:
 	bool AI_isUnitNeedingOpenBorders(TeamTypes eTarget) const; // advc.124
 	bool AI_isDefenseFocusOnBarbarians(CvArea const& kArea) const; // advc.300
 	bool AI_hasSharedPrimaryArea(PlayerTypes eOther) const; // advc
-
-	int AI_getContactDelay(ContactTypes eContact) const; // advc.130r
+	// <advc.130r>
+	int AI_getContactDelay(ContactTypes eContact) const;
+	bool AI_contactRoll(ContactTypes eContact, scaled rMult = 1); // </advc.130r>
 	// <advc.104m>
 	bool AI_proposeEmbargo(PlayerTypes eHuman);
 	bool AI_contactReligion(PlayerTypes eHuman);
@@ -788,9 +808,8 @@ protected:
 	int* m_aiBonusValueTrade; // advc.036
 	int* m_aiUnitClassWeights;
 	int* m_aiUnitCombatWeights;
-	// <advc.130c>
-	bool m_abTheyFarAhead[MAX_CIV_PLAYERS];
-	bool m_abTheyBarelyAhead[MAX_CIV_PLAYERS]; // </advc.130c>
+	ArrayEnumMap<VictoryTypes,short> m_aiVictoryWeights; // advc.115f
+
 	std::map<UnitClassTypes, int> m_GreatPersonWeights; // K-Mod
 	std::map<int,int> m_neededExplorersByArea; // advc.opt
 
@@ -829,9 +848,10 @@ protected:
 	}
 	bool AI_proposeJointWar(PlayerTypes eHuman);
 	void AI_proposeWarTrade(PlayerTypes eAIPlayer); // </advc>
-	// advc.130t:
-	int AI_rivalPactAttitude(PlayerTypes ePlayer, bool bVassalPacts) const;
-	scaled AI_expansionistHate(PlayerTypes ePlayer) const;
+
+	int AI_rivalPactAttitude(PlayerTypes ePlayer, bool bVassalPacts) const; // advc.130t
+	scaled AI_expansionistHate(PlayerTypes ePlayer) const; //advc.130w
+
 	bool AI_canBeAttackedBy(CvUnit const& u) const; // advc.315
 
 	// <advc.130p>
@@ -923,6 +943,7 @@ protected:
 	int AI_calculateDominationVictoryStage() const;
 	int AI_calculateDiplomacyVictoryStage() const;
 	// BETTER_BTS_AI_MOD: END
+	bool AI_isVictoryValid(VictoryTypes eVictory, int& iWeight) const; // advc.115f
 	// K-Mod. I've moved the bulk of AI_getStrategyHash into a new function: AI_updateStrategyHash.
 	AIStrategy AI_getStrategyHash() const { return m_eStrategyHash; }
 	void AI_updateStrategyHash();

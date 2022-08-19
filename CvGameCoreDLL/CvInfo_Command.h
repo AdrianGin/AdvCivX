@@ -14,6 +14,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvCommandInfo : public CvHotkeyInfo
 {
+	typedef CvHotkeyInfo base_t;
 public:
 	CvCommandInfo();
 
@@ -37,6 +38,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvAutomateInfo : public CvHotkeyInfo
 {
+	typedef CvHotkeyInfo base_t;
 public:
 	CvAutomateInfo();
 
@@ -91,13 +93,16 @@ public:
 	int getMissionData() const; // Exposed to Python
 	int getCommandData() const; // Exposed to Python
 
-	int getAutomateType() const;
+	int getAutomateType() const; // (advc.004k: Exposed to Python)
 	int getInterfaceModeType() const; // Exposed to Python
 	DllExport int getMissionType() const; // Exposed to Python
 	int getCommandType() const; // Exposed to Python
 	int getControlType() const; // Exposed to Python
-	int getOriginalIndex() const;
-	void setOriginalIndex(int i);
+	/*	<advc> Renamed from "OriginalIndex". It's what the user is supposed to
+		cast to the enum type indicated by getSubType. E.g. MISSION_SLEEP
+		if this action represents the Sleep mission. */
+	int getSubID() const;
+	void setSubID(int i); // </advc>
 
 	bool isConfirmCommand() const; // Exposed to Python
 	DllExport bool isVisible() const; // Exposed to Python
@@ -112,7 +117,7 @@ public:
 	DllExport bool isCtrlDownAlt() const;
 
 protected:
-	int m_iOriginalIndex;
+	int m_iSubID;
 	ActionSubTypes m_eSubType;
 
 private:
@@ -124,6 +129,7 @@ private:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvMissionInfo : public CvHotkeyInfo
 {
+	typedef CvHotkeyInfo base_t;
 public: // The const functions are exposed to Python
 	CvMissionInfo();
 
@@ -154,6 +160,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvInterfaceModeInfo : public CvHotkeyInfo
 {
+	typedef CvHotkeyInfo base_t;
 public: // "(ADD to Python)" // <-- advc: Looks like all the const functions are exposed as usual
 	CvInterfaceModeInfo();
 

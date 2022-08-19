@@ -39,7 +39,7 @@ public:
 		I.e. each player is assumed to focus its attacks on one opponent at a time.
 		"Targets" in this context are civ players assumed to be (soon/ in the
 		medium term) attacked by invading units. The "target team" during
-		war evaluation is a different concept. In particular, 
+		war evaluation is a different concept.
 		It's important to distinguish the player represented by a Node (m_ePlayer)
 		from the player (agent) from whose perspective the graph is computed
 		(InvasionGraph::m_eAgent). Only one node in the graph represents the agent. */
@@ -84,7 +84,8 @@ public:
 		/*	To be called on the attacker. Caller needs to delete the result.
 			Last two parameters only for clash steps */
 		SimulationStep* step(scaled rArmyPortionDefender = 0,
-				scaled rArmyPortionAttacker = 1, bool bClashOnly = false) const;
+				scaled rArmyPortionAttacker = 1, bool bClashOnly = false,
+				bool bUniformGarrisons = false) const;
 		void applyStep(SimulationStep const& kStep); // To be called on the defender
 		void setEliminated(bool b) { m_bEliminated = b; }
 		bool isEliminated() const { return m_bEliminated; }

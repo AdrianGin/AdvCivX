@@ -29,11 +29,13 @@ public:
 
 	void doTurn();
 	void doTurnPost(); // advc.029
-	void updateCombat(bool bQuick = false, /* advc.004c: */ bool* pbIntercepted = NULL);
+	void updateCombat(bool bQuick = false, /* advc.004c: */ bool* pbIntercepted = NULL,
+			bool bSeaPatrol = false); // advc.004k
 	void updateAirCombat(bool bQuick = false);
 	bool updateAirStrike(CvPlot& kPlot, bool bQuick, bool bFinish);
 
 	bool isActionRecommended(int iAction);
+	void onActiveSelection(); // advc
 	void updateFoundingBorder(bool bForceClear = false) const; // advc.004h
 
 	bool isUnowned() const; // advc.061
@@ -88,7 +90,8 @@ public:
 	bool isPlotValid(CvPlot const& kPlot) const;											// Exposed to Python (via CyPlot::isFriendlyCity)
 	bool isRevealedPlotValid(CvPlot const& kPlot) const; // </advc>
 	bool isInvasionMove(CvPlot const& kFrom, CvPlot const& kTo) const; // advc.162
-	void attack(CvPlot* pPlot, bool bQuick, /* advc.004c: */ bool* pbIntercepted = NULL);
+	void attack(CvPlot* pPlot, bool bQuick, /* advc.004c: */ bool* pbIntercepted = NULL,
+			bool bSeaPatrol = false); // advc
 	void attackForDamage(CvUnit *pDefender, int attackerDamageChange, int defenderDamageChange);
 	void fightInterceptor(CvPlot const& kPlot, bool bQuick);
 	void move(CvPlot& kPlot, bool bShow, // advc: 1st param was CvPlot* (not const b/c of possible feature change)
@@ -126,7 +129,10 @@ public:
 	bool canAirPatrol(const CvPlot* pPlot) const;															// Exposed to Python
 	void airCircle(bool bStart);
 
-	bool canSeaPatrol(const CvPlot* pPlot) const;															// Exposed to Python
+	bool canSeaPatrol(CvPlot const* pPlot																	// Exposed to Python
+			= NULL, bool bCheckActivity = false) const; // advc
+	bool isSeaPatrolling() const; // advc
+	bool canReachBySeaPatrol(CvPlot const& kDest, CvPlot const* pFrom = NULL) const; // advc.004k
 
 	bool canHeal(const CvPlot* pPlot) const;																// Exposed to Python
 	bool canSentryHeal(const CvPlot* pPlot) const; // advc.004l
@@ -142,12 +148,15 @@ public:
 	bool canAirliftAt(const CvPlot* pPlot, int iX, int iY) const;											// Exposed to Python
 	bool airlift(int iX, int iY);
 
-	bool isNukeVictim(const CvPlot* pPlot, TeamTypes eTeam) const;											// Exposed to Python
+	bool isNukeVictim(const CvPlot* pPlot, TeamTypes eTeam,													// Exposed to Python
+			TeamTypes eObs = NO_TEAM) const; // kekm.7 (advc)
 	bool canNuke(CvPlot const* pFrom) const { return (nukeRange() != -1); }									// Exposed to Python
-	bool canNukeAt(CvPlot const& kFrom, int iX, int iY) const;												// Exposed to Python
+	bool canNukeAt(CvPlot const& kFrom, int iX, int iY,														// Exposed to Python
+			TeamTypes eObs = NO_TEAM) const; // kekm.7 (advc)
 	bool nuke(int iX, int iY);
 	// <advc.650>
-	int nukeInterceptionChance(CvPlot const& kTarget, TeamTypes* pBestTeam = NULL,
+	int nukeInterceptionChance(CvPlot const& kTarget, TeamTypes eObs = NO_TEAM,
+			TeamTypes* pBestTeam = NULL,
 			EagerEnumMap<TeamTypes,bool> const* pTeamsAffected = NULL) const;
 	// <advc.650>
 	bool canRecon(const CvPlot* pPlot) const;																// Exposed to Python
@@ -243,7 +252,8 @@ public:
 	bool canGoldenAge(const CvPlot* pPlot, bool bTestVisible = false) const;								// Exposed to Python
 	bool goldenAge();
 
-	bool canBuild(CvPlot const& pPlot, BuildTypes eBuild, bool bTestVisible = false) const;					// Exposed to Python
+	bool canBuild(CvPlot const& pPlot, BuildTypes eBuild,													// Exposed to Python
+			bool bTestVisible = false, /* advc.181: */ bool bIgnoreFoW = true) const;
 	bool build(BuildTypes eBuild);
 
 	bool canPromote(PromotionTypes ePromotion,																// Exposed to Python
@@ -289,6 +299,7 @@ public:
 		return m_pUnitInfo->getSpecialUnitType();
 	}
 	UnitTypes getCaptureUnitType(CivilizationTypes eCivilization) const;									// Exposed to Python
+	int getCaptureOdds(CvUnit const& kDefender) const; // advc.010
 	UnitCombatTypes getUnitCombatType() const																// Exposed to Python
 	{
 		return m_pUnitInfo->getUnitCombatType();
@@ -343,6 +354,7 @@ public:
 	{
 		return m_pUnitInfo->getNukeRange();
 	}
+	bool isNuke() const { return m_pUnitInfo->isNuke(); } // advc
 
 	bool canBuildRoute() const;																				// Exposed to Python
 	DllExport BuildTypes getBuildType() const;																// Exposed to Python
@@ -667,7 +679,9 @@ public:
 	int getExperience() const { return m_iExperience; }														// Exposed to Python
 	void setExperience(int iNewValue, int iMax = -1);														// Exposed to Python
 	void changeExperience(int iChange, int iMax = -1, bool bFromCombat = false,								// Exposed to Python
-			bool bInBorders = false, bool bUpdateGlobal = false);
+			bool bInBorders = false, //bool bUpdateGlobal = false
+			int iGlobalPercent = 0); // advc.312
+	int getGlobalXPPercent() const; // advc.312
 
 	int getLevel() const { return m_iLevel; }																// Exposed to Python
 	void setLevel(int iNewValue);
@@ -804,7 +818,7 @@ public:
 	int getKamikazePercent() const;																			// Exposed to Python
 	void changeKamikazePercent(int iChange);
 
-	DllExport DirectionTypes getFacingDirection(bool checkLineOfSightProperty) const;
+	DllExport DirectionTypes getFacingDirection(bool bCheckLineOfSightProperty) const;
 	void setFacingDirection(DirectionTypes facingDirection);
 	void rotateFacingDirectionClockwise();
 	void rotateFacingDirectionCounterClockwise();
@@ -1197,7 +1211,8 @@ protected:
 	bool verifyRoundsValid(const CvBattleDefinition & battleDefinition) const;
 	void increaseBattleRounds(CvBattleDefinition & battleDefinition) const;
 	int computeWaveSize(bool bRangedRound, int iAttackerMax, int iDefenderMax) const;
-	bool isCombatVisible(const CvUnit* pDefender) const;
+	bool isCombatVisible(const CvUnit* pDefender,
+			bool bSeaPatrol = false) const; // advc.004k
 	//void resolveCombat(CvUnit* pDefender, CvPlot* pPlot, CvBattleDefinition& kBattle);
 	void resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible); // K-Mod
 	void addAttackSuccessMessages(CvUnit const& kDefender, bool bFought) const; // advc.010

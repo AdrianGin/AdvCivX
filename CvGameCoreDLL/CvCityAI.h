@@ -4,6 +4,7 @@
 #define CIV4_CITY_AI_H
 
 #include "CvCity.h"
+#include "AIStrategies.h" // advc.enum
 
 typedef std::vector<std::pair<UnitAITypes, int> > UnitTypeWeightArray;
 
@@ -141,13 +142,15 @@ public:
 	int AI_specialYieldMultiplier(YieldTypes eYield) const;
 	int AI_getCultureWeight() const { return m_iCultureWeight; } // K-Mod
 	void AI_setCultureWeight(int iWeight) { m_iCultureWeight = iWeight; } // K-Mod
+	bool AI_needsCultureToWorkFullRadius() const; // advc
 
 	int AI_countNumBonuses(BonusTypes eBonus, bool bIncludeOurs, bool bIncludeNeutral,
 			int iOtherCultureThreshold, bool bLand = true, bool bWater = true) const;
 	int AI_countNumImprovableBonuses(bool bIncludeNeutral, TechTypes eExtraTech = NO_TECH,
 			bool bLand = true, bool bWater = false) const; // BBAI
 
-	int AI_playerCloseness(PlayerTypes eIndex, int iMaxDistance = 7,
+	int AI_playerCloseness(PlayerTypes eIndex,
+			int iMaxDistance /* advc: */ = DEFAULT_PLAYER_CLOSENESS,
 			bool bConstCache = false) const; // advc.001n
 	int AI_highestTeamCloseness(TeamTypes eTeam, // K-Mod
 			bool bConstCache) const; // advc.001n
@@ -193,8 +196,8 @@ protected:
 	int* m_aiBestBuildValue;
 	int* m_aiPlayerCloseness;
 	// <advc> Made mutable (and made the cache accessor functions const)
-	mutable int* m_iCachePlayerClosenessTurn;
-	mutable int* m_iCachePlayerClosenessDistance;
+	mutable int* m_aiCachePlayerClosenessTurn;
+	mutable int* m_aiCachePlayerClosenessDistance;
 	mutable int m_iNeededFloatingDefenders;
 	mutable int m_iNeededFloatingDefendersCacheTurn;
 	mutable std::vector<int> m_aiConstructionValue; // K-Mod. (cache)

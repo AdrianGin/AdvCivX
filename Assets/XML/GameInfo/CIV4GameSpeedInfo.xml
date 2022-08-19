@@ -11,64 +11,124 @@
 			<Type>GAMESPEED_MARATHON</Type>
 			<Description>TXT_KEY_GAMESPEED_MARATHON</Description>
 			<Help>TXT_KEY_GAMESPEED_MARATHON_HELP</Help>
-			<iGrowthPercent>300</iGrowthPercent>
+			<!-- advc.252: all 300 percentages reduced to 250 -->
+			<iGrowthPercent>250</iGrowthPercent>
 			<iTrainPercent>200</iTrainPercent>
-			<iConstructPercent>300</iConstructPercent>
-			<iCreatePercent>300</iCreatePercent>
-			<iResearchPercent>300</iResearchPercent>
-			<iBuildPercent>300</iBuildPercent>
-			<iImprovementPercent>300</iImprovementPercent>
-			<iGreatPeoplePercent>300</iGreatPeoplePercent>
+			<iConstructPercent>250</iConstructPercent>
+			<iCreatePercent>250</iCreatePercent>
+			<iResearchPercent>250</iResearchPercent>
+			<iBuildPercent>250</iBuildPercent>
+			<iImprovementPercent>250</iImprovementPercent>
+			<iGreatPeoplePercent>250</iGreatPeoplePercent>
 			<!-- advc (note): Unused; the DLL doesn't even read it. (This goes
 				 for all iCulturePercent values in this file.) Handled by
 				 CvCultureLevelInfo instead. -->
-			<iCulturePercent>300</iCulturePercent>
+			<iCulturePercent>200</iCulturePercent>
 			<iAnarchyPercent>200</iAnarchyPercent>
-			<!-- advc.300: Reduced to 300 (was 400) -->
-			<iBarbPercent>300</iBarbPercent>
-			<iFeatureProductionPercent>300</iFeatureProductionPercent>
-			<iUnitDiscoverPercent>300</iUnitDiscoverPercent>
-			<iUnitHurryPercent>300</iUnitHurryPercent>
-			<iUnitTradePercent>300</iUnitTradePercent>
-			<iUnitGreatWorkPercent>300</iUnitGreatWorkPercent>
+			<!-- advc.300: was 400 -->
+			<iBarbPercent>225</iBarbPercent>
+			<iFeatureProductionPercent>250</iFeatureProductionPercent>
+			<iUnitDiscoverPercent>250</iUnitDiscoverPercent>
+			<iUnitHurryPercent>250</iUnitHurryPercent>
+			<iUnitTradePercent>250</iUnitTradePercent>
+			<iUnitGreatWorkPercent>250</iUnitGreatWorkPercent>
 			<iGoldenAgePercent>200</iGoldenAgePercent>
-			<iHurryPercent>33</iHurryPercent>
-			<iHurryConscriptAngerPercent>300</iHurryConscriptAngerPercent>
-			<iInflationPercent>10</iInflationPercent>
-			<iInflationOffset>-270</iInflationOffset>
-			<iVictoryDelayPercent>300</iVictoryDelayPercent>
-			<GameTurnInfos>
+			<!-- advc.252: was 33 -->
+			<iHurryPercent>40</iHurryPercent>
+			<iHurryConscriptAngerPercent>250</iHurryConscriptAngerPercent>
+			<!-- advc.252: was 10 -->
+			<iInflationPercent>12</iInflationPercent>
+			<!-- advc.252: was -270 -->
+			<iInflationOffset>-225</iInflationOffset>
+			<!-- advc.252: was 300 -->
+			<iVictoryDelayPercent>200</iVictoryDelayPercent>
+			<!-- advc.130r: start -->
+			<iAIMemoryRandPercent>200</iAIMemoryRandPercent>
+			<iAIContactRandPercent>167</iAIContactRandPercent>
+			<iAIContactDelayPercent>200</iAIContactDelayPercent>
+			<!-- advc.130r: end -->
+			<!-- advc.130k -->
+			<iFullTradeCreditPercent>200</iFullTradeCreditPercent>
+			<!-- advc.101 -->
+			<iRevoltDivPercent>200</iRevoltDivPercent>
+			<!-- advc.173: Spread through Missionaries will benefit from
+				 TrainPercent, but I don't think passive spread should
+				 match that. Units having a bigger role is normal for
+				 Marathon. -->
+			<iReligionSpreadDivPercent>250</iReligionSpreadDivPercent>
+			<!-- advc.252: start -->
+			<iEventRollSidesPercent>200</iEventRollSidesPercent>
+			<iVoteIntervalPercent>250</iVoteIntervalPercent>
+			<!-- advc.252: end -->
+			<!-- advc.910: Changed all of the turn counts -->
+			<!-- advc.252: Pogression for 1500 game turns - kept in case that
+				 the 300% modifiers need to be restored. -->
+			<!--GameTurnInfos>
 				<GameTurnInfo>
 					<iMonthIncrement>180</iMonthIncrement>
-					<iTurnsPerIncrement>100</iTurnsPerIncrement>
+					<iTurnsPerIncrement>150</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>120</iMonthIncrement>
-					<iTurnsPerIncrement>300</iTurnsPerIncrement>
+					<iTurnsPerIncrement>210</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>60</iMonthIncrement>
-					<iTurnsPerIncrement>170</iTurnsPerIncrement>
+					<iTurnsPerIncrement>240</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>24</iMonthIncrement>
-					<iTurnsPerIncrement>201</iTurnsPerIncrement>
+					<iTurnsPerIncrement>100</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>12</iMonthIncrement>
-					<iTurnsPerIncrement>129</iTurnsPerIncrement>
+					<iTurnsPerIncrement>110</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>6</iMonthIncrement>
-					<iTurnsPerIncrement>180</iTurnsPerIncrement>
+					<iTurnsPerIncrement>190</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>3</iMonthIncrement>
-					<iTurnsPerIncrement>264</iTurnsPerIncrement>
+					<iTurnsPerIncrement>320</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>1</iMonthIncrement>
-					<iTurnsPerIncrement>156</iTurnsPerIncrement>
+					<iTurnsPerIncrement>180</iTurnsPerIncrement>
+				</GameTurnInfo>
+			</GameTurnInfos-->
+			<GameTurnInfos>
+				<GameTurnInfo>
+					<iMonthIncrement>240</iMonthIncrement>
+					<iTurnsPerIncrement>130</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>120</iMonthIncrement>
+					<iTurnsPerIncrement>235</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>60</iMonthIncrement>
+					<iTurnsPerIncrement>140</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>24</iMonthIncrement>
+					<iTurnsPerIncrement>65</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>12</iMonthIncrement>
+					<iTurnsPerIncrement>140</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>6</iMonthIncrement>
+					<iTurnsPerIncrement>140</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>3</iMonthIncrement>
+					<iTurnsPerIncrement>160</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>1</iMonthIncrement>
+					<iTurnsPerIncrement>240</iTurnsPerIncrement>
 				</GameTurnInfo>
 			</GameTurnInfos>
 		</GameSpeedInfo>
@@ -97,35 +157,61 @@
 			<iHurryConscriptAngerPercent>150</iHurryConscriptAngerPercent>
 			<iInflationPercent>20</iInflationPercent>
 			<iInflationOffset>-135</iInflationOffset>
-			<iVictoryDelayPercent>150</iVictoryDelayPercent>
+			<!-- advc.252: was 150 -->
+			<iVictoryDelayPercent>125</iVictoryDelayPercent>
+			<!-- advc.130r: start -->
+			<iAIMemoryRandPercent>125</iAIMemoryRandPercent>
+			<iAIContactRandPercent>115</iAIContactRandPercent>
+			<iAIContactDelayPercent>125</iAIContactDelayPercent>
+			<!-- advc.130r: end -->
+			<!-- advc.130k -->
+			<iFullTradeCreditPercent>125</iFullTradeCreditPercent>
+			<!-- advc.101 -->
+			<iRevoltDivPercent>125</iRevoltDivPercent>
+			<!-- advc.173 -->
+			<iReligionSpreadDivPercent>150</iReligionSpreadDivPercent>
+			<!-- advc.252: start -->
+			<iEventRollSidesPercent>125</iEventRollSidesPercent>
+			<iVoteIntervalPercent>150</iVoteIntervalPercent>
+			<!-- advc.252: end -->
+			<!-- advc.910: Changed all of the turn counts,
+				 some of the increments. -->
 			<GameTurnInfos>
 				<GameTurnInfo>
-					<iMonthIncrement>300</iMonthIncrement>
-					<iTurnsPerIncrement>140</iTurnsPerIncrement>
+					<!-- was 300 -->
+					<iMonthIncrement>360</iMonthIncrement>
+					<iTurnsPerIncrement>90</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>180</iMonthIncrement>
-					<iTurnsPerIncrement>90</iTurnsPerIncrement>
+					<iTurnsPerIncrement>145</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>120</iMonthIncrement>
-					<iTurnsPerIncrement>40</iTurnsPerIncrement>
+					<iTurnsPerIncrement>75</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>60</iMonthIncrement>
-					<iTurnsPerIncrement>90</iTurnsPerIncrement>
+					<iTurnsPerIncrement>21</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>24</iMonthIncrement>
-					<iTurnsPerIncrement>70</iTurnsPerIncrement>
+					<iTurnsPerIncrement>57</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>12</iMonthIncrement>
-					<iTurnsPerIncrement>100</iTurnsPerIncrement>
+					<iTurnsPerIncrement>120</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>6</iMonthIncrement>
-					<iTurnsPerIncrement>220</iTurnsPerIncrement>
+					<iTurnsPerIncrement>102</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<!-- Can't avoid going into quarter years if we want to
+					 maintain 1 year per turn for long enough to avoid
+					 getting ahead of the time line in the 20th century. -->
+				<GameTurnInfo>
+					<iMonthIncrement>3</iMonthIncrement>
+					<iTurnsPerIncrement>140</iTurnsPerIncrement>
 				</GameTurnInfo>
 			</GameTurnInfos>
 		</GameSpeedInfo>
@@ -155,43 +241,41 @@
 			<iInflationPercent>30</iInflationPercent>
 			<iInflationOffset>-90</iInflationOffset>
 			<iVictoryDelayPercent>100</iVictoryDelayPercent>
-			<!-- advc.910: Changed 120 months from 50 to 55,
-				 60 months from 60 to 50,
-				 12 months from 120 to 115 and
-				 6 months from 60 to 70.
-				 (Can't place comments inside the GameTurnInfos.) -->
+			<!-- advc.910: Changed all of the turn counts -->
 			<GameTurnInfos>
 				<GameTurnInfo>
 					<iMonthIncrement>480</iMonthIncrement>
-					<iTurnsPerIncrement>75</iTurnsPerIncrement>
+					<iTurnsPerIncrement>65</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>300</iMonthIncrement>
-					<iTurnsPerIncrement>60</iTurnsPerIncrement>
+					<iTurnsPerIncrement>80</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>240</iMonthIncrement>
-					<iTurnsPerIncrement>25</iTurnsPerIncrement>
+					<iTurnsPerIncrement>40</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>120</iMonthIncrement>
-					<iTurnsPerIncrement>55</iTurnsPerIncrement>
+					<iTurnsPerIncrement>25</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>60</iMonthIncrement>
-					<iTurnsPerIncrement>50</iTurnsPerIncrement>
+					<!-- Avoid an odd number here - otherwise all the year numbers
+						 in the next period (2 years per turn) will be odd. -->
+					<iTurnsPerIncrement>26</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>24</iMonthIncrement>
-					<iTurnsPerIncrement>50</iTurnsPerIncrement>
+					<iTurnsPerIncrement>82</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>12</iMonthIncrement>
-					<iTurnsPerIncrement>115</iTurnsPerIncrement>
+					<iTurnsPerIncrement>30</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>6</iMonthIncrement>
-					<iTurnsPerIncrement>70</iTurnsPerIncrement>
+					<iTurnsPerIncrement>152</iTurnsPerIncrement>
 				</GameTurnInfo>
 			</GameTurnInfos>
 		</GameSpeedInfo>
@@ -221,23 +305,41 @@
 			<iHurryConscriptAngerPercent>67</iHurryConscriptAngerPercent>
 			<iInflationPercent>45</iInflationPercent>
 			<iInflationOffset>-60</iInflationOffset>
-			<iVictoryDelayPercent>67</iVictoryDelayPercent>
+			<!-- advc.252: was 67 -->
+			<iVictoryDelayPercent>80</iVictoryDelayPercent>
+			<!-- advc.130r: start -->
+			<iAIMemoryRandPercent>80</iAIMemoryRandPercent>
+			<iAIContactRandPercent>90</iAIContactRandPercent>
+			<iAIContactDelayPercent>80</iAIContactDelayPercent>
+			<!-- advc.130r: end -->
+			<!-- advc.130k -->
+			<iFullTradeCreditPercent>80</iFullTradeCreditPercent>
+			<!-- advc.101 -->
+			<iRevoltDivPercent>80</iRevoltDivPercent>
+			<!-- advc.173 -->
+			<iReligionSpreadDivPercent>67</iReligionSpreadDivPercent>
+			<!-- advc.252: start -->
+			<iEventRollSidesPercent>80</iEventRollSidesPercent>
+			<iVoteIntervalPercent>67</iVoteIntervalPercent>
+			<!-- advc.252: end -->
+			<!-- advc.910: Changed most of the turn count. Now sum up to a
+				 max turn of 335 instead of 330. -->
 			<GameTurnInfos>
 				<GameTurnInfo>
 					<iMonthIncrement>720</iMonthIncrement>
-					<iTurnsPerIncrement>50</iTurnsPerIncrement>
+					<iTurnsPerIncrement>45</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>480</iMonthIncrement>
-					<iTurnsPerIncrement>30</iTurnsPerIncrement>
+					<iTurnsPerIncrement>50</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>360</iMonthIncrement>
-					<iTurnsPerIncrement>20</iTurnsPerIncrement>
+					<iTurnsPerIncrement>15</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>240</iMonthIncrement>
-					<iTurnsPerIncrement>30</iTurnsPerIncrement>
+					<iTurnsPerIncrement>15</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>120</iMonthIncrement>
@@ -245,15 +347,15 @@
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>60</iMonthIncrement>
-					<iTurnsPerIncrement>40</iTurnsPerIncrement>
+					<iTurnsPerIncrement>26</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>24</iMonthIncrement>
-					<iTurnsPerIncrement>65</iTurnsPerIncrement>
+					<iTurnsPerIncrement>61</iTurnsPerIncrement>
 				</GameTurnInfo>
 				<GameTurnInfo>
 					<iMonthIncrement>12</iMonthIncrement>
-					<iTurnsPerIncrement>70</iTurnsPerIncrement>
+					<iTurnsPerIncrement>98</iTurnsPerIncrement>
 				</GameTurnInfo>
 			</GameTurnInfos>
 		</GameSpeedInfo>

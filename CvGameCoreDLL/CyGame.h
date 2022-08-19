@@ -164,7 +164,7 @@ public:
 	bool isSimultaneousTeamTurns();
 
 	bool isFinalInitialized();
-	void setScreenDimensions(int x, int y); // advc.061
+	void setScreenDimensions(int iWidth, int iHeight); // advc.061
 	int /*PlayerTypes*/ getActivePlayer();
 	void setActivePlayer(int /*PlayerTypes*/ eNewValue, bool bForceHotSeat);
 	int getPausePlayer();
@@ -187,6 +187,7 @@ public:
 	int /*TeamTypes*/ getRankTeam(int iRank);
 	int getTeamRank(int /*TeamTypes*/ iIndex);
 	int getTeamScore(int /*TeamTypes*/ iIndex);
+	void setVictoryValid(int /*VictoryTypes*/ iVictory, bool bValid); // advc
 	bool isOption(int /*GameOptionTypes*/ eIndex);
 	void setOption(int /*GameOptionTypes*/ eIndex, bool bEnabled);
 	bool isMPOption(int /*MultiplayerOptionTypes*/ eIndex);
@@ -272,8 +273,9 @@ public:
 
 	int getCultureThreshold(int /*CultureLevelTypes*/ eLevel);
 
-	int getPlotExtraYield(int iX, int iY, int /*YieldTypes*/ eYield); // K-Mod
-	void setPlotExtraYield(int iX, int iY, int /*YieldTypes*/ eYield, int iExtraYield);
+	// (advc.enum: deprecated x3)
+	int getPlotExtraYield(int iX, int iY, int eYield); // K-Mod
+	void setPlotExtraYield(int iX, int iY, int eYield, int iExtraYield);
 	void changePlotExtraCost(int iX, int iY, int iExtraCost);
 
 	bool isCivEverActive(int /*CivilizationTypes*/ eCivilization);

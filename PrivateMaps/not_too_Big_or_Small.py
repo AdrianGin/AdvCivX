@@ -5,29 +5,26 @@
 from CvPythonExtensions import *
 import CvUtil
 import CvMapGeneratorUtil
-from CvMapGeneratorUtil import FractalWorld
 from CvMapGeneratorUtil import TerrainGenerator
 from CvMapGeneratorUtil import FeatureGenerator
 
 def getDescription():
 	return "A modified version of Big and Small, designed to scale better for large maps."
 
-# <advc.165>
-def getGridSize(argsList):
+# advc.165:
+def getNumPlotsPercent(argsList):
 	[iWorldSize] = argsList
 	if iWorldSize < 0:
-		return ()
+		return 100
 	sizeModifiers = {
-		WorldSizeTypes.WORLDSIZE_DUEL:		( 0, 0),
-		WorldSizeTypes.WORLDSIZE_TINY:		( 0, 0),
-		WorldSizeTypes.WORLDSIZE_SMALL:		( 0,-1),
-		WorldSizeTypes.WORLDSIZE_STANDARD:	(-1,-1),
-		WorldSizeTypes.WORLDSIZE_LARGE:		(-2,-1),
-		WorldSizeTypes.WORLDSIZE_HUGE:		(-1,-2)
+		WorldSizeTypes.WORLDSIZE_DUEL:		100,
+		WorldSizeTypes.WORLDSIZE_TINY:		98,
+		WorldSizeTypes.WORLDSIZE_SMALL:		92,
+		WorldSizeTypes.WORLDSIZE_STANDARD:	87,
+		WorldSizeTypes.WORLDSIZE_LARGE:		83,
+		WorldSizeTypes.WORLDSIZE_HUGE:		79
 	}
-	wi = CyGlobalContext().getWorldInfo(iWorldSize)
-	return (sizeModifiers[iWorldSize][0] + wi.getGridWidth(), sizeModifiers[iWorldSize][1] + wi.getGridHeight())
-# </advc.165>
+	return sizeModifiers[iWorldSize]
 
 def isAdvancedMap():
 	"This map should not show up in simple mode"

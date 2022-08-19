@@ -28,9 +28,68 @@ alternative method to the default process for placing the starting units for eac
 # advc.129c: Master switch for turning off all my terrain changes (they're not extensive enough to justify new subclasses)
 bEarthlike = True
 
+# advc.tsl: Consult the DLL for this
+def latitudeAtPlot(map, iX, iY, iHeight):
+	bFallback = (not map.isPlot(iX, iY) or map.getTopLatitude() <= map.getBottomLatitude())
+	if not bFallback:
+		iAbsLat = map.plot(iX, iY).getLatitude() # new DLL call
+		if iAbsLat < 0 or iAbsLat > 90:
+			bFallback = True
+	if bFallback:
+		# BtS code moved from TerrainGenerator.latitudeAtPlot, FeatureGenerator.latitudeAtPlot.
+		# Only a fallback mechanism now. Doesn't support asymmetric top and bottom latitude.
+		return abs(float((iHeight-1)/2) - iY) / float((iHeight-1)/2)
+	return float(iAbsLat) / 90
+
+# advc.tsl: Wrapper for CyFractal that stores the height map at the dimensions of the game map (CyFractal uses different dimensions internally). But the main goal is to let Python modify the height data, which CyFractal doesn't allow.
+class ExplicitFractal:
+	def __init__(self, fractal, map):
+		self.map = map
+		self.w = map.getGridWidth()
+		self.h = map.getGridHeight()
+		self.data = []
+		for y in range(self.h):
+			for x in range(self.w):
+				self.data.append(fractal.getHeight(x, y))
+
+	def indexXY(self, x, y):
+		return y * self.w + x
+
+	def getHeight(self, x, y):
+		return self.data[self.indexXY(x, y)]
+
+	def getHeightFromPercent(self, iPercent):
+		sortedData = self.data * 1
+		sortedData.sort()
+		return sortedData[((len(sortedData) - 1) * iPercent) // 100]
+
+	def multiplyBy(self, x, y, fMult):
+		self.data[self.indexXY(x, y)] = round(self.getHeight(x, y) * fMult)
+
+	def decreaseNearMiddle(self, bMiddleRow, fMaxDecrease):
+		dim = self.w
+		if bMiddleRow:
+			dim = self.h
+		for x in range(self.w):
+			for y in range(self.h):
+				coord = x
+				if bMiddleRow:
+					coord = y
+				equatorDist = abs(coord * 2 - dim) / float(dim)
+				fMult = 1 - fMaxDecrease + fMaxDecrease * equatorDist
+				self.multiplyBy(x, y, fMult)
+
+
 class FractalWorld:
-	def __init__(self, fracXExp=CyFractal.FracVals.DEFAULT_FRAC_X_EXP,
-				 fracYExp=CyFractal.FracVals.DEFAULT_FRAC_Y_EXP):
+	def __init__(self,
+				 # <advc.137> Don't use those defaults b/c they're hardcoded in the EXE
+				 # (as 7 and 6 respectively).
+				 # Instead, let the DLL decide. Note that Oasis and RandomScriptMap
+				 # still use the EXE's defaults. Well, the DLL will check for those
+				 # defaults and may overwrite them, so it doesn't ultimately matter.
+				 fracXExp=-1,#CyFractal.FracVals.DEFAULT_FRAC_X_EXP
+				 fracYExp=-1):#CyFractal.FracVals.DEFAULT_FRAC_Y_EXP
+				 # </advc.137>
 		self.gc = CyGlobalContext()
 		self.map = self.gc.getMap()
 		self.iNumPlotsX = self.map.getGridWidth()
@@ -182,7 +241,9 @@ class FractalWorld:
 			landWeights[i] = landWeight
 		return landWeights
 
-	def generatePlotTypes(self, water_percent=78, shift_plot_types=True, grain_amount=3):
+	def generatePlotTypes(self,
+			water_percent=77, # advc.137: was 0.78
+			shift_plot_types=True, grain_amount=3):
 		# Check for changes to User Input variances.
 		self.checkForOverrideDefaultUserInputVariances()
 		
@@ -194,6 +255,16 @@ class FractalWorld:
 		water_percent = max(water_percent, self.seaLevelMin)
 
 		iWaterThreshold = self.continentsFrac.getHeightFromPercent(water_percent)
+		# <advc.tsl>
+		bSparseEquator = (CyGame().isOption(GameOptionTypes.GAMEOPTION_TRUE_STARTS) and
+				# Better not mess with maps that have strange latitude settings
+				self.map.getTopLatitude() == -self.map.getBottomLatitude() and
+				self.map.getTopLatitude() <= 90 and self.map.getTopLatitude() >= 80)
+		if bSparseEquator:
+			sparseEquatorFractal = ExplicitFractal(self.continentsFrac, self.map)
+			sparseEquatorFractal.decreaseNearMiddle(self.map.isWrapX() or not self.map.isWrapY(), 0.15)
+			iWaterThreshold = sparseEquatorFractal.getHeightFromPercent(water_percent)
+		# </advc.tsl>
 		iHillsBottom1 = self.hillsFrac.getHeightFromPercent(max((self.hillGroupOneBase - self.hillGroupOneRange), 0))
 		iHillsTop1 = self.hillsFrac.getHeightFromPercent(min((self.hillGroupOneBase + self.hillGroupOneRange), 100))
 		iHillsBottom2 = self.hillsFrac.getHeightFromPercent(max((self.hillGroupTwoBase - self.hillGroupTwoRange), 0))
@@ -205,6 +276,9 @@ class FractalWorld:
 			for y in range(self.iNumPlotsY):
 				i = y*self.iNumPlotsX + x
 				val = self.continentsFrac.getHeight(x,y)
+				# <advc.tsl>
+				if bSparseEquator:
+					val = sparseEquatorFractal.getHeight(x,y) # </advc.tsl>
 				if val <= iWaterThreshold:
 					self.plotTypes[i] = PlotTypes.PLOT_OCEAN
 				else:
@@ -225,7 +299,10 @@ class FractalWorld:
 									adjy = y + dy
 									if adjy < 0 or adjy >= self.iNumPlotsY:
 										continue
-									if self.continentsFrac.getHeight(adjx,adjy) <= iWaterThreshold:
+									# <advc.tsl>
+									if (bSparseEquator and sparseEquatorFractal.getHeight(adjx,adjy) <= iWaterThreshold or
+											(not bSparseEquator and # </advc.tsl>
+											self.continentsFrac.getHeight(adjx,adjy) <= iWaterThreshold)):
 										bWaterFound = True
 										break
 								if bWaterFound:
@@ -247,8 +324,11 @@ class FractalWorld:
 cardinal_directions = (1,0), (0,1), (-1,0), (0, -1)
 	
 class HintedWorld(FractalWorld):
-	def __init__(self, w=16, h=8, fracXExp=CyFractal.FracVals.DEFAULT_FRAC_X_EXP, 
+	def __init__(self, w=16, h=8,
+				 # advc.137 (note): Changing these to -1 would break Inland_Sea
+				 fracXExp=CyFractal.FracVals.DEFAULT_FRAC_X_EXP,
 				 fracYExp=CyFractal.FracVals.DEFAULT_FRAC_Y_EXP):
+				 # </advc.137>
 		FractalWorld.__init__(self, fracXExp, fracYExp)
 		
 		self.plotsPerBlockX = self.iNumPlotsX/w
@@ -663,8 +743,11 @@ controlling function and must be customized for each applicable map script.
 # Use GeneratePlotsByRegion to organize your fractal layers.
 
 class MultilayeredFractal:
-	def __init__(self, fracXExp=CyFractal.FracVals.DEFAULT_FRAC_X_EXP, 
-				 fracYExp=CyFractal.FracVals.DEFAULT_FRAC_Y_EXP):
+	def __init__(self,
+				 # <advc.137>
+				 fracXExp=-1,#CyFractal.FracVals.DEFAULT_FRAC_X_EXP
+				 fracYExp=-1):#CyFractal.FracVals.DEFAULT_FRAC_Y_EXP
+				 # </advc.137>
 		self.gc = CyGlobalContext()
 		self.map = self.gc.getMap()
 		self.iW = self.map.getGridWidth()
@@ -1022,12 +1105,12 @@ invert_heights
 class TerrainGenerator:
 	"If iDesertPercent=35, then about 35% of all land will be desert. Plains is similar. \
 	Note that all percentages are approximate, as values have to be roughened to achieve a natural look."
-	# advc.tsl: Increased tundra and snow latitude by 0.03 each
 	def __init__(self, iDesertPercent=32, iPlainsPercent=18,
-				 fSnowLatitude=0.73, fTundraLatitude=0.63,
-				 fGrassLatitude=0.1, fDesertBottomLatitude=0.2,
-				 fDesertTopLatitude=0.5, fracXExp=-1,
-				 fracYExp=-1, grain_amount=4):
+				 # advc.tsl: Increased tundra latitude by 0.04 and snow by 0.08. This is done with the noise added (or subtracted) by TerrainGenerator in mind.
+				 fSnowLatitude=0.78, fTundraLatitude=0.64,
+				 fGrassLatitude=0.1,
+				 fDesertBottomLatitude=0.2, fDesertTopLatitude=0.5,
+				 fracXExp=-1, fracYExp=-1, grain_amount=4):
 		
 		self.gc = CyGlobalContext()
 		self.map = CyMap()
@@ -1119,16 +1202,20 @@ class TerrainGenerator:
 		
 	def initFractals(self):
 		self.processCustomizations() # advc.129c
-		self.deserts.fracInit(self.iWidth, self.iHeight, self.grain_amount, self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
+		self.deserts.fracInit(self.iWidth, self.iHeight, self.grain_amount,
+				self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
 		self.iDesertTop = self.deserts.getHeightFromPercent(self.iDesertTopPercent)
 		self.iDesertBottom = self.deserts.getHeightFromPercent(self.iDesertBottomPercent)
 		# <advc.129c>
 		if self.bEarthlike:
-			self.plainsFine.fracInit(self.iWidth, self.iHeight, self.grain_amount + 1, self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
+			self.plainsFine.fracInit(self.iWidth, self.iHeight, self.grain_amount + 1,
+					self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
 			# Second plains fractal with coarser grain
-			self.plainsCoarse.fracInit(self.iWidth, self.iHeight, self.grain_amount, self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
+			self.plainsCoarse.fracInit(self.iWidth, self.iHeight, self.grain_amount,
+					self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
 		else: # </advc.129c>
-			self.plains.fracInit(self.iWidth, self.iHeight, self.grain_amount + 1, self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
+			self.plains.fracInit(self.iWidth, self.iHeight, self.grain_amount + 1,
+					self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
 		# <advc.129c>
 		if self.bEarthlike:
 			self.iPlainsFineTop = self.plainsFine.getHeightFromPercent(self.iPlainsTopPercent)
@@ -1139,7 +1226,8 @@ class TerrainGenerator:
 			self.iPlainsTop = self.plains.getHeightFromPercent(self.iPlainsTopPercent)
 			self.iPlainsBottom = self.plains.getHeightFromPercent(self.iPlainsBottomPercent)
 
-		self.variation.fracInit(self.iWidth, self.iHeight, self.grain_amount, self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
+		self.variation.fracInit(self.iWidth, self.iHeight, self.grain_amount,
+				self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
 
 		self.terrainDesert = self.gc.getInfoTypeForString("TERRAIN_DESERT")
 		self.terrainPlains = self.gc.getInfoTypeForString("TERRAIN_PLAINS")
@@ -1153,10 +1241,22 @@ class TerrainGenerator:
 		This function can be overridden to change the latitudes; for example,
 		to make an entire map have temperate terrain, or to make terrain change from east to west
 		instead of from north to south"""
-		lat = abs(float((self.iHeight-1)/2 - iY)/float((self.iHeight-1)/2)) # 0.0 = equator, 1.0 = pole
+		#lat = abs(float((self.iHeight-1)/2 - iY)/float((self.iHeight-1)/2)) # 0.0 = equator, 1.0 = pole
+		# advc: Forward to global function
+		lat = latitudeAtPlot(self.map, iX, iY, self.iHeight)
 
 		# Adjust latitude using self.variation fractal, to mix things up:
-		lat += (128 - self.variation.getHeight(iX, iY))/(255.0 * 5.0)
+		fDiv = 5
+		# <advc.tsl> Dial the variation down, especially with the TSL option b/c temperate civs starting near the tundra look jarring.
+		fDiv += 1.8
+		iVariationHeight = self.variation.getHeight(iX, iY)
+		if self.gc.getGame().isOption(GameOptionTypes.GAMEOPTION_TRUE_STARTS):
+			fDiv += 1.5
+			# Grassland and Plains extending to high latitudes is not jarring, and need this Gulf Stream climate to get the Vikings on the map.
+			if iVariationHeight >= 175 and lat > 0.6 and lat < 0.7 and self.map.plot(iX, iY).isCoastalLand():
+				fDiv = 4.5
+		# </advc.tsl>
+		lat += (128 - iVariationHeight) / (255.0 * fDiv)
 
 		# Limit to the range [0, 1]:
 		if lat < 0:
@@ -1264,8 +1364,10 @@ class FeatureGenerator:
 		self.__initFeatureTypes()
 	
 	def __initFractals(self):
-		self.jungles.fracInit(self.iGridW, self.iGridH, self.jungle_grain, self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
-		self.forests.fracInit(self.iGridW, self.iGridH, self.forest_grain, self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
+		self.jungles.fracInit(self.iGridW, self.iGridH, self.jungle_grain,
+				self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
+		self.forests.fracInit(self.iGridW, self.iGridH, self.forest_grain,
+				self.mapRand, self.iFlags, self.fracXExp, self.fracYExp)
 		
 		self.iJungleBottom = self.jungles.getHeightFromPercent((100 - self.iJunglePercent)/2)
 		self.iJungleTop = self.jungles.getHeightFromPercent((100 + self.iJunglePercent)/2)
@@ -1279,13 +1381,22 @@ class FeatureGenerator:
 
 	def addFeatures(self):
 		"adds features to all plots as appropriate"
+		# advc.129: Shuffle the plots to avoid biases resulting from the
+		# bNoAdjacent restriction. (Based on code in HintedWorld.findValid.)
+		plots = []
 		for iX in range(self.iGridW):
 			for iY in range(self.iGridH):
-				self.addFeaturesAtPlot(iX, iY)
+				# <advc.129>
+				plots.append((iX, iY))
+		plotOrder = CvUtil.shuffle(len(plots), self.mapRand)
+		for plotIndex in plotOrder:
+			iX, iY = plots[plotIndex] # </advc.129>
+			self.addFeaturesAtPlot(iX, iY)
 
 	def getLatitudeAtPlot(self, iX, iY):
 		"returns a value in the range of 0.0 (tropical) to 1.0 (polar)"
-		return abs(float((self.iGridH-1)/2) - iY)/float((self.iGridH-1)/2) # 0.0 = equator, 1.0 = pole
+		# advc: Forward to global function
+		return latitudeAtPlot(self.map, iX, iY, self.iGridH)
 
 	def addFeaturesAtPlot(self, iX, iY):
 		"adds any appropriate features at the plot (iX, iY) where (0,0) is in the SW"
@@ -1405,7 +1516,8 @@ class BonusBalancer:
 		self.map = CyMap()
 		
 		self.resourcesToBalance = ('BONUS_ALUMINUM', 'BONUS_COAL', 'BONUS_COPPER', 'BONUS_HORSE', 'BONUS_IRON', 'BONUS_OIL', 'BONUS_URANIUM')
-		self.resourcesToEliminate = ('BONUS_MARBLE', )
+		# advc.108c: Don't eliminate Marble
+		self.resourcesToEliminate = ()#('BONUS_MARBLE', )
 		
 	def isSkipBonus(self, iBonusType):
 		type_string = self.gc.getBonusInfo(iBonusType).getType()
@@ -1450,22 +1562,40 @@ class BonusBalancer:
 				plots = [] # build a list of the plots near the starting plot
 				for dx in range(-5,6):
 					for dy in range(-5,6):
+						# <advc.108c> Skip the inner ring at least
+						if abs(dx) <= 1 or abs(dy) <= 1:
+							continue # </advc.108c>
 						x,y = startx+dx, starty+dy
 						pLoopPlot = self.map.plot(x,y)
-						if not pLoopPlot.isNone():
+						if pLoopPlot:
 							plots.append(pLoopPlot)
 				
 				resources_placed = []
-				for pass_num in range(4):
+				for pass_num in range(5):
 					bIgnoreUniqueRange  = pass_num >= 1
 					bIgnoreOneArea 		= pass_num >= 2
-					bIgnoreAdjacent 	= pass_num >= 3
+					bIgnoreWater 		= pass_num >= 3 # advc.108c
+					bIgnoreAdjacent 	= pass_num >= 4
 					
 					for bonus in range(self.gc.getNumBonusInfos()):
 						type_string = self.gc.getBonusInfo(bonus).getType()
 						if (type_string not in resources_placed) and (type_string in self.resourcesToBalance):
-							for (pLoopPlot) in plots:
-								if (pLoopPlot.canHaveBonus(bonus, True)):
+							#for (pLoopPlot) in plots:
+							# <advc.108c>
+							# Allow resources that can appear on land only on land
+							# (i.e. no Oil on water)
+							bLandValid = False
+							for iTerrain in range(self.gc.getNumTerrainInfos()):
+								if self.gc.getBonusInfo(bonus).isTerrain(iTerrain):
+									if not self.gc.getTerrainInfo(iTerrain).isWater():
+										bLandValid = True
+							# Randomize placement
+							iOffset = self.gc.getGame().getMapRand().get(len(plots), "BonusBalancer")
+							for j in range(0, len(plots)):
+								pLoopPlot = plots[(j + iOffset) % len(plots)] # </advc.108c>
+								if (pLoopPlot.canHaveBonus(bonus, True)
+										# advc.108c:
+										and (bIgnoreWater or not pLoopPlot.isWater() or not bLandValid)):
 									if self.isBonusValid(bonus, pLoopPlot, bIgnoreUniqueRange, bIgnoreOneArea, bIgnoreAdjacent):
 										pLoopPlot.setBonusType(bonus)
 										resources_placed.append(type_string)

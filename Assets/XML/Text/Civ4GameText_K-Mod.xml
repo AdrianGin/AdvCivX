@@ -26,6 +26,16 @@
 		<Spanish>[SPACE]en la casilla</Spanish>
 	</TEXT>
 
+	<!-- Percentage modifiers from "Civilization" (eg. from tech) -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_HELP_MODIFIER_FROM_CIV</Tag>
+		<English>[ICON_BULLET]%D1%%%F2 from Civilization</English>
+		<French>[ICON_BULLET]%D1%%%F2 (civilisation)</French>
+		<German>[ICON_BULLET]%D1%%%F2 durch Zivilisation</German>
+		<Italian>[ICON_BULLET]%D1%%%F2 per la civilt&#224;</Italian>
+		<Spanish>[ICON_BULLET]%D1%%%F2 por civilizaci&#243;n</Spanish>
+	</TEXT>
+
 	<TEXT>
 		<Tag>TXT_KEY_PER</Tag>
 		<English>[SPACE]per[SPACE]</English>
@@ -73,7 +83,7 @@
 	</TEXT>
 	<!-- ** Replacements for standard game text ** -->
 	<!-- removed the word "to" at the end -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_TRANSFER_GAME_DATA_TITLE</Tag>
 		<English>Transferring Game Data</English>
 		<French>Transfert des donn&#233;es du jeu</French>
@@ -82,7 +92,7 @@
 		<Spanish>Transfiriendo datos de la partida</Spanish>
 	</TEXT>
 	<!-- added missing "has", and changed "from" to "by" in the english version -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_MISC_YOUR_UNIT_DIED_BY_FLANKING</Tag>
 		<English>Your %s1_UnitName has been killed by a %s3_civilization %s2_EnUName flank attack</English>
 		<French>Votre unit&#233; [NUM2:de:d':] %s1_UnitName a &#233;t&#233; tu&#233;e suite &#224; une attaque de flanc lanc&#233;e par les %s2_EnUName (%s3_civilization)</French>
@@ -91,7 +101,7 @@
 		<Spanish>Un flanqueo [NUM2:del:de la:de los:de las] %s2_EnUName de la civilizaci&#243;n %s3:2_civilization ha destruido [NUM1:vuestro:vuestra:vuestros:vuestras] %s1_UnitName</Spanish>
 	</TEXT>
 	<!-- a couple of minor language adjustments to the unit cost text -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_FINANCE_ADVISOR_UNIT_COST</Tag>
 		<English>[NEWLINE]%d3[ICON_GOLD]: Unit cost for %d1 [NUM1:unit:units] (free support for %d2)</English>
 		<French>[NEWLINE]%d3[ICON_GOLD] : Coût unitaire pour %d1 [NUM1:unité:unités] (gratuit pour %d2)</French>
@@ -99,7 +109,7 @@
 		<Italian>[NEWLINE]%d3[ICON_GOLD]: Costo per %d1 unit&#224; (supporto gratuito per %d2)</Italian>
 		<Spanish>[NEWLINE]%d3 [ICON_GOLD]: coste unitario de %d1 [NUM1:unidad:unidades] (abastecimiento gratis para %d2)</Spanish>
 	</TEXT>
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_FINANCE_ADVISOR_UNIT_COST_2</Tag>
 		<English>[NEWLINE]%d3[ICON_GOLD]: Military Supply cost for %d1 [NUM1:unit:units] (free support for %d2)</English>
 		<French>[NEWLINE]%d3[ICON_GOLD] : Co&#251;t de ravitaillement pour %d1 unités militaires (gratuit pour %d2)</French>
@@ -112,7 +122,7 @@
 		 so the text needs to be changed to be more flexible.
 		 I've removed the bullet, the number, and the icon.
 		 Those will now be in the dll. -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_CIVIC_SUPPORT_COSTS</Tag>
 		<English>Support Cost per Unit</English>
 		<French>Co&#251;t d'entretien par unit&#233;</French>
@@ -120,7 +130,7 @@
 		<Italian>Costo di supporto per unit&#224;</Italian>
 		<Spanish>de coste de abastecimiento por cada unidad</Spanish>
 	</TEXT>
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_CIVIC_MILITARY_SUPPORT_COSTS</Tag>
 		<English>Support Cost per Military Unit</English>
 		<French>Co&#251;t de ravitaillement par unit&#233; militaire</French>
@@ -131,7 +141,7 @@
 	<!-- similarly with war weariness,
 		I've removed the number from the end
 		so that I can change the way it is used in the DLL. -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_WAR_WEAR_HELP</Tag>
 		<English>War Weariness</English>
 		<French>Lassitude de la guerre</French>
@@ -140,7 +150,7 @@
 		<Spanish>Hast&#237;o b&#233;lico</Spanish>
 	</TEXT>
 	<!-- removed leading [SPACE] in unit limit messages -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_UNIT_WORLD_UNIT_LEFT</Tag>
 		<English>World Unit: %d1_Num Left</English>
 		<French>Unit&#233; mondiale : reste %d1_Num</French>
@@ -148,7 +158,7 @@
 		<Italian>Unit&#224; mondiale: %d1_Num [NUM1:rimanente:rimanenti]</Italian>
 		<Spanish>Unidad mundial: %d1_Num [NUM1:restante:restantes]</Spanish>
 	</TEXT>
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_UNIT_TEAM_UNIT_LEFT</Tag>
 		<English>Team Unit: %d1_Num Left</English>
 		<French>Unit&#233; d'&#233;quipe : reste %d1_Num</French>
@@ -156,7 +166,7 @@
 		<Italian>Unit&#224; di squadra: %d1_Num [NUM1:rimanente:rimanenti]</Italian>
 		<Spanish>Unidad de equipo: %d1_Num [NUM1:restante:restantes]</Spanish>
 	</TEXT>
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_UNIT_NATIONAL_UNIT_LEFT</Tag>
 		<English>National Unit: %d1_Num Left</English>
 		<French>Unit&#233; nationale : reste %d1_Num</French>
@@ -165,7 +175,7 @@
 		<Spanish>Unidad nacional: %d1_Num [NUM1:restante:restantes]</Spanish>
 	</TEXT>
 	<!-- highlight leader name in the contact string -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_MISC_CONTACT_LEADER</Tag>
 		<English>Contact [COLOR_HIGHLIGHT_TEXT]%s1_PlyrName of %s2_CivName[COLOR_REVERT]</English>
 		<French>Contacter [COLOR_HIGHLIGHT_TEXT]%s1_PlyrName des %s2_CivName[COLOR_REVERT]</French>
@@ -187,7 +197,7 @@
 
 	<!-- advc (note): This renames the Financial Advisor to
 		 "Economics Advisor" -->
-	<TEXT>
+	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_FINANCIAL_ADVISOR_TITLE</Tag>
 		<English>Economics Advisor</English>
 		<French>Conseiller &#233;conomie</French>

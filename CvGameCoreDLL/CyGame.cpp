@@ -8,6 +8,7 @@
 #include "CyPlayer.h"
 #include "CyDeal.h"
 #include "CyReplayInfo.h"
+#include "CvMap.h" // advc.enum
 
 void CyGame::updateScore(bool bForce)
 {
@@ -609,9 +610,9 @@ bool CyGame::isFinalInitialized()
 	return m_kGame.isFinalInitialized();
 }
 // advc.061:
-void CyGame::setScreenDimensions(int x, int y)
+void CyGame::setScreenDimensions(int iWidth, int iHeight)
 {
-	m_kGame.setScreenDimensions(x, y);
+	m_kGame.setScreenDimensions(iWidth, iHeight);
 }
 
 int /*PlayerTypes*/ CyGame::getActivePlayer()
@@ -692,7 +693,7 @@ int /*GameSpeedTypes*/ CyGame::getGameSpeedType()
 
 int /*PlayerTypes*/ CyGame::getRankPlayer(int iRank)
 {
-	return m_kGame.getRankPlayer(iRank);
+	return m_kGame.getRankPlayer((PlayerTypes)iRank);
 }
 
 int CyGame::getPlayerRank(int /*PlayerTypes*/ ePlayer)
@@ -707,7 +708,7 @@ int CyGame::getPlayerScore(int /*PlayerTypes*/ ePlayer)
 
 int /*TeamTypes*/ CyGame::getRankTeam(int iRank)
 {
-	return m_kGame.getRankTeam(iRank);
+	return m_kGame.getRankTeam((TeamTypes)iRank);
 }
 
 int CyGame::getTeamRank(int /*TeamTypes*/ eTeam)
@@ -718,6 +719,13 @@ int CyGame::getTeamRank(int /*TeamTypes*/ eTeam)
 int CyGame::getTeamScore(int /*TeamTypes*/ eTeam)
 {
 	return m_kGame.getTeamScore((TeamTypes)eTeam);
+}
+
+/*	advc: Exposed so that players can fix accidental settings
+	through the Python console */
+void CyGame::setVictoryValid(int iVictory, bool b)
+{
+	m_kGame.setVictoryValid((VictoryTypes)iVictory, b);
 }
 
 bool CyGame::isOption(int /*GameOptionTypes*/ eIndex)
@@ -1073,21 +1081,31 @@ int CyGame::getCultureThreshold(int eLevel)
 	return m_kGame.getCultureThreshold((CultureLevelTypes) eLevel);
 }
 
-// K-Mod
-int CyGame::getPlotExtraYield(int iX, int iY, int /*YieldTypes*/ eYield)
+/*	<advc.enum> These three are preserved for compatibility in mods;
+	they're deprecated in favor of homonymous CyMap functions. */
+int CyGame::getPlotExtraYield(int iX, int iY, int eYield) // K-Mod
 {
-	return m_kGame.getPlotExtraYield(iX, iY, (YieldTypes)eYield);
+	CvPlot const* pPlot = GC.getMap().plot(iX, iY);
+	if (pPlot == NULL)
+		return 0;
+	return GC.getMap().getPlotExtraYield(*pPlot, (YieldTypes)eYield);
 }
 
-void CyGame::setPlotExtraYield(int iX, int iY, int /*YieldTypes*/ eYield, int iExtraYield)
+void CyGame::setPlotExtraYield(int iX, int iY, int eYield, int iExtraYield)
 {
-	m_kGame.setPlotExtraYield(iX, iY, (YieldTypes)eYield, iExtraYield);
+	CvPlot* pPlot = GC.getMap().plot(iX, iY);
+	if (pPlot == NULL)
+		return;
+	GC.getMap().setPlotExtraYield(*pPlot, (YieldTypes)eYield, iExtraYield);
 }
 
 void CyGame::changePlotExtraCost(int iX, int iY, int iCost)
 {
-	m_kGame.changePlotExtraCost(iX, iY, iCost);
-}
+	CvPlot* pPlot = GC.getMap().plot(iX, iY);
+	if (pPlot == NULL)
+		return;
+	GC.getMap().changePlotExtraCost(*pPlot, iCost);
+} // </advc.enum>
 
 bool CyGame::isCivEverActive(int /*CivilizationTypes*/ eCivilization)
 {

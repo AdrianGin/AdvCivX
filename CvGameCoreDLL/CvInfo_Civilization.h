@@ -16,6 +16,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvCivilizationInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // advc: All the const functions are exposed to Python
 	CvCivilizationInfo();
 	~CvCivilizationInfo();
@@ -23,7 +24,7 @@ public: // advc: All the const functions are exposed to Python
 
 	int getDerivativeCiv() const;
 	DllExport int getDefaultPlayerColor() const;
-	int getArtStyleType() const;
+	ArtStyleTypes getArtStyleType() const { return m_eArtStyleType; }
 	int getUnitArtStyleType() const;
 	int getNumCityNames() const;
 	int getNumLeaders() const;
@@ -72,7 +73,7 @@ public: // advc: All the const functions are exposed to Python
 
 protected:
 	int m_iDefaultPlayerColor;
-	int m_iArtStyleType;
+	ArtStyleTypes m_eArtStyleType;
 	int m_iUnitArtStyleType; // FlavorUnits by Impaler[WrG]
 	int m_iNumCityNames;
 	int m_iNumLeaders; // the number of leaders the Civ has, this is needed so that random leaders can be generated easily
@@ -108,7 +109,8 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvLeaderHeadInfo : public CvInfoBase
 {
-friend class UWAI; // advc.104x (for applyPersonalityWeight)
+	typedef CvInfoBase base_t;
+	friend class UWAI; // advc.104x (for applyPersonalityWeight)
 public: // advc: All the const functions are exposed to Python except those added by mods
 	CvLeaderHeadInfo();
 	CvLeaderHeadInfo(CvLeaderHeadInfo const& kOther); // advc.xmldefault

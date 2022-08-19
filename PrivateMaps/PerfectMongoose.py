@@ -4,6 +4,7 @@
 ## customized for the AdvCiv mod. The AdvCiv changes are marked with
 ## "advc" comments, "advc.001" for bugfixes, "advc.027" for the integration of
 ## AdvCiv's starting position algorithm.
+## Also corrected some debug output that used "FairWeather" as the map name.
 ## Version history up to v3.3 moved to the end of the file.
 ##
 ##############################################################################
@@ -26,7 +27,7 @@
 ## PerfectWorld_v2.06.py (for Civ4)
 ##
 ## Copyright 2007-2010 Rich Marinaccio aka Cephalo
-## Used with Permission
+## Used [by Kenny Welch] with Permission
 ##
 ##############################################################################
 ##
@@ -90,8 +91,8 @@ class MapConstants:
 		#Percent of land vs. water
 		#LM - Exact Real Earth Value. Actual results vary depending on map size, meteors, and which landmass generator was used.
 		#self.landPercent = 0.2889
-		# advc: Low sea level should be close to the real ratio because that's how it works with the standard map scripts (e.g. Fractal). At Medium sea level, Fractal only yields about 21% land. PM has more bad, marginal and initially inaccessible terrain, but also a longer coastline and thus more seafood.
-		self.landPercent = 0.223
+		# advc.137: At Medium sea level, Fractal only aims at 23% land (BtS: 22). PM has more bad, marginal and initially inaccessible terrain, but also a longer coastline and thus more seafood.
+		self.landPercent = 0.2315
 
 		#Percentage of land squares high enough to be Hills or Peaks.
 		self.HillPercent = 0.225 # advc: was 0.42
@@ -168,7 +169,7 @@ class MapConstants:
 		self.BonusBonus = 1.0
 
 		#This value modifies LakeSizePerDrainage when a lake begins in desert
-		self.DesertLakeModifier = 0.6
+		self.DesertLakeModifier = 0.4 # advc: was 0.6
 
 		#This value controls the amount of siltification in lakes when using the Default Civ4 SDK River Generator
 		self.maxSiltPanSizeSDK = 5
@@ -269,6 +270,7 @@ class MapConstants:
 		#syncing issues for multi-player now or in the future, therefore it must
 		#be optional.
 		# advc (note): See AIAndy's comment in the seed function. This should be fine.
+		# But, for debugging with fixed seeds, it might be best to toggle this off.
 		self.UsePythonRandom = True
 
 		#Below here are static defines. If you change these, the map won't work.
@@ -366,9 +368,13 @@ class MapConstants:
 
 		#This value controls the number of mid-altitude lake depressions per map square.
 		#It will become a lake if enough water flows into the depression.
+		# (advc: Gets set based on world size now)
 		self.numberOfLakesPerPlot3 = 0.008
+		# advc: Was 3 (as a magic constant)
+		self.expandedLakeMinSize = 1
 
 		#How many squares are added to a lake for each unit of drainage flowing into it.
+		# (advc: Gets set based on world size now)
 		self.LakeSizePerDrainage3 = 30.0
 
 		#This value is used to decide if enough water has accumulated to form a river.
@@ -384,8 +390,9 @@ class MapConstants:
 		#Height and Width of main climate and height maps. This does not
 		#reflect the resulting map size. Both dimensions( + 1 if wrapping in
 		#that dimension = False) must be evenly divisible by self.hmMaxGrain
-		self.hmWidth  = 144
-		self.hmHeight = 97
+		# advc.137: Increased both by 16
+		self.hmWidth  = 160
+		self.hmHeight = 113
 
 		#Size of largest map increment to begin midpoint displacement. Must
 		#be a power of 2.
@@ -401,10 +408,14 @@ class MapConstants:
 		#noise(smooth).
 		self.hmNoiseLevel = 2.0
 
-		#Number of tectonic plates
+		#Number of tectonic plates. advc: Set in PerformTectonics.
 		#self.hmNumberOfPlates = int(float(self.hmWidth * self.hmHeight) * 0.0016)
-		# advc:
-		self.hmNumberOfPlates = int(round(math.sqrt(self.hmWidth * self.hmHeight) / 8))
+
+		# advc: Exponent for the chance of re-rolling plate seeds near a
+		# wrapping(!) edge of the map. A higher exponent makes such re-rolls
+		# less likely. Use 0 to disable re-rolls, i.e. to use an entirely
+		# uniform distribution of plate seeds across the map.
+		self.plateSeedRerollExp = 8
 
 		#Influence of the plate map, or how much of it is added to the height map.
 		self.plateMapScale = 1.1
@@ -417,9 +428,9 @@ class MapConstants:
 
 		#Chance for plates to grow. Higher chance tends to make more regular
 		#shapes. Lower chance makes more irregular shapes and takes longer.
-		# advc: Was 0.3, both.
-		self.plateGrowthChanceX = 0.6
-		self.plateGrowthChanceY = 0.6
+		# advc: Was 0.3, both. Also randomized now.
+		self.plateGrowthChanceX = 0.5
+		self.plateGrowthChanceY = 0.5
 
 		#This sets the amount that tectonic plates differ in altitude.
 		self.plateStagger = 0.1
@@ -434,14 +445,15 @@ class MapConstants:
 		self.rippleFrequency = 0.5
 
 		#This is the amplitude of the ripples near plate boundaries.
-		self.rippleAmplitude = 0.25 # advc: was 0.75
+		# advc: Was 0.75; will increase with world size. Also randomized a little.
+		self.rippleAmplitude = 0.25
 
 		#This is the amount of noise added to the plate map.
 		self.plateNoiseFactor = 1.2
 
-		#Filter size for altitude smoothing and distance finding. Must be
-		#odd number
-		self.distanceFilterSize = 5
+		#Filter size for altitude smoothing and distance finding. Must be odd number.
+		# advc: Was 5; also randomized now.
+		self.distanceFilterSize = 9
 
 		#It is necessary to eliminate small inland lakes during the initial
 		#heightmap generation. Keep in mind this number is in relation to
@@ -563,8 +575,9 @@ class MapConstants:
 		# I'm making the hex-based generator unavailable. So the PW2 generator takes choice id 1 on the menu, but is still represented by id 2 within the script (b/c a lot of code would have to be changed otherwise).
 		if self.LandmassGenerator == 1:
 			self.LandmassGenerator = 2
-			# advc: Land tends to be easier to access with the PW2 generator (though, on the other hand, there tends to be less seafood).
-			self.landPercent -= 0.003
+		if self.LandmassGenerator == 0:
+			# advc: The PW3 generator leads to a lot of seafood. I think that outweighs a higher chance of landmasses without starting sites.
+			self.landPercent -= 0.004
 		# Hill/Peak Style
 		# Always place hills and peaks based (mainly) on differences in altitude. Using absolute altitude is pretty much only good for concluding that it's a bad idea.
 		#self.HillPeakStyle     = mmap.getCustomMapOption(2)
@@ -611,7 +624,7 @@ class MapConstants:
 		if self.SeaLevelFactor > 1.2:
 			self.maximumMeteorCount += 1
 		elif self.SeaLevelFactor < 0.85:
-			self.maximumMeteorCount += 1
+			self.maximumMeteorCount -= 1
 		# Caveat: Need to keep an eye on isHmWaterMatch when adjusting the min. meteor size. Smaller meteors affect fewer plots but are also more likely to create peaks and hills through steep slopes.
 		self.minimumMeteorSize = 1
 		if mmap.getWorldSize() > 0:
@@ -639,6 +652,8 @@ class MapConstants:
 		if self.LandmassGenerator < 2:
 			self.JungleFactor -= 0.03
 			self.JunglePercent += 0.03
+		self.numberOfLakesPerPlot3 = (0.024 / self.SeaLevelFactor) - mmap.getWorldSize() * 0.0028
+		self.LakeSizePerDrainage3 = (50.0 / self.SeaLevelFactor) - mmap.getWorldSize() * 3
 		# </advc>
 		# advc: Deleted; can be looked up in-game in AdvCiv. And it's tedious to keep it up to date here.
 		#self.optionsString = 
@@ -665,7 +680,7 @@ class PythonRandom:
 				#AIAndy - seed Python random with MapRand
 				gc = CyGlobalContext()
 				self.mapRand = gc.getGame().getMapRand()
-				seedValue = self.mapRand.get(65535, "Seeding mapRand - FairWeather.py")
+				seedValue = self.mapRand.get(65535, "Seeding mapRand - PerfectMongoose.py")
 				seed(seedValue)
 				self.seedString = "Random seed (Using getMapRand) for this map is %(s)20d" % {"s" :seedValue}
 			else:
@@ -678,7 +693,7 @@ class PythonRandom:
 		else:
 			gc = CyGlobalContext()
 			self.mapRand = gc.getGame().getMapRand()
-			seedValue = self.mapRand.get(65535, "Seeding mapRand - FairWeather.py")
+			seedValue = self.mapRand.get(65535, "Seeding mapRand - PerfectMongoose.py")
 			self.mapRand.init(seedValue)
 			self.seedString = "Random seed (Using getMapRand) for this map is %(s)20d" % {"s" :seedValue}
 
@@ -689,7 +704,7 @@ class PythonRandom:
 		else:
 			#This formula is identical to the getFloat function in CvRandom. It
 			#is not exposed to Python so I have to recreate it.
-			fResult = float(self.mapRand.get(65535, "Getting float -FairWeather.py")) / float(65535)
+			fResult = float(self.mapRand.get(65535, "Getting float -PerfectMongoose.py")) / float(65535)
 			return fResult
 
 
@@ -702,7 +717,7 @@ class PythonRandom:
 			return randint(rMin, rMax)
 		else:
 			#mapRand.get() is not inclusive, so we must make it so
-			return rMin + self.mapRand.get(rMax + 1 - rMin, "Getting a randint - FairWeather.py")
+			return rMin + self.mapRand.get(rMax + 1 - rMin, "Getting a randint - PerfectMongoose.py")
 
 
 PRand = PythonRandom()
@@ -1544,6 +1559,32 @@ class ElevationMap3(FloatMap):
 
 e3 = ElevationMap3()
 
+# advc: Based on Totestra's "rotateMap" function
+def centerMap(heightMap, width, height, indexfunc):
+	minX = 0
+	minVal = 10000.0
+	# <advc>
+	extraRange = width // 50
+	#print("extraRange=" + str(extraRange)) # </advc>
+	for x in range(width):
+		val = 0.0
+		for y in range(height):
+			# advc: A wider ocean strip is better
+			for i in range(x - extraRange, x + extraRange + 1):
+				val += ( heightMap[indexfunc(#x, y)
+						i % width, y)] / (abs(x - i) + 1) ) # advc
+		#print "for x %d val is %f minVal %f" % (x,val,minVal)
+		if val < minVal:
+			minX = x
+			minVal = val
+	#print "minX is %d" % (minX) #DEBUG
+	for y in range(height):
+		tempRow = []
+		for x in range(width):
+			tempRow.append(heightMap[indexfunc(x, y)])
+		for x in range(width):
+			heightMap[indexfunc(x,y)] = tempRow[((x + minX) % width)]
+
 
 ##############################################################################
 ## PW2 Landmass Generator
@@ -1740,7 +1781,22 @@ class ElevationMap2(FloatMap):
 		borderMap           = array('i') #this will help in later distance calculations
 		self.plateHeightMap = array('d')
 		preSmoothMap        = array('d')
-		maxDistance = math.sqrt(pow(float(mc.distanceFilterSize / 2), 2) + pow(float(mc.distanceFilterSize / 2), 2))
+		# <advc>
+		# Sounds like this should have a big impact on the shape of the landmasses
+		# and mountain chains, but I find it hard to tell a difference. I guess
+		# a larger map should have more plates.
+		fPlates = math.pow(mc.width * mc.height, 0.33) * mc.SeaLevelFactor / 2
+		fPlates *= 0.75 + PRand.random() * 0.5
+		mc.hmNumberOfPlates = int(round(fPlates))
+		plateGrowthChanceRand = PRand.random() * 0.24 - 0.12
+		plateGrowthChanceX = mc.plateGrowthChanceX + plateGrowthChanceRand
+		plateGrowthChanceY = mc.plateGrowthChanceY + plateGrowthChanceRand
+		distanceFilterSize = mc.distanceFilterSize + 2 * int(PRand.random() * 4 - 2)
+		assert distanceFilterSize % 2 == 1
+		rippleAmplitude = mc.rippleAmplitude + max(0, CyMap().getWorldSize() - 3) * 0.2
+		rippleAmplitude += PRand.random() * 0.2 - 0.1
+		# </advc>
+		maxDistance = math.sqrt(pow(float(distanceFilterSize / 2), 2) + pow(float(distanceFilterSize / 2), 2))
 		#initialize maps
 		for y in range(mc.hmHeight):
 			for x in range(mc.hmWidth):
@@ -1760,6 +1816,16 @@ class ElevationMap2(FloatMap):
 					raise ValueError, "endless loop in region seed placement"
 				seedX = PRand.randint(0, mc.hmWidth  + 1)
 				seedY = PRand.randint(0, mc.hmHeight + 1)
+				# <advc>
+				if mc.plateSeedRerollExp > 0:
+					if mc.WrapX and PRand.random() < pow(
+							1.0 - min(mc.hmWidth + 1 - seedX, seedX) / (mc.hmWidth + 1.0),
+							mc.plateSeedRerollExp):
+						continue
+					elif mc.WrapY and PRand.random() < pow(
+							1.0 - min(mc.hmHeight + 1 - seedY, seedY) / (mc.hmHeight + 1.0),
+							mc.plateSeedRerollExp):
+						continue # </advc>
 				n = GetHmIndex(seedX, seedY)
 				if not self.isSeedBlocked(plateList, seedX, seedY):
 					self.plateMap[n].plateID = i
@@ -1780,6 +1846,10 @@ class ElevationMap2(FloatMap):
 		while(len(growthPlotList) > 0):
 			iterations += 1
 			if iterations > 200000:
+				# <advc>
+				print("plateGrowthChance=" + str(plateGrowthChanceY))
+				print("distanceFilterSize=" + str(distanceFilterSize))
+				# </advc>
 				raise ValueError, "endless loop in plate growth"
 			plot = growthPlotList[0]
 			roomLeft = False
@@ -1797,15 +1867,15 @@ class ElevationMap2(FloatMap):
 				elif self.plateMap[ii].plateID == 0:
 					roomLeft = True
 					if direction == mc.N or direction == mc.S:
-						growthChance = mc.plateGrowthChanceY
+						growthChance = plateGrowthChanceY
 					else:
-						growthChance = mc.plateGrowthChanceX
+						growthChance = plateGrowthChanceX
 					if PRand.random() < growthChance:
 						self.plateMap[ii].plateID = plateID
 						xx, yy = CoordsFromIndex(ii, self.width) # advc.001
 						newPlot = (xx, yy, plateID)
 						growthPlotList.append(newPlot)
-			#move plot to the end of the list if room left, otherwise
+			#move plot to the end of the list if room left,
 			#delete it if no room left
 			if roomLeft:
 				growthPlotList.append(plot)
@@ -1842,25 +1912,26 @@ class ElevationMap2(FloatMap):
 		#Since the algorithm is the same
 		for y in range(mc.hmHeight):
 			for x in range(mc.hmWidth):
-				contributers = 0
+				contributors = 0
 				avg = 0
 				i = GetHmIndex(x, y)
 				isBorder = False
 				if borderMap[i]:
 					isBorder = True
 				plateID = self.plateMap[i].plateID
-				for yy in range(y - mc.distanceFilterSize / 2, y + mc.distanceFilterSize / 2 + 1, 1):
-					for xx in range(x - mc.distanceFilterSize / 2, x + mc.distanceFilterSize / 2 + 1, 1):
+				for yy in range(y - distanceFilterSize / 2, y + distanceFilterSize / 2 + 1, 1):
+					for xx in range(x - distanceFilterSize / 2, x + distanceFilterSize / 2 + 1, 1):
 						ii = GetHmIndex(xx, yy)
 						if ii == -1:
 							continue
-						contributers += 1
+						contributors += 1
 						avg += preSmoothMap[ii]
 						if isBorder and plateID != self.plateMap[ii].plateID:
 							distance = math.sqrt(pow(float(y - yy), 2) + pow(float(x - xx), 2))
 							if distance < self.plateMap[ii].distanceList[plateID]:
 								self.plateMap[ii].distanceList[plateID] = distance
-				avg = avg/float(contributers)
+				if avg > 0: # advc.001
+					avg = avg/float(contributors)
 				self.plateHeightMap[i] = avg
 		#Now add ripple formula to plateHeightMap
 		for i in range(self.length):
@@ -1872,7 +1943,7 @@ class ElevationMap2(FloatMap):
 					angleDifference = AngleDifference(plateList[self.plateMap[i].plateID].angle, plateList[plateID].angle)
 				else:
 					angleDifference = AngleDifference(plateList[plateID].angle, plateList[self.plateMap[i].plateID].angle)
-				ripple = (pow(math.cos(mc.rippleFrequency * self.plateMap[i].distanceList[plateID]) * (-self.plateMap[i].distanceList[plateID] / maxDistance + 1), 2) + (-self.plateMap[i].distanceList[plateID] / maxDistance + 1)) * mc.rippleAmplitude * math.sin(math.radians(angleDifference))
+				ripple = (pow(math.cos(mc.rippleFrequency * self.plateMap[i].distanceList[plateID]) * (-self.plateMap[i].distanceList[plateID] / maxDistance + 1), 2) + (-self.plateMap[i].distanceList[plateID] / maxDistance + 1)) * rippleAmplitude * math.sin(math.radians(angleDifference))
 				avgRippleTop += (ripple * distanceWeight)
 				avgRippleBottom += distanceWeight
 			if avgRippleBottom == 0.0:
@@ -2852,15 +2923,16 @@ def ShrinkMap(largeMap, lWidth, lHeight, sWidth, sHeight):
 		for x in range(sWidth):
 			weights      = 0.0
 			contributors = 0.0
-			yyStart = int(y * yScale)
-			yyStop = int((y + 1) * yScale)
-			if yyStop < ((y + 1) * yScale):
-				yyStop += 1
+			# <advc.001> Using the scale ratios here can lead to out of bounds
+			# indices due to floating-point inaccuracy.
+			yyStart = (y * lHeight) // sHeight
+			yyStop = ((y + 1) * lHeight + sHeight - 1) // sHeight
+			# </advc.001>
 			for yy in range(yyStart, yyStop):
-				xxStart = int(x * xScale)
-				xxStop = int((x + 1) * xScale)
-				if xxStop < ((x + 1) * xScale):
-					xxStop += 1
+				# <advc.001>
+				xxStart = (x * lWidth) // sWidth
+				xxStop = ((x + 1) * lWidth + sWidth - 1) // sWidth
+				# </advc.001>
 				for xx in range(xxStart, xxStop):
 					weight = GetWeight(x, y, xx, yy, xScale, yScale)
 					i = yy * lWidth + xx
@@ -3323,7 +3395,7 @@ class TerrainMap:
 		peakMap = []
 		for i in range(em.length):
 			hillMap.append(0.0)
-			peakMap.append(0.0) #</advc>
+			peakMap.append(0.0) # </advc>
 		#zero out water tiles so percent is percent of land
 		for y in range(mc.height):
 			for x in range(mc.width):
@@ -3349,10 +3421,15 @@ class TerrainMap:
 				else:
 					self.pData[i] = mc.PEAK
 		#break up large clusters of hills and peaks
+		# advc: Disable this. Had no b/c of bugs, but it's still bad with the
+		# bugs fixed. Certain patterns should arguably be broken up probabi-
+		# listically, but that'll require more thought.
+		'''
 		for y in range(mc.height):
 			for x in range(mc.width):
 				i = em.GetIndex(x, y)
-				if self.pData == mc.HILLS:
+				# advc.001: Fix missing index (from Totestra)
+				if self.pData[i] == mc.HILLS:
 					allHills = True
 					for direction in range(1, 9):
 						xx, yy = GetNeighbor(x, y, direction)
@@ -3361,7 +3438,8 @@ class TerrainMap:
 							allHills = False
 					if allHills:
 						self.pData[i] = mc.LAND
-				if self.pData == mc.PEAK:
+				# advc.001: Fix missing index (from Totestra)
+				if self.pData[i] == mc.PEAK:
 					allPeaks = True
 					for direction in range(1, 9):
 						xx, yy = GetNeighbor(x, y, direction)
@@ -3370,7 +3448,7 @@ class TerrainMap:
 							allPeaks = False
 					if allPeaks:
 						self.pData[i] = mc.HILLS
-
+		'''
 
 	def GenerateTerrainMap(self):
 		print "----------------------"
@@ -3516,7 +3594,7 @@ class PangaeaBreaker:
 
 	def breakPangaeas(self):
 		if mc.AllowPangaeas:
-			print "Pangaeas are allowed on this map and will not be suppressed."
+			#print "Pangaeas are allowed on this map and will not be suppressed."
 			return
 		''' # advc: Should be OK now (will at most throw a couple of small ones)
 		gc = CyGlobalContext()
@@ -6178,12 +6256,12 @@ def getCustomMapOptionDescAt(argsList):
 	return u""
 	'''
 
-# <advc> Make cylindrical the middle option b/c that's what the standard map scripts do
+# <advc> Make cylindrical the middle choice b/c that's what the standard map scripts do
 def getCustomMapOptionDefault(argsList):
 #	return 0
 	[iOption] = argsList
 	option_defaults = {
-		0:	0,
+		0:	1, # And make the PW2 landmass generator the default
 		1:	0,
 		2:	1
 		}
@@ -6257,7 +6335,7 @@ def generatePlotTypes():
 	map = gc.getMap()
 	mc.width  = map.getGridWidth()
 	mc.height = map.getGridHeight()
-	PRand.seed()
+	#PRand.seed() # advc: Moved to beforeInit
 	if mc.LandmassGenerator == 2:
 		scaleMinMeteorSize() # advc: Moved into new function
 		em = e2
@@ -6279,6 +6357,13 @@ def generatePlotTypes():
 		em.FillInLakes()
 	if mc.maximumMeteorCount > 0: # advc
 		pb.breakPangaeas()
+	# <advc>
+	if mc.LandmassGenerator == 2:
+		centerMap(em.data, mc.hmWidth, mc.hmHeight, GetHmIndex)
+	else:
+		# (ElevationMap3 normally uses FloatMap.GetIndex, but the global function should be equivalent.)
+		centerMap(em.data, em.width, em.height, GetIndex)
+	# </advc>
 	if mc.ClimateSystem == 0:
 		c3.GenerateTemperatureMap()
 		c3.GenerateRainfallMap()
@@ -6619,13 +6704,15 @@ def expandLake(x, y, riversIntoLake, oceanMap):
 	lakeNeighbors = list()
 	i = oceanMap.getIndex(x, y)
 	if tm.tData[i] == mc.DESERT:
-		desertModifier = mc.DesertLakeModifier
+		terrainModifier = mc.DesertLakeModifier
 	else:
-		desertModifier = 1.0
+		terrainModifier = 1.0
 	if mc.ClimateSystem == 0:
-		lakeSize = max(3, int(rm.drainageMap[i] * mc.LakeSizePerDrainage3 * desertModifier))
+		lakeSize = max(mc.expandedLakeMinSize,
+				int(rm.drainageMap[i] * mc.LakeSizePerDrainage3 * terrainModifier))
 	else:
-		lakeSize = max(3, int(rm.drainageMap[i] * mc.LakeSizePerDrainage2 * desertModifier))
+		lakeSize = max(mc.expandedLakeMinSize,
+				int(rm.drainageMap[i] * mc.LakeSizePerDrainage2 * terrainModifier))
 	start = LakePlot(x, y, em.data[i])
 	lakeNeighbors.append(start)
 	while lakeSize > 0 and len(lakeNeighbors) > 0:
@@ -6939,6 +7026,7 @@ def findStartingArea(argsList):
 # </advc.027>
 
 def beforeInit():
+	PRand.seed() # advc: Moved from generatePlotTypes
 	mc.initInGameOptions()
 
 

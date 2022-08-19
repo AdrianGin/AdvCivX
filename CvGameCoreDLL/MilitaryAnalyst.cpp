@@ -5,6 +5,7 @@
 #include "InvasionGraph.h"
 #include "CoreAI.h"
 #include "CvCity.h"
+#include "CvPlot.h"
 #include "CvInfo_GameOption.h"
 
 using std::ostringstream;
@@ -431,25 +432,24 @@ void MilitaryAnalyst::prepareResults()
 		int const iCurrTotalPop = GET_PLAYER(ePlayer).getTotalPopulation();
 		if (iCurrTotalPop <= 0)
 			continue;
-		int iPopIncrease = 0;
+		scaled rPopIncrease;
 		CitySet const& kConq = conqueredCities(ePlayer);
 		for (CitySetIter it = kConq.begin(); it != kConq.end(); ++it)
 		{
-			iPopIncrease += kOurCache.lookupCity(*it)->city().getPopulation();
+			CvCity const& kCity = kOurCache.lookupCity(*it)->city();
+			rPopIncrease += kCity.getPopulation() *
+					// Likely to lose population in the short and medium term
+					(2 + per100(kCity.getPlot().calculateCulturePercent(ePlayer))) / 3;
 		}
 		CitySet const& kLost = lostCities(ePlayer);
 		for (CitySetIter it = kLost.begin(); it != kLost.end(); ++it)
 		{
-			iPopIncrease -= kOurCache.lookupCity(*it)->city().getPopulation();
+			rPopIncrease -= kOurCache.lookupCity(*it)->city().getPopulation();
 		}
-		scaled rPopIncrease(iPopIncrease, std::max(1, iCurrTotalPop));
-		if (rPopIncrease > 0)
-		{
-			/*  Only apply half of the relative increase b/c game score is only partially
-				determined by population */
-			playerResult(ePlayer).setGameScore(kGame.getPlayerScore(ePlayer) *
-					(1 + rPopIncrease / 2));
-		}
+		rPopIncrease /= std::max(1, iCurrTotalPop);
+		// This is just a (poor) starting point for predictedGameScore
+		playerResult(ePlayer).setGameScore(kGame.getPlayerScore(ePlayer) *
+				scaled::max(0, 1 + rPopIncrease));
 	}
 	// Precompute a table for isWar b/c it's frequently used
 	for (PlayerIter<MAJOR_CIV> it1; it1.hasNext(); ++it1)
@@ -470,9 +470,27 @@ void MilitaryAnalyst::prepareResults()
 scaled MilitaryAnalyst::predictedGameScore(PlayerTypes ePlayer) const
 {
 	FAssertBounds(0, MAX_CIV_PLAYERS, ePlayer);
+	int const iCurrScore = GC.getGame().getPlayerScore(ePlayer);
+	scaled r = iCurrScore *
+			(1 + GET_PLAYER(m_eWe).uwai().estimateDemographicGrowthRate(
+			ePlayer, PLAYER_HISTORY_SCORE, turnsSimulated()));
 	PlayerResult* pR = m_playerResults[ePlayer];
-	return (pR == NULL || pR->getGameScore() < 0 ?
-			GC.getGame().getPlayerScore(ePlayer) : pR->getGameScore());
+	if (pR == NULL || pR->getGameScore() < 0)
+		return r;
+	if (isEliminated(ePlayer))
+		return 0;
+	scaled rFromSim = pR->getGameScore();
+	TeamSet const& kCap = getCapitulationsAccepted(TEAMID(ePlayer));
+	for (TeamSetIter itVassal = kCap.begin(); itVassal != kCap.end(); ++itVassal)
+	{	// Use a fraction of the vassal's current score to keep it simple
+		rFromSim += fixp(0.4) * GC.getGame().getTeamScore(*itVassal);
+	}
+	if (rFromSim < iCurrScore)
+		r = (r + rFromSim) / 2;
+	else r.increaseTo(rFromSim);
+	if (hasCapitulated(TEAMID(ePlayer)))
+		r /= 2;
+	return r;
 }
 
 

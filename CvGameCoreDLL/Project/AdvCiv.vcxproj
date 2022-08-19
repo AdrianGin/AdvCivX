@@ -88,6 +88,7 @@
     <ClCompile Include="..\CvInfo_Symbol.cpp" />
     <ClCompile Include="..\CvInfo_Tech.cpp" />
     <ClCompile Include="..\CvInfo_Terrain.cpp" />
+    <ClCompile Include="..\CvInfo_TrueStarts.cpp" />
     <ClCompile Include="..\CvInfo_Unit.cpp" />
     <ClCompile Include="..\CvInfo_Water.cpp" />
     <ClCompile Include="..\CvInitCore.cpp" />
@@ -172,6 +173,7 @@
     <ClCompile Include="..\FAStarFunc.cpp" />
     <ClCompile Include="..\GroupPathFinder.cpp" />
     <ClCompile Include="..\KmodPathFinderLegacy.cpp" />
+    <ClCompile Include="..\ModName.cpp" />
     <ClCompile Include="..\PlayerHistory.cpp" />
     <ClCompile Include="..\ReproTest.cpp" />
     <ClCompile Include="..\FDialogTemplate.cpp" />
@@ -187,10 +189,12 @@
     <ClCompile Include="..\RFTotalScore.cpp" />
     <ClCompile Include="..\RiseFall.cpp" />
     <ClCompile Include="..\ScaledNumTest.cpp" />
+    <ClCompile Include="..\SelfMod.cpp" />
     <ClCompile Include="..\Shelf.cpp" />
     <ClCompile Include="..\StartingPositionIteration.cpp" />
     <ClCompile Include="..\StartPointsAsHandicap.cpp" />
     <ClCompile Include="..\TeamPathFinder.cpp" />
+    <ClCompile Include="..\TrueStarts.cpp" />
     <ClCompile Include="..\TSCProfiler.cpp" />
     <ClCompile Include="..\UWAIAgent.cpp" />
     <ClCompile Include="..\UWAI.cpp" />
@@ -276,6 +280,7 @@
     <ClInclude Include="..\CvInfo_Symbol.h" />
     <ClInclude Include="..\CvInfo_Tech.h" />
     <ClInclude Include="..\CvInfo_Terrain.h" />
+    <ClInclude Include="..\CvInfo_TrueStarts.h" />
     <ClInclude Include="..\CvInfo_Unit.h" />
     <ClInclude Include="..\CvInfo_Water.h" />
     <ClInclude Include="..\CvInitCore.h" />
@@ -337,6 +342,7 @@
     <ClInclude Include="..\KmodPathFinder.h" />
     <ClInclude Include="..\KmodPathFinderLegacy.h" />
     <ClInclude Include="..\LinkedListTraversal.h" />
+    <ClInclude Include="..\ModName.h" />
     <ClInclude Include="..\PlayerHistory.h" />
     <ClInclude Include="..\PlotAdjListTraversal.h" />
     <ClInclude Include="..\PragmaWarnings.h" />
@@ -358,9 +364,11 @@
     <ClInclude Include="..\PlotRange.h" />
     <ClInclude Include="..\ScaledNum.h" />
     <ClInclude Include="..\ScaledNumFwd.h" />
+    <ClInclude Include="..\SelfMod.h" />
     <ClInclude Include="..\StartingPositionIteration.h" />
     <ClInclude Include="..\TeamPathFinder.h" />
     <ClInclude Include="..\Trigonometry.h" />
+    <ClInclude Include="..\TrueStarts.h" />
     <ClInclude Include="..\TSCProfiler.h" />
     <ClInclude Include="..\TypeChoice.h" />
     <ClInclude Include="..\UWAISets.h" />

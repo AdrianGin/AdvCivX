@@ -618,8 +618,11 @@ bool KmodPathFinder<StepMetric,Node>::processNode()
 }
 
 template<class StepMetric, class Node>
-// advc: Cut out of processNode - but I think the compiler should leave it there.
-__forceinline
+/*	advc: Cut out of processNode - but I think the compiler should leave it there.
+	(But I do want to be able to step through it, even with /Ob1.) */
+#ifndef _DEBUG
+	__forceinline
+#endif
 void KmodPathFinder<StepMetric,Node>::processChild(
 	Node& kParent, CvPlot const& kParentPlot, CvPlot& kChildPlot)
 {

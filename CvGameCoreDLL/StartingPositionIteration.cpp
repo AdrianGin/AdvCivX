@@ -37,10 +37,7 @@ StartingPositionIteration::StartingPositionIteration() :
 	if (!GC.getDefineBOOL("ENABLE_STARTING_POSITION_ITERATION"))
 		return;
 	CvMap const& kMap = GC.getMap();
-	/*	Could go a bit higher w/o becoming prohibitively slow, but I doubt
-		that the algorithm will do much good on super-huge maps unless the
-		limit on the number of iterations is increased. */
-	if (kMap.numPlots() > 12000)
+	if (kMap.numPlots() > GC.getDefineINT("SPI_PLOT_LIMIT"))
 		return;
 	/*	Bail on extremely overcrowded maps? SPI can't really deal with
 		overlapping city radii, but neither can the BtS algorithm. */
@@ -155,8 +152,10 @@ StartingPositionIteration::StartingPositionIteration() :
 		FOR_EACH_ENUM(PlotNum)
 		{
 			CvPlot const& kPlot = kMap.getPlotByIndex(eLoopPlotNum);
-			scaled rYieldVal = yieldEval.evaluateWorkablePlot(kPlot);
+			if (!kPlot.isPotentialCityWork())
+				continue;
 			// CitySiteEvaluator has many useful subroutines for this; handle it there.
+			scaled rYieldVal = yieldEval.evaluateWorkablePlot(kPlot);
 			yieldValues.set(eLoopPlotNum, rYieldVal);
 			/*if(yieldValues.get(eLoopPlotNum) > 0) // (debug) Mark nonnegative-value plots with a ruin
 				GC.getMap().getPlotByIndex(i).setImprovementType(GC.getRUINS_IMPROVEMENT());*/
@@ -1787,6 +1786,17 @@ void StartingPositionIteration::doIterations(PotentialSites& kPotentialSites)
 	int iMaxSteps = (1000000 /
 			scaled(iPlots * PlayerIter<CIV_ALIVE>::count()).
 			pow(fixp(0.61))).round();
+	iMaxSteps *= GC.getDefineINT("SPI_TIME_LIMIT_PERCENT");
+	iMaxSteps /= 100;
+	if (iMaxSteps <= 0)
+	{
+		FAssert(iMaxSteps > 0);
+		return;
+	}
+	/*	Just so that players can check whether SPI was used - the preconditions
+		are pretty complex. Not a Python thing, but I don't want to create a
+		separate logfile just for this one message. */
+	gDLL->logMsg("PythonDbg.log", "\nRunning Starting Position Iteration (AdvCiv mod)\n");
 	while (iStepsConsidered < iMaxSteps)
 	{
 		vector<pair<scaled,PlayerTypes> > currSitesByOutlierVal;
@@ -1922,9 +1932,9 @@ void StartingPositionIteration::doIterations(PotentialSites& kPotentialSites)
 		gDLL->callUpdater();
 		kPotentialSites.updateCurrSites(true); // Also ensures that we never return to a site
 	}
-	#ifdef SPI_LOG
-		gDLL->logMsg("StartingPos.log", "Terminated b/c of time limit", false, false);
-	#endif
+#ifdef SPI_LOG
+	gDLL->logMsg("StartingPos.log", "Terminated b/c of time limit", false, false);
+#endif
 }
 
 

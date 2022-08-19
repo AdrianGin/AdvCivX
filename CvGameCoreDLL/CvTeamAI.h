@@ -58,6 +58,8 @@ public:
 	int AI_countFinancialTrouble() const; // addvc.003j (comment): unused
 	int AI_countMilitaryWeight(CvArea const* pArea = NULL) const;
 	// <advc.104>, advc.038, advc.132:
+	scaled AI_estimateDemographic(PlayerTypes ePlayer, PlayerHistoryTypes eDemographic,
+			int iSamples = 5) const;
 	scaled AI_estimateYieldRate(PlayerTypes ePlayer, YieldTypes eYield, // (exposed to Python)
 			 int iSamples = 5) const; // </advc.104>
 	int AI_estimateTotalYieldRate(YieldTypes eYield) const; // K-Mod
@@ -87,7 +89,7 @@ public:
 	//bool AI_isAllyLandTarget(TeamTypes eTeam) const; // advc: Merged into the above
 	// BETTER_BTS_AI_MOD, General AI, 11/30/08, jdog5000: START  advc.pf: Moved from CvPlot
 	bool AI_isHasPathToEnemyCity(CvPlot const& kFrom, bool bIgnoreBarb = true) const;
-	bool AI_isHasPathToPlayerCity(CvPlot const& kFrom, PlayerTypes eOtherPlayer = NO_PLAYER) const;
+	bool AI_isHasPathToEnemyCity(CvPlot const& kFrom, CvTeam const& kEnemy) const;
 	// BETTER_BTS_AI_MOD: END
 	bool AI_shareWar(TeamTypes eTeam) const;								// Exposed to Python
 	 // advc, advc.130e:
@@ -240,15 +242,16 @@ public:
 	void AI_setShareWarCounter(TeamTypes eIndex, int iNewValue);
 	void AI_changeShareWarCounter(TeamTypes eIndex, int iChange);
 
-	int AI_getWarSuccess(TeamTypes eIndex) const										 // Exposed to Python
+	// advc.130r: Use scaled for increased precision
+	scaled AI_getWarSuccess(TeamTypes eIndex) const											// Exposed to Python
 	{
-		return m_aiWarSuccess.get(eIndex);
+		return m_arWarSuccess.get(eIndex);
 	}
-	void AI_setWarSuccess(TeamTypes eIndex, int iNewValue);
-	void AI_changeWarSuccess(TeamTypes eIndex, int iChange);
-	int AI_countEnemyWarSuccess() const; // advc
+	void AI_setWarSuccess(TeamTypes eTeam, scaled rNewValue);
+	void AI_changeWarSuccess(TeamTypes eITeam, scaled rChange);
+	scaled AI_countEnemyWarSuccess() const; // advc
 	// <advc.130m>
-	void AI_reportSharedWarSuccess(int iIntensity, TeamTypes eWarAlly,
+	void AI_reportSharedWarSuccess(scaled rIntensity, TeamTypes eWarAlly,
 			TeamTypes eEnemy, bool bIgnoreDistress = false);
 	/*  The war success of our war ally against a shared enemy, plus the war success
 		of shared enemies against our war ally. This is quite different from AI_getWarSuccess,
@@ -313,7 +316,8 @@ public:
 	// advc.158:
 	AIStrengthMemoryMap& AI_strengthMemory() const { return m_strengthMemory; }
 	// advc.104:
-	int AI_teamCloseness(TeamTypes eIndex, int iMaxDistance = -1,
+	int AI_teamCloseness(TeamTypes eIndex,
+			int iMaxDistance = DEFAULT_PLAYER_CLOSENESS,
 			bool bConsiderLandTarget = false, // advc.104o
 			bool bConstCache = false) const; // advc.001n
 
@@ -362,7 +366,7 @@ protected:
 	ArrayEnumMap<TeamTypes,int,short> m_aiOpenBordersCounter;
 	ArrayEnumMap<TeamTypes,int,short> m_aiDefensivePactCounter;
 	ArrayEnumMap<TeamTypes,int,short> m_aiShareWarCounter;
-	ArrayEnumMap<TeamTypes,int> m_aiWarSuccess;
+	ArrayEnumMap<TeamTypes,scaled> m_arWarSuccess; // advc.130r: was V=int
 	ArrayEnumMap<TeamTypes,int> m_aiSharedWarSuccess; // advc.130m
 	ArrayEnumMap<TeamTypes,int> m_aiEnemyPeacetimeTradeValue;
 	ArrayEnumMap<TeamTypes,int> m_aiEnemyPeacetimeGrantValue;

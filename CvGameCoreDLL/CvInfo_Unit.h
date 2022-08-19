@@ -18,6 +18,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvUnitClassInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // All the const functions are exposed to Python. advc:inl: All inlined.
 	CvUnitClassInfo();
 
@@ -74,6 +75,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvUnitInfo : public CvHotkeyInfo
 {
+	typedef CvHotkeyInfo base_t;
 public: /*  All const functions are exposed to Python except some related to art and those added by mods.
 			Replaced int return types with enum. */
 	CvUnitInfo();
@@ -90,6 +92,7 @@ public: /*  All const functions are exposed to Python except some related to art
 	int getAirUnitCap() const { return m_iAirUnitCap; }
 	int getDropRange() const { return m_iDropRange; }
 	int getNukeRange() const { return m_iNukeRange; }
+	bool isNuke() const { return (getNukeRange() >= 0); } // advc
 	int getWorkRate() const { return m_iWorkRate; }
 	int getBaseDiscover() const { return m_iBaseDiscover; }
 	int getDiscoverMultiplier() const { return m_iDiscoverMultiplier; }
@@ -551,8 +554,8 @@ typedef CvUnitArtStyleInfo CvUnitArtStyleTypeInfo; // advc.enum: for any legacy 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvSpecialUnitInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public:
-
 	CvSpecialUnitInfo();
 	~CvSpecialUnitInfo();
 
@@ -577,6 +580,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvPromotionInfo :	public CvHotkeyInfo
 {
+	typedef CvHotkeyInfo base_t;
 public: // All the const functions are exposed to Python
 	CvPromotionInfo();
 	~CvPromotionInfo();
@@ -719,6 +723,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvEspionageMissionInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public:
 	CvEspionageMissionInfo();
 

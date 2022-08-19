@@ -6,7 +6,8 @@
 // advc.003x: Cut from CvInfos.h. Just CvTechInfo b/c I want to precompile this one.
 class CvTechInfo : public CvInfoBase
 {
-friend class CvXMLLoadUtility;
+	typedef CvInfoBase base_t;
+	friend class CvXMLLoadUtility;
 public: // advc: All the const functions are exposed to Python except those added by mods
 	CvTechInfo();
 	~CvTechInfo();
@@ -50,6 +51,8 @@ public: // advc: All the const functions are exposed to Python except those adde
 	bool isIgnoreIrrigation() const { return m_bIgnoreIrrigation; }
 	bool isWaterWork() const { return m_bWaterWork; }
 	bool isRiverTrade() const { return m_bRiverTrade; }
+	// advc.500c:
+	bool isNoFearForSafety() const { return m_bNoFearForSafety; }
 
 	std::wstring getQuote() const;
 	const TCHAR* getSound() const;
@@ -76,6 +79,8 @@ public: // advc: All the const functions are exposed to Python except those adde
 	int py_getPrereqAndTechs(int i) const;
 	// </advc.003t>
 	// K-Mod, exposed to Python
+	int getCommerceModifier(int i) const;
+	int* getCommerceModifierArray() const;
 	int getSpecialistExtraCommerce(int i) const;
 	int* getSpecialistExtraCommerceArray() const;
 	// K-Mod end
@@ -130,6 +135,7 @@ protected:
 	bool m_bIgnoreIrrigation;
 	bool m_bWaterWork;
 	bool m_bRiverTrade;
+	bool m_bNoFearForSafety; // advc.500c
 
 	CvString m_szQuoteKey;
 	CvString m_szSound;
@@ -141,6 +147,7 @@ protected:
 	std::vector<TechTypes> m_aePrereqOrTechs; // advc.003t: was int*
 	std::vector<TechTypes> m_aePrereqAndTechs; // advc.003t: was int*
 
+	int* m_piCommerceModifier; // K-Mod
 	int* m_piSpecialistExtraCommerce; // K-Mod
 	bool* m_pbCommerceFlexible;
 	bool* m_pbTerrainTrade;

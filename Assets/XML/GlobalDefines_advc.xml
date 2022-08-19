@@ -3,9 +3,22 @@
 <!-- Joined with GlobalDefinesAlt.xml (K-Mod settings) and the various
 	 ..._GlobalDefines files upon loading Advanced Civ. Takes precedence over
 	 BtS GlobalDefines.xml. Defines that overwrite a BtS value are tagged with
-	 a "redefine" comment. -->
+	 a "redefine" comment.
+
+	 Warning for network games: Changes in this file or other XML files can
+	 cause network games to go out of sync unless all participants have made
+	 the same changes. Settings that only affect the user interface or artwork
+	 are generally safe to change individually. -->
 
 <Civ4Defines xmlns="x-schema:CIV4GlobalDefinesSchema.xml">
+
+	<!-- advc: 000 in BtS - which makes sense because mods can be compatible
+		 with outdated versions of BtS. AdvCiv, however, requires v3.19.
+		 If the MIN_VERSION check (in the EXE) fails, a warning is displayed. -->
+	<Define> <!-- redefine -->
+		<DefineName>MIN_VERSION</DefineName>
+		<iDefineIntVal>319</iDefineIntVal>
+	</Define>
 
 	<!-- advc.002b: The DLL needs to know (well, it's not crucial ...) the
 		 font size of Size1_Normal in Civ4Theme_Common.thm. AdvCiv sets that
@@ -34,22 +47,6 @@
 		<iDefineIntVal>14223</iDefineIntVal>
 	</Define>
 
-	<!-- advc.106i: If set to 1, replay files are written in such a way that
-		 they appear like unmodded replays to BtS, meaning that AdvCiv replays
-		 will show up on the Hall of Fame screen even when no mod is loaded.
-		 If any player colors are added to CIV4ColorVals.xml beyond those in
-		 BtS, then this option is automatically disabled (as if set to 0)
-		 because BtS is unable to show replays that use unfamiliar color
-		 values. AdvCiv does not add such colors, but derived mods might.
-		 Additional map sizes, victory conditions, handicap or game speed
-		 settings will also cause problems, and therefore cause this option to be
-		 disabled.
-		 Mod-mods may also want to change TXT_KEY_REPLAY_PREFIX_ADVC in
-		 Civ4GameText_advc.xml. -->
-	<Define>
-		<DefineName>HOF_STORE_REPLAYS_AS_BTS</DefineName>
-		<iDefineIntVal>1</iDefineIntVal>
-	</Define>
 	<!-- advc.106i: If set to 1, replays from unmodded BtS can be viewed
 		 through AdvCiv's Hall of Fame screen. If set to 0, unmodded replays
 		 are filtered out. -->
@@ -75,8 +72,8 @@
 		 main screen, Military Advisor and Replay screen.
 		 Recommended: 512 as in BtS. A higher value (e.g. 1024) looks
 		 better on the (maximized) replay screen, but is incompatible
-		 with HOF_STORE_REPLAYS_AS_BTS=1. Higher values also increase
-		 the size of replay files.
+		 with the "Mod Name in Replays" option (System tab of the BUG menu).
+		 Higher values also increase the size of replay files.
 		 AdvCiv (since version 0.97) stores MINIMAP_RENDER_SIZE in
 		 replay files, so compatibility between within AdvCiv isn't
 		 an issue, but BtS can only read size 512. -->
@@ -125,6 +122,15 @@
 		<DefineName>USE_KMOD_AI_NONAGGRESSIVE</DefineName>
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
+
+	<!-- advc.092b: Set to 1 to disable all code that modifies the EXE
+		 at runtime. In case that those modifications render the mod unplayable
+		 with some edition of BtS or operating system and no one is around to
+		 properly fix the issue. -->
+	<Define>
+		<DefineName>DISABLE_EXE_RUNTIME_MODS</DefineName>
+        <iDefineIntVal>0</iDefineIntVal>
+    </Define>
 
     <!-- [advc.100]
 		 Only relevant if UWAI disabled (or only in the background).
@@ -239,6 +245,33 @@
 	<Define>
         <DefineName>ENABLE_STARTING_POSITION_ITERATION</DefineName>
         <iDefineIntVal>1</iDefineIntVal>
+    </Define>
+	<!-- If the number of plots exceeds this threshold, then the
+		 BtS algorithm sets the starting locations, regardless of whether
+		 ENABLE_STARTING_POSITION_ITERATION is set. Recommended: 12000
+		 (At Huge world size, most map scripts create about 10000 plots.)
+		 Could go a bit higher w/o becoming prohibitively slow, but it's
+		 doubtful that the iterative algorithm will do much good on super-huge
+		 maps unless the time limit (see below) is (generously) extended. -->
+	<Define>
+        <DefineName>SPI_PLOT_LIMIT</DefineName>
+        <iDefineIntVal>12000</iDefineIntVal>
+    </Define>
+	<!-- Multiplier for the maximal number of steps considered by the
+		 Starting Position Iteration (SPI) algorithm. Each such step corresponds
+		 to a re-evaluation of the fairness (and other properties) of all
+		 starting locations assuming that one or two locations are moved.
+		 Each iteration considers several alternative steps.
+		 SPI stops once it either finds a very good position or when the
+		 maximal number of steps to be considered has been reached.
+		 This time limit is set based on the number of plots and civs
+		 and gets adjusted by this percentage. Recommended: 100.
+		 Especially for large maps, increasing the limit substantially may
+		 increase the fairness of the starting locations - at the expense of
+		 (proportionally) longer computing times. -->
+	<Define>
+        <DefineName>SPI_TIME_LIMIT_PERCENT</DefineName>
+        <iDefineIntVal>100</iDefineIntVal>
     </Define>
 
 	<!-- advc.137: 12 in BtS. Recommended: 10 to match the
@@ -406,9 +439,44 @@
 
 	<!-- advc.004m: 2200 in BtS. Now ignored unless the "Default Camera Distance"
 		 BUG option is set to "Custom". -->
-	<Define>
+	<Define> <!-- redefine -->
 		<DefineName>CAMERA_START_DISTANCE</DefineName>
 		<fDefineFloatVal>5400</fDefineFloatVal>
+	</Define>
+
+	<!-- advc.004m: -28.0 in BtS. For a slightly more top-down view at medium zoom
+		 (at the expense of a perhaps slightly less flat angle at close zoom
+		 than would be desirable). -->
+	<Define> <!-- redefine -->
+		<DefineName>CAMERA_LOWER_PITCH</DefineName>
+		<fDefineFloatVal>-30.0</fDefineFloatVal>
+	</Define>
+
+	<!-- advc.004m: (1800, 300) in BtS. Not sure what units those are,
+		 I guess they're on the same scale as PLOT_SIZE. -->
+	<Define> <!-- redefine -->
+		<DefineName>CAMERA_MAX_SCROLL_SPEED</DefineName>
+		<fDefineFloatVal>2400.0</fDefineFloatVal>
+	</Define>
+	<!-- Not increasing this much b/c I still want to be able to position
+		 the camera at a precise location, e.g. for taking a screenshot. -->
+	<Define> <!-- redefine -->
+		<DefineName>CAMERA_MIN_SCROLL_SPEED</DefineName>
+		<fDefineFloatVal>325.0</fDefineFloatVal>
+	</Define>
+
+	<!-- advc.004m: This replaces CAMERA_CITY_ZOOM_IN_DISTANCE, which now gets
+		 set to this base value and is then adjusted to the field of view value
+		 (which gets set fully dynamically, not based on FIELD_OF_VIEW). -->
+	<Define>
+		<DefineName>CAMERA_BASE_CITY_DISTANCE</DefineName>
+		<fDefineFloatVal>3500</fDefineFloatVal>
+	</Define>
+
+	<!-- advc.002j: Was 1.25 in BtS; just a tiny adjustment. -->
+	<Define> <!-- redefine -->
+		<DefineName>SINGLE_UNIT_GFX_EXTRA_SCALE</DefineName>
+		<fDefineFloatVal>1.22</fDefineFloatVal>
 	</Define>
 
 	<!-- advc.500b: If this is set to a value greater than 0, unhappiness for
@@ -630,10 +698,10 @@
 		 the peak percentage. Setting BARB_PEAK_PERCENT to 0 results in BtS
 		 behavior, with B maximal when Barbarians first appear and then
 		 decreasing as the civs expand.
-		 Recommended: 56 -->
+		 Recommended: 54 -->
     <Define>
         <DefineName>BARB_PEAK_PERCENT</DefineName>
-        <iDefineIntVal>56</iDefineIntVal>
+        <iDefineIntVal>54</iDefineIntVal>
     </Define>
 	<!-- Used instead of the value above when the Raging Barbarians option
 		 is enabled. Recommended: Somewhat higher, say 7 points, than
@@ -846,15 +914,6 @@
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
-	<!-- [advc.130s] When set to 1 or higher (recommended), the relations bonus
-		 for accepting AI requests for military aid is enabled. The bonus is
-		 set to +1 for every leader in the Leaderhead XML. Set to 0 or less
-		 for no diplo bonus (BtS behavior). -->
-	<Define>
-		<DefineName>ENABLE_JOIN_WAR_DIPLO_BONUS</DefineName>
-		<iDefineIntVal>1</iDefineIntVal>
-	</Define>
-
 	<!-- [advc.130o] MADE_DEMAND_RECENT memory is increased to this number when
 		 a human player attacks an AI civ after receiving their tribute.
 		 MADE_DEMAND_RECENT memory causes the AI to reject demands and pleas,
@@ -925,6 +984,17 @@
 	<Define>
 		<DefineName>NATIVE_CITY_CULTURE_THRESH</DefineName>
 		<iDefineIntVal>20</iDefineIntVal>
+	</Define>
+
+	<!-- advc (for kekm.7): Can't nuke a city if the nationality percentage
+		 of the nuke owner is at least this high.
+		 Recommended: Same as CITY_TRADE_CULTURE_THRESH,
+		 use 101 (or a higher value) for BtS behavior. Still won't be able to
+		 nuke cities culturally owned by a neutral party or politically owned
+		 by the nuke owner. -->
+	<Define>
+		<DefineName>CITY_NUKE_CULTURE_THRESH</DefineName>
+		<iDefineIntVal>10</iDefineIntVal>
 	</Define>
 
 	<!-- [advc.030] Set this to 1 or greater (recommended) to treat plot groups
@@ -1004,13 +1074,13 @@
 
 	<!-- advc.550d: This modifier is applied to tech costs when playing
 		 with the "No Tech Trading" option. The effect of the modifier is
-		 reduced in the early and late game. Recommended: -30, meaning that
-		 tech costs are taken times 100% - 30% = 70%. This multiplier gets
+		 reduced in the early and late game. Recommended: -23, meaning that
+		 tech costs are taken times 100% - 23% = 77%. This multiplier gets
 		 further adjusted to the tech era and map size. Use 0 for BtS
 		 behavior (tech costs unaffected by the "No Tech Trading" option). -->
 	<Define>
 		<DefineName>TECH_COST_NOTRADE_MODIFIER</DefineName>
-		<iDefineIntVal>-30</iDefineIntVal>
+		<iDefineIntVal>-23</iDefineIntVal>
 	</Define>
 
 	<!-- [advc.034] The number of turns with Open Borders after making peace
@@ -1208,7 +1278,7 @@
 		<iDefineIntVal>31</iDefineIntVal>
 	</Define>
 
-	<!-- advc.190c: This concerns the probability distribution for civs and
+	<!-- advc.191: This concerns the probability distribution for civs and
 		 leaders when both are set to "Random" during game setup and
 		 "Unrestricted Leaders" isn't checked. Use 0 for BtS behavior, meaning
 		 that the civ (e.g. Rome) gets chosen uniformly at random and then
@@ -1218,6 +1288,7 @@
 		 100, specifically, gives every leader the same probability on the
 		 bottom line. A negative value (not recommended, not tested) makes
 		 civs with multiple leaders less likely to be chosen.
+		 advc.tsl: Also affects the True Starts game option.
 		 Recommended: 20, meaning that e.g. Rome is 1.2 times as likely
 		 to be chosen than Mali and America is 1.4 times as likely as Mali. -->
 	<Define>
@@ -1253,6 +1324,41 @@
 	</Define>
 	<Define> <!-- redefine -->
 		<DefineName>NUKE_UNIT_DAMAGE_RAND_2</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+
+	<!-- advc.tsl: Only relevant when playing with the True Starts game option.
+		 Set to 0 to disable the "sanitization" of starting sites,
+		 i.e. changes to bonus resources and other characteristics of tiles
+		 surrounding the starting sites. Recommended: 1 -->
+	<Define>
+		<DefineName>TRUE_STARTS_SANITIZE</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+	<!-- Same as above, but applies to scenarios instead of map scripts.
+		 Note that the True Starts option doesn't apply at all to
+		 scenarios with pre-placed cities. -->
+	<Define>
+		<DefineName>TRUE_STARTS_SANITIZE_SCENARIOS</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+
+	<!-- advc.010: Probability of capturing a unit that has a Capture Unit Class
+		 set in Civ4UnitInfos.xml, i.e. normally workers and settlers. If such a
+		 unit isn't successfully captured, it gets destroyed. Set to 100 for
+		 BtS behavior (capture always happens), recommended: 50.
+		 (In the future, this "base" probability might get adjusted dynamically,
+		 e.g. based on the distance to the territory of the capturing player;
+		 but this isn't implemented so far.) -->
+	<Define>
+		<DefineName>BASE_UNIT_CAPTURE_CHANCE</DefineName>
+		<iDefineIntVal>50</iDefineIntVal>
+	</Define>
+	<!-- Replaces the base chance above on the turn that war has been declared
+		 on a captured unit. Use 100 for BtS behavior. Recommended: 0, to
+		 discourage surprise attacks on workers. -->
+	<Define>
+		<DefineName>DOW_UNIT_CAPTURE_CHANCE</DefineName>
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 

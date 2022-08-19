@@ -21,7 +21,7 @@ void logBBAI(TCHAR* format, ... )
 		// For OOS debugging on one PC
 		szLogName.Format("BBAI%d.log", (int)GC.getGame().getActivePlayer());
 	}
-	else szLogName = "BBAILog.log"; // </advc.007>
+	else szLogName = "BBAI.log"; // </advc.007>
 	gDLL->logMsg(szLogName.GetCString(), buf, /* advc.007: No time stamps */ false, false);
 #endif
 }

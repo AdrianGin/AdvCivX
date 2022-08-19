@@ -25,11 +25,15 @@ class BugGeneralOptionsTab(BugOptionsTab.BugOptionsTab):
 		self.addSpacer(screen, left, "GeneralL1")
 		self.createTechSplashPanel(screen, left)
 		#self.createLeaderheadPanel(screen, left)
-
+		# <advc.092>
+		self.addSpacer(screen, left, "AboveEnlargeHUD1")
+		self.addSpacer(screen, left, "AboveEnlargeHUD2")
+		self.addCheckbox(screen, left, "MainInterface__EnlargeHUD")
+		# </advc.092>
 		#self.createAutoSavePanel(screen, center)
 		self.createInfoPanePanel(screen, center)
-		# advc: Don't have space for this spacer anymore
-		#self.addSpacer(screen, center, "GeneralC1")
+		# advc.004k (note): Should remove this spacer if the hide-command options are re-enabled
+		self.addSpacer(screen, center, "GeneralC1")
 		self.createActionsPanel(screen, center) # advc.004: Restored
 		
 		self.createSlidersPanel(screen, right) # advc.120c
@@ -78,8 +82,14 @@ class BugGeneralOptionsTab(BugOptionsTab.BugOptionsTab):
 		# </advc.004>
 		# advc.154:
 		self.addTextDropdown(screen, panel, panel, "MainInterface__UnitCyclingButtons", True)
-		# advc.004k:
-		self.addCheckbox(screen, panel, "MainInterface__SeaPatrol")
+		# (I don't think we need these options after all)
+		'''
+		# <advc.004k>
+		left, right = self.addTwoColumnLayout(screen, panel, "CommandCols")
+		self.addCheckbox(screen, left, "MainInterface__SeaPatrol")
+		self.addCheckbox(screen, right, "MainInterface__AutoExplore")
+		# </advc.004k>
+		'''
 		# advc.002m:
 		self.addTextDropdown(screen, panel, panel, "MainInterface__NukeMissionTime", True)
 

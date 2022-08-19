@@ -87,11 +87,11 @@
 		<Italian>Quando è selezionato, posizionare il cursore su una casella che contiene costruzioni (miglioramenti, strade, eccetera) parzialmente completate mostrerà quanti turni di lavoro sono necessari per completare l'opera.</Italian>
 		<Spanish>Dejar el ratón sobre una casilla con mejoras no terminadas mostarará el número de turnos necesarios para terminar.</Spanish>
 	</TEXT-->
-	<!-- advc.011b -->
+	<!-- advc.011b (German: not enough room for "stets anzeigen") -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MISCHOVER__PARTIALBUILDSALWAYS_TEXT</Tag>
 		<English>Always Show Partial Builds</English>
-		<German>Unfertige Arbeiten stets anzeigen</German>
+		<German>Unfertige Arbeiten anzeigen</German>
 		<Italian>Sempre mostra costruzione parziale</Italian>
 		<Spanish>Siempre muestra Construcción Parcial</Spanish>
 	</TEXT>

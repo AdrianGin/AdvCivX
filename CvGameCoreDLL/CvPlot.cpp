@@ -59,9 +59,9 @@ CvPlot::CvPlot() // advc: Merged with the deleted reset function
 	m_pDefenderSelector = new RandomizedSelector(*this);
 	m_szScriptData = NULL;
 	m_szMostRecentCityName = NULL; // advc.005c
-	// <advc.opt>
+	// <advc.003s>
 	m_paAdjList = NULL;
-	m_iAdjPlots = 0; // </advc.opt>
+	m_iAdjPlots = 0; // </advc.003s>
 
 	m_iX = 0;
 	m_iY = 0;
@@ -114,10 +114,10 @@ CvPlot::~CvPlot() // advc: Merged with the deleted uninit function
 {
 	SAFE_DELETE_ARRAY(m_szScriptData);
 	SAFE_DELETE_ARRAY(m_szMostRecentCityName); // advc.005c
-	SAFE_DELETE_ARRAY(m_paAdjList); // advc.opt
+	SAFE_DELETE_ARRAY(m_paAdjList); // advc.003s
 
 	gDLL->getFeatureIFace()->destroy(m_pFeatureSymbol);
-	if(m_pPlotBuilder)
+	if(m_pPlotBuilder != NULL)
 		gDLL->getPlotBuilderIFace()->destroy(m_pPlotBuilder);
 	gDLL->getRouteIFace()->destroy(m_pRouteSymbol);
 	gDLL->getRiverIFace()->destroy(m_pRiverSymbol);
@@ -136,7 +136,7 @@ void CvPlot::init(int iX, int iY)
 	m_iX = safeIntCast<short>(iX);
 	m_iY = safeIntCast<short>(iY);
 	updatePlotNum(); // advc.opt
-	m_iLatitude = calculateLatitude(); // advc.tsl
+	updateLatitude(); // advc.tsl
 	m_pDefenderSelector->uninit(); // advco.defr
 }
 
@@ -147,7 +147,7 @@ void CvPlot::updatePlotNum()
 		m_iPlotNum = (PlotNumInt)GC.getMap().plotNum(getX(), getY());
 }
 
-// advc.opt:
+// advc.003s:
 void CvPlot::initAdjList()
 {
 	std::vector<CvPlot*> apAdjList;
@@ -398,7 +398,7 @@ void CvPlot::doImprovement()
 			//Afforess: check for valid terrains for this bonus before discovering it
 			if (!canHaveBonus(eLoopBonus), false, /* advc.129: */ true)
 				continue; // </advc.rom3>
-			iOdds *= GC.getInfo(GC.getGame().getGameSpeedType()).getVictoryDelayPercent();
+			iOdds *= GC.getGame().getSpeedPercent();
 			iOdds /= 100;
 			if (SyncRandOneChanceIn(iOdds))
 			{	// UNOFFICIAL_PATCH: END
@@ -636,46 +636,53 @@ void CvPlot::updateCenterUnit()
 		return;
 	}
 
-	setCenterUnit(getSelectedUnit());
+	if (setCenterUnit(getSelectedUnit()))
+		return;
 
-	/*if (getCenterUnit() == NULL) {
-		setCenterUnit(getBestDefender(getActivePlayer(), NO_PLAYER,
-				NULL, false, false, true));
-	}*/
-	PlayerTypes eActivePlayer = getActivePlayer();
-	if (getCenterUnit() == NULL)
-		setCenterUnit(getBestDefender(eActivePlayer));
+	PlayerTypes const eActivePlayer = getActivePlayer();
 
-	if (getCenterUnit() == NULL)
-	{	// <advc.028>
-		CvUnit* pBestDef = getBestDefender(NO_PLAYER, eActivePlayer,
-				gDLL->UI().getHeadSelectedUnit(), true,
-				false, true); // advc.061
-		if(pBestDef != NULL)
-			setCenterUnit(pBestDef); // </advc.028>
-	} // disabled by K-Mod. I don't think it's relevant whether or not the best defender can move.
-	/*  advc.001: Enabled again, instead disabled the one with bTestCanMove=true --
-		I think that's the one karadoc had meant to disable. */
-
-	if (getCenterUnit() == NULL)
+	//setCenterUnit(getBestDefender(eActivePlayer, NO_PLAYER, NULL, false, false, true))
+	/*	advc.001: karadoc had meant to disable this (see K-Mod comment below).
+		Perhaps he wasn't aware that the center unit is also the unit that gets
+		selected when the active player clicks on a tile. I am disabling the
+		code during AI turns (when the active player can't select units). */
+	if (!GC.getGame().isInBetweenTurns())
 	{
-		//setCenterUnit(getBestDefender(NO_PLAYER, getActivePlayer(), gDLL->UI().getHeadSelectedUnit()));
-		// <advc.028> Replacing the above
-		CvUnit* pBestDef = getBestDefender(NO_PLAYER, eActivePlayer,
-				gDLL->UI().getHeadSelectedUnit(), false,
-				false, true); // advc.061
-		if(pBestDef != NULL)
-			setCenterUnit(pBestDef); // </advc.028>
+		DefenderFilters defFilters;
+		defFilters.m_bTestCanMove = true;
+		if (setCenterUnit(getBestDefender(eActivePlayer, defFilters)))
+			return;
 	}
-
-	if (getCenterUnit() == NULL)
+	if (setCenterUnit(getBestDefender(eActivePlayer)))
+		return;
 	{
-		//setCenterUnit(getBestDefender(NO_PLAYER, getActivePlayer()));
-		// <advc.028> Replacing the above
-		CvUnit* pBestDef = getBestDefender(NO_PLAYER, eActivePlayer, NULL, false,
-				false, true); // advc.061
-		if(pBestDef != NULL)
-			setCenterUnit(pBestDef); // </advc.028>
+		//setCenterUnit(getBestDefender(NO_PLAYER, eActivePlayer, gDLL->UI().getHeadSelectedUnit(), true));
+		/*	disabled by K-Mod. I don't think it's relevant
+			whether or not the best defender can move. */
+		/*	advc.001: Restored the code (with some changes for advc.028).
+			This is not the code that karadoc had meant to disable. */
+		// <advc.028>
+		DefenderFilters defFilters(eActivePlayer, gDLL->UI().getHeadSelectedUnit(),
+				true);
+		defFilters.m_bTestVisible = true; // advc.061
+		if (setCenterUnit(getBestDefender(NO_PLAYER, defFilters)))
+			return; // </advc.028>
+	}
+	{
+		//setCenterUnit(getBestDefender(NO_PLAYER, eActivePlayer, gDLL->UI().getHeadSelectedUnit()));
+		// <advc.028>
+		DefenderFilters defFilters(eActivePlayer, gDLL->UI().getHeadSelectedUnit());
+		defFilters.m_bTestVisible = true; // advc.061
+		if (setCenterUnit(getBestDefender(NO_PLAYER, defFilters)))
+			return; // </advc.028>
+	}
+	{
+		//setCenterUnit(getBestDefender(NO_PLAYER, eActivePlayer));
+		// <advc.028>
+		DefenderFilters defFilters(eActivePlayer);
+		defFilters.m_bTestVisible = true; // advc.061
+		if (setCenterUnit(getBestDefender(NO_PLAYER, defFilters)))
+			return; // </advc.028>
 	}
 }
 
@@ -1695,7 +1702,7 @@ int CvPlot::seeThroughLevel() const
 
 
 void CvPlot::changeAdjacentSight(TeamTypes eTeam, int iRange, bool bIncrement,
-	CvUnit const* pUnit, bool bUpdatePlotGroups) // advc: const CvUnit*
+	CvUnit const* pUnit, bool bUpdatePlotGroups)
 {
 	PROFILE_FUNC(); // advc: See comment in canSeeDisplacementPlot
 
@@ -1709,17 +1716,17 @@ void CvPlot::changeAdjacentSight(TeamTypes eTeam, int iRange, bool bIncrement,
 	std::vector<InvisibleTypes> aeSeeInvisibleTypes;
 	if (pUnit != NULL)
 	{
-		for(int i = 0; i < pUnit->getNumSeeInvisibleTypes(); i++)
+		for (int i = 0; i < pUnit->getNumSeeInvisibleTypes(); i++)
 			aeSeeInvisibleTypes.push_back(pUnit->getSeeInvisibleType(i));
 	}
-	if(aeSeeInvisibleTypes.empty())
+	if (aeSeeInvisibleTypes.empty())
 		aeSeeInvisibleTypes.push_back(NO_INVISIBLE);
 
 	// check one extra outer ring
 	if (!bAerial)
 		iRange++;
 
-	for(size_t i = 0; i < aeSeeInvisibleTypes.size(); i++)
+	for (size_t i = 0; i < aeSeeInvisibleTypes.size(); i++)
 	{
 		for (int iDX = -iRange; iDX <= iRange; iDX++)
 		{
@@ -1729,13 +1736,13 @@ void CvPlot::changeAdjacentSight(TeamTypes eTeam, int iRange, bool bIncrement,
 				if (bAerial ||
 					shouldProcessDisplacementPlot(iDX, iDY, /*iRange - 1,*/ eFacingDirection))
 				{
-					bool outerRing = false;
+					bool bOuterRing = false;
 					if (abs(iDX) == iRange || abs(iDY) == iRange)
-						outerRing = true;
+						bOuterRing = true;
 
 					// check if anything blocking the plot
 					if (bAerial ||
-						canSeeDisplacementPlot(eTeam, iDX, iDY, iDX, iDY, true, outerRing))
+						canSeeDisplacementPlot(eTeam, iDX, iDY, iDX, iDY, true, bOuterRing))
 					{
 						CvPlot* pPlot = plotXY(getX(), getY(), iDX, iDY);
 						if (pPlot != NULL)
@@ -1749,10 +1756,10 @@ void CvPlot::changeAdjacentSight(TeamTypes eTeam, int iRange, bool bIncrement,
 
 				if (eFacingDirection != NO_DIRECTION)
 				{	// always reveal adjacent plots when using line of sight
-					if(abs(iDX) <= 1 && abs(iDY) <= 1)
+					if (abs(iDX) <= 1 && abs(iDY) <= 1)
 					{
 						CvPlot* pPlot = plotXY(getX(), getY(), iDX, iDY);
-						if (NULL != pPlot)
+						if (pPlot != NULL)
 						{
 							pPlot->changeVisibilityCount(
 									eTeam, 1, aeSeeInvisibleTypes[i], bUpdatePlotGroups,
@@ -1788,12 +1795,12 @@ bool CvPlot::canSeePlot(CvPlot const* pPlot, TeamTypes eTeam, int iRange,
 	//check if in facing direction
 	if (shouldProcessDisplacementPlot(dx, dy,/* iRange - 1,*/ eFacingDirection))
 	{
-		bool outerRing = false;
+		bool bOuterRing = false;
 		if (abs(dx) == iRange || abs(dy) == iRange)
-			outerRing = true;
+			bOuterRing = true;
 
 		//check if anything blocking the plot
-		if (canSeeDisplacementPlot(eTeam, dx, dy, dx, dy, true, outerRing))
+		if (canSeeDisplacementPlot(eTeam, dx, dy, dx, dy, true, bOuterRing))
 			return true;
 	}
 
@@ -2035,14 +2042,17 @@ void CvPlot::updateSeeFromSight(bool bIncrement, bool bUpdatePlotGroups)
 
 
 bool CvPlot::canHaveBonus(BonusTypes eBonus, bool bIgnoreLatitude,
-		bool bIgnoreFeature) const // advc.129
+	bool bIgnoreFeature, // advc.129
+	bool bIgnoreCurrentBonus) const // advc.tsl
 {
 	if (eBonus == NO_BONUS)
 		return true;
 
-	if (getBonusType() != NO_BONUS)
+	if (!bIgnoreCurrentBonus && // advc.tsl
+		getBonusType() != NO_BONUS)
+	{
 		return false;
-
+	}
 	if (isPeak())
 		return false;
 
@@ -2251,7 +2261,8 @@ bool CvPlot::canHaveImprovement(ImprovementTypes eImprovement, TeamTypes eTeam, 
 }
 
 
-bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible) const
+bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible,
+	bool bIgnoreFoW) const // advc.181
 {
 	if (eBuild == NO_BUILD)
 		return false;
@@ -2265,19 +2276,22 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible)
 	ImprovementTypes const eImprovement = GC.getInfo(eBuild).getImprovement();
 	if (eImprovement != NO_IMPROVEMENT)
 	{
-		if (!canHaveImprovement(eImprovement, GET_PLAYER(ePlayer).getTeam(), bTestVisible,
+		if (!canHaveImprovement(eImprovement, TEAMID(ePlayer), bTestVisible,
 			eBuild, false)) // kekm.9
 		{
 			return false;
 		}
-		if (isImproved())
+		ImprovementTypes const eOldImprov = (bIgnoreFoW ? getImprovementType() :
+				getRevealedImprovementType(TEAMID(ePlayer)));
+		if (eOldImprov != NO_IMPROVEMENT) // advc.181
+		//if (isImproved())
 		{
-			if (GC.getInfo(getImprovementType()).isPermanent())
+			if (GC.getInfo(eOldImprov).isPermanent())
 				return false;
-			if (getImprovementType() == eImprovement)
+			if (eOldImprov == eImprovement)
 				return false;
 			ImprovementTypes eFinalImprovementType = CvImprovementInfo::
-					finalUpgrade(getImprovementType());
+					finalUpgrade(eOldImprov);
 			if (eFinalImprovementType != NO_IMPROVEMENT)
 			{
 				if (eFinalImprovementType == CvImprovementInfo::finalUpgrade(eImprovement))
@@ -2286,7 +2300,7 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible)
 		}
 		if (!bTestVisible)
 		{
-			if (GET_PLAYER(ePlayer).getTeam() != getTeam())
+			if (TEAMID(ePlayer) != getTeam())
 			{
 				//outside borders can't be built in other's culture
 				if (GC.getInfo(eImprovement).isOutsideBorders())
@@ -2303,9 +2317,13 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible)
 	RouteTypes const eRoute = GC.getInfo(eBuild).getRoute();
 	if (eRoute != NO_ROUTE)
 	{
-		if (isRoute())
+		// <advc.181>
+		RouteTypes const eOldRoute = (bIgnoreFoW ? getRouteType() :
+				getRevealedRouteType(TEAMID(ePlayer)));
+		if (eOldRoute != NO_ROUTE) // </advc.181>
+		//if (isRoute())
 		{
-			if (GC.getInfo(getRouteType()).getValue() >= GC.getInfo(eRoute).getValue())
+			if (GC.getInfo(eOldRoute).getValue() >= GC.getInfo(eRoute).getValue())
 				return false;
 		}
 		if (!bTestVisible)
@@ -2477,15 +2495,48 @@ int CvPlot::getFeatureProduction(BuildTypes eBuild, TeamTypes eTeam, CvCity** pp
 }
 
 
-CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner, PlayerTypes eAttackingPlayer,
-	CvUnit const* pAttacker, bool bTestEnemy, bool bTestPotentialEnemy,
-	/* advc.028: */ bool bTestVisible,
-	bool bTestCanAttack, bool bTestAny) const // advc: new params (for CvPlot::hasDefender)
+CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner,
+	/* <advc> */ DefenderFilters& kFilters) const
 {
-	// <advco.rdef> BtS/LfB code moved into BestDefenderSelector::getDefender
-	DefenderSelector::Settings params(eOwner, eAttackingPlayer, pAttacker,
-			bTestEnemy, bTestPotentialEnemy, bTestVisible, bTestCanAttack, bTestAny);
-	return m_pDefenderSelector->getDefender(params); // </advco.defr>
+	// Ensure consistency of parameters
+	if (kFilters.m_pAttacker != NULL)
+	{
+		FAssert(kFilters.m_pAttacker->getOwner() == kFilters.m_eAttackingPlayer);
+		kFilters.m_eAttackingPlayer = kFilters.m_pAttacker->getOwner();
+	}
+	// isEnemy implies isPotentialEnemy
+	FAssert(!kFilters.m_bTestEnemy || !kFilters.m_bTestPotentialEnemy); // </advc>
+	// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000
+	int iBestUnitRank = -1;
+	CvUnit* pBestUnit = NULL;
+	FOR_EACH_UNIT_VAR_IN(pLoopUnit, *this)
+	{
+		CvUnit& kUnit = *pLoopUnit;
+		if (eOwner != NO_PLAYER && kUnit.getOwner() != eOwner)
+			continue;
+		if (kUnit.isCargo()) // advc: Was previously only checked with TestCanMove
+			continue;
+		if (kFilters.m_bTestCanMove && !kUnit.canMove())
+			continue;
+		// <advc> Moved the other conditions into CvUnit::canBeAttackedBy (new function)
+		if (kFilters.m_eAttackingPlayer == NO_PLAYER ||
+			kUnit.canBeAttackedBy(kFilters.m_eAttackingPlayer,
+			kFilters.m_pAttacker, kFilters.m_bTestEnemy, kFilters.m_bTestPotentialEnemy,
+			kFilters.m_bTestVisible, // advc.028
+			kFilters.m_bTestCanAttack))
+		{
+			if (kFilters.m_bTestAny)
+				return &kUnit; // </advc>
+			if (kUnit.isBetterDefenderThan(pBestUnit, kFilters.m_pAttacker,
+				&iBestUnitRank, // UncutDragon
+				kFilters.m_bTestVisible)) // advc.061
+			{
+				pBestUnit = &kUnit;
+			}
+		}
+	}
+	// BETTER_BTS_AI_MOD: END
+	return pBestUnit;
 }
 
 /*	advco.defr: Set of units that the UI should gray out b/c they're unavailable
@@ -2695,18 +2746,6 @@ int CvPlot::movementCost(CvUnit const& kUnit, CvPlot const& kFrom,
 }
 
 
-int CvPlot::getExtraMovePathCost() const
-{
-	return GC.getGame().getPlotExtraCost(getX(), getY());
-}
-
-
-void CvPlot::changeExtraMovePathCost(int iChange)
-{
-	GC.getGame().changePlotExtraCost(getX(), getY(), iChange);
-}
-
-
 bool CvPlot::isAdjacentOwned() const
 {
 	FOR_EACH_ADJ_PLOT(*this)
@@ -2800,12 +2839,11 @@ PlayerTypes CvPlot::calculateCulturalOwner(/* advc.099c: */ bool bIgnoreCultureR
 	bool bAnyCityRadius = false;
 	if (bOwnExclusiveRadius)
 	{
-		for (CityPlotIter it(*this); it.hasNext(); ++it)
+		for (NearbyCityIter itCity(*this); itCity.hasNext(); ++itCity)
 		{
-			CvPlot const& p = *it;
-			if(!p.isCity() || p.getPlotCity()->isOccupation())
+			if (itCity->isOccupation())
 				continue;
-			PlayerTypes eCityOwner = p.getPlotCity()->getOwner();
+			PlayerTypes eCityOwner = itCity->getOwner();
 			if (isWithinCultureRange(eCityOwner))
 			{
 				abCityRadius.set(eCityOwner, true);
@@ -2820,9 +2858,9 @@ PlayerTypes CvPlot::calculateCulturalOwner(/* advc.099c: */ bool bIgnoreCultureR
 	{
 		PlayerTypes const ePlayer = itPlayer->getID();
 		// <advc.035>
-		if(bOwnExclusiveRadius && bAnyCityRadius && !abCityRadius.get(ePlayer))
+		if (bOwnExclusiveRadius && bAnyCityRadius && !abCityRadius.get(ePlayer))
 			continue; // </advc.035>
-		if(itPlayer->isAlive() /* advc.099c: */ || bIgnoreCultureRange)
+		if (itPlayer->isAlive() /* advc.099c: */ || bIgnoreCultureRange)
 		{
 			int iCulture = getCulture(ePlayer);
 			/*  <advc.035> When the range of a city expands, tile ownership is updated
@@ -2847,39 +2885,39 @@ PlayerTypes CvPlot::calculateCulturalOwner(/* advc.099c: */ bool bIgnoreCultureR
 
 	if (!isCity() && eBestPlayer != NO_PLAYER)
 	{
-		int iBestPriority = MAX_INT;
 		CvCity* pBestCity = NULL;
-		for (CityPlotIter it(*this); it.hasNext(); ++it)
+		int iBestPriority = MAX_INT;
+		for (NearbyCityIter itCity(*this); itCity.hasNext(); ++itCity)
 		{
-			CvCity* pLoopCity = it->getPlotCity();
-			if(pLoopCity == NULL)
-				continue;
-			if(pLoopCity->getTeam() != TEAMID(eBestPlayer) &&
-				!GET_TEAM(eBestPlayer).isVassal(pLoopCity->getTeam()))
+			if (itCity->getTeam() != TEAMID(eBestPlayer) &&
+				!GET_TEAM(eBestPlayer).isVassal(itCity->getTeam()))
 			{
 				continue;
 			}
-			if(getCulture(pLoopCity->getOwner()) <= 0)
+			if (getCulture(itCity->getOwner()) <= 0)
 				continue;
-			/*	advc.099c: 099c cares only about city tile culture, but for consistency,
+			/*	advc.099c: 099c cares only about city plot culture, but for consistency,
 				I'm also implementing the IgnoreCultureRange switch for non-city tiles. */
 			if (!bIgnoreCultureRange &&
-				!isWithinCultureRange(pLoopCity->getOwner()))
+				!isWithinCultureRange(itCity->getOwner()))
 			{
 				continue;
 			}
-			int iPriority = GC.getCityPlotPriority()[it.currID()];
-			if (pLoopCity->getTeam() == TEAMID(eBestPlayer))
-				iPriority += 5; // priority ranges from 0 to 4 -> give priority to Masters of a Vassal
-			if (iPriority < iBestPriority || (iPriority == iBestPriority &&
-					pLoopCity->getOwner() == eBestPlayer))
+			int iPriority = itCity.cityPlotPriority();
+			// give priority to master over vassal
+			if (itCity->getTeam() == TEAMID(eBestPlayer))
+			{	// advc: Was hardcoded as 5 w/ comment "priority ranges from 0 to 4"
+				iPriority += GC.maxCityPlotPriority() + 1;
+			}
+			if (iPriority < iBestPriority ||
+				(iPriority == iBestPriority && itCity->getOwner() == eBestPlayer))
 			{
 				iBestPriority = iPriority;
-				pBestCity = pLoopCity;
+				pBestCity = &*itCity;
 			}
 		}
 
-		if(pBestCity != NULL)
+		if (pBestCity != NULL)
 			eBestPlayer = pBestCity->getOwner();
 	}
 
@@ -3118,6 +3156,20 @@ void CvPlot::removeGoody()
 	if (!isGoody())
 		return; // </advc>
 	setImprovementType(NO_IMPROVEMENT);
+	/*	<advc.001> This works around an issue w/ Debug mode: The EXE does (apparently)
+		not update the layout of plots unrevealed to the active player (AP).
+		So when a rival of the AP enters a goody hut previously revealed to the AP
+		through Debug mode (but by then hidden again), the layout doesn't get updated,
+		and when the AP (eventually) reveals the plot through exploration, the goody
+		hut graphic briefly appears before the layout gets updated. */
+	if (!isRevealed(getActiveTeam(), true) && GC.IsGraphicsInitialized() &&
+		m_pPlotBuilder != NULL)
+	{
+		/*	The only way I've found to get rid of the goody hut graphic.
+			(Doing this whenever any plot becomes unrevealed might slow down repeated
+			toggling of Debug mode. Let's only deal with the annoying hut issue.) */
+		gDLL->getPlotBuilderIFace()->destroy(m_pPlotBuilder);
+	} // </advc.001>
 }
 
 // advc: Deprecated; see comment in header.
@@ -3181,9 +3233,9 @@ bool CvPlot::isVisibleEnemyCityAttacker(PlayerTypes eDefender, TeamTypes eAssume
 	return false;
 }
 
-/*	advc (note): Not used internally. Some of the getPlotList... functions
-	(available to the DLL through CvDLLInterfaceIFaceBase) call it, and it seems
-	that the EXE also exposes it to Python. */
+/*	advc (note): Some of the getPlotList... functions (available to the DLL
+	through CvDLLInterfaceIFaceBase) call this function, and it seems that
+	the EXE also exposes those to Python. */
 int CvPlot::getNumVisibleUnits(PlayerTypes ePlayer) const
 {
 	return plotCount(PUF_isVisibleDebug, ePlayer);
@@ -3507,6 +3559,12 @@ void CvPlot::setLatitude(int iLatitude)
 	m_iLatitude = safeIntCast<char>(iLatitude);
 }
 
+// advc.tsl:
+void CvPlot::updateLatitude()
+{
+	m_iLatitude = calculateLatitude();
+}
+
 
 int CvPlot::getLatitude() const
 {
@@ -3516,22 +3574,41 @@ int CvPlot::getLatitude() const
 // advc.tsl: was getLatitude()
 char CvPlot::calculateLatitude() const
 {
+	CvMap const& kMap = GC.getMap();
 	scaled rLatitude;
+	int iCoord = getY();
+	int iDim = kMap.getGridHeight();
+	if (!kMap.isWrapX() && kMap.isWrapY()) // Tilted axis
+	{
+		iCoord = getX();
+		iDim = kMap.getGridWidth();
+	}
+	int const iTop = kMap.getTopLatitude();
+	int const iBottom = kMap.getBottomLatitude();
 	/*	UNOFFICIAL_PATCH (UP), Bugfix, 07/12/09, Temudjin & jdog5000:
 		Subtract 1 from dimensions */
-	/*if (GC.getMap().isWrapX() || !GC.getMap().isWrapY())
-		rLatitude = scaled(getY(), GC.getMap().getGridHeight() - 1);
-	else rLatitude = scaled(getX(), GC.getMap().getGridWidth() - 1);
-	rLatitude *= GC.getMap().getTopLatitude() - GC.getMap().getBottomLatitude();
-	rLatitude += GC.getMap().getBottomLatitude();*/
+	/*rLatitude = scaled(iCoord, iDim - 1);
+	rLatitude *= iTop - iBottom;
+	rLatitude += iBottom;*/
 	/*	<advc.129> Let top and bottom latitude refer to the _edges_ of the map.
 		I.e. the topmost and bottommost _row_ will receive smaller (absolute)
 		latitude values. */
-	rLatitude = GC.getMap().getBottomLatitude() + scaled(
-			GC.getMap().getTopLatitude() - GC.getMap().getBottomLatitude(),
-			GC.getMap().getGridHeight()) *
-			(((GC.getMap().isWrapX() || !GC.getMap().isWrapY()) ?
-			getY() : getX()) + fixp(0.5)); // </advc.129>
+	rLatitude = iBottom + scaled(iTop - iBottom, iDim) *
+			(iCoord + fixp(0.5)); // </advc.129>
+	/*	<advc.tsl> Compress southern hemisphere so that the equator is less
+		central and fewer civs get placed there? Doesn't seem to help much.
+		Nor does shaving off the south pole (by decreasing m_iBottomLatitude
+		in CvMap::reset). */
+	/*if (GC.getGame().isOption(GAMEOPTION_TRUE_STARTS) && iTop == -iBottom &&
+		iTop > 0 && MapRandSuccess(fixp(2/3.)))
+	{
+		scaled rEquator = iDim * fixp(0.45);
+		rLatitude = iBottom +
+				(scaled::min(iCoord, rEquator - 1) + fixp(0.5))
+				* -iBottom / rEquator +
+				scaled::max(0, iCoord - (rEquator - 1) + fixp(0.5))
+				* iTop / (iDim - rEquator);
+	}*/ // </advc.tsl>
 	rLatitude = rLatitude.abs();
 	rLatitude.decreaseTo(90);
 	return safeIntCast<char>(rLatitude.round());
@@ -3963,14 +4040,11 @@ bool CvPlot::isShowCitySymbols() const
 void CvPlot::updateShowCitySymbols()
 {
 	bool bNewShowCitySymbols = false;
-	for (CityPlotIter it(*this); it.hasNext(); ++it)
+	for (NearbyCityIter itCity(*this); itCity.hasNext(); ++itCity)
 	{
-		CvCity* pLoopCity = it->getPlotCity();
-		if (pLoopCity == NULL)
-			continue;
-		if (pLoopCity->isCitySelected() && gDLL->UI().isCityScreenUp())
+		if (itCity->isCitySelected() && gDLL->UI().isCityScreenUp())
 		{
-			if (pLoopCity->canWork(*this))
+			if (itCity->canWork(*this))
 			{
 				bNewShowCitySymbols = true;
 				break;
@@ -4005,7 +4079,7 @@ void CvPlot::setOwner(PlayerTypes eNewValue, bool bCheckUnits, bool bUpdatePlotG
 	if(getOwner() == eNewValue)
 		return;
 	PlayerTypes eOldOwner = getOwner(); // advc.ctr
-	GC.getGame().addReplayMessage(REPLAY_MESSAGE_PLOT_OWNER_CHANGE, eNewValue, (char*)NULL, getX(), getY());
+	GC.getGame().addReplayMessage(*this, REPLAY_MESSAGE_PLOT_OWNER_CHANGE, eNewValue);
 
 	CvCity* pOldCity = getPlotCity();
 	if (pOldCity != NULL)  // advc: Removed some assertions and NULL/NO_... checks in this block
@@ -4049,8 +4123,8 @@ void CvPlot::setOwner(PlayerTypes eNewValue, bool bCheckUnits, bool bUpdatePlotG
 		szBuffer = gDLL->getText("TXT_KEY_MISC_CITY_REVOLTS_JOINS", pOldCity->getNameKey(),
 				GET_PLAYER(eNewValue).getCivilizationDescriptionKey(),
 				szOldOwnerDescr); // advc.101
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT, getOwner(),
-				szBuffer, getX(), getY());
+		GC.getGame().addReplayMessage(*this, REPLAY_MESSAGE_MAJOR_EVENT,
+				getOwner(), szBuffer);
 				// advc.106: Use ALT_HIGHLIGHT for research-related stuff now
 				//,GC.getColorType("ALT_HIGHLIGHT_TEXT")
 		FAssert(pOldCity->getOwner() != eNewValue);
@@ -4405,6 +4479,10 @@ void CvPlot::setPlotType(PlotTypes eNewValue, bool bRecalculate, bool bRebuildGr
 	if (bRebuildGraphics && GC.IsGraphicsInitialized())
 	{
 		//Update terrain graphical
+		/*	advc (note): Calling RebuildAllPlots here would get rid of artifacts
+			in terrain surfaces - but it's too slow. Just rebuilding surrounding
+			plots doesn't do the trick; there's sth. else, apparently, that
+			RebuildAllPlots does. (Or perhaps a delayed RebuildPlot call would do?) */
 		gDLL->getEngineIFace()->RebuildPlot(getX(), getY(), true, true);
 		//gDLL->getEngineIFace()->SetDirty(MinimapTexture_DIRTY_BIT, true); //minimap does a partial update
 		//gDLL->getEngineIFace()->SetDirty(GlobeTexture_DIRTY_BIT, true);
@@ -4503,11 +4581,9 @@ void CvPlot::setFeatureType(FeatureTypes eNewValue, int iVariety)
 		updateRiverSymbolArt(true);
 	}
 
-	for (CityPlotIter it(*this); it.hasNext(); ++it)
+	for (NearbyCityIter itCity(*this); itCity.hasNext(); ++itCity)
 	{
-		CvCity* pLoopCity = it->getPlotCity();
-		if (pLoopCity != NULL)
-			pLoopCity->updateSurroundingHealthHappiness();
+		itCity->updateSurroundingHealthHappiness();
 	}
 
 	if (!isFeature() && isImproved())
@@ -4575,11 +4651,11 @@ BonusTypes CvPlot::getNonObsoleteBonusType(TeamTypes eTeam,
 	bool bCheckConnected) const // K-Mod
 {
 	FAssert(eTeam != NO_TEAM);
-	FAssert(GET_TEAM(eTeam).isAlive()); // K-Mod
+	FAssertMsg(GET_TEAM(eTeam).isAlive(), "advc.064d: OK if eTeam has just died"); // K-Mod
 
 	BonusTypes eBonus = getBonusType(eTeam);
 	if (eBonus == NO_BONUS)
-		return NO_BONUS; // advc
+		return NO_BONUS;
 	if (GET_TEAM(eTeam).isBonusObsolete(eBonus))
 		return NO_BONUS;
 
@@ -4699,11 +4775,9 @@ void CvPlot::setImprovementType(ImprovementTypes eNewValue,
 	updateIrrigated();
 	updateYield();
 
-	for (CityPlotIter it(*this); it.hasNext(); ++it)
+	for (NearbyCityIter itCity(*this); itCity.hasNext(); ++itCity)
 	{
-		CvCity* pLoopCity = it->getPlotCity();
-		if (pLoopCity != NULL)
-			pLoopCity->updateSurroundingHealthHappiness();
+		itCity->updateSurroundingHealthHappiness();
 	}
 
 	/*	Building or removing a fort will now force a plotgroup update to
@@ -4823,22 +4897,21 @@ CvCityAI* CvPlot::AI_getPlotCity() const
 } // </advc.003u>
 
 
-void CvPlot::setPlotCity(CvCity* pNewValue)
+void CvPlot::setPlotCity(CvCity* pNewCity)
 {
-	if(getPlotCity() == pNewValue)
+	CvCity* pOldCity = getPlotCity();
+	if (pOldCity == pNewCity)
 		return;
-
-	if (isCity())
+	if (pOldCity != NULL)
 	{
-		for (CityPlotIter it(*this); it.hasNext(); ++it)
+		for (CityPlotIter itPlot(*pOldCity); itPlot.hasNext(); ++itPlot)
 		{
-			it->changeCityRadiusCount(-1);
-			it->changePlayerCityRadiusCount(getPlotCity()->getOwner(), -1);
+			itPlot->changeCityRadiusCount(-1);
+			itPlot->changePlayerCityRadiusCount(pOldCity->getOwner(), -1);
 		}
 	}
-
 	updatePlotGroupBonus(false, /* advc.064d: */ false);
-	if (isCity())
+	if (pOldCity != NULL)
 	{
 		CvPlotGroup* pPlotGroup = getPlotGroup(getOwner());
 		if (pPlotGroup != NULL)
@@ -4850,11 +4923,12 @@ void CvPlot::setPlotCity(CvCity* pNewValue)
 			}
 		}
 	}
-	if (pNewValue != NULL)
-		m_plotCity = pNewValue->getIDInfo();
-	else m_plotCity.reset();
-	if (isCity())
+	if (pNewCity == NULL)
+		m_plotCity.reset();
+	else
 	{
+		m_plotCity = pNewCity->getIDInfo();
+		FAssert(getPlotCity() == pNewCity);
 		CvPlotGroup* pPlotGroup = getPlotGroup(getOwner());
 		if (pPlotGroup != NULL)
 		{
@@ -4866,13 +4940,12 @@ void CvPlot::setPlotCity(CvCity* pNewValue)
 		}
 	}
 	updatePlotGroupBonus(true);
-
-	if (isCity())
+	if (pNewCity != NULL)
 	{
-		for (CityPlotIter it(*this); it.hasNext(); ++it)
+		for (CityPlotIter itPlot(*pNewCity); itPlot.hasNext(); ++itPlot)
 		{
-			it->changeCityRadiusCount(1);
-			it->changePlayerCityRadiusCount(getPlotCity()->getOwner(), 1);
+			itPlot->changeCityRadiusCount(1);
+			itPlot->changePlayerCityRadiusCount(pNewCity->getOwner(), 1);
 		}
 	}
 	updateIrrigated();
@@ -4975,30 +5048,25 @@ void CvPlot::updateWorkingCity()
 // advc: Cut from updateWorkingCity (for advc.ctr)
 CvCity const* CvPlot::defaultWorkingCity() const
 {
-	CvCity const* pR = NULL;
-	CityPlotTypes eBestPlot = CITY_HOME_PLOT;
-	for (CityPlotIter it(*this); it.hasNext(); ++it)
+	CvCity const* pBestCity = NULL;
+	int iBestPriority = MAX_INT;
+	for (NearbyCityIter itCity(*this); itCity.hasNext(); ++itCity)
 	{
-		CvCity* pLoopCity = it->getPlotCity();
-		if (pLoopCity == NULL)
+		if (itCity->getOwner() != getOwner())
 			continue;
-		CityPlotTypes const ePlot = it.currID();
-		if (pLoopCity->getOwner() == getOwner())
-		{	// XXX use getGameTurnAcquired() instead???
-			int const* pCityPriority = GC.getCityPlotPriority();
-			if (pR == NULL ||
-				pCityPriority[ePlot] < pCityPriority[eBestPlot] ||
-				(pCityPriority[ePlot] == pCityPriority[eBestPlot] &&
-				(pLoopCity->getGameTurnFounded() < pR->getGameTurnFounded() ||
-				(pLoopCity->getGameTurnFounded() == pR->getGameTurnFounded() &&
-				pLoopCity->getID() < pR->getID()))))
-			{
-				eBestPlot = ePlot;
-				pR = pLoopCity;
-			}
+		int const iPriority = itCity.cityPlotPriority();
+		if (iPriority < iBestPriority ||
+			(iPriority == iBestPriority &&
+			// XXX use getGameTurnAcquired() instead???
+			(itCity->getGameTurnFounded() < pBestCity->getGameTurnFounded() ||
+			(itCity->getGameTurnFounded() == pBestCity->getGameTurnFounded() &&
+			itCity->getID() < pBestCity->getID()))))
+		{
+			iBestPriority = iPriority;
+			pBestCity = &*itCity;
 		}
 	}
-	return pR;
+	return pBestCity;
 }
 
 
@@ -5095,27 +5163,27 @@ int CvPlot::calculateNatureYield(YieldTypes eYield, TeamTypes eTeam, bool bIgnor
 	bool bIgnoreHills) const // advc.300
 {
 	// advc.016: Cut from calculateYield
-	int iYield = GC.getGame().getPlotExtraYield(getX(), getY(), eYield);
+	int iYieldRate = GC.getMap().getPlotExtraYield(*this, eYield);
 	if (isImpassable())
 	{
 		//return 0;
 		/*  advc.016: Impassable tiles with extra yields can be worked -
 			as in BtS. This allows Python modders to make peaks workable. */
-		return iYield;
+		return iYieldRate;
 	}
-	iYield += GC.getInfo(getTerrainType()).getYield(eYield);
+	iYieldRate += GC.getInfo(getTerrainType()).getYield(eYield);
 	bool const bHills = (isHills() /* advc.300 */ && !bIgnoreHills);
 	if (bHills)
-		iYield += GC.getInfo(eYield).getHillsChange();
+		iYieldRate += GC.getInfo(eYield).getHillsChange();
 	else if (isPeak())
-		iYield += GC.getInfo(eYield).getPeakChange();
+		iYieldRate += GC.getInfo(eYield).getPeakChange();
 	else if (isLake())
-		iYield += GC.getInfo(eYield).getLakeChange();
+		iYieldRate += GC.getInfo(eYield).getLakeChange();
 	if (eTeam != NO_TEAM)
 	{
 		BonusTypes eBonus = getBonusType(eTeam);
 		if (eBonus != NO_BONUS)
-			iYield += GC.getInfo(eBonus).getYieldChange(eYield);
+			iYieldRate += GC.getInfo(eBonus).getYieldChange(eYield);
 	}
 	if (isRiver())
 	{
@@ -5127,12 +5195,12 @@ int CvPlot::calculateNatureYield(YieldTypes eYield, TeamTypes eTeam, bool bIgnor
 		int iRivers = 1;
 		/*if(isConnectRiverSegments()) // Disabled for now
 			iRivers++;*/
-		iYield += iRivers * iYieldPerRiver; // </advc.500a>
+		iYieldRate += iRivers * iYieldPerRiver; // </advc.500a>
 	}
 
 	if (bHills)
 	{
-		iYield += ((bIgnoreFeature || !isFeature()) ?
+		iYieldRate += ((bIgnoreFeature || !isFeature()) ?
 				GC.getInfo(getTerrainType()).getHillsYieldChange(eYield) :
 				GC.getInfo(getFeatureType()).getHillsYieldChange(eYield));
 	}
@@ -5140,10 +5208,10 @@ int CvPlot::calculateNatureYield(YieldTypes eYield, TeamTypes eTeam, bool bIgnor
 	if (!bIgnoreFeature)
 	{
 		if (isFeature())
-			iYield += GC.getInfo(getFeatureType()).getYieldChange(eYield);
+			iYieldRate += GC.getInfo(getFeatureType()).getYieldChange(eYield);
 	}
 
-	return std::max(0, iYield);
+	return std::max(0, iYieldRate);
 }
 
 
@@ -5453,6 +5521,21 @@ int CvPlot::calculateTeamCulturePercent(TeamTypes eTeam) const
 	return iTeamCulturePercent;
 }
 
+// kekm.7 (advc): Including vassals or master
+int CvPlot::calculateFriendlyCulturePercent(TeamTypes eTeam) const
+{
+	// Dead teams don't have vassal/ master relationships
+	if (!GET_TEAM(eTeam).isAlive())
+		return calculateTeamCulturePercent(eTeam);
+	int iR = 0;
+	for (PlayerIter<ALIVE,NOT_A_RIVAL_OF> itPlayer(eTeam);
+		itPlayer.hasNext(); ++itPlayer)
+	{
+		iR += calculateCulturePercent(itPlayer->getID());
+	}
+	return iR;
+}
+
 
 void CvPlot::setCulture(PlayerTypes eIndex, int iNewValue, bool bUpdate,
 	bool bUpdatePlotGroups)
@@ -5545,10 +5628,15 @@ void CvPlot::setFoundValue(PlayerTypes eIndex, short iNewValue)
 }
 
 // advc: Cut from CvPlayer::canFound (for advc.027)
-bool CvPlot::canFound(bool bTestVisible) const
+bool CvPlot::canFound(bool bTestVisible,
+	TeamTypes eTeam) const // advc.181
 {
 	if (!canEverFound()) // advc.129d: Moved into another new function
 		return false;
+	/*	<advc.181> Info leaks and AI cheats are already addressed elsewhere,
+		but doesn't hurt to make sure. */
+	if (eTeam != NO_TEAM && !isRevealed(eTeam))
+		return false; // </advc.181>
 	
 	if (isFeature() && GC.getInfo(getFeatureType()).isNoCity())
 		return false; // (advc.opt: Moved down)
@@ -5559,8 +5647,11 @@ bool CvPlot::canFound(bool bTestVisible) const
 	for (SquareIter it(*this, GC.getDefineINT(CvGlobals::MIN_CITY_RANGE));
 		it.hasNext(); ++it)
 	{
-		if (it->isCity() && it->sameArea(*this))
+		if (it->isCity() && it->sameArea(*this) &&
+			(eTeam == NO_TEAM || it->getPlotCity()->isRevealed(eTeam))) // advc.181
+		{
 			return false;
+		}
 	}
 
 	return true;
@@ -5756,9 +5847,7 @@ void CvPlot::changeVisibilityCount(TeamTypes eTeam, int iChange,
 		initial cities were being placed and over the first few turns.
 		The problems remain unresolved. */
 	/*	advc.001: Also works around a problem with nukeExplosion replacing
-		a sight-blocking feature with fallout. To reproduce this bug (in order to
-		fix it properly), it should suffice to drop a nuke onto a fogged Forest
-		or Jungle. */
+		a sight-blocking feature with fallout. */
 	if(getVisibilityCount(eTeam) < 0)
 	{
 		FAssert(m_aiVisibilityCount.get(eTeam) >= 0);
@@ -6055,7 +6144,8 @@ bool CvPlot::isRevealed(TeamTypes eTeam, bool bDebug) const
 }
 
 
-void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly, TeamTypes eFromTeam, bool bUpdatePlotGroup)
+void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly,
+	TeamTypes eFromTeam, bool bUpdatePlotGroup)
 {
 	FAssertBounds(0, MAX_TEAMS, eTeam);
 
@@ -6329,8 +6419,8 @@ void CvPlot::updateFeatureSymbolVisibility()
 			bVisible = true;
 	}
 
-	bool wasVisible = !gDLL->getFeatureIFace()->IsHidden(m_pFeatureSymbol);
-	if(wasVisible != bVisible)
+	bool bWasVisible = !gDLL->getFeatureIFace()->IsHidden(m_pFeatureSymbol);
+	if (bWasVisible != bVisible)
 	{
 		gDLL->getFeatureIFace()->Hide(m_pFeatureSymbol, !bVisible);
 		gDLL->getEngineIFace()->MarkPlotTextureAsDirty(getX(), getY());
@@ -6621,18 +6711,21 @@ CvUnit* CvPlot::getDebugCenterUnit() const
 	return pCenterUnit;
 }
 
-
-void CvPlot::setCenterUnit(CvUnit* pNewValue)
+/*	advc: Return false if center unit set to NULL, true otherwise.
+	This is convenient for updateCenterUnit. */
+bool CvPlot::setCenterUnit(CvUnit* pNewValue)
 {
+	bool bRet = (pNewValue != NULL);
 	CvUnit* pOldValue = getCenterUnit();
 	if (pOldValue == pNewValue)
-		return; // advc
+		return bRet;
 
 	m_pCenterUnit = pNewValue;
 	updateMinimapColor();
 	setFlagDirty(true);
 	if (getCenterUnit() != NULL)
 		getCenterUnit()->setInfoBarDirty(true);
+	return bRet;
 }
 
 
@@ -6778,8 +6871,7 @@ void CvPlot::doFeature()
 		if (iProbability > 0)
 		{	//if (SyncRandNum(10000) < iProbability)
 			// UNOFFICIAL_PATCH, Gamespeed scaling, 03/04/10, jdog5000
-			int iRoll = (10000 * GC.getInfo(GC.getGame().getGameSpeedType()).
-					getVictoryDelayPercent()) / 100;
+			int iRoll = 100 * GC.getGame().getSpeedPercent();
 			if (SyncRandNum(iRoll) < iProbability) // UNOFFICIAL_PATCH: END
 				setFeatureType(NO_FEATURE);
 		}
@@ -6821,8 +6913,7 @@ void CvPlot::doFeature()
 			{
 				//if (SyncRandNum(10000) < iProbability)
 				// UNOFFICIAL_PATCH, Gamespeed scaling, 03/04/10, jdog5000: START
-				int iRoll = (10000 * GC.getInfo(GC.getGame().getGameSpeedType()).
-						getVictoryDelayPercent()) / 100;
+				int iRoll = 100 * GC.getGame().getSpeedPercent();
 				if (syncRand().get(iRoll, "CvPlot::doFeature",
 					getX(), getY()) < iProbability) // advc.007: Log coordinates
 				// UNOFFICIAL_PATCH: END
@@ -6832,7 +6923,7 @@ void CvPlot::doFeature()
 					if (pCity != NULL &&
 						/*	advc.106: K-Mod had added an isVisible check,
 							but features aren't affected by fog of war. */
-						isRevealed(TEAMID(pCity->getOwner())))
+						isRevealed(pCity->getTeam()))
 					{
 						// Tell the owner of this city.
 						CvWString szBuffer(gDLL->getText("TXT_KEY_MISC_FEATURE_GROWN_NEAR_CITY",
@@ -6862,7 +6953,7 @@ void CvPlot::doCulture()
 void CvPlot::doCultureDecay()
 {
 	PROFILE_FUNC();
-	if(getTotalCulture() <= 0)
+	if (getTotalCulture() <= 0)
 		return;
 	int const iExclDecay = GC.getDefineINT(CvGlobals::CITY_RADIUS_DECAY);
 	// advc.099:
@@ -6874,22 +6965,19 @@ void CvPlot::doCultureDecay()
 	/*  To avoid ownership oscillation and to avoid making players worried that a
 		tile might flip */
 	int const iCulturePercentThresh = 55;
-	if(iExclDecay != 0 && isOwned() && !isCity())
+	if (iExclDecay != 0 && isOwned() && !isCity())
 	{
 		CvCity* pWorkingCity = getWorkingCity();
-		if(pWorkingCity == NULL ||
+		if (pWorkingCity == NULL ||
 			// To save time:
 			calculateCulturePercent(pWorkingCity->getOwner()) < iCulturePercentThresh)
 		{
-			for(CityPlotIter it(*this); it.hasNext(); ++it)
+			for (NearbyCityIter itCity(*this); itCity.hasNext(); ++itCity)
 			{
-				CvPlot& p = *it;
-				if(!p.isCity())
-					continue;
-				PlayerTypes const eCityOwner = p.getOwner();
-				if(eCityOwner != NO_PLAYER && eCityOwner != BARBARIAN_PLAYER)
+				PlayerTypes const eCityOwner = itCity->getOwner();
+				if (eCityOwner != BARBARIAN_PLAYER)
 				{
-					iMinDist = std::min(iMinDist, plotDistance(&p, this));
+					iMinDist = std::min(iMinDist, plotDistance(itCity->plot(), this));
 					iMaxRadiusCulture = std::max(iMaxRadiusCulture, getCulture(eCityOwner));
 					abInRadius[eCityOwner] = true;
 					bInAnyRadius = true;
@@ -6900,10 +6988,11 @@ void CvPlot::doCultureDecay()
 	FOR_EACH_ENUM(Player)
 	{
 		int iCulture = getCulture(eLoopPlayer);
-		if(iCulture <= 0)
+		if (iCulture <= 0)
 			continue;
 		int iDecayPerMill = iBaseDecayPerMill;
-		if(bInAnyRadius && !abInRadius[eLoopPlayer] &&
+		if (bInAnyRadius && !abInRadius[eLoopPlayer] &&
+			!isImpassable() && // Doesn't matter if no one can work impassable plots
 			iCulture >
 			scaled(100 - iCulturePercentThresh, iCulturePercentThresh) * iMaxRadiusCulture)
 		{
@@ -6912,7 +7001,7 @@ void CvPlot::doCultureDecay()
 				rExclDecay += iExclDecay;
 			if(iMinDist <= 1)
 				rExclDecay += iExclDecay;
-			if(iCulture < iMaxRadiusCulture)
+			if (iCulture < iMaxRadiusCulture)
 			{
 				// Gradually throttle decay when approaching the threshold
 				rExclDecay.mulDiv(iCulture, iMaxRadiusCulture);
@@ -6940,13 +7029,10 @@ int CvPlot::exclusiveRadius(PlayerTypes ePlayer) const
 		return -1;
 	}
 	int iRadius = -1;
-	for (CityPlotIter it(*this); it.hasNext(); ++it)
+	for (NearbyCityIter itCity(*this); itCity.hasNext(); ++itCity)
 	{
-		CvPlot const& p = *it;
-		if(!p.isCity())
-			continue;
-		if(p.getOwner() == ePlayer)
-			iRadius = plotDistance(&p, this);
+		if (itCity->getOwner() == ePlayer)
+			iRadius = plotDistance(itCity->plot(), this);
 		else return -1;
 	}
 	return iRadius;
@@ -7897,11 +7983,11 @@ void CvPlot::applyEvent(EventTypes eEvent)
 	else if (kEvent.getRouteChange() < 0)
 		setRouteType(NO_ROUTE, true);
 
-	for (int i = 0; i < NUM_YIELD_TYPES; ++i)
+	FOR_EACH_ENUM(Yield)
 	{
-		int iChange = kEvent.getPlotExtraYield(i);
+		int iChange = kEvent.getPlotExtraYield(eLoopYield);
 		if (iChange != 0)
-			GC.getGame().setPlotExtraYield(m_iX, m_iY, (YieldTypes)i, iChange);
+			GC.getMap().setPlotExtraYield(*this, eLoopYield, iChange);
 	}
 }
 
@@ -8048,8 +8134,7 @@ bool CvPlot::canTrain(UnitTypes eUnit, bool bContinue, bool bTestVisible,
 	// <advc.001b>
 	if (bCheckAirUnitCap &&
 		GC.getDefineBOOL(CvGlobals::CAN_TRAIN_CHECKS_AIR_UNIT_CAP) &&
-		kUnit.getAirUnitCap() > 0 &&
-		airUnitSpaceAvailable(getTeam()) < 1)
+		airUnitSpaceAvailable(getTeam()) < kUnit.getAirUnitCap())
 	{
 		return false;
 	} // </advc.001b>
@@ -8296,15 +8381,16 @@ void CvPlot::killRandomUnit(PlayerTypes eOwner, DomainTypes eDomain)
 }
 
 
-// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000: START
+// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000:
 bool CvPlot::hasDefender(bool bTestCanAttack, PlayerTypes eOwner, PlayerTypes eAttackingPlayer,
 	CvUnit const* pAttacker, bool bTestEnemy, bool bTestPotentialEnemy) const
 {
-	/*  advc: BBAI had repeated parts of getBestDefender here. To avoid that, I've
-		moved bTestAttack into getBestDefender and gave that function a "bAny" param. */
-	return (getBestDefender(eOwner, eAttackingPlayer, pAttacker, bTestEnemy,
-			bTestPotentialEnemy, false, bTestCanAttack, /*bAny=*/true) != NULL);
-} // BETTER_BTS_AI_MOD: END
+	/*  advc: BBAI had repeated parts of getBestDefender here. To avoid that, I've moved
+		bTestAttack into getBestDefender and gave that function a "bTestAny" param. */
+	CvPlot::DefenderFilters defFilters(eAttackingPlayer, pAttacker, bTestEnemy,
+			bTestPotentialEnemy, false, bTestCanAttack, /*bTestAny=*/true);
+	return (getBestDefender(eOwner, defFilters) != NULL);
+}
 
 // <advc.500a>
 #if 0 // disabled for now

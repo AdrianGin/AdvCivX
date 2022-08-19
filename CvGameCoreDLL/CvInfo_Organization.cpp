@@ -6,10 +6,10 @@
 
 CvOrganizationInfo::CvOrganizationInfo() :
 m_wcSymbol(0),
-m_iTechPrereq(NO_TECH),
-m_iFreeUnitClass(NO_UNITCLASS),
-m_iSpreadFactor(0),
-m_iMissionType(NO_MISSION)
+m_eTechPrereq(NO_TECH),
+m_eFreeUnitClass(NO_UNITCLASS),
+m_eMissionType(NO_MISSION),
+m_iSpreadFactor(0)
 {}
 
 wchar CvOrganizationInfo::getChar() const
@@ -22,19 +22,10 @@ void CvOrganizationInfo::setChar(wchar wc)
 	m_wcSymbol = wc;
 }
 
-int CvOrganizationInfo::getFreeUnitClass() const
-{
-	return m_iFreeUnitClass;
-}
-
-int CvOrganizationInfo::getMissionType() const
-{
-	return m_iMissionType;
-}
-
 void CvOrganizationInfo::setMissionType(int iNewType)
 {
-	m_iMissionType = iNewType;
+	m_eMissionType = (MissionTypes)iNewType;
+	FAssertEnumBounds(m_eMissionType); // advc
 }
 
 const TCHAR* CvOrganizationInfo::getMovieFile() const
@@ -54,11 +45,11 @@ const TCHAR* CvOrganizationInfo::getSound() const
 
 bool CvOrganizationInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvHotkeyInfo::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
-	pXML->SetInfoIDFromChildXmlVal(m_iTechPrereq, "TechPrereq");
-	pXML->SetInfoIDFromChildXmlVal(m_iFreeUnitClass, "FreeUnitClass");
+	pXML->SetInfoIDFromChildXmlVal((int&)m_eTechPrereq, "TechPrereq");
+	pXML->SetInfoIDFromChildXmlVal((int&)m_eFreeUnitClass, "FreeUnitClass");
 
 	pXML->GetChildXmlValByName(&m_iSpreadFactor, "iSpreadFactor");
 

@@ -246,6 +246,11 @@ class FavoriteCivic:
 			return (self.eFavorite == eCivic)
 		elif self.isInitialState():
 			return True
+		# <advc> Future-proofing for leaders with 0 FavoriteCivicAttitudeChange.
+		# This is not sufficient - the algorithm will still rule out civics that
+		# can't be ruled out, but should at least not crash this way.
+		elif self.possibles is None:
+			return False # </advc>
 		else:
 			return (eCivic in self.possibles)
 

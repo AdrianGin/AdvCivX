@@ -43,6 +43,8 @@
 	<ElementType name="bIrrigation" content="textOnly" dt:type="boolean"/>
 	<ElementType name="bIgnoreIrrigation" content="textOnly" dt:type="boolean"/>
 	<ElementType name="bWaterWork" content="textOnly" dt:type="boolean"/>
+	<!-- advc.500c -->
+	<ElementType name="bNoFearForSafety" content="textOnly" dt:type="int"/>
 	<ElementType name="iGridX" content="textOnly" dt:type="int"/>
 	<ElementType name="iGridY" content="textOnly" dt:type="int"/>
 	<ElementType name="DomainType" content="textOnly"/>
@@ -56,6 +58,9 @@
 	</ElementType>
 	<!-- K-Mod start -->
 	<ElementType name="iCommerce" content="textOnly" dt:type="int"/>
+	<ElementType name="CommerceModifiers" content="eltOnly">
+		<element type="iCommerce" minOccurs="0" maxOccurs="*"/>
+	</ElementType>
 	<ElementType name="SpecialistExtraCommerces" content="eltOnly">
 		<element type="iCommerce" minOccurs="0" maxOccurs="*"/>
 	</ElementType>
@@ -143,11 +148,15 @@
 		<element type="bIrrigation"/>
 		<element type="bIgnoreIrrigation"/>
 		<element type="bWaterWork"/>
+		<!-- advc.500c -->
+		<element type="bNoFearForSafety" minOccurs="0"/>
 		<element type="iGridX"/>
 		<element type="iGridY"/>
 		<element type="DomainExtraMoves"/>
-		<!-- K-Mod -->
+		<!-- K-Mod: start -->
+		<element type="CommerceModifiers" minOccurs="0"/>
 		<element type="SpecialistExtraCommerces" minOccurs="0"/>
+		<!-- K-Mod: end -->
 		<element type="CommerceFlexible"/>
 		<element type="TerrainTrades"/>
 		<element type="bRiverTrade"/>

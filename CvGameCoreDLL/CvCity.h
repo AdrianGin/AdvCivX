@@ -27,7 +27,17 @@ public:
 	/*	K-Mod. public for the "insert culture" espionage mission.
 		(I've also changed the functionality of it quite a bit.) */
 	void doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer, int iCultureRateTimes100, bool bCityCulture);
-	static int plotCultureScale(); // advc.120j
+	/*	advc.120j: Was 10 as a local variable (doPlotCultureTimes100).
+		Should still be 10. */
+	static int plotCultureScale()
+	{
+		return GC.getNumCultureLevelInfos() + plotCultureExtraRange();
+	}
+	// advc.ctr: Replacing local variable in doPlotCultureTimes100
+	static int plotCultureExtraRange()
+	{
+		return 3;
+	}
 
 	bool isCitySelected();
 	DllExport bool canBeSelected() const;
@@ -225,7 +235,10 @@ public:
 	bool isNoMaintenance() const; //advc
 	bool isHolyCity(ReligionTypes eReligion) const;																// Exposed to Python
 	bool isHolyCity() const;																					// Exposed to Python
-	bool hasShrine(ReligionTypes eReligion) const;
+	bool hasShrine(ReligionTypes eReligion) const
+	{	// advc.enum: Replacing implementation based on a cache at CvGame
+		return (m_aiShrine.get(eReligion) > 0);
+	}
 	bool isHeadquarters(CorporationTypes eCorp) const;															// Exposed to Python
 	bool isHeadquarters() const;																				// Exposed to Python
 	void setHeadquarters(CorporationTypes eCorp);
@@ -414,7 +427,8 @@ public:
 	// </advc.104>
 	// <advc.004b> A projection for cities yet to be founded
 	static int calculateDistanceMaintenanceTimes100(CvPlot const& kCityPlot,
-			PlayerTypes eOwner, int iPopulation = -1);
+			PlayerTypes eOwner, int iPopulation = -1,
+			bool bNoPlayerModifiers = false);
 	static int calculateNumCitiesMaintenanceTimes100(CvPlot const& kCityPlot,
 			PlayerTypes eOwner, int iPopulation = -1, int iExtraCities = 0);
 	static int calculateColonyMaintenanceTimes100(CvPlot const& kCityPlot,
@@ -782,11 +796,7 @@ public:
 	int getBuildingCommerceByBuilding(CommerceTypes eCommerce, BuildingTypes eBuilding) const;					// Exposed to Python
 	void updateBuildingCommerce();
 	void updateBuildingCommerce(CommerceTypes eCommerce); // advc.opt
-	// BUG - Building Additional Commerce - start
-	int getAdditionalCommerceByBuilding(CommerceTypes eCommerce, BuildingTypes eBuilding) const
-	{
-		return getAdditionalCommerceTimes100ByBuilding(eCommerce, eBuilding) / 100;
-	}
+	// BUG - Building Additional Commerce - start (advc: unused getAdditionalCommerceByBuilding removed)
 	int getAdditionalCommerceTimes100ByBuilding(CommerceTypes eCommerce, BuildingTypes eBuilding) const;
 	int getAdditionalBaseCommerceRateByBuilding(CommerceTypes eCommerce, BuildingTypes eBuilding) const;
 	int getAdditionalBaseCommerceRateByBuildingImpl(CommerceTypes eCommerce, BuildingTypes eBuilding) const;
@@ -1003,7 +1013,8 @@ public:
 	}
 	void setUnitProductionTime(UnitTypes eUnit, int iNewValue);
 	void changeUnitProductionTime(UnitTypes eUnit, int iChange);
-	// BULL - Production Decay - start (advc.094)
+	/*	BULL - Production Decay - start (advc.094 -
+		NB: defined through IMPLEMENT_BUG_PRODUCTION_DECAY_GETTERS macro) */
 	bool isBuildingProductionDecay(BuildingTypes eBuilding) const;												// Exposed to Python
 	int getBuildingProductionDecay(BuildingTypes eBuilding) const;												// Exposed to Python
 	int getBuildingProductionDecayTurns(BuildingTypes eBuilding) const;											// Exposed to Python
@@ -1458,6 +1469,7 @@ protected:
 	ListEnumMap<ImprovementTypes,int,char> m_aiImprovementFreeSpecialists;
 	ArrayEnumMap<ReligionTypes,int,char> m_aiReligionInfluence;
 	ArrayEnumMap<ReligionTypes,int,char> m_aiStateReligionHappiness;
+	ArrayEnumMap<ReligionTypes,int,char> m_aiShrine; // advc.enum
 	ArrayEnumMap<UnitCombatTypes,int,char> m_aiUnitCombatFreeExperience;
 	ListEnumMap<PromotionTypes,int,char> m_aiFreePromotionCount;
 

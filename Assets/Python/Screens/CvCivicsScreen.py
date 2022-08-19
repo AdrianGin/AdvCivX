@@ -6,6 +6,7 @@ import ScreenInput
 import CvScreenEnums
 import string
 import CvScreensInterface
+from LayoutDict import gRect # advc.002b
 
 # globals
 gc = CyGlobalContext()
@@ -30,14 +31,11 @@ class CvCivicsScreen:
 		self.HELP_HEADER_NAME = "CivicsScreenHeaderName"
 
 		self.H_SCREEN = 768
-		# advc.002b: Original horizontal constants moved into interfaceScreen
-		# <advc.002b>
-		# This corresponds to iEndOfTurnPosX in CvMainInterface. Want to leave room for the scoreboard.
-		self.HORIZONTAL_MARGIN = 300
-		# Almost the same value as HEADINGS_WIDTH (199) used to be; now only used for the panels that list the civics.
+		# advc.002b: (Original horizontal constants moved into interfaceScreen.)
+		# Almost the same value as HEADINGS_WIDTH (199) used to be;
+		# now only used for the panels that list the civics.
 		# Looks better to keep those in panels that fit snugly.
 		self.CIVIC_LIST_PANEL_WIDTH = 200
-		# </advc.002b>
 
 		self.HEADINGS_TOP = 70
 		self.HEADINGS_SPACING = 5
@@ -96,6 +94,10 @@ class CvCivicsScreen:
 		screen.showScreen( PopupStates.POPUPSTATE_IMMEDIATE, False)
 
 		# <advc.002b> Moved from __init__
+		# Set the margin based on the position of the end-turn button;
+		# that leaves the scoreboard visible in the background.
+		lEndTurnButton = gRect("EndTurnButton")
+		self.HORIZONTAL_MARGIN = screen.getXResolution() - lEndTurnButton.x() - lEndTurnButton.width() / 2
 		self.W_SCREEN = screen.getXResolution() - 2 * self.HORIZONTAL_MARGIN # was 1024
 		if self.W_SCREEN < 1024:
 			self.HORIZONTAL_MARGIN -= (1024 - self.W_SCREEN) / 2
@@ -182,10 +184,18 @@ class CvCivicsScreen:
 			
 			szAreaID = self.AREA_NAME + str(i)
 			screen = self.getScreen()
-			# advc.002b: CIVIC_LIST_PANEL_WIDTH instead of HEADINGS_WIDTH
-			screen.addPanel(szAreaID, "", "", True, True, fX, fY, self.CIVIC_LIST_PANEL_WIDTH, self.HEADINGS_BOTTOM - self.HEADINGS_TOP, PanelStyles.PANEL_STYLE_MAIN)
+			screen.addPanel(szAreaID, "", "", True, True,
+					# advc.002b: CIVIC_LIST_PANEL_WIDTH instead of HEADINGS_WIDTH
+					fX, fY, self.CIVIC_LIST_PANEL_WIDTH, self.HEADINGS_BOTTOM - self.HEADINGS_TOP,
+					PanelStyles.PANEL_STYLE_MAIN)
 
-			screen.setLabel("", "Background",  u"<font=3>" + gc.getCivicOptionInfo(i).getDescription().upper() + u"</font>", CvUtil.FONT_CENTER_JUSTIFY, fX + self.HEADINGS_WIDTH/2, self.HEADINGS_TOP + self.TEXT_MARGIN, 0, FontTypes.GAME_FONT, WidgetTypes.WIDGET_GENERAL, -1, -1 )
+			screen.setLabel("", "Background", 
+					u"<font=3>" + gc.getCivicOptionInfo(i).getDescription().upper() + u"</font>",
+					CvUtil.FONT_CENTER_JUSTIFY,
+					# advc.002b: CIVIC_LIST_PANEL_WIDTH instead of HEADINGS_WIDTH
+					fX + self.CIVIC_LIST_PANEL_WIDTH / 2, self.HEADINGS_TOP + self.TEXT_MARGIN, 0,
+					FontTypes.GAME_FONT,
+					WidgetTypes.WIDGET_GENERAL, -1, -1 )
 
 			fY += self.TEXT_MARGIN
 			

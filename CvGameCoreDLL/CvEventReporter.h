@@ -26,8 +26,8 @@ class CvEventReporter
 	/*  advc.make: Want to precompile this header, so CvPlayer.h can't be included.
 		I've instead added a public CvEventReporter::getPlayerRecord function. */
 	//friend const CvPlayerRecord* CvPlayer::getPlayerRecord() const; // K-Mod. Allow direct read-only access to player stats
+	CvEventReporter(); // advc.106l
 public:
-	CvEventReporter(); // advc.106l: Should perhaps be private, but that might break sth. in the EXE.
 	DllExport static CvEventReporter& getInstance();		// singleton accessor
 	DllExport void resetStatistics();
 	void initPythonCallbackGuards(); //n advc.003y

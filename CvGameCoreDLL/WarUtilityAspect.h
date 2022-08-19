@@ -31,7 +31,12 @@ protected:
 	// Class to enum mapping
 	virtual UWAI::AspectTypes xmlID() const=0;
 	// Just for convenience (replacing m_kReport.log)
-	void log(char const* fmt, ...) const;
+	void log(char const* fmt, ...) const
+	#if DISABLE_UWAI_REPORT
+		{}
+	#else
+		;
+	#endif
 	/*	What can m_pAgentPlayer gain from or lose to m_pRivalPlayer
 		(both set by evaluate(MilitaryAnalyst const&)). Note that m_kRivalPlayer
 		is not necessarily a war enemy of the m_kAgentPlayer; it can be
@@ -476,6 +481,31 @@ public:
 	:	WarUtilityAspect(kParams) {}
 	void evaluate();
 	UWAI::AspectTypes xmlID() const { return UWAI::LOVE_OF_PEACE; }
+};
+
+class ThirdPartyIntervention : public WarUtilityBroaderAspect
+{
+public:
+	ThirdPartyIntervention(WarEvalParameters const& kParams)
+	:	WarUtilityBroaderAspect(kParams) {}
+	int preEvaluate();
+	void evaluate();
+	UWAI::AspectTypes xmlID() const { return UWAI::THIRD_PARTY_INTERVENTION; }
+private:
+	scaled m_rDefPow;
+	scaled m_rLostDefPowRatio;
+};
+
+class DramaticArc : public WarUtilityAspect
+{
+public:
+	DramaticArc(WarEvalParameters const& kParams)
+	:	WarUtilityAspect(kParams) {}
+	int preEvaluate();
+	void evaluate();
+	UWAI::AspectTypes xmlID() const { return UWAI::DRAMATIC_ARC; }
+private:
+	scaled m_rTensionIncrease;
 };
 
 #endif

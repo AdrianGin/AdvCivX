@@ -6,7 +6,7 @@
 
 CvAgents::CvAgents(int iMaxPlayers, int iMaxTeams)
 {
-	// Tbd.: Instead create the CvPlayerAI and CvTeamAI objects here
+	// Tbd.: Instead create the CvPlayerAI and CvTeamAI instances here
 
 	m_playerSeqCache.resize(NUM_STATUS_CACHES);
 	m_teamSeqCache.resize(NUM_STATUS_CACHES);

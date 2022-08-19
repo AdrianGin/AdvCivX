@@ -43,8 +43,10 @@ m_bIrrigation(false),
 m_bIgnoreIrrigation(false),
 m_bWaterWork(false),
 m_bRiverTrade(false),
+m_bNoFearForSafety(false), // advc.500c
 m_piDomainExtraMoves(NULL),
 m_piFlavorValue(NULL),
+m_piCommerceModifier(NULL), // K-Mod
 m_piSpecialistExtraCommerce(NULL), // K-Mod
 m_pbCommerceFlexible(NULL),
 m_pbTerrainTrade(NULL)
@@ -54,6 +56,7 @@ CvTechInfo::~CvTechInfo()
 {
 	SAFE_DELETE_ARRAY(m_piDomainExtraMoves);
 	SAFE_DELETE_ARRAY(m_piFlavorValue);
+	SAFE_DELETE_ARRAY(m_piCommerceModifier); // K-Mod
 	SAFE_DELETE_ARRAY(m_piSpecialistExtraCommerce); // K-Mod
 	SAFE_DELETE_ARRAY(m_pbCommerceFlexible);
 	SAFE_DELETE_ARRAY(m_pbTerrainTrade);
@@ -101,6 +104,17 @@ int CvTechInfo::py_getPrereqAndTechs(int i) const
 } // </advc.003t>
 
 // K-Mod
+int CvTechInfo::getCommerceModifier(int i) const
+{
+	FAssertBounds(0, NUM_COMMERCE_TYPES, i);
+	return m_piCommerceModifier ? m_piCommerceModifier[i] : 0;
+}
+
+int* CvTechInfo::getCommerceModifierArray() const
+{
+	return m_piCommerceModifier;
+}
+
 int CvTechInfo::getSpecialistExtraCommerce(int i) const
 {
 	FAssertBounds(0, GC.getNumFlavorTypes(), i);
@@ -126,7 +140,7 @@ bool CvTechInfo::isTerrainTrade(int i) const
 #if ENABLE_XML_FILE_CACHE
 void CvTechInfo::read(FDataStreamBase* stream)
 {
-	CvInfoBase::read(stream);
+	base_t::read(stream);
 	uint uiFlag=0;
 	stream->Read(&uiFlag);
 
@@ -165,6 +179,7 @@ void CvTechInfo::read(FDataStreamBase* stream)
 	stream->Read(&m_bIgnoreIrrigation);
 	stream->Read(&m_bWaterWork);
 	stream->Read(&m_bRiverTrade);
+	stream->Read(&m_bNoFearForSafety); // advc.500c
 	stream->Read(&m_iGridX);
 	stream->Read(&m_iGridY);
 	SAFE_DELETE_ARRAY(m_piDomainExtraMoves);
@@ -189,6 +204,9 @@ void CvTechInfo::read(FDataStreamBase* stream)
 		stream->Read(iAndTechPrereqs, (int*)&m_aePrereqAndTechs[0]);
 	} // </advc.003t>
 	// K-Mod
+	SAFE_DELETE_ARRAY(m_piCommerceModifier)
+	m_piCommerceModifier = new int[NUM_COMMERCE_TYPES];
+	stream->Read(NUM_COMMERCE_TYPES, m_piCommerceModifier);
 	SAFE_DELETE_ARRAY(m_piSpecialistExtraCommerce)
 	m_piSpecialistExtraCommerce = new int[NUM_COMMERCE_TYPES];
 	stream->Read(NUM_COMMERCE_TYPES, m_piSpecialistExtraCommerce);
@@ -206,7 +224,7 @@ void CvTechInfo::read(FDataStreamBase* stream)
 
 void CvTechInfo::write(FDataStreamBase* stream)
 {
-	CvInfoBase::write(stream);
+	base_t::write(stream);
 	uint uiFlag = 0;
 	stream->Write(uiFlag);
 
@@ -245,6 +263,7 @@ void CvTechInfo::write(FDataStreamBase* stream)
 	stream->Write(m_bIgnoreIrrigation);
 	stream->Write(m_bWaterWork);
 	stream->Write(m_bRiverTrade);
+	stream->Write(m_bNoFearForSafety); // advc.500c
 	stream->Write(m_iGridX);
 	stream->Write(m_iGridY);
 	stream->Write(NUM_DOMAIN_TYPES, m_piDomainExtraMoves);
@@ -262,6 +281,7 @@ void CvTechInfo::write(FDataStreamBase* stream)
 		if (iAndTechPrereqs > 0)
 			stream->Write(iAndTechPrereqs, (int*)&m_aePrereqAndTechs[0]);
 	} // </advc.003t>
+	stream->Write(NUM_COMMERCE_TYPES, m_piCommerceModifier); // K-Mod
 	stream->Write(NUM_COMMERCE_TYPES, m_piSpecialistExtraCommerce); // K-Mod
 	stream->Write(NUM_COMMERCE_TYPES, m_pbCommerceFlexible);
 	stream->Write(GC.getNumTerrainInfos(), m_pbTerrainTrade);
@@ -272,7 +292,7 @@ void CvTechInfo::write(FDataStreamBase* stream)
 #endif
 bool CvTechInfo::read(CvXMLLoadUtility* pXML)
 {
-	if (!CvInfoBase::read(pXML))
+	if (!base_t::read(pXML))
 		return false;
 
 	pXML->SetInfoIDFromChildXmlVal(m_iAdvisorType, "Advisor");
@@ -313,10 +333,19 @@ bool CvTechInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_bIgnoreIrrigation, "bIgnoreIrrigation");
 	pXML->GetChildXmlValByName(&m_bWaterWork, "bWaterWork");
 	pXML->GetChildXmlValByName(&m_bRiverTrade, "bRiverTrade");
+	// advc.500c:
+	pXML->GetChildXmlValByName(&m_bNoFearForSafety, "bNoFearForSafety", false, false);
 	pXML->GetChildXmlValByName(&m_iGridX, "iGridX");
 	pXML->GetChildXmlValByName(&m_iGridY, "iGridY");
 
 	// K-Mod
+	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
+		"CommerceModifiers"))
+	{
+		pXML->SetCommerce(&m_piCommerceModifier);
+		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
+	}
+	else pXML->InitList(&m_piCommerceModifier, NUM_COMMERCE_TYPES);
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),
 		"SpecialistExtraCommerces"))
 	{

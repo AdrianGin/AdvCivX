@@ -13,6 +13,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvGameOptionInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public:
 	CvGameOptionInfo();
 
@@ -34,6 +35,7 @@ private:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvMPOptionInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public:
 	CvMPOptionInfo();
 
@@ -229,9 +231,49 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  class : CvGameSpeedInfo
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-class CvGameSpeedInfo : public CvInfoBase
+class CvGameSpeedInfo : /* <advc.tag> */ public CvXMLInfo
 {
-public: // The const functions are exposed to Python
+	typedef CvXMLInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		// <advc.130r>
+		kElements.addInt(AIMemoryRandPercent, "AIMemoryRandPercent", 100);
+		kElements.addInt(AIContactRandPercent, "AIContactRandPercent", 100);
+		kElements.addInt(AIContactDelayPercent, "AIContactDelayPercent", 100);
+		// </advc.130r>
+		// advc.130k:
+		kElements.addInt(FullTradeCreditPercent, "FullTradeCreditPercent", 100);
+		// advc.101:
+		kElements.addInt(RevoltDivPercent, "RevoltDivPercent", 100);
+		// advc.173:
+		kElements.addInt(ReligionSpreadDivPercent, "ReligionSpreadDivPercent", 100);
+		// <advc.252>
+		kElements.addInt(EventRollSidesPercent, "EventRollSidesPercent", 100);
+		kElements.addInt(VoteIntervalPercent, "VoteIntervalPercent", 100);
+		// </advc.252>
+	}
+public:
+	enum IntElementTypes
+	{	// <advc.130r>
+		AIMemoryRandPercent = CvXMLInfo::NUM_INT_ELEMENT_TYPES,
+		AIContactRandPercent,
+		AIContactDelayPercent, // </advc.130r>
+		FullTradeCreditPercent, // advc.130k
+		RevoltDivPercent, // advc.101
+		ReligionSpreadDivPercent, // advc.173
+		// <advc.252>
+		EventRollSidesPercent,
+		VoteIntervalPercent, // </advc.252>
+		NUM_INT_ELEMENT_TYPES
+	};
+	int get(IntElementTypes e) const
+	{
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
+	} // </advc.tag>
+
+	// All the const functions are exposed to Python except those added by mods
 	CvGameSpeedInfo();
 	~CvGameSpeedInfo();
 
@@ -298,6 +340,7 @@ private:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvTurnTimerInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // The const functions are exposed to Python
 
 	CvTurnTimerInfo();
@@ -321,6 +364,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvVictoryInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // The const functions are exposed to Python
 	CvVictoryInfo();
 
@@ -384,7 +428,7 @@ public:
 	};
 	int get(IntElementTypes e) const
 	{
-		return CvXMLInfo::get(static_cast<base_t::IntElementTypes>(e));
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
 	} // </advc.tag>
 
 	CvHandicapInfo();
@@ -571,6 +615,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvWorldInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // All the const functions are exposed to Python
 	CvWorldInfo();
 
@@ -623,6 +668,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvClimateInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // All the const functions are exposed to Python
 	CvClimateInfo();
 
@@ -661,6 +707,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvSeaLevelInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public:
 	CvSeaLevelInfo();
 

@@ -294,7 +294,7 @@ void CvTeam::AI_setShareWarCounterExternal(TeamTypes eIndex, int iNewValue) { re
 	AI().AI_setShareWarCounter(eIndex, iNewValue);
 }
 int CvTeam::AI_getWarSuccessExternal(TeamTypes eIndex) { reportCall;
-	return AI().AI_getWarSuccess(eIndex);
+	return AI().AI_getWarSuccess(eIndex).uround();
 }
 void CvTeam::AI_setWarSuccessExternal(TeamTypes eIndex, int iNewValue) { reportCall;
 	AI().AI_setWarSuccess(eIndex, iNewValue);

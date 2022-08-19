@@ -19,6 +19,9 @@ void CvEventReporter::resetStatistics()
 	m_kStatistics.reset();
 }
 
+// advc.106l: Explicit constructor added, so I can initialize my booleans.
+CvEventReporter::CvEventReporter() : m_bPreAutoSave(false), m_bPreQuickSave(false) {}
+
 // advc.003y: Just pass the call along
 void CvEventReporter::initPythonCallbackGuards()
 {
@@ -444,13 +447,14 @@ void CvEventReporter::preSave()
 	bool bQuickSave = m_bPreQuickSave;
 	m_bPreAutoSave = m_bPreQuickSave = false;
 	FAssertMsg(bAutoSave || !GC.getGame().isInBetweenTurns() ||
-			GC.getGame().isNetworkMultiPlayer(), "Quicksave in between turns?");
+			GC.getInitCore().getPbem() || GC.getGame().isNetworkMultiPlayer(),
+			"Quicksave in between turns?");
 	char const* szDefineName = "";
 	CvWString szMsgTag;
 	if(bAutoSave)
 	{
 		szDefineName = "AUTO_SAVING_MESSAGE_TIME";
-		szMsgTag = L"TXT_KEY_AUTO_SAVING2";
+		szMsgTag = L"TXT_KEY_AUTOSAVING2";
 	}
 	else if(bQuickSave)
 	{
@@ -565,6 +569,3 @@ void CvEventReporter::writeStatistics(FDataStreamBase* pStream)
 	m_kStatistics.write(pStream);
 	REPRO_TEST_FINAL_WRITE();
 }
-
-// advc.106l: Explicit constructor added, so I can initialize my booleans.
-CvEventReporter::CvEventReporter() : m_bPreAutoSave(false), m_bPreQuickSave(false) {}

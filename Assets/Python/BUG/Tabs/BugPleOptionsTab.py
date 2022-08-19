@@ -81,7 +81,8 @@ class BugPleOptionsTab(BugOptionsTab.BugOptionsTab):
 		self.addSpacer(screen, right, "PLE_Right_Top")
 		
 		self.addLabel(screen, right, "PLE_Unit_Info_Tooltip")
-		#self.addCheckbox(screen, right, "PLE__Info_Pane")  # EF: Can't get it to work
+		# EF: Can't get it to work  (advc, note: Seems to be enabled anyway ...)
+		#self.addCheckbox(screen, right, "PLE__Info_Pane")
 		#self.addTextEdit(screen, right, right, "PLE__Info_Pane_X")
 		#self.addTextEdit(screen, right, right, "PLE__Info_Pane_Y")
 		
@@ -92,8 +93,9 @@ class BugPleOptionsTab(BugOptionsTab.BugOptionsTab):
 		rightL, rightR = self.addTwoColumnLayout(screen, right, "PLE_Specialties_Column")
 		self.addColorDropdown(screen, rightL, rightR, "PLE__Unit_Type_Specialties_Color")
 		self.addColorDropdown(screen, rightL, rightR, "PLE__Promotion_Specialties_Color")
-		# advc.069: Moved under the promotions heading
-		self.addIntDropdown(screen, right, right, "PLE__Info_Pane_Promo_Icon_Offset_Y")
+		# advc.069: Moved under the promotions heading, then disabled entirely.
+		# Should be possible to set this correctly programmatically.
+		#self.addIntDropdown(screen, right, right, "PLE__Info_Pane_Promo_Icon_Offset_Y")
 		
 		# advc.069: Moved down; label indented.
 		self.addLabel(screen, right, "PLE_Upgrade_Cost", None, None, True)

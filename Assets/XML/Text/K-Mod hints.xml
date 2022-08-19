@@ -13,7 +13,7 @@
 <!-- advc.008c: Now also hints at menu button -->
 <TEXT>
 	<Tag>TXT_KEY_BUG_HINT_INTERFACE_1</Tag>
-	<English>You can customize the BUG mod from the game menu [ESC], or by pressing [ALT + CTRL + O].</English>
+	<English>You can customize the BUG mod from the main menu [ESC], or by pressing [ALT + CTRL + O].</English>
 	<French>Pressez [ALT + CTRL + O] pour accèder aux écrans d'options du BUG Mod.</French>
 	<German>Die BUG-Mod lässt sich vom Menü [ESC] aus konfigurieren, oder mit der Tastenkombination [STRG + ALT + O].</German>
 	<Italian>Premi [ALT + CTRL + O] per accedere alla schermata di configurazione del BUG Mod.</Italian>

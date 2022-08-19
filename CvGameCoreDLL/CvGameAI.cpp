@@ -5,6 +5,7 @@
 #include "UWAIAgent.h"
 #include "CvInfo_GameOption.h"
 #include "CvInfo_Building.h" // advc.erai
+#include "CvInfo_City.h" // advc.251
 
 // <advc.007c>
 #undef CVGAME_INSTANCE_FOR_RNG
@@ -52,12 +53,22 @@ void CvGameAI::AI_initScenario()
 			c->AI_assignWorkingPlots();
 		}
 	}
+	/*	BtS seems to tolerate major civs w/o capitals (e.g. Italy in Lokolus's
+		Earth1862AD scenario), but UWAI can't work with that. */
+	for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
+	{
+		if (it->getNumCities() > 1 && !it->hasCapital())
+		{
+			FErrorMsg("Major civ player w/o a capital");
+			it->findNewCapital();
+		}
+	}
 	if (getUWAI().isEnabled() || getUWAI().isEnabled(true))
 	{
 		for (TeamAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
 			it->uwai().turnPre();
 	}
-} // </advc.104u>
+}
 
 /*  advc.104: I'm repurposing the Aggressive AI option so that it disables UWAI
 	in addition to the option's normal effect. A bit of a hack, but less invasive
@@ -99,10 +110,12 @@ void CvGameAI::AI_reset(/* advc (as in CvGame): */ bool bConstructor)
 {
 	AI_uninit();
 	m_iPad = 0;
+	m_iMaxCultureLevelPercent = 0; // advc.251
 	if (!bConstructor)
 	{
 		AI_updateExclusiveRadiusWeight(); // advc.099b
 		AI_updateVoteSourceEras(); // advc.erai
+		AI_updateMaxCultureLevelPercent(); // advc.251
 	}
 }
 
@@ -208,6 +221,35 @@ void CvGameAI::AI_updateVoteSourceEras()
 	}
 } // </advc.erai>
 
+// advc.251:
+void CvGameAI::AI_updateMaxCultureLevelPercent()
+{
+	int iThresh = GC.getInfo(CvCultureLevelInfo::finalCultureLevel()).
+			getSpeedThreshold(getGameSpeedType());
+	int iNormalThresh = 50000; // fallback
+	GameSpeedTypes eNormal = NO_GAMESPEED;
+	FOR_EACH_ENUM(GameSpeed)
+	{
+		if (GC.getInfo(eLoopGameSpeed).getResearchPercent() == 100)
+		{
+			if (eNormal != NO_GAMESPEED) // More than one is unexpected
+			{
+				eNormal = NO_GAMESPEED;
+				break;
+			}
+			eNormal = eLoopGameSpeed;
+		}
+	}
+	if (eNormal != NO_GAMESPEED)
+	{
+		int iTmp = GC.getInfo(CvCultureLevelInfo::finalCultureLevel()).
+				getSpeedThreshold(eNormal);
+		if (iTmp > 0)
+			iNormalThresh = iTmp;
+	}
+	m_iMaxCultureLevelPercent = (iThresh * 100) / iNormalThresh;
+}
+
 
 /*	advc.099b: Between 0 and 1. Expresses AI confidence about winning culturally
 	contested tiles that are within the working radius of its cities exclusively.
@@ -222,6 +264,13 @@ scaled CvGameAI::AI_exclusiveRadiusWeight(int iDist) const
 		iDist++;
 	FAssert(iDist >= 0);
 	return m_arExclusiveRadiusWeight[iDist];
+}
+
+// advc.115f:
+void CvGameAI::AI_updateVictoryWeights()
+{
+	for (PlayerAIIter<CIV_ALIVE> it; it.hasNext(); ++it)
+		it->AI_updateVictoryWeights();
 }
 
 // advc.009b:

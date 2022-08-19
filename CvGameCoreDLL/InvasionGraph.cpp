@@ -554,7 +554,7 @@ void InvasionGraph::Node::logTypicalUnits()
 					m_kReport.leaderName(m_eAgent), iAgentCost, iAgentPow);
 		}
 	}
-	m_kReport.log("");
+	m_kReport.logNewline();
 }
 
 
@@ -590,8 +590,10 @@ void InvasionGraph::Node::predictArmament(int iTurns, bool bNoUpgrading)
 			!m_kOuter.m_bLossesDone, m_kOuter.m_bAllWarPartiesKnown,
 			pTargetCity, productionPortion());
 	m_rProductionInvested += forec.getProductionInvested();
+#if !DISABLE_UWAI_REPORT
 	logPower("Predicted power");
 	m_kReport.logNewline();
+#endif
 }
 
 
@@ -612,7 +614,10 @@ scaled InvasionGraph::Node::productionPortion() const
 
 
 SimulationStep* InvasionGraph::Node::step(scaled rArmyPortionDefender,
-	scaled rArmyPortionAttacker, bool bClashOnly) const
+	scaled rArmyPortionAttacker, bool bClashOnly,
+	/*	For calculating threat values when breaking cycles. Attacks against
+		lightly defended cities shouldn't result in larger threat values. */
+	bool bUniformGarrisons) const
 {
 	PROFILE_FUNC();
 	UWAICache::City const* const pCacheCity = (bClashOnly ? NULL : targetCity());
@@ -844,7 +849,8 @@ SimulationStep* InvasionGraph::Node::step(scaled rArmyPortionDefender,
 	}
 	if (bCanBombardFromSea)
 		bCanBombard = true;
-	bool bCavalryAttack = (!bClashOnly && !bCanBombard && !bNaval && !bCanSoften &&
+	bool bCavalryAttack = (!bClashOnly && !bCanBombard && !bNaval &&
+			!bCanSoften && !bUniformGarrisons &&
 		/*	Minor inconsistency: A cavalry attack might be assumed when assessing
 			priority b/c then rDefArmyPow is 0, but for the actual simulation,
 			no cavalry attack would be assumed. */
@@ -1305,7 +1311,7 @@ SimulationStep* InvasionGraph::Node::step(scaled rArmyPortionDefender,
 		(similar to code in CvCityAI::AI_neededDefenders) */
 	bool const bCityImportant = (pCity->isCapital() || pCity->isHolyCity() ||
 			pCity->hasActiveWorldWonder());
-	if (bCityImportant)
+	if (bCityImportant && !bUniformGarrisons)
 		iLocalGarrisons += 2;
 	/*	If a civ has only 3 cities, then the code above assigns 4 (of the 6)
 		garrisons to an important city (e.g. the capital). That adds up
@@ -1323,25 +1329,30 @@ SimulationStep* InvasionGraph::Node::step(scaled rArmyPortionDefender,
 	int iRallied = (rPowerPerGarrison / rTypicalGarrisonPow).uround();
 	// Upper bound for rallies based on importance of city
 	int iRallyBound = 0;
-	// Population above 75% of the average
-	if (pCity->getPopulation() >
-		(fixp(0.75) * GET_PLAYER(kDefender.m_ePlayer).getTotalPopulation()) /
-		std::max(1, iDefCities))
-	{
+	if (bUniformGarrisons)
 		iRallyBound = 1;
-	}
-	if (bCityImportant)
-		iRallyBound = 2;
-	if (pBattleArea != NULL)
+	else
 	{
-		/*	-1: garrison of c already counted as local.
-			Fixme(?): Should subtract lost cities in pBattleArea. */
-		iRallyBound = std::min(pBattleArea->getCitiesPerPlayer(kDefender.m_ePlayer) - 1,
-				iRallyBound);
-		iRallyBound = std::min(iRemainingCitiesDef - 1, iRallyBound);
-		iRallyBound = std::max(0, iRallyBound);
+		// Population above 75% of the average
+		if (pCity->getPopulation() >
+			(fixp(0.75) * GET_PLAYER(kDefender.m_ePlayer).getTotalPopulation()) /
+			std::max(1, iDefCities))
+		{
+			iRallyBound = 1;
+		}
+		if (bCityImportant)
+			iRallyBound = 2;
+		if (pBattleArea != NULL)
+		{
+			/*	-1: garrison of c already counted as local.
+				Fixme(?): Should subtract lost cities in pBattleArea. */
+			iRallyBound = std::min(pBattleArea->getCitiesPerPlayer(
+					kDefender.m_ePlayer) - 1, iRallyBound);
+			iRallyBound = std::min(iRemainingCitiesDef - 1, iRallyBound);
+			iRallyBound = std::max(0, iRallyBound);
+		}
+		else FAssert(false);
 	}
-	else FAssert(false);
 	iRallied = std::min(iRallyBound, iRallied);
 	if (bCavalryAttack) // Swift attack
 		iRallied = 0;
@@ -1350,7 +1361,8 @@ SimulationStep* InvasionGraph::Node::step(scaled rArmyPortionDefender,
 		in the other city, therefore only 3 in the attacked city. */
 	iGarrisons = std::min(iRemainingCitiesDef + 1, iGarrisons);
 	// Recently conquered city likely to lack a garrison
-	if (pCity->isEverOwned(m_ePlayer) && pCity->isOccupation() &&
+	if (!bUniformGarrisons && pCity->isEverOwned(m_ePlayer) &&
+		pCity->isOccupation() &&
 		GET_TEAM(m_ePlayer).isAtWar(TEAMID(kDefender.m_ePlayer)))
 	{
 		iGarrisons = 1;
@@ -2116,7 +2128,9 @@ void InvasionGraph::simulate(int iTurns)
 		PlayerTypes const ePlayer = it->getID();
 		if (m_nodeMap[ePlayer] != NULL)
 		{
+	#if !DISABLE_UWAI_REPORT
 			m_nodeMap[ePlayer]->logTypicalUnits();
+	#endif
 			m_nodeMap[ePlayer]->prepareForSimulation();
 		}
 	}
@@ -2193,14 +2207,16 @@ void InvasionGraph::simulateComponent(Node& kStart)
 	}
 	if(!aCycle.empty())
 	{
+	#if !DISABLE_UWAI_REPORT
 		m_kReport.log("*Cycle*");
-		std::string szMsg = "";
+		std::string szMsg;
 		for (size_t i = 0; i < aCycle.size(); i++)
 		{
 			szMsg += m_kReport.leaderName(aCycle[i]->getPlayer());
 			szMsg += " --> ";
 		}
 		m_kReport.log("%s\n", szMsg.c_str());
+	#endif
 		breakCycle(aCycle);
 	}
 	kStart.findSink().resolveLossesRec();
@@ -2243,7 +2259,7 @@ void InvasionGraph::breakCycle(vector<Node*> const& kCycle)
 					m_kReport.leaderName(m_nodeMap[*it]->getPlayer()),
 					szNodeName, szNodeName);
 			m_kReport.setMute(true);
-			SimulationStep* pStep = m_nodeMap[*it]->step();
+			SimulationStep* pStep = m_nodeMap[*it]->step(0, 1, false, true);
 			m_kReport.setMute(false);
 			if (pStep == NULL)
 			{
@@ -2264,7 +2280,7 @@ void InvasionGraph::breakCycle(vector<Node*> const& kCycle)
 					willingness(m_nodeMap[*it]->getPlayer(), kNode.getPlayer());
 			if (!rThreat.approxEquals(rBaseThreat, fixp(0.005)))
 			{
-				m_kReport.log("Threat set to %d/%d percent (base/modified by willingness)",
+				m_kReport.log("Threat set to %d/%d percent (base/adjusted)",
 						rBaseThreat.getPercent(), rThreat.getPercent());
 			}
 			else m_kReport.log("Threat set to %d percent", rThreat.getPercent());
@@ -2284,7 +2300,7 @@ void InvasionGraph::breakCycle(vector<Node*> const& kCycle)
 			for clash depend on those outside threats. */
 		FAssert(rSumOfEnemyThreat >= rThreatOfAttackFromCycle);
 		// Coefficient: prioritize primary target
-		scaled rArmyPortion = fixp(1.25) * rThreatOfAttackFromCycle /
+		scaled rArmyPortion = fixp(1.45) * rThreatOfAttackFromCycle /
 				(rSumOfEnemyThreat + scaled::epsilon());
 		rArmyPortion.decreaseTo(1);
 		if (i == 0)
@@ -2313,9 +2329,10 @@ scaled InvasionGraph::willingness(PlayerTypes eAggressor, PlayerTypes eTarget) c
 {
 	if (m_kMA.evaluationParams().getSponsor() != eAggressor)
 		return 1;
-	scaled r(GET_TEAM(eAggressor).AI_getWarSuccess(TEAMID(eTarget)) +
-			GET_TEAM(eTarget).AI_getWarSuccess(TEAMID(eAggressor)),
-			std::max(GET_TEAM(eAggressor).getNumCities() * 4, 1));
+	scaled r =
+			(GET_TEAM(eAggressor).AI_getWarSuccess(TEAMID(eTarget)) +
+			GET_TEAM(eTarget).AI_getWarSuccess(TEAMID(eAggressor))) /
+			std::max(GET_TEAM(eAggressor).getNumCities() * 4, 1);
 	r.clamp(fixp(0.5), 1);
 	return r;
 }

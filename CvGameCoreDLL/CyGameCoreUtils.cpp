@@ -11,6 +11,7 @@
 // For functions moved from CvGameCoreUtils to CvInfos
 #include "CvInfo_Building.h"
 #include "CvInfo_Terrain.h" // </advc>
+#include "SelfMod.h" // advc.092b
 
 int cyIntRange(int iNum, int iLow, int iHigh)
 {
@@ -93,8 +94,12 @@ int cyPlotCityXYFromInt(int iDX, int iDY)
 
 int cyPlotCityXYFromCity(CyCity* pCity, CyPlot* pPlot)
 {
-	CvCity const& kCity = *pCity->getCity(); // advc: plotCityXY(CvCity*,CvPlot*) no longer exists
-	return plotCityXY(kCity.getX(), kCity.getY(), *pPlot->getPlot());
+	// <advc> plotCityXY(CvCity*,CvPlot*) no longer exists
+	CvCity const* pCvCity = pCity->getCity();
+	CvPlot const* pCvPlot = pPlot->getPlot();
+	if (pCvCity == NULL || pCvPlot == NULL)
+		return NO_CITYPLOT;
+	return pCvCity->getCityPlotIndex(*pCvPlot); // </advc>
 }
 
 CardinalDirectionTypes cyGetOppositeCardinalDirection(CardinalDirectionTypes eCardDirection)
@@ -260,3 +265,8 @@ int cyGetEspionageModifier(int iOurTeam, int iTargetTeam)
 	return CvTeam::getTeam((TeamTypes)iOurTeam).getEspionageModifier((TeamTypes)iTargetTeam);
 }
 
+// advc.092b:
+void cyUpdatePlotIndicatorSize()
+{
+	smc::BtS_EXE.patchPlotIndicatorSize();
+}

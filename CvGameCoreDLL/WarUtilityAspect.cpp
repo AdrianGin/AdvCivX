@@ -176,7 +176,7 @@ char const* WarUtilityAspect::aspectName() const
 	return szBuffer.GetCString();
 }
 
-
+#if !DISABLE_UWAI_REPORT
 void WarUtilityAspect::log(char const* fmt, ...) const
 {
 	/*	The time spent in this function is negligible when the report is muted,
@@ -193,7 +193,7 @@ void WarUtilityAspect::log(char const* fmt, ...) const
 	va_end(args);
 	m_kReport.log(szMsg.c_str());
 }
-
+#endif
 
 scaled WarUtilityAspect::normalizeUtility(scaled rUtilityTeamOnTeam,
 	TeamTypes eOther) const
@@ -441,11 +441,15 @@ scaled WarUtilityAspect::conqAssetScore(bool bMute) const
 		Tbd.: Would better to apply this per area, i.e. no culture pressure if we
 		take all their cities in one area. Then again, we may not know about
 		all their cities in the area. */
+	int const iTheirRemainingCities = kThey.getNumCities()
+			- (int)militAnalyst().lostCities(eThey).size();
 	if (militAnalyst().getCapitulationsAccepted(eOurTeam).count(eTheirTeam) == 0 &&
-		((int)militAnalyst().lostCities(eThey).size()) < kThey.getNumCities())
+		iTheirRemainingCities > 0)
 	{
-		// Equivalent to subtracting 50% of the mean per-city score
-		r *= 1 - scaled(1, 2 * (int)ourConquestsFromThem().size());
+		/*	Mean of a quotient based just on how many cities we conquer and another
+			based on how much of them remains. Then shift that toward 1 a little. */
+		r *= (4 * (1 - (scaled(1, 1 + (int)ourConquestsFromThem().size()) +
+				scaled(iTheirRemainingCities, kThey.getNumCities())) / 2) + 1) / 5;
 		if (!bMute)
 			log("Asset score reduced to %d due to culture pressure", r.round());
 	}
@@ -473,6 +477,8 @@ scaled WarUtilityAspect::remainingCityRatio(PlayerTypes ePlayer) const
 scaled WarUtilityAspect::partnerUtilFromTech() const
 {
 	// Some overlap with the "Tech Groundbreaker" code in CvPlayerAI::AI_techValue
+	if (m_kGame.isOption(GAMEOPTION_NO_TECH_TRADING))
+		return 0;
 	// How good our and their attitude needs to be at least to allow tech trade
 	AttitudeTypes eOurAttitudeThresh = techRefuseThresh(eWe);
 	AttitudeTypes eTheirAttitudeThresh = techRefuseThresh(eThey);
@@ -516,15 +522,15 @@ scaled WarUtilityAspect::partnerUtilFromTech() const
 			(kOurTeam.AI_estimateYieldRate(eWe, YIELD_COMMERCE) + scaled::epsilon());
 	if (rTheyToUsCommerceRatio > 1)
 		rTheyToUsCommerceRatio.flipFraction();
-	scaled r = SQR(rTheyToUsCommerceRatio) * (20 + iHumanExtra);
-	int iNearFutureTrades = std::min(iWeCanOffer, iTheyCanOffer);
-	if (iNearFutureTrades > 1) // Just 1 isn't likely to result in a trade
+	scaled r = SQR(rTheyToUsCommerceRatio) * (17 + iHumanExtra);
+	scaled rNearFutureTrades = std::min(iWeCanOffer, iTheyCanOffer);
+	if (rNearFutureTrades > 1) // Just 1 isn't likely to result in a trade
 	{
-		log("Added utility for %d foreseeable trades", iNearFutureTrades);
+		log("Added utility for %d foreseeable trades", rNearFutureTrades.floor());
 		// Humans tend to make trades immediately, and avoid certain techs entirely.
 		if (kThey.isHuman())
-			iNearFutureTrades /= 2;
-		r += 4 * std::min(3, iNearFutureTrades);
+			rNearFutureTrades /= 2;
+		r += fixp(10/3.) * scaled::min(3, rNearFutureTrades);
 	}
 	if (r > 0)
 		log("Tech trade utility: %d", r.round());
@@ -536,6 +542,8 @@ scaled WarUtilityAspect::partnerUtilFromTech() const
 		log("Tech trade utility halved for distrust");
 		r /= 2;
 	}
+	if (m_kGame.isOption(GAMEOPTION_NO_TECH_BROKERING))
+		r *= fixp(2/3.);
 	return r * kWeAI.amortizationMultiplier();
 }
 
@@ -619,7 +627,7 @@ scaled WarUtilityAspect::partnerUtilFromTrade() const
 		if (iTurnsToCancel > 0)
 		{
 			rTimeHorizon = scaled(iTurnsToCancel + 10, 2);
-			log("Reduced time horizon for recent deal: %d", rTimeHorizon);
+			log("Reduced time horizon for recent deal: %d", rTimeHorizon.round());
 		}
 		rDealVal *= rTimeHorizon;
 		rGoldVal += rDealVal;
@@ -681,7 +689,7 @@ void GreedForAssets::evaluate()
 	/*	(Count non-wonder buildings for rPresentScore? May construct those
 		in the conquered cities too eventually ...) */
 	scaled rUtility = scaled::min(650, 350 * rConqScore /
-			(rPresentScore + scaled::epsilon()));
+			scaled::max(rPresentScore, 1));
 	log("Base utility from assets: %d", rUtility.round());
 	scaled const rTeamSzMult = teamSizeMultiplier();
 	if (rTeamSzMult != 1)
@@ -826,8 +834,6 @@ scaled GreedForAssets::medianDistFromOurConquests(PlayerTypes ePlayer) const
 {
 	CvPlayerAI const& kPlayer = GET_PLAYER(ePlayer);
 	vector<scaled> arDistances;
-	CvArea const* pCapitalArea = (GET_PLAYER(ePlayer).hasCapital() ?
-			GET_PLAYER(ePlayer).getCapital()->area() : NULL);
 	for (size_t i = 0; i < ourConquestsFromThem().size(); i++)
 	{
 		/*	For a human, it's almost always easy to tell whether one civ is
@@ -843,9 +849,6 @@ scaled GreedForAssets::medianDistFromOurConquests(PlayerTypes ePlayer) const
 		if (iDist < 0) // unreachable
 			iDist = 1000;
 		arDistances.push_back(iDist);
-		// Double weight for cities in capital area
-		if (pCacheCity->city().area() == pCapitalArea)
-			arDistances.push_back(iDist);
 	}
 	scaled r = 1000;
 	if (!arDistances.empty())
@@ -947,7 +950,7 @@ void GreedForVassals::evaluate()
 	scaled rUtilityFromResources = ourCache().vassalResourceScore(eThey);
 	log("Resource score: %d", rUtilityFromResources.uround());
 	// Expect just +1.5 commerce per each of their cities from trade routes
-	scaled rUtilityFromTR = fixp(1.5) * kThey.getNumCities() * rOurIncome;
+	scaled rUtilityFromTR = fixp(1.5) * kThey.getNumCities() / rOurIncome;
 	log("Trade route score: %d", rUtilityFromTR.uround());
 	// These trades are pretty safe bets; treated as 75% probable
 	rUtility += fixp(0.75) * rTheirCityRatio * (rUtilityFromResources + rUtilityFromTR);
@@ -1075,6 +1078,8 @@ void GreedForCash::evaluate()
 		return;
 	}
 	int const iTheyLoseToUs = ourConquestsFromThem().size();
+	if (iTheyLoseToUs <= 0)
+		return;
 	int iWeLoseToThem = 0;
 	CitySet const& kTheyConquer = militAnalyst().conqueredCities(eThey);
 	for (CitySetIter it = kTheyConquer.begin(); it != kTheyConquer.end(); ++it)
@@ -1722,7 +1727,6 @@ void Assistance::evaluate()
 		rUtility = rOBUtil;
 		log("Utility raised to %d for strategic value of OB", rUtility.round());
 	}
-	// DogPileWarRand also factors in through the military analysis
 	scaled rPersonalityMult = kWeAI.protectiveInstinct();
 	log("Personality multiplier: %d percent", rPersonalityMult.getPercent());
 	/*	Assistance really counts the negative utility from losses
@@ -1907,6 +1911,7 @@ void HiredHand::evaluate()
 	FAssert((eSponsor == NO_PLAYER) == (iOriginalUtility <= 0));
 	scaled rUtility;
 	if (eSponsor != NO_PLAYER && iOriginalUtility > 0 &&
+		GET_PLAYER(eSponsor).isAlive() &&
 		kOurTeam.AI_getAttitude(TEAMID(eSponsor)) >= kOurPersonality.
 		/*	Between Annoyed and Pleased; has to be strictly better to allow
 			sponsorship. If it becomes strictly worse, we bail. */
@@ -2178,8 +2183,7 @@ void PreEmptiveWar::evaluate()
 {
 	/*	If an unfavorable war with them seems likely in the long run,
 		we rather take our chances now. */
-	/*	Don't worry about long-term threat if already in the endgame;
-		Kingmaking handles that. */
+	// Don't worry about long-term threat when getting close to victory
 	if (kOurTeam.AI_anyMemberAtVictoryStage3() || militAnalyst().isEliminated(eWe) ||
 		militAnalyst().hasCapitulated(kOurTeam.getID()))
 	{
@@ -2276,9 +2280,13 @@ void PreEmptiveWar::evaluate()
 		rThreatChange.flipSign();
 	log("Change in threat: %d percent", rThreatChange.getPercent());
 	scaled rUtility = -90 * rCurrThreat * rThreatChange;
-	scaled rDistrustFactor = 1;
-	if (!kWe.isHuman())
-		rDistrustFactor = kWeAI.distrustRating();
+	// Kingmaking should handle the endgame (but not quite there yet)
+	if (rUtility.abs().uround() >= 1 && kTheirTeam.AI_anyMemberAtVictoryStage3())
+	{
+		log("Util from pre-emptive war reduced b/c they're close to victory");
+		rUtility *= fixp(0.6);
+	}
+	scaled rDistrustFactor = kWeAI.distrustRating();
 	log("Our distrust: %d percent", rDistrustFactor.getPercent());
 	m_iU += (rUtility * rDistrustFactor).round();
 }
@@ -2288,6 +2296,8 @@ scaled const KingMaking::m_rScoreMargin = fixp(0.25);
 int KingMaking::preEvaluate()
 {
 	PROFILE_FUNC();
+	m_winningFuture.clear();
+	m_winningPresent.clear();
 	/*	(Scoreboard ranks just aren't meaningful off the bat, even if the game
 		starts in the Modern era. Leaving m_winningPresent empty causes 0 utility
 		to be counted by evaluate.) */
@@ -2298,7 +2308,13 @@ int KingMaking::preEvaluate()
 		return 0;
 	addWinning(m_winningFuture, true);
 	addWinning(m_winningPresent, false);
-	if (m_winningFuture.count(kOurTeam.getLeaderID()) > 0 &&
+	scaled const rEraFactor = kOurTeam.AI_getCurrEraFactor();
+	// Sealing the deal through war is a pretty aggressive move
+	int const iPeaceWeight = kWe.AI_getPeaceWeight();
+	int const iVeryHighPeaceWeight = 11;
+	if (iPeaceWeight < iVeryHighPeaceWeight &&
+		rEraFactor > 0 &&
+		m_winningFuture.count(kOurTeam.getLeaderID()) > 0 &&
 		m_winningFuture.size() <= 1 &&
 		// We don't want to be the only winner if it means betraying our partners
 		(m_kParams.getTarget() == NO_TEAM ||
@@ -2306,8 +2322,8 @@ int KingMaking::preEvaluate()
 		kOurTeam.AI_isChosenWar(m_kParams.getTarget()) ||
 		!kOurTeam.AI_isAvoidWar(m_kParams.getTarget(), true)))
 	{
-		log("We'll be the only winners");
-		return (kOurTeam.AI_getCurrEraFactor() * 9).round();
+		log("We'll be the only winners; peace weight: %d", iPeaceWeight);
+		return (rEraFactor * (iVeryHighPeaceWeight - iPeaceWeight)).round();
 	}
 	return 0;
 }
@@ -2334,7 +2350,7 @@ void KingMaking::addWinning(std::set<PlayerTypes>& kWinning, bool bPredict) cons
 	}
 	int const iMaxTurns = m_kGame.getMaxTurns();
 	int const iTurnsRemaining = ((iMaxTurns - m_kGame.getElapsedGameTurns()) * 100) /
-			m_kSpeed.getVictoryDelayPercent();
+			m_kGame.getSpeedPercent(); // normalized turns
 	/*	If we're already past the turn limit, then apparently time victory is disabled.
 		(Would be safer but slower to check m_kGame.isVictoryValid in addition.) */
 	bool const bTimeVictoryImminent = (iMaxTurns > 0 && iTurnsRemaining > 0 &&
@@ -2526,14 +2542,15 @@ void KingMaking::evaluate()
 	/*	As humans we are very much not OK with rivals winning the game,
 		so ATTITUDE_FURIOUS would be the smarter assumption, however, I don't want
 		a leading AI to be extremely alert about a human runner-up. */
-	AttitudeTypes const eAttitude = (kWe.isHuman() ? ATTITUDE_ANNOYED :
-			towardThem());
-	if (eAttitude >= ATTITUDE_FRIENDLY)
+	int iAttitude = (kWe.isHuman() ? ATTITUDE_ANNOYED : towardThem());
+	if (kOurTeam.isAtWar(eTheirTeam)) // When at war, bad attitude is normal.
+		iAttitude++;
+	if (iAttitude >= ATTITUDE_FRIENDLY)
 	{	/*	We don't go as far as helping a friend win
 			(only indirectly by trying to thwart the victory of a disliked civ) */
 		return;
 	}
-	scaled rAttitudeMult = fixp(0.03) + fixp(0.25) * (ATTITUDE_PLEASED - eAttitude);
+	scaled rAttitudeMult = fixp(0.03) + fixp(0.25) * (ATTITUDE_PLEASED - iAttitude);
 	scaled rCaughtUpPremium;
 	scaled rCatchUpVal = (16 * m_rGameEraAIFactor) / m_winningPresent.size();
 	rCatchUpVal.exponentiate(fixp(0.75));
@@ -2583,7 +2600,7 @@ void KingMaking::evaluate()
 		m_iU += rCaughtUpPremium.round();
 		return;
 	}
-	scaled rWeight = 4; // So that 25% loss correspond to 100 utility
+	scaled rWeight(10,3); // So that 30% loss correspond to 100 utility
 	// We're a bit less worried about helping them indirectly
 	if (rTheirLoss < 0)
 	{
@@ -2596,7 +2613,7 @@ void KingMaking::evaluate()
 	{
 		/*	Over the course of the game, we become more willing to take out rivals
 			even if several rivals are still in competition. */
-		scaled rProgressFactor = fixp(2/3.) - fixp(1/3.) * m_kGame.gameTurnProgress();
+		scaled rProgressFactor = fixp(3/4.) - fixp(1/3.) * m_kGame.gameTurnProgress();
 		FAssert(rProgressFactor > 0);
 		scaled rDiv = 1 + SQR(rProgressFactor * iWinningRivals);
 		rCompetitionMult = 1 / rDiv;
@@ -2659,6 +2676,21 @@ scaled KingMaking::theirRelativeLoss() const
 	return rTheirLostAssets / rTheirAssets;
 }
 
+namespace
+{
+	/*	Kludge. ArmamentForecast will often predict dramatic increases in
+		military power. Not sure how wrong those are, but I don't want to
+		base the evaluation of future uses for military units on such
+		grandiose projections. */
+	void adjustPowerChangeProjection(scaled& rChange)
+	{
+		if (rChange > fixp(1.5))
+		{
+			rChange.exponentiate(fixp(0.5));
+			rChange *= fixp(1.225);
+		}
+	}
+}
 
 int Effort::preEvaluate()
 {
@@ -2703,7 +2735,7 @@ int Effort::preEvaluate()
 			/*	Reduced cost for long-distance war; less disturbance of Workers
 				and Settlers, and less danger of pillaging. */
 			rUtility += militAnalyst().turnsSimulated() /
-					((bAllWarsLongDist ? 8 : fixp(5.5)) +
+					((bAllWarsLongDist ? 10 : 7) +
 					// Workers not much of a concern later on
 					kWe.AI_getCurrEraFactor() / 2);
 			log("Cost for wartime economy and ravages: %d%s", rUtility.uround(),
@@ -2719,8 +2751,9 @@ int Effort::preEvaluate()
 		branches. Our rival's per-branch power isn't public info either.
 		The simulation yields per-branch losses though. Use relative losses
 		in armies to predict the BtS power ratios. */
-	scaled const rOurPowerChange = militAnalyst().gainedPower(eWe, ARMY) /
+	scaled rOurPowerChange = militAnalyst().gainedPower(eWe, ARMY) /
 			(ourCache().getPowerValues()[ARMY]->power() + scaled::epsilon());
+	adjustPowerChangeProjection(rOurPowerChange); // Don't drink the koolaid
 	scaled const rOurPower = kWe.getPower() * (1 + rOurPowerChange);
 	scaled rHighestRivalPower;
 	for (PlayerAIIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itRival(eOurTeam);
@@ -2731,12 +2764,16 @@ int Effort::preEvaluate()
 		/*	If they're not part of the military analysis, estimate their power based
 			on BtS statistics. */
 		if (rRivalPowerChange == 0)
-			rRivalPowerChange = kWeAI.estimateBuildUpRate(kRival.getID());
+		{
+			rRivalPowerChange = kWeAI.estimateBuildUpRate(kRival.getID(),
+					militAnalyst().turnsSimulated());
+		}
 		else
 		{
 			rRivalPowerChange /= (GET_PLAYER(kRival.getID()).uwai().getCache().
 					getPowerValues()[ARMY]->power() + scaled::epsilon());
 		}
+		adjustPowerChangeProjection(rRivalPowerChange);
 		scaled rRivalPower = kRival.getPower() * (1 + rRivalPowerChange);
 		if (kWe.isHuman())
 			rRivalPower *= kRival.uwai().confidenceAgainstHuman();
@@ -2777,35 +2814,24 @@ int Effort::preEvaluate()
 	scaled rFutureUse = rHighestRivalPower / (rOurPower + scaled::epsilon());
 	rFutureUse.clamp(fixp(0.35), fixp(1.65));
 	/*	Division by e.g. 2.2 means survivors can be valued up to 75%; 2.75: 60%
-		(not taking account the exponentiation below) */
-	rFutureUse /= fixp(2.6);
-	bool const bHuman = kWe.isHuman();
-	// sqrt would be a bit much
-	rFutureUse.exponentiate(bHuman ? fixp(0.9) : fixp(0.74));
-	if (!bHuman)
+		(not taking into account the exponentiation below) */
+	rFutureUse /= fixp(2.55);
+	rFutureUse.exponentiate(fixp(0.75));
+	if (!kWe.isHuman())
 	{
 		rFutureUse += scaled::max(0,
 				// I.e. add between 3 (Gandhi) and 8 (Ragnar) percentage points
 				scaled(kOurPersonality.getBuildUnitProb(), 500));
 	}
-	/*	If we're at peace, units trained are apparently deemed useful by CvCityAI;
-		we still shouldn't assume that they'll _certainly_ be useful. */
-	/*bool bAnyWar = false;
-	for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it) {
-		if (militAnalyst().isWar(eWe, it->getID())) {
-			bAnyWar = true;
-			break;
-		}
-	}
-	if (!bAnyWar)
-		rFutureUse = 1;*/
 	scaled const rInvested = militAnalyst().militaryProduction(eWe);
 	scaled const rOurLostProduction = rOurLostProductionInUnits * rFutureUse +
 			rInvested *
 			/*	Total vs. limited war is already reflected by ArmamentForecast,
 				but a strong focus on military build-up is extra harmful b/c
 				even essential buildings may not get constructed then. */
-			(1 - rFutureUse) * (m_kParams.isTotal() ? fixp(1.1) : 1);
+			(1 - rFutureUse) * (m_kParams.isTotal() ? fixp(1.1) : 1) *
+			// Future use of transports is a long shot
+			(m_kParams.isNaval() ? fixp(1.2) : 1);
 	log("Production value of lost units: %d, invested production: %d,"
 			" multiplier for future use of trained units: %d percent, "
 			"adjusted production value of build-up and losses: %d",
@@ -2837,7 +2863,7 @@ int Effort::preEvaluate()
 	int iExtraDuration = iDuration - iGiveWarAChanceDuration;
 	if (iExtraDuration > 0)
 	{
-		scaled rGameSpeedDiv = per100(m_kSpeed.getResearchPercent());
+		scaled rGameSpeedDiv = per100(m_kGame.getSpeedPercent());
 		scaled const rVagueOpportunityWeight = fixp(2.3); // pretty arbitrary
 		rGoldPerProduction = scaled::min(5, rGoldPerProduction *
 				(1 + rVagueOpportunityWeight * fixp(0.025) *
@@ -3049,6 +3075,7 @@ int IllWill::preEvaluate()
 void IllWill::evaluate() 
 {
 	PROFILE_FUNC();
+	m_rCost = 0;
 	// We can't trade with our war enemies
 	evalLostPartner();
 	bool const bEndNigh = (kOurTeam.AI_anyMemberAtVictoryStage4() ||
@@ -3322,7 +3349,8 @@ void IllWill::evalAngeredPartners()
 	bool const bWillDisplease = (kThey.AI_getAttitudeFromValue(
 			// -1 b/c barely Pleased could quickly tip to Cautious
 			diploTowardUs() - rPenalties.floor() - 1) <= ATTITUDE_CAUTIOUS);
-	scaled const rTheirToOurPow = theirToOurPowerRatio();
+	scaled rTheirToOurPow = theirToOurPowerRatio();
+	rTheirToOurPow.decreaseTo(1000); // avoid overflow
 	scaled rCostPerPenalty =
 			partnerUtilFromTrade() + partnerUtilFromTech() +
 			partnerUtilFromMilitary() +
@@ -3911,7 +3939,7 @@ void FairPlay::evaluate()
 					another enemy and our DoW won't really hurt. */
 				((int)militAnalyst().lostCities(eThey).size()) -
 				((int)militAnalyst().conqueredCities(eWe).size()))).sqrt()) /
-				scaled(std::max(1, iPotentialOtherEnemies)).sqrt() - fixp(1/3.));
+				(scaled(std::max(1, iPotentialOtherEnemies)).sqrt() - fixp(1/3.)));
 		rFromOtherEnemies *= (1 - fixp(2/3.) * m_kGame.gameTurnProgress());
 		/*	Once we've gone through the trouble of preparing war, we'd like to go
 			through with it, but if there are many civs in the game, there's a good
@@ -4069,7 +4097,7 @@ void Bellicosity::evaluate()
 	}
 	if (rOurMinusTheirLostPow <= 0 || rCurrentAggrPow < 1)
 		return;
-	// A good war is one that we win, and that occupies many of our eager warriors
+	// A good war is one that we win, and that occupies many of our eager warriors.
 	scaled rGloryRate = rOurMinusTheirLostPow / rCurrentAggrPow;
 	rGloryRate.decreaseTo(1);
 	log("Difference in lost power: %d; present aggressive power: %d; bellicosity: %d",
@@ -4138,7 +4166,10 @@ void TacticalSituation::evalEngagement()
 			if (!kPlot.isVisible(eOurTeam) || !kPlot.sameArea(kGroupPlot) ||
 				!kPlot.isUnit() || // shortcut
 				// Could do without this if it's too slow
-				!pHeadUnit->canMoveInto(kPlot, true, false, false, true, false))
+				!pHeadUnit->canMoveInto(kPlot, true, false, false, true,
+				/*	We're about to move our units, but their movement points haven't
+					been restored yet, so it's important not to check for moves. */
+				/*bDangerCheck=*/true))
 			{
 				continue;
 			}
@@ -4176,17 +4207,29 @@ void TacticalSituation::evalEngagement()
 			// Akin to CvPlayerAI::AI_enemyTargetMissions
 			MissionAITypes const eMission = pGroup->AI_getMissionAIType();
 			CvPlot const* pMissionPlot = pGroup->AI_getMissionAIPlot();
-			/*	K-Mod uses MISSIONAI_ASSAULT also for land-based assaults on cities.
-				This should be more helpful than CvPlayerAI::AI_enemyTargetMission,
-				which counts all missions that target a hostile tile, i.e. also
-				reinforcements. (CvTeamAI::AI_endWarVal relies on that function.) */
-			if ((eMission == MISSIONAI_PILLAGE && ePlotOwner == eThey) ||
-				(eMission == MISSIONAI_ASSAULT && pMissionPlot != NULL &&
-				pMissionPlot->getOwner() == eThey))
+			bool const bPillage = (eMission == MISSIONAI_PILLAGE && ePlotOwner == eThey);
+			if (bPillage ||
+				// (K-Mod uses MISSIONAI_ASSAULT also for land-based assaults on cities)
+				((eMission == MISSIONAI_ASSAULT || eMission == MISSIONAI_GROUP ||
+				eMission == MISSIONAI_REINFORCE) &&
+				pMissionPlot != NULL && pMissionPlot->getOwner() == eThey &&
+				// Don't count besiegers
+				(!pMissionPlot->isCity() || stepDistance(&kGroupPlot, pMissionPlot) > 1)))
 			{
-				iOurMissions += iGroupSize + pGroup->getCargo();
+				int iMissionScore = pGroup->getNumUnits() + pGroup->getCargo();
+				if (bPillage)
+					iMissionScore = intdiv::uround(iMissionScore, 2);
+				iOurMissions += iMissionScore;
 			}
 		}
+	}
+	if (iOurMissions > 0 && kOurTeam.AI_isPushover(eTheirTeam))
+	{
+		/*	If the target is weak, even a small fraction of our military en route
+			could have a big impact once it arrives. */
+		iOurMissions *= 3;
+		iOurMissions /= 2;
+		log("Mission count increased b/c target is short work");
 	}
 	/*	So long as we check canMoveInto with bAttack=true above, this here
 		probably won't save time. */
@@ -4242,16 +4285,6 @@ void TacticalSituation::evalEngagement()
 		iTheirExposed += iTheirDamaged;
 	}
 	} // (end of profile scope)
-	// Don't count entangled units on missions
-	iOurMissions = std::max(0, iOurMissions - iEntangled);
-	if (iOurMissions > 0 && kOurTeam.AI_isPushover(eTheirTeam))
-	{
-		/*	If the target is weak, even a small fraction of our military en route
-			could have a big impact once it arrives. */
-		iOurMissions *= 3;
-		iOurMissions /= 2;
-		log("Mission count increased b/c target is short work");
-	}
 	int const iOurEvac = evacPop(eWe, eThey);
 	int const iTheirEvac = evacPop(eThey, eWe);
 	/*	If a human is involved or if it's our turn, then we shouldn't worry too
@@ -4368,7 +4401,7 @@ void TacticalSituation::evalOperational()
 		rTargetAttackers *= fixp(1.25);
 	/*	To account for the AI's inability to put all available attackers in one spot,
 		and misc. distractions like barbarians */
-	rTargetAttackers += scaled::max(0, fixp(0.75) * kWe.getNumCities() - fixp(1.5));
+	rTargetAttackers += scaled::max(0, fixp(0.75) * kWe.getNumCities() - 2);
 	scaled rTargetCargo;
 	scaled rCargo;
 	scaled rTargetEscort;
@@ -4477,4 +4510,423 @@ void LoveOfPeace::evaluate()
 		iLoPCost /= 2;
 	}
 	m_iU -= iLoPCost;
+}
+
+
+int ThirdPartyIntervention::preEvaluate()
+{
+	scaled rOurLostPow = militAnalyst().lostPower(eWe, ARMY) +
+			militAnalyst().lostPower(eWe, HOME_GUARD) +
+			/*	Squared b/c logistics power is only the cargo capacity.
+				(Fixme: should track power of cargo ships separately.) */
+			SQR(militAnalyst().lostPower(eWe, LOGISTICS));
+	/*	The timing of the intervention is difficult to predict. They may or may not
+		need to build up units, and we may be weakest early in the simulation or
+		late, but, even in the latter case, they might attack early b/c we already
+		appear weak enough ... I'm just going to look at the current power values
+		b/c that's easy to implement. */
+	m_rDefPow = /*(militAnalyst().gainedPower(eWe, ARMY) +
+			militAnalyst().gainedPower(eWe, HOME_GUARD)) / 2 +*/ // Count gains half?
+			// The cache includes HOME_GUARD in ARMY
+			ourCache().getPowerValues()[ARMY]->power();
+	m_rDefPow.increaseTo(scaled::epsilon());
+	for (PlayerAIIter<MAJOR_CIV,OTHER_KNOWN_TO> itAlly(eOurTeam);
+		itAlly.hasNext(); ++itAlly)
+	{
+		if(militAnalyst().isEliminated(itAlly->getID()))
+			continue;
+		if (itAlly->getMasterTeam() == kOurTeam.getMasterTeam() ||
+			(kOurTeam.isDefensivePact(itAlly->getTeam()) &&
+			// This distinction should make us reluctant to kill our DPs
+			militAnalyst().getWarsDeclaredBy(eWe).empty()))
+		{
+			m_rDefPow += itAlly->uwai().getCache().
+					getPowerValues()[ARMY]->power() / 2;
+			// Let's not bother with their guard units, but count army fully.
+			rOurLostPow += militAnalyst().lostPower(itAlly->getID(), ARMY);
+		}
+	}
+	m_rLostDefPowRatio = rOurLostPow / m_rDefPow;
+	m_rLostDefPowRatio.clamp(0, fixp(0.5));
+	return 0;
+}
+
+
+void ThirdPartyIntervention::evaluate()
+{
+	/*	For setting a debugger breakpoint, may want to use this condition:
+		m_kAgentTeam.m_eID == x && m_kParams.m_eTarget == y && m_pRivalPlayer->m_eID == z
+	*/
+	// Mustn't modify those members here
+	scaled rOurPow = m_rDefPow;
+	scaled rOurLostPowRatio = m_rLostDefPowRatio;
+	TeamTypes const eTarget = m_kParams.getTarget();
+	/*	Count this cost only when we're actually incurring losses from fighting
+		against a 2nd party. Otherwise, we'd veer into the lane of the
+		PreEmptiveWar aspect. If we're not incurring losses, then we're doing
+		all that we can to avoid exposing us to the 3rd party (eThey). Active
+		preparations for an anticipated DoW are handled by the Alert AI strategy. */
+	if (rOurLostPowRatio <= 0 ||
+		// War against them is already covered by the military analysis
+		militAnalyst().isOnTheirSide(eTheirTeam, true) ||
+		/*	They're busy fighting someone else. Need to be careful not to use a
+			narrow check here - like them conquering cities - b/c that could
+			indirectly encourage us to support their war effort. */
+		militAnalyst().lostPower(eThey, ARMY) >= 1 ||
+		/*	When already at war and winning decisively, try to wrap it up
+			before worrying about 3rd parties. */
+		(m_kParams.isConsideringPeace() && eTarget != NO_TEAM &&
+		(militAnalyst().isEliminated(GET_TEAM(eTarget).getLeaderID()) ||
+		!militAnalyst().getCapitulationsAccepted(eOurTeam).empty())) ||
+		// Vassals are covered when evaluating their master
+		!kTheirTeam.uwai().canSchemeAgainst(eOurTeam, true) ||
+		!kTheirTeam.uwai().isLandTarget(eOurTeam))
+	{
+		return;
+	}
+	{	/*	Our losses should be small if our enemies are weak, but perhaps
+			better not to rely on that. Fear of 3rd parties should not stop
+			us from waging minor wars. (Well, having our troops away from
+			home could actually hurt us a lot, but I'm more worried about
+			the AI just sitting there in tonic immobility.) */
+		bool bAllPushOver = true;
+		for (TeamIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itEnemy(eOurTeam);
+			itEnemy.hasNext(); ++itEnemy)
+		{
+			if (militAnalyst().isWar(eOurTeam, itEnemy->getID()) &&
+				!kOurTeam.AI_isPushover(itEnemy->getID()))
+			{
+				bAllPushOver = false;
+				break;
+			}
+		}
+		if (bAllPushOver)
+		{
+			log("Not considering 3rd-party interventions b/c all enemies are weak");
+			return;
+		}
+	}
+	// Sending troops abroad is dangerous; will take long to redeploy.
+	if (!militAnalyst().isPeaceScenario() && eTarget != NO_TEAM &&
+		!kOurTeam.uwai().isLandTarget(eTarget) &&
+		!GET_TEAM(eTarget).AI_hasSharedPrimaryArea(eTheirTeam))
+	{
+		log("Losses treated as higher b/c of overseas deployment");
+		rOurLostPowRatio *= 2;
+		rOurLostPowRatio.decreaseTo(fixp(0.6));
+	}
+	scaled rInterventionProb;
+	/*	(If we applied different measures in the war/peace scenario, we could
+		get inconsistent results, making us feel safer in the war scenario.) */
+	if (//militAnalyst().isPeaceScenario() ||
+		m_kParams.isConsideringPeace())
+	{
+		/*	In this case, all relevant wars are already reflected by their
+			war utility against us. No worries if that utility is 0.
+			Not sure if war utility _including_ Distraction would be better here;
+			well, that's not cached and it shouldn't matter much. */
+		scaled rUtilityVsUs = kThey.uwai().getCache().
+				warUtilityIgnoringDistraction(eOurTeam);
+		/*	We're not supposed to know everything that enters their war utility
+			calculation. Add some noise. Hashing rank should result in a somewhat
+			stable error. */
+		scaled rNoise = 30 *
+				(scaled::hash(m_kGame.getPlayerRank(eWe), eWe) - fixp(0.5));
+		rUtilityVsUs += rNoise;
+		if (rUtilityVsUs > 0)
+		{
+			log("Their war utility: %d (%d from noise)",
+					rUtilityVsUs.uround(), rNoise.round());
+			rUtilityVsUs.decreaseTo(94);
+			rInterventionProb = fixp(0.8) * rUtilityVsUs / 100;
+		}
+	}
+	else
+	{	/*	If there are undeclared wars, it's really difficult to say how much
+			higher their war utility will be after those DoW. Not worth letting
+			the AI cheat more. Better just rely on paranoia. */
+		int iOurDefPow = kOurTeam.getDefensivePower();
+		iOurDefPow = (iOurDefPow * (1 - rOurLostPowRatio)).uround();
+		int iParanoia = kWe.AI_paranoiaRating(eThey, iOurDefPow, false, true);
+		iParanoia = std::min(iParanoia, 190);
+		rInterventionProb = scaled(iParanoia - 25, 215);
+		if (rInterventionProb > 0)
+		{
+			log("Our paranoia rating: %d", iParanoia);
+			if (!kTheirTeam.isHuman() &&
+				!m_kGame.isOption(GAMEOPTION_RANDOM_PERSONALITIES))
+			{
+				scaled rWarRand = kTheirTeam.AI_dogpileWarRand();
+				log("Adjusting paranoia based on DogpileWarRand=%d", rWarRand.floor());
+				rWarRand.mulDiv(4, 3);
+				rWarRand.clamp(25, 200);
+				// War rands matter less when war utility is high
+				rInterventionProb /= (rWarRand / 100 + 5 * rInterventionProb) /
+						(5 * rInterventionProb + 1);
+			}
+		}
+	}
+	if (rInterventionProb < per100(1))
+		return;
+	/*	(Would be nice to do this also when there has been no war, but there
+		is no counter for the number of turns that we've been considering
+		war against the target or have been afraid of an intervention.) */
+	if (kWe.AI_getMemoryCount(eThey, MEMORY_DECLARED_WAR) +
+		kThey.AI_getMemoryCount(eWe, MEMORY_DECLARED_WAR) > 0)
+	{	// Avoid stalemates: don't be afraid of interventions forever
+		int iAtPeaceTurns = kOurTeam.AI_getAtPeaceCounter(eTheirTeam);
+		int iThresh = (5 * GC.getDefineINT(CvGlobals::PEACE_TREATY_LENGTH)) / 3 - 1;
+		if (iAtPeaceTurns > iThresh)
+		{
+			scaled rAtPeaceTurns = fixp(1.5) * iAtPeaceTurns /
+					(per100(m_kSpeed.getGoldenAgePercent()) + fixp(0.5));
+			scaled rMult = std::max(fixp(1/3.), 1 - scaled(iAtPeaceTurns - iThresh, 30));
+			log("Taking intervention prob times %d percent b/c peace has lasted %d turns",
+					rMult.getPercent(), iAtPeaceTurns);
+			rInterventionProb *= rMult;
+		}
+	}
+	if (!kTheirTeam.isHuman() &&
+		!m_kGame.isOption(GAMEOPTION_RANDOM_PERSONALITIES))
+	{	/*	(DogpileWarRand is already accounted for above;
+			is part of the war utility calc.) */
+		int iLimitedWarRand = kTheirTeam.AI_limitedWarRand();
+		scaled rWarRand(iLimitedWarRand +
+				std::min(iLimitedWarRand, kTheirTeam.AI_maxWarRand()), 2);
+		log("Adjusting intervention prob based on WarRand=%d", rWarRand.round());
+		rWarRand.clamp(25, 200);
+		rInterventionProb /= (rWarRand / 100 + 5 * rInterventionProb) /
+				(5 * rInterventionProb + 1);
+	}
+	if (rInterventionProb < per100(1))
+		return;
+	/*	(Would be nice to anticipate war trades, but the request frequency is the
+		same for almost all leaders anyway, and checking attitude thresholds -
+		not to mention trade items - gets pretty complicated, especially
+		considering that all parties involved could be human.) */
+	/*	(Better not to create an incentive for joining the wars of civs
+		that we fear. Let the SuckingUp aspect deal with that.) */
+	/*if (militAnalyst().isOnOurSide(eTheirTeam))
+		rInterventionProb *= fixp(2/3.);*/
+	rInterventionProb.decreaseTo(fixp(0.85));
+	log("Probability of intervention by %s: %d percent", m_kReport.leaderName(eThey),
+			rInterventionProb.getPercent());
+	scaled rTheirPow = kThey.uwai().getCache().
+			getPowerValues()[ARMY]->power();
+	if (kWe.isHuman())
+		rTheirPow *= kThey.uwai().confidenceAgainstHuman();
+	for (PlayerAIIter<MAJOR_CIV,VASSAL_OF> itTheirVassal(eTheirTeam);
+		itTheirVassal.hasNext(); ++itTheirVassal)
+	{
+		rTheirPow += itTheirVassal->uwai().getCache().
+				getPowerValues()[ARMY]->power() / 2;
+	}
+	rTheirPow.increaseTo(scaled::epsilon());
+	// Preserve for later
+	scaled const rTheirCurPowToOurs = rTheirPow / rOurPow;
+	{
+		// (Ignore their losses in home guard; we know that they haven't lost cities.)
+		scaled rTheirLostPowMult = rTheirPow - militAnalyst().lostPower(eThey, ARMY);
+		for (PlayerAIIter<MAJOR_CIV,VASSAL_OF> itTheirVassal(eTheirTeam);
+			itTheirVassal.hasNext(); ++itTheirVassal)
+		{
+			rTheirLostPowMult -= militAnalyst().lostPower(
+					itTheirVassal->getID(), ARMY) / 2;
+		}
+		rTheirLostPowMult /= rTheirPow;
+		rTheirLostPowMult.increaseTo(fixp(0.6));
+		rTheirPow *= rTheirLostPowMult;
+	}
+	if (kThey.isHuman())
+		rOurPow *= kWeAI.confidenceAgainstHuman();
+	rOurPow *= 1 - rOurLostPowRatio;
+	scaled rTheirPowToOurs = rTheirPow / rOurPow;
+	scaled const rPowRatioFloor = fixp(0.5);
+	if (rTheirPowToOurs <= rPowRatioFloor)
+		return;
+	log("Our loss ratio from fighting 2nd parties: %d percent",
+			rOurLostPowRatio.getPercent());
+	log("Power ratio (they:we) %d:%d=%d percent", rTheirPow.uround(),
+			rOurPow.uround(), rTheirPowToOurs.getPercent());
+	/*	Proportional to the square of our losses (which are in the unit interval,
+		hence sqrt). We want to avoid any tough fights with 2nd parties, when a
+		dangerous 3rd-party intervention looms. */
+	scaled rCost = rInterventionProb * 85 * rOurLostPowRatio.sqrt();
+	{	// These formulas are a mess
+		scaled const rPowRatioThresh = 2;
+		if (rTheirPowToOurs > rPowRatioThresh)
+		{
+			rTheirPowToOurs = rPowRatioThresh +
+					(rTheirPowToOurs - rPowRatioThresh + 1).sqrt() - 1;
+		}
+		else if (rTheirPowToOurs < 1)
+			rTheirPowToOurs.exponentiate(fixp(0.5));
+		rCost *= rTheirPowToOurs - rPowRatioThresh + 1 + rPowRatioFloor;
+		rCost /= 1 + rPowRatioFloor;
+		/*	If we can't stand up to them in any case, then we might as well
+			expose ourselves and hope for the best. That said, even if we can't
+			win, us being able to put up a fight may dissuade them on the
+			bottom line. Important only to look at current power values for
+			this - to avoid an incentive for incurring greater losses. */
+		scaled rThresh = fixp(5/3.);
+		if (rTheirCurPowToOurs > rThresh)
+		{
+			scaled rMult = rThresh / rTheirCurPowToOurs;
+			log("Cost reduced by a factor of %d percent b/c 3rd party very powerful",
+					rMult.getPercent());
+			rCost *= rMult;
+		}
+	}
+	if (kOurTeam.isHuman())
+	{	// Humans tend to not worry much about being backstabbed
+		rCost *= fixp(2/3.);
+	}
+	else
+	{
+		log("Our distrust rating: %d percent", kWeAI.distrustRating().getPercent());
+		rCost *= kWeAI.distrustRating().sqrt();
+	}
+	if (kWe.hasCapital() && kThey.hasCapital() &&
+		!kWe.getCapital()->sameArea(*kThey.getCapital()))
+	{
+		log("Cost decreased for differing capital areas");
+		rCost /= 2;
+	}
+	if (!militAnalyst().getWarsDeclaredBy(eWe).empty() &&
+		!kOurTeam.AI_isSneakAttackPreparing())
+	{	/*	Not starting war preparations should be less of an inconvenience
+			than abandoning preparations or ending an ongoing war. */
+		log("Cost increased for our DoW");
+		rCost *= fixp(4/3.);
+	}
+	{
+		int iThresh = 35;
+		if (rCost > iThresh)
+			rCost = iThresh + (rCost - iThresh).sqrt();
+	}
+	{
+		rCost *= 2;
+		rCost /= (kOurTeam.getNumMembers() + kTheirTeam.getNumMembers());
+	}
+	if (rCost < fixp(0.5))
+		log("(Not a relevant threat: %s)", m_kReport.leaderName(eThey));
+	else m_iU -= rCost.uround();
+}
+
+
+int DramaticArc::preEvaluate()
+{
+	m_rTensionIncrease = 0;
+	if (kOurTeam.isAVassal())
+		return 0;
+	scaled const rSpeedMult = 2 / per100(m_kGame.getSpeedPercent() +
+			m_kSpeed.getTrainPercent());
+	int const iElapsedTurns = m_kGame.getElapsedGameTurns();
+	if (iElapsedTurns * rSpeedMult < 25) // (Even when starting in a later era)
+		return 0;
+	int const iOtherKnown = TeamIter<FREE_MAJOR_CIV,OTHER_KNOWN_TO>::count(eOurTeam);
+	if (iOtherKnown <= 0)
+		return 0;
+	int const iMaxPeaceCounter = 100;
+	std::vector<int> aiPeaceCounters;
+	for (TeamAIIter<FREE_MAJOR_CIV,KNOWN_TO> itFirst(eOurTeam);
+		itFirst.hasNext(); ++itFirst)
+	{
+		int iLoopMinCounter = iElapsedTurns;
+		for (TeamIter<MAJOR_CIV,KNOWN_TO> itSecond(eOurTeam);
+			itSecond.hasNext(); ++itSecond)
+		{
+			TeamTypes const eSecond = itSecond->getID();
+			if (itFirst->getID() != eSecond)
+			{
+				int iAtPeace = itFirst->getTurnsAtPeace(eSecond);
+				// With tolerance b/c the has-met counter isn't exact
+				if (abs(itFirst->AI_getHasMetCounter(eSecond) - iAtPeace) >= 8)
+					iLoopMinCounter = std::min(iLoopMinCounter, iAtPeace);
+				// (else assume that they've always been at peace)
+			}
+		}
+		aiPeaceCounters.push_back(std::min(iMaxPeaceCounter, iLoopMinCounter));
+	}
+	int const iMinPeaceCounter = stats::min(aiPeaceCounters);
+	scaled rTension;
+	if (iMinPeaceCounter > 0) // No wars ongoing
+	{
+		if (kWe.AI_isDoStrategy(AI_STRATEGY_ALERT1))
+			return 0; // We're foreseeing enough tension
+		/*	A lack of late-game warfare is not usually a problem,
+			and can be due to Cold War dynamics (defensive pacts, nukes). */
+		for (int i = 0; i <= m_kGame.getCurrentEra(); i++)
+		{
+			if (GC.getInfo((EraTypes)i).get(CvEraInfo::AIAgeOfGuns) ||
+				GC.getInfo((EraTypes)i).get(CvEraInfo::AIAtomicAge))
+			{
+				return 0;
+			}
+		}
+		rTension = 1 - scaled(iMinPeaceCounter, iMaxPeaceCounter) * rSpeedMult;
+		rTension.increaseTo(0);
+		rTension /= 2; // Less than 0.5 when there are no wars
+	}
+	else
+	{
+		// Mean of the per-team minima
+		int const iMeanPeaceCounter = stats::mean(aiPeaceCounters);
+		rTension = 1 - scaled(iMeanPeaceCounter, iMaxPeaceCounter) * rSpeedMult;
+		rTension.increaseTo(0);
+		// There is at least one war, so let's not go below 0.5.
+		rTension += 1;
+		rTension /= 2;
+	}
+	scaled rTensionTarget = m_kGame.gameTurnProgress() * fixp(10/3.);
+	rTensionTarget.decreaseTo(fixp(2/3.));
+	if (rTension.approxEquals(rTensionTarget, fixp(0.1)))
+		return 0;
+	m_rTensionIncrease = (rTensionTarget - rTension) *
+			scaled(iOtherKnown).sqrt() / 2;
+	m_rTensionIncrease.clamp(-1, 1);
+	log("Seeking to adjust tension (overall warfare) by %d percent",
+			m_rTensionIncrease.getPercent());
+	return 0;
+}
+
+
+void DramaticArc::evaluate()
+{
+	if (m_rTensionIncrease == 0) // Often the case, save time.
+		return;
+	bool const bWillBeAtWar = militAnalyst().isWar(eWe, eThey);
+	if (bWillBeAtWar == kOurTeam.isAtWar(eTheirTeam))
+		return;
+	if (kTheirTeam.isAVassal()) // Only care about wars between free civs
+		return;
+	/*	We're already doing our part. And don't prolong wars either just b/c there's
+		already too little going on. The end of a war is an interesting event
+		in itself, and let's see what will develop in the aftermath. */
+	if (m_rTensionIncrease > 0 && kOurTeam.getNumWars() > 0)
+		return;
+	scaled const rWeight = 16;
+	scaled rUtil = m_rTensionIncrease * (bWillBeAtWar ? 1 : -1) * rWeight;
+	if (rUtil > 0 && bWillBeAtWar) // Don't encourage phoney or unfair wars ...
+	{
+		int iTheirLostCities = (int)militAnalyst().lostCities(eThey).size();
+		if (iTheirLostCities > 2 || // We should be motivated enough (if it's a fair war)
+			// I worry that the AI will go after humans too hard and too often ...
+			(kThey.isHuman() && iTheirLostCities == 1 && kThey.hasCapital() &&
+			militAnalyst().lostCities(eThey).count(kThey.getCapital()->plotNum()) > 0 &&
+			TeamIter<MAJOR_CIV,OTHER_KNOWN_TO>::count(eOurTeam) > 2))
+		{
+			return;
+		}
+		if ((iTheirLostCities == 0 && militAnalyst().conqueredCities(eWe).empty()) ||
+			(militAnalyst().lostPower(eWe, ARMY) + militAnalyst().lostPower(eThey, ARMY)) <
+			std::max(ourCache().getPowerValues()[ARMY]->power(), scaled::epsilon()) / 20)
+		{
+			//log("Too little action expected - not a good way to increase tension");
+			return;
+		}
+	}
+	// Tension in team games is jumpy, don't try too hard to steer it.
+	rUtil /= scaled(kOurTeam.getNumMembers() + kTheirTeam.getNumMembers(), 2);
+	m_iU += rUtil.round();
 }

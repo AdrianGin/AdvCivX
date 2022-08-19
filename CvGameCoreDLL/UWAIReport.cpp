@@ -31,7 +31,7 @@ UWAIReport::~UWAIReport()
 	deleteBuffer();
 }
 
-
+#if !DISABLE_UWAI_REPORT
 void UWAIReport::log(char const* fmt, ...)
 {
 	if (m_iMuted > 0)
@@ -43,7 +43,7 @@ void UWAIReport::log(char const* fmt, ...)
 	m_report += CvString::format("\n");
 	writeToFile();
 }
-
+#endif
 
 void UWAIReport::writeToFile()
 {
@@ -64,7 +64,7 @@ void UWAIReport::deleteBuffer()
 		delete m_aStringBuffer[i];
 }
 
-
+#if !DISABLE_UWAI_REPORT
 char const* UWAIReport::leaderName(PlayerTypes ePlayer, int iCharLimit)
 {
 	if (m_iMuted > 0)
@@ -73,7 +73,6 @@ char const* UWAIReport::leaderName(PlayerTypes ePlayer, int iCharLimit)
 			iCharLimit);
 }
 
-
 char const* UWAIReport::unitName(UnitTypes eUnit, int iCharLimit)
 {
 	if (m_iMuted > 0)
@@ -81,14 +80,13 @@ char const* UWAIReport::unitName(UnitTypes eUnit, int iCharLimit)
 	return narrow(GC.getInfo(eUnit).getDescription(), iCharLimit);
 }
 
-
 char const* UWAIReport::cityName(CvCity const& kCity, int iCharLimit)
 {
 	if (m_iMuted > 0)
 		return "";
 	return narrow(kCity.getName(), iCharLimit);
 }
-
+#endif
 
 char const* UWAIReport::narrow(wchar const* ws, int iCharLimit)
 {
@@ -105,7 +103,7 @@ char const* UWAIReport::narrow(wchar const* ws, int iCharLimit)
 	return pNewString->c_str();
 }
 
-
+#if !DISABLE_UWAI_REPORT
 char const* UWAIReport::masterName(TeamTypes eMaster, int iCharLimit)
 {
 	if (m_iMuted > 0)
@@ -115,7 +113,6 @@ char const* UWAIReport::masterName(TeamTypes eMaster, int iCharLimit)
 		return teamName(eMaster);
 	return leaderName(kMaster.getLeaderID());
 }
-
 
 char const* UWAIReport::teamName(TeamTypes eTeam)
 {
@@ -132,14 +129,12 @@ char const* UWAIReport::teamName(TeamTypes eTeam)
 	return pNewString->c_str();
 }
 
-
 char const* UWAIReport::techName(TechTypes eTech, int iCharLimit)
 {
 	if (m_iMuted > 0)
 		return "";
 	return narrow(GC.getInfo(eTech).getDescription(), iCharLimit);
 }
-
 
 char const* UWAIReport::warPlanName(WarPlanTypes eWarPlan) const
 {
@@ -158,7 +153,7 @@ char const* UWAIReport::warPlanName(WarPlanTypes eWarPlan) const
 	default: return "unrecognized";
 	}
 }
-
+#endif
 
 void UWAIReport::setMute(bool b)
 {

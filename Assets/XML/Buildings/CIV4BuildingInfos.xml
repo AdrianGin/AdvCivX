@@ -2426,9 +2426,7 @@
 			<iGlobalHurryModifier>0</iGlobalHurryModifier>
 			<iExperience>0</iExperience>
 			<iGlobalExperience>0</iGlobalExperience>
-			<!-- advc.160: Was 50. Note that advc.912d multiplies this by 1.2
-				 in the DLL when playing with the "No Slavery" option. -->
-			<iFoodKept>40</iFoodKept>
+			<iFoodKept>50</iFoodKept>
 			<iAirlift>0</iAirlift>
 			<iAirModifier>0</iAirModifier>
 			<iAirUnitCapacity>0</iAirUnitCapacity>
@@ -2608,8 +2606,7 @@
 			<iGlobalHurryModifier>0</iGlobalHurryModifier>
 			<iExperience>0</iExperience>
 			<iGlobalExperience>0</iGlobalExperience>
-			<!-- advc.160: was 50 -->
-			<iFoodKept>40</iFoodKept>
+			<iFoodKept>50</iFoodKept>
 			<iAirlift>0</iAirlift>
 			<iAirModifier>0</iAirModifier>
 			<iAirUnitCapacity>0</iAirUnitCapacity>
@@ -26427,8 +26424,7 @@
 			<MaxStartEra>ERA_CLASSICAL</MaxStartEra>
 			<!-- advc.310: Was NONE -->
 			<ObsoleteTech>TECH_CORPORATION</ObsoleteTech>
-			<!-- advc.310: Was TECH_MASONRY -->
-			<PrereqTech>TECH_ARCHERY</PrereqTech>
+			<PrereqTech>TECH_MASONRY</PrereqTech>
 			<TechTypes/>
 			<Bonus>NONE</Bonus>
 			<PrereqBonuses/>

@@ -23,7 +23,7 @@ CvDLLButtonPopup* CvDLLButtonPopup::m_pInst = NULL;
 namespace
 {
 	/*	K-Mod: In the original code, arbitrary integers are used
-		to express the options of the in-game main menu. */
+		to express the options of the main menu. */
 	enum MainMenuOptions
 	{
 		MM_EXIT_TO_DESKTOP,
@@ -103,7 +103,7 @@ void CvDLLButtonPopup::OnOkClicked(CvPopup* pPopup, PopupReturn *pPopupReturn, C
 				gDLL->SetDone(true);
 				break;
 			case 1:
-				m_kUI.exitingToMainMenu();
+				kGame.exitToMenu();
 				break;
 			case 2:
 				//kGame.doControl(CONTROL_RETIRE);
@@ -538,7 +538,7 @@ void CvDLLButtonPopup::OnOkClicked(CvPopup* pPopup, PopupReturn *pPopupReturn, C
 		}
 		else if (pPopupReturn->getButtonClicked() == 1)
 		{
-			// exit to main menu
+			// exit to opening menu
 			if (kGame.isNetworkMultiPlayer() && kGame.canDoControl(CONTROL_RETIRE) &&
 				kGame.countHumanPlayersAlive() > 1)
 			{
@@ -546,7 +546,7 @@ void CvDLLButtonPopup::OnOkClicked(CvPopup* pPopup, PopupReturn *pPopupReturn, C
 				kGame.retire(); // K-Mod
 			}
 			else if (!m_kUI.isDebugMenuCreated())
-				m_kUI.exitingToMainMenu();
+				kGame.exitToMenu();
 			else gDLL->SetDone(true);
 		}
 		break;
@@ -568,7 +568,7 @@ void CvDLLButtonPopup::OnOkClicked(CvPopup* pPopup, PopupReturn *pPopupReturn, C
 	case BUTTONPOPUP_FORCED_DISCONNECT:
 	case BUTTONPOPUP_PITBOSS_DISCONNECT:
 	case BUTTONPOPUP_KICKED:
-		m_kUI.exitingToMainMenu();
+		kGame.exitToMenu();
 		break;
 
 	case BUTTONPOPUP_VASSAL_DEMAND_TRIBUTE:

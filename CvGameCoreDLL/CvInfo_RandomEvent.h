@@ -12,6 +12,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvEventInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 	friend class CvXMLLoadUtility;
 public: // All the const functions returning primitive types are exposed to Python
 	CvEventInfo();
@@ -86,10 +87,10 @@ public: // All the const functions returning primitive types are exposed to Pyth
 	int getNumWorldNews() const;
 
 	// <advc.003t> Replacing vectors of tuples
-	DEF_INFO_ENUM2SHORT_MAP(BuildingYieldChange, BuildingClass, Yield, YieldChangeMap, ListEnumMap);
-	DEF_INFO_ENUM2SHORT_MAP(BuildingCommerceChange, BuildingClass, Commerce, CommerceChangeMap, ListEnumMap);
-	DEF_INFO_ENUM_MAP(BuildingHappyChange, BuildingClass, int, char, ListEnumMap);
-	DEF_INFO_ENUM_MAP(BuildingHealthChange, BuildingClass, int, char, ListEnumMap);
+	DEF_INFO_ENUM2SHORT_MAP(BuildingYieldChange, BuildingClass, Yield, YieldChangeMap, NonDefaultEnumMap);
+	DEF_INFO_ENUM2SHORT_MAP(BuildingCommerceChange, BuildingClass, Commerce, CommerceChangeMap, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(BuildingHappyChange, BuildingClass, int, char, NonDefaultEnumMap);
+	DEF_INFO_ENUM_MAP(BuildingHealthChange, BuildingClass, int, char, NonDefaultEnumMap);
 	// </advc.003t>
 
 	const char* getPythonCallback() const;
@@ -190,6 +191,7 @@ private:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvEventTriggerInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 	friend class CvXMLLoadUtility;
 public: // All the const functions returning primitive types are exposed to Python
 	CvEventTriggerInfo();

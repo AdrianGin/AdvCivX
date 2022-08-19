@@ -19,7 +19,7 @@ using std::set;
 namespace
 {
 	int const iMaxReparationUtility = 25;
-	int const iWarTradeUtilityThresh = -35;
+	int const iWarTradeUtilityThresh = -37;
 	// AI payments for peace (with human or AI enemy)
 	scaled const rReparationsModifierAI = fixp(0.5);
 	/*  Modifier for human payments for peace, i.e what the AI asks a human to pay
@@ -100,7 +100,7 @@ void UWAI::Team::doWar()
 	if (!getUWAI().isReady())
 		return;
 	CvTeamAI& kAgent = GET_TEAM(m_eAgent);
-	if (!kAgent.isAlive() || kAgent.isBarbarian() || kAgent.isMinorCiv())
+	if (!kAgent.isAlive() || !kAgent.isMajorCiv())
 		return;
 	FAssertMsg(!kAgent.isAVassal() || kAgent.getNumWars() > 0 ||
 			kAgent.AI_getNumWarPlans(WARPLAN_DOGPILE) +
@@ -587,10 +587,12 @@ bool UWAI::Team::considerPeace(TeamTypes eTarget, int iU)
 	int iTheirReluct = MIN_INT; // Costly, don't compute this sooner than necessary.
 	if (bHuman)
 	{
-		int iContactDelay = kAgentPlayer.AI_getContactTimer(kTargetPlayer.getID(),
-				CONTACT_PEACE_TREATY);
+		int const iContactDelay = kAgentPlayer.
+				AI_getContactTimer(kTargetPlayer.getID(), CONTACT_PEACE_TREATY);
+		int const iContactRand = GC.getInfo(kAgentPlayer.
+				getPersonalityType()).getContactRand(CONTACT_PEACE_TREATY);
 		int iAtWarCounter = kAgent.AI_getAtWarCounter(eTarget);
-		if (iContactDelay > 0 ||
+		if (iContactDelay > 0 || iContactRand <= 0 ||
 			kAgent.AI_getWarPlan(eTarget) == WARPLAN_ATTACKED_RECENT ||
 			kAgentPlayer.AI_refuseToTalkTurns(kTargetPlayer.getID()) > iAtWarCounter)
 		{
@@ -599,15 +601,20 @@ bool UWAI::Team::considerPeace(TeamTypes eTarget, int iU)
 				m_pReport->log("No peace with human sought b/c of contact delay: %d",
 						iContactDelay);
 			}
+			else if (iContactRand <= 0)
+			{
+				m_pReport->log("No peace sought b/c %s never seeks peace",
+						m_pReport->leaderName(kAgentPlayer.getID()));
+			}
 			else m_pReport->log("No peace sought b/c war too recent: %d turns", iAtWarCounter);
 			rPeaceProb = 0; // Don't return; capitulation always needs to be checked.
 			bOfferPeace = false;
 		}
 		else
 		{
-			// 5 to 10%
-			rPeaceProb = scaled(1, std::max(1, GC.getInfo(kTargetPlayer.
-					getPersonalityType()).getContactRand(CONTACT_PEACE_TREATY)));
+			/*	(Going through CvPlayerAI::AI_contactRoll gets too complicated here,
+				and wouldn't matter b/c we don't speed-adjust peace rolls.) */
+			rPeaceProb = scaled(1, iContactRand); // 5 to 10%
 			// Adjust probability based on whether peace looks like win-win or zero-sum
 			iTheirReluct = kTarget.uwai().reluctanceToPeace(kAgent.getID(), false);
 			scaled rWinWinFactor = scaled(iTheirReluct + iU, -15);
@@ -1038,6 +1045,10 @@ bool UWAI::Team::considerAbandonPreparations(TeamTypes eTarget, int iU,
 	FAssert(iWarRand >= 0);
 	// WarRand is between 40 (aggro) and 400 (chilled)
 	scaled rAbandonProb(-iU * iWarRand, 7500);
+	// Slight adjustment to training speed
+	rAbandonProb *= 2;
+	rAbandonProb /= per100(GC.getInfo(GC.getGame().getGameSpeedType()).
+			getTrainPercent()) + 1;
 	rAbandonProb.decreaseTo(1);
 	m_pReport->log("Abandoning preparations with probability %d percent (warRand=%d)",
 			rAbandonProb.getPercent(), iWarRand);
@@ -1097,6 +1108,13 @@ bool UWAI::Team::considerSwitchTarget(TeamTypes eTarget, int iU,
 	if (std::min(iU, iBestUtility) < 20)
 		iPadding += 20 - std::min(iU, iBestUtility);
 	scaled rSwitchProb = fixp(0.75) * (1 - scaled(iU + iPadding, iBestUtility + iPadding));
+	// Slight adjustment to training speed
+	if (rSwitchProb.isPositive())
+	{
+		rSwitchProb *= 2;
+		rSwitchProb /= per100(GC.getInfo(GC.getGame().getGameSpeedType()).
+				getTrainPercent()) + 1;
+	}
 	if (bQualms && !bAltQualms)
 		rSwitchProb += fixp(1.8);
 	m_pReport->log("Switching target for war preparations to %s (u=%d) with pr=%d percent",
@@ -1208,9 +1226,9 @@ int UWAI::Team::peaceThreshold(TeamTypes eTarget) const
 		r += (1 - rPrideRating) * 40 - 30;
 	}
 	r += scaled::min(15, kAgent.AI_getAtWarCounter(eTarget) +
-				scaled(2 * kAgent.AI_getWarSuccess(eTarget) +
-				4 * kTarget.AI_getWarSuccess(eTarget),
-				GC.getWAR_SUCCESS_CITY_CAPTURING()));
+				(2 * kAgent.AI_getWarSuccess(eTarget) +
+				4 * kTarget.AI_getWarSuccess(eTarget)) /
+				GC.getWAR_SUCCESS_CITY_CAPTURING());
 	int iR = r.round();
 	if (!kTarget.isHuman())
 	{
@@ -1294,7 +1312,8 @@ int UWAI::Team::reluctanceToPeace(TeamTypes eEnemy, bool bNonNegative) const
 }
 
 
-bool UWAI::Team::canSchemeAgainst(TeamTypes eTarget, bool bAssumeNoWarPlan) const
+bool UWAI::Team::canSchemeAgainst(TeamTypes eTarget, bool bAssumeNoWarPlan,
+	bool bCheckDefensivePacts) const
 {
 	CvTeamAI const& kAgent = GET_TEAM(m_eAgent);
 	if (eTarget == NO_TEAM || eTarget == BARBARIAN_TEAM || eTarget == kAgent.getID())
@@ -1310,10 +1329,54 @@ bool UWAI::Team::canSchemeAgainst(TeamTypes eTarget, bool bAssumeNoWarPlan) cons
 	{
 		return false;
 	}
-	return (kTarget.isAlive() && !kTarget.isMinorCiv() && kAgent.isHasMet(eTarget) &&
-			!kTarget.isAVassal() && kTarget.getNumCities() > 0 && (bAssumeNoWarPlan ||
-			kAgent.AI_getWarPlan(eTarget) == NO_WARPLAN) &&
-			kAgent.canEventuallyDeclareWar(eTarget));
+	if (!(kTarget.isAlive() && !kTarget.isMinorCiv() && kAgent.isHasMet(eTarget) &&
+		!kTarget.isAVassal() && kTarget.getNumCities() > 0 &&
+		(bAssumeNoWarPlan || kAgent.AI_getWarPlan(eTarget) == NO_WARPLAN) &&
+		kAgent.canEventuallyDeclareWar(eTarget)))
+	{
+		return false;
+	}
+	/*	Important not to scheme against a faraway member of a DP b/c that
+		may delay our DoW considerably, may even require transports. CvUnitAI
+		is only going to target cities of the target team and its vassals.
+		The initial DoW matters for diplo penalties, but that's a less important
+		consideration. */
+	if (bCheckDefensivePacts)
+	{
+		for (TeamIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itAlly(eTarget);
+			itAlly.hasNext(); ++itAlly)
+		{
+			if (itAlly->isDefensivePact(eTarget) &&
+				/*	(Should come up rarely, so the performance of these checks
+					shouldn't matter much. Closeness also gets cached, however,
+					we may not be in a synchronized context, so we can't
+					necessarily benefit from caching.) */
+				canSchemeAgainst(itAlly->getID(), bAssumeNoWarPlan, false))
+			{
+				int iAllyCloseness = kAgent.AI_teamCloseness(itAlly->getID(),
+						DEFAULT_PLAYER_CLOSENESS, false, true);
+				for (TeamIter<MAJOR_CIV,VASSAL_OF> itVassal(itAlly->getID());
+					itVassal.hasNext(); ++itVassal)
+				{
+					iAllyCloseness = std::max(iAllyCloseness,
+							kAgent.AI_teamCloseness(itVassal->getID(),
+							DEFAULT_PLAYER_CLOSENESS, false, true));
+				}
+				int iTargetCloseness = kAgent.AI_teamCloseness(eTarget,
+						DEFAULT_PLAYER_CLOSENESS, false, true);
+				for (TeamIter<MAJOR_CIV,VASSAL_OF> itVassal(eTarget);
+					itVassal.hasNext(); ++itVassal)
+				{
+					iTargetCloseness = std::max(iTargetCloseness,
+							kAgent.AI_teamCloseness(itVassal->getID(),
+							DEFAULT_PLAYER_CLOSENESS, false, true));
+				}
+				if (2 * iAllyCloseness > 3 * iTargetCloseness)
+					return false;
+			}
+		}
+	}
+	return true;
 }
 
 
@@ -1376,7 +1439,7 @@ void UWAI::Team::scheme()
 		itTarget.hasNext(); ++itTarget)
 	{
 		TeamTypes const eTarget = itTarget->getID();
-		if (!canSchemeAgainst(eTarget, true))
+		if (!canSchemeAgainst(eTarget, true, false))
 			kCache.setCanBeHiredAgainst(eTarget, false);
 		if (!canSchemeAgainst(eTarget, false))
 			continue;
@@ -1454,11 +1517,19 @@ void UWAI::Team::scheme()
 		/*  WarRand of e.g. Alexander and Montezuma 50 for total war, else 40;
 			Gandhi and Mansa Musa 400 for total, else 200.
 			I.e. peaceful leaders hesitate longer before starting war preparations;
-			warlike leaders have more drive. */
+			warlike leaders have more drive.
+			(Could easily use DogpileWarRand here when the target is already
+			in a war, but I think I've found a better use for DogpileWarRand
+			in warConfidenceAllies. Less dogpiling on weak targets that way.) */
 		scaled rDiv = (bTotal ? kAgent.AI_maxWarRand() : kAgent.AI_limitedWarRand());
 		FAssert(rDiv >= 0);
-		// Let's make the AI a bit less patient, especially the peaceful types.
-		rDiv.exponentiate(fixp(0.95)); // This maps e.g. 400 to 296 and 40 to 33
+		// Let's make the AI a bit less patient
+		// Especially the peaceful types; this maps e.g. 400 to 296 and 40 to 33.
+		//rDiv.exponentiate(fixp(0.95));
+		/*	Not a good idea after all. Overall, UWAI tends to make peaceful leaders
+			rather too utilitarian with their war plans, I've come to think.
+			So let's adjust only linearly. */
+		rDiv *= fixp(0.85);
 		if (rDiv <= 0)
 			rDrive = 0;
 		else rDrive /= rDiv;
@@ -1626,7 +1697,7 @@ int UWAI::Team::declareWarTradeVal(TeamTypes eTarget, TeamTypes eSponsor) const
 	/*  Sponsored war results in a peace treaty with the sponsor. Don't check if
 		we're planning war against the sponsor - too easy to read (b/c there are
 		just two possibilities). Instead check war utility against the sponsor. */
-	if (canSchemeAgainst(eSponsor, true))
+	if (canSchemeAgainst(eSponsor, true, false))
 	{
 		WarEvalParameters paramsVsSponsor(kAgent.getID(), eSponsor, silentReport);
 		WarEvaluator evalVsSponsor(paramsVsSponsor);
@@ -1711,7 +1782,7 @@ DenialTypes UWAI::Team::makePeaceTrade(TeamTypes eEnemy, TeamTypes eBroker) cons
 		{
 			CvGameAI const& kGame = GC.AI_getGame();
 			scaled rScoreRatio(kGame.getTeamScore(m_eAgent),
-					kGame.getTeamScore(kGame.getRankTeam(0)));
+					kGame.getTeamScore(kGame.getRankTeam((TeamTypes)0)));
 			scaled const rGameEra = kGame.AI_getCurrEraFactor();
 			if (rGameEra > 0 &&
 				rScoreRatio < ((rGameEra - 1) / rGameEra + fixp(2/3.)) / 2)
@@ -1837,10 +1908,11 @@ int UWAI::Team::endWarVal(TeamTypes eEnemy) const
 		if (kAI.AI_getMemoryCount(kHuman.getID(), MEMORY_DECLARED_WAR) > 0 &&
 			kAI.getNumCities() > 0)
 		{
-			int iWSDelta = std::max(0, kHuman.AI_getWarSuccess(kAI.getID()) -
-					kAI.AI_getWarSuccess(kHuman.getID()));
-			scaled rWSAdjustment(4 * iWSDelta,
-					(GC.getWAR_SUCCESS_CITY_CAPTURING() * kAI.getNumCities()));
+			scaled rWSDelta = scaled::max(0,
+					kHuman.AI_getWarSuccess(kAI.getID())
+					-kAI.AI_getWarSuccess(kHuman.getID()));
+			scaled rWSAdjustment = (4 * rWSDelta) /
+					(GC.getWAR_SUCCESS_CITY_CAPTURING() * kAI.getNumCities());
 			rWSAdjustment.decreaseTo(1);
 			r *= rWSAdjustment;
 		}
@@ -2032,15 +2104,15 @@ scaled UWAI::Team::reparationsToHuman(scaled rUtility) const
 
 void UWAI::Team::respondToRebuke(TeamTypes eTarget, bool bPrepare)
 {
-	/*  Caveat: Mustn't use RNG here b/c this is called from both async (prepare=false)
-		and sync (prepare=true) contexts */
+	/*  Caveat: Mustn't use RNG here b/c this is called from both async (bPrepare=false)
+		and sync (bPrepare=true) contexts */
 	CvTeamAI& kAgent = GET_TEAM(m_eAgent);
 	if (!canSchemeAgainst(eTarget, true) || (bPrepare ?
 		kAgent.AI_isSneakAttackPreparing(eTarget) :
 		kAgent.AI_isSneakAttackReady(eTarget)))
 	{
 		return;
-		}
+	}
 	if (!bPrepare && !kAgent.canDeclareWar(eTarget))
 		return;
 	FAssert(GET_TEAM(eTarget).isHuman());
@@ -2198,6 +2270,21 @@ bool UWAI::Team::canReach(TeamTypes eTarget) const
 			{
 				return true;
 			}
+		}
+	}
+	return false;
+}
+
+
+bool UWAI::Team::isCloseToAdoptingAnyWarPlan() const
+{
+	for (TeamIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itRival(m_eAgent);
+		itRival.hasNext(); ++itRival)
+	{
+		if (canSchemeAgainst(itRival->getID(), false) &&
+			leaderCache().warUtilityIgnoringDistraction(itRival->getID()) >= -20)
+		{
+			return true;
 		}
 	}
 	return false;
@@ -2436,66 +2523,47 @@ bool UWAI::Player::amendTensions(PlayerTypes eHuman)
 	{
 		FOR_EACH_ENUM(AIDemand)
 		{
-			int const iContactRand = kPersonality.getContactRand(CONTACT_DEMAND_TRIBUTE);
-			if (iContactRand > 0)
+			if (GET_PLAYER(m_eAgent).AI_contactRoll(CONTACT_DEMAND_TRIBUTE,
+				(fixp(8.5) - rEra) / 2) &&
+				GET_PLAYER(m_eAgent).AI_demandTribute(eHuman, eLoopAIDemand))
 			{
-				scaled rContactProb = (fixp(8.5) - rEra) / (2 * iContactRand);
-				// Exclude Gandhi (iContactRand=10000 => rAcceptProb<0.0005)
-				if (rContactProb * 1000 > 1 && SyncRandSuccess(rContactProb) &&
-					GET_PLAYER(m_eAgent).AI_demandTribute(eHuman, eLoopAIDemand))
-				{
-					return true;
-				}
+				return true;
 			}
 		}
 	}
 	else
 	{
-		int const iContactRand = kPersonality.getContactRand(CONTACT_ASK_FOR_HELP);
-		if (iContactRand > 0)
+		if (GET_PLAYER(m_eAgent).AI_contactRoll(CONTACT_ASK_FOR_HELP,
+			(fixp(5.5) - rEra) / fixp(1.25)) &&
+			GET_PLAYER(m_eAgent).AI_askHelp(eHuman))
 		{
-			scaled rContactProb = (fixp(5.5) - rEra) / (fixp(1.25) * iContactRand);
-			if (SyncRandSuccess(rContactProb) &&
-				GET_PLAYER(m_eAgent).AI_askHelp(eHuman))
-			{
-				return true;
-			}
+			return true;
 		}
 	}
-	int const iContactRandReligion = kPersonality.getContactRand(CONTACT_RELIGION_PRESSURE);
-	int const iContactRandCivics = kPersonality.getContactRand(CONTACT_CIVIC_PRESSURE);
-	if (iContactRandReligion <= iContactRandCivics)
+	if (kPersonality.getContactRand(CONTACT_RELIGION_PRESSURE) <=
+		kPersonality.getContactRand(CONTACT_CIVIC_PRESSURE))
 	{
-		if (iContactRandReligion > 0)
+		if (GET_PLAYER(m_eAgent).AI_contactRoll(CONTACT_RELIGION_PRESSURE,
+			8 - rEra) &&
+			GET_PLAYER(m_eAgent).AI_contactReligion(eHuman))
 		{
-			scaled rContactProb = (8 - rEra) / iContactRandReligion;
-			if (SyncRandSuccess(rContactProb) &&
-				GET_PLAYER(m_eAgent).AI_contactReligion(eHuman))
-			{
-				return true;
-			}
+			return true;
 		}
 	} 
 	else
 	{
-		if (iContactRandCivics > 0)
+		if (GET_PLAYER(m_eAgent).AI_contactRoll(CONTACT_CIVIC_PRESSURE,
+			fixp(2.5)) &&
+			GET_PLAYER(m_eAgent).AI_contactCivics(eHuman))
 		{
-			scaled rContactProb = fixp(2.5) / iContactRandCivics;
-			// Exclude Saladin (contact rand 10000)
-			if (rContactProb * 1000 > 1 && SyncRandSuccess(rContactProb) &&
-				GET_PLAYER(m_eAgent).AI_contactCivics(eHuman))
-			{
-				return true;
-			}
-		}
-	}
-	//  Embargo request - too unlikely to succeed I think.
-	/*int const iContactRand = kPersonality.getContactRand(CONTACT_STOP_TRADING);
-	if (iContactRand > 0) {
-		scaled rContactProb = ?;
-		if (SyncRandSuccess(rContactProb) && GET_PLAYER(m_eAgent).AI_proposeEmbargo(eHuman)) {
 			return true;
 		}
+	}
+	// Embargo request - too unlikely to succeed I think.
+	/*if (GET_PLAYER(m_eAgent).AI_contactRoll(CONTACT_STOP_TRADING, ?) &&
+		GET_PLAYER(m_eAgent).AI_proposeEmbargo(eHuman))
+	{
+		return true;
 	}*/
 	return false;
 }
@@ -2629,11 +2697,11 @@ scaled UWAI::Player::tradeValUtilityConversionRate() const
 			getTrainPercent();
 	if (iTrainPercent > 0)
 		rSpeedFactor = scaled(100, iTrainPercent);
-	return (3 * rSpeedFactor) /
+	return std::max(scaled::epsilon(), (3 * rSpeedFactor) /
 			(scaled::max(10,
 			GET_TEAM(m_eAgent).AI_estimateYieldRate(m_eAgent, YIELD_COMMERCE))
 			+ 2 * scaled::max(1,
-			GET_TEAM(m_eAgent).AI_estimateYieldRate(m_eAgent, YIELD_PRODUCTION)));
+			GET_TEAM(m_eAgent).AI_estimateYieldRate(m_eAgent, YIELD_PRODUCTION))));
 	/*  Note that change advc.004s excludes espionage and culture from the
 		Economy history, and estimateYieldRate(YIELD_COMMERCE) doesn't account
 		for these yields either. Not a problem for culture, I think, which is
@@ -2652,10 +2720,14 @@ scaled UWAI::Player::amortizationMultiplier() const
 
 scaled UWAI::Player::buildUnitProb() const
 {
+	scaled r;
 	if (GET_PLAYER(m_eAgent).isHuman())
-		return humanBuildUnitProb();
-	return per100(GC.getInfo(GET_PLAYER(m_eAgent).getPersonalityType()).
+		r = humanBuildUnitProb();
+	else r = per100(GC.getInfo(GET_PLAYER(m_eAgent).getPersonalityType()).
 			getBuildUnitProb());
+	// Accounting for advc.253
+	r *= GET_PLAYER(m_eAgent).AI_trainUnitSpeedAdustment();
+	return r;
 }
 
 // (Sort of duplicated in UWAI::Team::canReach)
@@ -2664,25 +2736,30 @@ bool UWAI::Player::canReach(PlayerTypes eTarget) const
 	return (getCache().numReachableCities(eTarget) > 0);
 }
 
-
+/*	This player makes the prediction; the prediction is _about_ ePlayer.
+	Like CvTeamAI::AI_estimateYieldRate (and other AI code), this function
+	currently cheats by not checking whether demographics are visible.
+	Would, in any case, make more sense as a team-level function,
+	but I want to keep it together with buildUnitProb for now. */
 scaled UWAI::Player::estimateBuildUpRate(PlayerTypes ePlayer, int iTurns) const
 {
-	/*	This player makes the prediction; the prediction is _about_ ePlayer.
-		Like CvTeamAI::AI_estimateYieldRate (and other AI code), this function
-		currently cheats by not checking whether demographics are visible.
-		Would, in any case, make more sense as a team-level function,
-		but I want to keep it together with buildUnitProb for now. */
-	CvGame const& kGame = GC.getGame();
-	iTurns *= GC.getInfo(kGame.getGameSpeedType()).getTrainPercent();
+	iTurns *= GC.getInfo(GC.getGame().getGameSpeedType()).getTrainPercent();
 	iTurns /= 100;
-	if (kGame.getElapsedGameTurns() < iTurns + 1)
+	return estimateDemographicGrowthRate(ePlayer, PLAYER_HISTORY_POWER, iTurns);
+}
+
+
+scaled UWAI::Player::estimateDemographicGrowthRate(PlayerTypes ePlayer,
+	PlayerHistoryTypes eDemographic, int iTurns) const
+{
+	if (GC.getGame().getElapsedGameTurns() < iTurns + 1)
 		return 0;
-	int iGameTurn = kGame.getGameTurn();
-	int iPastPow = std::max(1, GET_PLAYER(ePlayer).getHistory(
-			PLAYER_HISTORY_POWER, iGameTurn - 1 - iTurns));
-	int iDelta = GET_PLAYER(ePlayer).getHistory(PLAYER_HISTORY_POWER, iGameTurn - 1)
-			- iPastPow;
-	return scaled::max(0, scaled(iDelta, iPastPow));
+	int iGameTurn = GC.getGame().getGameTurn();
+	int iPastValue = std::max(1, GET_PLAYER(ePlayer).getHistory(
+			eDemographic, iGameTurn - 1 - iTurns));
+	int iDelta = GET_PLAYER(ePlayer).getHistory(eDemographic, iGameTurn - 1)
+			- iPastValue;
+	return scaled::max(0, scaled(iDelta, iPastValue));
 }
 
 
@@ -2716,9 +2793,11 @@ scaled UWAI::Player::confidenceFromWarSuccess(TeamTypes eTarget) const
 	FAssert(std::abs(iTurnsAtWar - kTarget.AI_getAtWarCounter(kAgent.getID())) <= 2);
 	if (iTurnsAtWar <= 0)
 		return -1;
-	int const iAgentSuccess = std::max(1, kAgent.AI_getWarSuccess(eTarget));
-	int const iTargetSuccess = std::max(1, kTarget.AI_getWarSuccess(kAgent.getID()));
-	scaled rSuccessRatio = (iAgentSuccess, iTargetSuccess);
+	scaled const rAgentSuccess = std::max(scaled::epsilon(),
+			kAgent.AI_getWarSuccess(eTarget));
+	scaled const rTargetSuccess = std::max(scaled::epsilon(),
+			kTarget.AI_getWarSuccess(kAgent.getID()));
+	scaled rSuccessRatio = rAgentSuccess / rTargetSuccess;
 	scaled const rFixedBound = fixp(0.5);
 	// Reaches rFixedBound after 20 turns
 	scaled rTimeBasedBound = (100 - fixp(2.5) * iTurnsAtWar) / 100;
@@ -2731,7 +2810,7 @@ scaled UWAI::Player::confidenceFromWarSuccess(TeamTypes eTarget) const
 		scaled rProgressFactor = 11 - kAgent.AI_getCurrEraFactor() * fixp(1.5);
 		rProgressFactor.increaseTo(3);
 		rTotalBasedBound = (100 - (rProgressFactor *
-				(iAgentSuccess + iTargetSuccess)) / iTurnsAtWar) / 100;
+				(rAgentSuccess + rTargetSuccess)) / iTurnsAtWar) / 100;
 	}
 	scaled r = rSuccessRatio;
 	r.clamp(rFixedBound, 2 - rFixedBound);
@@ -2754,6 +2833,8 @@ scaled UWAI::Player::confidenceFromPastWars(TeamTypes eTarget) const
 
 scaled UWAI::Player::distrustRating() const
 {
+	if (GET_PLAYER(m_eAgent).isHuman())
+		return 1;
 	int iR = GC.getInfo(GET_PLAYER(m_eAgent).getPersonalityType()).
 			getEspionageWeight() - 10;
 	if (m_cache.hasDefensiveTrait())
@@ -2927,15 +3008,15 @@ scaled UWAI::Player::diploWeight() const
 	CvLeaderHeadInfo const& kPersonality = GC.getInfo(GET_PLAYER(m_eAgent).
 			getPersonalityType());
 	int const iCR = kPersonality.getContactRand(CONTACT_TRADE_TECH);
+	if (iCR <= 0 || iCR > 15)
+		return fixp(0.25);
 	if (iCR <= 1)
 		return fixp(1.75);
 	if (iCR <= 3)
 		return fixp(1.5);
 	if (iCR <= 7)
 		return 1;
-	if (iCR <= 15)
-		return fixp(0.5);
-	return fixp(0.25);
+	return fixp(0.5);
 }
 
 

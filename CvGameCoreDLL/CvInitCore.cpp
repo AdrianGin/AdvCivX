@@ -53,7 +53,7 @@ void CvInitCore::init(GameMode eMode)
 
 void CvInitCore::uninit()
 {
-	// <advc.003w> So that memory doesn't remain allocated after exit to main menu
+	// <advc.003w> So that memory doesn't remain allocated after exit to opening menu
 	if (GC.IsGraphicsInitialized())
 	{
 		for (int i = 0; i < MAX_CIV_PLAYERS; i++)
@@ -189,7 +189,7 @@ bool CvInitCore::getPbem() const
 }
 
 
-bool CvInitCore::getSlotVacant(PlayerTypes eID) const  // advc: refactored
+bool CvInitCore::getSlotVacant(PlayerTypes eID) const
 {
 	FAssertBounds(0, MAX_CIV_PLAYERS, eID);
 	SlotStatus eStatus = getSlotStatus(eID);
@@ -439,9 +439,7 @@ void CvInitCore::resetGame(/* advc.enum: */ bool bBeforeRead)
 	} // </advc.003c>
 	// Map-specific custom parameters
 	clearCustomMapOptions();
-	/*  advc: Unused as far as I can tell, but still better to ensure that it
-		gets initialized. */
-	m_iNumHiddenCustomMapOptions = 0;
+	m_iNumHiddenCustomMapOptions = 0; // advc: ensure initialization
 	// Data-defined victory conditions
 	//refreshVictories();
 	/*	<advc> Unrolling that function should make it easier to use an EnumMap instead
@@ -487,14 +485,19 @@ void CvInitCore::resetGame(/* advc.enum: */ bool bBeforeRead)
 	m_szTemp.clear();
 }
 
+/*	advc (note): This seems to get used for resetting CvGlobals::m_initCore and
+	m_loadedInitCore to pSource = &CvGlobals::m_iniInitCore, i.e. (presumably)
+	to the data stored in CivilizationIV.ini.
+	Also used for resetting m_initCore to pSource = &m_loadedInitCore when
+	loading a savegame. */
 void CvInitCore::resetGame(CvInitCore* pSource, bool bClear, bool bSaveGameType)
 {
 	FAssert(pSource != NULL);
 	FAssertMsg(!bClear || !bSaveGameType, "Should not clear while trying to preserve gametype info");
 	if (bClear || pSource == NULL)
 		resetGame();
-	if(pSource == NULL)
-		return; // advc
+	if (pSource == NULL)
+		return;
 
 	// Only copy over saved data
 
@@ -587,6 +590,7 @@ void CvInitCore::resetPlayer(PlayerTypes eID,
 	m_aszCivPassword[eID].clear();
 	m_aszEmail[eID].clear();
 	m_aszSmtpHost[eID].clear();
+	m_uiTotalNameLength = 0; // advc.003k
 
 	m_abWhiteFlag.resetVal(eID);
 	m_aszFlagDecal[eID].clear();
@@ -700,7 +704,7 @@ void CvInitCore::setMapScriptName(CvWString const& szMapScriptName)
 {
 	m_szMapScriptName = szMapScriptName;
 	refreshCustomMapOptions();
-	updatePangaea();	
+	updatePangaea();
 }
 
 bool CvInitCore::getWBMapScript() const
@@ -1006,6 +1010,7 @@ void CvInitCore::setForceControl(ForceControlTypes eIndex, bool bOption)
 
 void CvInitCore::setActivePlayer(PlayerTypes eActivePlayer)
 {
+	m_uiTotalNameLength = 0; // advc.003k (tidier to reset this asap)
 	// <advc>
 	if (m_eActivePlayer == eActivePlayer)
 		return; // </advc>
@@ -1048,23 +1053,26 @@ void CvInitCore::setType(GameType eType)
 	// Otherwise as set in XML
 	else kPermWarPeace.setVisible(kPermWarPeace.getVisibleXML());
 	// Never visible in MP
-	std::vector<GameOptionTypes> aeHideMP;
-	aeHideMP.push_back(GAMEOPTION_LOCK_MODS);
-	aeHideMP.push_back(GAMEOPTION_NEW_RANDOM_SEED);
-	aeHideMP.push_back(GAMEOPTION_RISE_FALL); // advc.701
-	for (size_t i = 0; i < aeHideMP.size(); i++)
+	GameOptionTypes aeHideMP[] = {
+		GAMEOPTION_LOCK_MODS,
+		GAMEOPTION_NEW_RANDOM_SEED,
+		GAMEOPTION_RISE_FALL, // advc.701
+	};
+	for (int i = 0; i < ARRAYSIZE(aeHideMP); i++)
 	{
 		CvGameOptionInfo& kOption = GC.getInfo(aeHideMP[i]);
-		if (eType == GAME_MP_SCENARIO || eType == GAME_MP_NEW || eType == GAME_MP_LOAD ||
-			eType == GAME_HOTSEAT_SCENARIO || eType == GAME_HOTSEAT_NEW ||
-			eType == GAME_PBEM_LOAD || eType == GAME_PBEM_NEW ||
-			eType == GAME_PBEM_SCENARIO)
-		{
+		if (getGameMultiplayer())
 			kOption.setVisible(false);
-		}
-		// Otherwise as set in XML
 		else kOption.setVisible(kOption.getVisibleXML());
 	} // </advc.054>
+	/*	<advc.tsl> Disable in network games b/c it can't apply just to civs
+		set to "random"? (Cf. comment in TrueStarts::updateFitnessValues.)
+		No, I think it's still worth having. */
+	/*CvGameOptionInfo& kTrueStarts = GC.getInfo(GAMEOPTION_TRUE_STARTS);
+	if (eType == GAME_MP_SCENARIO || eType == GAME_MP_NEW || eType == GAME_MP_LOAD)
+		kTrueStarts.setVisible(false);
+	else kTrueStarts.setVisible(kTrueStarts.getVisibleXML());*/
+	// </advc.tsl>
 	if (CvPlayer::areStaticsInitialized())
 	{
 		for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -1121,6 +1129,7 @@ void CvInitCore::setLeaderName(PlayerTypes eID, CvWString const& szLeaderName)
 		CvWString szName = szLeaderName;
 		gDLL->stripSpecialCharacters(szName);
 		m_aszLeaderName[eID] = szName;
+		countNameLength(szName); // advc.003k
 	}
 	else FAssertBounds(0, MAX_PLAYERS, eID);
 	gDLL->UI().setDirty(Score_DIRTY_BIT, true); // advc.001m
@@ -1157,6 +1166,7 @@ void CvInitCore::setCivDescription(PlayerTypes eID, CvWString const& szCivDescri
 	CvWString szName = szCivDescription;
 	gDLL->stripSpecialCharacters(szName);
 	m_aszCivDescription[eID] = szName;
+	countNameLength(szName); // advc.003k
 }
 
 CvWString const& CvInitCore::getCivDescriptionKey(PlayerTypes eID) const
@@ -1289,6 +1299,19 @@ void CvInitCore::setSmtpHost(PlayerTypes eID, CvString const& szHost)
 {
 	FAssertBounds(0, MAX_PLAYERS, eID);
 	m_aszSmtpHost[eID] = szHost;
+}
+
+// advc.003k:
+void CvInitCore::countNameLength(CvWString const& kName)
+{
+	#ifdef FASSERT_ENABLE
+	if (getActivePlayer() == NO_PLAYER && getScenario())
+	{
+		m_uiTotalNameLength += kName.length();
+		FAssertMsg(m_uiTotalNameLength < 1240, "Total length of LeaderName"
+				" and CivDesc strings might crash civ selection screen.");
+	}
+	#endif
 }
 
 void CvInitCore::setWhiteFlag(PlayerTypes eID, bool bWhiteFlag)
@@ -1612,6 +1635,13 @@ bool CvInitCore::wasLeaderRandomlyChosen(PlayerTypes eID) const
 	return m_abLeaderChosenRandomly.get(eID);
 }
 
+void CvInitCore::setCivLeaderRandomlyChosen(PlayerTypes eID, bool bRandomCiv, bool bRandomLeader)
+{
+	m_bCivLeaderSetupKnown = true;
+	m_abCivChosenRandomly.set(eID, bRandomCiv);
+	m_abLeaderChosenRandomly.set(eID, bRandomLeader);
+} // </advc.190c>
+
 // <advc.191>
 void CvInitCore::setLeaderExternal(PlayerTypes eID, LeaderHeadTypes eLeader)
 {
@@ -1644,6 +1674,10 @@ void CvInitCore::setLeaderExternal(PlayerTypes eID, LeaderHeadTypes eLeader)
 
 void CvInitCore::reRandomizeCivsAndLeaders()
 {
+	/*	NB: Only executed by the host. The EXE syncs most of the data, but not the
+		was-randomly-chosen info. That gets handled by CvGame::setInitialItems.
+		Not letting CvInitCore send net messages makes clear that they're not
+		delivered until CvGame takes over the setup procedure. */
 	if (getOption(GAMEOPTION_LEAD_ANY_CIV))
 		return;
 	int const iPER_EXTRA_LEADER_CIV_SELECTION_WEIGHT = GC.getDefineINT(
@@ -1859,26 +1893,18 @@ void CvInitCore::read(FDataStreamBase* pStream)
 	if (uiFlag >= 6)
 		m_abOptions.read(pStream);
 	else if (uiFlag >= 4)
-		m_abOptions.readArray<int>(pStream);
+		m_abOptions.readArray<int>(pStream, 1);
 	else // </advc.enum>
 	{
-		bool abOptions[NUM_GAMEOPTION_TYPES];
+		bool abOptions[NUM_GAMEOPTION_TYPES] = {};
 		// <advc.912d>
 		if (uiFlag <= 1)
 		{
 			if (uiFlag == 1)
-			{
-				pStream->Read(NUM_GAMEOPTION_TYPES - 1, abOptions);
-				abOptions[NUM_GAMEOPTION_TYPES - 1] = false;
-			}
-			else
-			{
 				pStream->Read(NUM_GAMEOPTION_TYPES - 2, abOptions);
-				abOptions[NUM_GAMEOPTION_TYPES - 2] = false;
-				abOptions[NUM_GAMEOPTION_TYPES - 1] = false;
-			}
+			else pStream->Read(NUM_GAMEOPTION_TYPES - 3, abOptions);
 		}
-		else pStream->Read(NUM_GAMEOPTION_TYPES, abOptions);
+		else pStream->Read(NUM_GAMEOPTION_TYPES - 1, abOptions);
 		FOR_EACH_ENUM(GameOption)
 			m_abOptions.set(eLoopGameOption, abOptions[eLoopGameOption]);
 	} // </advc.912d>
@@ -1927,6 +1953,24 @@ void CvInitCore::read(FDataStreamBase* pStream)
 		m_aeColor.readArray<int>(pStream);
 		m_aeArtStyle.readArray<int>(pStream);
 	}
+	/*	<advc.250a> Looks like I hadn't taken care of save compatibility
+		when I did away with the "King" handicap. Game handicap will have to be
+		handled by CvGame. */
+	if (uiFlag <= 1)
+	{
+		FOR_EACH_ENUM(Player)
+		{
+			if (getHandicap(eLoopPlayer) >= GC.getNumHandicapInfos())
+			{
+				FErrorMsg("Invalid handicap ID loaded");
+				HandicapTypes eReplacement = (HandicapTypes)
+						GC.getInfoTypeForString("HANDICAP_EMPEROR");
+				if (eReplacement == NO_HANDICAP)
+					eReplacement = (HandicapTypes)(GC.getNumHandicapInfos() - 1);
+				setHandicap(eLoopPlayer, eReplacement);
+			}
+		}
+	} // </advc.250a>
 	// <advc.190c>
 	if (uiFlag >= 5)
 	{
@@ -1991,7 +2035,8 @@ void CvInitCore::write(FDataStreamBase* pStream)
 	//uiFlag = 3; // advc: m_bPangaea
 	//uiFlag = 4; // advc.enum: m_abOptions as byte map
 	//uiFlag = 5; // advc.190c
-	uiFlag = 6; // advc.enum: new enum map save behavior
+	//uiFlag = 6; // advc.enum: new enum map save behavior
+	uiFlag = 7; // advc.tsl: Additional game option
 
 	pStream->Write(uiFlag);
 

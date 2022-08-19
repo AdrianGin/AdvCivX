@@ -24,6 +24,7 @@
 #include "CvReplayInfo.h" // advc.106n
 #include "BarbarianWeightMap.h" // advc.304
 #include "CvDLLIniParserIFaceBase.h"
+#include <boost/algorithm/string.hpp> // advc.108b
 
 
 CvMap::CvMap()
@@ -65,9 +66,9 @@ void CvMap::init(CvMapInitData* pInitInfo)
 			getPlot(iX, iY).init(iX, iY);
 		}
 	}
-	// <advc.opt>
+	// <advc.003s>
 	FOR_EACH_ENUM(PlotNum)
-		getPlotByIndex(eLoopPlotNum).initAdjList(); // </advc.opt>
+		getPlotByIndex(eLoopPlotNum).initAdjList(); // </advc.003s>
 	calculateAreas();
 	gDLL->logMemState("CvMap after init plots");
 }
@@ -82,7 +83,8 @@ void CvMap::uninit()
 }
 
 // Initializes data members that are serialized.
-void CvMap::reset(CvMapInitData* pInitInfo)
+void CvMap::reset(CvMapInitData const* pInitInfo,
+	bool bResetPlotExtraData) // advc.enum (only needed for legacy saves)
 {
 	uninit();
 
@@ -92,7 +94,8 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 			GC.getInfo(GC.getInitCore().getWorldSize()).getGridWidth() : 0; //todotw:tcells wide
 	m_iGridHeight = (GC.getInitCore().getWorldSize() != NO_WORLDSIZE) ?
 			GC.getInfo(GC.getInitCore().getWorldSize()).getGridHeight() : 0;
-
+	// advc.137: (Ignore CvLandscapeInfos::getPlotsPerCellX/Y)
+	int iPlotsPerCell = 2;
 	// allow grid size override
 	if (pInitInfo != NULL)
 	{
@@ -104,24 +107,61 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 		WorldSizeTypes eWorldSize = GC.getInitCore().getWorldSize();
 		if (eWorldSize != NO_WORLDSIZE)
 		{
+			CvWorldInfo const& kWorldSz = GC.getInfo(eWorldSize);
+			// <advc.165>
+			int iPlotNumPercent;
+			if (GC.getPythonCaller()->mapPlotsPercent(eWorldSize, iPlotNumPercent))
+			{
+				scaled rTargetAspectRatio(kWorldSz.getGridWidth(),
+						kWorldSz.getGridHeight());
+				// (The number of cells is proportional to the number of plots)
+				scaled rTargetCells = m_iGridWidth * m_iGridHeight
+						* per100(iPlotNumPercent);
+				scaled rTargetHeight = (rTargetCells / rTargetAspectRatio).sqrt();
+				scaled rTargetWidth = rTargetCells / rTargetHeight;
+				m_iGridWidth = rTargetWidth.uround();
+				m_iGridHeight = rTargetHeight.uround();
+			}
+			else // </advc.165>
 			// check map script for grid size override
-			GC.getPythonCaller()->mapGridDimensions(eWorldSize, m_iGridWidth, m_iGridHeight);
+			if (GC.getPythonCaller()->mapGridDimensions(eWorldSize,
+				m_iGridWidth, m_iGridHeight))
+			{	// <advc.137>
+				// If a map sets custom dimensions, then we can't change the scale.
+				iPlotsPerCell = 4;
+			}
+			// Undo aspect ratio changes for Continents
+			else if (!GC.getInitCore().getScenario() &&
+				GC.getInitCore().getMapScriptName() == CvWString("Continents"))
+			{
+				scaled rModAspectRatio(kWorldSz.getGridWidth(),
+						kWorldSz.getGridHeight());
+				scaled rHStretch = fixp(1.6) / rModAspectRatio;
+				m_iGridWidth = (m_iGridWidth * rHStretch).uround();
+				m_iGridHeight = (m_iGridHeight / rHStretch).uround();
+			} // </advc.137>
 		}
 
 		// convert to plot dimensions
+	#if 0
 		if (GC.getNumLandscapeInfos() > 0)
 		{	/*  advc.003x: A bit of code moved into new CvGlobals functions
 				in order to remove the dependency of CvMap on CvLandscapeInfos */
 			m_iGridWidth *= GC.getLandscapePlotsPerCellX();
 			m_iGridHeight *= GC.getLandscapePlotsPerCellY();
 		}
+	#endif
+		/*	<advc.137> The landscape-based multipliers (4) are too coarse.
+			I'm not seeing graphical artifacts; seems fine to use 2 instead. */
+		m_iGridWidth *= iPlotsPerCell;
+		m_iGridHeight *= iPlotsPerCell; // </advc.137>
 	}
 	updateNumPlots(); // advc.opt
 
 	m_iLandPlots = 0;
 	m_iOwnedPlots = 0;
 
-	if (pInitInfo)
+	if (pInitInfo != NULL)
 	{
 		m_iTopLatitude = pInitInfo->m_iTopLatitude;
 		m_iBottomLatitude = pInitInfo->m_iBottomLatitude;
@@ -131,14 +171,13 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 		// Check map script for latitude override (map script beats ini file)
 		GC.getPythonCaller()->mapLatitudeExtremes(m_iTopLatitude, m_iBottomLatitude);
 	}
-
 	m_iTopLatitude = std::min(m_iTopLatitude, 90);
 	m_iTopLatitude = std::max(m_iTopLatitude, -90);
 	m_iBottomLatitude = std::min(m_iBottomLatitude, 90);
 	m_iBottomLatitude = std::max(m_iBottomLatitude, -90);
+	FAssert(m_iTopLatitude >= m_iBottomLatitude); // advc
 
 	m_iNextRiverID = 0;
-
 	//
 	// set wrapping
 	//
@@ -157,7 +196,10 @@ void CvMap::reset(CvMapInitData* pInitInfo)
 
 	m_aiNumBonus.reset();
 	m_aiNumBonusOnLand.reset();
-
+	m_aebBalancedBonuses.reset(); // advc.108c
+	// <advc.enum>
+	if (bResetPlotExtraData)
+		resetPlotExtraData(); // </advc.enum>
 	m_areas.removeAll();
 }
 
@@ -247,6 +289,7 @@ void CvMap::erasePlots()
 {
 	for (int i = 0; i < numPlots(); i++)
 		plotByIndex(i)->erase();
+	resetPlotExtraData(); // advc.004j
 	m_replayTexture.clear(); // advc.106n
 }
 
@@ -474,6 +517,38 @@ void CvMap::updateYield()
 	for (int i = 0; i < numPlots(); i++)
 		getPlotByIndex(i).updateYield();
 }
+
+// <advc.enum> Moved from CvGame
+void CvMap::setPlotExtraYield(CvPlot& kPlot, YieldTypes eYield, int iChange)
+{
+	m_aeiPlotExtraYield.set(kPlot.plotNum(), eYield, iChange);
+	kPlot.updateYield();
+}
+
+
+void CvMap::changePlotExtraCost(CvPlot& kPlot, int iChange)
+{
+	m_aiPlotExtraCost.add(kPlot.plotNum(), iChange);
+}
+
+
+void CvMap::setPlotExtraYield(PlotNumTypes ePlot, YieldTypes eYield, int iChange)
+{
+	m_aeiPlotExtraYield.set(ePlot, eYield, iChange);
+}
+
+
+void CvMap::changePlotExtraCost(PlotNumTypes ePlot, int iChange)
+{
+	m_aiPlotExtraCost.add(ePlot, iChange);
+}
+
+
+void CvMap::resetPlotExtraData()
+{
+	m_aeiPlotExtraYield.reset();
+	m_aiPlotExtraCost.reset();
+} // </advc.enum>
 
 
 void CvMap::verifyUnitValidPlot()
@@ -762,7 +837,7 @@ int CvMap::numPlotsExternal() const // advc.inl
 }
 
 
-int CvMap::pointXToPlotX(float fX) /* advc: */ const
+int CvMap::pointXToPlotX(float fX) const
 {
 	float fWidth, fHeight;
 	gDLL->getEngineIFace()->GetLandscapeGameDimensions(fWidth, fHeight);
@@ -770,7 +845,7 @@ int CvMap::pointXToPlotX(float fX) /* advc: */ const
 }
 
 
-float CvMap::plotXToPointX(int iX) /* advc: */ const
+float CvMap::plotXToPointX(int iX) const
 {
 	float fWidth, fHeight;
 	gDLL->getEngineIFace()->GetLandscapeGameDimensions(fWidth, fHeight);
@@ -778,7 +853,7 @@ float CvMap::plotXToPointX(int iX) /* advc: */ const
 }
 
 
-int CvMap::pointYToPlotY(float fY) /* advc: */ const
+int CvMap::pointYToPlotY(float fY) const
 {
 	float fWidth, fHeight;
 	gDLL->getEngineIFace()->GetLandscapeGameDimensions(fWidth, fHeight);
@@ -786,7 +861,7 @@ int CvMap::pointYToPlotY(float fY) /* advc: */ const
 }
 
 
-float CvMap::plotYToPointY(int iY) /* advc: */ const
+float CvMap::plotYToPointY(int iY) const
 {
 	float fWidth, fHeight;
 	gDLL->getEngineIFace()->GetLandscapeGameDimensions(fWidth, fHeight);
@@ -805,12 +880,12 @@ float CvMap::getHeightCoords() const
 	return GC.getPLOT_SIZE() * getGridHeight();
 }
 
-
-int CvMap::maxPlotDistance() const
+// advc.tsl: Cut from maxPlotDistance
+int CvMap::maxPlotDistance(int iGridWidth, int iGridHeight) const
 {
 	return std::max(1, plotDistance(0, 0,
-			isWrapX() ? getGridWidth() / 2 : getGridWidth() - 1,
-			isWrapY() ? getGridHeight() / 2 : getGridHeight() - 1));
+			isWrapX() ? iGridWidth / 2 : iGridWidth - 1,
+			isWrapY() ? iGridHeight / 2 : iGridHeight - 1));
 }
 
 
@@ -854,16 +929,20 @@ void CvMap::changeOwnedPlots(int iChange)
 	FAssert(getOwnedPlots() >= 0);
 }
 
-
-int CvMap::getTopLatitude() const
+// advc.tsl:
+void CvMap::setLatitudeLimits(int iTop, int iBottom)
 {
-	return m_iTopLatitude;
-}
-
-
-int CvMap::getBottomLatitude() const
-{
-	return m_iBottomLatitude;
+	if (iBottom > iTop)
+	{
+		FErrorMsg("Invalid latitude limits");
+		return;
+	}
+	if (iTop == getTopLatitude() && iBottom == getBottomLatitude())
+		return;
+	m_iTopLatitude = iTop;
+	m_iBottomLatitude = iBottom;
+	FOR_EACH_ENUM(PlotNum)
+		getPlotByIndex(eLoopPlotNum).updateLatitude();
 }
 
 
@@ -920,23 +999,45 @@ CvWString CvMap::getNonDefaultCustomMapOptionDesc(int iOption) const
 	return py.customMapOptionDescription(szMapScriptNameNarrow.c_str(), iOption, eOptionValue);
 }
 
-/*	advc.108b: Does any custom map option have (exactly) the value szOptionsValue?
+/*	advc.108b: Does any custom map option have the value szOptionsValue?
+	Checks for an exact match ignoring case unless bCheckContains is set to true
+	or bIgnoreCase to false.
 	So that the DLL can implement special treatment for particular custom map options
-	(that may or may not be present in only one particular map script). */
-bool CvMap::isCustomMapOption(char const* szOptionsValue) const
+	(that may or may not be present in only one particular map script).
+	Translations will have to be handled by the caller (by generating szOptionsValue
+	through gDLL->getText). */
+bool CvMap::isCustomMapOption(char const* szOptionsValue, bool bCheckContains,
+	bool bIgnoreCase) const
 {
 	CvWString wsOptionsValue(szOptionsValue);
+	if (bIgnoreCase)
+	{
+		// A pain to implement with the (2003) standard library
+		boost::algorithm::to_lower(wsOptionsValue);
+	}
 	CvString szMapScriptNameNarrow(GC.getInitCore().getMapScriptName());
 	for (int iOption = 0; iOption < getNumCustomMapOptions(); iOption++)
 	{
-		if (GC.getPythonCaller()->customMapOptionDescription(
-			szMapScriptNameNarrow.c_str(), iOption, getCustomMapOption(iOption)) ==
-			wsOptionsValue)
+		CvWString wsOptionDescr = GC.getPythonCaller()->customMapOptionDescription(
+				szMapScriptNameNarrow.c_str(), iOption, getCustomMapOption(iOption));
+		if (bIgnoreCase)
+			boost::algorithm::to_lower(wsOptionDescr);
+		if (bCheckContains ? (wsOptionDescr.find(wsOptionsValue) != CvWString::npos) :
+			(wsOptionDescr == wsOptionsValue))
 		{
 			return true;
 		}
 	}
 	return false;
+}
+
+/*	For convenience, especially when working with translated strings
+	(which use wide characters). */
+bool CvMap::isCustomMapOption(CvWString szOptionsValue, bool bCheckContains,
+	bool bIgnoreCase) const
+{
+	CvString szNarrow(szOptionsValue);
+	return isCustomMapOption(szNarrow.c_str());
 }
 
 
@@ -1121,12 +1222,11 @@ void CvMap::invalidateBorderDangerCache(TeamTypes eTeam)
 // read object from a stream. used during load
 void CvMap::read(FDataStreamBase* pStream)
 {
-	CvMapInitData defaultMapData;
-
-	reset(&defaultMapData);
-
 	uint uiFlag=0;
 	pStream->Read(&uiFlag);
+
+	CvMapInitData defaultMapData;
+	reset(&defaultMapData, /* advc.enum: */ uiFlag >= 7);
 
 	pStream->Read(&m_iGridWidth);
 	pStream->Read(&m_iGridHeight);
@@ -1157,6 +1257,15 @@ void CvMap::read(FDataStreamBase* pStream)
 		m_aiNumBonus.readArray<int>(pStream);
 		m_aiNumBonusOnLand.readArray<int>(pStream);
 	}
+	// <advc.108c>
+	if (uiFlag >= 6)
+		m_aebBalancedBonuses.read(pStream); // </advc.108c>
+	// <advc.enum>
+	if (uiFlag >= 7)
+	{
+		m_aeiPlotExtraYield.read(pStream);
+		m_aiPlotExtraCost.read(pStream);
+	} // </advc.enum>
 	// <advc.304>
 	if (uiFlag >= 5)
 		GC.getGame().getBarbarianWeightMap().getActivityMap().read(pStream);
@@ -1166,9 +1275,10 @@ void CvMap::read(FDataStreamBase* pStream)
 		m_pMapPlots = new CvPlot[numPlots()];
 		for (int i = 0; i < numPlots(); i++)
 			m_pMapPlots[i].read(pStream);
-		// <advc.opt>
+		// <advc.003s>
 		for (int i = 0; i < numPlots(); i++)
-			m_pMapPlots[i].initAdjList();
+			m_pMapPlots[i].initAdjList(); // </advc.003s>
+		// <advc.opt>
 		if (uiFlag < 2)
 		{
 			for (int i = 0; i < numPlots(); i++)
@@ -1212,7 +1322,9 @@ void CvMap::write(FDataStreamBase* pStream)
 	//uiFlag = 2; // advc.opt: CvPlot::m_bAnyIsthmus
 	//uiFlag = 3; // advc.opt: m_ePlots
 	//uiFlag = 4; // advc.enum: new enum map save behavior
-	uiFlag = 5; // advc.304: Barbarian weight map
+	//uiFlag = 5; // advc.304: Barbarian weight map
+	//uiFlag = 6; // advc.108c
+	uiFlag = 7; // advc.enum: Extra plot yields, costs moved from CvGame
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iGridWidth);
@@ -1230,6 +1342,12 @@ void CvMap::write(FDataStreamBase* pStream)
 	FAssertMsg((0 < GC.getNumBonusInfos()), "GC.getNumBonusInfos() is not greater than zero but an array is being allocated");
 	m_aiNumBonus.write(pStream);
 	m_aiNumBonusOnLand.write(pStream);
+	/*	advc.108c (Player might save on turn 0, then reload and regenerate the map.
+		Therefore this info needs to be saved.) */
+	m_aebBalancedBonuses.write(pStream);
+	// <advc.enum>
+	m_aeiPlotExtraYield.write(pStream);
+	m_aiPlotExtraCost.write(pStream); // </advc.enum>
 	/*	advc.304: Serialize this for CvGame b/c the map size isn't known
 		when CvGame gets deserialized. (kludge) */
 	GC.getGame().getBarbarianWeightMap().getActivityMap().write(pStream);
@@ -1295,14 +1413,14 @@ byte const* CvMap::getReplayTexture() const
 void CvMap::calculateAreas()
 {
 	PROFILE("CvMap::calculateAreas"); // <advc.030>
-	if(GC.getDefineINT("PASSABLE_AREAS") > 0)
+	if (GC.getDefineBOOL(CvGlobals::PASSABLE_AREAS))
 	{
 		/*  Will recalculate from CvGame::setinitialItems once normalization is
 			through. But need preliminary areas because normalization is done
 			based on areas. Also, some scenarios don't call CvGame::
 			setInitialItems; these only get the initial calculation based on
 			land, sea and peaks (not ice). */
-		calculateAreas_030();
+		calculateAreas_advc();
 		calculateReprAreas();
 		return;
 	} // </advc.030>
@@ -1324,7 +1442,7 @@ void CvMap::calculateAreas()
 }
 
 // <advc.030>
-void CvMap::calculateAreas_030()
+void CvMap::calculateAreas_advc()
 {
 	for(int iPass = 0; iPass <= 1; iPass++)
 	{

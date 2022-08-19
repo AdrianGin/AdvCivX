@@ -20,6 +20,8 @@ import CvUtil
 import re
 import string
 import MonkeyTools # advc.085: For checking Ctrl key
+import LayoutDict # advc.092
+import CvScreensInterface # advc.092
 
 # Globals
 ScoreOpt = BugCore.game.Scores
@@ -59,6 +61,11 @@ NUM_PARTS = 28
 	LEADER_BUTTON, CIV_BUTTON, # kekm.30
 	GOLDEN_AGE # advc.085
 ) = range(NUM_PARTS)
+
+# <advc.002b> These need to be placed a little lower than other text
+gameTextColumns = (
+	ESPIONAGE, TRADE, BORDERS, PACT, RELIGION, ATTITUDE, WORST_ENEMY, WHEOOH, GOLDEN_AGE
+) # </advc.002b>
 
 # Types
 SKIP = 0
@@ -383,7 +390,7 @@ class Scoreboard:
 		
 	def hide(self, screen):
 		"""Hides the text from the screen before building the scoreboard."""
-		screen.hide( "ScoreBackground" )
+		#screen.hide( "ScoreBackground" ) # advc.004z: Handled by CvMainInterface now
 		for p in range( gc.getMAX_CIV_PLAYERS() ):
 			name = "ScoreText%d" %( p ) # the part that flashes? holds the score and name
 			screen.hide( name )
@@ -398,25 +405,34 @@ class Scoreboard:
 		self.assignRanks()
 		self.gatherVassals()
 		self.sort()
-		interface = CyInterface()
-		xResolution = screen.getXResolution()
-		yResolution = screen.getYResolution()
-		# <advc.106d>
-		# Was effectively 18 in BtS regardless of resolution
-		iVOffset = 0
-		if screen.getYResolution() > 1100:
-			iVOffset = 6
-		# </advc.106d>
-		x = xResolution - 12 # start here and shift left with each column
-		if ( interface.getShowInterface() == InterfaceVisibility.INTERFACE_SHOW or interface.isInAdvancedStart()):
-			y = yResolution - 188 - iVOffset # advc.106d: was yResolution-206
+		# <advc.092> "Default" choices added
+		bScaleHUD = BugCore.game.MainInterface.isEnlargeHUD()
+		if ScoreOpt.isRowHeightDefault():
+			if bScaleHUD:
+				height = LayoutDict.VLEN(21, 0.5)
+			else:
+				height = 20
 		else:
-			y = yResolution - 88
+			# Convert choice index to choice value by adding the
+			# lowest possible value
+			height = ScoreOpt.getRowHeight() - 1 + 10
+		if ScoreOpt.isTechButtonSizeDefault():
+			techIconSize = height + 2
+		else:
+			techIconSize = ScoreOpt.getTechButtonSize() - 1 + 12
+		if ScoreOpt.isColumnSpacingDefault():
+			if bScaleHUD:
+				defaultSpacing = LayoutDict.HSPACE(2, 2)
+			else:
+				defaultSpacing = 0
+		else:
+			defaultSpacing = ScoreOpt.getColumnSpacing() - 1 + 0
+		x = LayoutDict.gPoint("ScoreTextLowerRight").x() 
+		y = LayoutDict.gPoint("ScoreTextLowerRight").y()
+		y -= height
+		# </advc.092>
+		# start at x and shift left with each column
 		totalWidth = 0
-		height = ScoreOpt.getLineHeight()
-		techIconSize = ScoreOpt.getResearchIconSize()
-		
-		defaultSpacing = ScoreOpt.getDefaultSpacing()
 		spacing = defaultSpacing
 		szDisplayOrder = ScoreOpt.getDisplayOrder()
 		# <advc.085>
@@ -457,6 +473,13 @@ class Scoreboard:
 			if (c == RESEARCH and not ScoreOpt.isShowResearchIcons()):
 				# switch SPECIAL research icon to DYNAMIC name
 				type = DYNAMIC
+			# <advc.002b>
+			if c in gameTextColumns:
+				iYTextOffset = 3
+			else:
+				iYTextOffset = 0
+			iYIconOffset = -1 # (as in BUG)
+			# </advc.002b>
 			# advc.085: For filling gaps so that the scoreboard doesn't collapse. 4 spaces seem to fit almost exactly for columns with a single icon.
 			szBlank = "    "
 			if (type == SKIP):
@@ -480,11 +503,20 @@ class Scoreboard:
 								widget = (WidgetTypes.WIDGET_EXPAND_SCORES, -1, 0)
 							else: # </advc.085>
 								widget = (WidgetTypes.WIDGET_GENERAL, -1, -1)
-						screen.setText( name, "Background", value, CvUtil.FONT_RIGHT_JUSTIFY, x, y - p * height, Z_DEPTH, FontTypes.SMALL_FONT, *widget )
+						screen.setText(name, "Background", value,
+								CvUtil.FONT_RIGHT_JUSTIFY,
+								# advc.002b: text offset
+								x, y - p * height + iYTextOffset, Z_DEPTH,
+								FontTypes.SMALL_FONT,
+								*widget)
 						screen.show(name)
 					# <advc.085>
 					elif bExpanded:
-						screen.setText(name, "Background", szBlank, CvUtil.FONT_RIGHT_JUSTIFY, x, y - p * height, Z_DEPTH, FontTypes.SMALL_FONT, WidgetTypes.WIDGET_EXPAND_SCORES, -1, 0)
+						screen.setText(name, "Background", szBlank,
+								CvUtil.FONT_RIGHT_JUSTIFY,
+								x, y - p * height, Z_DEPTH,
+								FontTypes.SMALL_FONT,
+								WidgetTypes.WIDGET_EXPAND_SCORES, -1, 0)
 						screen.show(name) # </advc.085>
 				x -= width
 				totalWidth += width + spacing
@@ -500,7 +532,7 @@ class Scoreboard:
 								value = VASSAL_PREFIX + value
 							else:
 								value += VASSAL_POSTFIX
-						newWidth = interface.determineWidth( value )
+						newWidth = CyInterface().determineWidth( value )
 						if (newWidth > width):
 							width = newWidth
 				if (width == 0):
@@ -534,9 +566,12 @@ class Scoreboard:
 								widget = (WidgetTypes.WIDGET_EXPAND_SCORES, -1, 0)
 							else: # </advc.085>
 								widget = (WidgetTypes.WIDGET_GENERAL, -1, -1)
-						screen.setText( name, "Background", value, align, 
-										x - adjustX, y - p * height, Z_DEPTH, 
-										FontTypes.SMALL_FONT, *widget )
+						screen.setText(name, "Background", value,
+								align,
+								# advc.002b: text offset
+								x - adjustX, y - p * height + iYTextOffset, Z_DEPTH, 
+								FontTypes.SMALL_FONT,
+								*widget)
 						screen.show(name)
 					# <advc.085>
 					elif bExpanded and c != NAME:
@@ -544,7 +579,11 @@ class Scoreboard:
 						if c == POWER: # Power ratio takes up extra space
 							# Mustn't add too much space though: when the power ratio is in the leftmost column, too many spaces will prevent the scoreboard from collapsing when the mouse is moved away to the left.
 							szBlankLoop += szBlank + szBlank
-						screen.setText(name, "Background", szBlankLoop, CvUtil.FONT_RIGHT_JUSTIFY, x, y - p * height, Z_DEPTH, FontTypes.SMALL_FONT, WidgetTypes.WIDGET_EXPAND_SCORES, -1, 0)
+						screen.setText(name, "Background", szBlankLoop,
+								CvUtil.FONT_RIGHT_JUSTIFY,
+								x, y - p * height, Z_DEPTH,
+								FontTypes.SMALL_FONT,
+								WidgetTypes.WIDGET_EXPAND_SCORES, -1, 0)
 						screen.show(name) # </advc.085>
 				x -= width
 				totalWidth += width + spacing
@@ -559,7 +598,10 @@ class Scoreboard:
 							name = "ScoreTech%d" % p
 							info = gc.getTechInfo(tech)
 							iData2 = 0 # advc.085: was -1
-							screen.addDDSGFC( name, info.getButton(), x - techIconSize, y - p * height - 1, techIconSize, techIconSize, WidgetTypes.WIDGET_PEDIA_JUMP_TO_TECH, tech, iData2 )
+							screen.addDDSGFC(name, info.getButton(),
+									x - techIconSize, y - p * height + iYIconOffset,
+									techIconSize, techIconSize,
+									WidgetTypes.WIDGET_PEDIA_JUMP_TO_TECH, tech, iData2 )
 					x -= techIconSize
 					totalWidth += techIconSize + spacing
 					spacing = defaultSpacing
@@ -571,7 +613,10 @@ class Scoreboard:
 							leader = playerScore.value(c)
 							name = "ScoreLeader%d" % p
 							info = gc.getLeaderHeadInfo(leader)
-							screen.addDDSGFC( name, info.getButton(), x - techIconSize, y - p * height - 1, techIconSize, techIconSize, WidgetTypes.WIDGET_PEDIA_JUMP_TO_LEADER, leader, 1 )
+							screen.addDDSGFC(name, info.getButton(),
+									x - techIconSize, y - p * height + iYIconOffset,
+									techIconSize, techIconSize,
+									WidgetTypes.WIDGET_PEDIA_JUMP_TO_LEADER, leader, 1 )
 					x -= techIconSize
 					totalWidth += techIconSize + spacing
 					spacing = defaultSpacing
@@ -582,22 +627,21 @@ class Scoreboard:
 							civ = playerScore.value(c)
 							name = "ScoreCiv%d" % p
 							info = gc.getCivilizationInfo(civ)
-							screen.addDDSGFC( name, info.getButton(), x - techIconSize, y - p * height - 1, techIconSize, techIconSize, WidgetTypes.WIDGET_PEDIA_JUMP_TO_CIV, civ, -1 )
+							screen.addDDSGFC(name, info.getButton(),
+									x - techIconSize, y - p * height + iYIconOffset,
+									techIconSize, techIconSize,
+									WidgetTypes.WIDGET_PEDIA_JUMP_TO_CIV, civ, -1 )
 					x -= techIconSize
 					totalWidth += techIconSize + spacing
 					spacing = defaultSpacing
 				# </kekm.30>
 		
 		for playerScore in self._playerScores:
-			interface.checkFlashReset( playerScore.getID() )
-		
-		if ( interface.getShowInterface() == InterfaceVisibility.INTERFACE_SHOW or interface.isInAdvancedStart()):
-			y = yResolution - 168 - iVOffset # advc.106d: was yResolution-186
-		else:
-			y = yResolution - 68
-		screen.setPanelSize( "ScoreBackground", xResolution - 21 - totalWidth, y - (height * self.size()) - 4, 
-							 totalWidth + 12, (height * self.size()) + 8 )
-		screen.show( "ScoreBackground" )
+			CyInterface().checkFlashReset( playerScore.getID() )
+		# advc.092:
+		CvScreensInterface.mainInterface.updateScoreBackgrSize(totalWidth, height * self.size())
+
+		#screen.show( "ScoreBackground" ) # advc.004z: Handled by caller now
 		timer.log()
 
 

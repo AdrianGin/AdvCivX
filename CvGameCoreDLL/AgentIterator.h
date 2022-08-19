@@ -3,7 +3,7 @@
 #ifndef AGENT_ITERATOR_H
 #define AGENT_ITERATOR_H
 
-/*  advc.agent: New file. Iterators over sequences of CvTeam or CvPlayer objects.
+/*  advc.agent: New file. Iterators over sequences of CvTeam or CvPlayer instances.
 	The concrete iterator classes are defined at the end of the file.
 	Caveat: Can't use agent iterators before CvAgents::gameStart has been called -
 	which currently happens in CvGame::initDiplomacy and allGameDataRead. */
@@ -104,12 +104,12 @@ public:
 	{
 		/*	This is, at worst, an up-cast. But the compiler doesn't know this
 			b/c the AI headers aren't included here. */
-		return *reinterpret_cast<AgentType*>(m_pNext);
+		return *(AgentType*)m_pNext;
 	}
 
 	AgentType* operator->() const
-	{
-		return m_pNext;
+	{	// See above
+		return (AgentType*)m_pNext;
 	}
 
 	/*  Like ListIterator.nextIndex in Java: "The index of the element that would be

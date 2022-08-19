@@ -19,6 +19,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvTerrainInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // All the const functions are exposed to Python except for those related to sound
 	CvTerrainInfo();
 	~CvTerrainInfo();
@@ -78,6 +79,7 @@ private:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvFeatureInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: /*  All the const functions are exposed to Python except for those dealing with art
 			and those added by mods */
 	CvFeatureInfo();
@@ -192,6 +194,7 @@ private:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvBonusInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // All the const functions are exposed to Python
 	CvBonusInfo();
 	virtual ~CvBonusInfo();
@@ -296,6 +299,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvBonusClassInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public:
 	CvBonusClassInfo();
 
@@ -311,6 +315,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvRouteInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // All the const functions are exposed to Python except those added by mods
 	CvRouteInfo();
 	~CvRouteInfo();
@@ -373,7 +378,7 @@ public:
 	};
 	int get(IntElementTypes e) const
 	{
-		return CvXMLInfo::get(static_cast<base_t::IntElementTypes>(e));
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
 	}
 	// </advc.tag>
 	/*  All the const functions are exposed to Python except those dealing with sound,
@@ -514,8 +519,9 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvImprovementBonusInfo : public CvInfoBase
 {
-friend class CvImprovementInfo;
-friend class CvXMLLoadUtility;
+	typedef CvInfoBase base_t;
+	friend class CvImprovementInfo;
+	friend class CvXMLLoadUtility;
 public: // The const functions are exposed to Python
 	CvImprovementBonusInfo();
 	~CvImprovementBonusInfo();
@@ -541,6 +547,7 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvGoodyInfo : public CvInfoBase
 {
+	typedef CvInfoBase base_t;
 public: // The const functions are exposed to Python
 	CvGoodyInfo();
 

@@ -65,7 +65,10 @@ public:
 	DllExport void resetPlayer(PlayerTypes eID, CvInitCore* pSource, bool bClear = true, bool bSaveSlotInfo = false);
 
 
-	// Member access ...
+	/*	Member access ... (advc.003k, note: The non-exported getters aren't called
+		by the EXE but were originally exported and have, apparently, been
+		inline-expanded. I.e. the EXE will access the respective members directly
+		through a memory offset.) */
 
 	const CvWString& getGameName() const { return m_szGameName; }
 	DllExport void setGameName(const CvWString& szGameName);
@@ -227,7 +230,10 @@ public:
 	// // <advc.190c> (all exposed to Python via CvPlayer, CvGame)
 	bool wasCivRandomlyChosen(PlayerTypes eID) const;
 	bool wasLeaderRandomlyChosen(PlayerTypes eID) const;
-	bool isCivLeaderSetupKnown() const { return m_bCivLeaderSetupKnown; } // </advc.190c>
+	bool isCivLeaderSetupKnown() const { return m_bCivLeaderSetupKnown; }
+	// Just for network sync
+	void setCivLeaderRandomlyChosen(PlayerTypes eID, bool bRandomCiv, bool bRandomLeader);
+	// </advc.190c>
 	DllExport TeamTypes getTeam(PlayerTypes eID) const { return m_aeTeam.get(eID); }
 	DllExport void setTeam(PlayerTypes eID, TeamTypes eTeam);
 
@@ -273,9 +279,9 @@ public:
 
 protected:
 	/* advc.003k (caveat): It's not safe to add data members to this class
-		nor to reorder the existing data members. At least not in the upper half
-		of the member declarations; after the declaration of m_eMode, it seems
-		to be OK to add and rearrange stuff. Weird. */
+		nor to reorder the existing data members, probably due to inlined
+		getter functions. After the declaration of m_eMode, it seems to be OK
+		to add and rearrange stuff. */
 	// CORE GAME INIT DATA ...
 
 	// Game type
@@ -357,6 +363,7 @@ protected:
 	CvWString* m_aszCivPassword;
 	CvString* m_aszEmail;
 	CvString* m_aszSmtpHost;
+	size_t m_uiTotalNameLength; // advc.003k
 
 	CvWString* m_aszFlagDecal;
 	ArrayEnumMap<PlayerTypes,bool> m_abWhiteFlag;
@@ -394,14 +401,24 @@ protected:
 	void clearCustomMapOptions();
 	void refreshCustomMapOptions();
 	void updatePangaea(); // advc
+	void countNameLength(CvWString const& kName);
 
 	/*void clearVictories();
 	void refreshVictories();*/ // advc: Easier to understand w/o these
 };
 
 /*  advc.003k: OK to increase the size of CvInitCore (and to update or remove this
-	assertion). Just make sure that new data members are added in the right place. */
+	assertion). Just make sure that new data members are added in the right place.
+	And think about whether they need to by synchronized in network games. */
 BOOST_STATIC_ASSERT(sizeof(CvInitCore) ==
-		(sizeof(ArrayEnumMap<PlayerTypes,bool>) > 4 ? 444 : 420)); 
+		(sizeof(ArrayEnumMap<PlayerTypes,bool>) > 4 ? 448 : 424));
+// <advc>
+BOOST_STATIC_ASSERT(
+		// Custom Game screen probably relies on these
+		GAMEOPTION_LEAD_ANY_CIV == 7 && GAMEOPTION_ADVANCED_START == 0 &&
+		// EXE relies on this for assigning the random personalities
+		GAMEOPTION_RANDOM_PERSONALITIES == 8 &&
+		// EXE explicitly sets this one to false (under unknown circumstances)
+		GAMEOPTION_LOCK_MODS == 18); // </advc>
 
 #endif

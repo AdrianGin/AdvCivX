@@ -45,7 +45,7 @@
 			<!-- advc.114d: was 0 -->
 			<iBaseAttackOddsChange>2</iBaseAttackOddsChange>
 			<!-- advc.114d: was 16 -->
-			<iAttackOddsChangeRand>18</iAttackOddsChangeRand>
+			<iAttackOddsChangeRand>21</iAttackOddsChangeRand>
 			<iWorseRankDifferenceAttitudeChange>0</iWorseRankDifferenceAttitudeChange>
 			<iBetterRankDifferenceAttitudeChange>0</iBetterRankDifferenceAttitudeChange>
 			<iCloseBordersAttitudeChange>0</iCloseBordersAttitudeChange>
@@ -196,13 +196,14 @@
 			<iTechTradeKnownPercent>0</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>0</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
-			<!-- BBAI Victory Strategy -->
-			<iCultureVictoryWeight>0</iCultureVictoryWeight>
-			<iSpaceVictoryWeight>0</iSpaceVictoryWeight>
-			<iConquestVictoryWeight>0</iConquestVictoryWeight>
-			<iDominationVictoryWeight>0</iDominationVictoryWeight>
-			<iDiplomacyVictoryWeight>0</iDiplomacyVictoryWeight>
-			<!-- BBAI Victory Strategy -->
+			<!-- BBAI Victory Strategy: start -->
+			<!-- advc: Default changed from 0 to 30 -->
+			<iCultureVictoryWeight>30</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>30</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>30</iConquestVictoryWeight>
+			<iDominationVictoryWeight>30</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>30</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy: end -->
 			<iMaxWarRand>0</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>0</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>0</iMaxWarDistantPowerRatio>
@@ -211,7 +212,7 @@
 			<iLimitedWarPowerRatio>0</iLimitedWarPowerRatio>
 			<iDogpileWarRand>0</iDogpileWarRand>
 			<iMakePeaceRand>0</iMakePeaceRand>
-			<iDeclareWarTradeRand>0</iDeclareWarTradeRand>
+			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>0</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>0</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -368,8 +369,9 @@
 					<iContactDelay>50</iContactDelay>
 				</ContactDelay>
 				<ContactDelay>
+					<!-- advc.124: was 20 -->
 					<ContactType>CONTACT_OPEN_BORDERS</ContactType>
-					<iContactDelay>20</iContactDelay>
+					<iContactDelay>40</iContactDelay>
 				</ContactDelay>
 				<ContactDelay>
 					<ContactType>CONTACT_DEFENSIVE_PACT</ContactType>
@@ -874,7 +876,6 @@
 			<iLimitedWarPowerRatio>130</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>40</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>40</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>25</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -1076,7 +1077,6 @@
 			<iLimitedWarPowerRatio>110</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>10</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>0</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>20</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -1318,7 +1318,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>40</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>60</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>25</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -1533,7 +1532,6 @@
 			<iLimitedWarPowerRatio>90</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>20</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>25</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -1623,9 +1621,10 @@
 					<ContactType>CONTACT_TRADE_TECH</ContactType>
 					<iContactRand>10</iContactRand>
 				</ContactRand>
+				<!-- advc.036: was 10 -->
 				<ContactRand>
 					<ContactType>CONTACT_TRADE_BONUS</ContactType>
-					<iContactRand>10</iContactRand>
+					<iContactRand>8</iContactRand>
 				</ContactRand>
 			</ContactRands>
 			<ContactDelays>
@@ -1742,7 +1741,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>30</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>30</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>40</iDemandRebukedWarProb>
 			<iRazeCityProb>20</iRazeCityProb>
@@ -1947,7 +1945,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>25</iDogpileWarRand>
 			<iMakePeaceRand>80</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>60</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>40</iDemandRebukedWarProb>
 			<iRazeCityProb>50</iRazeCityProb>
@@ -2153,7 +2150,6 @@
 			<iLimitedWarPowerRatio>110</iLimitedWarPowerRatio>
 			<iDogpileWarRand>25</iDogpileWarRand>
 			<iMakePeaceRand>10</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>80</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>0</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -2390,7 +2386,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>75</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>60</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>20</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -2598,7 +2593,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>40</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>40</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -2810,7 +2804,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>0</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>5</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -3029,7 +3022,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>0</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>5</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -3252,7 +3244,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>20</iDogpileWarRand>
 			<iMakePeaceRand>10</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>10</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>0</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -3466,7 +3457,6 @@
 			<iLimitedWarPowerRatio>90</iLimitedWarPowerRatio>
 			<iDogpileWarRand>25</iDogpileWarRand>
 			<iMakePeaceRand>10</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>60</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>0</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -3679,7 +3669,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>0</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>0</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -3891,7 +3880,6 @@
 			<iLimitedWarPowerRatio>80</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>10</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>0</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>0</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -3967,9 +3955,10 @@
 					<ContactType>CONTACT_ASK_FOR_HELP</ContactType>
 					<iContactRand>50</iContactRand>
 				</ContactRand>
+				<!-- advc.130r: Was 10000. 0 now means never. -->
 				<ContactRand>
 					<ContactType>CONTACT_DEMAND_TRIBUTE</ContactType>
-					<iContactRand>10000</iContactRand>
+					<iContactRand>0</iContactRand>
 				</ContactRand>
 				<ContactRand>
 					<!-- advc.134a: was 20 -->
@@ -4044,7 +4033,7 @@
 					<iMemoryAttitudePercent>0</iMemoryAttitudePercent>
 				</MemoryAttitudePercent>
 			</MemoryAttitudePercents>
-			<!-- advc.005a: was 0/30/70/100 -->
+			<!-- advc.005a: was 0/30/70/100/100 -->
 			<NoWarAttitudeProbs>
 				<NoWarAttitudeProb>
 					<AttitudeType>ATTITUDE_FURIOUS</AttitudeType>
@@ -4056,11 +4045,15 @@
 				</NoWarAttitudeProb>
 				<NoWarAttitudeProb>
 					<AttitudeType>ATTITUDE_CAUTIOUS</AttitudeType>
-					<iNoWarProb>80</iNoWarProb>
+					<iNoWarProb>85</iNoWarProb>
 				</NoWarAttitudeProb>
 				<NoWarAttitudeProb>
 					<AttitudeType>ATTITUDE_PLEASED</AttitudeType>
-					<iNoWarProb>100</iNoWarProb>
+					<iNoWarProb>110</iNoWarProb>
+				</NoWarAttitudeProb>
+				<NoWarAttitudeProb>
+					<AttitudeType>ATTITUDE_PLEASED</AttitudeType>
+					<iNoWarProb>115</iNoWarProb>
 				</NoWarAttitudeProb>
 			</NoWarAttitudeProbs>
 			<!-- advc.005a: Was Worker 100. India cleared large areas of
@@ -4147,7 +4140,6 @@
 			<iLimitedWarPowerRatio>130</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>80</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>20</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>50</iDemandRebukedWarProb>
 			<iRazeCityProb>75</iRazeCityProb>
@@ -4367,7 +4359,6 @@
 			<iLimitedWarPowerRatio>110</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>30</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>25</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>25</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -4449,7 +4440,7 @@
 					<iContactRand>100</iContactRand>
 				</ContactRand>
 				<ContactRand>
-					<!-- advc.250a: was 500 -->
+					<!-- advc.005a: was 500 -->
 					<ContactType>CONTACT_DEMAND_TRIBUTE</ContactType>
 					<iContactRand>250</iContactRand>
 				</ContactRand>
@@ -4572,7 +4563,6 @@
 			<iLimitedWarPowerRatio>110</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>30</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>15</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -4773,7 +4763,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>40</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>60</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>20</iDemandRebukedWarProb>
 			<iRazeCityProb>10</iRazeCityProb>
@@ -4978,7 +4967,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>0</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>0</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -5215,7 +5203,6 @@
 			<iLimitedWarPowerRatio>110</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>40</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>0</iDemandRebukedWarProb>
 			<iRazeCityProb>10</iRazeCityProb>
@@ -5437,7 +5424,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>40</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>60</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>25</iDemandRebukedWarProb>
 			<iRazeCityProb>25</iRazeCityProb>
@@ -5526,9 +5512,10 @@
 					<ContactType>CONTACT_TRADE_TECH</ContactType>
 					<iContactRand>10</iContactRand>
 				</ContactRand>
+				<!-- advc.036: was 10 -->
 				<ContactRand>
 					<ContactType>CONTACT_TRADE_BONUS</ContactType>
-					<iContactRand>10</iContactRand>
+					<iContactRand>8</iContactRand>
 				</ContactRand>
 			</ContactRands>
 			<ContactDelays>
@@ -5677,7 +5664,6 @@
 			<iLimitedWarPowerRatio>80</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>40</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>40</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>10</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -5770,9 +5756,10 @@
 					<ContactType>CONTACT_TRADE_TECH</ContactType>
 					<iContactRand>10</iContactRand>
 				</ContactRand>
+				<!-- advc.036: was 10 -->
 				<ContactRand>
 					<ContactType>CONTACT_TRADE_BONUS</ContactType>
-					<iContactRand>10</iContactRand>
+					<iContactRand>8</iContactRand>
 				</ContactRand>
 			</ContactRands>
 			<ContactDelays>
@@ -5883,7 +5870,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>40</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>40</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>10</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -6089,7 +6075,6 @@
 			<iLimitedWarPowerRatio>80</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>60</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>5</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -6301,7 +6286,6 @@
 			<iLimitedWarPowerRatio>120</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>40</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>40</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>10</iDemandRebukedWarProb>
 			<iRazeCityProb>25</iRazeCityProb>
@@ -6558,7 +6542,6 @@
 			<iLimitedWarPowerRatio>90</iLimitedWarPowerRatio>
 			<iDogpileWarRand>150</iDogpileWarRand>
 			<iMakePeaceRand>10</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>20</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>0</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -6765,7 +6748,6 @@
 			<iLimitedWarPowerRatio>130</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>10</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>40</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>10</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -6988,7 +6970,6 @@
 			<iLimitedWarPowerRatio>90</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>20</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>5</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -7192,7 +7173,6 @@
 			<iLimitedWarPowerRatio>120</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>40</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>40</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>5</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -7400,7 +7380,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>25</iDogpileWarRand>
 			<iMakePeaceRand>60</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>20</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>40</iDemandRebukedWarProb>
 			<iRazeCityProb>25</iRazeCityProb>
@@ -7602,7 +7581,6 @@
 			<iLimitedWarPowerRatio>130</iLimitedWarPowerRatio>
 			<iDogpileWarRand>25</iDogpileWarRand>
 			<iMakePeaceRand>80</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>60</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>10</iDemandRebukedWarProb>
 			<iRazeCityProb>50</iRazeCityProb>
@@ -7695,9 +7673,10 @@
 					<ContactType>CONTACT_TRADE_TECH</ContactType>
 					<iContactRand>10</iContactRand>
 				</ContactRand>
+				<!-- advc.036: was 10 -->
 				<ContactRand>
 					<ContactType>CONTACT_TRADE_BONUS</ContactType>
-					<iContactRand>10</iContactRand>
+					<iContactRand>8</iContactRand>
 				</ContactRand>
 			</ContactRands>
 			<ContactDelays>
@@ -7830,7 +7809,6 @@
 			<iLimitedWarPowerRatio>120</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>40</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>60</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>10</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -8255,7 +8233,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>50</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>50</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>10</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -8465,7 +8442,6 @@
 			<iLimitedWarPowerRatio>120</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>20</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>0</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -8705,7 +8681,6 @@
 			<iLimitedWarPowerRatio>110</iLimitedWarPowerRatio>
 			<iDogpileWarRand>25</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>40</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>25</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -8935,7 +8910,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>40</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>20</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -9171,7 +9145,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>25</iDogpileWarRand>
 			<iMakePeaceRand>80</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>80</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>20</iDemandRebukedWarProb>
 			<iRazeCityProb>50</iRazeCityProb>
@@ -9373,7 +9346,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>25</iDogpileWarRand>
 			<iMakePeaceRand>10</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>0</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>50</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -9594,7 +9566,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>10</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>0</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>25</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -9655,9 +9626,10 @@
 					<ContactType>CONTACT_RELIGION_PRESSURE</ContactType>
 					<iContactRand>100</iContactRand>
 				</ContactRand>
+				<!-- advc.130r: Was 10000. 0 now means never. -->
 				<ContactRand>
 					<ContactType>CONTACT_CIVIC_PRESSURE</ContactType>
-					<iContactRand>10000</iContactRand>
+					<iContactRand>0</iContactRand>
 				</ContactRand>
 				<ContactRand>
 					<ContactType>CONTACT_JOIN_WAR</ContactType>
@@ -9831,7 +9803,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>80</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>40</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>40</iDemandRebukedWarProb>
 			<iRazeCityProb>50</iRazeCityProb>
@@ -10025,7 +9996,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>120</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>20</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>10</iDemandRebukedWarProb>
 			<iRazeCityProb>20</iRazeCityProb>
@@ -10117,9 +10087,10 @@
 					<ContactType>CONTACT_TRADE_TECH</ContactType>
 					<iContactRand>10</iContactRand>
 				</ContactRand>
+				<!-- advc.036: was 10 -->
 				<ContactRand>
 					<ContactType>CONTACT_TRADE_BONUS</ContactType>
-					<iContactRand>10</iContactRand>
+					<iContactRand>8</iContactRand>
 				</ContactRand>
 			</ContactRands>
 			<ContactDelays>
@@ -10230,7 +10201,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>60</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>60</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>20</iDemandRebukedWarProb>
 			<iRazeCityProb>25</iRazeCityProb>
@@ -10470,7 +10440,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>25</iDogpileWarRand>
 			<iMakePeaceRand>40</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>0</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>50</iDemandRebukedWarProb>
 			<iRazeCityProb>5</iRazeCityProb>
@@ -10677,7 +10646,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>25</iDogpileWarRand>
 			<iMakePeaceRand>60</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>50</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>0</iDemandRebukedWarProb>
 			<iRazeCityProb>25</iRazeCityProb>
@@ -10915,7 +10883,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>25</iDogpileWarRand>
 			<iMakePeaceRand>40</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>60</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>25</iDemandRebukedWarProb>
 			<iRazeCityProb>25</iRazeCityProb>
@@ -10988,9 +10955,10 @@
 					<ContactType>CONTACT_STOP_TRADING</ContactType>
 					<iContactRand>50</iContactRand>
 				</ContactRand>
+				<!-- advc.130r: Was 10000. 0 now means never. -->
 				<ContactRand>
 					<ContactType>CONTACT_GIVE_HELP</ContactType>
-					<iContactRand>10000</iContactRand>
+					<iContactRand>0</iContactRand>
 				</ContactRand>
 				<ContactRand>
 					<ContactType>CONTACT_ASK_FOR_HELP</ContactType>
@@ -11009,9 +10977,10 @@
 					<ContactType>CONTACT_TRADE_TECH</ContactType>
 					<iContactRand>20</iContactRand>
 				</ContactRand>
+				<!-- advc.036: was 20 -->
 				<ContactRand>
 					<ContactType>CONTACT_TRADE_BONUS</ContactType>
-					<iContactRand>20</iContactRand>
+					<iContactRand>16</iContactRand>
 				</ContactRand>
 			</ContactRands>
 			<ContactDelays>
@@ -11166,7 +11135,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>0</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>0</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -11364,7 +11332,6 @@
 			<iLimitedWarPowerRatio>100</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>40</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>40</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>20</iDemandRebukedWarProb>
 			<iRazeCityProb>10</iRazeCityProb>
@@ -11573,7 +11540,6 @@
 			<iLimitedWarPowerRatio>110</iLimitedWarPowerRatio>
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>20</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>100</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>0</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -11810,7 +11776,6 @@
 			<!-- advc.005a: was 80 -->
 			<iDogpileWarRand>100</iDogpileWarRand>
 			<iMakePeaceRand>40</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>50</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>20</iDemandRebukedWarProb>
 			<iRazeCityProb>0</iRazeCityProb>
@@ -12019,7 +11984,6 @@
 			<iLimitedWarPowerRatio>110</iLimitedWarPowerRatio>
 			<iDogpileWarRand>50</iDogpileWarRand>
 			<iMakePeaceRand>10</iMakePeaceRand>
-			<iDeclareWarTradeRand>40</iDeclareWarTradeRand>
 			<iDemandRebukedSneakProb>50</iDemandRebukedSneakProb>
 			<iDemandRebukedWarProb>10</iDemandRebukedWarProb>
 			<iRazeCityProb>5</iRazeCityProb>

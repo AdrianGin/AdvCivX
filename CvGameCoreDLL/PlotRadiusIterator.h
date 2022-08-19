@@ -20,8 +20,8 @@
 	(That's also what the BtS code did.)
 	There are derived classes at the end of this file that hide the template parameter.
 	For the special case of iterating over a city radius, see CityPlotIterator.h.
-	If iRadius is known to be 1 at compile time, then one of the macros in
-	PlotAdjListTraversal.h should be preferred; they're faster.
+	If iRadius is known to be 1 at compile time and the center is excluded, then
+	one of the macros in PlotAdjListTraversal.h should be preferred; they're faster.
 
 	The order of traversal corresponds to a north-east-south-west (clockwise) spiral
 	away from the center.

@@ -29,7 +29,7 @@ public:
 	~CvPlot();
 
 	void init(int iX, int iY);
-	void initAdjList(); // advc.opt
+	void initAdjList(); // advc.003s
 	void setupGraphical();
 	void updateGraphicEra();
 
@@ -117,12 +117,14 @@ public:
 	void updateSeeFromSight(bool bIncrement, bool bUpdatePlotGroups);
 
 	bool canHaveBonus(BonusTypes eBonus, bool bIgnoreLatitude = false,								// Exposed to Python
-			bool bIgnoreFeature = false) const; // advc.129
+			bool bIgnoreFeature = false, // advc.129
+			bool bIgnoreCurrentBonus = false) const; // advc.tsl
 	bool canHaveImprovement(ImprovementTypes eImprovement,											// Exposed to Python
 			TeamTypes eTeam = NO_TEAM, bool bPotential = false,
 			BuildTypes eBuild = NO_BUILD, bool bAnyBuild = true) const; // kekm.9
 	bool canBuild(BuildTypes eBuild, PlayerTypes ePlayer = NO_PLAYER,								// Exposed to Python
-			bool bTestVisible = false) const;
+			bool bTestVisible = false,
+			bool bIgnoreFoW = true) const; // advc.181
 	int getBuildTime(BuildTypes eBuild,																// Exposed to Python
 			PlayerTypes ePlayer) const; // advc.251
 	int getBuildTurnsLeft(BuildTypes eBuild, /* advc.251: */ PlayerTypes ePlayer,
@@ -135,21 +137,45 @@ public:
 			CvPlot const* pCityPlot = NULL, PlayerTypes eCityOwner = NO_PLAYER) const; // advc.031
 
 	DllExport CvUnit* getBestDefender(PlayerTypes eOwner, PlayerTypes eAttackingPlayer = NO_PLAYER,	// Exposed to Python
-		const CvUnit* pAttacker = NULL, bool bTestAtWar = false, bool bTestPotentialEnemy = false,
-		/*  advc.028: Replacing unused bTestCanMove. False by default b/c invisible units are
-			generally able to defend - they just choose not to (CvUnit::isBetterDefenderThan). */
-		bool bTestVisible = false) const  // <advc> Need some more params
+		CvUnit const* pAttacker = NULL, bool bTestAtWar = false, bool bTestPotentialEnemy = false,
+		/*  advc.028: Replacing bTestCanMove. False by default b/c invisible units are generally
+			able to defend - they just choose not to (CvUnit::isBetterDefenderThan). */
+		bool bTestVisible = false) const
+	// <advc> Need some more params
 	{
-		return getBestDefender(eOwner, eAttackingPlayer, pAttacker, bTestAtWar,
-				bTestPotentialEnemy, bTestVisible,
-				// advc.089: bTestCanAttack=true by default
-				true, false);
+		DefenderFilters defFilters(eAttackingPlayer, pAttacker,
+				bTestAtWar, bTestPotentialEnemy,
+				bTestVisible); // advc.028
+		return getBestDefender(eOwner, defFilters);
 	}
-	CvUnit* getBestDefender(PlayerTypes eOwner,
-			PlayerTypes eAttackingPlayer, CvUnit const* pAttacker,
-			bool bTestEnemy, bool bTestPotentialEnemy,
-			bool bTestVisible, // advc.028
-			bool bTestCanAttack, bool bTestAny = false) const; // </advc>
+	struct DefenderFilters
+	{
+		DefenderFilters(
+			PlayerTypes eAttackingPlayer = NO_PLAYER, CvUnit const* pAttacker = NULL,
+			bool bTestEnemy = false, bool bTestPotentialEnemy = false,
+			bool bTestVisible = false, // advc.028
+			/*	advc: New params to allow hasDefender checks.
+				advc.089: bTestCanAttack=true by default. */
+			bool bTestCanAttack = true, bool bTestAny = false,
+			/*	(Ideally, this should be swapped with bTestVisible to stay closer
+				to the original code. bTestCanMove had been unused for a while.
+				Not going to change this now, too error-prone.) */
+			bool bTestCanMove = false)
+		:	m_eAttackingPlayer(eAttackingPlayer), m_pAttacker(pAttacker),
+			m_bTestEnemy(bTestEnemy), m_bTestPotentialEnemy(bTestPotentialEnemy),
+			m_bTestVisible(bTestVisible), // advc.028
+			m_bTestCanAttack(bTestCanAttack), m_bTestAny(bTestAny), // advc
+			m_bTestCanMove(bTestCanMove)
+		{}
+		PlayerTypes m_eAttackingPlayer;
+		CvUnit const* m_pAttacker;
+		bool m_bTestEnemy, m_bTestPotentialEnemy,
+			 m_bTestVisible, // advc.028
+			 m_bTestCanAttack, m_bTestAny, // advc
+			 m_bTestCanMove;
+	};
+	CvUnit* getBestDefender(PlayerTypes eOwner, DefenderFilters& kFilters) const;
+	// </advc>
 	// advco.defr:
 	void unavailableDefendersVsActivePlayer(std::set<CvUnit const*>& apDef) const;
 	// BETTER_BTS_AI_MOD, Lead From Behind (UncutDragon), 02/21/10, jdog5000:
@@ -169,9 +195,9 @@ public:
 			bool bGarrisonStrength = false) const; // advc.500b
 	int movementCost(CvUnit const& kUnit, CvPlot const& kFrom,										// Exposed to Python
 			bool bAssumeRevealed = true) const; // advc.001i
-
-	int getExtraMovePathCost() const;																// Exposed to Python
-	void changeExtraMovePathCost(int iChange);														// Exposed to Python
+	// advc.enum: Still exposed to Python, obsolete within the DLL.
+	/*int getExtraMovePathCost() const;																// Exposed to Python
+	void changeExtraMovePathCost(int iChange);*/													// Exposed to Python
 
 	bool isAdjacentOwned() const;																	// Exposed to Python
 	bool isAdjacentPlayer(PlayerTypes ePlayer, bool bLandOnly = false) const;						// Exposed to Python
@@ -328,6 +354,7 @@ public:
 	PlotNumTypes plotNum() const { return (PlotNumTypes)m_iPlotNum; } // advc.opt
 	int getLatitude() const;																																					// Exposed to Python
 	void setLatitude(int iLatitude); // advc.tsl	(exposed to Python)
+	void updateLatitude(); // advc.tsl (public for testing)
 	int getFOWIndex() const;
 
 	//int getArea() const;
@@ -493,7 +520,7 @@ public:
 
 	DllExport CvCity* getPlotCity() const;															// Exposed to Python
 	CvCityAI* AI_getPlotCity() const;
-	void setPlotCity(CvCity* pNewValue);
+	void setPlotCity(CvCity* pNewCity);
 	void setRuinsName(CvWString const& szName); // advc.005c
 	const wchar* getRuinsName() const; // advc.005c (NULL if none)
 	CvCity* getWorkingCity() const;																	// Exposed to Python
@@ -545,6 +572,7 @@ public:
 			bool bAlive = false) const; // advc.035
 	int calculateCulturePercent(PlayerTypes ePlayer) const;											// Exposed to Python
 	int calculateTeamCulturePercent(TeamTypes eTeam) const;											// Exposed to Python
+	int calculateFriendlyCulturePercent(TeamTypes eTeam) const; // advc (for kekm.7)
 	void setCulture(PlayerTypes eIndex, int iNewValue, bool bUpdate,								// Exposed to Python
 			bool bUpdatePlotGroups);
 	void changeCulture(PlayerTypes eIndex, int iChange, bool bUpdate);								// Exposed to Python
@@ -558,7 +586,7 @@ public:
 			bool bRandomize = false) const; // advc.052
 	bool isBestAdjacentFound(PlayerTypes eIndex) const;												// Exposed to Python
 	void setFoundValue(PlayerTypes eIndex, short iNewValue); // K-Mod (was int iNewValue)
-	bool canFound(bool bTestVisible = false) const; // advc
+	bool canFound(bool bTestVisible = false, TeamTypes eTeam = NO_TEAM) const; // advc
 	bool canEverFound() const; // advc.129d
 
 	int getPlayerCityRadiusCount(PlayerTypes eIndex) const											// Exposed to Python
@@ -689,7 +717,7 @@ public:
 
 	DllExport CvUnit* getCenterUnit() const { return m_pCenterUnit; }
 	DllExport CvUnit* getDebugCenterUnit() const;
-	void setCenterUnit(CvUnit* pNewValue);
+	bool setCenterUnit(CvUnit* pNewValue);
 
 	int getCultureRangeCities(PlayerTypes eOwnerIndex,												// Exposed to Python
 		CultureLevelTypes eRangeIndex) const // advc.enum
@@ -779,8 +807,7 @@ public:
 	DllExport bool checkLateEra() const;
 	void killRandomUnit(PlayerTypes eOwner, DomainTypes eDomain); // advc.300
 
-	// <advc.opt>
-	/*	advc.003s: No assertion of iAt being within array bounds; should
+	/*	<advc.003s> No assertion of iAt being within array bounds; should
 		call this only via a FOR_EACH_ADJ_PLOT macro (PlotAdjListTraversal.h). */
 	CvPlot* getAdjacentPlotUnchecked(int iAt) const
 	{
@@ -788,7 +815,7 @@ public:
 		return m_paAdjList[iAt];
 	}
 	int numAdjacentPlots() const { return m_iAdjPlots; }
-	// </advc.opt>
+	// </advc.003s>
 
 	wchar const* debugStr() const; // advc.031c
 
@@ -859,7 +886,7 @@ protected:
 	int m_iUpgradeProgress;
 	int m_iTotalCulture; // advc.opt
 
-	CvPlot** m_paAdjList; // advc.opt (a vector would take up 16 byte)
+	CvPlot** m_paAdjList; // advc.003s (a vector would take up 16 byte)
 	// <advc> m_pArea is enough - except while loading a savegame.
 	union
 	{

@@ -16,7 +16,7 @@ using std::set_difference;
 AdvCiv4lert::AdvCiv4lert(PlayerTypes eOwner) : m_eOwner(eOwner)
 {
 	m_bSilent = false;
-	/*	Set this to true in a subclass constructor in order to test or debug a
+	/*	Set this to true in a derived constructor in order to test or debug a
 		particular alert through AI Auto Play */
 	m_bDebug = false;
 }
@@ -462,7 +462,7 @@ void CityTradeAlert::check()
 							//GC.getGame().getGameTurn() - pCity->getGameTurnAcquired() > 1 &&
 							// Don't report possible liberation right after making peace
 							/*(!bLiberate || GET_TEAM(kPlayer.getTeam()).
-							AI_getAtPeaceCounter(kAlertPlayer.getTeam()) > 1)*/
+							getTurnsAtPeace(kAlertPlayer.getTeam()) > 1)*/
 							//^Try a different tack.
 							(!bLiberate || pCity->getPreviousOwner() != kPlayer.getID()))
 						{

@@ -89,7 +89,7 @@ public:
 	CvCity* initCity(int iX, int iY, bool bBumpUnits, bool bUpdatePlotGroups,										// Exposed to Python
 			int iOccupationTimer = 0); // advc.ctr
 	void acquireCity(CvCity* pCity, bool bConquest, bool bTrade, bool bUpdatePlotGroups,							// Exposed to Python
-			bool bPeaceDeal = false); // advc.ctr
+			bool bPeaceDeal = false, bool bForFree = false); // advc.ctr
 	void keepCity(CvCity& kCity); // advc
 	void killCities();																								// Exposed to Python
 	CvWString getNewCityName() const;																				// Exposed to Python
@@ -118,8 +118,10 @@ public:
 	void processTraits(int iChange); // advc.003q: Replacing the above
 	void changePersonalityType();
 	void resetCivTypeEffects(/* advc.003q: */ bool bInit);
-	void changeLeader(LeaderHeadTypes eNewLeader);
-	void changeCiv(CivilizationTypes eNewCiv);
+	void changeLeader(LeaderHeadTypes eNewLeader,
+			bool bChangeName = false); // advc.tsl
+	void changeCiv(CivilizationTypes eNewCiv,
+			bool bChangeDescr = false, bool bForceColorUpdate = false); // advc.tsl
 	void setIsHuman(bool bNewValue, /* advc.127c: */ bool bAIUpdate = false);
 	// CHANGE_PLAYER: END
 	// AI_AUTO_PLAY_MOD, 07/09/08, jdog5000: START
@@ -277,6 +279,9 @@ public:
 			GoodyTypes eTaboo = NO_GOODY);
 
 	DllExport bool canFound(int iX, int iY, bool bTestVisible = false) const;										// Exposed to Python
+	// <advc.181>
+	bool canFound(CvPlot const& kPlot, bool bTestVisible = false,
+			bool bIgnoreFoW = true) const; // </advc.181>
 	void found(int iX, int iY);																						// Exposed to Python
 
 	bool canTrain(UnitTypes eUnit, bool bContinue = false, bool bTestVisible = false,								// Exposed to Python
@@ -305,7 +310,8 @@ public:
 	void removeBuildingClass(BuildingClassTypes eBuildingClass);													// Exposed to Python
 	void processBuilding(BuildingTypes eBuilding, int iChange, CvArea& kArea);
 
-	bool canBuild(CvPlot const& kPlot, BuildTypes eBuild, bool bTestEra = false, bool bTestVisible = false) const;	// Exposed to Python
+	bool canBuild(CvPlot const& kPlot, BuildTypes eBuild, bool bTestEra = false,									// Exposed to Python
+			bool bTestVisible = false, /* advc.181: */ bool bIgnoreFoW = true) const;
 	int getBuildCost(CvPlot const& kPlot, BuildTypes eBuild) const;
 	RouteTypes getBestRoute(CvPlot const* pPlot = NULL,																// Exposed to Python
 			BuildTypes* peBestBuild = NULL) const; // advc.121
@@ -363,9 +369,7 @@ public:
 	bool canEverResearch(TechTypes eTech) const;																	// Exposed to Python
 	TechTypes getDiscoveryTech(UnitTypes eUnit) const; // advc: Moved from CvGameCoreUtils
 	bool canResearch(TechTypes eTech, bool bTrade = false,													 // K-Mod: Exposed to Python
-			bool bFree = false, // K-Mod (advc.004x: disused)
-			// advc.126: Disables the isHasTech check
-			bool bCouldResearchAgain = false) const;
+			bool bFree = false) const; // K-Mod (advc.004x: disused)
 	TechTypes getCurrentResearch() const;																			// Exposed to Python
 	bool isCurrentResearchRepeat() const;																			// Exposed to Python
 	bool isNoResearchAvailable() const;																				// Exposed to Python
@@ -674,7 +678,10 @@ public:
 
 	int getDistanceMaintenanceModifier() const { return m_iDistanceMaintenanceModifier; }							// Exposed to Python
 	void changeDistanceMaintenanceModifier(int iChange);
-
+	// <advc.912g>
+	int getColonyMaintenanceModifier() const { return m_iColonyMaintenanceModifier; }
+	void changeColonyMaintenanceModifier(int iChange);
+	// </advc.912g>
 	int getNumCitiesMaintenanceModifier() const { return m_iNumCitiesMaintenanceModifier; }							// Exposed to Python
 	void changeNumCitiesMaintenanceModifier(int iChange);
 
@@ -1510,6 +1517,7 @@ protected:  // <advc.210>
 	int m_iExpInBorderModifier;
 	int m_iBuildingOnlyHealthyCount;
 	int m_iDistanceMaintenanceModifier;
+	int m_iColonyMaintenanceModifier; // advc.912g
 	int m_iNumCitiesMaintenanceModifier;
 	int m_iCorporationMaintenanceModifier;
 	int m_iTotalMaintenance;
