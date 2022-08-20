@@ -1321,10 +1321,25 @@ TeamTypes AIFoundValue::getRevealedTeam(CvPlot const& p) const
 // (replacing all CvPlot::getBonusType and getNonObsoleteBonusType calls)
 BonusTypes AIFoundValue::getBonus(CvPlot const& p) const
 {
-	bool bRevealBonus = ((kSet.isStartingLoc() /* advc.031e: */ || kSet.isNormalizing()) &&
-			// advc.108: Don't factor in unrevealed bonuses
-			kGame.getStartingPlotNormalizationLevel() > CvGame::NORMALIZE_LOW);
-	return p.getBonusType(bRevealBonus ? NO_TEAM : eTeam);
+	BonusTypes const eBonus = p.getBonusType();
+	if (eBonus == NO_BONUS)
+		return NO_BONUS;
+	// <advc.108>
+	if (kSet.isStartingLoc() /* advc.031e: */ || kSet.isNormalizing())
+	{
+		if (kGame.getStartingPlotNormalizationLevel() > CvGame::NORMALIZE_LOW)
+			return eBonus;
+		/*	Treat resources revealed by any starting tech as revealed.
+			(No such resources exist in BtS, AdvCiv.) */
+		TechTypes const eTech = GC.getInfo(eBonus).getTechReveal();
+		if (eTech != NO_TECH &&
+			GC.getInfo(eTech).getNumOrTechPrereqs() <= 0 &&
+			GC.getInfo(eTech).getNumAndTechPrereqs() <= 0)
+		{
+			return eBonus;
+		}
+	} // </advc.108>
+	return p.getBonusType(eTeam);
 }
 
 /*  advc.031: Rewritten. K-Mod had added a crucial isImprovementBonusTrade check, but
