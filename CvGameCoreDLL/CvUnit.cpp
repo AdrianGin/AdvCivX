@@ -653,12 +653,10 @@ void CvUnit::doTurn()
 	if (baseCombatStr() > 0)
 	{
 		FeatureTypes eFeature = getPlot().getFeatureType();
-		if (NO_FEATURE != eFeature)
+		if (eFeature != NO_FEATURE && GC.getInfo(eFeature).getTurnDamage() != 0)
 		{
-			if (GC.getInfo(eFeature).getTurnDamage() != 0)
-			{
-				changeDamage(GC.getInfo(eFeature).getTurnDamage(), NO_PLAYER);
-			}
+			// (advc, note: Should show an on-screen message here.)
+			changeDamage(GC.getInfo(eFeature).getTurnDamage(), NO_PLAYER);
 		}
 	}
 

@@ -348,7 +348,7 @@ int const LFB_ODDS_EXTRA_ACCURACY = 32;
 int LFBcalculateCombatOdds(int iFirstStrikes, int iNeededRoundsAttacker,
 	int iNeededRoundsDefender, int iAttackerOdds)
 {
-	int iMaxRounds = iNeededRoundsAttacker + iNeededRoundsDefender - 1;
+	int const iMaxRounds = iNeededRoundsAttacker + iNeededRoundsDefender - 1;
 	int iOdds = 0;
 	// <advc.opt>
 	float const fAttHitProb = iAttackerOdds / (float)GC.getCOMBAT_DIE_SIDES();
@@ -561,7 +561,7 @@ int LFBlookupCombatOdds(int iFirstStrikes, int iNeededRoundsAttacker,
 }
 
 /*	gets the combat odds using precomputed attacker/defender values
-	[advc: Now stored in objects] instead of unit pointers */
+	[advc: Now wrapped in Combatant class] instead of unit pointers */
 int LFBcalculateCombatOdds(Combatant const& att, Combatant const& def)
 {
 	// (advc: 0-hitsToWin checks moved into setupCombatants)

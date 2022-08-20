@@ -2911,34 +2911,12 @@ void CvGameTextMgr::setCannotAttackHelp(CvWStringBuffer& szHelp,
 }
 
 
-/*namespace { // advc: unused
-void createTestFontString(CvWStringBuffer& szString) // for font testing - Moose
+/*namespace {
+// DO NOT REMOVE - needed for font testing - Moose
+void createTestFontString(CvWStringBuffer& szString)
 {
-	int iI;
-	szString.assign(L"!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[×]^_`abcdefghijklmnopqrstuvwxyz\n");
-	szString.append(L"{}~\\ßÀÁÂÃÄÅÆÇÈÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞŸßàáâãäåæçèêëìíîïğñòóôõö÷øùúûüışÿ¿¡«»°ŠŒšœ™©®€£¢”‘“…’");
-	for (iI=0;iI<NUM_YIELD_TYPES;++iI)
-		szString.append(CvWString::format(L"%c", GC.getInfo((YieldTypes) iI).getChar()));
-
-	szString.append(L"\n");
-	for (iI=0;iI<NUM_COMMERCE_TYPES;++iI)
-		szString.append(CvWString::format(L"%c", GC.getInfo((CommerceTypes) iI).getChar()));
-	szString.append(L"\n");
-	for (iI = 0; iI < GC.getNumReligionInfos(); ++iI)
-	{
-		szString.append(CvWString::format(L"%c", GC.getInfo((ReligionTypes) iI).getChar()));
-		szString.append(CvWString::format(L"%c", GC.getInfo((ReligionTypes) iI).getHolyCityChar()));
-	}
-	for (iI = 0; iI < GC.getNumCorporationInfos(); ++iI)
-	{
-		szString.append(CvWString::format(L"%c", GC.getInfo((CorporationTypes) iI).getChar()));
-		szString.append(CvWString::format(L"%c", GC.getInfo((CorporationTypes) iI).getHeadquarterChar()));
-	}
-	szString.append(L"\n");
-	for (iI = 0; iI < GC.getNumBonusInfos(); ++iI)
-		szString.append(CvWString::format(L"%c", GC.getInfo((BonusTypes) iI).getChar()));
-	for (iI=0; iI<MAX_NUM_SYMBOLS; ++iI)
-		szString.append(CvWString::format(L"%c", gDLL->getSymbolID(iI)));
+	//	advc: Will have to restore this from BtS if it is indeed ever needed.
+	//	Contains non-ASCII string literals that seem trip up my Git merge tool.
 } }*/
 
 void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot const& kPlot)
