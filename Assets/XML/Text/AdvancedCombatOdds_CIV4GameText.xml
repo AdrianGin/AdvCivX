@@ -74,13 +74,14 @@
 		<Italian>[COLOR_NEGATIVE_TEXT]Sconfitta[COLOR_REVERT]</Italian>
 		<Spanish>[COLOR_NEGATIVE_TEXT]Derrota[COLOR_REVERT]</Spanish>
 	</TEXT>
+	<!-- advc.048b: Was COLOR_POSITIVE_TEXT -->
 	<TEXT>
 		<Tag>TXT_ACO_Withdraw</Tag>
-		<English>[COLOR_POSITIVE_TEXT]Withdraw[COLOR_REVERT]</English>
-		<French>[COLOR_POSITIVE_TEXT]Se retirer[COLOR_REVERT]</French>
-		<German>[COLOR_POSITIVE_TEXT]Flucht[COLOR_REVERT]</German>
-		<Italian>[COLOR_POSITIVE_TEXT]Fuga[COLOR_REVERT]</Italian>
-		<Spanish>[COLOR_POSITIVE_TEXT]Repliegue[COLOR_REVERT]</Spanish>
+		<English>[COLOR_UNIT_TEXT]Withdraw[COLOR_REVERT]</English>
+		<French>[COLOR_UNIT_TEXT]Se retirer[COLOR_REVERT]</French>
+		<German>[COLOR_UNIT_TEXT]Flucht[COLOR_REVERT]</German>
+		<Italian>[COLOR_UNIT_TEXT]Fuga[COLOR_REVERT]</Italian>
+		<Spanish>[COLOR_UNIT_TEXT]Repliegue[COLOR_REVERT]</Spanish>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_ACO_Retreat</Tag>
