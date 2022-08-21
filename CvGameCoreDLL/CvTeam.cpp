@@ -5051,7 +5051,9 @@ void CvTeam::setForceRevealedBonus(BonusTypes eBonus, bool bRevealed)
 	}
 }
 
-
+/*	(advc: Replaced some isHasTech checks with calls to this function - based on
+	Civ 4 Reimagined. In some cases, the force-reveal check was missing, which,
+	however, is only relevant for the "Man Named Jed" Oil event.) */
 bool CvTeam::isBonusRevealed(BonusTypes eBonus) const // K-Mod
 {
 	return (isHasTech(GC.getInfo(eBonus).getTechReveal()) || isForceRevealedBonus(eBonus));

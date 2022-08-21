@@ -5381,8 +5381,7 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 		}
 		// K-Mod: Value for enabling resources that are already revealed
 		else if (kLoopBonus.getTechCityTrade() == eTech &&
-			(kTeam.isHasTech(kLoopBonus.getTechReveal()) ||
-			kTeam.isForceRevealedBonus(eLoopBonus)))
+			kTeam.isBonusRevealed(eLoopBonus))
 		{
 			int iOwned = AI_countOwnedBonuses(eLoopBonus, /* advc.opt: */ 2);
 			if (iOwned > 0)
@@ -6803,8 +6802,7 @@ int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnable
 			}
 			else
 			{
-				if ((kTeam.isHasTech(GC.getInfo(ePrereqBonus).getTechReveal()) ||
-					kTeam.isForceRevealedBonus(ePrereqBonus)) &&
+				if (kTeam.isBonusRevealed(ePrereqBonus) &&
 					!AI_isAnyOwnedBonus(ePrereqBonus))
 				{
 					bDefinitelyMissing = true;
@@ -6822,8 +6820,7 @@ int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnable
 		BonusTypes ePrereqBonus = kLoopUnit.getPrereqAndBonus();
 		if (ePrereqBonus != NO_BONUS && !hasBonus(ePrereqBonus))
 		{
-			if ((kTeam.isHasTech(GC.getInfo(ePrereqBonus).getTechReveal()) ||
-				kTeam.isForceRevealedBonus(ePrereqBonus)) &&
+			if (kTeam.isBonusRevealed(ePrereqBonus) &&
 				!AI_isAnyOwnedBonus(ePrereqBonus))
 			{
 				bDefinitelyMissing = true;
@@ -15807,11 +15804,8 @@ int CvPlayerAI::AI_corporationValue(CorporationTypes eCorporation,
 			iBonuses += AI_countOwnedBonuses(eBonus);
 		else iBonuses += pCity->getNumBonuses(eBonus);
 		// maybe use getNumAvailableBonuses ?
-		if (!kTeam.isHasTech(GC.getInfo(eBonus).getTechReveal()) &&
-			!kTeam.isForceRevealedBonus(eBonus))
-		{
+		if (!kTeam.isBonusRevealed(eBonus))
 			iBonuses++; // expect that we'll get one of each unrevealed resource
-		}
 	}
 	if (!GC.getGame().isCorporationFounded(eCorporation))
 	{
@@ -15888,7 +15882,7 @@ int CvPlayerAI::AI_corporationValue(CorporationTypes eCorporation,
 				AI_countOwnedBonuses(eBonusProduced));
 		/*	pretend we have 1 bonus if it is not yet revealed.
 			(so that we don't overvalue the corp before the resource gets revealed) */
-		if (!kTeam.isHasTech(GC.getInfo(eBonusProduced).getTechReveal()))
+		if (!kTeam.isBonusRevealed(eBonusProduced))
 			iBonuses++;
 		iValue += AI_baseBonusVal(eBonusProduced) * 25 /
 				(1 + 2 * iBonuses * (iBonuses + 3));

@@ -2775,7 +2775,7 @@ bool CvGame::isNormalizationBonus(BonusTypes eBonus, PlayerTypes eStartPlayer,
 	}
 	/*	advc: BtS had checked this only for seafood; doesn't really matter though
 		b/c all of the isNormalize resources are revealed from the start. */
-	if (!GET_TEAM(eStartPlayer).isHasTech((TechTypes)kBonus.getTechReveal()))
+	if (!GET_TEAM(eStartPlayer).isBonusRevealed(eBonus))
 		return false;
 	if (kPlot.getBonusType() == eBonus)
 	{
