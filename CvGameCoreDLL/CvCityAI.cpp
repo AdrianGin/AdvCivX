@@ -13587,7 +13587,7 @@ void CvCityAI::read(FDataStreamBase* pStream)
 void CvCityAI::write(FDataStreamBase* pStream)
 {
 	CvCity::write(pStream);
-	uint uiFlag;;
+	uint uiFlag;
 	//uiFlag = 1; // K-Mod: m_aiConstructionValue
 	//uiFlag = 2; // K-Mod: m_iCultureWeight
 	//uiFlag = 3; // advc.139: m_bEvacuate

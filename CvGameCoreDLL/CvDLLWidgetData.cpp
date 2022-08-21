@@ -2005,7 +2005,7 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct,
 	szTemp.Format(SETCOLR L"%s" ENDCOLR , TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),
 			kAction.getHotKeyDescription().c_str());
 	szBuffer.assign(szTemp);
-	CvDLLInterfaceIFaceBase& kUI = *gDLL->getInterfaceIFace(); // advc
+	CvDLLInterfaceIFaceBase& kUI = *gDLL->getInterfaceIFace();
 
 	CvUnit const* pHeadSelectedUnit = kUI.getHeadSelectedUnit();
 	if (pHeadSelectedUnit != NULL)
@@ -2026,7 +2026,7 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct,
 			}
 			else if (kAction.getCommandType() == COMMAND_UPGRADE)
 			{
-				UnitTypes eTo = (UnitTypes)kAction.getCommandData(); // advc
+				UnitTypes const eTo = (UnitTypes)kAction.getCommandData();
 				GAMETEXT.setBasicUnitHelp(szBuffer, eTo);
 
 				// <advc.080>

@@ -2916,7 +2916,7 @@ void CvGameTextMgr::setCannotAttackHelp(CvWStringBuffer& szHelp,
 void createTestFontString(CvWStringBuffer& szString)
 {
 	//	advc: Will have to restore this from BtS if it is indeed ever needed.
-	//	Contains non-ASCII string literals that seem trip up my Git merge tool.
+	//	Contains non-ASCII string literals that seem to trip up my Git merge tool.
 } }*/
 
 void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot const& kPlot)

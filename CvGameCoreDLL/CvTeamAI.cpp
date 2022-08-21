@@ -249,7 +249,7 @@ scaled CvTeamAI::AI_estimateYieldRate(PlayerTypes ePlayer,
 		break;
 	}
 	FAssert(eHistory != NO_PLAYER_HISTORY);
-	return AI_estimateDemographic(ePlayer, eHistory, iSamples);;
+	return AI_estimateDemographic(ePlayer, eHistory, iSamples);
 }
 
 /*	K-Mod: return the total yield of the team, estimated by averaging
@@ -6515,7 +6515,7 @@ int CvTeamAI::AI_getTechMonopolyValue(TechTypes eTech, TeamTypes eTeam) const
 {
 	PROFILE_FUNC(); // advc: called not that infrequently
 	//bool bWarPlan = (getAnyWarPlanCount(eTeam) > 0);
-	bool bWarPlan = (AI_getWarPlan(eTeam) != NO_WARPLAN); // advc.001
+	bool const bWarPlan = (AI_getWarPlan(eTeam) != NO_WARPLAN); // advc.001
 	int iValue = 0;
 	// <advc.550c> Evaluate each team member so that UU and UB can be taken into account
 	MemberIter it(eTeam);
@@ -6538,9 +6538,10 @@ int CvTeamAI::AI_getTechMonopolyValue(TechTypes eTech, TeamTypes eTeam) const
 				continue;
 
 			int iNavalValue = 0;
-			int iCombatRatio = (kUnit.getCombat() * 100) / std::max(1, GC.getGame().getBestLandUnitCombat());
+			int iCombatRatio = (kUnit.getCombat() * 100) /
+					std::max(1, GC.getGame().getBestLandUnitCombat());
 			if (iCombatRatio > 50)
-				iValue += ((bWarPlan ? 100 : 50) * (iCombatRatio - 40)) / 50;
+				iValue += (bWarPlan ? 2 : 1) * (iCombatRatio - 40);
 
 			switch (kUnit.getDefaultUnitAIType())
 			{

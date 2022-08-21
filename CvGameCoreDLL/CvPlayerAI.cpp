@@ -6770,7 +6770,7 @@ int CvPlayerAI::AI_techUnitValue(TechTypes eTech, int iPathLength, bool& bEnable
 		// Decrease the value if we are missing other prereqs.
 		{
 			int iMissingTechs = 0;
-			if (!kTeam.isHasTech((TechTypes)kLoopUnit.getPrereqAndTech()))
+			if (!kTeam.isHasTech(kLoopUnit.getPrereqAndTech()))
 				iMissingTechs++;
 			for (int j = 0; j < kLoopUnit.getNumPrereqAndTechs(); j++)
 			{
