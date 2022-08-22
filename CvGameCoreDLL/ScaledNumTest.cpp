@@ -132,6 +132,17 @@ void TestScaledNum()
 	//rEnum = rTest;
 	//rEnum *= 3; // ! Failed runtime assertion due to MAXINT==0
 
+	/*	Will do something "non-const" at the end based on the value of iDummy.
+		To prevent the compiler from discarding code, results of test computations
+		can be added to iDummy. */
+	int iDummy = scaled(1, 2).round();
+
+	// This should use only 32-bit numbers and no int divisions
+	ScaledNum<4096,unsigned short> rFastPow(423, 1000);
+	rFastPow.exponentiate(3);
+	FAssert(rFastPow.approxEquals(fixp(0.075686), fixp(0.0005)));
+	iDummy += rFastPow.round();
+
 	// Ensure that even extremely high scale factors don't overflow on mulDiv
 	uscaled rAlmostSqrtOfTwo = scaled(2).sqrt() - scaled::epsilon();
 	ScaledNum<MAX_INT,uint> r1 = rAlmostSqrtOfTwo;
@@ -141,11 +152,6 @@ void TestScaledNum()
 	// (But an approxEquals check isn't possible so close to r2.MAX)
 	FAssert(r2 > fixp(1.99));
 	FAssert(r2 < 2);
-
-	/*	Will do something "non-const" at the end based on the value of iDummy.
-		To prevent the compiler from discarding code, results of test computations
-		can be added to iDummy. */
-	int iDummy = scaled(1, 2).round();
 
 	// Speed measurements
 	// (CPU cycles noted in comments can be out of date)
