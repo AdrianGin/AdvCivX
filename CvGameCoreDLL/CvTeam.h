@@ -539,6 +539,7 @@ public:
 		return m_abRevealedBonuses.get(eBonus);
 	}
 	bool isBonusRevealed(BonusTypes eBonus) const; // K-Mod. (the definitive answer)
+	bool canDiscoverBonus(BonusTypes eBonus) const; // advc
 
 	void revealSurroundingPlots(CvPlot const& kCenter, int iRange) const; // advc.108
 

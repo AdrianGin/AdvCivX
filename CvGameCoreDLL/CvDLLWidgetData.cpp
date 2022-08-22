@@ -3077,17 +3077,15 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 				bool bFirst = true;
 				FOR_EACH_ENUM2(Bonus, eRandBonus)
 				{
-					if (kUnitTeam.isHasTech(GC.getInfo(eRandBonus).getTechReveal()))
+					if (kUnitTeam.canDiscoverBonus(eRandBonus) &&
+						kImprov.getImprovementBonusDiscoverRand(eRandBonus) > 0 &&
+						kMissionPlot.canHaveBonus(eRandBonus, false, // advc.rom3
+						true)) // advc.129
 					{
-						if (kImprov.getImprovementBonusDiscoverRand(eRandBonus) > 0 &&
-							kMissionPlot.canHaveBonus(eRandBonus, false, // advc.rom3
-							true)) // advc.129
-						{
-							szFirstBuffer.Format(L"%s%s", NEWLINE,
-									gDLL->getText("TXT_KEY_ACTION_CHANCE_DISCOVER").c_str());
-							szTempBuffer.Format(L"%c", GC.getInfo(eRandBonus).getChar());
-							setListHelp(szBuffer, szFirstBuffer, szTempBuffer, L", ", bFirst);
-						}
+						szFirstBuffer.Format(L"%s%s", NEWLINE,
+								gDLL->getText("TXT_KEY_ACTION_CHANCE_DISCOVER").c_str());
+						szTempBuffer.Format(L"%c", GC.getInfo(eRandBonus).getChar());
+						setListHelp(szBuffer, szFirstBuffer, szTempBuffer, L", ", bFirst);
 					}
 				}
 			}

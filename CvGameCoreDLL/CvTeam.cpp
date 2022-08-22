@@ -5059,6 +5059,14 @@ bool CvTeam::isBonusRevealed(BonusTypes eBonus) const // K-Mod
 	return (isHasTech(GC.getInfo(eBonus).getTechReveal()) || isForceRevealedBonus(eBonus));
 }
 
+/*	advc: Whether random discovery is possible. BtS doesn't check force-reveal
+	for that, and I'd like to keep it that way. (Though it makes no difference
+	for the current random events.) */
+bool CvTeam::canDiscoverBonus(BonusTypes eBonus) const
+{
+	return isHasTech(GC.getInfo(eBonus).getTechReveal());
+}
+
 // advc.108: Based on CvPlayer::initFreeUnits
 void CvTeam::revealSurroundingPlots(CvPlot const& kCenter, int iRange) const
 {

@@ -10794,12 +10794,12 @@ int CvCityAI::AI_jobChangeValue(std::pair<bool, int> new_job, std::pair<bool, in
 	if (new_job.second >= 0 && !new_job.first)
 	{
 		iImprovementsValue += AI_specialPlotImprovementValue(
-				getCityIndexPlot((CityPlotTypes)new_job.second));
+				*getCityIndexPlot((CityPlotTypes)new_job.second));
 	}
 	if (old_job.second >= 0 && !old_job.first)
 	{
 		iImprovementsValue -= AI_specialPlotImprovementValue(
-				getCityIndexPlot((CityPlotTypes)old_job.second));
+				*getCityIndexPlot((CityPlotTypes)old_job.second));
 	}
 	iTotalValue += iImprovementsValue;
 
@@ -11080,33 +11080,29 @@ bool CvCityAI::AI_timeWeightedImprovementYields(CvPlot const& kPlot, Improvement
 
 /*	K-Mod. Value for working a plot in addition to its yields.
 	(Returns ~400x commerce per turn.) */
-int CvCityAI::AI_specialPlotImprovementValue(CvPlot* pPlot) const
+int CvCityAI::AI_specialPlotImprovementValue(CvPlot const& kPlot) const
 {
-	FAssert(pPlot);
+	ImprovementTypes const eImprovement = kPlot.getImprovementType();
+	if (eImprovement == NO_IMPROVEMENT)
+		return 0;
 	int iValue = 0;
-
-	ImprovementTypes eImprovement = pPlot->getImprovementType();
-	if (eImprovement != NO_IMPROVEMENT)
+	if (GC.getInfo(eImprovement).getImprovementUpgrade() != NO_IMPROVEMENT)
 	{
-		if (GC.getInfo(eImprovement).getImprovementUpgrade() != NO_IMPROVEMENT)
+		/*	Prefer plots that are close to upgrading, but
+			not over immediate yield differences. (kludge) */
+		iValue += kPlot.getUpgradeProgress() /
+				std::max(1, GC.getGame().getImprovementUpgradeTime(eImprovement));
+	}
+	/*	small value bonus for the possibility of popping new resources.
+		(cf. CvGame::doFeature) */
+	if (kPlot.getBonusType(getTeam()) == NO_BONUS)
+	{
+		FOR_EACH_ENUM(Bonus)
 		{
-			/*	Prefer plots that are close to upgrading, but
-				not over immediate yield differences. (kludge) */
-			iValue += pPlot->getUpgradeProgress() /
-					std::max(1, GC.getGame().getImprovementUpgradeTime(eImprovement));
-		}
-
-		/*	small value bonus for the possibility of popping new resources.
-			(cf. CvGame::doFeature) */
-		if (pPlot->getBonusType(getTeam()) == NO_BONUS)
-		{
-			FOR_EACH_ENUM(Bonus)
+			if (GET_TEAM(getTeam()).canDiscoverBonus(eLoopBonus) &&
+				GC.getInfo(eImprovement).getImprovementBonusDiscoverRand(eLoopBonus) > 0)
 			{
-				if (GET_TEAM(getTeam()).isHasTech(GC.getInfo(eLoopBonus).getTechReveal()))
-				{
-					if (GC.getInfo(eImprovement).getImprovementBonusDiscoverRand(eLoopBonus) > 0)
-						iValue += 20;
-				}
+				iValue += 20;
 			}
 		}
 	}

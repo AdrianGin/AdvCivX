@@ -247,7 +247,7 @@ protected:
 	bool AI_timeWeightedImprovementYields(CvPlot const& kPlot, ImprovementTypes eImprovement,
 			int iTimeScale, EagerEnumMap<YieldTypes,scaled>& kWeightedYields) const;
 	// value for working a plot in addition to its yields
-	int AI_specialPlotImprovementValue(CvPlot* pPlot) const;
+	int AI_specialPlotImprovementValue(CvPlot const& kPlot) const;
 	int AI_growthValuePerFood() const;
 	// K-Mod end  // <advc.901>
 	int AI_healthHappyImprovementValue(CvPlot const& kPlot, ImprovementTypes eImprovement,

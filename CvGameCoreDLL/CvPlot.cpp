@@ -379,8 +379,7 @@ void CvPlot::doImprovement()
 	{
 		FOR_EACH_ENUM(Bonus)
 		{
-			CvBonusInfo const& kLoopBonus = GC.getInfo(eLoopBonus);
-			if (!GET_TEAM(kOwner.getTeam()).isHasTech(kLoopBonus.getTechReveal()))
+			if (!GET_TEAM(kOwner.getTeam()).canDiscoverBonus(eLoopBonus))
 				continue;
 			/*if (GC.getInfo(getImprovementType()).getImprovementBonusDiscoverRand(eLoopBonus) > 0) { // BtS
 				if (SyncRandOneChanceIn(GC.getInfo(getImprovementType()).getImprovementBonusDiscoverRand(eLoopBonus))) {*/
@@ -402,9 +401,9 @@ void CvPlot::doImprovement()
 				if (pCity != NULL)
 				{
 					CvWString szBuffer = gDLL->getText("TXT_KEY_MISC_DISCOVERED_NEW_RESOURCE",
-							kLoopBonus.getTextKeyWide(), pCity->getNameKey());
+							GC.getInfo(eLoopBonus).getTextKeyWide(), pCity->getNameKey());
 					gDLL->UI().addMessage(kOwner.getID(), false, -1, szBuffer, *this,
-							"AS2D_DISCOVERBONUS", MESSAGE_TYPE_MINOR_EVENT, kLoopBonus.getButton());
+							"AS2D_DISCOVERBONUS", MESSAGE_TYPE_MINOR_EVENT, GC.getInfo(eLoopBonus).getButton());
 				}
 				break;
 			}
