@@ -733,12 +733,13 @@ __inline float powNonNegative(float fBase, int iExponent)
 template<>
 __inline ScaledOdds powNonNegative(ScaledOdds urBase, int iExponent)
 {
-	/*	Convert for higher precision in intermediate results, faster mulDiv.
-		(In a single test, uint for even higher precision
-		didn't seem to improve the precision of the overall results.) */
+	// Convert for faster mulDiv
 	ScaledNum<32 * 1024, unsigned short> urPow = urBase;
 	urPow.exponentiate(iExponent);
-	return urPow; // Implicit conversion back to lower precision
+	/*	Implicit conversion back to lower precision.
+		(Is faster ScaledNum::exponentiate really worth these conversions?)
+		Could also try memoization for more speed. */
+	return urPow;
 }
 
 template<class Prob>
@@ -792,14 +793,15 @@ int binomialCoeffCapped(int n, int k)
 	static int const iCap = 17;
 	n = std::min(n, iCap);
 	/*	(Might be more efficient to precompute the full matrix
-		and get rid of this comparison) */
+		and get rid of this comparison- and of the indexing function,
+		which contains two multiplications.) */
 	if (2 * k > n)
 	{
 		FAssert(k <= n);
 		k = n - k;
 	}
 	/*	Funny indexing function resulting from k+sum_{i=0..n}floor(i/2).
-		Lots of halves of n rounded down or up. Multiplication-free. */
+		Lots of halves of n rounded down or up. */
 	int iIndex = k + (n / 2 * (n / 2 + 1) + (n + 1) / 2 * ((n + 1) / 2 + 1)) / 2;
 	FAssertBounds(0, ARRAYSIZE(binCoeffsTriangle), iIndex);
 	return binCoeffsTriangle[iIndex];
@@ -1049,7 +1051,7 @@ void combat_odds::OutcomeStats<Prob>::calculateAttackerOdds(
 	#ifdef _DEBUG
 		prTotal += pr;
 	#endif
-		bool bDefTookMoreDmg = (
+		bool const bDefTookMoreDmg = (
 				outcome.getHitsTakenByDefender() * kAtt.damagePerRound() >
 				outcome.getHitsTakenByAttacker() * kDef.damagePerRound());
 		if (outcome.getHitsTakenByAttacker() >= kDef.hitsToWin())
