@@ -6185,18 +6185,12 @@ int CvPlayer::calculateInflatedCosts() const
 int CvPlayer::calculateResearchModifier(TechTypes eTech,  // <advc.910>
 		int* piFromOtherKnown, int* piFromPaths, int* piFromTeam) const
 {
-	// So that the caller isn't required to provide the pointer params
-	int iFromOtherKnown, iFromPaths, iFromTeam;
-	if(piFromOtherKnown == NULL)
-		piFromOtherKnown = &iFromOtherKnown;
-	if(piFromPaths == NULL)
-		piFromPaths = &iFromPaths;
-	if(piFromTeam == NULL)
-		piFromTeam = &iFromTeam;
-	*piFromOtherKnown = *piFromPaths = *piFromTeam = 0;
+	LOCAL_REF(int, iFromOtherKnown, piFromOtherKnown, 0);
+	LOCAL_REF(int, iFromPaths, piFromPaths, 0);
+	LOCAL_REF(int, iFromTeam, piFromTeam, 0);
 	// </advc.910>
 	int iModifier = 100;
-	if(NO_TECH == eTech)
+	if (eTech == NO_TECH)
 		return iModifier;
 
 	// BETTER_BTS_AI_MOD, Tech Diffusion, 07/27/09, jdog5000: START
@@ -6219,7 +6213,7 @@ int CvPlayer::calculateResearchModifier(TechTypes eTech,  // <advc.910>
 		static int const iTechDiffMod = GC.getDefineINT("TECH_DIFFUSION_KNOWN_TEAM_MODIFIER", 30);
 		if (rKnownExp > 0)
 		{
-			*piFromOtherKnown += // advc.910
+			iFromOtherKnown += // advc.910
 					iTechDiffMod - (iTechDiffMod * fixp(0.85).pow(rKnownExp)).round();
 		}
 		// Tech flows downhill to those who are far behind
@@ -6230,7 +6224,7 @@ int CvPlayer::calculateResearchModifier(TechTypes eTech,  // <advc.910>
 			if (rKnownExp > 0)
 			{
 				static int const iWelfareModifier = GC.getDefineINT("TECH_DIFFUSION_WELFARE_MODIFIER", 30);
-				*piFromOtherKnown += // advc.910
+				iFromOtherKnown += // advc.910
 						(iWelfareModifier * GC.getGame().getCurrentEra() *
 						(iWelfareThreshold - iTechScorePercent)) / 200;
 			}
@@ -6248,11 +6242,11 @@ int CvPlayer::calculateResearchModifier(TechTypes eTech,  // <advc.910>
 		if (iPossibleKnownCount > 0)
 		{
 			static int iTECH_COST_TOTAL_KNOWN_TEAM_MODIFIER = GC.getDefineINT("TECH_COST_TOTAL_KNOWN_TEAM_MODIFIER"); // advc.opt
-			*piFromOtherKnown += // advc.910
+			iFromOtherKnown += // advc.910
 				(iTECH_COST_TOTAL_KNOWN_TEAM_MODIFIER * iKnownCount) / iPossibleKnownCount;
 		}
 	}
-	iModifier += *piFromOtherKnown; // advc.910
+	iModifier += iFromOtherKnown; // advc.910
 
 	int iPossiblePaths = 0;
 	int iUnknownPaths = 0;
@@ -6265,26 +6259,26 @@ int CvPlayer::calculateResearchModifier(TechTypes eTech,  // <advc.910>
 	FAssert(iPossiblePaths >= iUnknownPaths);
 	if(iPossiblePaths > iUnknownPaths)
 	{
-		*piFromPaths += // advc.910
+		iFromPaths += // advc.910
 				GC.getDefineINT(CvGlobals::TECH_COST_FIRST_KNOWN_PREREQ_MODIFIER);
 		iPossiblePaths--;
-		*piFromPaths += (iPossiblePaths - iUnknownPaths) *
+		iFromPaths += (iPossiblePaths - iUnknownPaths) *
 				GC.getDefineINT(CvGlobals::TECH_COST_KNOWN_PREREQ_MODIFIER);
 	}
 	// BETTER_BTS_AI_MOD: END
-	iModifier += *piFromPaths;
+	iModifier += iFromPaths;
 	// <advc.156>
 	for (MemberIter it(getTeam()); it.hasNext(); ++it)
 	{
 		CvPlayer const& kMember = *it;
 		if (kMember.getID() != getID() && kMember.getCurrentResearch() == eTech)
 		{
-			*piFromTeam = // advc.910
+			iFromTeam = // advc.910
 					GC.getDefineINT(CvGlobals::RESEARCH_MODIFIER_EXTRA_TEAM_MEMBER); // advc.210
 			break; // Or should the penalty stack?
 		}
 	}
-	iModifier += *piFromTeam; // advc.910
+	iModifier += iFromTeam; // advc.910
 	// </advc.156>
 	iModifier -= groundbreakingPenalty(eTech); // advc.groundbr
 	return iModifier;
