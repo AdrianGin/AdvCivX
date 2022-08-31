@@ -2469,6 +2469,10 @@ bool CvUnit::canMoveInto(CvPlot const& kPlot, bool bAttack, bool bDeclareWar,
 	{
 		if (//isMadeAttack() && !isBlitz()
 			isMadeAllAttacks() && // advc.164
+			/*	advc.004: If the move won't happen until the next turn,
+				then made attacks shouldn't matter - and shouldn't result
+				in a red waypoint. */
+			movesLeft() > 0 &&
 			kPlot.isVisibleEnemyDefender(this))
 		{
 			return false;
