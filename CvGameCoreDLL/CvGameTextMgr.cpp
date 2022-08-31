@@ -2740,6 +2740,10 @@ bool CvGameTextMgr::setCombatPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
 	if (pAttacker->getDomainType() != DOMAIN_AIR)
 	{
 		int const iCombatOdds = calculateCombatOdds(*pAttacker, *pDefender);
+// <advc.tmp>
+ScaledCombatOutcomes outcomes;
+calculateCombatOutcomes(*pAttacker, *pDefender, outcomes);
+//</advc.tmp>
 		bool bVictoryOddsAppended = false; // advc.048
 		if (pAttacker->combatLimit() >= GC.getMAX_HIT_POINTS())
 		{

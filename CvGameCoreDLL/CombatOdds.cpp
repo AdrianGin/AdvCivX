@@ -720,3 +720,368 @@ int calculateCombatOdds(CvUnit const& kAttacker, CvUnit const& kDefender)
 	#endif
 	return iOdds;
 }
+
+namespace
+{
+template<class Prob>
+__inline Prob powNonNegative(Prob prBase, int iExponent);
+template<>
+__inline float powNonNegative(float fBase, int iExponent)
+{
+	return std::pow(fBase, iExponent);
+}
+template<>
+__inline ScaledOdds powNonNegative(ScaledOdds urBase, int iExponent)
+{
+	/*	Convert for higher precision in intermediate results, faster mulDiv.
+		(In a single test, uint for even higher precision
+		didn't seem to improve the precision of the overall results.) */
+	ScaledNum<32 * 1024, unsigned short> urPow = urBase;
+	urPow.exponentiate(iExponent);
+	return urPow; // Implicit conversion back to lower precision
+}
+
+template<class Prob>
+__inline short toPermille(Prob pr);
+template<>
+__inline short toPermille(float fProb)
+{
+	/*	Don't round to nearest b/c that would e.g. convert 0.8496 to
+		850 permille, which will get displayed as 85.0%. */
+	return safeIntCast<short>(static_cast<int>(std::floor(fProb * 1000/*+ 0.5f*/)));
+}
+template<>
+__inline short toPermille(ScaledOdds rProb)
+{
+	/*	This does round to nearest - which is OK (preferable I guess)
+		when not displaying the odds (for which floating-point math
+		should be used, see above). */
+	return safeIntCast<short>(rProb.getPermille());
+}
+
+int binomialCoeffCapped(int n, int k)
+{
+	/*	Out of Excel, which doesn't even have a function for
+		binomial coefficients, so I've used: FACT(n)/(FACT(n-k)*FACT(k)) */
+	static short binCoeffsTriangle[] = {					// n=
+		1,													//  0
+		1,													//  1
+		1,  2,												//  2
+		1,  3,												//  3
+		1,  4,   6,											//  4
+		1,  5,  10,											//  5
+		1,  6,  15,  20,									//  6
+		1,  7,  21,  35,									//  7
+		1,  8,  28,  56,   70,								//  8
+		1,  9,  36,  84,  126,								//  9
+		1, 10,  45, 120,  210,  252,						// 10
+		1, 11,  55, 165,  330,  462,						// 11
+		1, 12,  66, 220,  495,  792,   924,					// 12
+		1, 13,  78, 286,  715, 1287,  1716,					// 13
+		1, 14,  91, 364, 1001, 2002,  3003,  3432,			// 14
+		1, 15, 105, 455, 1365, 3003,  5005,  6435,			// 15
+		1, 16, 120, 560, 1820, 4368,  8008, 11440, 12870,	// 16
+		1, 17, 136, 680, 2380, 6188, 12376, 19448, 24310,	// 17
+	//k=0  1   2    3    4     5     6      7      8
+		/*	Could precompute more (using an unsigned short array, or int,
+			I just don't think it would make a difference,
+			given how combat odds are used. */
+		//1, 18, 153, 816, 3060, 8568, 18564, 31824, 43758, 48620,	// 18
+	};
+	// Could compute this from ARRAYSIZE, but, oh, the math ...
+	static int const iCap = 17;
+	n = std::min(n, iCap);
+	/*	(Might be more efficient to precompute the full matrix
+		and get rid of this comparison) */
+	if (2 * k > n)
+	{
+		FAssert(k <= n);
+		k = n - k;
+	}
+	/*	Funny indexing function resulting from k+sum_{i=0..n}floor(i/2).
+		Lots of halves of n rounded down or up. Multiplication-free. */
+	int iIndex = k + (n / 2 * (n / 2 + 1) + (n + 1) / 2 * ((n + 1) / 2 + 1)) / 2;
+	FAssertBounds(0, ARRAYSIZE(binCoeffsTriangle), iIndex);
+	return binCoeffsTriangle[iIndex];
+}
+
+template<class Prob>
+void calcOutcomes(CvUnit const& kAttacker, CvUnit const& kDefender,
+	OutcomeStats<Prob>& kResult)
+{
+	Combatant att, def;
+	initCombatants(kAttacker, kDefender, att, def, kResult.isIgnoreFreeWins());
+	/*	Longer fights are going to be extremely uneven, odds will then round
+		to "near 0/100" anyway. */
+	int const iMaxHitsToWin = 16;
+	/*	If the base per-hit damage gets lowered significantly in XML,
+		then more hits will have to be allowed. Will also have to be able
+		to handle higher binomial coefficients then. */
+	FAssertMsg(GC.getCOMBAT_DAMAGE() >= 17, "COMBAT_DAMAGE too low for odds calc");
+	int const iAttHitsToWin = std::min(att.hitsToWin(), iMaxHitsToWin);
+	int const iDefHitsToWin = std::min(def.hitsToWin(), iMaxHitsToWin);
+	/*	Difficult to figure out a way to enumerate the outcomes w/o repetition
+		b/c the same outcome can be reached through FS and non-FS hits.
+		Hence this map for tallying probabilities.
+		(Keeping a list of indices with non-zero prob in addition could later
+		save time when iterating over the array - doubtful ...) */
+	Prob aprHitsTakenAttDef[iMaxHitsToWin][iMaxHitsToWin] = {};
+	int const iRoundsLimit = std::min(20,
+			9); // tbd.: Base on GlobalDefines and kAttacker, kDefender.
+	/*	The fractional math needs to work with just ctor and operators as much
+		as possible - those are overloaded for both float and ScaledNum.
+		For exponentiation, we need to use specialization. */
+	Prob const prBaseAttFSChances = powNonNegative(Prob(1) / 2,
+			att.highFS() - att.lowFS());
+	Prob const prBaseDefFSChances = powNonNegative(Prob(1) / 2,
+			def.highFS() - def.lowFS());
+	/*	(Could compute the probability distribution for taken FS hits
+		upfront to avoid redundant calculations when dealing with FS chances.
+		But I think FS chances are too uncommon to make that worthwhile.) */
+	for (int iAttNominalFS = att.lowFS();
+		iAttNominalFS <= att.highFS(); iAttNominalFS++)
+	{
+		Prob const prAttFSChances = prBaseAttFSChances * binomialCoeffCapped(
+				att.highFS() - att.lowFS(), iAttNominalFS - att.lowFS());
+		for (int iDefNominalFS = def.lowFS();
+			iDefNominalFS <= def.highFS(); iDefNominalFS++)
+		{
+			Prob prFSChances;
+			{
+				Prob prDefFSChances = prBaseDefFSChances * binomialCoeffCapped(
+						def.highFS() - def.lowFS(), iDefNominalFS - def.lowFS());
+				prFSChances = prAttFSChances * prDefFSChances;
+			}
+			/*	First strikes cancel each other out entirely;
+				only their difference extends the round limit. */
+			int iAttFS = std::max(0, iAttNominalFS - iDefNominalFS);
+			int iDefFS = std::max(0, iDefNominalFS - iAttNominalFS);
+			// (Limits incl. first-strike hits)
+			int const iMaxAttHitsTaken = std::min(iDefHitsToWin, iRoundsLimit + iDefFS);
+			int const iMaxDefHitsTaken = std::min(iAttHitsToWin, iRoundsLimit + iAttFS);
+			int iMaxFSTaken = std::max(iAttFS, iDefFS);
+			int iFSOdds, iFSMissOdds;
+			if (iAttFS > iDefFS)
+			{
+				iMaxFSTaken = std::min(iMaxFSTaken, iMaxDefHitsTaken);
+				iFSOdds = att.odds();
+				iFSMissOdds = def.odds();
+			}
+			else
+			{
+				iMaxFSTaken = std::min(iMaxFSTaken, iMaxAttHitsTaken);
+				iFSOdds = def.odds();
+				iFSMissOdds = att.odds();
+			}
+			for (int iFSTaken = 0; iFSTaken <= iMaxFSTaken; iFSTaken++)
+			{
+				Prob prFS = prFSChances;
+				int iAttFSTaken = 0, iDefFSTaken = 0;
+				if (iMaxFSTaken > 0) // Save time when no FS
+				{
+					prFS *= powNonNegative(
+							Prob(iFSOdds) / 1000, iFSTaken) *
+							powNonNegative(
+							Prob(iFSMissOdds) / 1000, iMaxFSTaken - iFSTaken) *
+							binomialCoeffCapped(iMaxFSTaken, iFSTaken);
+					(iAttFS > iDefFS ? iDefFSTaken : iAttFSTaken) = iFSTaken;
+				}
+				// (I realize that putting an 's' before "hits" is unfortunate)
+				int const iMaxAttNonFSHitsTaken = iMaxAttHitsTaken - iAttFSTaken;
+				for (int iAttNonFSHitsTaken = 0;
+					iAttNonFSHitsTaken <= iMaxAttNonFSHitsTaken;
+					iAttNonFSHitsTaken++)
+				{
+					int const iAttHitsTaken = iAttNonFSHitsTaken + iAttFSTaken;
+					int iMinDefNonFSHitsTaken = 0;
+					// If att not defeated ...
+					if (iAttHitsTaken < iDefHitsToWin)
+					{
+						iMinDefNonFSHitsTaken = std::min(
+								// ... then def needs to be defeated ...
+								iAttHitsToWin - iDefFSTaken,
+								// ... or round limit reached.
+								iRoundsLimit - iAttNonFSHitsTaken);
+						// Needed for the case when def killed by FS
+						iMinDefNonFSHitsTaken = std::min(
+								iMinDefNonFSHitsTaken,
+								iMaxDefHitsTaken - iDefFSTaken);
+					}
+					// def can't take hits when att defeated by FS
+					int iMaxDefNonFSHitsTaken = 0;
+					if (iAttFSTaken < iDefHitsToWin)
+					{
+						iMaxDefNonFSHitsTaken = std::min(
+								// Can't exceed round limit
+								iRoundsLimit - iAttNonFSHitsTaken,
+								// Can't be more than defeated
+								iMaxDefHitsTaken - iDefFSTaken);
+						// Not both can be defeated
+						if (iAttHitsTaken >= iDefHitsToWin)
+						{
+							iMaxDefNonFSHitsTaken = std::min(
+									iMaxDefNonFSHitsTaken,
+									iAttHitsToWin - iDefFSTaken - 1);
+						}
+					}
+					for (int iDefNonFSHitsTaken = iMinDefNonFSHitsTaken;
+						iDefNonFSHitsTaken <= iMaxDefNonFSHitsTaken;
+						iDefNonFSHitsTaken++)
+					{
+						int const iDefHitsTaken = iDefNonFSHitsTaken + iDefFSTaken;
+						/*	Final hit can't come from the defeated side.
+							Refer to non-FS, non-final hits as "regular" hits. */
+						int const iAttRegularHitsTaken = std::max(0,
+								std::min(iAttNonFSHitsTaken,
+								iDefHitsToWin - iAttFSTaken - 1));
+						int const iDefRegularHitsTaken = std::max(0,
+								std::min(iDefNonFSHitsTaken,
+								iAttHitsToWin - iDefFSTaken - 1));
+						Prob prOutcome = prFS;
+						prOutcome *=
+								powNonNegative(
+								Prob(att.odds()) / 1000, iDefRegularHitsTaken) *
+								powNonNegative(
+								Prob(def.odds()) / 1000, iAttRegularHitsTaken) *
+								binomialCoeffCapped(
+								iAttRegularHitsTaken + iDefRegularHitsTaken,
+								iDefRegularHitsTaken);
+						if (iAttRegularHitsTaken < iAttNonFSHitsTaken)
+							prOutcome *= Prob(def.odds()) / 1000;
+						else if (iDefRegularHitsTaken < iDefNonFSHitsTaken)
+							prOutcome *= Prob(att.odds()) / 1000;
+						aprHitsTakenAttDef[iAttHitsTaken][iDefHitsTaken] += prOutcome;
+					}
+				}
+			}
+		}
+	}
+	int const iWithdrawPercent = kAttacker.withdrawalProbability();
+	for (int iAttHitsTaken = 0; iAttHitsTaken < iMaxHitsToWin; iAttHitsTaken++)
+	{
+		for (int iDefHitsTaken = 0; iDefHitsTaken < iMaxHitsToWin; iDefHitsTaken++)
+		{
+			Prob const prOutcome = aprHitsTakenAttDef[iAttHitsTaken][iDefHitsTaken];
+			if (prOutcome <= 0)
+				continue;
+			if (iWithdrawPercent <= 0 || iAttHitsTaken < iDefHitsToWin)
+			{
+				kResult.add(CombatOutcome(iAttHitsTaken, iDefHitsTaken, false),
+						prOutcome);
+			}
+			else
+			{
+				if (iWithdrawPercent < 100)
+				{
+					kResult.add(CombatOutcome(iAttHitsTaken, iDefHitsTaken, false),
+							(prOutcome * (100 - iWithdrawPercent)) / 100);
+				}
+				kResult.add(CombatOutcome(iAttHitsTaken, iDefHitsTaken, true),
+						(prOutcome * iWithdrawPercent) / 100);
+			}
+		}
+	}
+	// Convenient to do this here since we already have the Combatant data
+	kResult.calculateAttackerOdds(att, def);
+};
+
+} // end of nameless namespace
+
+void calculateCombatOutcomes(CvUnit const& kAttacker, CvUnit const& kDefender,
+	FloatCombatOutcomes& kResult)
+{
+	calcOutcomes(kAttacker, kDefender, kResult);
+	#if MONTE_CARLO_ODDS_TEST // advc.test
+	iTradOdds = kResult.getTraditionalCombatOdds);
+	/*	Tbd.: Still need to revise that function to respect combat round limit;
+		i.e. will currently only work correctly for unlimited rounds. */
+	int iEstimate = estimateCombatOddsInternal(kAttacker, kDefender, 500000);
+	if (abs(iTradOdds - iEstimate) > 2)
+	{
+		FErrorMsg("Simulated odds differ from calculated odds");
+		// For immediate debugging
+		calcOutcomes(kAttacker, kDefender, kResult);
+	}
+	#endif
+}
+
+void calculateCombatOutcomes(CvUnit const& kAttacker, CvUnit const& kDefender,
+	ScaledCombatOutcomes& kResult)
+{
+	calcOutcomes(kAttacker, kDefender, kResult);
+	#if MONTE_CARLO_ODDS_TEST // advc.test
+	iTradOdds = kResult.getTraditionalCombatOdds);
+	int iEstimate = estimateCombatOdds(kAttacker, kDefender, 500000);
+	// tbd.: This threshold may well be too strict for fixed-point arithmetic
+	if (abs(iTradOdds - iEstimate) > 2)
+	{
+		FErrorMsg("Simulated odds differ from calculated odds");
+		// For immediate debugging
+		calcOutcomes(kAttacker, kDefender, kResult);
+	}
+	#endif
+}
+
+template<class Prob>
+void combat_odds::OutcomeStats<Prob>::calculateAttackerOdds(
+	CvUnit const& kAttacker, CvUnit const& kDefender)
+{
+	Combatant att, def;
+	initCombatants(kAttacker, kDefender, att, def, m_bIgnoreFreeWins);
+	calculateAttackerOdds(att, def);
+}
+
+template<class Prob>
+void combat_odds::OutcomeStats<Prob>::calculateAttackerOdds(
+	Combatant const& kAtt, Combatant const& kDef)
+{
+	Prob prAttSurvival = 0;
+	Prob prAttWithdrawal = 0;
+	Prob prAttDecisiveVictory = 0;
+	Prob prAttTacticalVictory = 0;
+#ifdef _DEBUG
+	Prob prTotal = 0;
+#endif
+	for (size_t i = 0; i < m_distrib.size(); i++)
+	{
+		CombatOutcome outcome = m_distrib[i].first;
+		Prob pr = m_distrib[i].second;
+	#ifdef _DEBUG
+		prTotal += pr;
+	#endif
+		bool bDefTookMoreDmg = (
+				outcome.getHitsTakenByDefender() * kAtt.damagePerRound() >
+				outcome.getHitsTakenByAttacker() * kDef.damagePerRound());
+		if (outcome.getHitsTakenByAttacker() >= kDef.hitsToWin())
+		{
+			FAssertMsg(outcome.getHitsTakenByDefender() < kAtt.hitsToWin(),
+					"Both dying or withdrawing not supported");
+			if (outcome.hasAttackerWithdrawn())
+			{
+				prAttWithdrawal += pr;
+				if (bDefTookMoreDmg)
+					prAttTacticalVictory += pr;
+			}
+		}
+		else
+		{
+			prAttSurvival += pr;
+			if (outcome.getHitsTakenByDefender() >= kAtt.hitsToWin())
+				prAttDecisiveVictory += pr;
+			else if (bDefTookMoreDmg)
+				prAttTacticalVictory += pr;
+		}
+	}
+	prAttSurvival += prAttWithdrawal;
+	m_iAttSurvival = toPermille(prAttSurvival);
+	m_iAttWithdrawal = toPermille(prAttWithdrawal);
+	m_iAttDecisiveVictory = toPermille(prAttDecisiveVictory);
+	m_iAttTacticalVictory = toPermille(prAttTacticalVictory);
+#ifdef _DEBUG
+	FAssert((prTotal > 1 ? prTotal - 1 : 1 - prTotal) * 1024 < Prob(3));
+#endif
+}
+
+// Explicit instantiations
+template class OutcomeStats<float>;
+template class OutcomeStats<ScaledOdds>;

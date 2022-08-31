@@ -73,7 +73,57 @@ private:
 // From CvGameTextMgr.cpp (ACO helper function)
 float getCombatOddsSpecific(CvUnit const& kAttacker, CvUnit const& kDefender,
 		int iHitsByDef, int iHitsByAtt);
-} // </advc>
+
+class CombatOutcome
+{
+public:
+	CombatOutcome(int iHitsTakenAtt, int iHitsTakenDef, bool bWithdrawn)
+	:	m_cHitsTakenAtt((char)iHitsTakenAtt), m_cHitsTakenDef((char)iHitsTakenDef),
+		m_bWithdrawn(bWithdrawn) {}
+	int getHitsTakenByAttacker() const { return m_cHitsTakenAtt; }
+	int getHitsTakenByDefender() const { return m_cHitsTakenDef; }
+	bool hasAttackerWithdrawn() const { return m_bWithdrawn; }
+private:
+	char m_cHitsTakenAtt;
+	char m_cHitsTakenDef;
+	bool m_bWithdrawn;
+};
+
+template<class Prob>
+class OutcomeStats
+{
+public:
+	OutcomeStats(bool bIgnoreFreeWins = false)
+	:	m_bIgnoreFreeWins(bIgnoreFreeWins),
+		m_iAttSurvival(0), m_iAttWithdrawal(0),
+		m_iAttDecisiveVictory(0), m_iAttTacticalVictory(0)
+	{}
+	bool isIgnoreFreeWins() const { return m_bIgnoreFreeWins; }
+	void add(CombatOutcome outcome, Prob pr)
+	{
+		m_distrib.push_back(std::make_pair(outcome, pr));
+	}
+	void calculateAttackerOdds(CvUnit const& kAttacker, CvUnit const& kDefender);
+	void calculateAttackerOdds(Combatant const& kAtt, Combatant const& kDef);
+	int getTraditionalCombatOdds() const { return m_iAttSurvival - m_iAttWithdrawal; }
+private:
+	std::vector<std::pair<CombatOutcome,Prob> > m_distrib;
+	bool m_bIgnoreFreeWins;
+	short m_iAttSurvival;
+	short m_iAttWithdrawal;
+	short m_iAttDecisiveVictory;
+	short m_iAttTacticalVictory;
+};
+} // (end of combat_odds namespace)
+
+typedef ScaledNum<64 * 1024, uint> ScaledOdds;
+typedef combat_odds::OutcomeStats<float> FloatCombatOutcomes;
+typedef combat_odds::OutcomeStats<ScaledOdds> ScaledCombatOutcomes;
+void calculateCombatOutcomes(CvUnit const& kAttacker, CvUnit const& kDefender,
+		FloatCombatOutcomes& kResult);
+void calculateCombatOutcomes(CvUnit const& kAttacker, CvUnit const& kDefender,
+		ScaledCombatOutcomes& kResult);
+// </advc>
 
 __int64 getBinomialCoefficient(int iN, int iK);
 
