@@ -3465,7 +3465,8 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 	GAMETEXT.parsePlayerTraits(szBuffer, ePlayer);*/ // BtS
 	if (eActivePlayer != ePlayer && // advc.085
 			!kActiveTeam.isHasMet(eTeam))
-	{	// K-Mod. If we haven't met the player yet - don't say "contact". Because we can't actually contact them!
+	{	/*	K-Mod. If we haven't met the player yet - don't say "contact".
+			Because we can't actually contact them! */
 		szBuffer.append(CvWString::format(SETCOLR L"%s" ENDCOLR,
 				TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), kPlayer.getName())); // K-Mod end
 		// <advc.007>

@@ -1450,8 +1450,8 @@ void CvGameTextMgr::appendUnitOwnerHeading(CvWStringBuffer& szString, PlayerType
 
 // Reuses bits and pieces from setPlotListHelp
 void CvGameTextMgr::appendUnitTypeAggregated(CvWStringBuffer& szString,
-		std::vector<CvUnit const*> const& ownerUnits, UnitTypes eUnit,
-		CvPlot const& kPlot, bool bIndicator) // advc.007
+	std::vector<CvUnit const*> const& ownerUnits, UnitTypes eUnit,
+	CvPlot const& kPlot, bool bIndicator) // advc.007
 {
 	CvUnit* pCenterUnit = kPlot.getCenterUnit();
 	int iCount = 0;

@@ -806,7 +806,7 @@ int /* RouteTypes */ CyPlot::getRouteType()
 void CyPlot::setRouteType(int /*RouteTypes*/ eNewValue)
 {
 	if (m_pPlot)
-		m_pPlot->setRouteType((RouteTypes) eNewValue, true);
+		m_pPlot->setRouteType((RouteTypes)eNewValue);
 }
 
 CyCity* CyPlot::getPlotCity()

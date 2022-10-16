@@ -691,45 +691,6 @@ CvPlot* CvSelectionGroup::lastMissionPlot() const
 				return pTargetUnit->plot();
 			break;
 		}
-		case MISSION_SKIP:
-		case MISSION_SLEEP:
-		case MISSION_FORTIFY:
-		case MISSION_PLUNDER:
-		case MISSION_AIRPATROL:
-		case MISSION_SEAPATROL:
-		case MISSION_HEAL:
-		case MISSION_SENTRY_HEAL: // advc.004l
-		case MISSION_SENTRY:
-		case MISSION_AIRLIFT:
-		case MISSION_NUKE:
-		case MISSION_RECON:
-		case MISSION_PARADROP:
-		case MISSION_AIRBOMB:
-		case MISSION_BOMBARD:
-		case MISSION_RANGE_ATTACK:
-		case MISSION_PILLAGE:
-		case MISSION_SABOTAGE:
-		case MISSION_DESTROY:
-		case MISSION_STEAL_PLANS:
-		case MISSION_FOUND:
-		case MISSION_SPREAD:
-		case MISSION_SPREAD_CORPORATION:
-		case MISSION_JOIN:
-		case MISSION_CONSTRUCT:
-		case MISSION_DISCOVER:
-		case MISSION_HURRY:
-		case MISSION_TRADE:
-		case MISSION_GREAT_WORK:
-		case MISSION_INFILTRATE:
-		case MISSION_GOLDEN_AGE:
-		case MISSION_BUILD:
-		case MISSION_LEAD:
-		case MISSION_ESPIONAGE:
-		case MISSION_DIE_ANIMATION:
-			break;
-		default:
-			FAssert(false);
-			break;
 		}
 		pMissionNode = prevMissionQueueNode(pMissionNode);
 	}

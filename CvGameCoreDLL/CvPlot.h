@@ -512,7 +512,7 @@ public:
 	{
 		return (RouteTypes)m_eRouteType;
 	}
-	void setRouteType(RouteTypes eNewValue, bool bUpdatePlotGroup);									// Exposed to Python
+	void setRouteType(RouteTypes eNewValue, bool bUpdatePlotGroup /*advc:*/= true);					// Exposed to Python
 	void updateCityRoute(bool bUpdatePlotGroup);
 
 	DllExport CvCity* getPlotCity() const;															// Exposed to Python

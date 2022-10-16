@@ -1059,15 +1059,6 @@ int CvMapGenerator::calculateNumBonusesToAdd(BonusTypes eBonus)
 {
 	CvBonusInfo const& kBonus = GC.getInfo(eBonus);
 	CvMap const& kMap = GC.getMap();
-
-	int iBaseCount = kBonus.getConstAppearance();
-	{
-		int iRand1 = MapRandNum(kBonus.getRandAppearance1());
-		int iRand2 = MapRandNum(kBonus.getRandAppearance2());
-		int iRand3 = MapRandNum(kBonus.getRandAppearance3());
-		int iRand4 = MapRandNum(kBonus.getRandAppearance4());
-		iBaseCount += iRand1 + iRand2 + iRand3 + iRand4;
-	}
 	bool const bIgnoreLatitude = GC.getPythonCaller()->isBonusIgnoreLatitude();
 
 	//int iLandTiles = 0; // advc: misleadingly named
@@ -1112,6 +1103,12 @@ int CvMapGenerator::calculateNumBonusesToAdd(BonusTypes eBonus)
 		a bit more for small player counts. */
 	rFromPlayers.exponentiate(fixp(0.8));
 	rFromPlayers *= fixp(1.5); // </advc.129>
-	int iBonusCount = (iBaseCount * (iFromTiles + rFromPlayers.round())) / 100;
+	int iMult = kBonus.getConstAppearance();
+	iMult +=
+			MapRandNum(kBonus.getRandAppearance1()) +
+			MapRandNum(kBonus.getRandAppearance2()) +
+			MapRandNum(kBonus.getRandAppearance3()) +
+			MapRandNum(kBonus.getRandAppearance4());
+	int iBonusCount = (iMult * (iFromTiles + rFromPlayers.round())) / 100;
 	return std::max(1, iBonusCount);
 }

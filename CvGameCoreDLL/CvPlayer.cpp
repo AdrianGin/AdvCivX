@@ -12288,7 +12288,7 @@ bool CvPlayer::doEspionageMission(EspionageMissionTypes eMission, PlayerTypes eT
 		{
 			szBuffer = gDLL->getText("TXT_KEY_ESPIONAGE_TARGET_SOMETHING_DESTROYED",
 					GC.getInfo(pPlot->getRouteType()).getDescription()).GetCString();
-			pPlot->setRouteType(NO_ROUTE, true);
+			pPlot->setRouteType(NO_ROUTE);
 			bSomethingHappened = true;
 		}
 		if (bSomethingHappened)
@@ -12774,7 +12774,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 		}
 		else // Remove City from the map
 		{
-			pPlot->setRouteType(NO_ROUTE, true);
+			pPlot->setRouteType(NO_ROUTE);
 			pPlot->getPlotCity()->kill(true);
 			pPlot->setImprovementType(NO_IMPROVEMENT);
 			changeAdvancedStartPoints(iCost);
@@ -12900,7 +12900,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 		{
 			if (getAdvancedStartPoints() >= iCost)
 			{
-				pPlot->setRouteType(eRoute, true);
+				pPlot->setRouteType(eRoute);
 				changeAdvancedStartPoints(-iCost);
 			}
 		}
@@ -12913,7 +12913,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 			}
 			if (iCost < 0)
 				return;
-			pPlot->setRouteType(NO_ROUTE, true);
+			pPlot->setRouteType(NO_ROUTE);
 			changeAdvancedStartPoints(iCost);
 		}
 		if (isActive())

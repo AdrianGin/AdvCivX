@@ -1708,6 +1708,7 @@ bool CvUnit::isActionRecommended(int iAction)
 {
 	if (!isActiveOwned() || /* advc.127: */ !isHuman())
 		return false;
+
 	bool bUpdateFoundBorder = false; // advc.004h
 	// <advc> (Don't know how else the DLL could tell)
 	static int iLastUnitID = -1;
@@ -4728,7 +4729,7 @@ bool CvUnit::pillageRoute()
 {
 	if (!getPlot().isRoute())
 		return false;
-	getPlot().setRouteType(NO_ROUTE, true); // XXX downgrade rail???
+	getPlot().setRouteType(NO_ROUTE); // XXX downgrade rail???
 	return true;
 }
 

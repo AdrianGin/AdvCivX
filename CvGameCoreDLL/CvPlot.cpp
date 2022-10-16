@@ -4800,7 +4800,7 @@ void CvPlot::setImprovementType(ImprovementTypes eNewValue,
 
 void CvPlot::setRouteType(RouteTypes eNewValue, bool bUpdatePlotGroups)
 {
-	if(getRouteType() == eNewValue)
+	if (getRouteType() == eNewValue)
 		return;
 
 	bool const bOldRoute = isRoute(); // XXX is this right???
@@ -6119,7 +6119,7 @@ void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly,
 	FAssertBounds(0, MAX_TEAMS, eTeam);
 
 	CvCity* pCity = getPlotCity();
-	bool bOldValue = isRevealed(eTeam); // advc.124
+	bool const bOldValue = isRevealed(eTeam); // advc.124
 	if (bOldValue != bNewValue)
 	{
 		m_abRevealed.set(eTeam, bNewValue);
@@ -6300,7 +6300,7 @@ bool CvPlot::changeBuildProgress(BuildTypes eBuild, int iChange,
 		setImprovementType(kBuild.getImprovement());
 
 	if (kBuild.getRoute() != NO_ROUTE)
-		setRouteType(kBuild.getRoute(), true);
+		setRouteType(kBuild.getRoute());
 
 	if (isFeature() && kBuild.isFeatureRemove(getFeatureType()))
 	{
@@ -7947,10 +7947,10 @@ void CvPlot::applyEvent(EventTypes eEvent)
 	if (kEvent.getRouteChange() > 0)
 	{
 		if (NO_ROUTE != kEvent.getRoute())
-			setRouteType((RouteTypes)kEvent.getRoute(), true);
+			setRouteType((RouteTypes)kEvent.getRoute());
 	}
 	else if (kEvent.getRouteChange() < 0)
-		setRouteType(NO_ROUTE, true);
+		setRouteType(NO_ROUTE);
 
 	FOR_EACH_ENUM(Yield)
 	{
