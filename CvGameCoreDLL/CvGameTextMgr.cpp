@@ -8296,8 +8296,11 @@ void CvGameTextMgr::setTechTradeHelp(CvWStringBuffer &szBuffer, TechTypes eTech,
 						The Shift check is for queuing up techs; don't know
 						what the Ctrl check is for. */
 					GET_PLAYER(eActivePlayer).getResearchTurnsLeft(eTech,
-					(!bTreeInfo && (GC.ctrlKey() || !GC.shiftKey())) ||
-					bStrategyText)); // Do include overflow in choose-tech popup
+					//(!bTreeInfo && (GC.ctrlKey() || !GC.shiftKey()))
+					/*	I think overflow should be included for researchable tech
+						unless trading or queuing */
+					(!bDiplo && (bTreeInfo || !GC.shiftKey())) &&
+					GET_PLAYER(eActivePlayer).canResearch(eTech)));
 			if (iTurnsLeft < 0)
 				bShowTurns = false;
 			if (bDiplo) // To set the cost apart from trade denial text
