@@ -5695,6 +5695,9 @@ void CvGameTextMgr::setCityBarHelp(CvWStringBuffer &szString, CvCity const& kCit
 			for (int i = 0; i < kCiv.getNumBuildings(); i++)
 			{
 				BuildingTypes eBuilding = kCiv.buildingAt(i);
+				/*	(NB: If this were changed to getNumBuilding, then
+					TXT_KEY_BUG_OPT_CITYBAR__BUILDINGDISPLAY_HOVER also ought to
+					changed; currently warns that free buildings are omitted.) */
 				if (kCity.getNumRealBuilding(eBuilding) > 0)
 				{
 					aszeBuildingsByName.push_back(std::make_pair(
