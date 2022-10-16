@@ -331,7 +331,7 @@
 	<!-- advc.004m: Explain briefly what FoV does -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__FIELDOFVIEW_HOVER</Tag>
-		<English>When checked, displays a slider for adjusting the field of view. The field-of-view setting changes the camera distance, but, unlike zoom, without changing the camera angle.</English>
+		<English>When checked, displays a slider for adjusting the field of view. Unlike zooming in and out, changes to the field of view do not affect the camera angle.</English>
 		<German>Zeigt im Hauptbildschirm einen Regler an, mit dem die Größe des Sichtfelds eingestellt werden kann. Im Gegensatz zur Zoomfunktion ändert sich dabei der Blickwinkel nicht.</German>
 		<Italian>Quando è selezionato, visualizza un cursore che può essere utilizzato per regolare il campo visuale.</Italian>
 		<Spanish>Muestra una barra deslizante que permite modificar el campo de visión.</Spanish>
@@ -571,12 +571,13 @@
 		<German>Diese Farbe wird anstatt der obigen verwendet, wenn eine Beförderung allen Einheiten des Verbandes gemeinsam ist.</German>
 	</TEXT>
 	
-	<!-- advc.061 (German: not enough space for "Einheiten nach Besitzer gruppieren") -->
+	<!-- advc.061 (I've given this option a simpler name in AdvCiv 1.07;
+		 haven't bothered changing the FIS translations.) -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__LISTUNITSPEROWNER_TEXT</Tag>
-		<English>List Units per Owner</English>
+		<English>Unit Counts</English>
 		<French>Grouper les unités par propriétaire</French>
-		<German>Einheiten pro Besitzer</German>
+		<German>Anzahl von Einheiten</German>
 		<Italian>Elenca unità per proprietario</Italian>
 		<Spanish>Agrupar unidades por propietario</Spanish>
 	</TEXT>

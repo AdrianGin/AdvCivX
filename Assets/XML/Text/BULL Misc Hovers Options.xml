@@ -443,10 +443,11 @@
 		<Spanish>Muestra el límite de unidades que se pueden reclutar este turno y si la ciudad ya ha reclutado este turno en el texto flotante del botón Reclutar.</Spanish>
 	</TEXT>
 
-	<!-- advc.004: German ("Zwangsarbeit-Schaltfläche") was too long -->
+	<!-- advc.004: German ("Zwangsarbeit-Schaltfläche") was too long.
+		 advc.064: English was "Whip Button". -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MISCHOVER__HURRYOVERFLOW_TEXT</Tag>
-		<English>Whip Button</English>
+		<English>Hurry Button</English>
 		<German>Tooltip</German>
 		<Italian>Bottone dei sacrifici</Italian>
 		<Spanish>Sacrificio</Spanish>
