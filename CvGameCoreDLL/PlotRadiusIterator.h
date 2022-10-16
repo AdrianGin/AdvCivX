@@ -175,10 +175,7 @@ private:
 		m_eDir = CARDINALDIRECTION_WEST;
 		m_iConsecMoves = 0;
 		if (!bIncludeCenter)
-		{
-			m_iMaxPos--;
 			computeNext();
-		}
 	}
 	// To avoid including CvUnit.h
 	CvPlot& getUnitPlot(CvUnit const& kUnit) const;
