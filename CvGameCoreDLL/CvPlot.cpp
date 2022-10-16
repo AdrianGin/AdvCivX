@@ -6148,20 +6148,18 @@ void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly,
 	{
 		m_abRevealed.set(eTeam, bNewValue);
 		getArea().changeNumRevealedTiles(eTeam, isRevealed(eTeam) ? 1 : -1);
-	}  // <advc.124> Need to update plot group if any revealed info changes
+	}
+	// <advc.124> Need to update plot group if any revealed info changes
 	if (bUpdatePlotGroup &&
-		(bOldValue != bNewValue ||
+		!(bOldValue != bNewValue ||
 		getRevealedOwner(eTeam) != getOwner() ||
 		getRevealedImprovementType(eTeam) != getImprovementType() ||
 		getRevealedRouteType(eTeam) != getRouteType() ||
-		(pCity != NULL && !pCity->isRevealed(eTeam)))) // </advc.124>
+		(pCity != NULL && !pCity->isRevealed(eTeam))))
 	{
-		for (MemberIter itMember(eTeam); itMember.hasNext(); ++itMember)
-		{
-			updatePlotGroup(itMember->getID());
-		}
+		bUpdatePlotGroup = false;
 	}
-	if (bOldValue != bNewValue) // advc.124
+	if (bOldValue != bNewValue) // </advc.124>
 	{
 		if (eTeam == getActiveTeam())
 		{
@@ -6191,10 +6189,8 @@ void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly,
 
 		if (pCity != NULL)
 			pCity->setRevealed(eTeam, false);
-		return; // advc
 	}
-
-	if (eFromTeam == NO_TEAM)
+	else if (eFromTeam == NO_TEAM)
 	{
 		setRevealedOwner(eTeam, getOwner());
 		setRevealedImprovementType(eTeam, getImprovementType());
@@ -6217,6 +6213,14 @@ void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly,
 		if (pCity != NULL && pCity->isRevealed(eFromTeam))
 			pCity->setRevealed(eTeam, true);
 	}
+	// <advc.124> Moved down; all revealed status changes need to be applied first.
+	if (bUpdatePlotGroup)
+	{
+		for (MemberIter itMember(eTeam); itMember.hasNext(); ++itMember)
+		{
+			updatePlotGroup(itMember->getID());
+		}
+	} // </advc.124>
 }
 
 
