@@ -1101,8 +1101,8 @@ int CvMapGenerator::calculateNumBonusesToAdd(BonusTypes eBonus)
 			per100(kBonus.getPercentPerPlayer());
 	/*	<advc.129> Same as in BtS for 8 players, a bit less for high player counts,
 		a bit more for small player counts. */
-	rFromPlayers.exponentiate(fixp(0.8));
-	rFromPlayers *= fixp(1.5); // </advc.129>
+	rFromPlayers.exponentiate(fixp(0.85));
+	rFromPlayers *= fixp(4/3.); // </advc.129>
 	int iMult = kBonus.getConstAppearance();
 	iMult +=
 			MapRandNum(kBonus.getRandAppearance1()) +
