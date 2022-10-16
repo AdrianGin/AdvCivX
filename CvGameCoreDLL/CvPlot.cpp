@@ -3388,9 +3388,12 @@ bool CvPlot::isTradeNetworkConnected(CvPlot const& kOther, TeamTypes eTeam) cons
 	// <advc.opt> Moved up
 	bool const bNetworkTerrain = isNetworkTerrain(eTeam);
 	bool const bOtherNetworkTerrain = kOther.isNetworkTerrain(eTeam);
-	if (bNetworkTerrain && bOtherNetworkTerrain)
+	if (bNetworkTerrain && bOtherNetworkTerrain /*&&
+		// (BtS doesn't check for isthmi, and I guess that's OK.)
+		!GC.getMap().isSeparatedByIsthmus(*this, kOther)*/)
+	{
 		return true; // </advc.opt>
-
+	}
 	if (isRoute() /* advc.124: */ && getRevealedRouteType(eTeam) != NO_ROUTE)
 	{
 		if (kOther.isRoute() &&
