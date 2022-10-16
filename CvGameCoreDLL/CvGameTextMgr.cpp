@@ -17261,7 +17261,14 @@ void CvGameTextMgr::parseLeaderHeadHelp(CvWStringBuffer &szBuffer,
 	{
 		szBuffer.append(CvWString::format(SETCOLR SEPARATOR NEWLINE,
 				TEXT_COLOR("COLOR_LIGHT_GREY")));
-		szBuffer.append(CvWString::format(L"id=%d\n", eThisPlayer)); // advc.007
+		// <advc.007>
+		szBuffer.append(CvWString::format(L"id=%d\n", eThisPlayer));
+		if (GC.getGame().isOption(GAMEOPTION_RANDOM_PERSONALITIES))
+		{
+			szBuffer.append(L"Personality: ");
+			szBuffer.append(GC.getInfo(kPlayer.getPersonalityType()).getDescription());
+			szBuffer.append(NEWLINE);
+		} // </advc.007>
 		CitySiteEvaluator citySiteEval(kPlayer);
 
 		bool bFirst = true;
