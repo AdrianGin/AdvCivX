@@ -382,6 +382,7 @@ void CvGame::updateSelectionList()
 	if (pHeadSelectedUnit == NULL)
 		gDLL->getEngineIFace()->clearAreaBorderPlots(AREA_BORDER_LAYER_PATROLLED);
 	// </advc.004k>
+	else pHeadSelectedUnit->onActiveSelection(); // advc
 	if (GC.suppressCycling() || // K-Mod
 		GET_PLAYER(getActivePlayer()).isOption(PLAYEROPTION_NO_UNIT_CYCLING))
 	{

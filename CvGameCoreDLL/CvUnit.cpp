@@ -1711,14 +1711,14 @@ bool CvUnit::isActionRecommended(int iAction)
 
 	bool bUpdateFoundBorder = false; // advc.004h
 	// <advc> (Don't know how else the DLL could tell)
-	static int iLastUnitID = -1;
-	if (getID() != iLastUnitID)
+	static int iLastAction = MAX_INT;
+	if (iAction < iLastAction)
 	{
-		iLastUnitID = getID();
 		onActiveSelection();
 		bUpdateFoundBorder = true; // advc.004h
-	} // </advc>
-	// <advc.004h>
+	}
+	iLastAction = iAction;
+	// </advc>  <advc.004h>
 	{	// Update founding border also when go-to plot changes
 		static CvPlot const* pLastGoToPlot = NULL;
 		CvPlot const* pGoToPlot = gDLL->UI().getGotoPlot();
@@ -1896,10 +1896,7 @@ bool CvUnit::isActionRecommended(int iAction)
 	return false;
 }
 
-/*	advc: Called when the active player selects a unit.
-	(For responding to a unit becoming _unselected_ and no other unit
-	becoming selected, CvGame::updateSelectionList is my best bet - though it
-	doesn't learn which unit has become unselected.) */
+// advc: Called when a unit of the active player becomes selected
 void CvUnit::onActiveSelection()
 {
 	/*  <advc.002e> This needs to happen in some CvUnit function that gets called
