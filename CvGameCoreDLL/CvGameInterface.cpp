@@ -56,40 +56,42 @@ void CvGame::updateColoredPlots()
 
 	CvMap const& kMap = GC.getMap();
 	// BETTER_BTS_AI_MOD, Debug, 06/25/09, jdog5000: START
-	if (isDebugMode() &&
-		kUI.isShowYields() && !gDLL->GetWorldBuilderMode()) // advc.007
+	if (isDebugMode())
 	{
-		// City circles for debugging
-		for (PlayerAIIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		if (kUI.isShowYields() && !gDLL->GetWorldBuilderMode()) // advc.007
 		{
-			for (int i = 0; i < itPlayer->AI_getNumCitySites(); i++)
+			// City circles for debugging
+			for (PlayerAIIter<CIV_ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 			{
-				CvPlot const& kSite = itPlayer->AI_getCitySite(i);
-				kEngine.addColoredPlot(kSite.getX(), kSite.getY(),
-						GC.getInfo(GC.getInfo(itPlayer->getPlayerColor()).
-						getColorTypePrimary()).getColor(),
-						PLOT_STYLE_CIRCLE, PLOT_LANDSCAPE_LAYER_BASE);
-			}
-		}
-		// Plot improvement replacement circles for debugging
-		FOR_EACH_ENUM(PlotNum)
-		{
-			CvPlot& kPlot = kMap.getPlotByIndex(eLoopPlotNum);
-			CvCityAI const* pWorkingCity = kPlot.AI_getWorkingCity();
-			ImprovementTypes eImprovement = kPlot.getImprovementType();
-			if (pWorkingCity != NULL && eImprovement != NO_IMPROVEMENT)
-			{
-				CityPlotTypes ePlot = pWorkingCity->getCityPlotIndex(kPlot);
-				//int iBuildValue = pWorkingCity->AI_getBestBuildValue(ePlot);
-				BuildTypes eBestBuild = pWorkingCity->AI_getBestBuild(ePlot);
-				if (eBestBuild != NO_BUILD)
+				for (int i = 0; i < itPlayer->AI_getNumCitySites(); i++)
 				{
-					if (GC.getInfo(eBestBuild).getImprovement() != NO_IMPROVEMENT &&
-						eImprovement != GC.getInfo(eBestBuild).getImprovement())
+					CvPlot const& kSite = itPlayer->AI_getCitySite(i);
+					kEngine.addColoredPlot(kSite.getX(), kSite.getY(),
+							GC.getInfo(GC.getInfo(itPlayer->getPlayerColor()).
+							getColorTypePrimary()).getColor(),
+							PLOT_STYLE_CIRCLE, PLOT_LANDSCAPE_LAYER_BASE);
+				}
+			}
+			// Plot improvement replacement circles for debugging
+			FOR_EACH_ENUM(PlotNum)
+			{
+				CvPlot& kPlot = kMap.getPlotByIndex(eLoopPlotNum);
+				CvCityAI const* pWorkingCity = kPlot.AI_getWorkingCity();
+				ImprovementTypes eImprovement = kPlot.getImprovementType();
+				if (pWorkingCity != NULL && eImprovement != NO_IMPROVEMENT)
+				{
+					CityPlotTypes ePlot = pWorkingCity->getCityPlotIndex(kPlot);
+					//int iBuildValue = pWorkingCity->AI_getBestBuildValue(ePlot);
+					BuildTypes eBestBuild = pWorkingCity->AI_getBestBuild(ePlot);
+					if (eBestBuild != NO_BUILD)
 					{
-						kEngine.addColoredPlot(kPlot.getX(), kPlot.getY(),
-								GC.getInfo(GC.getColorType("RED")).getColor(),
-								PLOT_STYLE_CIRCLE, PLOT_LANDSCAPE_LAYER_BASE);
+						if (GC.getInfo(eBestBuild).getImprovement() != NO_IMPROVEMENT &&
+							eImprovement != GC.getInfo(eBestBuild).getImprovement())
+						{
+							kEngine.addColoredPlot(kPlot.getX(), kPlot.getY(),
+									GC.getInfo(GC.getColorType("RED")).getColor(),
+									PLOT_STYLE_CIRCLE, PLOT_LANDSCAPE_LAYER_BASE);
+						}
 					}
 				}
 			}
