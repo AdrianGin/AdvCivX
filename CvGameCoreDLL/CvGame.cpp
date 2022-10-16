@@ -9116,7 +9116,8 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 19; // advc.500c: Update citizen assignments
 	//uiFlag = 20; // advc.130r: Update war attitude
 	//uiFlag = 21; // advc.enum
-	uiFlag = 22; // advc.130n: Bugfix in fave-civic attitude calc
+	//uiFlag = 22; // advc.130n: Bugfix in fave-civic attitude calc
+	uiFlag = 23; // advc.124b: Need a plot group update for compatibility
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9293,6 +9294,9 @@ void CvGame::onAllGameDataRead()
 			initGameHandicap();
 		}
 	} // </advc.250a>
+	// <advc.124b> River connection rules have changed
+	if (m_uiSaveFlag <= 23)
+		updatePlotGroups(); // </advc.124b>
 	// <advc.003m>
 	for (TeamIter<> it; it.hasNext(); ++it)
 	{

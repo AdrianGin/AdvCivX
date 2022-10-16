@@ -1598,31 +1598,56 @@ bool CvPlot::isRiverSide() const
 }
 
 
-bool CvPlot::isRiverConnection(DirectionTypes eDirection) const
+bool CvPlot::isRiverConnection(DirectionTypes eDir) const
 {
-	switch (eDirection)
+	// advc: Rewritten; had been implemented through switch(eDir).
+	int const iRot = (isCardinalDirection(eDir) ? 2 : 1);
+	return (isRiverCrossing(rotateDirClockw(eDir, iRot)) ||
+			isRiverCrossing(rotateDirCounterClockw(eDir, iRot)));
+	/*	advc.124b (note): Now that this function is only used for checking
+		river-to-sea connections, a crossing in eDir would mean that a river
+		runs along the coast. I think isRiverToRiverConnection will handle
+		that case, so we don't need to check isRiverCrossing(eDir) here.
+		(And such rivers don't really have to be supported anyway.) */
+}
+
+/*	advc.124b: Allows connections between separate rivers only
+	when one of the plots is adjacent to both rivers.
+	(Could cache the result in an EnumMap<DirectionTypes,bool> member, i.e.
+	in a single byte, but I doubt that performance is that crucial here.) */
+bool CvPlot::isRiverToRiverConnection(CvPlot const& kOther) const
+{
+	FAssert(stepDistance(this, &kOther) == 1);
+	/*	Alias. Want the param name to communicate a symmetrical relation,
+		but, internally, we work with a (single) DirectionTypes value. */
+	CvPlot const& kTo = kOther;
+	DirectionTypes const eDir = directionXY(*this, kTo);
+	// Always allow trade straight across the river
+	if (isRiverCrossing(eDir))
+		return true;
+	if (isCardinalDirection(eDir))
 	{
-	case NO_DIRECTION: return false; // advc.opt (instead of checking it upfront)
-	case DIRECTION_NORTH:
-		return (isRiverCrossing(DIRECTION_EAST) || isRiverCrossing(DIRECTION_WEST));
-	case DIRECTION_NORTHEAST:
-		return (isRiverCrossing(DIRECTION_NORTH) || isRiverCrossing(DIRECTION_EAST));
-	case DIRECTION_EAST:
-		return (isRiverCrossing(DIRECTION_NORTH) || isRiverCrossing(DIRECTION_SOUTH));
-	case DIRECTION_SOUTHEAST:
-		return (isRiverCrossing(DIRECTION_SOUTH) || isRiverCrossing(DIRECTION_EAST));
-	case DIRECTION_SOUTH:
-		return (isRiverCrossing(DIRECTION_EAST) || isRiverCrossing(DIRECTION_WEST));
-	case DIRECTION_SOUTHWEST:
-		return (isRiverCrossing(DIRECTION_SOUTH) || isRiverCrossing(DIRECTION_WEST));
-	case DIRECTION_WEST:
-		return (isRiverCrossing(DIRECTION_NORTH) || isRiverCrossing(DIRECTION_SOUTH));
-	case DIRECTION_NORTHWEST:
-		return (isRiverCrossing(DIRECTION_NORTH) || isRiverCrossing(DIRECTION_WEST));
-	default:
-		FAssert(false);
-		return false;
+		DirectionTypes const ePerpClockw = rotateDirClockw(eDir, 2);
+		DirectionTypes const ePerpCounterClockw = rotateDirCounterClockw(eDir, 2);
+		if ((isRiverCrossing(ePerpClockw) && // as in BtS
+			(kTo.isRiverCrossing(ePerpClockw) ||
+			kTo.isRiverCrossing(rotateDirClockw(eDir, 3)))) ||
+			(isRiverCrossing(ePerpCounterClockw) && // as in BtS
+			(kTo.isRiverCrossing(ePerpCounterClockw) ||
+			kTo.isRiverCrossing(rotateDirCounterClockw(eDir, 3)))))
+		{
+			return true;
+		}
+		// Symmetrical to the additions above
+		return ((kTo.isRiverCrossing(ePerpClockw) &&
+				isRiverCrossing(rotateDirClockw(eDir))) ||
+				(kTo.isRiverCrossing(ePerpCounterClockw) &&
+				isRiverCrossing(rotateDirCounterClockw(eDir))));
 	}
+	return ((isRiverCrossing(rotateDirCounterClockw(eDir)) && // as in BtS
+			kTo.isRiverCrossing(rotateDirCounterClockw(eDir, 3))) ||
+			(isRiverCrossing(rotateDirClockw(eDir)) && // as in BtS
+			kTo.isRiverCrossing(rotateDirClockw(eDir, 3))));
 }
 
 
@@ -1922,9 +1947,8 @@ bool CvPlot::shouldProcessDisplacementPlot(int iDX, int iDY, //int iRange, // ad
 	if (fTheta >= -fSpread / 2 && fTheta <= fSpread / 2)
 		return true;
 	return false;
-
-	/*DirectionTypes eLeftDirection = GC.getTurnLeftDirection(eFacingDirection);
-	DirectionTypes eRightDirection = GC.getTurnRightDirection(eFacingDirection);
+	/*DirectionTypes eLeftDirection = ::rotateDirCounterClockw(eFacingDirection);
+	DirectionTypes eRightDirection = ::rotateDirClockw(eFacingDirection);
 	//test which sides of the line equation (cross product)
 	int iLeftSide = aaiDdisplacements[eLeftDirection][0] * iDY - aaiDisplacements[eLeftDirection][1] * iDX;
 	int iRightSide = displacements[eRightDirection][0] * iDY - displacements[rightDirection][1] * iDX;
@@ -3414,13 +3438,10 @@ bool CvPlot::isTradeNetworkConnected(CvPlot const& kOther, TeamTypes eTeam) cons
 		if (GET_TEAM(eTeam).isRevealedCityTrade(kOther)) // advc.124
 			return true;
 
-		if (kOther.isRiverNetwork(eTeam))
+		if (kOther.isRiverNetwork(eTeam) &&
+			kOther.isRiverConnection(directionXY(kOther, *this)))
 		{
-			/*	advc (comment): Could argue that the river direction should matter here.
-				If a river flows away from a water plot, then, at least graphically,
-				they're not quite connected. (Same goes for the isRiverNetwork branch below.) */
-			if (kOther.isRiverConnection(directionXY(kOther, *this)))
-				return true;
+			return true;
 		}
 		/*	<advc.124> Case 1: kOther has a route and this plot has network terrain.
 			(Note: The isCityRadius check is just for performance.) */
@@ -3439,14 +3460,14 @@ bool CvPlot::isTradeNetworkConnected(CvPlot const& kOther, TeamTypes eTeam) cons
 
 	if (isRiverNetwork(eTeam))
 	{
-		if (bOtherNetworkTerrain)
+		if (bOtherNetworkTerrain &&
+			isRiverConnection(directionXY(*this, kOther)))
 		{
-			if (isRiverConnection(directionXY(*this, kOther)))
-				return true;
+			return true;
 		}
-
-		if (isRiverConnection(directionXY(*this, kOther)) ||
-			kOther.isRiverConnection(directionXY(kOther, *this)))
+		/*if (isRiverConnection(directionXY(*this, kOther)) ||
+			kOther.isRiverConnection(directionXY(kOther, *this)))*/
+		if (isRiverToRiverConnection(kOther)) // advc.124b
 		{
 			if (kOther.isRiverNetwork(eTeam))
 				return true;

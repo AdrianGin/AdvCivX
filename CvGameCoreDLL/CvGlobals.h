@@ -175,18 +175,8 @@ public:
 	int const* getCityPlotY() const { return m_aiCityPlotY; }
 	int const* getCityPlotPriority() const { return m_aiCityPlotPriority; }
 	int maxCityPlotPriority() const { return m_iMaxCityPlotPriority; } // advc
-	DirectionTypes const* getTurnLeftDirection() const { return m_aeTurnLeftDirection; }
-	DirectionTypes getTurnLeftDirection(int i) const
-	{
-		FAssertBounds(0, NUM_DIRECTION_TYPES, i);
-		return m_aeTurnLeftDirection[i];
-	}
-	DirectionTypes const* getTurnRightDirection() const { return m_aeTurnRightDirection; }
-	DirectionTypes getTurnRightDirection(int i) const
-	{
-		FAssertBounds(0, NUM_DIRECTION_TYPES, i);
-		return m_aeTurnRightDirection[i];
-	}
+	/*	(advc: Unused getTurnLeftDirection, getTurnRightDirection deleted,
+		replacement rotateDir in CvGameCoreUtils.) */
 
 	//
 	// Global Infos
@@ -874,8 +864,9 @@ protected:
 	int m_aiCityPlotPriority[NUM_CITY_PLOTS];
 	int m_iMaxCityPlotPriority; // advc
 	CityPlotTypes m_aaeXYCityPlot[CITY_PLOTS_DIAMETER][CITY_PLOTS_DIAMETER];
-	DirectionTypes m_aeTurnLeftDirection[NUM_DIRECTION_TYPES];
-	DirectionTypes m_aeTurnRightDirection[NUM_DIRECTION_TYPES];
+	// advc: Can calculate these on the fly just fine (also: were unused)
+	/*DirectionTypes m_aeTurnLeftDirection[NUM_DIRECTION_TYPES];
+	DirectionTypes m_aeTurnRightDirection[NUM_DIRECTION_TYPES];*/
 	DirectionTypes m_aaeXYDirection[DIRECTION_DIAMETER][DIRECTION_DIAMETER];
 
 

@@ -92,7 +92,8 @@ public:
 	DllExport bool isRiverCrossingFlowClockwise(DirectionTypes eDirection) const;
 	bool isRiverSide() const;																		// Exposed to Python
 	bool isRiver() const { return (getRiverCrossingCount() > 0); }									// Exposed to Python
-	bool isRiverConnection(DirectionTypes eDirection) const;										// Exposed to Python
+	bool isRiverConnection(DirectionTypes eDir) const;												// Exposed to Python
+	bool isRiverToRiverConnection(CvPlot const& kOther) const; // advc.124b
 	// advc.500:
 	bool isConnectRiverSegments() const;
 	// advc.121: A kind of canal detection

@@ -178,29 +178,9 @@ void CvGlobals::init() // allocate
 		{NO_CITYPLOT, 13, 12,  11, NO_CITYPLOT,}
 	};
 
-	DirectionTypes aeTurnRightDirection[NUM_DIRECTION_TYPES] =
-	{
-		DIRECTION_NORTHEAST,	// DIRECTION_NORTH
-		DIRECTION_EAST,			// DIRECTION_NORTHEAST
-		DIRECTION_SOUTHEAST,	// DIRECTION_EAST
-		DIRECTION_SOUTH,		// DIRECTION_SOUTHEAST
-		DIRECTION_SOUTHWEST,	// DIRECTION_SOUTH
-		DIRECTION_WEST,			// DIRECTION_SOUTHWEST
-		DIRECTION_NORTHWEST,	// DIRECTION_WEST
-		DIRECTION_NORTH,		// DIRECTION_NORTHWEST
-	};
-
-	DirectionTypes aeTurnLeftDirection[NUM_DIRECTION_TYPES] =
-	{
-		DIRECTION_NORTHWEST,	// DIRECTION_NORTH
-		DIRECTION_NORTH,		// DIRECTION_NORTHEAST
-		DIRECTION_NORTHEAST,	// DIRECTION_EAST
-		DIRECTION_EAST,			// DIRECTION_SOUTHEAST
-		DIRECTION_SOUTHEAST,	// DIRECTION_SOUTH
-		DIRECTION_SOUTH,		// DIRECTION_SOUTHWEST
-		DIRECTION_SOUTHWEST,	// DIRECTION_WEST
-		DIRECTION_WEST,			// DIRECTION_NORTHWEST
-	};
+	// advc: unused
+	/*DirectionTypes aeTurnRightDirection[NUM_DIRECTION_TYPES] = ...
+	DirectionTypes aeTurnLeftDirection[NUM_DIRECTION_TYPES] = ...*/
 
 	DirectionTypes aaeXYDirection[DIRECTION_DIAMETER][DIRECTION_DIAMETER] =
 	{
@@ -246,8 +226,9 @@ void CvGlobals::init() // allocate
 	memcpy(m_aiCityPlotX, aiCityPlotX, sizeof(m_aiCityPlotX));
 	memcpy(m_aiCityPlotY, aiCityPlotY, sizeof(m_aiCityPlotY));
 	memcpy(m_aiCityPlotPriority, aiCityPlotPriority, sizeof(m_aiCityPlotPriority));
-	memcpy(m_aeTurnLeftDirection, aeTurnLeftDirection, sizeof(m_aeTurnLeftDirection));
-	memcpy(m_aeTurnRightDirection, aeTurnRightDirection, sizeof(m_aeTurnRightDirection));
+	// advc: unused
+	/*memcpy(m_aeTurnLeftDirection, aeTurnLeftDirection, sizeof(m_aeTurnLeftDirection));
+	memcpy(m_aeTurnRightDirection, aeTurnRightDirection, sizeof(m_aeTurnRightDirection));*/
 	memcpy(m_aaeXYCityPlot, aaiXYCityPlot, sizeof(m_aaeXYCityPlot));
 	memcpy(m_aaeXYDirection, aaeXYDirection,sizeof(m_aaeXYDirection));
 }
