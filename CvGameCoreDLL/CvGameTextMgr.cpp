@@ -1672,24 +1672,24 @@ void CvGameTextMgr::setPlotListHelpPerOwner(CvWStringBuffer& szString,
 	uint uTotal = perOwner[iRogueIndex][ALL].size();
 	for(int i = 0; i < iRogueIndex; i++) // Rogue units don't get a heading
 	{
-		int iSize = perOwner[i][ALL].size();
-		if(iSize > 0)
+		int const iSize = perOwner[i][ALL].size();
+		if (iSize <= 0)
+			continue;
+		iOwners++;
+		//uTotal += iSize; // Not good enough; need to anticipate linewrap.
+		for(int j = 0; j < iSize; j++)
 		{
-			//uTotal += iSize; // Not good enough; need to anticipate linewrap.
-			for(int j = 0; j < iSize; j++)
-			{
+			uTotal++;
+			// Ad hoc heuristic for estimating the required (horizontal) space
+			int iSpaceValue = perOwner[i][ALL][j]->getName().length()
+					+ (8 * perOwner[i][ALL][j]->getExperience()) / 5;
+			if(perOwner[i][ALL][j]->getDamage() > 0)
+				iSpaceValue += 2;
+			if(iSpaceValue >= 30)
 				uTotal++;
-				// Ad hoc heuristic for estimating the required (horizontal) space
-				int iSpaceValue = perOwner[i][ALL][j]->getName().length()
-						+ (8 * perOwner[i][ALL][j]->getExperience()) / 5;
-				if(perOwner[i][ALL][j]->getDamage() > 0)
-					iSpaceValue += 2;
-				if(iSpaceValue >= 30)
-					uTotal++;
-			}
-			if(iSize > 1)
-				iHeadings++;
 		}
+		if(iSize > 1)
+			iHeadings++;
 	}
 	int iTotal = (int)uTotal;
 	CvUnit const& kCenterUnit = *kPlot.getCenterUnit();

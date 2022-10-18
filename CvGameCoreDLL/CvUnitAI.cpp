@@ -2939,7 +2939,7 @@ void CvUnitAI::AI_attackCityMove()
 	if (isBarbarian())
 		bReadyToAttack = (getGroup()->getNumUnits() >= 3);
 	// <advc.300>
-	if (!isBarbarian() && !bTurtle)
+	else if (!bTurtle)
 	{
 		int const iGroupSz = getGroup()->getNumUnits();
 		scaled const rOurEra = GET_PLAYER(getOwner()).AI_getCurrEraFactor();
