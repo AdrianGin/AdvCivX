@@ -1669,6 +1669,7 @@ void CvGameTextMgr::setPlotListHelpPerOwner(CvWStringBuffer& szString,
 		perOwner[iOwnerIndex][ALL].push_back(pUnit);
 	}
 	int iHeadings = 0;
+	int iOwners = 0;
 	uint uTotal = perOwner[iRogueIndex][ALL].size();
 	for(int i = 0; i < iRogueIndex; i++) // Rogue units don't get a heading
 	{
@@ -1724,7 +1725,7 @@ void CvGameTextMgr::setPlotListHelpPerOwner(CvWStringBuffer& szString,
 	if(!szString.isEmpty()) // No newline at the start of PlotListHelp
 		szString.append(NEWLINE);
 	int iLinesUsed = 1;
-	bool bOmitOwner = (iHeadings > 0);
+	bool const bOmitOwner = (iHeadings >= iOwners);
 	if(iTotal + iHeadings + iLinesCenter <= iLineLimit)
 	{
 		setUnitHelp(szString, &kCenterUnit, false, false, false, bOmitOwner,
