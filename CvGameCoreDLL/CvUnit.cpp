@@ -1546,15 +1546,13 @@ void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted,
 					iWS, getTeam(), pDefender->getTeam(), true);
 			}
 		} // <advc.130m>
-
-		addAttackSuccessMessages(*pDefender, true); // advc.010: Moved into new function
 		// report event to Python, along with some other key state
 		CvEventReporter::getInstance().combatResult(this, pDefender);
-
 		bool bAdvance = false;
-
+		bool bCapture = false; // advc.010
 		if (isSuicide())
-		{
+		{	// advc.010: Moved into new function
+			addAttackSuccessMessages(*pDefender, true);
 			kill(true);
 			pDefender->kill(false);
 			pDefender = NULL;
@@ -1568,12 +1566,15 @@ void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted,
 					SyncRandSuccess100(getCaptureOdds(*pDefender))) // advc.010
 				{
 					pDefender->setCapturingPlayer(getOwner());
+					bCapture = true; // advc.010
 				}
 			}
-
+			/*	<advc.010> BtS had shown "destroyed" and then "captured" (I think).
+				We want to show only the captured message. */
+			if (!bCapture)
+				addAttackSuccessMessages(*pDefender, true); // </advc.010>
 			pDefender->kill(false);
 			pDefender = NULL;
-
 			if (!bAdvance)
 			{
 				changeMoves(std::max(GC.getMOVE_DENOMINATOR(),
