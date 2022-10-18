@@ -6739,17 +6739,17 @@ int CvCityAI::AI_neededDefenders(/* advc.139: */ bool bIgnoreEvac,
 			getArea().getAreaAIType(getTeam()) == AREAAI_MASSING);
 	bool const bDefenseWar = (getArea().getAreaAIType(getTeam()) == AREAAI_DEFENSIVE);
 	CvGame const& kGame = GC.getGame();
+	CvPlayerAI const& kOwner = GET_PLAYER(getOwner());
 	int iDefenders = 1;
 	if (isBarbarian())
 	{
 		iDefenders = GC.getInfo(kGame.getHandicapType()).getBarbarianInitialDefenders();
-		iDefenders += (getPopulation() + 2) / 7;
+		// advc.300: Numerator was pop+2
+		iDefenders += (getPopulation() + kOwner.getCurrentEra()) / 7;
 		return iDefenders;
 	} // advc.003n: Switched the order of these two branches
 	if (!GET_TEAM(getTeam()).AI_isWarPossible())
 		return iDefenders;
-
-	CvPlayerAI const& kOwner = GET_PLAYER(getOwner());
 
 	if (hasActiveWorldWonder() || isCapital() || isHolyCity())
 	{
