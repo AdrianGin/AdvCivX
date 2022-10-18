@@ -7147,21 +7147,23 @@ void CvGame::createBarbarianUnits()
 		}
 		if (iUnownedTotal < iBaseTilesPerLandUnit / 2)
 			continue;
-		int const iBarbarianCities = a.getCitiesPerPlayer(BARBARIAN_PLAYER);
 		{
-			int const iInitialDefenders = GC.getInfo(getHandicapType()).
-					getBarbarianInitialDefenders();
-			iLandUnits = std::max(0, iLandUnits
 			/*	Don't count city defenders. Settled Barbarians being less aggressive
 				makes sense, but cities also reduce the number of unowned tiles;
-				that's enough.	(Alt. idea: Subtract half the Barbarian population
-				in this area.)	Old Firaxis to-do comment on this subject:
+				that's enough.Old Firaxis to-do comment on this subject:
 				'XXX eventually need to measure	how many barbs of eBarbUnitAI we
 				have in this area...' */
-					- iBarbarianCities * std::max(0, iInitialDefenders));
+			int iDefenders = 0;
+			FOR_EACH_CITY(pCity, GET_PLAYER(BARBARIAN_PLAYER))
+			{
+				if (pCity->isArea(a))
+					iDefenders += pCity->getPlot().plotCount(PUF_isCityAIType);
+			}
+			iLandUnits = std::max(0, iLandUnits - iDefenders);
 		}
 		int iNeededLand = numBarbariansToCreate(iBaseTilesPerLandUnit, iTiles,
 				iUnowned, iLandUnits);
+		int const iBarbarianCities = a.getCitiesPerPlayer(BARBARIAN_PLAYER);
 		for (size_t i = 0; i < shelves.size(); i++)
 		{
 			int iShips = shelves[i]->countBarbarians();
