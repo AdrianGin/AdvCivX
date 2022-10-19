@@ -5211,20 +5211,25 @@ void CvTeam::doBarbarianResearch()
 					one or two civs. */
 				if (bNoBarbCities)
 					iCount = std::max(iCount, (2 * iHasTech) / 3);
-				static int const iBARBARIAN_FREE_TECH_PERCENT = GC.getDefineINT("BARBARIAN_FREE_TECH_PERCENT"); // advc.opt
-				int iTechPercent = iBARBARIAN_FREE_TECH_PERCENT;
-				// <advc.301> For slightly earlier Archers, earlier Horse Archers.
-				if (GC.getInfo(eLoopTech).getFlavorValue(FLAVOR_MILITARY) > 7)
-					iTechPercent++; // </advc.301>
+				static scaled const rBARBARIAN_FREE_TECH_PERCENT = // advc.opt
+						per100(GC.getDefineINT("BARBARIAN_FREE_TECH_PERCENT")); // advc.301
+				scaled rTechPercent = rBARBARIAN_FREE_TECH_PERCENT *
+						// <advc.301>
+						(1 + per100(GC.getInfo(eLoopTech).get(
+						CvTechInfo::BarbarianFreeTechModifier)));
+				if (rTechPercent <= 0)
+					continue; // </advc.301>
 				//changeResearchProgress(eLoopTech, (getResearchCost(eLoopTech) * ((iTechPercent * iCount) / iPossible)) / 100, getLeaderID());
-				/*	K-Mod. Adjust research rate for game-speed & start-era -
+				/*	<K-Mod> Adjust research rate for game-speed & start-era -
 					but _not_ world-size. And fix the rounding error. */
-				int iBaseCost = (getResearchCost(eLoopTech, false) *
-						GC.getInfo(GC.getMap().getWorldSize()).getResearchPercent()) / 100;
-				changeResearchProgress(eLoopTech, std::max(1,
-						(iBaseCost * iTechPercent * iCount) /
-						(100 * iPossible)), kBarbPlayer.getID());
-				// K-Mod end
+				scaled rBaseCost = per100(getResearchCost(eLoopTech, false) *
+						GC.getInfo(GC.getMap().getWorldSize()).getResearchPercent());
+				changeResearchProgress(eLoopTech, scaled::clamp(
+						(rBaseCost * rTechPercent * iCount) / iPossible, 1,
+						// <advc.301> No overflow
+						std::max(1, getResearchCost(eLoopTech)
+						- getResearchProgress(eLoopTech))).uround(), // </advc.301>
+						kBarbPlayer.getID()); // </K-Mod>
 			}
 		}
 	}

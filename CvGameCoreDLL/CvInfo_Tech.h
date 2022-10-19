@@ -4,9 +4,26 @@
 #define CV_INFO_TECH_H
 
 // advc.003x: Cut from CvInfos.h. Just CvTechInfo b/c I want to precompile this one.
-class CvTechInfo : public CvInfoBase
+class CvTechInfo : /* <advc.tag> */ public CvXMLInfo
 {
-	typedef CvInfoBase base_t;
+	typedef CvXMLInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		kElements.addInt(BarbarianFreeTechModifier, "BarbarianFreeTechModifier"); // advc.301
+	}
+public:
+	enum IntElementTypes
+	{
+		BarbarianFreeTechModifier = base_t::NUM_INT_ELEMENT_TYPES, // advc.301
+		NUM_INT_ELEMENT_TYPES
+	};
+	int get(IntElementTypes e) const
+	{
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
+	}
+	// </advc.tag>
 	friend class CvXMLLoadUtility;
 public: // advc: All the const functions are exposed to Python except those added by mods
 	CvTechInfo();

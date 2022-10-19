@@ -2245,6 +2245,8 @@
 			<!-- advc.131b -->
 			<iAIWeight>-100</iAIWeight>
 			<iAITradeModifier>0</iAITradeModifier>
+			<!-- advc.301 -->
+			<iBarbarianFreeTechModifier>-50</iBarbarianFreeTechModifier>
 			<iCost>100</iCost>
 			<iAdvancedStartCost>100</iAdvancedStartCost>
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
@@ -4804,6 +4806,8 @@
 			<iAIWeight>0</iAIWeight>
 			<!-- advc.552: was 10 -->
 			<iAITradeModifier>0</iAITradeModifier>
+			<!-- advc.301 -->
+			<iBarbarianFreeTechModifier>50</iBarbarianFreeTechModifier>
 			<iCost>250</iCost>
 			<iAdvancedStartCost>100</iAdvancedStartCost>
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
