@@ -454,12 +454,7 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szString, const CvUnit* pUnit,
 						gDLL->getSymbolID(STRENGTH_CHAR));
 			}
 			else if (pUnit->isHurt())
-			{
-				szTempBuffer.Format(L"%.1f/%d%c, ",
-						(pUnit->airBaseCombatStr() * pUnit->currHitPoints()) /
-						(float)pUnit->maxHitPoints(),
-						pUnit->airBaseCombatStr(), gDLL->getSymbolID(STRENGTH_CHAR));
-			}
+				setHurtUnitStrength(szTempBuffer, *pUnit); // advc.004
 			else
 			{
 				szTempBuffer.Format(L"%d%c, ", pUnit->airBaseCombatStr(),
@@ -479,23 +474,7 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szString, const CvUnit* pUnit,
 						gDLL->getSymbolID(STRENGTH_CHAR));
 			}
 			else if (pUnit->isHurt())
-			{	// <advc.004>
-				// as in BtS
-				float fCurrStrength = pUnit->baseCombatStr() *
-						pUnit->currHitPoints() / (float)pUnit->maxHitPoints();
-				int iCurrStrengthTimes100 = (100 * pUnit->baseCombatStr() *
-						pUnit->currHitPoints()) / pUnit->maxHitPoints();
-				// Format would round up to e.g. 2.0/2 for a Warrior here
-				if(pUnit->baseCombatStr() * pUnit->maxHitPoints() -
-						iCurrStrengthTimes100 <= 5)
-					fCurrStrength = pUnit->baseCombatStr() - 0.1f;
-				// Format would show 0.0 here
-				if(pUnit->baseCombatStr() * pUnit->maxHitPoints() < 5)
-					fCurrStrength = 0.1f;
-				// </advc.004>
-				szTempBuffer.Format(L"%.1f/%d%c, ", fCurrStrength,
-					pUnit->baseCombatStr(), gDLL->getSymbolID(STRENGTH_CHAR));
-			}
+				setHurtUnitStrength(szTempBuffer, *pUnit); // advc.004
 			else
 			{
 				szTempBuffer.Format(L"%d%c, ", pUnit->baseCombatStr(),
@@ -1297,6 +1276,28 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szString, const CvUnit* pUnit,
 			szString.append(szTempBuffer);
 		}
 	}
+}
+
+/*	advc.004: Based on code cut from setUnitHelp.
+	Avoids showing units that are very slightly damaged at full strength
+	or units that are barely alive at 0 strength. */
+void CvGameTextMgr::setHurtUnitStrength(CvWString& szBuffer, CvUnit const& kUnit)
+{
+	int const iBaseStr = (kUnit.getDomainType() == DOMAIN_AIR ?
+			kUnit.airBaseCombatStr() : kUnit.baseCombatStr());
+	// as in BtS:
+	float fCurrStrength = iBaseStr * kUnit.currHitPoints() /
+			(float)kUnit.maxHitPoints();
+	int iCurrStrengthTimes100 = (100 * iBaseStr *
+			kUnit.currHitPoints()) / kUnit.maxHitPoints();
+	// %.1f would round up to e.g. 2.0/2 for a Warrior here
+	if (iBaseStr * kUnit.maxHitPoints() - iCurrStrengthTimes100 <= 5)
+		fCurrStrength = iBaseStr - 0.1f;
+	if (iCurrStrengthTimes100 < 5) // %.1f would show 0.0 here
+		fCurrStrength = 0.1f;
+	// as in BtS:
+	szBuffer.Format(L"%.1f/%d%c, ", fCurrStrength,
+			iBaseStr, gDLL->getSymbolID(STRENGTH_CHAR));
 }
 
 // <advc.061>
