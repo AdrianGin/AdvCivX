@@ -249,10 +249,19 @@ private:
 /*	advc.tag: (To expose a tag to Python, this macro needs to be called in the
 	public section of the concrete XML info class that defines the tag, and a
 	py_get... def needs to be added in the appropriate CyInfoPythonInterface*.cpp.) */
-#define PY_GET_ELEMENT(ReturnType, TagName) \
+#define PY_GET_ELEMENT(TagName) \
 	private: \
 		FRIEND_CY_INFO_PYTHON_INTERFACE; \
-		ReturnType py_get##TagName() const \
+		int py_get##TagName() const \
+		{ \
+			return get(TagName); \
+		} \
+	public:
+// advc.tag: (See above; this one is for BoolElements.)
+#define PY_IS_ELEMENT(TagName) \
+	private: \
+		FRIEND_CY_INFO_PYTHON_INTERFACE; \
+		bool py_is##TagName() const \
 		{ \
 			return get(TagName); \
 		} \

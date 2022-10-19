@@ -14989,7 +14989,7 @@ void CvGameTextMgr::buildFreeTechString(CvWStringBuffer &szBuffer,
 void CvGameTextMgr::buildNoFearForSafetyString(CvWStringBuffer &szBuffer,
 	TechTypes eTech, bool bList, bool bPlayerContext)
 {
-	if (!GC.getInfo(eTech).isNoFearForSafety())
+	if (!GC.getInfo(eTech).get(CvTechInfo::NoFearForSafety))
 		return;
 	if (bList)
 		szBuffer.append(NEWLINE);

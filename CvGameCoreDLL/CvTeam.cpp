@@ -5181,57 +5181,57 @@ void CvTeam::doBarbarianResearch()
 	CvPlayerAI const& kBarbPlayer = GET_PLAYER(BARBARIAN_PLAYER);
 	FOR_EACH_ENUM(Tech)
 	{
-		if (!isHasTech(eLoopTech) && /* advc.307: */ (bIgnorePrereqs ||
+		if (isHasTech(eLoopTech) || /* advc.307: */ (!bIgnorePrereqs &&
 			// K-Mod. Make no progress on techs until prereqs are researched.
-			kBarbPlayer.canResearch(eLoopTech, false, true)))
+			!kBarbPlayer.canResearch(eLoopTech, false, true)))
 		{
-			int iCount = 0;
-			int iHasTech = 0; // advc.307
-			TeamIter<CIV_ALIVE> it;
-			for (; it.hasNext(); ++it)
-			{
-				CvTeam const& kLoopTeam = *it;
-				if (kLoopTeam.isHasTech(eLoopTech) &&
-					kLoopTeam.isInContactWithBarbarians()) // advc.302
-				{
-					iCount++;
-				}
-				// <advc.307>
-				if (kLoopTeam.isHasTech(eLoopTech))
-					iHasTech++; // </advc.307>
-			} /* advc.302: Don't stop Barbarian research entirely even when there
-				 is no contact with any civs */
-			iCount = std::max(iCount, iHasTech / 3);
-			if (iCount > 0)
-			{
-				int const iPossible = it.nextIndex();
-				/*  advc.307: In the late game, count all civs as having contact
-					with Barbarians if at least one of them has contact. Otherwise,
-					New World Barbarians catch up too slowly when colonized by only
-					one or two civs. */
-				if (bNoBarbCities)
-					iCount = std::max(iCount, (2 * iHasTech) / 3);
-				static scaled const rBARBARIAN_FREE_TECH_PERCENT = // advc.opt
-						per100(GC.getDefineINT("BARBARIAN_FREE_TECH_PERCENT")); // advc.301
-				scaled rTechPercent = rBARBARIAN_FREE_TECH_PERCENT *
-						// <advc.301>
-						(1 + per100(GC.getInfo(eLoopTech).get(
-						CvTechInfo::BarbarianFreeTechModifier)));
-				if (rTechPercent <= 0)
-					continue; // </advc.301>
-				//changeResearchProgress(eLoopTech, (getResearchCost(eLoopTech) * ((iTechPercent * iCount) / iPossible)) / 100, getLeaderID());
-				/*	<K-Mod> Adjust research rate for game-speed & start-era -
-					but _not_ world-size. And fix the rounding error. */
-				scaled rBaseCost = per100(getResearchCost(eLoopTech, false) *
-						GC.getInfo(GC.getMap().getWorldSize()).getResearchPercent());
-				changeResearchProgress(eLoopTech, scaled::clamp(
-						(rBaseCost * rTechPercent * iCount) / iPossible, 1,
-						// <advc.301> No overflow
-						std::max(1, getResearchCost(eLoopTech)
-						- getResearchProgress(eLoopTech))).uround(), // </advc.301>
-						kBarbPlayer.getID()); // </K-Mod>
-			}
+			continue;
 		}
+		int iCount = 0;
+		int iHasTech = 0; // advc.307
+		TeamIter<CIV_ALIVE> it;
+		for (; it.hasNext(); ++it)
+		{
+			CvTeam const& kLoopTeam = *it;
+			if (kLoopTeam.isHasTech(eLoopTech) &&
+				kLoopTeam.isInContactWithBarbarians()) // advc.302
+			{
+				iCount++;
+			}
+			// <advc.307>
+			if (kLoopTeam.isHasTech(eLoopTech))
+				iHasTech++; // </advc.307>
+		} /* advc.302: Don't stop Barbarian research entirely even when there
+			 is no contact with any civs */
+		iCount = std::max(iCount, iHasTech / 3);
+		if (iCount <= 0)
+			continue;
+		int const iPossible = it.nextIndex();
+		/*  advc.307: In the late game, count all civs as having contact
+			with Barbarians if at least one of them has contact. Otherwise,
+			New World Barbarians catch up too slowly when colonized by only
+			one or two civs. */
+		if (bNoBarbCities)
+			iCount = std::max(iCount, (2 * iHasTech) / 3);
+		static scaled const rBARBARIAN_FREE_TECH_PERCENT = // advc.opt
+				per100(GC.getDefineINT("BARBARIAN_FREE_TECH_PERCENT")); // advc.301
+		scaled rTechPercent = rBARBARIAN_FREE_TECH_PERCENT *
+				// <advc.301>
+				(1 + per100(GC.getInfo(eLoopTech).get(
+				CvTechInfo::BarbarianFreeTechModifier)));
+		if (rTechPercent <= 0)
+			continue; // </advc.301>
+		//changeResearchProgress(eLoopTech, (getResearchCost(eLoopTech) * ((iTechPercent * iCount) / iPossible)) / 100, getLeaderID());
+		/*	<K-Mod> Adjust research rate for game-speed & start-era -
+			but _not_ world-size. And fix the rounding error. */
+		scaled rBaseCost = per100(getResearchCost(eLoopTech, false) *
+				GC.getInfo(GC.getMap().getWorldSize()).getResearchPercent());
+		changeResearchProgress(eLoopTech, scaled::clamp(
+				(rBaseCost * rTechPercent * iCount) / iPossible, 1,
+				// <advc.301> No overflow
+				std::max(1, getResearchCost(eLoopTech)
+				- getResearchProgress(eLoopTech))).uround(), // </advc.301>
+				kBarbPlayer.getID()); // </K-Mod>
 	}
 }
 
@@ -5508,7 +5508,7 @@ void CvTeam::processTech(TechTypes eTech, int iChange,
 	if (kTech.isRiverTrade() /* advc.300: */ && !isBarbarian())
 		changeRiverTradeCount(iChange);
 	// <advc.500c>
-	if (kTech.isNoFearForSafety())
+	if (kTech.get(CvTechInfo::NoFearForSafety))
 		changeNoFearForSafetyCount(iChange); // </advc.500c>
 
 	FOR_EACH_ENUM(Building)
