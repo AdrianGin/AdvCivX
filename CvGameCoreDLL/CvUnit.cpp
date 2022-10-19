@@ -9874,9 +9874,17 @@ void CvUnit::setTransportUnit(CvUnit* pTransportUnit)
 	else
 	{
 		m_transportUnit.reset();
-
-		if (getGroup()->getActivityType() != ACTIVITY_MISSION) // K-Mod. (the unit might be trying to walk somewhere.)
+		// K-Mod. (the unit might be trying to walk somewhere.)
+		if (getGroup()->getActivityType() != ACTIVITY_MISSION)
+		{
 			getGroup()->setActivityType(ACTIVITY_AWAKE);
+			/*	advc.001: This is normally the job of setActivityType, but,
+				when unloading multiple units, the first setTransportUnit call
+				will already awaken the whole group, and then setActivityType
+				doesn't set any dirty-bits. (Not sure if this is the best way
+				to fix that.) */
+			gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
+		}
 	}
 }
 
