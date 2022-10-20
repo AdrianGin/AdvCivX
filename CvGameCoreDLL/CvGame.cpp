@@ -7150,7 +7150,7 @@ void CvGame::createBarbarianUnits()
 		{
 			/*	Don't count city defenders. Settled Barbarians being less aggressive
 				makes sense, but cities also reduce the number of unowned tiles;
-				that's enough.Old Firaxis to-do comment on this subject:
+				that's enough. Old Firaxis to-do comment on this subject:
 				'XXX eventually need to measure	how many barbs of eBarbUnitAI we
 				have in this area...' */
 			int iDefenders = 0;

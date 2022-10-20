@@ -624,657 +624,654 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szString, const CvUnit* pUnit,
 		}
 	}
 
-	if (!bOneLine)
+	if (bOneLine)
+		return;
+
+	// advc.007: Don't show rival spy test in Debug mode
+	if (pUnit->isActiveTeam())
+		setEspionageMissionHelp(szString, pUnit);
+
+	if (pUnit->cargoSpace() > 0)
 	{
-		// advc.007: Don't show rival spy test in Debug mode
+		CvWString szTempBuffer;
 		if (pUnit->isActiveTeam())
-			setEspionageMissionHelp(szString, pUnit);
-
-		if (pUnit->cargoSpace() > 0)
 		{
-			CvWString szTempBuffer;
-			if (pUnit->isActiveTeam())
-			{
-				szTempBuffer = NEWLINE + gDLL->getText("TXT_KEY_UNIT_HELP_CARGO_SPACE",
-						pUnit->getCargo(), pUnit->cargoSpace());
-			}
-			else
-			{
-				szTempBuffer = NEWLINE + gDLL->getText("TXT_KEY_UNIT_CARGO_SPACE",
-						pUnit->cargoSpace());
-			}
-			szString.append(szTempBuffer);
-
-			if (pUnit->specialCargo() != NO_SPECIALUNIT)
-			{
-				szString.append(gDLL->getText("TXT_KEY_UNIT_CARRIES",
-						GC.getInfo(pUnit->specialCargo()).getTextKeyWide()));
-			}
+			szTempBuffer = NEWLINE + gDLL->getText("TXT_KEY_UNIT_HELP_CARGO_SPACE",
+					pUnit->getCargo(), pUnit->cargoSpace());
 		}
+		else
+		{
+			szTempBuffer = NEWLINE + gDLL->getText("TXT_KEY_UNIT_CARGO_SPACE",
+					pUnit->cargoSpace());
+		}
+		szString.append(szTempBuffer);
 
-		if (pUnit->fortifyModifier() != 0)
+		if (pUnit->specialCargo() != NO_SPECIALUNIT)
+		{
+			szString.append(gDLL->getText("TXT_KEY_UNIT_CARRIES",
+					GC.getInfo(pUnit->specialCargo()).getTextKeyWide()));
+		}
+	}
+
+	if (pUnit->fortifyModifier() != 0)
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText("TXT_KEY_UNIT_HELP_FORTIFY_BONUS",
+				pUnit->fortifyModifier()));
+	}
+
+	if (!bShort)
+	{
+		if (pUnit->isNuke())
 		{
 			szString.append(NEWLINE);
-			szString.append(gDLL->getText("TXT_KEY_UNIT_HELP_FORTIFY_BONUS",
-					pUnit->fortifyModifier()));
+			szString.append(gDLL->getText("TXT_KEY_UNIT_CAN_NUKE"));
 		}
 
-		if (!bShort)
+		if (pUnit->alwaysInvisible())
 		{
-			if (pUnit->isNuke())
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_CAN_NUKE"));
-			}
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_INVISIBLE_ALL"));
+		}
+		else if (pUnit->getInvisibleType() != NO_INVISIBLE)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_INVISIBLE_MOST"));
+		}
 
-			if (pUnit->alwaysInvisible())
+		for (int i = 0; i < pUnit->getNumSeeInvisibleTypes(); i++)
+		{
+			if (pUnit->getSeeInvisibleType(i) != pUnit->getInvisibleType())
 			{
 				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_INVISIBLE_ALL"));
-			}
-			else if (pUnit->getInvisibleType() != NO_INVISIBLE)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_INVISIBLE_MOST"));
-			}
-
-			for (int i = 0; i < pUnit->getNumSeeInvisibleTypes(); i++)
-			{
-				if (pUnit->getSeeInvisibleType(i) != pUnit->getInvisibleType())
-				{
-					szString.append(NEWLINE);
-					szString.append(gDLL->getText("TXT_KEY_UNIT_SEE_INVISIBLE",
-							GC.getInfo(pUnit->getSeeInvisibleType(i)).getTextKeyWide()));
-				}
-			}
-
-			if (pUnit->canMoveImpassable())
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_CAN_MOVE_IMPASSABLE"));
+				szString.append(gDLL->getText("TXT_KEY_UNIT_SEE_INVISIBLE",
+						GC.getInfo(pUnit->getSeeInvisibleType(i)).getTextKeyWide()));
 			}
 		}
 
-		if (pUnit->maxFirstStrikes() > 0)
+		if (pUnit->canMoveImpassable())
 		{
-			if (pUnit->firstStrikes() == pUnit->maxFirstStrikes())
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_CAN_MOVE_IMPASSABLE"));
+		}
+	}
+
+	if (pUnit->maxFirstStrikes() > 0)
+	{
+		if (pUnit->firstStrikes() == pUnit->maxFirstStrikes())
+		{
+			if (pUnit->firstStrikes() == 1)
 			{
-				if (pUnit->firstStrikes() == 1)
-				{
-					szString.append(NEWLINE);
-					szString.append(gDLL->getText("TXT_KEY_UNIT_ONE_FIRST_STRIKE"));
-				}
-				else
-				{
-					szString.append(NEWLINE);
-					szString.append(gDLL->getText("TXT_KEY_UNIT_NUM_FIRST_STRIKES",
-							pUnit->firstStrikes()));
-				}
+				szString.append(NEWLINE);
+				szString.append(gDLL->getText("TXT_KEY_UNIT_ONE_FIRST_STRIKE"));
 			}
 			else
 			{
 				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_FIRST_STRIKE_CHANCES",
-						pUnit->firstStrikes(), pUnit->maxFirstStrikes()));
-			}
-		}
-
-		if (pUnit->immuneToFirstStrikes())
-		{
-			szString.append(NEWLINE);
-			szString.append(gDLL->getText("TXT_KEY_UNIT_IMMUNE_FIRST_STRIKES"));
-		}
-
-		if (!bShort)
-		{	// <advc.315> Whether a unit can attack is too important to omit
-			if (pUnit->isOnlyDefensive())
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_ONLY_DEFENSIVE"));
-			} // </advc.315>
-			// <advc.315a> Same code as under setBasicUnitHelp
-			if (kInfo.isOnlyAttackAnimals())
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_ONLY_ATTACK_ANIMALS"));
-			} // </advc.315a>
-			// <advc.315b>
-			if (kInfo.isOnlyAttackBarbarians())
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_ONLY_ATTACK_BARBARIANS"));
-			} // </advc.315b>
-			if (pUnit->noDefensiveBonus())
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_NO_DEFENSE_BONUSES"));
-			}
-			/*	advc.opt: was pUnit->flatMovementCost, which is now always true
-				for air units. Don't want to show text for those. */
-			if (pUnit->getUnitInfo().isFlatMovementCost())
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_FLAT_MOVEMENT"));
-			}
-
-			if (pUnit->ignoreTerrainCost())
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_IGNORE_TERRAIN"));
-			}
-
-			if (pUnit->isBlitz())
-			{
-				szString.append(NEWLINE);
-				// <advc.164>
-				int iBlitz = pUnit->getBlitzCount();
-				if (iBlitz > 0)
-				{
-					if (iBlitz > 1)
-					{
-						szString.append(gDLL->getText("TXT_KEY_PROMOTION_BLITZ_LIMIT",
-								iBlitz + 1));
-					}
-					else szString.append(gDLL->getText("TXT_KEY_PROMOTION_BLITZ_TWICE"));
-				}
-				else // </advc.164>
-					szString.append(gDLL->getText("TXT_KEY_PROMOTION_BLITZ_TEXT"));
-			}
-
-			if (pUnit->isAmphib())
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_AMPHIB_TEXT"));
-			}
-
-			if (pUnit->isRiver())
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_RIVER_ATTACK_TEXT"));
-			}
-
-			if (pUnit->isEnemyRoute())
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_ENEMY_ROADS_TEXT"));
-			}
-
-			if (pUnit->isAlwaysHeal())
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_ALWAYS_HEAL_TEXT"));
-			}
-
-			if (pUnit->isHillsDoubleMove())
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_HILLS_MOVE_TEXT"));
-			}
-
-			FOR_EACH_ENUM(Terrain)
-			{
-				if (pUnit->isTerrainDoubleMove(eLoopTerrain))
-				{
-					szString.append(NEWLINE);
-					szString.append(gDLL->getText("TXT_KEY_PROMOTION_DOUBLE_MOVE_TEXT",
-							GC.getInfo(eLoopTerrain).getTextKeyWide()));
-				}
-			}
-
-			FOR_EACH_ENUM(Feature)
-			{
-				if (pUnit->isFeatureDoubleMove(eLoopFeature))
-				{
-					szString.append(NEWLINE);
-					szString.append(gDLL->getText("TXT_KEY_PROMOTION_DOUBLE_MOVE_TEXT",
-							GC.getInfo(eLoopFeature).getTextKeyWide()));
-				}
-			}
-
-			if (pUnit->getExtraVisibilityRange() != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_VISIBILITY_TEXT",
-						pUnit->getExtraVisibilityRange()));
-			}
-
-			if (pUnit->getExtraMoveDiscount() != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_MOVE_DISCOUNT_TEXT",
-						-pUnit->getExtraMoveDiscount()));
-			}
-
-			if (pUnit->getExtraEnemyHeal() != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_HEALS_EXTRA_TEXT",
-						pUnit->getExtraEnemyHeal()) +
-						gDLL->getText("TXT_KEY_PROMOTION_ENEMY_LANDS_TEXT"));
-			}
-
-			if (pUnit->getExtraNeutralHeal() != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_HEALS_EXTRA_TEXT",
-						pUnit->getExtraNeutralHeal()) +
-						gDLL->getText("TXT_KEY_PROMOTION_NEUTRAL_LANDS_TEXT"));
-			}
-
-			if (pUnit->getExtraFriendlyHeal() != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_HEALS_EXTRA_TEXT",
-						pUnit->getExtraFriendlyHeal()) +
-						gDLL->getText("TXT_KEY_PROMOTION_FRIENDLY_LANDS_TEXT"));
-			}
-
-			if (pUnit->getSameTileHeal() != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_HEALS_SAME_TEXT",
-						pUnit->getSameTileHeal()) +
-						gDLL->getText("TXT_KEY_PROMOTION_DAMAGE_TURN_TEXT"));
-			}
-
-			if (pUnit->getAdjacentTileHeal() != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_HEALS_ADJACENT_TEXT",
-						pUnit->getAdjacentTileHeal()) +
-						gDLL->getText("TXT_KEY_PROMOTION_DAMAGE_TURN_TEXT"));
-			}
-		}
-
-		if (pUnit->currInterceptionProbability() > 0)
-		{
-			szString.append(NEWLINE);
-			szString.append(gDLL->getText("TXT_KEY_UNIT_INTERCEPT_AIRCRAFT",
-					pUnit->currInterceptionProbability()));
-		}
-
-		if (pUnit->evasionProbability() > 0)
-		{
-			szString.append(NEWLINE);
-			szString.append(gDLL->getText("TXT_KEY_UNIT_EVADE_INTERCEPTION",
-					pUnit->evasionProbability()));
-		}
-
-		if (pUnit->withdrawalProbability() > 0)
-		{
-			if (bShort)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_WITHDRAWL_PROBABILITY_SHORT",
-						pUnit->withdrawalProbability()));
-			}
-			else
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_WITHDRAWL_PROBABILITY",
-						pUnit->withdrawalProbability()));
-			}
-		}
-
-		if (pUnit->combatLimit() < GC.getMAX_HIT_POINTS() && pUnit->canAttack())
-		{
-			szString.append(NEWLINE);
-			szString.append(gDLL->getText("TXT_KEY_UNIT_COMBAT_LIMIT",
-					(100 * pUnit->combatLimit()) / GC.getMAX_HIT_POINTS()));
-		}
-
-		if (pUnit->collateralDamage() > 0)
-		{
-			szString.append(NEWLINE);
-			if (pUnit->getExtraCollateralDamage() == 0)
-			{
-				szString.append(gDLL->getText(
-						"TXT_KEY_UNIT_COLLATERAL_DAMAGE_SHORT", // advc.004: short version
-						100 * kInfo.getCollateralDamageLimit() / GC.getMAX_HIT_POINTS(),
-						pUnit->collateralDamageMaxUnits())); // advc.004
-			}
-			else
-			{
-				szString.append(gDLL->getText("TXT_KEY_UNIT_COLLATERAL_DAMAGE_EXTRA",
-						pUnit->getExtraCollateralDamage()));
-			}
-		}
-
-		FOR_EACH_ENUM(UnitCombat)
-		{
-			if (kInfo.getUnitCombatCollateralImmune(eLoopUnitCombat))
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_COLLATERAL_IMMUNE",
-						GC.getInfo(eLoopUnitCombat).getTextKeyWide()));
-			}
-		}
-
-		if (pUnit->getCollateralDamageProtection() > 0)
-		{
-			szString.append(NEWLINE);
-			szString.append(gDLL->getText("TXT_KEY_PROMOTION_COLLATERAL_PROTECTION_TEXT",
-					pUnit->getCollateralDamageProtection()));
-		}
-
-		if (pUnit->getExtraCombatPercent() != 0)
-		{
-			szString.append(NEWLINE);
-			szString.append(gDLL->getText("TXT_KEY_PROMOTION_STRENGTH_TEXT",
-					pUnit->getExtraCombatPercent()));
-		}
-
-		if (pUnit->cityAttackModifier() == pUnit->cityDefenseModifier())
-		{
-			if (pUnit->cityAttackModifier() != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_CITY_STRENGTH_MOD",
-						pUnit->cityAttackModifier()));
+				szString.append(gDLL->getText("TXT_KEY_UNIT_NUM_FIRST_STRIKES",
+						pUnit->firstStrikes()));
 			}
 		}
 		else
 		{
-			if (pUnit->cityAttackModifier() != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_CITY_ATTACK_TEXT",
-						pUnit->cityAttackModifier()));
-			}
-
-			if (pUnit->cityDefenseModifier() != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_CITY_DEFENSE_TEXT",
-						pUnit->cityDefenseModifier()));
-			}
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_FIRST_STRIKE_CHANCES",
+					pUnit->firstStrikes(), pUnit->maxFirstStrikes()));
 		}
+	}
 
-		if (pUnit->animalCombatModifier() != 0)
+	if (pUnit->immuneToFirstStrikes())
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText("TXT_KEY_UNIT_IMMUNE_FIRST_STRIKES"));
+	}
+
+	if (!bShort)
+	{	// <advc.315> Whether a unit can attack is too important to omit
+		if (pUnit->isOnlyDefensive())
 		{
 			szString.append(NEWLINE);
-			szString.append(gDLL->getText("TXT_KEY_UNIT_ANIMAL_COMBAT_MOD",
-					pUnit->animalCombatModifier()));
-		}
-		// <advc.315c>
-		if (pUnit->barbarianCombatModifier() != 0)
+			szString.append(gDLL->getText("TXT_KEY_UNIT_ONLY_DEFENSIVE"));
+		} // </advc.315>
+		// <advc.315a> Same code as under setBasicUnitHelp
+		if (kInfo.isOnlyAttackAnimals())
 		{
 			szString.append(NEWLINE);
-			szString.append(gDLL->getText("TXT_KEY_UNIT_BARBARIAN_COMBAT_MOD",
-					pUnit->barbarianCombatModifier()));
-		} // </advc.315c>
-
-		if (pUnit->getDropRange() > 0)
+			szString.append(gDLL->getText("TXT_KEY_UNIT_ONLY_ATTACK_ANIMALS"));
+		} // </advc.315a>
+		// <advc.315b>
+		if (kInfo.isOnlyAttackBarbarians())
 		{
 			szString.append(NEWLINE);
-			szString.append(gDLL->getText("TXT_KEY_UNIT_PARADROP_RANGE",
-					pUnit->getDropRange()));
+			szString.append(gDLL->getText("TXT_KEY_UNIT_ONLY_ATTACK_BARBARIANS"));
+		} // </advc.315b>
+		if (pUnit->noDefensiveBonus())
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_NO_DEFENSE_BONUSES"));
+		}
+		/*	advc.opt: was pUnit->flatMovementCost, which is now always true
+			for air units. Don't want to show text for those. */
+		if (pUnit->getUnitInfo().isFlatMovementCost())
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_FLAT_MOVEMENT"));
 		}
 
-		if (pUnit->hillsAttackModifier() == pUnit->hillsDefenseModifier())
+		if (pUnit->ignoreTerrainCost())
 		{
-			if (pUnit->hillsAttackModifier() != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_HILLS_STRENGTH",
-						pUnit->hillsAttackModifier()));
-			}
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_IGNORE_TERRAIN"));
 		}
-		else
-		{
-			if (pUnit->hillsAttackModifier() != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_HILLS_ATTACK",
-						pUnit->hillsAttackModifier()));
-			}
 
-			if (pUnit->hillsDefenseModifier() != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_HILLS_DEFENSE",
-						pUnit->hillsDefenseModifier()));
-			}
-		}
-		FOR_EACH_ENUM(Terrain) // advc: loop refactored
+		if (pUnit->isBlitz())
 		{
-			int const iAttackMod = pUnit->terrainAttackModifier(eLoopTerrain);
-			int const iDefenseMod = pUnit->terrainDefenseModifier(eLoopTerrain);
-			if (iAttackMod != 0)
+			szString.append(NEWLINE);
+			// <advc.164>
+			int iBlitz = pUnit->getBlitzCount();
+			if (iBlitz > 0)
 			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText(iAttackMod == iDefenseMod ?
-						"TXT_KEY_UNIT_STRENGTH" : "TXT_KEY_UNIT_ATTACK",
-						iAttackMod, GC.getInfo(eLoopTerrain).getTextKeyWide()));
+				if (iBlitz > 1)
+				{
+					szString.append(gDLL->getText("TXT_KEY_PROMOTION_BLITZ_LIMIT",
+							iBlitz + 1));
+				}
+				else szString.append(gDLL->getText("TXT_KEY_PROMOTION_BLITZ_TWICE"));
 			}
-			if (iAttackMod != iDefenseMod && iDefenseMod != 0)
+			else // </advc.164>
+				szString.append(gDLL->getText("TXT_KEY_PROMOTION_BLITZ_TEXT"));
+		}
+
+		if (pUnit->isAmphib())
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_AMPHIB_TEXT"));
+		}
+
+		if (pUnit->isRiver())
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_RIVER_ATTACK_TEXT"));
+		}
+
+		if (pUnit->isEnemyRoute())
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_ENEMY_ROADS_TEXT"));
+		}
+
+		if (pUnit->isAlwaysHeal())
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_ALWAYS_HEAL_TEXT"));
+		}
+
+		if (pUnit->isHillsDoubleMove())
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_HILLS_MOVE_TEXT"));
+		}
+
+		FOR_EACH_ENUM(Terrain)
+		{
+			if (pUnit->isTerrainDoubleMove(eLoopTerrain))
 			{
 				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_DEFENSE", iDefenseMod,
+				szString.append(gDLL->getText("TXT_KEY_PROMOTION_DOUBLE_MOVE_TEXT",
 						GC.getInfo(eLoopTerrain).getTextKeyWide()));
 			}
 		}
-		FOR_EACH_ENUM(Feature) // advc: loop refactored
+
+		FOR_EACH_ENUM(Feature)
 		{
-			int const iAttackMod = pUnit->featureAttackModifier(eLoopFeature);
-			int const iDefenseMod = pUnit->featureDefenseModifier(eLoopFeature);
-			if (iAttackMod != 0)
+			if (pUnit->isFeatureDoubleMove(eLoopFeature))
 			{
 				szString.append(NEWLINE);
-				szString.append(gDLL->getText(iAttackMod == iDefenseMod ?
-						"TXT_KEY_UNIT_STRENGTH" : "TXT_KEY_UNIT_ATTACK",
-						iAttackMod, GC.getInfo(eLoopFeature).getTextKeyWide()));
-			}
-			if (iAttackMod != iDefenseMod && iDefenseMod != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_DEFENSE", iDefenseMod,
+				szString.append(gDLL->getText("TXT_KEY_PROMOTION_DOUBLE_MOVE_TEXT",
 						GC.getInfo(eLoopFeature).getTextKeyWide()));
 			}
 		}
-		FOR_EACH_ENUM(UnitClass) // advc: loop refactored
+
+		if (pUnit->getExtraVisibilityRange() != 0)
 		{
-			int const iAttackMod = kInfo.getUnitClassAttackModifier(eLoopUnitClass);
-			int const iDefenseMod = kInfo.getUnitClassDefenseModifier(eLoopUnitClass);
-			if (iAttackMod != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText(iAttackMod == iDefenseMod ?
-						"TXT_KEY_UNIT_MOD_VS_TYPE" : "TXT_KEY_UNIT_ATTACK_MOD_VS_CLASS",
-						iAttackMod, GC.getInfo(eLoopUnitClass).getTextKeyWide()));
-			}
-			if (iAttackMod != iDefenseMod && iDefenseMod != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_DEFENSE_MOD_VS_CLASS", iDefenseMod,
-						GC.getInfo(eLoopUnitClass).getTextKeyWide()));
-			}
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_VISIBILITY_TEXT",
+					pUnit->getExtraVisibilityRange()));
 		}
 
+		if (pUnit->getExtraMoveDiscount() != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_MOVE_DISCOUNT_TEXT",
+					-pUnit->getExtraMoveDiscount()));
+		}
+
+		if (pUnit->getExtraEnemyHeal() != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_HEALS_EXTRA_TEXT",
+					pUnit->getExtraEnemyHeal()) +
+					gDLL->getText("TXT_KEY_PROMOTION_ENEMY_LANDS_TEXT"));
+		}
+
+		if (pUnit->getExtraNeutralHeal() != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_HEALS_EXTRA_TEXT",
+					pUnit->getExtraNeutralHeal()) +
+					gDLL->getText("TXT_KEY_PROMOTION_NEUTRAL_LANDS_TEXT"));
+		}
+
+		if (pUnit->getExtraFriendlyHeal() != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_HEALS_EXTRA_TEXT",
+					pUnit->getExtraFriendlyHeal()) +
+					gDLL->getText("TXT_KEY_PROMOTION_FRIENDLY_LANDS_TEXT"));
+		}
+
+		if (pUnit->getSameTileHeal() != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_HEALS_SAME_TEXT",
+					pUnit->getSameTileHeal()) +
+					gDLL->getText("TXT_KEY_PROMOTION_DAMAGE_TURN_TEXT"));
+		}
+
+		if (pUnit->getAdjacentTileHeal() != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_HEALS_ADJACENT_TEXT",
+					pUnit->getAdjacentTileHeal()) +
+					gDLL->getText("TXT_KEY_PROMOTION_DAMAGE_TURN_TEXT"));
+		}
+	}
+
+	if (pUnit->currInterceptionProbability() > 0)
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText("TXT_KEY_UNIT_INTERCEPT_AIRCRAFT",
+				pUnit->currInterceptionProbability()));
+	}
+
+	if (pUnit->evasionProbability() > 0)
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText("TXT_KEY_UNIT_EVADE_INTERCEPTION",
+				pUnit->evasionProbability()));
+	}
+
+	if (pUnit->withdrawalProbability() > 0)
+	{
+		if (bShort)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_WITHDRAWL_PROBABILITY_SHORT",
+					pUnit->withdrawalProbability()));
+		}
+		else
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_WITHDRAWL_PROBABILITY",
+					pUnit->withdrawalProbability()));
+		}
+	}
+
+	if (pUnit->combatLimit() < GC.getMAX_HIT_POINTS() && pUnit->canAttack())
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText("TXT_KEY_UNIT_COMBAT_LIMIT",
+				(100 * pUnit->combatLimit()) / GC.getMAX_HIT_POINTS()));
+	}
+
+	if (pUnit->collateralDamage() > 0)
+	{
+		szString.append(NEWLINE);
+		if (pUnit->getExtraCollateralDamage() == 0)
+		{
+			szString.append(gDLL->getText(
+					"TXT_KEY_UNIT_COLLATERAL_DAMAGE_SHORT", // advc.004: short version
+					100 * kInfo.getCollateralDamageLimit() / GC.getMAX_HIT_POINTS(),
+					pUnit->collateralDamageMaxUnits())); // advc.004
+		}
+		else
+		{
+			szString.append(gDLL->getText("TXT_KEY_UNIT_COLLATERAL_DAMAGE_EXTRA",
+					pUnit->getExtraCollateralDamage()));
+		}
+	}
+
+	FOR_EACH_ENUM(UnitCombat)
+	{
+		if (kInfo.getUnitCombatCollateralImmune(eLoopUnitCombat))
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_COLLATERAL_IMMUNE",
+					GC.getInfo(eLoopUnitCombat).getTextKeyWide()));
+		}
+	}
+
+	if (pUnit->getCollateralDamageProtection() > 0)
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText("TXT_KEY_PROMOTION_COLLATERAL_PROTECTION_TEXT",
+				pUnit->getCollateralDamageProtection()));
+	}
+
+	if (pUnit->getExtraCombatPercent() != 0)
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText("TXT_KEY_PROMOTION_STRENGTH_TEXT",
+				pUnit->getExtraCombatPercent()));
+	}
+
+	if (pUnit->cityAttackModifier() == pUnit->cityDefenseModifier())
+	{
+		if (pUnit->cityAttackModifier() != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_CITY_STRENGTH_MOD",
+					pUnit->cityAttackModifier()));
+		}
+	}
+	else
+	{
+		if (pUnit->cityAttackModifier() != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_CITY_ATTACK_TEXT",
+					pUnit->cityAttackModifier()));
+		}
+
+		if (pUnit->cityDefenseModifier() != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_PROMOTION_CITY_DEFENSE_TEXT",
+					pUnit->cityDefenseModifier()));
+		}
+	}
+
+	if (pUnit->animalCombatModifier() != 0)
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText("TXT_KEY_UNIT_ANIMAL_COMBAT_MOD",
+				pUnit->animalCombatModifier()));
+	}
+	// <advc.315c>
+	if (pUnit->barbarianCombatModifier() != 0)
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText("TXT_KEY_UNIT_BARBARIAN_COMBAT_MOD",
+				pUnit->barbarianCombatModifier()));
+	} // </advc.315c>
+
+	if (pUnit->getDropRange() > 0)
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText("TXT_KEY_UNIT_PARADROP_RANGE",
+				pUnit->getDropRange()));
+	}
+
+	if (pUnit->hillsAttackModifier() == pUnit->hillsDefenseModifier())
+	{
+		if (pUnit->hillsAttackModifier() != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_HILLS_STRENGTH",
+					pUnit->hillsAttackModifier()));
+		}
+	}
+	else
+	{
+		if (pUnit->hillsAttackModifier() != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_HILLS_ATTACK",
+					pUnit->hillsAttackModifier()));
+		}
+
+		if (pUnit->hillsDefenseModifier() != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_HILLS_DEFENSE",
+					pUnit->hillsDefenseModifier()));
+		}
+	}
+	FOR_EACH_ENUM(Terrain) // advc: loop refactored
+	{
+		int const iAttackMod = pUnit->terrainAttackModifier(eLoopTerrain);
+		int const iDefenseMod = pUnit->terrainDefenseModifier(eLoopTerrain);
+		if (iAttackMod != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText(iAttackMod == iDefenseMod ?
+					"TXT_KEY_UNIT_STRENGTH" : "TXT_KEY_UNIT_ATTACK",
+					iAttackMod, GC.getInfo(eLoopTerrain).getTextKeyWide()));
+		}
+		if (iAttackMod != iDefenseMod && iDefenseMod != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_DEFENSE", iDefenseMod,
+					GC.getInfo(eLoopTerrain).getTextKeyWide()));
+		}
+	}
+	FOR_EACH_ENUM(Feature)
+	{
+		int const iAttackMod = pUnit->featureAttackModifier(eLoopFeature);
+		int const iDefenseMod = pUnit->featureDefenseModifier(eLoopFeature);
+		if (iAttackMod != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText(iAttackMod == iDefenseMod ?
+					"TXT_KEY_UNIT_STRENGTH" : "TXT_KEY_UNIT_ATTACK",
+					iAttackMod, GC.getInfo(eLoopFeature).getTextKeyWide()));
+		}
+		if (iAttackMod != iDefenseMod && iDefenseMod != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_DEFENSE", iDefenseMod,
+					GC.getInfo(eLoopFeature).getTextKeyWide()));
+		}
+	}
+	FOR_EACH_ENUM(UnitClass)
+	{
+		int const iAttackMod = kInfo.getUnitClassAttackModifier(eLoopUnitClass);
+		int const iDefenseMod = kInfo.getUnitClassDefenseModifier(eLoopUnitClass);
+		if (iAttackMod != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText(iAttackMod == iDefenseMod ?
+					"TXT_KEY_UNIT_MOD_VS_TYPE" : "TXT_KEY_UNIT_ATTACK_MOD_VS_CLASS",
+					iAttackMod, GC.getInfo(eLoopUnitClass).getTextKeyWide()));
+		}
+		if (iAttackMod != iDefenseMod && iDefenseMod != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_DEFENSE_MOD_VS_CLASS", iDefenseMod,
+					GC.getInfo(eLoopUnitClass).getTextKeyWide()));
+		}
+	}
+	FOR_EACH_ENUM(UnitCombat)
+	{
+		if (pUnit->unitCombatModifier(eLoopUnitCombat) != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_MOD_VS_TYPE",
+					pUnit->unitCombatModifier(eLoopUnitCombat),
+					GC.getInfo(eLoopUnitCombat).getTextKeyWide()));
+		}
+	}
+	FOR_EACH_ENUM(Domain)
+	{
+		if (pUnit->domainModifier(eLoopDomain) != 0)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_MOD_VS_TYPE",
+					pUnit->domainModifier(eLoopDomain),
+					GC.getInfo(eLoopDomain).getTextKeyWide()));
+		}
+	}
+	{
+		CvWString szTempBuffer;
+		bool bFirst = true;
+		FOR_EACH_ENUM(UnitClass)
+		{
+			if (kInfo.getTargetUnitClass(eLoopUnitClass))
+			{
+				if (bFirst)
+					bFirst = false;
+				else szTempBuffer += L", ";
+				szTempBuffer += CvWString::format(L"<link=literal>%s</link>",
+						GC.getInfo(eLoopUnitClass).getDescription());
+			}
+		}
+		if (!bFirst)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_TARGETS_UNIT_FIRST",
+					szTempBuffer.GetCString()));
+		}
+	}
+	{
+		CvWString szTempBuffer;
+		bool bFirst = true;
+		FOR_EACH_ENUM(UnitClass)
+		{
+			if (kInfo.getDefenderUnitClass(eLoopUnitClass))
+			{
+				if (bFirst)
+					bFirst = false;
+				else szTempBuffer += L", ";
+				szTempBuffer += CvWString::format(L"<link=literal>%s</link>",
+						GC.getInfo(eLoopUnitClass).getDescription());
+			}
+		}
+		if (!bFirst)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText("TXT_KEY_UNIT_DEFENDS_UNIT_FIRST",
+					szTempBuffer.GetCString()));
+		}
+	}
+	{
+		CvWString szTempBuffer;
+		bool bFirst = true;
 		FOR_EACH_ENUM(UnitCombat)
 		{
-			if (pUnit->unitCombatModifier(eLoopUnitCombat) != 0)
+			if (kInfo.getTargetUnitCombat(eLoopUnitCombat))
 			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_MOD_VS_TYPE",
-						pUnit->unitCombatModifier(eLoopUnitCombat),
-						GC.getInfo(eLoopUnitCombat).getTextKeyWide()));
+				if (bFirst)
+					bFirst = false;
+				else szTempBuffer += L", ";
+				szTempBuffer += CvWString::format(L"<link=literal>%s</link>",
+						GC.getInfo(eLoopUnitCombat).getDescription());
 			}
 		}
-
-		FOR_EACH_ENUM(Domain)
-		{
-			if (pUnit->domainModifier(eLoopDomain) != 0)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_MOD_VS_TYPE",
-						pUnit->domainModifier(eLoopDomain),
-						GC.getInfo(eLoopDomain).getTextKeyWide()));
-			}
-		}
-
-		{
-			CvWString szTempBuffer;
-			bool bFirst = true;
-			FOR_EACH_ENUM(UnitClass)
-			{
-				if (kInfo.getTargetUnitClass(eLoopUnitClass))
-				{
-					if (bFirst)
-						bFirst = false;
-					else szTempBuffer += L", ";
-					szTempBuffer += CvWString::format(L"<link=literal>%s</link>",
-							GC.getInfo(eLoopUnitClass).getDescription());
-				}
-			}
-			if (!bFirst)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_TARGETS_UNIT_FIRST",
-						szTempBuffer.GetCString()));
-			}
-		}
-		{
-			CvWString szTempBuffer;
-			bool bFirst = true;
-			FOR_EACH_ENUM(UnitClass)
-			{
-				if (kInfo.getDefenderUnitClass(eLoopUnitClass))
-				{
-					if (bFirst)
-						bFirst = false;
-					else szTempBuffer += L", ";
-					szTempBuffer += CvWString::format(L"<link=literal>%s</link>",
-							GC.getInfo(eLoopUnitClass).getDescription());
-				}
-			}
-			if (!bFirst)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_DEFENDS_UNIT_FIRST",
-						szTempBuffer.GetCString()));
-			}
-		}
-		{
-			CvWString szTempBuffer;
-			bool bFirst = true;
-			FOR_EACH_ENUM(UnitCombat)
-			{
-				if (kInfo.getTargetUnitCombat(eLoopUnitCombat))
-				{
-					if (bFirst)
-						bFirst = false;
-					else szTempBuffer += L", ";
-					szTempBuffer += CvWString::format(L"<link=literal>%s</link>",
-							GC.getInfo(eLoopUnitCombat).getDescription());
-				}
-			}
-			if (!bFirst)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_TARGETS_UNIT_FIRST",
-						szTempBuffer.GetCString()));
-			}
-		}
-		{
-			CvWString szTempBuffer;
-			bool bFirst = true;
-			FOR_EACH_ENUM(UnitCombat)
-			{
-				if (kInfo.getDefenderUnitCombat(eLoopUnitCombat))
-				{
-					if (bFirst)
-						bFirst = false;
-					else szTempBuffer += L", ";
-					szTempBuffer += CvWString::format(L"<link=literal>%s</link>",
-							GC.getInfo(eLoopUnitCombat).getDescription());
-				}
-			}
-			if (!bFirst)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_DEFENDS_UNIT_FIRST",
-						szTempBuffer.GetCString()));
-			}
-		}
-		{
-			CvWString szTempBuffer;
-			bool bFirst = true;
-			FOR_EACH_ENUM(UnitClass)
-			{
-				if (kInfo.getFlankingStrikeUnitClass(eLoopUnitClass) > 0)
-				{
-					if (bFirst)
-						bFirst = false;
-					else szTempBuffer += L", ";
-					szTempBuffer += CvWString::format(L"<link=literal>%s</link>",
-							GC.getInfo(eLoopUnitClass).getDescription());
-				}
-			}
-			if (!bFirst)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_UNIT_FLANKING_STRIKES",
-						szTempBuffer.GetCString()));
-			}
-		}
-		{
-			int iBombRate = pUnit->bombardRate();
-			// <advc.004c>
-			bool bAirBomb = false;
-			if (iBombRate <= 0)
-			{
-				iBombRate = pUnit->airBombCurrRate();
-				bAirBomb = true;
-			} // </advc.004c>
-			if (iBombRate > 0)
-			{
-				if (bShort ||
-					bAirBomb) // advc.004c: Always use the short version for that
-				{
-					szString.append(NEWLINE);
-					szString.append(gDLL->getText(
-							bAirBomb ? "TXT_KEY_UNIT_AIR_BOMB_RATE_SHORT" : // advc.004c
-							"TXT_KEY_UNIT_BOMBARD_RATE_SHORT",
-							(iBombRate * 100) / GC.getMAX_CITY_DEFENSE_DAMAGE()));
-				}
-				else
-				{
-					szString.append(NEWLINE);
-					szString.append(gDLL->getText("TXT_KEY_UNIT_BOMBARD_RATE",
-							(iBombRate * 100) / GC.getMAX_CITY_DEFENSE_DAMAGE()));
-				}
-			}
-		}
-
-		if (pUnit->isSpy())
+		if (!bFirst)
 		{
 			szString.append(NEWLINE);
-			szString.append(gDLL->getText("TXT_KEY_UNIT_IS_SPY"));
+			szString.append(gDLL->getText("TXT_KEY_UNIT_TARGETS_UNIT_FIRST",
+					szTempBuffer.GetCString()));
 		}
-
-		if (kInfo.isNoRevealMap())
+	}
+	{
+		CvWString szTempBuffer;
+		bool bFirst = true;
+		FOR_EACH_ENUM(UnitCombat)
+		{
+			if (kInfo.getDefenderUnitCombat(eLoopUnitCombat))
+			{
+				if (bFirst)
+					bFirst = false;
+				else szTempBuffer += L", ";
+				szTempBuffer += CvWString::format(L"<link=literal>%s</link>",
+						GC.getInfo(eLoopUnitCombat).getDescription());
+			}
+		}
+		if (!bFirst)
 		{
 			szString.append(NEWLINE);
-			szString.append(gDLL->getText("TXT_KEY_UNIT_VISIBILITY_MOVE_RANGE"));
+			szString.append(gDLL->getText("TXT_KEY_UNIT_DEFENDS_UNIT_FIRST",
+					szTempBuffer.GetCString()));
 		}
-
-		if (!CvWString(kInfo.getHelp()).empty())
+	}
+	{
+		CvWString szTempBuffer;
+		bool bFirst = true;
+		FOR_EACH_ENUM(UnitClass)
+		{
+			if (kInfo.getFlankingStrikeUnitClass(eLoopUnitClass) > 0)
+			{
+				if (bFirst)
+					bFirst = false;
+				else szTempBuffer += L", ";
+				szTempBuffer += CvWString::format(L"<link=literal>%s</link>",
+						GC.getInfo(eLoopUnitClass).getDescription());
+			}
+		}
+		if (!bFirst)
 		{
 			szString.append(NEWLINE);
-			szString.append(kInfo.getHelp());
+			szString.append(gDLL->getText("TXT_KEY_UNIT_FLANKING_STRIKES",
+					szTempBuffer.GetCString()));
 		}
-
-		if (bShift && /*(gDLL->getChtLvl() > 0))*/ /* advc.135c: */ bDebugMode)
+	}
+	{
+		int iBombRate = pUnit->bombardRate();
+		// <advc.004c>
+		bool bAirBomb = false;
+		if (iBombRate <= 0)
 		{
-			CvWString szTempBuffer;
-			szTempBuffer.Format(L"\nUnitAI Type = %s.",
-					GC.getInfo(pUnit->AI_getUnitAIType()).getDescription());
-			szString.append(szTempBuffer);
-			szTempBuffer.Format(L"\nSacrifice Value = %d.",
-					pUnit->AI().AI_sacrificeValue(NULL));
-			szString.append(szTempBuffer);
+			iBombRate = pUnit->airBombCurrRate();
+			bAirBomb = true;
+		} // </advc.004c>
+		if (iBombRate > 0)
+		{
+			if (bShort ||
+				bAirBomb) // advc.004c: Always use the short version for that
+			{
+				szString.append(NEWLINE);
+				szString.append(gDLL->getText(
+						bAirBomb ? "TXT_KEY_UNIT_AIR_BOMB_RATE_SHORT" : // advc.004c
+						"TXT_KEY_UNIT_BOMBARD_RATE_SHORT",
+						(iBombRate * 100) / GC.getMAX_CITY_DEFENSE_DAMAGE()));
+			}
+			else
+			{
+				szString.append(NEWLINE);
+				szString.append(gDLL->getText("TXT_KEY_UNIT_BOMBARD_RATE",
+						(iBombRate * 100) / GC.getMAX_CITY_DEFENSE_DAMAGE()));
+			}
 		}
+	}
+
+	if (pUnit->isSpy())
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText("TXT_KEY_UNIT_IS_SPY"));
+	}
+
+	if (kInfo.isNoRevealMap())
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText("TXT_KEY_UNIT_VISIBILITY_MOVE_RANGE"));
+	}
+
+	if (!CvWString(kInfo.getHelp()).empty())
+	{
+		szString.append(NEWLINE);
+		szString.append(kInfo.getHelp());
+	}
+
+	if (bShift && /*(gDLL->getChtLvl() > 0))*/ /* advc.135c: */ bDebugMode)
+	{
+		CvWString szTempBuffer;
+		szTempBuffer.Format(L"\nUnitAI Type = %s.",
+				GC.getInfo(pUnit->AI_getUnitAIType()).getDescription());
+		szString.append(szTempBuffer);
+		szTempBuffer.Format(L"\nSacrifice Value = %d.",
+				pUnit->AI().AI_sacrificeValue(NULL));
+		szString.append(szTempBuffer);
 	}
 }
 

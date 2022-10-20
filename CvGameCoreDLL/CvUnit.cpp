@@ -7050,23 +7050,26 @@ int CvUnit::maxCombatStr(CvPlot const* pPlot, CvUnit const* pAttacker,
 	if (pCombatDetails != NULL)
 		pCombatDetails->iExtraCombatPercent = iExtraModifier;
 
-	// do modifiers for animals and barbarians (leaving these out for bAttackingUnknownDefender case)
+	/*	do modifiers for animals and barbarians
+		(leaving these out for bAttackingUnknownDefender case) */
 	if (pAttacker != NULL)
 	{
 		if (isAnimal())
 		{
 			if (pAttacker->isHuman())
 			{
-				// K-Mod. Give bonus based on player's difficulty, not game difficulty.
-				//iExtraModifier = GC.getInfo(GC.getGame().getHandicapType()).getAnimalCombatModifier();
-				iExtraModifier = GC.getInfo(GET_PLAYER(pAttacker->getOwner()).getHandicapType()).getAnimalCombatModifier(); // K-Mod
+				iExtraModifier = GC.getInfo(
+						// K-Mod. Based on player's difficulty, not game difficulty.
+						GET_PLAYER(pAttacker->getOwner()).getHandicapType()).
+						getAnimalCombatModifier();
 				iModifier += iExtraModifier;
 				if (pCombatDetails != NULL)
 					pCombatDetails->iAnimalCombatModifierTA = iExtraModifier;
 			}
 			else
 			{
-				iExtraModifier = GC.getInfo(GC.getGame().getHandicapType()).getAIAnimalCombatModifier();
+				iExtraModifier = GC.getInfo(GC.getGame().getHandicapType()).
+						getAIAnimalCombatModifier();
 				iModifier += iExtraModifier;
 				if (pCombatDetails != NULL)
 					pCombatDetails->iAIAnimalCombatModifierTA = iExtraModifier;
@@ -7077,15 +7080,17 @@ int CvUnit::maxCombatStr(CvPlot const* pPlot, CvUnit const* pAttacker,
 		{
 			if (isHuman())
 			{
-				//iExtraModifier = -GC.getInfo(GC.getGame().getHandicapType()).getAnimalCombatModifier();
-				iExtraModifier = -GC.getInfo(GET_PLAYER(getOwner()).getHandicapType()).getAnimalCombatModifier(); // K-Mod
+				iExtraModifier = -GC.getInfo(
+						GET_PLAYER(getOwner()).getHandicapType()). // K-Mod
+						getAnimalCombatModifier();
 				iModifier += iExtraModifier;
 				if (pCombatDetails != NULL)
 					pCombatDetails->iAnimalCombatModifierAA = iExtraModifier;
 			}
 			else
 			{
-				iExtraModifier = -GC.getInfo(GC.getGame().getHandicapType()).getAIAnimalCombatModifier();
+				iExtraModifier = -GC.getInfo(GC.getGame().getHandicapType()).
+						getAIAnimalCombatModifier();
 				iModifier += iExtraModifier;
 				if (pCombatDetails != NULL)
 					pCombatDetails->iAIAnimalCombatModifierAA = iExtraModifier;
@@ -7097,15 +7102,17 @@ int CvUnit::maxCombatStr(CvPlot const* pPlot, CvUnit const* pAttacker,
 			iExtraModifier = -pAttacker->barbarianCombatModifier();
 			if (pAttacker->isHuman())
 			{
-				//iExtraModifier = GC.getInfo(GC.getGame().getHandicapType()).getBarbarianCombatModifier();
-				iExtraModifier += GC.getInfo(GET_PLAYER(pAttacker->getOwner()).getHandicapType()).getBarbarianCombatModifier(); // K-Mod
+				iExtraModifier += GC.getInfo(
+						GET_PLAYER(pAttacker->getOwner()).getHandicapType()). // K-Mod
+						getBarbarianCombatModifier();
 				iModifier += iExtraModifier;
 				if (pCombatDetails != NULL)
 					pCombatDetails->iBarbarianCombatModifierTB = iExtraModifier;
 			}
 			else
 			{
-				iExtraModifier += GC.getInfo(GC.getGame().getHandicapType()).getAIBarbarianCombatModifier();
+				iExtraModifier += GC.getInfo(GC.getGame().getHandicapType()).
+						getAIBarbarianCombatModifier();
 				iModifier += iExtraModifier;
 				if (pCombatDetails != NULL)
 					pCombatDetails->iAIBarbarianCombatModifierTB = iExtraModifier;
@@ -7117,15 +7124,17 @@ int CvUnit::maxCombatStr(CvPlot const* pPlot, CvUnit const* pAttacker,
 			iExtraModifier = barbarianCombatModifier();
 			if (isHuman())
 			{
-				//iExtraModifier = -GC.getInfo(GC.getGame().getHandicapType()).getBarbarianCombatModifier();
-				iExtraModifier += -GC.getInfo(GET_PLAYER(getOwner()).getHandicapType()).getBarbarianCombatModifier(); // K-Mod
+				iExtraModifier -= GC.getInfo(
+						GET_PLAYER(getOwner()).getHandicapType()). // K-Mod
+						getBarbarianCombatModifier();
 				iModifier += iExtraModifier;
 				if (pCombatDetails != NULL)
 					pCombatDetails->iBarbarianCombatModifierAB = iExtraModifier;
 			}
 			else
 			{
-				iExtraModifier += -GC.getInfo(GC.getGame().getHandicapType()).getAIBarbarianCombatModifier();
+				iExtraModifier -= GC.getInfo(GC.getGame().getHandicapType()).
+						getAIBarbarianCombatModifier();
 				iModifier += iExtraModifier;
 				if (pCombatDetails != NULL)
 					pCombatDetails->iAIBarbarianCombatModifierTB = iExtraModifier;
@@ -7223,7 +7232,6 @@ int CvUnit::maxCombatStr(CvPlot const* pPlot, CvUnit const* pAttacker,
 			iTempModifier += iExtraModifier;
 			if (pCombatDetails != NULL)
 				pCombatDetails->iCityAttackModifier = iExtraModifier;
-
 			if (pAttacker->isBarbarian())
 			{
 				iExtraModifier = GC.getDefineINT("CITY_BARBARIAN_DEFENSE_MODIFIER");
