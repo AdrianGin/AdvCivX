@@ -7482,23 +7482,24 @@ int CvGame::createBarbarianUnits(int iUnitsToCreate, int iUnitsPresent,
 		UnitTypes eUnitType = randomBarbarianUnit(eUnitAI, *pPlot);
 		if (eUnitType == NO_UNIT)
 			return iCreated;
-		CvUnit* pNewUnit = GET_PLAYER(BARBARIAN_PLAYER).initUnit(eUnitType,
+		/*CvUnit* pNewUnit =*/GET_PLAYER(BARBARIAN_PLAYER).initUnit(eUnitType,
 				pPlot->getX(), pPlot->getY(), eUnitAI);
 		if (!pPlot->isWater())
 			iCreated++;
 		// </advc.300>
-		// K-Mod. Give a combat penalty to barbarian boats.
+	// advc.313: Replaced by a handicap-based modifier
+	#if 0
+		/*	K-Mod. Sorry, barbarians. Free ships are just too dangerous for
+			real civilizations to defend against. */
 		if (pPlot->isWater() &&
 			!pNewUnit->getUnitInfo().isHiddenNationality()) // kekm.12
-		{	// find the "disorganized" promotion. (is there a better way to do this?)
+		{
 			PromotionTypes eDisorganized = (PromotionTypes)
 					GC.getInfoTypeForString("PROMOTION_DISORGANIZED", true);
 			if (eDisorganized != NO_PROMOTION)
-			{	/*	Sorry, barbarians. Free ships are just too dangerous for
-					real civilizations to defend against. */
 				pNewUnit->setHasPromotion(eDisorganized, true);
-			}
 		} // K-Mod end
+	#endif
 		// <advc.304> Discourage nearby unit placement for some time
 		getBarbarianWeightMap().getActivityMap().change(*pPlot,
 				BarbarianActivityMap::maxStrength() / 2, 2); // </advc.304>

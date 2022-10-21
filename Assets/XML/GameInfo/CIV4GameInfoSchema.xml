@@ -361,6 +361,19 @@
 	<ElementType name="iBarbarianCityCreationProb" content="textOnly" dt:type="int"/>
 	<ElementType name="iAnimalBonus" content="textOnly" dt:type="int"/>
 	<ElementType name="iBarbarianBonus" content="textOnly" dt:type="int"/>
+	<!-- advc.313: start
+		 Refer to the strength modifiers as "bonuses" to be consistent with
+		 the two modifier elements above. Barbarian strength modifiers are
+		 additively cumulative (except that the iAI... modifiers replace
+		 their non-AI counterparts rather than add to them).
+		 Either sign should work. -->
+	<!-- Replacing CITY_BARBARIAN_DEFENSE_MODIFIER in BtS GlobalDefines -->
+	<ElementType name="iBarbarianCityAttackBonus" content="textOnly" dt:type="int"/>
+	<!-- Replacing K-Mod's Disorganized promotion -->
+	<ElementType name="iSeaBarbarianBonus" content="textOnly" dt:type="int"/>
+	<!-- Extra moves for Barbarian sea units. Can be negative. -->
+	<ElementType name="iSeaBarbarianExtraMoves" content="textOnly" dt:type="int"/>
+	<!-- advc.313: end -->
 	<ElementType name="iAIAnimalBonus" content="textOnly" dt:type="int"/>
 	<ElementType name="iAIBarbarianBonus" content="textOnly" dt:type="int"/>
 	<ElementType name="iStartingDefenseUnits" content="textOnly" dt:type="int"/>
@@ -460,6 +473,14 @@
 		<element type="iBarbarianCityCreationProb"/>
 		<element type="iAnimalBonus"/>
 		<element type="iBarbarianBonus"/>
+		<!-- advc.313: start
+			 Default values (set in the DLL), respectively:
+			 -25 (as in BtS), -10 (like the Disorganized promotion in K-Mod),
+			 -1 (negating the speed increase for ships in AdvCiv) -->
+		<element type="iBarbarianCityAttackBonus" minOccurs="0"/>
+		<element type="iSeaBarbarianBonus" minOccurs="0"/>
+		<element type="iSeaBarbarianExtraMoves" minOccurs="0"/>
+		<!-- advc.313: end -->
 		<element type="iAIAnimalBonus"/>
 		<element type="iAIBarbarianBonus"/>
 		<element type="iStartingDefenseUnits"/>

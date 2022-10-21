@@ -631,6 +631,32 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szString, const CvUnit* pUnit,
 	if (pUnit->isActiveTeam())
 		setEspionageMissionHelp(szString, pUnit);
 
+	// <advc.313>
+	int iBarbarianMovesHandicap = 0;
+	int iBarbarianCombatHandicap = 0;
+	int iBarbarianCityAttackHandicap = 0;
+	if (!bShort && pUnit->isBarbarian() && pUnit->canFight())
+	{
+		CvHandicapInfo const& kHandicap = GC.getInfo(
+				GET_PLAYER(getActivePlayer()).getHandicapType());
+		iBarbarianCombatHandicap += kHandicap.getBarbarianCombatModifier();
+		if (pUnit->isAnimal())
+			iBarbarianCombatHandicap += kHandicap.getAnimalCombatModifier();
+		else if (pUnit->isKnownSeaBarbarian())
+		{
+			iBarbarianCombatHandicap += kHandicap.get(
+					CvHandicapInfo::SeaBarbarianBonus);
+			iBarbarianMovesHandicap += kHandicap.get(
+					CvHandicapInfo::SeaBarbarianExtraMoves);
+		}
+		else if (pUnit->getDomainType() == DOMAIN_LAND)
+		{
+			iBarbarianCityAttackHandicap += kHandicap.get(
+					CvHandicapInfo::BarbarianCityAttackBonus);
+		}
+		// (Will display these below along with promotion effects)
+	} // </advc.313>
+
 	if (pUnit->cargoSpace() > 0)
 	{
 		CvWString szTempBuffer;
@@ -957,14 +983,30 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szString, const CvUnit* pUnit,
 		szString.append(gDLL->getText("TXT_KEY_PROMOTION_COLLATERAL_PROTECTION_TEXT",
 				pUnit->getCollateralDamageProtection()));
 	}
-
+	// <advc.313>
+	if (iBarbarianCombatHandicap != 0)
+	{
+		szString.append(NEWLINE);
+		szString.append(CvWString::format(SETCOLR L"%s" ENDCOLR,
+				PLAYER_TEXT_COLOR(GET_PLAYER(pUnit->getOwner())),
+				gDLL->getText("TXT_KEY_PROMOTION_STRENGTH_TEXT",
+				iBarbarianCombatHandicap).c_str()));
+	} // </advc.313>
 	if (pUnit->getExtraCombatPercent() != 0)
 	{
 		szString.append(NEWLINE);
 		szString.append(gDLL->getText("TXT_KEY_PROMOTION_STRENGTH_TEXT",
 				pUnit->getExtraCombatPercent()));
 	}
-
+	// <advc.313>
+	if (iBarbarianCityAttackHandicap != 0)
+	{
+		szString.append(NEWLINE);
+		szString.append(CvWString::format(SETCOLR L"%s" ENDCOLR,
+				PLAYER_TEXT_COLOR(GET_PLAYER(pUnit->getOwner())),
+				gDLL->getText("TXT_KEY_PROMOTION_CITY_ATTACK_TEXT",
+				iBarbarianCityAttackHandicap).c_str()));
+	} // </advc.313>
 	if (pUnit->cityAttackModifier() == pUnit->cityDefenseModifier())
 	{
 		if (pUnit->cityAttackModifier() != 0)
@@ -1256,6 +1298,15 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szString, const CvUnit* pUnit,
 		szString.append(NEWLINE);
 		szString.append(gDLL->getText("TXT_KEY_UNIT_VISIBILITY_MOVE_RANGE"));
 	}
+	// <advc.313>
+	if (iBarbarianMovesHandicap != 0)
+	{
+		szString.append(NEWLINE);
+		szString.append(CvWString::format(SETCOLR L"%s" ENDCOLR,
+				PLAYER_TEXT_COLOR(GET_PLAYER(pUnit->getOwner())),
+				gDLL->getText("TXT_KEY_PROMOTION_MOVE_TEXT",
+				iBarbarianMovesHandicap).c_str()));
+	} // </advc.313>
 
 	if (!CvWString(kInfo.getHelp()).empty())
 	{
@@ -21579,6 +21630,13 @@ void CvGameTextMgr::appendCombatModifiers(CvWStringBuffer& szBuffer,
 						GET_PLAYER(kAttacker.getOwner()). // K-Mod
 						getHandicapType()).getAnimalCombatModifier();
 			}
+			// <advc.313>
+			if (kDefender.isKnownSeaBarbarian())
+			{
+				iModifier -= GC.getInfo(
+						GET_PLAYER(kAttacker.getOwner()).
+						getHandicapType()).get(CvHandicapInfo::SeaBarbarianBonus);
+			} // </advc.313>
 			appendCombatModifier(szBuffer, iModifier,
 					params, "TXT_KEY_MISC_FROM_HANDICAP");
 			// </advc.315c>
@@ -21605,8 +21663,6 @@ void CvGameTextMgr::appendCombatModifiers(CvWStringBuffer& szBuffer,
 	}
 	if (!bOnlyNonGeneric)
 	{
-		/*	(advc.001: appendCombatModifier will pick the proper color
-			for K-Mod's Disorganized promotion when ACO is enabled) */
 		appendCombatModifier(szBuffer,
 				kDefender.getExtraCombatPercent(),
 				params, "TXT_KEY_COMBAT_PLOT_EXTRA_STRENGTH");

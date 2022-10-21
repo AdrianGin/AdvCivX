@@ -283,9 +283,9 @@ public:
 	{
 		derived().writeArray<CompactV>(pStream);
 	}
-	void read(FDataStreamBase* pStream, uint uiSubtrahend = 0)
+	void read(FDataStreamBase* pStream, int iSubtrahend = 0)
 	{
-		derived().readArray<CompactV>(pStream, uiSubtrahend);
+		derived().readArray<CompactV>(pStream, iSubtrahend);
 	}
 	template<typename SizeType, typename ValueType>
 	void writeLazyArray(FDataStreamBase* pStream) const
@@ -299,13 +299,13 @@ public:
 	}
 	template<typename SizeType, typename ValueType>
 	void readLazyArray(FDataStreamBase* pStream,
-		uint uiSubtrahend = 0) // (Could also get this from sz)
+		int iSubtrahend = 0) // (Could also get this from sz)
 	{
 		SizeType sz;
 		pStream->Read(&sz);
 		if (sz == 0)
 			return;
-		derived().readArray<ValueType>(pStream, uiSubtrahend);
+		derived().readArray<ValueType>(pStream, iSubtrahend);
 	}
 	template<class DataStream>
 	void writeLazyIntArray(DataStream* pStream) const
@@ -323,11 +323,11 @@ public:
 			writeVal(pStream, safeCast<ValueType>(derived().getUnsafe(eKey)));
 	}
 	template<typename ValueType>
-	void readArray(FDataStreamBase* pStream, uint uiSubtrahend = 0)
+	void readArray(FDataStreamBase* pStream, int iSubtrahend = 0)
 	{
 		/*	Allocating an array and calling Read(getLength(), array) might be faster,
 			might be slower. Reading one value at a time is at least easier to debug. */
-		int const iLen = getLength() - (int)uiSubtrahend;
+		int const iLen = getLength() - iSubtrahend;
 		for (E eKey = enum_traits<E>::first; eKey < iLen; ++eKey)
 		{
 			ValueType val;
@@ -1411,16 +1411,17 @@ public:
 			pStream->Write(false);
 		}
 	}
-	void read(FDataStreamBase* pStream, uint uiSubtrahend = 0)
+	void read(FDataStreamBase* pStream, int iSubtrahend = 0)
 	{
-		FAssert(!bBIT_BLOCKS || uiSubtrahend == 0);
+// Fixme: arraySize function is not taking into account bBIT_BLOCKS when !bSTATIC_MEMORY
+//		FAssert(!bBIT_BLOCKS || iSubtrahend == 0);
 		bool bAnyNonDefault;
 		pStream->Read(&bAnyNonDefault);
 		if (bAnyNonDefault)
 		{
 			if (!isAllocated())
 				allocate();
-			pStream->Read(arraySize() - (int)uiSubtrahend, values());
+			pStream->Read(arraySize() - iSubtrahend, values());
 		}
 	}
 
@@ -2160,12 +2161,12 @@ public:
 			lookup(eOuterKey).writeArray<ValueType>(pStream);
 	}
 	template<typename ValueType>
-	void readArray(FDataStreamBase* pStream, uint uiSubtrahend = 0)
+	void readArray(FDataStreamBase* pStream, int iSubtrahend = 0)
 	{
 		FOR_EACH_OUTER_KEY(eOuterKey)
 		{
 			InnerEncodableMap innerMap;
-			innerMap.readArray<ValueType>(pStream, uiSubtrahend);
+			innerMap.readArray<ValueType>(pStream, iSubtrahend);
 			set(eOuterKey, innerMap.encode());
 		}
 	}

@@ -281,6 +281,12 @@ def combatDetailMessageBuilder(cdUnit, ePlayer, iChange):
 			"TXT_KEY_COMBAT_MESSAGE_BARBARIAN_COMBAT")
 	_addCombatMsg(ePlayer, cdUnit.iAIBarbarianCombatModifierAB * iChange,
 			"TXT_KEY_COMBAT_MESSAGE_BARBARIAN_AI_COMBAT")
+	# <advc.313>
+	_addCombatMsg(ePlayer, cdUnit.iSeaBarbarianModifierTB * iChange,
+			"TXT_KEY_COMBAT_MESSAGE_BARBARIAN_SEA")
+	_addCombatMsg(ePlayer, cdUnit.iSeaBarbarianModifierAB * iChange,
+			"TXT_KEY_COMBAT_MESSAGE_BARBARIAN_SEA")
+	# </advc.313>
 	_addCombatMsg(ePlayer, cdUnit.iPlotDefenseModifier * iChange,
 			"TXT_KEY_COMBAT_MESSAGE_PLOT_DEFENSE")
 	_addCombatMsg(ePlayer, cdUnit.iFortifyModifier * iChange,
@@ -303,8 +309,10 @@ def combatDetailMessageBuilder(cdUnit, ePlayer, iChange):
 			"TXT_KEY_COMBAT_MESSAGE_CITY_ATTACK")
 	_addCombatMsg(ePlayer, cdUnit.iDomainDefenseModifier * iChange,
 			"TXT_KEY_COMBAT_MESSAGE_CITY_DOMAIN_DEFENSE")
-	_addCombatMsg(ePlayer, cdUnit.iCityBarbarianDefenseModifier * iChange,
-			"TXT_KEY_COMBAT_MESSAGE_CITY_BARBARIAN_DEFENSE")
+	#_addCombatMsg(ePlayer, cdUnit.iCityBarbarianDefenseModifier * iChange, "TXT_KEY_COMBAT_MESSAGE_CITY_BARBARIAN_DEFENSE")
+	# <advc.313>
+	_addCombatMsg(ePlayer, cdUnit.iBarbarianCityAttackModifier * iChange,
+			"TXT_KEY_COMBAT_MESSAGE_BARBARIAN_CITY") # </advc.313>
 	_addCombatMsg(ePlayer, cdUnit.iClassDefenseModifier * iChange,
 			"TXT_KEY_COMBAT_MESSAGE_CLASS_DEFENSE")
 	_addCombatMsg(ePlayer, cdUnit.iClassAttackModifier * iChange,

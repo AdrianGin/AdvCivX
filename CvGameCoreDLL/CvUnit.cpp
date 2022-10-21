@@ -115,6 +115,12 @@ void CvUnit::init(int iID, UnitTypes eUnit, PlayerTypes eOwner, int iX, int iY,
 	m_eFacingDirection = eFacingDirection;
 	m_pUnitInfo = &GC.getInfo(m_eUnitType);
 	m_iBaseCombat = m_pUnitInfo->getCombat();
+	// <advc.313>
+	if (isKnownSeaBarbarian())
+	{
+		changeExtraMoves(GC.getInfo(GC.getGame().getHandicapType()).get(
+				CvHandicapInfo::SeaBarbarianExtraMoves));
+	} // </advc.313>
 	updateFlatMovement(); // advc.opt
 	m_iCargoCapacity = m_pUnitInfo->getCargoSpace();
 	setXY(iX, iY, false, false);
@@ -7117,6 +7123,16 @@ int CvUnit::maxCombatStr(CvPlot const* pPlot, CvUnit const* pAttacker,
 				if (pCombatDetails != NULL)
 					pCombatDetails->iAIBarbarianCombatModifierTB = iExtraModifier;
 			}
+			// <advc.313>
+			if (isKnownSeaBarbarian())
+			{
+				iExtraModifier = GC.getInfo(
+						GET_PLAYER(pAttacker->getOwner()).getHandicapType()).
+						get(CvHandicapInfo::SeaBarbarianBonus);
+				iModifier += iExtraModifier;
+				if (pCombatDetails != NULL)
+					pCombatDetails->iSeaBarbarianModifierTB = iExtraModifier;
+			} // </advc.313>
 		}
 
 		if (pAttacker->isBarbarian())
@@ -7139,6 +7155,16 @@ int CvUnit::maxCombatStr(CvPlot const* pPlot, CvUnit const* pAttacker,
 				if (pCombatDetails != NULL)
 					pCombatDetails->iAIBarbarianCombatModifierTB = iExtraModifier;
 			}
+			// <advc.313>
+			if (pAttacker->isKnownSeaBarbarian())
+			{
+				iExtraModifier = -GC.getInfo(
+						GC.getGame().getHandicapType()).
+						get(CvHandicapInfo::SeaBarbarianBonus);
+				iModifier += iExtraModifier;
+				if (pCombatDetails != NULL)
+					pCombatDetails->iSeaBarbarianModifierAB = iExtraModifier;
+			} // </advc.313>
 		}
 	}
 
@@ -7234,10 +7260,16 @@ int CvUnit::maxCombatStr(CvPlot const* pPlot, CvUnit const* pAttacker,
 				pCombatDetails->iCityAttackModifier = iExtraModifier;
 			if (pAttacker->isBarbarian())
 			{
-				iExtraModifier = GC.getDefineINT("CITY_BARBARIAN_DEFENSE_MODIFIER");
+				iExtraModifier = //GC.getDefineINT("CITY_BARBARIAN_DEFENSE_MODIFIER")
+						// <advc.313>
+						-GC.getInfo(GC.getGame().getHandicapType()).
+						get(CvHandicapInfo::BarbarianCityAttackBonus); // </advc.313>
 				iTempModifier += iExtraModifier;
 				if (pCombatDetails != NULL)
-					pCombatDetails->iCityBarbarianDefenseModifier = iExtraModifier;
+				{
+					pCombatDetails->//iCityBarbarianDefenseModifier
+							iBarbarianCityAttackModifier = iExtraModifier; // advc.313
+				}
 			}
 		}
 		if (pAttackedPlot->isHills())
@@ -10393,9 +10425,22 @@ void CvUnit::read(FDataStreamBase* pStream)
 	pStream->ReadString(m_szName);
 	pStream->ReadString(m_szScriptData);
 
+	// <advc.313>
+	if (uiFlag >= 8)
+		m_abHasPromotion.read(pStream);
+	else if (uiFlag == 7)
+	{	// Skip loading Disorganized promo
+		m_abHasPromotion.read(pStream, -1);
+		/*	Promo effects get cached in m_iExtra... members, which get saved.
+			This is good for the extra moves, not good for the strength modifier
+			b/c that gets applied on the fly now. */
+		if (isKnownSeaBarbarian())
+			m_iExtraCombatPercent += 10;
+	}
+	else // </advc.313>
+		m_abHasPromotion.readArray<bool>(pStream);
 	if (uiFlag >= 7)
 	{
-		m_abHasPromotion.read(pStream);
 		m_aiTerrainDoubleMoveCount.read(pStream);
 		m_aiFeatureDoubleMoveCount.read(pStream);
 		m_aiExtraTerrainAttackPercent.read(pStream);
@@ -10406,7 +10451,6 @@ void CvUnit::read(FDataStreamBase* pStream)
 	}
 	else
 	{
-		m_abHasPromotion.readArray<bool>(pStream);
 		m_aiTerrainDoubleMoveCount.readArray<int>(pStream);
 		m_aiFeatureDoubleMoveCount.readArray<int>(pStream);
 		m_aiExtraTerrainAttackPercent.readArray<int>(pStream);
@@ -10428,7 +10472,8 @@ void CvUnit::write(FDataStreamBase* pStream)
 	//uiFlag = 4; // advc.029
 	//uiFlag = 5; // advc.164
 	//uiFlag = 6; // advc.opt (m_bFlatMovement)
-	uiFlag = 7; // advc.enum: new enum map save behavior
+	//uiFlag = 7; // advc.enum: new enum map save behavior
+	uiFlag = 8; // advc.313: Disorganized promo removed
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);

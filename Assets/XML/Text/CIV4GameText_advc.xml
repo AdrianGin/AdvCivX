@@ -1998,6 +1998,27 @@
 		<Italian>da turno</Italian>
 		<Spanish>desde turno</Spanish>
 	</TEXT>
+
+	<!-- advc.313: Replacement for TXT_KEY_COMBAT_MESSAGE_CITY_BARBARIAN_DEFENSE
+		 (CIV4GameText_Misc1.xml); translation based on
+		 TXT_KEY_COMBAT_MESSAGE_CITY_ATTACK. -->
+	<TEXT>
+		<Tag>TXT_KEY_COMBAT_MESSAGE_BARBARIAN_CITY</Tag>
+		<English>(Barbarian City Attack: %D1%%)</English>
+		<French>(Attaque barbare contre ville : %D1%%)</French>
+		<German>(Barbaren-Angriff auf Stadt: %D1%%)</German>
+		<Italian>(Attacco barbare contro citt&#224;: %D1%%)</Italian>
+		<Spanish>(Ataque b&#225;rbaro contra ciudad: %D1%%)</Spanish>
+	</TEXT>
+	<!-- Based on TXT_KEY_COMBAT_MESSAGE_BARBARIAN_COMBAT -->
+	<TEXT>
+		<Tag>TXT_KEY_COMBAT_MESSAGE_BARBARIAN_SEA</Tag>
+		<English>(Barbarian Sea Combat: %D1%%)</English>
+		<French>(Combat barbare navale : %D1%%)</French>
+		<German>(Barbaren-Seekampf: %D1%%)</German>
+		<Italian>(Combattimento navale Barbari: %D1%%)</Italian>
+		<Spanish>(Combate naval del b&#225;rbaro: %D1%%)</Spanish>
+	</TEXT>
 	
 	<!-- advc.314: Based on TXT_KEY_GOODY_SCOUT in Vanilla
 		 Civ4GameTextInfos.xml. -->

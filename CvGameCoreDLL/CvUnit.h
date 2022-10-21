@@ -327,6 +327,13 @@ public:
 	}
 
 	bool isBarbarian() const;																				// Exposed to Python
+	// advc.313:
+	bool isKnownSeaBarbarian() const
+	{
+		return (isBarbarian() && getDomainType() == DOMAIN_SEA &&
+				// Future-proof for Barbarian Privateers
+				!m_pUnitInfo->isHiddenNationality());
+	}
 	bool isHuman() const;																					// Exposed to Python
 
 	int visibilityRange() const;																			// Exposed to Python
@@ -1231,6 +1238,10 @@ private:
 struct CombatDetails											// Exposed to Python
 {
 	int iExtraCombatPercent;
+	/*	advc.313 (note): Not sure what these suffixes are supposed to abbreviate.
+		I'll be assuming "T" for "This", meaning the defender, and then:
+		"TA" = "This is Animal", "AA" = "Attacker is Animal",
+		"TB" = "This is Barbarian", "AB" = "Attacker is Barbarian". */
 	int iAnimalCombatModifierTA;
 	int iAIAnimalCombatModifierTA;
 	int iAnimalCombatModifierAA;
@@ -1239,6 +1250,10 @@ struct CombatDetails											// Exposed to Python
 	int iAIBarbarianCombatModifierTB;
 	int iBarbarianCombatModifierAB;
 	int iAIBarbarianCombatModifierAB;
+	// <advc.313>
+	int iBarbarianCityAttackModifier;
+	int iSeaBarbarianModifierTB;
+	int iSeaBarbarianModifierAB; // </advc.313>
 	int iPlotDefenseModifier;
 	int iFortifyModifier;
 	int iCityDefenseModifier;
@@ -1250,7 +1265,7 @@ struct CombatDetails											// Exposed to Python
 	int iTerrainDefenseModifier;
 	int iCityAttackModifier;
 	int iDomainDefenseModifier;
-	int iCityBarbarianDefenseModifier;
+	//int iCityBarbarianDefenseModifier; // advc.313: replaced above
 	int iClassDefenseModifier;
 	int iClassAttackModifier;
 	int iCombatModifierT;
@@ -1277,8 +1292,8 @@ struct CombatDetails											// Exposed to Python
 	{
 		/*	Not nice - but we mustn't zero the string, and we don't want to
 			repeat all the int members. */
-		ZeroMemory(this, 39 * sizeof(int));
-		BOOST_STATIC_ASSERT(sizeof(CombatDetails) == 39 * sizeof(int) + 2 * sizeof(PlayerTypes) + sizeof(std::wstring));
+		ZeroMemory(this, 41 * sizeof(int));
+		BOOST_STATIC_ASSERT(sizeof(CombatDetails) == 41 * sizeof(int) + 2 * sizeof(PlayerTypes) + sizeof(std::wstring));
 		this->eOwner = eOwner;
 		this->eVisualOwner = eVisualOwner;
 		this->sUnitName = sUnitName;

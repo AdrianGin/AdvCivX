@@ -419,11 +419,17 @@ protected:
 		/*	(Didn't have this framework when I implemented change advc.251,
 			otherwise, I would've used it for that too.) */
 		kElements.addInt(ForeignCultureStrength, "ForeignCultureStrength"); // advc.101
+		// <advc.313>
+		kElements.addInt(BarbarianCityAttackBonus, "BarbarianCityAttackBonus", -25);
+		kElements.addInt(SeaBarbarianBonus, "SeaBarbarianBonus", -10);
+		kElements.addInt(SeaBarbarianExtraMoves, "SeaBarbarianExtraMoves", -1);
+		// </advc.313>
 	}
 public:
 	enum IntElementTypes
 	{
 		ForeignCultureStrength = base_t::NUM_INT_ELEMENT_TYPES, // advc.101
+		BarbarianCityAttackBonus, SeaBarbarianBonus, SeaBarbarianExtraMoves, // advc.313
 		NUM_INT_ELEMENT_TYPES
 	};
 	int get(IntElementTypes e) const
