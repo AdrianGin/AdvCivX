@@ -20,6 +20,8 @@
 #   difficult to associate error messages with a translation unit; but don't need
 #   a slow version of every config.]
 # YOURMOD2 and YOURLOGS (see under "Paths").
+# /Z option for debug builds obtained from Makefile.project, the default being /Zd.
+#   This precludes expression evaluation at runtime, but links much faster than /Z7.
 # PROJECT_Profile_CFLAGS, PROJECT_Debug_CFLAGS, PROJECT_DebugOpt_CFLAGS added to Makefile.project.
 # For selecting a profiler and for balancing speed vs. fidelity of debug builds.
 # Removed unused /DCVGAMECOREDLL_EXPORTS from Debug_DEFINES
@@ -141,9 +143,9 @@ SUBDIRPATH15 = ../
 !ENDIF
 !IF [ECHO PROJECT_Profile_CFLAGS = >> Makefile.project]
 !ENDIF
-!IF [ECHO PROJECT_Debug_CFLAGS = >> Makefile.project]
+!IF [ECHO PROJECT_Debug_CFLAGS = /Zd >> Makefile.project]
 !ENDIF
-!IF [ECHO PROJECT_DebugOpt_CFLAGS = >> Makefile.project]
+!IF [ECHO PROJECT_DebugOpt_CFLAGS = /Z7 >> Makefile.project]
 !ENDIF
 !IF [ECHO PRECOMPILE_DEPENDENCIES = >> Makefile.project]
 !ENDIF
@@ -192,10 +194,10 @@ FILE_DEPENDS = $(TEMP_TARGET_FILES)\depends
 
 #### CFLAGS ####
 GLOBAL_CFLAGS=/MD /GR /Gy /EHsc /Gd /Gm- /Fd"$(Target_PDB)" $(CUSTOM_CFLAGS) $(PROJECT_CFLAGS)
-Debug_CFLAGS=/Z7 /Od /RTC1 $(Debug_DEFINES) $(GLOBAL_CFLAGS) $(PROJECT_Debug_CFLAGS)
+Debug_CFLAGS=/Od /RTC1 $(Debug_DEFINES) $(GLOBAL_CFLAGS) $(PROJECT_Debug_CFLAGS)
 Release_CFLAGS=/O2 /G7 /arch:SSE2 $(Release_DEFINES) $(GLOBAL_CFLAGS)
 Final_Release_CFLAGS=$(Release_CFLAGS) /GL
-Debug_Opt_CFLAGS=$(Release_CFLAGS) /Z7 $(PROJECT_DebugOpt_CFLAGS)
+Debug_Opt_CFLAGS=$(Release_CFLAGS) $(PROJECT_DebugOpt_CFLAGS)
 
 PRECOMPILE_CFLAGS1 = /Yu"
 PRECOMPILE_CFLAGS2 = CvGameCoreDLL.h" /Fp"$(Target_PCH)"
