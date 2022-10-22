@@ -11256,8 +11256,16 @@ void CvCity::read(FDataStreamBase* pStream)
 		m_aiNumRealBuilding.read(pStream);
 		m_aiNumFreeBuilding.read(pStream);
 		m_abWorkingPlot.read(pStream);
-		m_abHasReligion.read(pStream);
-		m_abHasCorporation.read(pStream);
+		if (uiFlag >= 17)
+		{
+			m_abHasReligion.read(pStream);
+			m_abHasCorporation.read(pStream);
+		}
+		else
+		{
+			LegacyArrayEnumMap<ReligionTypes,bool>::convert(m_abHasReligion, pStream);
+			LegacyArrayEnumMap<CorporationTypes,bool>::convert(m_abHasCorporation, pStream);
+		}
 	}
 	else
 	{
@@ -11624,7 +11632,8 @@ void CvCity::write(FDataStreamBase* pStream)
 	//uiFlag = 13; // advc.201: Cathedrals restored to BtS stats
 	//uiFlag = 14; // advc.179, advc.exp.1, advc.exp.2
 	//uiFlag = 15; // advc.912d: Partly reverted, adjust MaxFoodKept.
-	uiFlag = 16; // advc.enum: m_aiShrine
+	//uiFlag = 16; // advc.enum: m_aiShrine
+	uiFlag = 17; // advc.enum: Bugfix in bool-valued ArrayEnumMap
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);

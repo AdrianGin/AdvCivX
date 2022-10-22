@@ -14214,7 +14214,9 @@ void CvPlayer::read(FDataStreamBase* pStream)
 		m_aiHasCorporationCount.read(pStream);
 		m_aiUpkeepCount.read(pStream);
 		m_aiSpecialistValidCount.read(pStream);
-		m_abResearchingTech.read(pStream);
+		if (uiFlag >= 21)
+			m_abResearchingTech.read(pStream);
+		else LegacyArrayEnumMap<TechTypes,bool>::convert(m_abResearchingTech, pStream);
 	}
 	else
 	{
@@ -14260,7 +14262,9 @@ void CvPlayer::read(FDataStreamBase* pStream)
 	} // </advc.091>
 	if (uiFlag >= 16)
 	{
-		m_abLoyalMember.read(pStream);
+		if (uiFlag >= 21)
+			m_abLoyalMember.read(pStream);
+		else LegacyArrayEnumMap<VoteSourceTypes,bool,void*,true>::convert(m_abLoyalMember, pStream);
 		m_aeCivics.read(pStream);
 		m_aeeiSpecialistExtraYield.read(pStream);
 		m_aeeiImprovementYieldChange.read(pStream);
@@ -14589,7 +14593,8 @@ void CvPlayer::write(FDataStreamBase* pStream)
 	//uiFlag = 17; // advc.157
 	//uiFlag = 18; // advc.251 (city maintenance changed in handicap XML)
 	//uiFlag = 19; // advc.708
-	uiFlag = 20; // advc.912g
+	//uiFlag = 20; // advc.912g
+	uiFlag = 21; // advc.enum: Bugfix in bool-valued ArrayEnumMap
 	pStream->Write(uiFlag);
 
 	// <advc.027>

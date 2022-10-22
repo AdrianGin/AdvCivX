@@ -10429,8 +10429,9 @@ void CvUnit::read(FDataStreamBase* pStream)
 	if (uiFlag >= 8)
 		m_abHasPromotion.read(pStream);
 	else if (uiFlag == 7)
-	{	// Skip loading Disorganized promo
-		m_abHasPromotion.read(pStream, -1);
+	{
+		// Skip loading Disorganized promo
+		LegacyArrayEnumMap<PromotionTypes,bool>::convert(m_abHasPromotion, pStream, -1);
 		/*	Promo effects get cached in m_iExtra... members, which get saved.
 			This is good for the extra moves, not good for the strength modifier
 			b/c that gets applied on the fly now. */
@@ -10473,7 +10474,7 @@ void CvUnit::write(FDataStreamBase* pStream)
 	//uiFlag = 5; // advc.164
 	//uiFlag = 6; // advc.opt (m_bFlatMovement)
 	//uiFlag = 7; // advc.enum: new enum map save behavior
-	uiFlag = 8; // advc.313: Disorganized promo removed
+	uiFlag = 8; // advc.313: Disorganized promo removed, advc.enum: bugfix.
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);

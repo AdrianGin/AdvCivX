@@ -1284,7 +1284,15 @@ protected:
 			(enum_traits<E>::len + BITSIZE(BitBlock) - 1) / BITSIZE(BitBlock)); // round up
 	static int arraySize()
 	{
-		return (bSTATIC_MEMORY ? iSTATIC_ARRAY_SIZE : getLength());
+		if (bSTATIC_MEMORY)
+			return iSTATIC_ARRAY_SIZE;
+		int iLen = getLength();
+		if (bBIT_BLOCKS)
+		{
+			iLen += BITSIZE(BitBlock) - 1;
+			iLen /= BITSIZE(BitBlock);
+		}
+		return iLen;
 	}
 	/*	Allow derived classes to handle initial values.
 		(Cleaner solution might be to make this class CRT-poolymorphic.) */
@@ -1413,8 +1421,7 @@ public:
 	}
 	void read(FDataStreamBase* pStream, int iSubtrahend = 0)
 	{
-// Fixme: arraySize function is not taking into account bBIT_BLOCKS when !bSTATIC_MEMORY
-//		FAssert(!bBIT_BLOCKS || iSubtrahend == 0);
+		FAssert(!bBIT_BLOCKS || iSubtrahend == 0);
 		bool bAnyNonDefault;
 		pStream->Read(&bAnyNonDefault);
 		if (bAnyNonDefault)
@@ -1524,6 +1531,65 @@ protected:
 	}
 };
 #undef ArrayEnumMapBase
+
+/*	This version retains a bug that got fixed in AdvCiv 1.08.
+	To facilitate save-compatibility. The arraySize function can't really be
+	overridden, so this is a hack-y class that should be retained only so long
+	as it is needed. */
+template<typename E, class V,
+	class CV = void*,
+	int iDEFAULT = (int)enum_traits<V>::none>
+class LegacyArrayEnumMap : public ArrayEnumMap<E,V,CV,iDEFAULT,false,8>
+{
+private: // We're only here for converting old savegames
+	LegacyArrayEnumMap() { m_aValues = NULL; }
+	~LegacyArrayEnumMap() { SAFE_DELETE_ARRAY(m_aValues); }
+public:
+	template<class OtherEnumMap>
+	static convert(OtherEnumMap& kOther, FDataStreamBase* pStream, int iSubtrahend = 0)
+	{
+		LegacyArrayEnumMap tmp;
+		tmp.read(pStream, iSubtrahend);
+		if (tmp.isAllocated())
+		{
+			FOR_EACH_KEY(eKey)
+			{
+				kOther.set(eKey, tmp.get(eKey));
+			}
+		}
+	}
+	static int arraySize()
+	{
+		/*	The bug is that, for
+			bBIT_BLOCKS && !bSTATIC_MEMORY
+			the array will contain one 4-byte block per boolean value
+			rather than 1 bit per value. */
+		return (isStaticMemory ? iSTATIC_ARRAY_SIZE : getLength());
+	}
+	/*	On the bright side, this bugged version can be easily
+		instructed to read fewer or more values. */
+	void read(FDataStreamBase* pStream, int iSubtrahend = 0)
+	{
+		//FAssert(!bBIT_BLOCKS || iSubtrahend == 0);
+		/*	Instead, assert that we have (possibly) a good reason for using
+			this legacy version. */
+		FAssert(bBIT_BLOCKS && !isStaticMemory);
+		// Copy-pasted from ArrayEnumMap ...
+		bool bAnyNonDefault;
+		pStream->Read(&bAnyNonDefault);
+		if (bAnyNonDefault)
+		{
+			if (!isAllocated())
+			{
+				//allocate();
+				/*	arraySize is not polymorphic, so we need to call it
+					directly, not via the base class's allocate function. */
+				m_aValues = new CompactV[arraySize()];
+			}
+			pStream->Read(arraySize() - iSubtrahend, values());
+		}
+	}
+};
 
 // For convenience - as the bEAGER_ALLOC param is pretty far down the list.
 template<typename E, class V,

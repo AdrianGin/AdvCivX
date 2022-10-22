@@ -8861,9 +8861,18 @@ void CvGame::read(FDataStreamBase* pStream)
 		m_aiSecretaryGeneralTimer.read(pStream);
 		m_aiVoteTimer.read(pStream);
 		m_aiDiploVote.read(pStream);
-		m_abSpecialUnitValid.read(pStream);
-		m_abSpecialBuildingValid.read(pStream);
-		m_abReligionSlotTaken.read(pStream);
+		if (uiFlag >= 24)
+		{
+			m_abSpecialUnitValid.read(pStream);
+			m_abSpecialBuildingValid.read(pStream);
+			m_abReligionSlotTaken.read(pStream);
+		}
+		else
+		{
+			LegacyArrayEnumMap<SpecialUnitTypes,bool>::convert(m_abSpecialUnitValid, pStream);
+			LegacyArrayEnumMap<SpecialBuildingTypes,bool>::convert(m_abSpecialBuildingValid, pStream);
+			LegacyArrayEnumMap<ReligionTypes,bool>::convert(m_abReligionSlotTaken, pStream);
+		}
 		m_aeHolyCity.read(pStream);
 		m_aeHeadquarters.read(pStream);
 	}
@@ -9034,7 +9043,11 @@ void CvGame::read(FDataStreamBase* pStream)
 	if (uiFlag >= 21)
 	{
 		if (!isOption(GAMEOPTION_NO_EVENTS))
-			m_abInactiveTriggers.read(pStream);
+		{
+			if (uiFlag >= 24)
+				m_abInactiveTriggers.read(pStream);
+			else LegacyArrayEnumMap<EventTriggerTypes,bool>::convert(m_abInactiveTriggers, pStream);
+		}
 	}
 	else
 	{
@@ -9120,7 +9133,8 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 20; // advc.130r: Update war attitude
 	//uiFlag = 21; // advc.enum
 	//uiFlag = 22; // advc.130n: Bugfix in fave-civic attitude calc
-	uiFlag = 23; // advc.124b: Need a plot group update for compatibility
+	//uiFlag = 23; // advc.124b: Need a plot group update for compatibility
+	uiFlag = 24; // advc.enum: Bugfix in bool-valued ArrayEnumMap
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);

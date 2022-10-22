@@ -5872,7 +5872,9 @@ void CvTeam::read(FDataStreamBase* pStream)
 	// </advc.opt>
 	if (uiFlag >= 16)
 	{
-		m_abCanLaunch.read(pStream);
+		if (uiFlag >= 19)
+			m_abCanLaunch.read(pStream);
+		else LegacyArrayEnumMap<VictoryTypes,bool>::convert(m_abCanLaunch, pStream);
 		m_aiRouteChange.read(pStream);
 		m_aiProjectCount.read(pStream);
 	}
@@ -5940,7 +5942,11 @@ void CvTeam::read(FDataStreamBase* pStream)
 		}
 	} // </advc.opt>
 	if (uiFlag >= 16)
-		m_abHasTech.read(pStream);
+	{
+		if (uiFlag >= 19)
+			m_abHasTech.read(pStream);
+		else LegacyArrayEnumMap<TechTypes,bool>::convert(m_abHasTech, pStream);
+	}
 	else m_abHasTech.readArray<bool>(pStream);
 	// <advc.101>
 	if (uiFlag >= 10)
@@ -5955,7 +5961,9 @@ void CvTeam::read(FDataStreamBase* pStream)
 	} // </advc.101>
 	if (uiFlag >= 16)
 	{
-		m_abNoTradeTech.read(pStream);
+		if (uiFlag >= 19)
+			m_abNoTradeTech.read(pStream);
+		else LegacyArrayEnumMap<TechTypes,bool>::convert(m_abNoTradeTech, pStream);
 		m_aaiImprovementYieldChange.read(pStream);
 	}
 	else
@@ -5964,7 +5972,11 @@ void CvTeam::read(FDataStreamBase* pStream)
 		m_aaiImprovementYieldChange.readArray<int>(pStream);
 	}
 	if (uiFlag >= 16)
-		m_abRevealedBonuses.read(pStream);
+	{
+		if (uiFlag >= 19)
+			m_abRevealedBonuses.read(pStream);
+		else LegacyArrayEnumMap<BonusTypes,bool>::convert(m_abRevealedBonuses, pStream);
+	}
 	else
 	{
 		int iSize;
@@ -6035,7 +6047,8 @@ void CvTeam::write(FDataStreamBase* pStream)
 	//uiFlag = 15; // advc (for kekm.38)
 	//uiFlag = 16; // advc.enum: new enum map save behavior
 	//uiFlag = 17; // advc.130k
-	uiFlag = 18; // advc.500c
+	//uiFlag = 18; // advc.500c
+	uiFlag = 19; // advc.enum: Bugfix in bool-valued ArrayEnumMap
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iNumMembers);
