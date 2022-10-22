@@ -4939,19 +4939,19 @@ void CvCity::updateSurroundingHealthHappiness()
 			}
 		}
 	}
+	bool bDirty = false;
 	if (getSurroundingGoodHappiness() != iNewGoodHappiness)
 	{
 		m_iSurroundingGoodHappiness = iNewGoodHappiness;
 		FAssert(getSurroundingGoodHappiness() >= 0);
-		AI_setAssignWorkDirty(true);
+		bDirty = true;
 	}
 	if (getSurroundingBadHappiness() != iNewBadHappiness)
 	{
 		m_iSurroundingBadHappiness = iNewBadHappiness;
 		FAssert(getSurroundingBadHappiness() <= 0);
-		AI_setAssignWorkDirty(true);
+		bDirty = true;
 	}
-
 	std::pair<int,int> iiGoodBad = calculateSurroundingHealth(); // advc.901: Moved into new function
 	if (getSurroundingGoodHealth() != iiGoodBad.first ||
 		getSurroundingBadHealth() != iiGoodBad.second)
@@ -4960,6 +4960,10 @@ void CvCity::updateSurroundingHealthHappiness()
 		m_iSurroundingBadHealth = iiGoodBad.second;
 		FAssert(getSurroundingGoodHealth() >= 0);
 		FAssert(getSurroundingBadHealth() <= 0);
+		bDirty = true;
+	}
+	if (bDirty)
+	{
 		AI_setAssignWorkDirty(true);
 		if (isActiveTeam())
 			setInfoDirty(true);
