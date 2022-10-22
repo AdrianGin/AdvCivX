@@ -1558,7 +1558,7 @@ public:
 			}
 		}
 	}
-	static int arraySize()
+	static int arraySizeLegacy()
 	{
 		/*	The bug is that, for
 			bBIT_BLOCKS && !bSTATIC_MEMORY
@@ -1582,11 +1582,11 @@ public:
 			if (!isAllocated())
 			{
 				//allocate();
-				/*	arraySize is not polymorphic, so we need to call it
+				/*	arraySize is not polymorphic, so we need to call our version
 					directly, not via the base class's allocate function. */
-				m_aValues = new CompactV[arraySize()];
+				m_aValues = new CompactV[arraySizeLegacy()];
 			}
-			pStream->Read(arraySize() - iSubtrahend, values());
+			pStream->Read(arraySizeLegacy() - iSubtrahend, values());
 		}
 	}
 };
