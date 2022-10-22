@@ -7552,7 +7552,7 @@ bool CvUnit::canBeAttackedBy(PlayerTypes eAttackingPlayer,
 		if (!isEnemy(TEAMID(eAttackingPlayer)) &&
 			/*	Need to check both if pAttacker is given, otherwise attacks
 				_against_ Privateers aren't possible (cf. comment above isEnemy). */
-			(pAttacker == NULL || !pAttacker->isEnemy(getTeam())))
+			(pAttacker == NULL || !pAttacker->isEnemy(getTeam(), getPlot())))
 		{
 			return false;
 		}
