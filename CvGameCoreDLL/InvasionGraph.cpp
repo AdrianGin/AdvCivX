@@ -1326,7 +1326,10 @@ SimulationStep* InvasionGraph::Node::step(scaled rArmyPortionDefender,
 		rTypicalGarrisonPow = fixp(3.25); // That's a Warrior
 	}
 	// Fewer rallies if all spread thin
-	int iRallied = (rPowerPerGarrison / rTypicalGarrisonPow).uround();
+	int iRallied = ((rPowerPerGarrison *
+			// Humans are better at rallying
+			(GET_PLAYER(kDefender.m_ePlayer).isHuman() ? fixp(1.3) : 1)) /
+			rTypicalGarrisonPow).uround();
 	// Upper bound for rallies based on importance of city
 	int iRallyBound = 0;
 	if (bUniformGarrisons)
