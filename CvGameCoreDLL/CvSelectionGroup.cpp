@@ -1209,7 +1209,11 @@ void CvSelectionGroup::startMission()
 			else if (getActivityType() == ACTIVITY_MISSION)
 				continueMission();
 			// K-Mod
-			else if (isActiveOwned() && IsSelected() && !canAnyMove())
+			else if (isActiveOwned() && IsSelected() && //!canAnyMove()
+				/*	advc.001: Mission won't start unless all can move.
+					Need to cycle if mission not started. BtS already
+					gets this wrong. */
+				!canAllMove())
 			{
 				GC.getGame().cycleSelectionGroups_delayed(kOwner.
 						isOption(PLAYEROPTION_QUICK_MOVES) ? 1 : 2, true);
@@ -3247,7 +3251,7 @@ bool CvSelectionGroup::readyForMission() const
 	// direct attack is a special case...    sorry about that.
 	bool bCheckMoves = true;
 
-	if (kData.eMissionType == MISSION_MOVE_TO && kData.eFlags & MOVE_DIRECT_ATTACK)
+	if (kData.eMissionType == MISSION_MOVE_TO && (kData.eFlags & MOVE_DIRECT_ATTACK))
 	{
 		if (canAnyMove())
 			bCheckMoves = false;
