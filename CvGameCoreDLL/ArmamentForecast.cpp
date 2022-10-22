@@ -599,10 +599,11 @@ void ArmamentForecast::predictArmament(int iTurnsBuildUp, scaled rPerTurnProduct
 			continue;
 		scaled const rTypicalPower = kBranch.getTypicalPower(eAgentTeam);
 		scaled rIncrease = rBranchPortions[i] * rTotalProductionForBuildUp *
-				rTypicalPower / rTypicalCost;
+				(rTypicalPower / rTypicalCost);
 		kBranch.changePower(rIncrease);
 		if (rIncrease.uround() > 0)
 		{
+			FAssertMsg(kBranch.power() >= 0, "overflow in predicted power?");
 			m_kReport.log("Predicted power increase in %s by %d",
 					kBranch.str(), rIncrease.uround());
 		}
