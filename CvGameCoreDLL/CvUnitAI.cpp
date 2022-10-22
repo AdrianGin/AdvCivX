@@ -3048,8 +3048,12 @@ void CvUnitAI::AI_attackCityMove()
 	// K-Mod note.: I've rearranged some parts of the code below, sometimes without comment.
 	if (pTargetCity != NULL)
 	{
-		int iComparePostBombard = AI_getGroup()->
-				AI_compareStacks(pTargetCity->plot(), true);
+		int iComparePostBombard =
+				/*	advc.159: Avoid overflow when applying the modifier below.
+					Will only get compared with attack ratio percentages, which
+					should be 3-digit numbers. So 10k is a huge ceiling. */
+				std::min(10000,
+				AI_getGroup()->AI_compareStacks(pTargetCity->plot(), true));
 		int iBombardTurns = AI_getGroup()->AI_getBombardTurns(pTargetCity);
 		// K-Mod note: AI_compareStacks will try to use the AI memory if it can't see.
 		{
@@ -3062,13 +3066,13 @@ void CvUnitAI::AI_attackCityMove()
 			int iReducedModifier = iDefenseModifier;
 			iReducedModifier *= std::min(20, iBombardTurns);
 			iReducedModifier /= 20;
-			int iBase = 210 + (pTargetCity->getPlot().isHills() ?
-					GC.getDefineINT(CvGlobals::HILLS_EXTRA_DEFENSE) : 0);
-			// advc: Make sure we don't overflow
-			scaled rMult(iBase, std::max(1,
+			int iBase = 210;
+			if (pTargetCity->getPlot().isHills())
+				iBase += GC.getDefineINT(CvGlobals::HILLS_EXTRA_DEFENSE);
+			iComparePostBombard *= iBase;
+			iComparePostBombard /= std::max(1,
 					// def. mod. < 200. I promise.
-					iBase + iReducedModifier - iDefenseModifier));
-			iComparePostBombard = (rMult * iComparePostBombard).round();
+					iBase + iReducedModifier - iDefenseModifier);
 			/*	iBase > 100 is to offset the over-reduction from compounding.
 				With iBase == 200, bombarding a defence bonus of 100% will
 				reduce effective defence by 50% */
