@@ -1532,62 +1532,36 @@ protected:
 };
 #undef ArrayEnumMapBase
 
-/*	This version retains a bug that got fixed in AdvCiv 1.08.
-	To facilitate save-compatibility. The arraySize function can't really be
-	overridden, so this is a hack-y class that should be retained only so long
-	as it is needed. */
+/*	AdvCiv 1.08 fixes a bug in ArrayEnumMap. Convenient to wrap code for
+	maintaining save-compatibility in a derived class. */
 template<typename E, class V,
 	class CV = void*,
 	int iDEFAULT = (int)enum_traits<V>::none>
 class LegacyArrayEnumMap : public ArrayEnumMap<E,V,CV,iDEFAULT,false,8>
 {
-private: // We're only here for converting old savegames
-	LegacyArrayEnumMap() { m_aValues = NULL; }
-	~LegacyArrayEnumMap() { SAFE_DELETE_ARRAY(m_aValues); }
+private: LegacyArrayEnumMap() {} // Not going to instantiate this
 public:
 	template<class OtherEnumMap>
-	static convert(OtherEnumMap& kOther, FDataStreamBase* pStream, int iSubtrahend = 0)
+	static void convert(OtherEnumMap& kOther, FDataStreamBase* pStream, int iSubtrahend = 0)
 	{
-		LegacyArrayEnumMap tmp;
-		tmp.read(pStream, iSubtrahend);
-		if (tmp.isAllocated())
-		{
-			FOR_EACH_KEY(eKey)
-			{
-				kOther.set(eKey, tmp.get(eKey));
-			}
-		}
-	}
-	static int arraySizeLegacy()
-	{
-		/*	The bug is that, for
-			bBIT_BLOCKS && !bSTATIC_MEMORY
-			the array will contain one 4-byte block per boolean value
-			rather than 1 bit per value. */
-		return (isStaticMemory ? iSTATIC_ARRAY_SIZE : getLength());
-	}
-	/*	On the bright side, this bugged version can be easily
-		instructed to read fewer or more values. */
-	void read(FDataStreamBase* pStream, int iSubtrahend = 0)
-	{
-		//FAssert(!bBIT_BLOCKS || iSubtrahend == 0);
-		/*	Instead, assert that we have (possibly) a good reason for using
-			this legacy version. */
-		FAssert(bBIT_BLOCKS && !isStaticMemory);
-		// Copy-pasted from ArrayEnumMap ...
+		BOOST_STATIC_ASSERT(bBIT_BLOCKS && !isStaticMemory);
 		bool bAnyNonDefault;
 		pStream->Read(&bAnyNonDefault);
-		if (bAnyNonDefault)
+		if (!bAnyNonDefault)
+			return;
+		int const iLen = getLength() - iSubtrahend;
+		/*	Allocate one 4-byte block per value.
+			(That's the bug that got fixed in AdvCiv 1.08.) */
+		CompactV* aValues = new CompactV[iLen];
+		pStream->Read(iLen, aValues);
+		for (E eKey = enum_traits<E>::first; eKey < std::min<int>(iLen, getLength()); eKey++)
 		{
-			if (!isAllocated())
-			{
-				//allocate();
-				/*	arraySize is not polymorphic, so we need to call our version
-					directly, not via the base class's allocate function. */
-				m_aValues = new CompactV[arraySizeLegacy()];
-			}
-			pStream->Read(arraySizeLegacy() - iSubtrahend, values());
+			bool bVal = BitUtil::GetBit(
+					aValues[eKey / BITSIZE(BitBlock)],
+					eKey % BITSIZE(BitBlock));
+			kOther.set(eKey, bVal);
 		}
+		delete[] aValues;
 	}
 };
 
