@@ -3979,13 +3979,23 @@ DenialTypes CvTeamAI::AI_openBordersTrade(TeamTypes eWithTeam) const
 	}
 	if (AI_getWorstEnemy() == eWithTeam)
 		return DENIAL_WORST_ENEMY;
-
-	int iOurAttitude = AI_getAttitude(eWithTeam);
+	/*	<advc.124> If personalities are hidden, then avoid giving away
+		attitude thresholds in the early game (i.e. when territory not yet
+		located). Attitude is typically Cautious at that point, which should
+		mean that everyone (except Toku) accepts OB if located and refuses
+		otherwise. */
+	int const iAttitudeThreshFloor =
+			(GC.getGame().isOption(GAMEOPTION_RANDOM_PERSONALITIES) &&
+			!AI_isTerritoryAccessible(eWithTeam) ?
+			ATTITUDE_ANNOYED : NO_ATTITUDE); // </advc.124>
+	int const iOurAttitude = AI_getAttitude(eWithTeam);
 	for (MemberIter it(getID()); it.hasNext(); ++it)
 	{
 		// <advc.124>
-		int const iAttitudeThresh = GC.getInfo(it->getPersonalityType()).
-				getOpenBordersRefuseAttitudeThreshold();
+		int const iAttitudeThresh = std::max(
+				GC.getInfo(it->getPersonalityType()).
+				getOpenBordersRefuseAttitudeThreshold(),
+				iAttitudeThreshFloor);
 		if (iOurAttitude < iAttitudeThresh)
 			return DENIAL_ATTITUDE;
 		if (iOurAttitude > iAttitudeThresh + 1)
