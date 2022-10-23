@@ -36,12 +36,17 @@
 			<!-- advc.252: was 33 -->
 			<iHurryPercent>40</iHurryPercent>
 			<iHurryConscriptAngerPercent>250</iHurryConscriptAngerPercent>
-			<!-- advc.252: was 10 -->
+			<!-- advc.252: start -->
+			<!-- was 10 -->
 			<iInflationPercent>12</iInflationPercent>
-			<!-- advc.252: was -270 -->
+			<!-- was -270 -->
 			<iInflationOffset>-225</iInflationOffset>
-			<!-- advc.252: was 300 -->
+			<!-- Reduce unit expenses ... -->
+			<iUnitCostPercent>85</iUnitCostPercent>
+			<iExtraFreeOutsideUnits>1</iExtraFreeOutsideUnits>
+			<!-- was 300 -->
 			<iVictoryDelayPercent>200</iVictoryDelayPercent>
+			<!-- advc.252: end -->
 			<!-- advc.130r: start -->
 			<iAIMemoryRandPercent>200</iAIMemoryRandPercent>
 			<iAIContactRandPercent>167</iAIContactRandPercent>

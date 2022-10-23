@@ -20,6 +20,8 @@
 			<iMaxConscriptModifier>-30</iMaxConscriptModifier>
 			<!-- advc.140: was 37 -->
 			<iWarWearinessModifier>30</iWarWearinessModifier>
+			<!-- advc.252 -->
+			<iUnitCostPercent>109</iUnitCostPercent>
 			<!-- advc.137: was 10x6 -->
 			<iGridWidth>18</iGridWidth>
 			<iGridHeight>13</iGridHeight>
@@ -53,6 +55,8 @@
 			<iMaxConscriptModifier>-15</iMaxConscriptModifier>
 			<!-- advc.140: was 30 -->
 			<iWarWearinessModifier>20</iWarWearinessModifier>
+			<!-- advc.252 -->
+			<iUnitCostPercent>106</iUnitCostPercent>
 			<!-- advc.137: was 13x8 -->
 			<iGridWidth>23</iGridWidth>
 			<iGridHeight>17</iGridHeight>
@@ -84,6 +88,8 @@
 			<iMaxConscriptModifier>0</iMaxConscriptModifier>
 			<!-- advc.140: was 10 -->
 			<iWarWearinessModifier>12</iWarWearinessModifier>
+			<!-- advc.252 -->
+			<iUnitCostPercent>103</iUnitCostPercent>
 			<!-- advc.137: was 16x10 -->
 			<iGridWidth>30</iGridWidth>
 			<iGridHeight>22</iGridHeight>
@@ -121,6 +127,8 @@
 			<iMaxConscriptModifier>15</iMaxConscriptModifier>
 			<!-- advc.140: was -10 -->
 			<iWarWearinessModifier>0</iWarWearinessModifier>
+			<!-- advc.252 -->
+			<iUnitCostPercent>100</iUnitCostPercent>
 			<!-- advc.137: was 21x13 -->
 			<iGridWidth>39</iGridWidth>
 			<iGridHeight>28</iGridHeight>
@@ -154,6 +162,8 @@
 			<iMaxConscriptModifier>30</iMaxConscriptModifier>
 			<!-- advc.140: was -30 -->
 			<iWarWearinessModifier>-13</iWarWearinessModifier>
+			<!-- advc.252 -->
+			<iUnitCostPercent>97</iUnitCostPercent>
 			<!-- advc.137: was 26x16 -->
 			<iGridWidth>47</iGridWidth>
 			<iGridHeight>34</iGridHeight>
@@ -188,6 +198,8 @@
 			<iMaxConscriptModifier>45</iMaxConscriptModifier>
 			<!-- advc.140: was -50 -->
 			<iWarWearinessModifier>-25</iWarWearinessModifier>
+			<!-- advc.252 -->
+			<iUnitCostPercent>94</iUnitCostPercent>
 			<!-- advc.137: was 32x20 -->
 			<iGridWidth>60</iGridWidth>
 			<iGridHeight>42</iGridHeight>
@@ -219,6 +231,7 @@
 			<iBuildingClassPrereqModifier>75</iBuildingClassPrereqModifier>
 			<iMaxConscriptModifier>50</iMaxConscriptModifier>
 			<iWarWearinessModifier>-25</iWarWearinessModifier>
+			<iUnitCostPercent>91</iUnitCostPercent>
 			<iGridWidth>73</iGridWidth>
 			<iGridHeight>51</iGridHeight>
 			<iTerrainGrainChange>3</iTerrainGrainChange>

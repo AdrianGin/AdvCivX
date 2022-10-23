@@ -252,6 +252,8 @@ protected:
 		// <advc.252>
 		kElements.addInt(EventRollSidesPercent, "EventRollSidesPercent", 100);
 		kElements.addInt(VoteIntervalPercent, "VoteIntervalPercent", 100);
+		kElements.addInt(UnitCostPercent, "UnitCostPercent", 100);
+		kElements.addInt(ExtraFreeOutsideUnits, "ExtraFreeOutsideUnits", 100);
 		// </advc.252>
 	}
 public:
@@ -265,7 +267,9 @@ public:
 		ReligionSpreadDivPercent, // advc.173
 		// <advc.252>
 		EventRollSidesPercent,
-		VoteIntervalPercent, // </advc.252>
+		VoteIntervalPercent,
+		UnitCostPercent,
+		ExtraFreeOutsideUnits, // </advc.252>
 		NUM_INT_ELEMENT_TYPES
 	};
 	int get(IntElementTypes e) const
@@ -619,12 +623,28 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  class : CvWorldInfo
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-class CvWorldInfo : public CvInfoBase
+class CvWorldInfo : /* <advc.tag> */ public CvXMLInfo
 {
-	typedef CvInfoBase base_t;
-public: // All the const functions are exposed to Python
+	typedef CvXMLInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		kElements.addInt(UnitCostPercent, "UnitCostPercent", 100); // advc.252
+	}
+public:
+	enum IntElementTypes
+	{
+		UnitCostPercent = CvXMLInfo::NUM_INT_ELEMENT_TYPES, // advc.252
+		NUM_INT_ELEMENT_TYPES
+	};
+	int get(IntElementTypes e) const
+	{
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
+	} // </advc.tag>
+ 
 	CvWorldInfo();
-
+	// All the const functions are exposed to Python ...
 	DllExport int getDefaultPlayers() const { return m_iDefaultPlayers; }
 	int getUnitNameModifier() const;
 	int getTargetNumCities() const { return m_iTargetNumCities; }

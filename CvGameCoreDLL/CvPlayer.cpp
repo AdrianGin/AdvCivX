@@ -6005,7 +6005,14 @@ int CvPlayer::getUnitCostMultiplier() const
 		/*iMultiplier *= std::max(0, ((GC.getInfo(GC.getGame().getHandicapType()).getAIPerEraModifier() * getCurrentEra()) + 100));
 		iMultiplier /= 100;*/
 	}
-
+	// <advc.252>
+	iMultiplier *= GC.getInfo(GC.getGame().getGameSpeedType()).get(
+			CvGameSpeedInfo::UnitCostPercent);
+	iMultiplier /= 100;
+	iMultiplier *= GC.getInfo(GC.getMap().getWorldSize()).get(
+			CvWorldInfo::UnitCostPercent);
+	iMultiplier /= 100;
+	// </advc.252>
 	return iMultiplier;
 }
 
@@ -6100,9 +6107,13 @@ int CvPlayer::calculateUnitSupply(int& iPaidUnits, int& iBaseSupplyCost,
 	static int iINITIAL_FREE_OUTSIDE_UNITS = GC.getDefineINT("INITIAL_FREE_OUTSIDE_UNITS"); // advc.opt
 	static int iINITIAL_OUTSIDE_UNIT_GOLD_PERCENT = GC.getDefineINT("INITIAL_OUTSIDE_UNIT_GOLD_PERCENT"); // advc.opt
 
+	int iFreeOutsideUnits = iINITIAL_FREE_OUTSIDE_UNITS +
+			// <advc.252>
+			GC.getInfo(GC.getGame().getGameSpeedType()).get(
+			CvGameSpeedInfo::ExtraFreeOutsideUnits); // </advc.252>
 	iPaidUnits = std::max(0, getNumOutsideUnits()
-		+ iExtraOutsideUnits // advc.004b
-		- iINITIAL_FREE_OUTSIDE_UNITS);
+			+ iExtraOutsideUnits // advc.004b
+			- iFreeOutsideUnits);
 
 	iBaseSupplyCost = iPaidUnits * iINITIAL_OUTSIDE_UNIT_GOLD_PERCENT;
 	iBaseSupplyCost /= 100;
