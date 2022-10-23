@@ -20,8 +20,8 @@
 #   difficult to associate error messages with a translation unit; but don't need
 #   a slow version of every config.]
 # YOURMOD2 and YOURLOGS (see under "Paths").
-# /Z option for debug builds obtained from Makefile.project, the default being /Zd.
-#   This precludes expression evaluation at runtime, but links much faster than /Z7.
+# /Z option for debug builds obtained from Makefile.project, the default being /Z7.
+#   To make it easier to switch, temporarily, to /Zd, which links much faster.
 # PROJECT_Profile_CFLAGS, PROJECT_Debug_CFLAGS, PROJECT_DebugOpt_CFLAGS added to Makefile.project.
 # For selecting a profiler and for balancing speed vs. fidelity of debug builds.
 # Removed unused /DCVGAMECOREDLL_EXPORTS from Debug_DEFINES
@@ -143,7 +143,7 @@ SUBDIRPATH15 = ../
 !ENDIF
 !IF [ECHO PROJECT_Profile_CFLAGS = >> Makefile.project]
 !ENDIF
-!IF [ECHO PROJECT_Debug_CFLAGS = /Zd >> Makefile.project]
+!IF [ECHO PROJECT_Debug_CFLAGS = /Z7 >> Makefile.project]
 !ENDIF
 !IF [ECHO PROJECT_DebugOpt_CFLAGS = /Z7 >> Makefile.project]
 !ENDIF

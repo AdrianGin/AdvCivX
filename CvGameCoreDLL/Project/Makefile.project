@@ -4,11 +4,13 @@ SOURCE_DIR = ..
 PROJECT_CFLAGS = /WX /W4
 
 # Ob1: Allow inline expansion of functions with an inline keyword even for debug builds
-# Replace Zd with Z7 to include symbolic debugging info in object files, which allows
-#   expression evaluation at runtime but takes much longer to link.
+# Replace Z7 with Zd for faster linking - at the expense of having only line numbers
+#   and call stack when debugging, no debug symbols. It's not clear if a full rebuild
+#	is needed when switching between Z7 and Zd; linking object files with inconsistent
+#	debug info might cause issues(?).
 # Zi (symbols in pdb file) also links fast but can't be used with the parallelized
 #   Debug-fast config.
-PROJECT_Debug_CFLAGS = /Ob1 /Zd
+PROJECT_Debug_CFLAGS = /Ob1 /Z7
 
 # Should use the extra flags for debugging optimized builds (i.e. when debugging
 # errors that aren't reproducible with non-optimizing debug builds). Replacing /O2
