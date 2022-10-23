@@ -910,7 +910,7 @@ int CvMap::maxTypicalDistance() const
 	if(isWrapY())
 		iWraps++;
 	CvWorldInfo const& kWorld = GC.getInfo(getWorldSize());
-	scaled r = (kWorld.getGridWidth() * kWorld.getGridHeight() * rCivRatio *
+	scaled r = (kWorld.getGridWidth() * kWorld.getGridHeight() * rCivRatio.sqrt() *
 			rSeaLvlModifier).sqrt() * fixp(3.5) - 5 * iWraps;
 	return std::max(1, r.round());
 }
