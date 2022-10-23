@@ -5981,7 +5981,7 @@ int CvPlayer::calculatePollution(PollutionFlags ePollution) const
 	return iTotal;
 }
 
-// <K-Mod>
+// K-Mod:
 void CvPlayer::setGwPercentAnger(int iNewValue)
 {
 	if (iNewValue != m_iGwPercentAnger)
@@ -5991,13 +5991,12 @@ void CvPlayer::setGwPercentAnger(int iNewValue)
 	}
 } 
 
-
+// K-Mod: Cut from calculateUnitCost
 int CvPlayer::getUnitCostMultiplier() const
 {
 	int iMultiplier = 100;
 	iMultiplier *= GC.getInfo(getHandicapType()).getUnitCostPercent();
 	iMultiplier /= 100;
-
 	if (!isHuman() && !isBarbarian())
 	{
 		iMultiplier *= GC.getInfo(GC.getGame().getHandicapType()).getAIUnitCostPercent();
@@ -6008,7 +6007,7 @@ int CvPlayer::getUnitCostMultiplier() const
 	}
 
 	return iMultiplier;
-} // </K-Mod>
+}
 
 
 int CvPlayer::calculateUnitCost(int& iFreeUnits, int& iFreeMilitaryUnits, int& iPaidUnits,

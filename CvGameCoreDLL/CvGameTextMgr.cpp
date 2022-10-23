@@ -16746,8 +16746,10 @@ void CvGameTextMgr::buildFinanceAwaySupplyString(CvWStringBuffer& szBuffer, Play
 
 	CvWString szHandicap;
 	if (iHandicap != 0)
-	{
-		FErrorMsg("not all supply costs were accounted for"); // K-Mod (handicap modifier are now rolled into the other costs)
+	{	// K-Mod (handicap modifiers are now rolled into the other costs)
+		FAssertMsg(
+			!kPlayer.isHuman(), // advc.001d
+			"not all supply costs were accounted for");
 		szHandicap = gDLL->getText("TXT_KEY_FINANCE_ADVISOR_HANDICAP_COST", iHandicap);
 	}
 	CvWString szTmp; // advc.086
