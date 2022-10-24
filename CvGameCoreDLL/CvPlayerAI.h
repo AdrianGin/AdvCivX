@@ -453,7 +453,12 @@ public:
 	// <advc.139>
 	void AI_attackMadeAgainst(CvUnit const& kDefender);
 	void AI_humanEnemyStackMovedInTerritory(CvPlot const& kFrom, CvPlot const& kTo);
-	// </advc.139>
+	// </advc.139>  advc:
+	int AI_neededCityAttackers(/* advc.104p: */ CvArea const& kArea,
+			int iHash = -1) const;
+	// <advc.300>
+	scaled AI_neededCityAttackersVsBarbarians() const;
+	int AI_estimateBarbarianGarrisonSize() const; // </advc.300>
 
 	CivicTypes AI_bestCivic(CivicOptionTypes eCivicOption, int* iBestValue = 0) const;
 	int AI_civicValue(CivicTypes eCivic) const;						// Exposed to Python

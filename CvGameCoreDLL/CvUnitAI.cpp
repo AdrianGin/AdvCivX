@@ -2942,13 +2942,9 @@ void CvUnitAI::AI_attackCityMove()
 	else if (!bTurtle)
 	{
 		int const iGroupSz = getGroup()->getNumUnits();
-		scaled const rOurEra = GET_PLAYER(getOwner()).AI_getCurrEraFactor();
-		/*	(Don't use AI era factor for Barbarians; don't expect them
-			to develop faster in a mod with fewer eras.) */
-		int const iBarbarianEra = GET_PLAYER(BARBARIAN_PLAYER).getCurrentEra();
-		int iBarbarianGarrison = 2 + iBarbarianEra;
+		int iBarbarianGarrison = kOwner.AI_estimateBarbarianGarrisonSize();
 		if ((eAreaAI != AREAAI_DEFENSIVE && eAreaAI != AREAAI_OFFENSIVE && !bAlert1) ||
-			iBarbarianGarrison < 2 * rOurEra)
+			iBarbarianGarrison < 2 * kOwner.AI_getCurrEraFactor())
 		{
 			bHuntBarbs = true;
 		}
@@ -2962,8 +2958,7 @@ void CvUnitAI::AI_attackCityMove()
 		if (!bHuntOnlyBarbs && iGroupSz >= AI_stackOfDoomExtra())
 			bReadyToAttack = true;
 		else if (bHuntOnlyBarbs &&
-			iGroupSz + rOurEra >=
-			fixp(1.25) * iBarbarianGarrison + iBarbarianEra &&
+			iGroupSz >= kOwner.AI_neededCityAttackersVsBarbarians() &&
 			// Don't send a giant stack. (Tbd.: Should perhaps split the group up then.)
 			iGroupSz < 3 * iBarbarianGarrison)
 		{
@@ -21608,86 +21603,15 @@ unsigned CvUnitAI::AI_unitPlotHash(const CvPlot* pPlot, int iExtra) const
 	return AI_unitBirthmarkHash(pPlot->plotNum() + iExtra);
 } // K-Mod end
 
-/*	advc (note): Used mostly as a target group size for city-attack stacks.
-	The "Extra" in the function name refers to how the function is used in
-	AI_omniGroup (originally AI_group). */
+/*	advc (note): The "Extra" in the function name refers to how the function is
+	used in AI_omniGroup (originally AI_group). */
 int CvUnitAI::AI_stackOfDoomExtra() const
 {
 	//return ((AI_getBirthmark() % (1 + GET_PLAYER(getOwner()).getCurrentEra())) + 4);
-	// K-Mod
-	CvPlayerAI const& kOwner = GET_PLAYER(getOwner());
-	CvTeamAI const& kOurTeam = GET_TEAM(kOwner.getTeam()); //advc
-	int iFlavourExtra = kOwner.AI_getFlavorValue(FLAVOR_MILITARY)/2 +
-			(kOwner.AI_getFlavorValue(FLAVOR_MILITARY) > 0 ?
-			4 : 2); // <advc.104p> was 8:4
-	//int iEra = kOwner.getCurrentEra();
-	/*	<advc.104p> We don't need more units as _we_ become more advanced.
-		Instead check what era our potential targets are in. */
-	scaled rMeanTargetEra;
-	int iEnemies = 0;
-	for (PlayerIter<CIV_ALIVE,KNOWN_POTENTIAL_ENEMY_OF> itEnemy(kOurTeam.getID());
-		itEnemy.hasNext(); ++itEnemy)
-	{
-		if (kOurTeam.AI_getWarPlan(itEnemy->getTeam()) != NO_WARPLAN)
-		{
-			rMeanTargetEra += itEnemy->getCurrentEra();
-			iEnemies++;
-		}
-	}
-	if (rMeanTargetEra == 0)
-	{
-		rMeanTargetEra += GET_PLAYER(BARBARIAN_PLAYER).getCurrentEra();
-		iEnemies++;
-	}
-	rMeanTargetEra /= iEnemies; // </advc.104p>
-	// 4 base. then rand between 0 and ... (1 or 2 + iEra + flavour * era ratio)
-	// <advc.104p> Put that era ratio in a variable and round modulus to nearest
-	scaled rEraRatio = (rMeanTargetEra + 1) / std::max(1, GC.getNumEraInfos());
-	int iModulus = ( // </advc.104p>
-			((kOwner.AI_isDoStrategy(AI_STRATEGY_CRUSH) ? 2 : 1) +
-			rEraRatio * iFlavourExtra +
-			// <advc.104p> Half of rMeanTargetEra factored into the non-random portion
-			rMeanTargetEra / 2)).round();
-	int iR = (rMeanTargetEra / 2).floor() + // </advc.104p>
-			4 + (AI_getBirthmark() % iModulus);
-	// K-Mod end
-	// <advc.104p>
-	scaled rMult = 1;
-	// Bigger AI stacks when units are cheaper to train
-	{
-		scaled rTrainMod = kOwner.trainingModifierFromHandicap();
-		rTrainMod.increaseTo(fixp(0.7));
-		rMult /= rTrainMod;
-		rMult *= kOwner.AI_trainUnitSpeedAdustment(); // advc.253
-	}
-	// A little extra for naval assault
-	if (getArea().getAreaAIType(kOurTeam.getID()) == AREAAI_ASSAULT)
-		rMult += fixp(0.225);
-	else if (kOwner.hasCapital() && !kOwner.getCapital()->isArea(getArea()))
-	{	/*	Smaller stacks for colonial wars. (Not against enemy colonies
-			in our capital area b/c those could well be cities recently lost
-			to a big naval invasion. Ideally, we should know which specific
-			cities we're hoping to conquer. Not really how this function works.) */
-		bool bOnlyColonies = true;
-		int iEnemyColonies = 0;
-		for (PlayerIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itEnemy(getTeam());
-			bOnlyColonies && itEnemy.hasNext(); ++itEnemy)
-		{
-			if (kOurTeam.AI_getWarPlan(itEnemy->getTeam()) == NO_WARPLAN)
-				continue;
-			CvCity const* pEnemyCapital = itEnemy->getCapital();
-			if (pEnemyCapital != NULL && pEnemyCapital->isArea(getArea()))
-				bOnlyColonies = false;
-			else iEnemyColonies += getArea().getCitiesPerPlayer(itEnemy->getID());
-		}
-		if (bOnlyColonies && iEnemyColonies <= 3 && iEnemyColonies > 0)
-			rMult *= fixp(0.25) + fixp(0.2) * iEnemyColonies;
-	}
-	if (kOurTeam.AI_getNumWarPlans(WARPLAN_TOTAL) <= 0)
-		rMult *= fixp(0.85);
-	iR = (rMult * iR).round();
-	FAssert(iR > 0);
-	return std::max(1, iR); // </advc.104p>
+	// advc: K-Mod and AdvCiv code moved into new CvPlayerAI function
+	return GET_PLAYER(getOwner()).AI_neededCityAttackers(
+			getArea(), // advc.104p
+			AI_getBirthmark());
 }
 
 // This function has been significantly modified for K-Mod

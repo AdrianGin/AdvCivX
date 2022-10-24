@@ -16267,6 +16267,107 @@ void CvPlayerAI::AI_humanEnemyStackMovedInTerritory(
 	}
 } // </advc.139>
 
+/*	advc: Body cut from CvUnitAI::AI_stackOfDoomExtra b/c the result doesn't
+	really depend on the unit leading the group, or even on the group or its plot.
+	Code not tagged with comments is from K-Mod. */
+int CvPlayerAI::AI_neededCityAttackers(
+	CvArea const& kArea, // advc.104p
+	/*	For randomization, based on whatever context the caller deems relevant.
+		-1 (default) to disable randomization. */
+	int iHash) const
+{
+	CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
+	int const iFlavourExtra = AI_getFlavorValue(FLAVOR_MILITARY) / 2 +
+			(AI_getFlavorValue(FLAVOR_MILITARY) > 0 ?
+			/* <advc.104p> was 8:4 */ 4 : 2);
+	//int const iEra = getCurrentEra();
+	/*	We don't need more units as _we_ become more advanced.
+		Instead check what era our potential targets are in. */
+	scaled rMeanTargetEra;
+	int iEnemies = 0;
+	for (PlayerIter<CIV_ALIVE,KNOWN_POTENTIAL_ENEMY_OF> itEnemy(kOurTeam.getID());
+		itEnemy.hasNext(); ++itEnemy)
+	{
+		if (kOurTeam.AI_getWarPlan(itEnemy->getTeam()) != NO_WARPLAN)
+		{
+			rMeanTargetEra += itEnemy->getCurrentEra();
+			iEnemies++;
+		}
+	}
+	if (rMeanTargetEra == 0)
+	{
+		rMeanTargetEra += GET_PLAYER(BARBARIAN_PLAYER).getCurrentEra();
+		iEnemies++;
+	}
+	rMeanTargetEra /= iEnemies;
+	/*	K-Mod: 4 base. then rand between 0 and ...
+		(1 or 2 + iEra + flavour * era ratio) */
+	// Put that era ratio in a variable and round modulus to nearest
+	scaled rEraRatio = (rMeanTargetEra + 1) / std::max(1, GC.getNumEraInfos());
+	int iModulus = (
+			// </advc.104p>
+			((AI_isDoStrategy(AI_STRATEGY_CRUSH) ? 2 : 1) +
+			rEraRatio * iFlavourExtra +
+			// <advc.104p> Half of rMeanTargetEra factored into the non-random portion
+			rMeanTargetEra / 2)).round();
+	int iR = (rMeanTargetEra / 2).floor() + // </advc.104p>
+			// advc: randomization optional
+			4 + ((iHash >= 0 ? iHash : iModulus / 2) % iModulus);
+	// <advc.104p>
+	scaled rMult = 1;
+	// Bigger AI stacks when units are cheaper to train
+	{
+		scaled rTrainMod = trainingModifierFromHandicap();
+		rTrainMod.increaseTo(fixp(0.7));
+		rMult /= rTrainMod;
+		rMult *= AI_trainUnitSpeedAdustment(); // advc.253
+	}
+	// A little extra for naval assault
+	if (kArea.getAreaAIType(kOurTeam.getID()) == AREAAI_ASSAULT)
+		rMult += fixp(0.225);
+	else if (hasCapital() && !getCapital()->isArea(kArea))
+	{	/*	Smaller stacks for colonial wars. (Not against enemy colonies
+			in our capital area b/c those could well be cities recently lost
+			to a big naval invasion. Ideally, we should know which specific
+			cities we're hoping to conquer. Not really how this function works.) */
+		bool bOnlyColonies = true;
+		int iEnemyColonies = 0;
+		for (PlayerIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itEnemy(getTeam());
+			bOnlyColonies && itEnemy.hasNext(); ++itEnemy)
+		{
+			if (kOurTeam.AI_getWarPlan(itEnemy->getTeam()) == NO_WARPLAN)
+				continue;
+			CvCity const* pEnemyCapital = itEnemy->getCapital();
+			if (pEnemyCapital != NULL && pEnemyCapital->isArea(kArea))
+				bOnlyColonies = false;
+			else iEnemyColonies += kArea.getCitiesPerPlayer(itEnemy->getID());
+		}
+		if (bOnlyColonies && iEnemyColonies <= 3 && iEnemyColonies > 0)
+			rMult *= fixp(0.25) + fixp(0.2) * iEnemyColonies;
+	}
+	if (kOurTeam.AI_getNumWarPlans(WARPLAN_TOTAL) <= 0)
+		rMult *= fixp(0.85);
+	iR = (rMult * iR).round();
+	FAssert(iR > 0);
+	return std::max(1, iR); // </advc.104p>
+}
+
+// <advc.300>
+scaled CvPlayerAI::AI_neededCityAttackersVsBarbarians() const
+{
+	FAssert(!isBarbarian());
+	return fixp(1.25) * AI_estimateBarbarianGarrisonSize() +
+			GET_PLAYER(BARBARIAN_PLAYER).getCurrentEra() - AI_getCurrEraFactor();
+}
+
+
+int CvPlayerAI::AI_estimateBarbarianGarrisonSize() const
+{
+	/*	(Don't use AI era factor for Barbarians; don't expect them
+		to develop faster in a mod with fewer eras.) */
+	return 2 + GET_PLAYER(BARBARIAN_PLAYER).getCurrentEra();
+} // </advc.300>
+
 
 int CvPlayerAI::AI_unitTargetMissionAIs(CvUnit const& kUnit,
 	MissionAITypes* aeMissionAI, int iMissionAICount,
