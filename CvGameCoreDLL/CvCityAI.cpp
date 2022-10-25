@@ -1323,8 +1323,7 @@ void CvCityAI::AI_chooseProduction()
 		iAreaBestFoundValue < iMinFoundValue * 2 &&
 		// <advc.017>
 		!kPlayer.AI_isDoStrategy(AI_STRATEGY_ECONOMY_FOCUS) &&
-		/*	(And exclude Barbarians? Should perhaps also check
-			CvTeamAI::AI_isLandTarget ...) */
+		// (Maybe check CvTeamAI::AI_isLandTarget?)
 		kArea.getNumCities() > kTeam.countNumCitiesByArea(kArea))
 		// </advc.017>
 	{	//Building city hunting stack.
@@ -1383,6 +1382,48 @@ void CvCityAI::AI_chooseProduction()
 					}
 				}
 			}
+			/*	<advc.300> The above won't enable the AI to take Barbarian cities;
+				perhaps it was intended to, if so, I think it's far off the mark.
+				It might be helpful for giving the AI an appetite for warfare, so
+				I'm going to keep it. Now, to at least sometimes conquer Barbarians: */
+			if (!kPlayer.AI_isFocusWar())
+			{
+				int iNeededCityAtt = (kPlayer.AI_neededCityAttackersVsBarbarians()
+						/*	Safety margin; some may well be guarding cities or
+							have trouble reaching the main stack. */
+						* fixp(4/3.)).uceil();
+				/*	Even go 1 above the safety margin eventually - in case that
+					the Barbarians have unusually many defenders. */
+				if (iAttackCityCount <= iNeededCityAtt)
+				{
+					scaled rProb = kPlayer.AI_barbarianTargetCityScore(getArea());
+					if (rProb > 0) // to save time
+					{
+						if (iAttackCityCount >= iNeededCityAtt)
+							rProb /= scaled::max(1, 6 - kPlayer.AI_getCurrEraFactor());
+						else
+						{
+							/*	Inertia - the more attackers we still need, the less
+								we're inclined to train any. */
+							scaled rDiv = iNeededCityAtt - iAttackCityCount;
+							rDiv.exponentiate(std::max(fixp(0.5),
+									2 - kPlayer.AI_getCurrEraFactor() / 2));
+							rProb /= rDiv;
+						}
+						/*	The iOdds param causes a re-roll after every production turn.
+							Perhaps that should be amended. For now, avoid using it. */
+						std::vector<int> aiInputs;
+						aiInputs.push_back(getID());
+						aiInputs.push_back(iAttackCityCount);
+						if (scaled::hash(aiInputs, getOwner()) < rProb &&
+							AI_chooseUnit(UNITAI_ATTACK_CITY))
+						{
+							if (gCityLogLevel >= 2) logBBAI("      City %S trains city attacker vs. Barbarians", getName().GetCString());
+							return;
+						}
+					}
+				}
+			} // </advc.300>
 		}
 	}
 

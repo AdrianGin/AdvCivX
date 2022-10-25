@@ -458,7 +458,8 @@ public:
 			int iHash = -1) const;
 	// <advc.300>
 	scaled AI_neededCityAttackersVsBarbarians() const;
-	int AI_estimateBarbarianGarrisonSize() const; // </advc.300>
+	int AI_estimateBarbarianGarrisonSize() const;
+	scaled AI_barbarianTargetCityScore(CvArea const& kArea) const; // </advc.300>
 
 	CivicTypes AI_bestCivic(CivicOptionTypes eCivicOption, int* iBestValue = 0) const;
 	int AI_civicValue(CivicTypes eCivic) const;						// Exposed to Python

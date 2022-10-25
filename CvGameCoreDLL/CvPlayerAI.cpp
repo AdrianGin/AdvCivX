@@ -16366,6 +16366,79 @@ int CvPlayerAI::AI_estimateBarbarianGarrisonSize() const
 	/*	(Don't use AI era factor for Barbarians; don't expect them
 		to develop faster in a mod with fewer eras.) */
 	return 2 + GET_PLAYER(BARBARIAN_PLAYER).getCurrentEra();
+}
+
+// 0 means nothing worth attacking, 1 definitely something, can also go > 1.
+scaled CvPlayerAI::AI_barbarianTargetCityScore(CvArea const& kArea) const
+{
+	scaled rTotal;
+	FOR_EACH_CITY(pBarbarianCity, GET_PLAYER(BARBARIAN_PLAYER))
+	{
+		if (!pBarbarianCity->isArea(kArea) ||
+			!GET_TEAM(getTeam()).AI_deduceCitySite(*pBarbarianCity))
+		{
+			continue;
+		}
+		CvPlot const& kBarbarianCityPlot = pBarbarianCity->getPlot();
+		int iOurDist = MAX_INT;
+		FOR_EACH_CITY(pOurCity, *this)
+		{
+			iOurDist = std::min(iOurDist,
+					plotDistance(pOurCity->plot(), &kBarbarianCityPlot));
+		}
+		if (iOurDist >= 15)
+			continue;
+		/*	"Other" can be on our team - if a teammate is better positioned
+			than we are, we want to hold back. */
+		int iOtherDist = MAX_INT;
+		// Check only for nearby rival cities - to save time.
+		for (SquareIter itPlot(kBarbarianCityPlot, std::min(iOurDist - 1, 4), false);
+			itPlot.hasNext(); ++itPlot)
+		{
+			if (itPlot->isCity() && itPlot->getOwner() != getID() &&
+				!itPlot->isBarbarian())
+			{
+				iOtherDist = std::min(iOtherDist, plotDistance(&*itPlot,
+						&kBarbarianCityPlot));
+			}
+		}
+		int const iOurCulture = kBarbarianCityPlot.calculateCulturePercent(getID());
+		int iOtherCulture = 0;
+		if (kBarbarianCityPlot.calculateCulturePercent(BARBARIAN_PLAYER) + iOurCulture
+			< 75) // save time
+		{
+			for (PlayerIter<CIV_ALIVE,KNOWN_TO> itOther(getTeam());
+				itOther.hasNext(); ++itOther)
+			{
+				if (itOther->getID() != getID())
+				{
+					iOtherCulture = std::max(iOtherCulture,
+							kBarbarianCityPlot.calculateCulturePercent(itOther->getID()));
+				}
+			}
+		}
+		int iDefModifier = 0;
+		if (pBarbarianCity->isRevealed(getTeam()))
+		{
+			iDefModifier += kBarbarianCityPlot.defenseModifier(
+					BARBARIAN_TEAM, false, getTeam());
+		}
+		int iDefenders = -1;
+		if (pBarbarianCity->isVisible(getTeam()))
+			iDefenders = kBarbarianCityPlot.plotCount(PUF_canDefend);
+		int const iDistFloor = 5;
+		scaled rScore(iDistFloor, std::max(iDistFloor, iOurDist));
+		if (iOtherDist < iOurDist)
+			rScore.mulDiv(iOtherDist, iOurDist);
+		scaled const rCultureWeight = fixp(1.3);
+		rScore *= per100(iOurCulture - iOtherCulture) * rCultureWeight + 1;
+		// Risky (with current AI behavior ...) to go after strongly defended city
+		rScore /= std::max(fixp(0.6),
+				1 + per100(iDefModifier) + (iDefenders < 0 ? 0 : fixp(0.25) *
+				(iDefenders - AI_estimateBarbarianGarrisonSize())));
+		rTotal += rScore;
+	}
+	return rTotal;
 } // </advc.300>
 
 
