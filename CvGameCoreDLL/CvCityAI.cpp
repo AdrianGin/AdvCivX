@@ -9184,13 +9184,14 @@ bool CvCityAI::AI_chooseUnit(UnitAITypes eUnitAI, int iOdds)
 			SyncRandNum(100) < iOdds)*/ // BtS
 		// K-Mod. boost the odds based on our completion percentage.
 		if (iOdds < 0 || SyncRandSuccess100(iOdds +
-			(100 * getUnitProduction(eBestUnit)) /
+			/*	advc.131: Coefficient was 100. Should we re-roll at all
+				once production has been started? */
+			(250 * getUnitProduction(eBestUnit)) /
 			std::max(1, getProductionNeeded(eBestUnit)))) // K-Mod end
 		{
 			pushOrder(ORDER_TRAIN, eBestUnit, eUnitAI);
 			return true;
 		}
-		//FAssert(eUnitAI != UNITAI_SETTLE); // advc.031b: To test how often Settlers are delayed due to low SettlerPriority
 	}
 
 	return false;
