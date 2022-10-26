@@ -1368,7 +1368,7 @@ void CvCityAI::AI_chooseProduction()
 				{
 					if (AI_chooseUnit(UNITAI_ATTACK_CITY))
 					{
-						if (gCityLogLevel >= 2) logBBAI("      City %S uses choose start city attack stack", getName().GetCString());
+						if (gCityLogLevel >= 2) logBBAI("      City %S chooses to start city attack stack", getName().GetCString());
 						return;
 					}
 				}
@@ -1377,7 +1377,7 @@ void CvCityAI::AI_chooseProduction()
 				{
 					if (AI_chooseUnit(UNITAI_ATTACK))
 					{
-						if (gCityLogLevel >= 2) logBBAI("      City %S uses choose add to city attack stack", getName().GetCString());
+						if (gCityLogLevel >= 2) logBBAI("      City %S chooses to add to city attack stack", getName().GetCString());
 						return;
 					}
 				}

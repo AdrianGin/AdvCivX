@@ -2565,43 +2565,36 @@ int CvCity::computeOverflow(int iRawOverflow, int iProductionModifier,
 	OrderTypes eOrderType, int* piProductionGold, int* piLostProduction,
 	int iPopulationChange) const
 {
-	if(piProductionGold != NULL)
-		*piProductionGold = 0;
-	if(piLostProduction != NULL)
-		*piLostProduction = 0;
+	LOCAL_REF(int, iProductionGold, piProductionGold, 0);
+	LOCAL_REF(int, iLostProduction, piLostProduction, 0);
 	/*  (BtS and the unofficial patch cap overflow before factoring out the modifiers.
 		However, they also apply generic production modifiers to the overflow once
 		work on the next order starts, which AdvCiv no longer does.) */
 	int iOverflow = unmodifyOverflow(iRawOverflow, iProductionModifier);
 	int iMaxOverflow = overflowCapacity(iProductionModifier, iPopulationChange);
-	int iLostProduction = iOverflow - iMaxOverflow;
+	iLostProduction = iOverflow - iMaxOverflow;
 	iOverflow = std::min(iMaxOverflow, iOverflow);
-	if(iLostProduction <= 0)
+	if (iLostProduction <= 0)
 		return iOverflow;
-	if(piLostProduction != NULL)
-		*piLostProduction = iLostProduction;
-	if(piProductionGold != NULL)
-		*piProductionGold = (iLostProduction * failGoldPercent(eOrderType)) / 100;
+	iProductionGold = (iLostProduction * failGoldPercent(eOrderType)) / 100;
 	return iOverflow;
 } // </advc.064b>
 
 // BUG - Hurry Overflow: (advc.064)
 bool CvCity::hurryOverflow(HurryTypes eHurry, int* piProduction, int* piGold, bool bCountThisTurn) const
 {
-	if(piProduction != NULL)
-		*piProduction = 0;
-	if(piGold != NULL)
-		*piGold = 0;
+	LOCAL_REF(int, iProduction, piProduction, 0);
+	LOCAL_REF(int, iGold, piGold, 0);
 
-	if(!canHurry(eHurry))
+	if (!canHurry(eHurry))
 		return false;
 
-	if(GC.getInfo(eHurry).getProductionPerPopulation() == 0)
+	if (GC.getInfo(eHurry).getProductionPerPopulation() == 0)
 		return true;
 
 	int iTotal, iCurrent, iModifier;
 	OrderTypes eOrder = NO_ORDER; // advc.064b
-	if(isProductionUnit())
+	if (isProductionUnit())
 	{
 		UnitTypes eUnit = getProductionUnit();
 		iTotal = getProductionNeeded(eUnit);
@@ -2609,7 +2602,7 @@ bool CvCity::hurryOverflow(HurryTypes eHurry, int* piProduction, int* piGold, bo
 		iModifier = getProductionModifier(eUnit);
 		eOrder = ORDER_TRAIN;
 	}
-	else if(isProductionBuilding())
+	else if (isProductionBuilding())
 	{
 		BuildingTypes eBuilding = getProductionBuilding();
 		iTotal = getProductionNeeded(eBuilding);
@@ -2634,11 +2627,8 @@ bool CvCity::hurryOverflow(HurryTypes eHurry, int* piProduction, int* piGold, bo
 				option. However: Feature production can no longer contribute to
 				overflow, so ignore that in any case. */
 			getCurrentProductionDifference(!bCountThisTurn, true, true, !bCountThisTurn);
-	if (piProduction != NULL)
-	{
-		*piProduction = computeOverflow(iRawOverflow, iModifier, eOrder, piGold, NULL,
-				-hurryPopulation(eHurry)); // </advc.064b>
-	}
+	iProduction = computeOverflow(iRawOverflow, iModifier, eOrder, piGold, NULL,
+			-hurryPopulation(eHurry)); // </advc.064b>
 	return true;
 }
 
