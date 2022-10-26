@@ -8549,7 +8549,7 @@ int CvPlayerAI::AI_getRankDifferenceAttitude(PlayerTypes ePlayer) const
 					iMaxRankDifference;
 			rMultiplier.increaseTo(0);
 			// Don't hate them much when both struggling to keep up
-			rMultiplier *= fixp(5/4.) - rOutrankBothRatio;
+			rMultiplier *= fixp(4/3.) - rOutrankBothRatio.sqrt();
 			// Smoothen based on score ratio
 			scaled const rPeakScoreRatio = fixp(1.22);
 			scaled rFarAheadThresh = fixp(1.7);

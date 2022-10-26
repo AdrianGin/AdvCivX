@@ -9134,7 +9134,7 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 21; // advc.enum
 	//uiFlag = 22; // advc.130n: Bugfix in fave-civic attitude calc
 	//uiFlag = 23; // advc.124b: Need a plot group update for compatibility
-	uiFlag = 24; // advc.enum: Bugfix in bool-valued ArrayEnumMap
+	uiFlag = 24; // advc.enum: Bugfix in bool-valued ArrayEnumMap; advc.130c: tweak.
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9361,7 +9361,7 @@ void CvGame::onAllGameDataRead()
 		CvPlayerAI::AI_updateAttitudes();
 	} // </advc.130n>
 	// <advc.130r>
-	else if (m_uiSaveFlag < 20)
+	else if (m_uiSaveFlag < 24)
 	{
 		for (TeamAIIter<MAJOR_CIV> itTeam; itTeam.hasNext(); ++itTeam)
 		{
