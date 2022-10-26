@@ -106,7 +106,7 @@ public:
 	void setDiscoverPathHelp(CvWStringBuffer& szBuffer, UnitTypes eUnit);
 	// <advc.ctr>
 	void setCityTradeHelp(CvWStringBuffer& szBuffer, CvCity const& kCity,
-			PlayerTypes eWhoTo, bool bListMore); // </advc.ctr>
+			PlayerTypes eWhoTo, bool bListMore, bool bReason = true); // </advc.ctr>
 	void setBasicUnitHelp(CvWStringBuffer &szBuffer, UnitTypes eUnit, bool bCivilopediaText = false);
 	void setUnitHelp(CvWStringBuffer &szBuffer, UnitTypes eUnit, bool bCivilopediaText = false, bool bStrategyText = false, bool bTechChooserText = false, CvCity* pCity = NULL);
 	void setBuildingHelp(CvWStringBuffer &szBuffer, BuildingTypes eBuilding, bool bCivilopediaText = false, bool bStrategyText = false, bool bTechChooserText = false, CvCity* pCity = NULL);

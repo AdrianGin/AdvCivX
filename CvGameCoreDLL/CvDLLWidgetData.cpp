@@ -4655,8 +4655,14 @@ void CvDLLWidgetData::parseTradeItem(CvWidgetDataStruct &widgetDataStruct,
 		GAMETEXT.setBonusHelp(szBuffer, (BonusTypes)widgetDataStruct.m_iData2);
 		break;
 	case TRADE_CITIES:
-		szBuffer.assign(gDLL->getText("TXT_KEY_TRADE_CITIES"));
+	{	// <advc.ctr>
+		CvCity const* pCity = GET_PLAYER(eWhoFrom).getCity(widgetDataStruct.m_iData2);
+		if (pCity != NULL)
+			GAMETEXT.setCityTradeHelp(szBuffer, *pCity, eWhoTo, false, false);
+		else // </advc.ctr>
+			szBuffer.assign(gDLL->getText("TXT_KEY_TRADE_CITIES"));
 		break;
+	}
 	case TRADE_PEACE:
 		szBuffer.append(gDLL->getText("TXT_KEY_TRADE_MAKE_PEACE",
 				GET_TEAM(eWhoFrom).getName().GetCString(),

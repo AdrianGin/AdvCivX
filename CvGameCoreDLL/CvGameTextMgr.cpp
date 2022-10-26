@@ -8558,7 +8558,7 @@ void CvGameTextMgr::setDiscoverPathHelp(CvWStringBuffer& szBuffer, UnitTypes eUn
 
 // advc.ctr:
 void CvGameTextMgr::setCityTradeHelp(CvWStringBuffer& szBuffer, CvCity const& kCity,
-	PlayerTypes eWhoTo, bool bListMore)
+	PlayerTypes eWhoTo, bool bListMore, bool bReason)
 {
 	PlayerTypes eActivePlayer = getActivePlayer();
 	/*	For the debug menu on the Cities tab. Don't really know which
@@ -8576,7 +8576,7 @@ void CvGameTextMgr::setCityTradeHelp(CvWStringBuffer& szBuffer, CvCity const& kC
 	else eDenial = GET_PLAYER(eOtherPlayer).AI_cityTrade(kCity.AI(), eActivePlayer);
 	bool bWilling = (eDenial == NO_DENIAL);
 	CvWString szReason;
-	if (!bWilling)
+	if (!bWilling && bReason)
 	{
 		szReason = CvWString::format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_NEGATIVE_TEXT"),
 				GC.getInfo(eDenial).getText());
