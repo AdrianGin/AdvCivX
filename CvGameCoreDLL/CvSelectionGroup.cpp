@@ -365,16 +365,23 @@ bool CvSelectionGroup::showMoves(/* advc.102: */ CvPlot const& kFromPlot) const
 		if(!itHuman->isOption(PLAYEROPTION_SHOW_FRIENDLY_MOVES))
 			continue;
 		// <advc.102b>
-		if (std::max(1, /*	kToPlot may not be visible at all,
-							but the move still gets animated. */
-			kToPlot.plotCount(PUF_isVisible, itHuman->getID(), -1, eGroupOwner)) <
-			iFriendlyStackThresh)
+		if (iFriendlyStackThresh > 0)
 		{
-			if (eGroupDomain != DOMAIN_SEA || // just to save time
-				getCargoSpace() <= 1)
+			int iPlotCount = 0;
+			if (kToPlot.isVisible(itHuman->getTeam()))
 			{
-				continue;
+				iPlotCount += kToPlot.plotCount(
+						PUF_isVisible, itHuman->getID(), -1, eGroupOwner, NO_TEAM,
+						PUF_canDefend);
 			}
+			// Treat all but one unit as having already arrived
+			if (canDefend())
+				iPlotCount += getNumUnits() - 1;
+			// Assume that cargo is full
+			if (eGroupDomain == DOMAIN_SEA) // just to save time
+				iPlotCount += getCargoSpace();
+			if (iPlotCount < iFriendlyStackThresh)
+				continue;
 		} // </advc.102b>
 		// <advc.102> Hide uninteresting friendly moves
 		TeamTypes const eObs = itHuman->getTeam();
