@@ -16391,7 +16391,7 @@ scaled CvPlayerAI::AI_barbarianTargetCityScore(CvArea const& kArea) const
 		/*	"Other" can be on our team - if a teammate is better positioned
 			than we are, we want to hold back. */
 		int iOtherDist = MAX_INT;
-		// Check only for nearby rival cities - to save time.
+		// Check only for nearby cities - to save time.
 		for (SquareIter itPlot(kBarbarianCityPlot, std::min(iOurDist - 1, 4), false);
 			itPlot.hasNext(); ++itPlot)
 		{
@@ -16432,6 +16432,7 @@ scaled CvPlayerAI::AI_barbarianTargetCityScore(CvArea const& kArea) const
 			rScore.mulDiv(iOtherDist, iOurDist);
 		scaled const rCultureWeight = fixp(1.3);
 		rScore *= per100(iOurCulture - iOtherCulture) * rCultureWeight + 1;
+		rScore.increaseTo(0);
 		// Risky (with current AI behavior ...) to go after strongly defended city
 		rScore /= std::max(fixp(0.6),
 				1 + per100(iDefModifier) + (iDefenders < 0 ? 0 : fixp(0.25) *
