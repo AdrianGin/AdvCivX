@@ -2266,7 +2266,7 @@ int CvPlayerAI::AI_yieldWeight(YieldTypes eYield,
 	switch (eYield)
 	{
 	case YIELD_FOOD:
-		if (pCity)
+		if (pCity != NULL)
 		{
 			iWeight *= (pCity->happyLevel() - pCity->unhappyLevel(1) >=
 					pCity->foodDifference()) ?
@@ -2280,13 +2280,17 @@ int CvPlayerAI::AI_yieldWeight(YieldTypes eYield,
 			iWeight /= 100;
 		}
 		// <advc.110> <advc.115b>
-		if(AI_atVictoryStage(AI_VICTORY_DIPLOMACY4))
+		if (AI_atVictoryStage(AI_VICTORY_DIPLOMACY4))
 			iWeight += 25; // </advc.115b>
 		else // Gradually reduce weight of food in the second half of the game
 		{
 			iWeight -= (60 * scaled::max(0,
 					GC.getGame().gameTurnProgress() - fixp(0.5))).uround();
-		} // </advc.110>
+		}
+		if (GC.getInfo(getCurrentEra()).get(CvEraInfo::AIAgeOfPollution))
+			iWeight -= 25;
+		iWeight = std::max(iWeight, 33); // future-proofing
+		// </advc.110>
 		break;
 	case YIELD_PRODUCTION:
 		/*	advc.104 (note): Use UWAICache::goldValueOfProduction?
