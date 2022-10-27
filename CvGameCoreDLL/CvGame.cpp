@@ -3468,9 +3468,9 @@ void CvGame::getGlobeviewConfigurationParameters(TeamTypes eTeam,
 
 int CvGame::getAdjustedPopulationPercent(VictoryTypes eVictory) const
 {
-	if (GC.getInfo(eVictory).getPopulationPercentLead() == 0)
+	if (GC.getInfo(eVictory).getPopulationPercentLead() <= 0)
 		return 0;
-	if (getTotalPopulation() == 0)
+	if (getTotalPopulation() <= 0)
 		return 100;
 
 	int iBestPopulation = 0;
@@ -3511,12 +3511,34 @@ int CvGame::getHurryAngerLength() const
 
 int CvGame::getAdjustedLandPercent(VictoryTypes eVictory) const
 {
-	if (GC.getInfo(eVictory).getLandPercent() == 0)
+	if (GC.getInfo(eVictory).getLandPercent() <= 0)
 		return 0;
-
+	// <advc.254>
+	int const iTotalLand = GC.getMap().getLandPlots();
+	if (iTotalLand <= 0)
+		return 0; // </advc.254>
 	int iPercent = GC.getInfo(eVictory).getLandPercent();
-	iPercent -= (getCivTeamsEverAlive() * 2);
-	return std::max(iPercent, GC.getInfo(eVictory).getMinLandPercent());
+	iPercent -= getCivTeamsEverAlive() * 2;
+	iPercent = std::max(iPercent, GC.getInfo(eVictory).getMinLandPercent());
+	// <advc.254> (Based on getAdjustedPopulationPercent)
+	int iBestLand = 0;
+	int iNextBestLand = 0;
+	for (TeamIter<CIV_ALIVE> itTeam; itTeam.hasNext(); ++itTeam)
+	{
+		int iLand = itTeam->getTotalLand();
+		if (iLand > iBestLand)
+		{
+			iNextBestLand = iBestLand;
+			iBestLand = iLand;
+		}
+		else if (iLand > iNextBestLand)
+			iNextBestLand = iLand;
+	}
+	iPercent = std::max(iPercent,
+			std::min(100, (iNextBestLand * 100) / iTotalLand +
+			GC.getInfo(eVictory).get(CvVictoryInfo::LandPercentLead)));
+	// </advc.254>
+	return iPercent;
 }
 
 // advc.178: Cut from CvPlayerAI::AI_calculateDiplomacyVictoryStage
@@ -3536,7 +3558,7 @@ VictoryTypes CvGame::getDominationVictory() const
 	FOR_EACH_ENUM(Victory)
 	{
 		if (GC.getInfo(eLoopVictory).getLandPercent() > 0 &&
-			GC.getInfo(eLoopVictory).getPopulationPercentLead())
+			GC.getInfo(eLoopVictory).getPopulationPercentLead() > 0)
 		{
 			return eLoopVictory;
 		}

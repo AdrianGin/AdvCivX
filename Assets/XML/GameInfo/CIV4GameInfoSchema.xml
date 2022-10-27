@@ -536,6 +536,8 @@
 	<ElementType name="bDiploVote" content="textOnly" dt:type="boolean"/>
 	<ElementType name="bPermanent" content="textOnly" dt:type="boolean"/>
 	<ElementType name="iPopulationPercentLead" content="textOnly" dt:type="int"/>
+	<!-- advc.254 -->
+	<ElementType name="iLandPercentLead" content="textOnly" dt:type="int"/>
 	<ElementType name="iLandPercent" content="textOnly" dt:type="int"/>
 	<ElementType name="iMinLandPercent" content="textOnly" dt:type="int"/>
 	<ElementType name="iReligionPercent" content="textOnly" dt:type="int"/>
@@ -553,6 +555,8 @@
 		<element type="bDiploVote"/>
 		<element type="bPermanent"/>
 		<element type="iPopulationPercentLead"/>
+		<!-- advc.254 (set to 0 by default in the DLL) -->
+		<element type="iLandPercentLead" minOccurs="0"/>
 		<element type="iLandPercent"/>
 		<element type="iMinLandPercent"/>
 		<element type="iReligionPercent"/>

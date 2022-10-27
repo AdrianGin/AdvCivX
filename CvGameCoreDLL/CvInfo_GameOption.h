@@ -366,11 +366,28 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  class : CvVictoryInfo
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-class CvVictoryInfo : public CvInfoBase
+class CvVictoryInfo : /* <advc.tag> */ public CvXMLInfo
 {
-	typedef CvInfoBase base_t;
-public: // The const functions are exposed to Python
+	typedef CvXMLInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		kElements.addInt(LandPercentLead, "LandPercentLead"); // advc.254
+	}
+public:
+	enum IntElementTypes
+	{
+		LandPercentLead = CvXMLInfo::NUM_INT_ELEMENT_TYPES, // advc.254
+		NUM_INT_ELEMENT_TYPES
+	};
+	int get(IntElementTypes e) const
+	{
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
+	} // </advc.tag>
+
 	CvVictoryInfo();
+	// The const functions are exposed to Python ...
 
 	int getPopulationPercentLead() const;
 	int getLandPercent() const;

@@ -73,8 +73,13 @@
 			<bDiploVote>0</bDiploVote>
 			<bPermanent>0</bPermanent>
 			<iPopulationPercentLead>25</iPopulationPercentLead>
-			<iLandPercent>78</iLandPercent>
-			<iMinLandPercent>51</iMinLandPercent>
+			<!-- advc.254: start -->
+			<iLandPercentLead>25</iLandPercentLead>
+			<!-- was 78 -->
+			<iLandPercent>71</iLandPercent>
+			<!-- was 51 -->
+			<iMinLandPercent>10</iMinLandPercent>
+			<!-- advc.254: end -->
 			<iReligionPercent>0</iReligionPercent>
 			<CityCulture>NONE</CityCulture>
 			<iNumCultureCities>0</iNumCultureCities>
