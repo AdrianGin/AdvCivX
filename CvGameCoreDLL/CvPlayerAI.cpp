@@ -7406,8 +7406,8 @@ bool CvPlayerAI::AI_isWillingToTalk(PlayerTypes ePlayer, /* advc.104l: */ bool b
 			return false;
 	} // </advc.104i>
 
-	// <advc.003n> In particular, don't call AI_surrenderTrade on Barbarians.
-	if (ePlayer == BARBARIAN_PLAYER)
+	// <advc.003n> In particular, don't call AI_surrenderTrade on non-major civs.
+	if (!GET_PLAYER(ePlayer).isMajorCiv())
 		return false; // </advc.003n>
 
 	// K-Mod
