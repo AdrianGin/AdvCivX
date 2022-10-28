@@ -2864,9 +2864,6 @@ PlayerTypes CvPlot::calculateCulturalOwner(/* advc.099c: */ bool bIgnoreCultureR
 			if (iCulture <= iBestCulture) // </advc.035>
 				continue;
 			if (bIgnoreCultureRange || // advc.099c
-				// <advc.023>
-				(isCity() && getPlotCity()->isOccupation() &&
-				getPlotCity()->isMartialLaw(itPlayer->getID())) || // </advc.023>
 				isWithinCultureRange(ePlayer))
 			{
 				if (iCulture > iBestCulture ||

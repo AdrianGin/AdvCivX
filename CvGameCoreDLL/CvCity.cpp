@@ -4210,20 +4210,6 @@ int CvCity::cultureGarrison(PlayerTypes ePlayer) const
 	return intdiv::uround(iGarrison, 100);
 }
 
-// advc.023:
-bool CvCity::isAnyCultureGarrison() const
-{
-	FOR_EACH_UNIT_IN(pUnit, getPlot())
-	{
-		if (pUnit->getTeam() == getTeam() &&
-			pUnit->garrisonStrength() > 0)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 // advc.099c:
 PlayerTypes CvCity::calculateCulturalOwner() const
 {
@@ -7920,20 +7906,10 @@ bool CvCity::canCultureFlip(PlayerTypes eToPlayer,
 	/*if (isBarbarian())
 		return true;*/ // advc.101: Commented out
 	// <advc.099c>
-	bool bPotentiallyOutsideCultureRange = true; // just to save time
 	if (eToPlayer == NO_PLAYER)
-	{
 		eToPlayer = getPlot().calculateCulturalOwner();
-		bPotentiallyOutsideCultureRange = false;
-	}
-	bool const bEasyFlip = (!isAnyCultureGarrison() && isOccupation() &&
-			isMartialLaw(eToPlayer)); // advc.023
-	if (bPotentiallyOutsideCultureRange &&
-		!bEasyFlip && // advc.023
-		!getPlot().isWithinCultureRange(eToPlayer))
-	{
+	else if (!getPlot().isWithinCultureRange(eToPlayer))
 		return false;
-	}
 	if(eToPlayer == NO_PLAYER || eToPlayer == getOwner() ||
 		!GET_PLAYER(eToPlayer).isAlive() || eToPlayer == BARBARIAN_PLAYER ||
 		GET_TEAM(eToPlayer).isVassal(getTeam()))
@@ -7946,13 +7922,11 @@ bool CvCity::canCultureFlip(PlayerTypes eToPlayer,
 			getPreviousOwner() == NO_PLAYER ||
 			TEAMID(getPreviousOwner()) != TEAMID(eToPlayer)) && // advc
 			(!bCheckPriorRevolts || // advc.101
-			bEasyFlip || // advc.023
 			getNumRevolts(eToPlayer) >= GC.getDefineINT(CvGlobals::NUM_WARNING_REVOLTS)
 			- (isBarbarian() ? 1 : 0))); // advc.101
 }
 
-/*	advc.023: Easier suppression - but also easier flipping -
-	to major-civ while at war. */
+// advc.023: Conditions for easier suppression while at war
 bool CvCity::isMartialLaw(PlayerTypes eRevoltPlayer) const
 {
 	CvPlayer const& kRevoltPlayer = GET_PLAYER(eRevoltPlayer);

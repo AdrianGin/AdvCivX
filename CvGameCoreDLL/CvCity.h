@@ -303,7 +303,6 @@ public:
 			bool bIgnoreWar = false, bool bIgnoreOccupation = false, // advc.023
 			std::vector<GrievanceTypes>* paGrievances = NULL) const; // advc.101
 	int cultureGarrison(PlayerTypes ePlayer) const;																// Exposed to Python
-	bool isAnyCultureGarrison() const; // advc.023
 	PlayerTypes calculateCulturalOwner() const; // advc.099c
 
 	int getNumBuilding(BuildingTypes eBuilding) const;															// Exposed to Python
