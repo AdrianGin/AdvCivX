@@ -655,7 +655,20 @@ void CvCity::doRevolt()
 	{
 		if (GET_PLAYER(eCulturalOwner).isOneCityChallenge())
 			kill(true);
-		else getPlot().setOwner(eCulturalOwner, true, true); // will delete pCity
+		else
+		{	/*	<advc.023> Make sure that allowing cities to flip repeatedly
+				while at war can't be exploited for racking up WS.
+				Doesn't take care of shared war success, but that's hardly
+				worth exploiting. */
+			if (eCulturalOwner != BARBARIAN_PLAYER &&
+				GET_TEAM(eCulturalOwner).isAtWar(getTeam()))
+			{
+				GET_TEAM(getTeam()).AI_changeWarSuccess(TEAMID(eCulturalOwner),
+						-scaled::min(GC.getWAR_SUCCESS_CITY_CAPTURING(),
+						GET_TEAM(getTeam()).AI_getWarSuccess(TEAMID(eCulturalOwner))));
+			} // </advc.023>
+			getPlot().setOwner(eCulturalOwner, true, true); // will delete pCity
+		}
 		/*  advc (comment): setOwner doesn't actually delete this object; just
 			calls CvCity::kill. Messages also handled by setOwner (through
 			CvPlayer::acquireCity). */
@@ -3974,6 +3987,7 @@ int CvCity::cultureDistance(int iDX, int iDY)
 
 // advc.101: Replaced most of the code, but it's still the same structure as in BtS.
 int CvCity::cultureStrength(PlayerTypes ePlayer,
+	bool bIgnoreWar, bool bIgnoreOccupation, // advc.023
 	std::vector<GrievanceTypes>* paGrievances) const // Out parameter for UI support
 {
 	//int iStrength = 1 + getHighestPopulation() * 2; // BtS
@@ -4007,8 +4021,8 @@ int CvCity::cultureStrength(PlayerTypes ePlayer,
 		rEraFactor++;
 	}
 	CvPlot const& kCityPlot = getPlot();
-	bool bCanFlip = (canCultureFlip(ePlayer, false) &&
-			ePlayer == kCityPlot.calculateCulturalOwner());
+	PlayerTypes const eCulturalOwner = kCityPlot.calculateCulturalOwner();
+	bool bCanFlip = (canCultureFlip(ePlayer, false) && ePlayer == eCulturalOwner);
 	scaled rStrengthFromInnerRadius;
 	CvPlayer const& kOwner = GET_PLAYER(getOwner());
 	// <advc.099c>
@@ -4165,7 +4179,15 @@ int CvCity::cultureStrength(PlayerTypes ePlayer,
 	if(rGrievanceModifier < 0)
 		rGrievanceModifier /= 2;
 	rStrength *= (1 + scaled::max(-1, rGrievanceModifier));
-
+	/*	<advc.023> Occupation state helps the garrison. Kind of a negative grievance,
+		but I think multiplying with grievances will be more intuitive. */
+	int iOccupationDiv = 1;
+	if (!bIgnoreOccupation && isOccupation())
+		iOccupationDiv *= 2;
+	if (!bIgnoreWar && isMartialLaw(eCulturalOwner))
+		iOccupationDiv *= 2;
+	rStrength /= iOccupationDiv;
+	// </advc.023>
 	return rStrength.round();
 }
 
@@ -4186,6 +4208,20 @@ int CvCity::cultureGarrison(PlayerTypes ePlayer) const
 	/*if (atWar(TEAMID(ePlayer), getTeam()))
 		iGarrison *= 2;*/ // advc.023: commented out
 	return intdiv::uround(iGarrison, 100);
+}
+
+// advc.023:
+bool CvCity::isAnyCultureGarrison() const
+{
+	FOR_EACH_UNIT_IN(pUnit, getPlot())
+	{
+		if (pUnit->getTeam() == getTeam() &&
+			pUnit->garrisonStrength() > 0)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 // advc.099c:
@@ -7829,29 +7865,18 @@ scaled CvCity::revoltProbability(bool bIgnoreWar,
 	{
 		return 0;
 	}
-	// <advc.023>
-	scaled rOccupationFactor = 1;
-	if (isOccupation() && !bIgnoreOccupation)
-	{
-		if(!bIgnoreWar && !isBarbarian() && !GET_TEAM(getTeam()).isMinorCiv() &&
-			GET_PLAYER(eCulturalOwner).isAlive() &&
-			GET_TEAM(getTeam()).isAtWar(TEAMID(eCulturalOwner)))
-		{
-			return 0;
-		}
-		rOccupationFactor = fixp(0.5);
-	} // </advc.023>
-	int iCityStrength = cultureStrength(eCulturalOwner);
+	int iCityStrength = cultureStrength(eCulturalOwner,
+			bIgnoreWar, bIgnoreOccupation); // advc.023
 	int iGarrison =
 			(bIgnoreGarrison ? 0 : // advc.023
 			cultureGarrison(eCulturalOwner));
-	if(iCityStrength <= iGarrison)
+	if (iCityStrength <= iGarrison)
 		return 0;
 	/*  About the two revolt tests: I guess the first one checks if the city tries
 		to revolt, and the second if the garrison can stop the revolt.
 		Restored the BtS formula for the second test. */
 	scaled r = scaled::max(0, (1 - scaled(iGarrison, iCityStrength))) *
-			getRevoltTestProbability() * rOccupationFactor;
+			getRevoltTestProbability();
 	// Don't use probabilities that are too small to be displayed
 	if (r.getPermille() < 1)
 		return 0;
@@ -7888,16 +7913,27 @@ scaled CvCity::probabilityOccupationDecrement() const
 	return r;
 }
 
-// K-Mod: The following function defines whether or not the city is allowed to flip to the given player
-bool CvCity::canCultureFlip(PlayerTypes eToPlayer, /* advc.101: */ bool bCheckPriorRevolts) const
+// K-Mod: Whether or not the city is allowed to flip to the given player
+bool CvCity::canCultureFlip(PlayerTypes eToPlayer,
+	bool bCheckPriorRevolts) const // advc.101
 {
 	/*if (isBarbarian())
 		return true;*/ // advc.101: Commented out
 	// <advc.099c>
+	bool bPotentiallyOutsideCultureRange = true; // just to save time
 	if (eToPlayer == NO_PLAYER)
+	{
 		eToPlayer = getPlot().calculateCulturalOwner();
-	else if (!getPlot().isWithinCultureRange(eToPlayer))
+		bPotentiallyOutsideCultureRange = false;
+	}
+	bool const bEasyFlip = (!isAnyCultureGarrison() && isOccupation() &&
+			isMartialLaw(eToPlayer)); // advc.023
+	if (bPotentiallyOutsideCultureRange &&
+		!bEasyFlip && // advc.023
+		!getPlot().isWithinCultureRange(eToPlayer))
+	{
 		return false;
+	}
 	if(eToPlayer == NO_PLAYER || eToPlayer == getOwner() ||
 		!GET_PLAYER(eToPlayer).isAlive() || eToPlayer == BARBARIAN_PLAYER ||
 		GET_TEAM(eToPlayer).isVassal(getTeam()))
@@ -7910,8 +7946,18 @@ bool CvCity::canCultureFlip(PlayerTypes eToPlayer, /* advc.101: */ bool bCheckPr
 			getPreviousOwner() == NO_PLAYER ||
 			TEAMID(getPreviousOwner()) != TEAMID(eToPlayer)) && // advc
 			(!bCheckPriorRevolts || // advc.101
+			bEasyFlip || // advc.023
 			getNumRevolts(eToPlayer) >= GC.getDefineINT(CvGlobals::NUM_WARNING_REVOLTS)
 			- (isBarbarian() ? 1 : 0))); // advc.101
+}
+
+/*	advc.023: Easier suppression - but also easier flipping -
+	to major-civ while at war. */
+bool CvCity::isMartialLaw(PlayerTypes eRevoltPlayer) const
+{
+	CvPlayer const& kRevoltPlayer = GET_PLAYER(eRevoltPlayer);
+	return (kRevoltPlayer.isAlive() && kRevoltPlayer.isMajorCiv() &&
+			GET_TEAM(getTeam()).isAtWar(kRevoltPlayer.getTeam()));
 }
 
 

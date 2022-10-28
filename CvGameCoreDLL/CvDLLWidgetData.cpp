@@ -5032,32 +5032,31 @@ void CvDLLWidgetData::parseNationalityHelp(CvWidgetDataStruct &widgetDataStruct,
 	std::vector<CvCity::GrievanceTypes> aeGrievances;
 	// <advc.023>
 	scaled const rDecrementProb = c.probabilityOccupationDecrement();
-	scaled const rProbToDisplay = c.revoltProbability(true, false, true);
-	int const iCultureStr = c.cultureStrength(eCulturalOwner, &aeGrievances);
+	scaled const rHypotheticalProb = c.revoltProbability(true, false, true);
+	int const iCultureStr = c.cultureStrength(eCulturalOwner, false, false,
+			&aeGrievances);
 	int const iGarrisonStr = c.cultureGarrison(eCulturalOwner);
 	scaled const rTrueProb = c.revoltProbability() * (1 - rDecrementProb);
-	if (rProbToDisplay > 0)
+	if (rHypotheticalProb > 0)
 	{
 		swprintf(szTempBuffer, (rTrueProb == 0 ? L"%.0f" : L"%.1f"),
 				100 * rTrueProb.getFloat()); // </advc.023>
 		// </advc.101>
 		szBuffer.append(NEWLINE);
 		szBuffer.append(gDLL->getText("TXT_KEY_MISC_CHANCE_OF_REVOLT", szTempBuffer));
-		// <advc.023> Probability after occupation
-		if (rTrueProb != rProbToDisplay)
+		/*	<advc.023> Probability after occupation and war. (If only either ends,
+			a third probability may apply, but I don't to bother showing that.) */
+		if (rTrueProb != rHypotheticalProb)
 		{
 			szBuffer.append(NEWLINE);
-			swprintf(szTempBuffer, L"%.1f", 100 * rProbToDisplay.getFloat());
-			if(eCulturalOwner == BARBARIAN_PLAYER || !GET_PLAYER(eCulturalOwner).isAlive())
-			{
-				szBuffer.append(gDLL->getText(
-						"TXT_KEY_NO_BARB_REVOLT_IN_OCCUPATION", szTempBuffer));
-			}
-			else
-			{
-				szBuffer.append(gDLL->getText(
-						"TXT_KEY_NO_REVOLT_IN_OCCUPATION", szTempBuffer));
-			}
+			swprintf(szTempBuffer, L"%.1f", 100 * rHypotheticalProb.getFloat());
+			CvWString szKey;
+			if (c.isMartialLaw(eCulturalOwner) && c.isOccupation())
+				szKey = "TXT_KEY_REVOLT_CHANCE_AFTER_WAR_OCCUPATION";
+			else if (c.isMartialLaw(eCulturalOwner))
+				szKey = "TXT_KEY_REVOLT_CHANCE_AFTER_WAR";
+			else szKey = "TXT_KEY_REVOLT_CHANCE_AFTER_OCCUPTAION";
+			szBuffer.append(gDLL->getText(szKey, szTempBuffer));
 		} // </advc.023>
 		// <advc.101>
 		szBuffer.append(NEWLINE);
@@ -5069,11 +5068,14 @@ void CvDLLWidgetData::parseNationalityHelp(CvWidgetDataStruct &widgetDataStruct,
 				iCultureStrength, iCultureStrength,
 				::round(100 * c.getRevoltTestProbability())));
 		// Also show c.getRevoltProtection()? */
-		szBuffer.append(gDLL->getText("TXT_KEY_GARRISON_STRENGTH_NEEDED",
-				iCultureStr - iGarrisonStr));
+		if (iCultureStr > iGarrisonStr)
+		{
+			szBuffer.append(gDLL->getText("TXT_KEY_GARRISON_STRENGTH_NEEDED",
+					iCultureStr - iGarrisonStr));
+		}
 	}
-	if (!c.isOccupation() && rProbToDisplay <= 0 && eCulturalOwner != c.getOwner() &&
-		iGarrisonStr >= iCultureStr)
+	if (!c.isOccupation() && rHypotheticalProb <= 0 &&
+		eCulturalOwner != c.getOwner() && iGarrisonStr >= iCultureStr)
 	{
 		szBuffer.append(NEWLINE);
 		szBuffer.append(gDLL->getText("TXT_KEY_GARRISON_STRENGTH_EXCESS",
@@ -5100,7 +5102,7 @@ void CvDLLWidgetData::parseNationalityHelp(CvWidgetDataStruct &widgetDataStruct,
 		szBuffer.append(NEWLINE);
 		szBuffer.append(gDLL->getText("TXT_KEY_MISC_PRIOR_REVOLTS",
 				c.getNumRevolts(eCulturalOwner)));
-		if (rProbToDisplay > 0 && rTrueProb > 0 && c.canCultureFlip(eCulturalOwner))
+		if (rTrueProb > 0 && c.canCultureFlip(eCulturalOwner))
 		{
 			szBuffer.append(NEWLINE);
 			szBuffer.append(gDLL->getText("TXT_KEY_MISC_FLIP_WARNING"));

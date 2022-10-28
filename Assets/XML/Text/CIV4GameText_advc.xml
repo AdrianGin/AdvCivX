@@ -272,20 +272,28 @@
 		<Spanish>(&#161;convertir&#225;!)</Spanish>
 	</TEXT>
 	<TEXT>
-		<Tag>TXT_KEY_NO_REVOLT_IN_OCCUPATION</Tag>
-		<English>%s1_Chance%% once occupation or war ends</English>
-		<French>%s1_Chance%% quand l'occupation ou la guerre finira</French>
-		<German>%s1_Chance%% wenn Besatzung oder Krieg endet</German>
-		<Italian>%s1_Chance%% quando finisce l'occupazione o la guerra</Italian>
-		<Spanish>%s1_Chance%% cuando termine la ocupación o la guerra</Spanish>
+		<Tag>TXT_KEY_REVOLT_CHANCE_AFTER_WAR_OCCUPATION</Tag>
+		<English>%s1_Chance%% once occupation and war end</English>
+		<French>%s1_Chance%% quand l'occupation et la guerre finiront</French>
+		<German>%s1_Chance%% wenn Besatzung und Krieg enden</German>
+		<Italian>%s1_Chance%% quando finiscono l'occupazione e la guerra</Italian>
+		<Spanish>%s1_Chance%% cuando terminen la ocupación y la guerra</Spanish>
 	</TEXT>
 	<TEXT>
-		<Tag>TXT_KEY_NO_BARB_REVOLT_IN_OCCUPATION</Tag>
+		<Tag>TXT_KEY_REVOLT_CHANCE_AFTER_OCCUPATION</Tag>
 		<English>%s1_Chance%% once occupation ends</English>
 		<French>%s1_Chance%% quand l'occupation finira</French>
 		<German>%s1_Chance%% wenn Besatzung endet</German>
 		<Italian>%s1_Chance%% quando finisce l'occupazione</Italian>
 		<Spanish>%s1_Chance%% cuando termine la ocupación</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_REVOLT_CHANCE_AFTER_WAR</Tag>
+		<English>%s1_Chance%% once war ends</English>
+		<French>%s1_Chance%% quand la guerre finira</French>
+		<German>%s1_Chance%% wenn der Krieg endet</German>
+		<Italian>%s1_Chance%% quando finisce la guerra</Italian>
+		<Spanish>%s1_Chance%% cuando termine la guerra</Spanish>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_REVOLT_PR_BREAKDOWN</Tag>

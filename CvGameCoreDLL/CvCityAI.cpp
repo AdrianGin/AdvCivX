@@ -6978,7 +6978,7 @@ int CvCityAI::AI_neededCultureDefenders() const
 	CvPlayerAI const& kOwner = GET_PLAYER(getOwner());
 	if (getPlot().calculateCulturePercent(kOwner.getID()) >= 50)
 		return 0; // To save time
-	PlayerTypes eCulturalOwner = calculateCulturalOwner();
+	PlayerTypes const eCulturalOwner = calculateCulturalOwner();
 	if(eCulturalOwner == kOwner.getID() || revoltProbability(true, true) <= 0)
 		return 0;
 
@@ -6989,7 +6989,8 @@ int CvCityAI::AI_neededCultureDefenders() const
 		rTargetProb = 0;
 	else if (getNumRevolts(eCulturalOwner) > 0)
 		rTargetProb /= 4;
-	int const iCultureStr = cultureStrength(eCulturalOwner);
+	int const iCultureStr = cultureStrength(eCulturalOwner,
+			false, true); // advc.023
 	// Based on the formula in CvCity::revoltProbability
 	scaled rTargetGarrisonStr = iCultureStr - iCultureStr * rTargetProb /
 			scaled::max(per100(1), getRevoltTestProbability());
