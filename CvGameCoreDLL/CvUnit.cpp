@@ -10570,6 +10570,7 @@ void CvUnit::write(FDataStreamBase* pStream)
 	//uiFlag = 7; // advc.enum: new enum map save behavior
 	uiFlag = 8; // advc.313: Disorganized promo removed, advc.enum: bugfix.
 	pStream->Write(uiFlag);
+	REPRO_TEST_BEGIN_WRITE(CvString::format("Unit(%d,%d,%d)", getID(), getX(), getY()));
 
 	pStream->Write(m_iID);
 	pStream->Write(m_iGroupID);
@@ -10664,6 +10665,7 @@ void CvUnit::write(FDataStreamBase* pStream)
 	m_aiExtraFeatureAttackPercent.write(pStream);
 	m_aiExtraFeatureDefensePercent.write(pStream);
 	m_aiExtraUnitCombatModifier.write(pStream);
+	REPRO_TEST_END_WRITE();
 }
 
 
