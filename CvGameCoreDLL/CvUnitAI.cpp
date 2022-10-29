@@ -21252,14 +21252,15 @@ bool CvUnitAI::AI_defendPlot(CvPlot* pPlot)
 	}
 	else
 	{
-		if (pPlot->plotCount(PUF_canDefendGroupHead, -1, -1, getOwner(),
+		if (getGroupSize() == 1 && // advc.010
+			pPlot->plotCount(PUF_canDefendGroupHead, -1, -1, getOwner(),
 			// advc.001s: Want up to 1 defender per domain type
 			NO_TEAM, PUF_isDomainType, getDomainType())
 			<= (atPlot(pPlot) ? 1 : 0))
 		{
 			/*if (pPlot->plotCount(PUF_cannotDefend, -1, -1, getOwner()) > 0)
 				return true*/
-			// <advc.101>
+			// <advc.010>
 			int iTotalProductionCost = 0;
 			FOR_EACH_UNIT_IN(pUnit, *pPlot)
 			{
@@ -21278,7 +21279,7 @@ bool CvUnitAI::AI_defendPlot(CvPlot* pPlot)
 					if (iTotalProductionCost * 5 > m_pUnitInfo->getProductionCost() * 3)
 						return true;
 				}
-			} // </advc.101>
+			} // </advc.010>
 			/*if (pPlot->defenseModifier(getTeam(), false) >= 50 && pPlot->isRoute() && pPlot->getTeam() == getTeam())
 				return true;*/ // (commented out by the BtS expansion)
 		}
