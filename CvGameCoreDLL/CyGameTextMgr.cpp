@@ -103,6 +103,15 @@ std::wstring CyGameTextMgr::getSpecificUnitHelp(CyUnit* pUnit, bool bOneLine, bo
 	return szBuffer.getCString();
 }
 
+// advc.004:
+std::wstring CyGameTextMgr::getHurtUnitStrength(CyUnit* pUnit)
+{
+	CvWString szBuffer;
+	if (pUnit != NULL && pUnit->getUnit() != NULL)
+		GAMETEXT.setHurtUnitStrength(szBuffer, *pUnit->getUnit());
+	return szBuffer.c_str();
+}
+
 std::wstring CyGameTextMgr::getBuildingHelp(int iBuilding, bool bCivilopediaText, bool bStrategyText, bool bTechChooserText, CyCity* pCity)
 {
 	CvWStringBuffer szBuffer;

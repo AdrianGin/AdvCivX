@@ -34,6 +34,7 @@ public:
 	// advc.069:
 	std::wstring getBasicUnitHelp(int iUnit, bool bCivilopediaText);
 	std::wstring getSpecificUnitHelp(CyUnit* pUnit, bool bOneLine, bool bShort);
+	std::wstring getHurtUnitStrength(CyUnit* pUnit); // advc.004
 	std::wstring getBuildingHelp(int iBuilding, bool bCivilopediaText, bool bStrategyText, bool bTechChooserText, CyCity* pCity);
 	std::wstring getProjectHelp(int iProject, bool bCivilopediaText, CyCity* pCity);
 	std::wstring getPromotionHelp(int iPromotion, bool bCivilopediaText);

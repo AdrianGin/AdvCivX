@@ -6076,12 +6076,10 @@ class CvMainInterface:
 							szRightBuffer = u"?/%d%c" %(pHeadSelectedUnit.airBaseCombatStr(),
 									CyGame().getSymbolID(FontSymbols.STRENGTH_CHAR))
 						elif (pHeadSelectedUnit.isHurt()):
-							szRightBuffer = u"%.1f/%d%c" %(
-									((float(pHeadSelectedUnit.airBaseCombatStr() *
-									pHeadSelectedUnit.currHitPoints())) /
-									(float(pHeadSelectedUnit.maxHitPoints()))),
-									pHeadSelectedUnit.airBaseCombatStr(),
-									CyGame().getSymbolID(FontSymbols.STRENGTH_CHAR))
+							# <advc.004> Replacing Python implementation
+							szRightBuffer = u"%s" %(
+									CyGameTextMgr().getHurtUnitStrength(pHeadSelectedUnit))
+							# </advc.004>
 						else:
 							szRightBuffer = u"%d%c" %(pHeadSelectedUnit.airBaseCombatStr(),
 									CyGame().getSymbolID(FontSymbols.STRENGTH_CHAR))
@@ -6092,23 +6090,10 @@ class CvMainInterface:
 							szRightBuffer = u"?/%d%c" %(pHeadSelectedUnit.baseCombatStr(),
 									CyGame().getSymbolID(FontSymbols.STRENGTH_CHAR))
 						elif (pHeadSelectedUnit.isHurt()):
-							# <advc.004> Same as in CvGameTextMgr::setUnitHelp
-							fCurrStrength = float(pHeadSelectedUnit.baseCombatStr())
-							fCurrStrength *= pHeadSelectedUnit.currHitPoints()
-							fCurrStrength /= pHeadSelectedUnit.maxHitPoints()
-							iCurrStrengthTimes100 = 100 * pHeadSelectedUnit.baseCombatStr()
-							iCurrStrengthTimes100 *= pHeadSelectedUnit.currHitPoints()
-							iCurrStrengthTimes100 /= pHeadSelectedUnit.maxHitPoints()
-							if (pHeadSelectedUnit.baseCombatStr() *
-									pHeadSelectedUnit.maxHitPoints() - iCurrStrengthTimes100 <= 5):
-								fCurrStrength = pHeadSelectedUnit.baseCombatStr() - 0.1
-							if (pHeadSelectedUnit.baseCombatStr() *
-									pHeadSelectedUnit.maxHitPoints() < 5):
-								fCurrStrength = 0.1
+							# <advc.004> Replacing Python implementation
+							szRightBuffer = u"%s" %(
+									CyGameTextMgr().getHurtUnitStrength(pHeadSelectedUnit))
 							# </advc.004>
-							szRightBuffer = u"%.1f/%d%c" %(fCurrStrength,
-									pHeadSelectedUnit.baseCombatStr(),
-									CyGame().getSymbolID(FontSymbols.STRENGTH_CHAR))
 						else:
 							szRightBuffer = u"%d%c" %(pHeadSelectedUnit.baseCombatStr(),
 									CyGame().getSymbolID(FontSymbols.STRENGTH_CHAR))

@@ -450,17 +450,18 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szString, const CvUnit* pUnit,
 			CvWString szTempBuffer;
 			if (pUnit->isFighting())
 			{
-				szTempBuffer.Format(L"?/%d%c, ", pUnit->airBaseCombatStr(),
+				szTempBuffer.Format(L"?/%d%c", pUnit->airBaseCombatStr(),
 						gDLL->getSymbolID(STRENGTH_CHAR));
 			}
 			else if (pUnit->isHurt())
 				setHurtUnitStrength(szTempBuffer, *pUnit); // advc.004
 			else
 			{
-				szTempBuffer.Format(L"%d%c, ", pUnit->airBaseCombatStr(),
+				szTempBuffer.Format(L"%d%c", pUnit->airBaseCombatStr(),
 						gDLL->getSymbolID(STRENGTH_CHAR));
 			}
 			szString.append(szTempBuffer);
+			szString.append(L", "); // advc.004
 		}
 	}
 	else
@@ -470,17 +471,18 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szString, const CvUnit* pUnit,
 			CvWString szTempBuffer;
 			if (pUnit->isFighting())
 			{
-				szTempBuffer.Format(L"?/%d%c, ", pUnit->baseCombatStr(),
+				szTempBuffer.Format(L"?/%d%c", pUnit->baseCombatStr(),
 						gDLL->getSymbolID(STRENGTH_CHAR));
 			}
 			else if (pUnit->isHurt())
 				setHurtUnitStrength(szTempBuffer, *pUnit); // advc.004
 			else
 			{
-				szTempBuffer.Format(L"%d%c, ", pUnit->baseCombatStr(),
+				szTempBuffer.Format(L"%d%c", pUnit->baseCombatStr(),
 						gDLL->getSymbolID(STRENGTH_CHAR));
 			}
 			szString.append(szTempBuffer);
+			szString.append(L", "); // advc.004
 		}
 	}
 	int const iDenom = GC.getMOVE_DENOMINATOR(); // advc
@@ -1344,7 +1346,7 @@ void CvGameTextMgr::setHurtUnitStrength(CvWString& szBuffer, CvUnit const& kUnit
 	if (iCurrStrengthTimes100 < 5) // %.1f would show 0.0 here
 		fCurrStrength = 0.1f;
 	// as in BtS:
-	szBuffer.Format(L"%.1f/%d%c, ", fCurrStrength,
+	szBuffer.Format(L"%.1f/%d%c", fCurrStrength,
 			iBaseStr, gDLL->getSymbolID(STRENGTH_CHAR));
 }
 
