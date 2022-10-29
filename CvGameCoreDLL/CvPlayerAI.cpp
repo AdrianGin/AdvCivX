@@ -5554,7 +5554,7 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 				iValue += 4 * std::min(iCityCount, iCityTarget); // </k146>
 			}
 
-			if (eCivic == GC.getInfo(getPersonalityType()).getFavoriteCivic())
+			if (eCivic == getFavoriteCivic())
 			{
 				/*  k146: favourite civic is already taken into account in the
 					civic evaluation above. */
@@ -6938,8 +6938,7 @@ int CvPlayerAI::AI_techReligionValue(TechTypes eTech, int iPathLength,
 	CvRandom& kRand, int& iRandomMax, bool bRandomize) const
 {
 	CvTechInfo const& kTech = GC.getInfo(eTech);
-	ReligionTypes const eFavoriteReligion = GC.getInfo(getLeaderType()).
-			getFavoriteReligion();
+	ReligionTypes const eFavoriteReligion = getFavoriteReligion();
 	// <advc.171>
 	bool bLateFavoriteReligion = false;
 	bool bLateReligion = false; // </advc.171>
@@ -8304,11 +8303,11 @@ int CvPlayerAI::AI_getShareWarAttitude(PlayerTypes ePlayer) const
 
 int CvPlayerAI::AI_getFavoriteCivicAttitude(PlayerTypes ePlayer) const
 {
-	CvLeaderHeadInfo const& kPersonality = GC.getInfo(getPersonalityType());
-	CivicTypes const eFavCivic = kPersonality.getFavoriteCivic();
+	CivicTypes const eFavCivic = getFavoriteCivic();
 	if (eFavCivic != NO_CIVIC &&
 		isCivic(eFavCivic) && GET_PLAYER(ePlayer).isCivic(eFavCivic))
 	{
+		CvLeaderHeadInfo const& kPersonality = GC.getInfo(getPersonalityType());
 		return kPersonality.getFavoriteCivicAttitudeChange() +
 				// advc.130n: Moved into new function
 				AI_ideologyAttitudeChange(ePlayer, SAME_CIVIC,
@@ -13261,7 +13260,7 @@ DenialTypes CvPlayerAI::AI_civicTrade(CivicTypes eCivic, PlayerTypes ePlayer) co
 		{
 			return DENIAL_ANGER_CIVIC;
 		}
-		CivicTypes eFavoriteCivic = GC.getInfo(getPersonalityType()).getFavoriteCivic();
+		CivicTypes const eFavoriteCivic = getFavoriteCivic();
 		if (eFavoriteCivic != NO_CIVIC)
 		{
 			if (isCivic(eFavoriteCivic) &&
@@ -15054,7 +15053,7 @@ int CvPlayerAI::AI_nukeWeight() const
 	scaled rPersonalNukeLove = per100(kPersonality.getEspionageWeight()) *
 			per100(100 - kPersonality.getNoWarAttitudeProb(ATTITUDE_CAUTIOUS));
 	{	// Environmentalists shouldn't like nukes
-		CivicTypes eFavCivic = GC.getInfo(getLeaderType()).getFavoriteCivic();
+		CivicTypes eFavCivic = getFavoriteCivic();
 		if (eFavCivic != NO_CIVIC &&
 			GC.getInfo(eFavCivic).getUnhealthyPopulationModifier() <= -10)
 		{
@@ -17520,7 +17519,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 				iValue -= 3 * std::max(0,
 						iCities + iBestReligionCities - iTotalReligonCount);
 			}
-			else if (eBestReligion == GC.getInfo(getLeaderType()).getFavoriteReligion() &&
+			else if (eBestReligion == getFavoriteReligion() &&
 				/*	advc.115b: Used to be a logical OR. Theocracy as the standard civic
 					from Medieval onwards hurts religious strategies unduly. */
 				(hasHolyCity(eBestReligion) && countHolyCities() == 1))
@@ -17860,9 +17859,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 			AttitudeTypes eAttitude = AI_getAttitude(kAIRival.getID(), false);
 			if (eAttitude >= ATTITUDE_PLEASED)
 			{
-				CvLeaderHeadInfo const& kPersonality = GC.getInfo(kAIRival.getPersonalityType());
-				if (kPersonality.getFavoriteCivic() == eCivic &&
-					kAIRival.isCivic(eCivic))
+				if (kAIRival.getFavoriteCivic() == eCivic && kAIRival.isCivic(eCivic))
 				{
 					// (better to use getVotes; but that's more complex.)
 					//iValue += kAIRival.getTotalPopulation() * (2 + kPersonality.getFavoriteCivicAttitudeChangeLimit()) / 20;
@@ -17872,7 +17869,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 		}
 	} // K-Mod end
 
-	if (GC.getInfo(getPersonalityType()).getFavoriteCivic() == eCivic &&
+	if (getFavoriteCivic() == eCivic &&
 		iValue > 0) // advc.131: Just to make sure
 	{
 		if (!kCivic.isStateReligion() || iBestReligionCities > 0)
@@ -17919,7 +17916,7 @@ ReligionTypes CvPlayerAI::AI_bestReligion() const
 {
 	ReligionTypes eBestReligion = NO_RELIGION;
 	int iBestValue = 0;
-	ReligionTypes const eFavorite = GC.getInfo(getLeaderType()).getFavoriteReligion();
+	ReligionTypes const eFavorite = getFavoriteReligion();
 	FOR_EACH_ENUM(Religion)
 	{
 		if (canDoReligion(eLoopReligion))
@@ -18800,7 +18797,7 @@ int CvPlayerAI::AI_ideologyAttitudeChange(PlayerTypes eOther, IdeologicMarker eM
 			break;
 		case SAME_CIVIC:
 		{
-			CivicTypes eFavCivic = GC.getInfo(getPersonalityType()).getFavoriteCivic();
+			CivicTypes eFavCivic = getFavoriteCivic();
 			if (eFavCivic != NO_CIVIC && isCivic(eFavCivic) &&
 				itPlayer->isCivic(eFavCivic))
 			{
@@ -19284,9 +19281,9 @@ void CvPlayerAI::AI_doCounter()
 		}
 		else AI_setDifferentReligionCounter(ePlayer,
 				(AI_getDifferentReligionCounter(ePlayer) * rDecayFactor).floor());
-		if (kPersonality.getFavoriteCivic() != NO_CIVIC)
+		if (getFavoriteCivic() != NO_CIVIC)
 		{
-			CivicTypes eFavCivic = kPersonality.getFavoriteCivic();
+			CivicTypes eFavCivic = getFavoriteCivic();
 			if (isCivic(eFavCivic) && kPlayer.isCivic(eFavCivic))
 				AI_changeFavoriteCivicCounter(ePlayer, kOurTeam.AI_randomCounterChange());
 			else
@@ -19416,8 +19413,7 @@ void CvPlayerAI::AI_doCounter()
 			} // </advc.130r>
 			/*  <advc.145> Decay of accepted/denied civic/religion memory based on
 				current civics and religion */
-			// Fav. civic and religion are based on LeaderType, not PersonalityType.
-			CivicTypes eFavCivic = GC.getInfo(getLeaderType()).getFavoriteCivic();
+			CivicTypes eFavCivic = getFavoriteCivic();
 			scaled const rAbolishMultiplier = 4;
 			if (eMem == MEMORY_ACCEPTED_CIVIC)
 			{
@@ -22039,7 +22035,7 @@ bool CvPlayerAI::AI_contactCivics(PlayerTypes eHuman)
 {
 	if(AI_getContactTimer(eHuman, CONTACT_CIVIC_PRESSURE) > 0)
 		return false;
-	CivicTypes eFavoriteCivic = GC.getInfo(getPersonalityType()).getFavoriteCivic();
+	CivicTypes const eFavoriteCivic = getFavoriteCivic();
 	if(eFavoriteCivic == NO_CIVIC || !isCivic(eFavoriteCivic))
 		return false;
 	CvPlayer& kHuman = GET_PLAYER(eHuman);
@@ -28640,7 +28636,7 @@ int CvPlayerAI::AI_disbandValue(CvUnitAI const& kUnit, bool bMilitaryOnly) const
 
 ReligionTypes CvPlayerAI::AI_chooseReligion()
 {
-	ReligionTypes eFavorite = GC.getInfo(getLeaderType()).getFavoriteReligion();
+	ReligionTypes eFavorite = getFavoriteReligion();
 	if (eFavorite != NO_RELIGION && !GC.getGame().isReligionFounded(eFavorite))
 		return eFavorite;
 

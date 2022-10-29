@@ -3654,7 +3654,7 @@ void CvPlayer::handleDiploEvent(DiploEventTypes eDiploEvent, PlayerTypes ePlayer
 		AI().AI_changeMemoryCount(ePlayer, MEMORY_ACCEPTED_CIVIC, 1);
 		CivicMap aeNewCivics;
 		GET_PLAYER(ePlayer).getCivics(aeNewCivics);
-		CivicTypes eFavCivic = GC.getInfo(getPersonalityType()).getFavoriteCivic();
+		CivicTypes eFavCivic = getFavoriteCivic();
 		aeNewCivics.set(GC.getInfo(eFavCivic).getCivicOptionType(), eFavCivic);
 		GET_PLAYER(ePlayer).revolution(aeNewCivics, true);
 		break;
@@ -6823,6 +6823,33 @@ int CvPlayer::getCivicPercentAnger(CivicTypes eCivic, bool bIgnore) const
 
 	return (GC.getInfo(eCivic).getCivicPercentAnger() * iCount) / iPossibleCount;
 }
+
+/*	<advc.130n> Functions that allow favorite ideologies to be tied to either
+	to personality or leader type in a single place. (This distinction matters
+	only for the Random Personalities option.)
+	Could argue that these should be CvPlayerAI functions b/c only the AI
+	should care about favorite ideologies, but mods might want to reward
+	human players for roleplaying their leader.
+	NB: AttitudeChanges remain tied to personality. */
+CivicTypes CvPlayer::getFavoriteCivic() const
+{
+	return GC.getInfo(
+			//getPersonalityType() // BtS
+			getLeaderType()).getFavoriteCivic();
+}
+bool CvPlayer::isFavoriteCivicKnown() const
+{
+	//return !GC.getGame().isOption(GAMEOPTION_RANDOM_PERSONALITIES); // BtS
+	return true;
+}
+ReligionTypes CvPlayer::getFavoriteReligion() const
+{
+	return GC.getInfo(getLeaderType()).getFavoriteReligion(); // (as in BtS)
+}
+bool CvPlayer::isFavoriteReligionKnown() const
+{
+	return true; // (as in BtS)
+} // </advc.130n>
 
 
 bool CvPlayer::canChangeReligion() const

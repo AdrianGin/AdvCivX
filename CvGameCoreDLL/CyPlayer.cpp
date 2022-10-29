@@ -674,6 +674,31 @@ int CyPlayer::getCivicPercentAnger(int /*CivicTypes*/ eCivic)
 	return m_pPlayer ? m_pPlayer->getCivicPercentAnger((CivicTypes) eCivic) : -1;
 }
 
+// <advc.130n>
+CivicTypes CyPlayer::getFavoriteCivic()
+{
+	return (m_pPlayer == NULL || !m_pPlayer->isAlive() ? NO_CIVIC :
+			m_pPlayer->getFavoriteCivic());
+}
+
+bool CyPlayer::isFavoriteCivicKnown()
+{
+	return (m_pPlayer == NULL || !m_pPlayer->isAlive() ? false :
+			m_pPlayer->isFavoriteCivicKnown());
+}
+
+ReligionTypes CyPlayer::getFavoriteReligion()
+{
+	return (m_pPlayer == NULL || !m_pPlayer->isAlive() ? NO_RELIGION :
+			m_pPlayer->getFavoriteReligion());
+}
+
+bool CyPlayer::isFavoriteReligionKnown()
+{
+	return (m_pPlayer == NULL || !m_pPlayer->isAlive() ? false :
+			m_pPlayer->isFavoriteReligionKnown());
+} // </advc.130n>
+
 bool CyPlayer::canDoReligion(int /*ReligionTypes*/ eReligion)
 {
 	return m_pPlayer ? m_pPlayer->canDoReligion((ReligionTypes) eReligion) : false;

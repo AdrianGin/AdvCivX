@@ -6786,7 +6786,7 @@ int CvGame::religionPriority(PlayerTypes ePlayer, ReligionTypes eReligion) const
 			e.g. Buddhism would fit so well for Ashoka.
 			Don't use PersonalityType here; fav. religion is always a matter
 			of LeaderType. */
-		if (GC.getInfo(kPlayer.getLeaderType()).getFavoriteReligion() == eReligion)
+		if (kPlayer.getFavoriteReligion() == eReligion)
 			iR += 6;
 	}
 	return iR;
@@ -9156,7 +9156,9 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 21; // advc.enum
 	//uiFlag = 22; // advc.130n: Bugfix in fave-civic attitude calc
 	//uiFlag = 23; // advc.124b: Need a plot group update for compatibility
-	uiFlag = 24; // advc.enum: Bugfix in bool-valued ArrayEnumMap; advc.130c: tweak.
+	/*	advc.enum: Bugfix in bool-valued ArrayEnumMap; advc.130c: tweak;
+		advc.130n: fave civic based on displayed leader type. */
+	uiFlag = 24;
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9374,26 +9376,14 @@ void CvGame::onAllGameDataRead()
 		}
 		SAFE_DELETE_ARRAY(m_pLegacyOrgSeatData);
 	} // </advc.enum>
-	// <advc.130n>, advc.148, advc.130x
-	if (m_uiSaveFlag < 22 ||
+	// <advc.130n>, advc.148, advc.130r, advc.130x, advc.130c
+	if (m_uiSaveFlag < 24 ||
 		// <advc.127> Save created during AI Auto Play
 		(m_iAIAutoPlay != 0 && !isNetworkMultiPlayer()))
 	{
 		m_iAIAutoPlay = 0; // </advc.127>
 		CvPlayerAI::AI_updateAttitudes();
 	} // </advc.130n>
-	// <advc.130r>
-	else if (m_uiSaveFlag < 24)
-	{
-		for (TeamAIIter<MAJOR_CIV> itTeam; itTeam.hasNext(); ++itTeam)
-		{
-			for (TeamIter<MAJOR_CIV,ENEMY_OF> itEnemy(itTeam->getID());
-				itEnemy.hasNext(); ++itEnemy)
-			{
-				itTeam->AI_updateAttitude(itEnemy->getID(), false);
-			}
-		}
-	} // </advc.130r>
 	// <advc.500c>
 	if (m_uiSaveFlag < 19)
 	{
