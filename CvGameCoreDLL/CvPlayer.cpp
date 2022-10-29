@@ -6839,8 +6839,8 @@ CivicTypes CvPlayer::getFavoriteCivic() const
 }
 bool CvPlayer::isFavoriteCivicKnown() const
 {
-	//return !GC.getGame().isOption(GAMEOPTION_RANDOM_PERSONALITIES); // BtS
-	return true;
+	return isAlive();
+	//&& !GC.getGame().isOption(GAMEOPTION_RANDOM_PERSONALITIES) // BtS
 }
 ReligionTypes CvPlayer::getFavoriteReligion() const
 {
@@ -6848,7 +6848,7 @@ ReligionTypes CvPlayer::getFavoriteReligion() const
 }
 bool CvPlayer::isFavoriteReligionKnown() const
 {
-	return true; // (as in BtS)
+	return isAlive(); // (as in BtS)
 } // </advc.130n>
 
 
