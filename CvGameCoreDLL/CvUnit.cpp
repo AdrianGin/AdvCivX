@@ -11,6 +11,7 @@
 #include "PlotRange.h"
 #include "CvArea.h"
 #include "BarbarianWeightMap.h" // advc.304
+#include "CvGameTextMgr.h" // advc.048c
 #include "CvInfo_Command.h"
 #include "CvInfo_Terrain.h"
 #include "CvInfo_GameOption.h"
@@ -41,6 +42,9 @@ CvUnit::CvUnit() // advc.003u: Body cut from the deleted reset function
 	m_iCargo = 0;
 	m_iAttackPlotX = INVALID_PLOT_COORD;
 	m_iAttackPlotY = INVALID_PLOT_COORD;
+	// <advc.048c>
+	m_iAttackOdds = -1;
+	m_iPreCombatHP = -1; // </advc.048c>
 	m_iCombatTimer = 0;
 	m_iCombatFirstStrikes = 0;
 	m_iFortifyTurns = 0;
@@ -1080,6 +1084,11 @@ void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible)
 			iDefenderOdds, iDefenderStrength, iAttackerDamage, iDefenderDamage,
 			&cdDefenderDetails);
 	int iAttackerKillOdds = iDefenderOdds * (100 - withdrawalProbability()) / 100;
+	// <advc.048c> Preserve info for interface message
+	m_iAttackOdds = pDefender->m_iAttackOdds = GC.getCOMBAT_DIE_SIDES()
+			- iAttackerKillOdds;
+	m_iPreCombatHP = currHitPoints();
+	pDefender->m_iPreCombatHP = pDefender->currHitPoints(); // </advc.048c>
 
 	// advc.001: Replacing isHuman checks
 	if (isActiveOwned() || pDefender->isActiveOwned())
@@ -1601,24 +1610,10 @@ void CvUnit::updateCombat(bool bQuick, /* <advc.004c> */ bool* pbIntercepted,
 	}
 	else
 	{
-		bool const bSea = (getDomainType() == DOMAIN_SEA); // advc.002l
-		CvWString szBuffer(gDLL->getText("TXT_KEY_MISC_YOU_UNIT_WITHDRAW",
-				getNameKey(), pDefender->getNameKey()));
-		gDLL->UI().addMessage(getOwner(), true, -1, szBuffer,
-				bSea ? "AS2D_OUR_SEA_WITHDRAWL" : // advc.002l
-				"AS2D_OUR_WITHDRAWL", MESSAGE_TYPE_INFO, NULL,
-				GC.getColorType("GREEN"), pPlot->getX(), pPlot->getY());
-		szBuffer = gDLL->getText("TXT_KEY_MISC_ENEMY_UNIT_WITHDRAW",
-				getNameKey(), pDefender->getNameKey());
-		gDLL->UI().addMessage(pDefender->getOwner(), true, -1, szBuffer,
-				bSea ? "AS2D_THEIR_SEA_WITHDRAWL" : // advc.002l
-				"AS2D_THEIR_WITHDRAWL", MESSAGE_TYPE_INFO, NULL,
-				GC.getColorType("RED"), pPlot->getX(), pPlot->getY());
-
+		addWithdrawalMessages(*pDefender); // advc: Moved into new function
 		changeMoves(std::max(GC.getMOVE_DENOMINATOR(),
 				pPlot->movementCost(*this, getPlot())));
 		checkRemoveSelectionAfterAttack();
-
 		getGroup()->clearMissionQueue();
 	}
 }
@@ -1636,25 +1631,14 @@ void CvUnit::addAttackSuccessMessages(CvUnit const& kDefender, bool bFought) con
 			: NULL, // advc.010: No victory sound for killing noncombatant
 			MESSAGE_TYPE_INFO, NULL,
 			GC.getColorType("GREEN"), kPlot.getX(), kPlot.getY());
-	if (getVisualOwner(kDefender.getTeam()) != getOwner())
-	{
-		szBuffer = gDLL->getText("TXT_KEY_MISC_YOU_UNIT_WAS_DESTROYED_UNKNOWN",
-				kDefender.getNameKeyNoGG(), // advc.004u
-				getNameKey());
-	}
-	else
-	{
-		szBuffer = gDLL->getText("TXT_KEY_MISC_YOU_UNIT_WAS_DESTROYED",
-				kDefender.getNameKeyNoGG(), // advc.004u
-				getNameKey(), getVisualCivAdjective(kDefender.getTeam()));
-	}
+	setHasBeenDefendedAgainstMessage(szBuffer, kDefender, 1); // advc.048c
 	gDLL->UI().addMessage(kDefender.getOwner(), bFought, -1, szBuffer,
 			bSound ? GC.getInfo(GET_PLAYER(kDefender.getOwner()) // advc.002l
 			.getCurrentEra()).getAudioUnitDefeatScript() /* advc.002l: */ : NULL,
 			MESSAGE_TYPE_INFO, NULL, GC.getColorType("RED"), kPlot.getX(), kPlot.getY());
 }
 
-// advc: Cut from resolveCombat - just to be consistent with addAttackSuccessMessages.
+// <advc> Cut from resolveCombat - just to be consistent with addAttackSuccessMessages.
 void CvUnit::addDefenseSuccessMessages(CvUnit const& kDefender) const
 {
 	bool const bSound = !suppressStackAttackSound(kDefender);
@@ -1667,15 +1651,125 @@ void CvUnit::addDefenseSuccessMessages(CvUnit const& kDefender) const
 			.getCurrentEra()).getAudioUnitDefeatScript() /* 002l: */ : NULL,
 			MESSAGE_TYPE_INFO, NULL, GC.getColorType("RED"),
 			kPlot.getX(), kPlot.getY());
-	szBuffer = gDLL->getText("TXT_KEY_MISC_YOU_KILLED_ENEMY_UNIT", kDefender.getNameKey(),
-			getNameKeyNoGG(), // advc.004u
-			getVisualCivAdjective(kDefender.getTeam()));
+	setHasBeenDefendedAgainstMessage(szBuffer, kDefender, -1); // advc.048c
 	gDLL->UI().addMessage(kDefender.getOwner(),
 			true, -1, szBuffer,
 			bSound ? GC.getInfo(GET_PLAYER(kDefender.getOwner()) // advc.002l
 			.getCurrentEra()).getAudioUnitVictoryScript() /* advc.002l: */ : NULL,
 			MESSAGE_TYPE_INFO, NULL, GC.getColorType("GREEN"),
 			kPlot.getX(), kPlot.getY());
+}
+
+
+void CvUnit::addWithdrawalMessages(CvUnit const& kDefender) const
+{
+	bool const bSea = (getDomainType() == DOMAIN_SEA); // advc.002l
+	CvPlot const& kPlot = kDefender.getPlot();
+	CvWString szBuffer(gDLL->getText("TXT_KEY_MISC_YOU_UNIT_WITHDRAW",
+			getNameKey(), kDefender.getNameKey()));
+	gDLL->UI().addMessage(getOwner(), true, -1, szBuffer,
+			bSea ? "AS2D_OUR_SEA_WITHDRAWL" : // advc.002l
+			"AS2D_OUR_WITHDRAWL", MESSAGE_TYPE_INFO, NULL,
+			GC.getColorType("GREEN"), kPlot.getX(), kPlot.getY());
+	setHasBeenDefendedAgainstMessage(szBuffer, kDefender, 0); // advc.048c
+	gDLL->UI().addMessage(kDefender.getOwner(), true, -1, szBuffer,
+			bSea ? "AS2D_THEIR_SEA_WITHDRAWL" : // advc.002l
+			"AS2D_THEIR_WITHDRAWL", MESSAGE_TYPE_INFO, NULL,
+			GC.getColorType("RED"), kPlot.getX(), kPlot.getY());
+} // </advc>
+
+/*	advc.048c: Based on code originally in resolveCombat.
+	iAttackSuccess:
+	1 for defender destroyed, -1 for attacker destroyed, 0 for withdrawal. */
+void CvUnit::setHasBeenDefendedAgainstMessage(CvWString& kBuffer,
+	CvUnit const& kDefender, int iAttackSuccess) const
+{
+	static bool const bOdds = GC.getDefineBOOL("SHOW_ODDS_IN_COMBAT_MESSAGES");
+	CvWString szOdds, szDefStrength;
+	if (bOdds)
+	{
+		szOdds.Format(L"%.1f", (m_iAttackOdds * 100.f) / GC.getCOMBAT_DIE_SIDES());
+		if (kDefender.m_iPreCombatHP < kDefender.maxHitPoints())
+		{
+			CvWString szHurtStr;
+			GAMETEXT.setHurtUnitStrength(szHurtStr, kDefender,
+					kDefender.m_iPreCombatHP);
+			szDefStrength.append(L" (");
+			szDefStrength.append(szHurtStr);
+			szDefStrength.append(L")");
+		}
+	}
+	if (iAttackSuccess < 0)
+	{
+		if (bOdds)
+		{
+			kBuffer = gDLL->getText("TXT_KEY_MISC_YOU_KILLED_ENEMY_UNIT_ODDS",
+					kDefender.getNameKey(),
+					getNameKeyNoGG(), // advc.004u
+					getVisualCivAdjective(kDefender.getTeam()),
+					szDefStrength.c_str(), szOdds.c_str());
+		}
+		else
+		{
+			kBuffer = gDLL->getText("TXT_KEY_MISC_YOU_KILLED_ENEMY_UNIT",
+					kDefender.getNameKey(),
+					getNameKeyNoGG(), // advc.004u
+					getVisualCivAdjective(kDefender.getTeam()));
+		}
+	}
+	else if (iAttackSuccess > 0)
+	{
+		if (getVisualOwner(kDefender.getTeam()) != getOwner())
+		{
+			if (bOdds)
+			{
+				kBuffer = gDLL->getText("TXT_KEY_MISC_YOU_UNIT_WAS_DESTROYED_UNKNOWN_ODDS",
+						kDefender.getNameKeyNoGG(), // advc.004u
+						getNameKey(),
+						szDefStrength.c_str(), szOdds.c_str());
+			}
+			else
+			{
+				kBuffer = gDLL->getText("TXT_KEY_MISC_YOU_UNIT_WAS_DESTROYED_UNKNOWN",
+						kDefender.getNameKeyNoGG(), // advc.004u
+						getNameKey());
+			}
+		}
+		else
+		{
+			if (bOdds)
+			{
+				kBuffer = gDLL->getText("TXT_KEY_MISC_YOU_UNIT_WAS_DESTROYED_ODDS",
+						kDefender.getNameKeyNoGG(), // advc.004u
+						getNameKey(),
+						getVisualCivAdjective(kDefender.getTeam()),
+						szDefStrength.c_str(), szOdds.c_str());
+			}
+			else
+			{
+				kBuffer = gDLL->getText("TXT_KEY_MISC_YOU_UNIT_WAS_DESTROYED",
+						kDefender.getNameKeyNoGG(), // advc.004u
+						getNameKey(),
+						getVisualCivAdjective(kDefender.getTeam()));
+			}
+		}
+	}
+	else
+	{
+		if (bOdds)
+		{
+			kBuffer = gDLL->getText("TXT_KEY_MISC_ENEMY_UNIT_WITHDRAW_ODDS",
+					getNameKey(),
+					kDefender.getNameKeyNoGG(), // advc.004u
+					szDefStrength.c_str(), szOdds.c_str());
+		}
+		else
+		{
+			kBuffer = gDLL->getText("TXT_KEY_MISC_ENEMY_UNIT_WITHDRAW",
+					getNameKey(),
+					kDefender.getNameKeyNoGG()); // advc.004u
+		}
+	}
 }
 
 // advc.002l:

@@ -1331,15 +1331,16 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szString, const CvUnit* pUnit,
 /*	advc.004: Based on code cut from setUnitHelp.
 	Avoids showing units that are very slightly damaged at full strength
 	or units that are barely alive at 0 strength. */
-void CvGameTextMgr::setHurtUnitStrength(CvWString& szBuffer, CvUnit const& kUnit)
+void CvGameTextMgr::setHurtUnitStrength(CvWString& szBuffer, CvUnit const& kUnit,
+	/* <advc.048c> */ int iHP)
 {
+	if (iHP < 0)
+		iHP = kUnit.currHitPoints(); // </advc.048c>
 	int const iBaseStr = (kUnit.getDomainType() == DOMAIN_AIR ?
 			kUnit.airBaseCombatStr() : kUnit.baseCombatStr());
 	// as in BtS:
-	float fCurrStrength = iBaseStr * kUnit.currHitPoints() /
-			(float)kUnit.maxHitPoints();
-	int iCurrStrengthTimes100 = (100 * iBaseStr *
-			kUnit.currHitPoints()) / kUnit.maxHitPoints();
+	float fCurrStrength = iBaseStr * iHP / (float)kUnit.maxHitPoints();
+	int iCurrStrengthTimes100 = (100 * iBaseStr * iHP) / kUnit.maxHitPoints();
 	// %.1f would round up to e.g. 2.0/2 for a Warrior here
 	if (iBaseStr * kUnit.maxHitPoints() - iCurrStrengthTimes100 <= 5)
 		fCurrStrength = iBaseStr - 0.1f;

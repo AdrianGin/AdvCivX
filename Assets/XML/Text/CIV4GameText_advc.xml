@@ -134,6 +134,61 @@
 		<Italian>contro</Italian>
 		<Spanish>contra</Spanish>
 	</TEXT>
+	<!-- Akin to TXT_ACO_PressALT in AdvancedCombatOdds_CIV4GameText.xml -->
+	<TEXT>
+		<Tag>TXT_KEY_GROUP_ATTACK_BEST_ODDS_HELP</Tag>
+		<English>[COLOR_HIGHLIGHT_TEXT]Recommended attack (ALT for best odds)[COLOR_REVERT]:</English>
+		<French>[COLOR_HIGHLIGHT_TEXT]Attaque recommandée (ALT pour meilleure probabilité)[COLOR_REVERT]:</French>
+		<German>[COLOR_HIGHLIGHT_TEXT]Empfohl. Angriff (ALT für beste Chancen)[COLOR_REVERT]:</German>
+		<Italian>[COLOR_HIGHLIGHT_TEXT]Attacco raccomandato (ALT per migliori probabilità)[COLOR_REVERT]:</Italian>
+		<Spanish>[COLOR_HIGHLIGHT_TEXT]Ataque recomendado (ALT para mejores probabilidades)[COLOR_REVERT]:</Spanish>
+	</TEXT>
+	<!-- advc.048b: Overwrites CIV4GameText_Warlords.xml -->
+	<TEXT> <!-- redefine -->
+		<Tag>TXT_KEY_COMBAT_PLOT_ODDS_RETREAT</Tag>
+		<English>Withdrawal odds: %s1%%</English>
+		<French>Chances de retraite : %s1 %%</French>
+		<German>R&#252;ckzugschance: %s1%%</German>
+		<Italian>Probabilit&#224; di ritirata: %s1%%</Italian>
+		<Spanish>Probabilidades de retirada: %s1%%</Spanish>
+	</TEXT>
+	<!-- advc.048c: start -->
+	<!-- Based on TXT_KEY_MISC_YOU_KILLED_ENEMY_UNIT, TXT_KEY_MISC_YOU_UNIT_WAS_DESTROYED,
+		 TXT_KEY_MISC_ENEMY_UNIT_WITHDRAW (CIV4GameText_BTS.xml) -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_YOU_KILLED_ENEMY_UNIT_ODDS</Tag>
+		<English>While defending, your %s1_UnitName%s4_Strength has killed a %s3_owner_adjective %s2_EnUName (attacker's odds: %s5_Odds%%).</English>
+		<French>En se d&#233;fendant, votre %s1_UnitName%s4_Strength a &#233;limin&#233; [NUM2:un:une:des:des] %s2_EnUName (%s3_owner_adjective); chances de l'attaquant: %s5_Odds%%.</French>
+		<German>Eure Einheit %s1_UnitName%s4_Strength hat w&#228;hrend eines Verteidigungsman&#246;vers eine Einheit %s2_EnUName (%s3_owner_adjective) vernichtet (Chance des Angreifers: %s5_Odds%%).</German>
+		<Italian>Difendendo, la tua unit&#224; %s1_UnitName%s4_Strength ha ucciso l'unit&#224; nemica %s2_EnUName (%s3_owner_adjective); prob. dell'attaccante: %s5_Odds%%.</Italian>
+		<Spanish>Mientras se [NUM1:defend&#237;a:defend&#237;a:defend&#237;an:defend&#237;an], [NUM1:vuestro:vuestra:vuestros:vuestras] %s1_UnitName%s4_Strength [NUM1:ha:ha:han:han] acabado con [NUM2:un:una:unos:unas] %s2_EnUName (%s3_owner_adjective); prob. del atacante: %s5_Odds%%.</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_MISC_YOU_UNIT_WAS_DESTROYED_ODDS</Tag>
+		<English>While defending, your %s1_UnitName%s4_Strength was destroyed by a %s3_owner_adjective %s2_EnUName (attacker's odds: %s5_Odds%%).</English>
+		<French>En se d&#233;fendant, votre unit&#233; "%s1_UnitName"%s4_Strength a &#233;t&#233; d&#233;truite par [NUM2:un:une:des:des] %s2_EnUName (%s3_owner_adjective); chances de l'attaquant: %s5_Odds%%.</French>
+		<German>Eure Einheit %s1_UnitName%s4_Strength wurde w&#228;hrend eines Verteidigungsman&#246;vers von einer Einheit %s2_EnUName (%s3_owner_adjective) vernichtet (Chance des Angreifers: %s5_Odds%%).</German>
+		<Italian>Difendendo, la tua unit&#224; %s1_UnitName%s4_Strength &#232; stata distrutta dall'unit&#224; nemica %s2_EnUName (%s3_owner_adjective); prob. dell'attaccante: %s5_Odds%%.</Italian>
+		<Spanish>Mientras se [NUM1:defend&#237;a:defend&#237;a:defend&#237;an:defend&#237;an], [NUM1:vuestro:vuestra:vuestros:vuestras] %s1_UnitName%s4_Strength [NUM1:ha sido destruido:ha sido destruida:han sido destruidos:han sido destruidas] por [NUM2:un:una:unos:unas] %s2_EnUName (%s3_owner_adjective); prob. del atacante: %s5_Odds%%.</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_MISC_ENEMY_UNIT_WITHDRAW_ODDS</Tag>
+		<English>A %s1_EnUName has withdrawn (odds: %s4_Odds%%) from combat with your %s2_UnitName%s3_Strength.</English>
+		<French>L'unit&#233; de combat ennemie (%s1_EnUName) a fui le combat face &#224; votre %s2_UnitName%s3_Strength; chances de survie étaient: %s4_Odds%%.</French>
+		<German>Eine Einheit %s1_EnUName hat im Kampf gegen Eure Einheit %s2_UnitName%s3_Strength den R&#252;ckzug angetreten (Überlebenschance betrug %s4_Odds%%).</German>
+		<Italian>L'unit&#224; nemica %s1_EnUName si &#232; ritirata  (prob. di sopravvivenza: %s4_Odds%%) dal combattimento contro la tua unit&#224; %s2_UnitName%s3_Strength.</Italian>
+		<Spanish>[NUM1:Un:Una:Unos:Unas] %s1_EnUName se [NUM1:ha:ha:han:han] retirado (prob de supervivencia:  %s4_Odds%%) del combate contra [NUM2:vuestro:vuestra:vuestros:vuestras] %s2_UnitName.</Spanish>
+	</TEXT>
+	<!-- Based on TXT_KEY_MISC_YOU_UNIT_WAS_DESTROYED_UNKNOWN (CIV4GameText_BTS.xml) -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_YOU_UNIT_WAS_DESTROYED_UNKNOWN_ODDS</Tag>
+		<English>While defending, your %s1_UnitName%s3_Strength was destroyed by a %s2_EnUName (attacker's odds: %s4_Odds%%).</English>
+		<French>En se d&#233;fendant, votre unit&#233; "%s1_UnitName"%s3_Strength a &#233;t&#233; d&#233;truite par l'unit&#233; ennemie : %s2_EnUName (chances de l'attaquant: %s4_Odds%%).</French>
+		<German>Eure Einheit %s1_UnitName%s3_Strength wurde w&#228;hrend eines Verteidigungsman&#246;vers von einer Einheit %s2_EnUName vernichtet (Chance des Angreifers: %s5_Odds%%).</German>
+		<Italian>Difendendo, la tua unit&#224; %s1_UnitName%s3_Strength &#232; stata distrutta dall'unit&#224; nemica %s2_EnUName (prob. dell'attaccante: %s5_Odds%%).</Italian>
+		<Spanish>Mientras se [NUM1:defend&#237;a:defend&#237;a:defend&#237;an:defend&#237;an], [NUM1:vuestro:vuestra:vuestros:vuestras] %s1_UnitName%s3_Strength [NUM1:ha sido destruido:ha sido destruida:han sido destruidos:han sido destruidas] por [NUM2:un:una:unos:unas] %s2_EnUName (prob. del atacante: %s5_Odds%%).</Spanish>
+	</TEXT>
+	<!-- advc.048c: end -->
 	
 	<!-- advc.106g: Based on TXT_KEY_GAME_OPTION_NO_EVENTS
 		 (CIV4GameText_BTS.xml) -->
@@ -4560,26 +4615,7 @@
 		<Italian>"Ci hai fatto pagare un tributo."</Italian>
 		<Spanish>"Nos forzasteis a pagar un tributo."</Spanish>
 	</TEXT>
-	
-	<!-- Akin to TXT_ACO_PressALT in AdvancedCombatOdds_CIV4GameText.xml -->
-	<TEXT>
-		<Tag>TXT_KEY_GROUP_ATTACK_BEST_ODDS_HELP</Tag>
-		<English>[COLOR_HIGHLIGHT_TEXT]Recommended attack (ALT for best odds)[COLOR_REVERT]:</English>
-		<French>[COLOR_HIGHLIGHT_TEXT]Attaque recommandée (ALT pour meilleure probabilité)[COLOR_REVERT]:</French>
-		<German>[COLOR_HIGHLIGHT_TEXT]Empfohl. Angriff (ALT für beste Chancen)[COLOR_REVERT]:</German>
-		<Italian>[COLOR_HIGHLIGHT_TEXT]Attacco raccomandato (ALT per migliori probabilità)[COLOR_REVERT]:</Italian>
-		<Spanish>[COLOR_HIGHLIGHT_TEXT]Ataque recomendado (ALT para mejores probabilidades)[COLOR_REVERT]:</Spanish>
-	</TEXT>
-	<!-- advc.048b: Overwrites CIV4GameText_Warlords.xml -->
-	<TEXT> <!-- redefine -->
-		<Tag>TXT_KEY_COMBAT_PLOT_ODDS_RETREAT</Tag>
-		<English>Withdrawal odds: %s1%%</English>
-		<French>Chances de retraite : %s1 %%</French>
-		<German>R&#252;ckzugschance: %s1%%</German>
-		<Italian>Probabilit&#224; di ritirata: %s1%%</Italian>
-		<Spanish>Probabilidades de retirada: %s1%%</Spanish>
-	</TEXT>
-	
+
 	<!-- advc.178: Based on TXT_KEY_NONE in CIV4GameTextInfos.xml -->
 	<TEXT>
 		<Tag>TXT_KEY_EARLY_ELECTION</Tag>

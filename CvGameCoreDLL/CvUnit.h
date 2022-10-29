@@ -1115,6 +1115,9 @@ protected:
 	int m_iCargoCapacity;
 	int m_iAttackPlotX;
 	int m_iAttackPlotY;
+	// <advc.048c>
+	int m_iAttackOdds;
+	int m_iPreCombatHP; // </advc.048c>
 	int m_iCombatTimer;
 	int m_iCombatFirstStrikes;
 	//int m_iCombatDamage; // advc.003j: unused
@@ -1224,6 +1227,10 @@ protected:
 	void resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible); // K-Mod
 	void addAttackSuccessMessages(CvUnit const& kDefender, bool bFought) const; // advc.010
 	void addDefenseSuccessMessages(CvUnit const& kDefender) const; // advc
+	void addWithdrawalMessages(CvUnit const& kDefender) const; // advc
+	// <advc.048c>
+	void setHasBeenDefendedAgainstMessage(CvWString& kBuffer, CvUnit const& kDefender,
+			int iAttackSuccess) const; // </advc.048c>
 	bool suppressStackAttackSound(CvUnit const& kDefender) const; // advc.002l
 	void resolveAirCombat(CvUnit* pInterceptor, CvPlot* pPlot, CvAirMissionDefinition& kBattle);
 	void checkRemoveSelectionAfterAttack();
