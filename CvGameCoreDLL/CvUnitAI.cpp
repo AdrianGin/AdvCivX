@@ -21256,15 +21256,29 @@ bool CvUnitAI::AI_defendPlot(CvPlot* pPlot)
 			// advc.001s: Want up to 1 defender per domain type
 			NO_TEAM, PUF_isDomainType, getDomainType())
 			<= (atPlot(pPlot) ? 1 : 0))
-		{	// advc.opt: was plotCount ... > 0
-			if (pPlot->plotCheck(PUF_cannotDefend, -1, -1, getOwner(),
-				/*  advc.001s: A land unit can defend non-land units in a Fort,
-					but not vice versa. */
-				NO_TEAM, getDomainType() == DOMAIN_LAND ? NULL : PUF_isDomainType, getDomainType())
-				!= NULL)
+		{
+			/*if (pPlot->plotCount(PUF_cannotDefend, -1, -1, getOwner()) > 0)
+				return true*/
+			// <advc.101>
+			int iTotalProductionCost = 0;
+			FOR_EACH_UNIT_IN(pUnit, *pPlot)
 			{
-				return true;
-			}
+				if (pUnit->getOwner() == getOwner() && !pUnit->canDefend() &&
+					/*  advc.001s: A land unit can defend non-land units in a Fort,
+						but not vice versa. */
+					(getDomainType() == DOMAIN_LAND ||
+					pUnit->getDomainType() == getDomainType()))
+				{
+					if (pUnit->hasCargo() || pUnit->isFound())
+						return true;
+					int iProduction = pUnit->getUnitInfo().getProductionCost();
+					if (iProduction <= 0) // special unit
+						return true;
+					iTotalProductionCost += iProduction;
+					if (iTotalProductionCost * 5 > m_pUnitInfo->getProductionCost() * 3)
+						return true;
+				}
+			} // </advc.101>
 			/*if (pPlot->defenseModifier(getTeam(), false) >= 50 && pPlot->isRoute() && pPlot->getTeam() == getTeam())
 				return true;*/ // (commented out by the BtS expansion)
 		}
