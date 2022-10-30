@@ -11505,19 +11505,21 @@ int CvPlayerAI::AI_baseBonusVal(BonusTypes eBonus, /* advc.036: */ bool bTrade) 
 		/*  advc.912c: Better ignore getLuxuryModifier; don't want civs with a
 			luxury modifier to trade for more luxuries, and don't want them to
 			pay more more for luxuries. */
-		scaled const rCivicsMod = 0;//getLuxuryModifier() / 200.0;
+		scaled rCivicsMod;
 		// Considering to cancel a trade
 		if (bTrade && bAvailable) { /* HappinessWeight can't handle iHappy=0;
 									  increase extra pop instead */
 			iExtraPop1 += iHappy;
 			iExtraPop2 += iHappy;
+			/*	advc.912c: Better not to ignore civics when it comes to
+				deal cancellation. Even inflate it a bit. */
+			rCivicsMod += fixp(4/3.) * per100(getLuxuryModifier());
 		}
-		rValue += rScaleFactor *
-			 ((fixp(0.7) + fixp(0.5) * rCivicsMod) * AI_getHappinessWeight(iHappy,
+		rValue += rScaleFactor * /* advc.912c: */ (1 + rCivicsMod) *
+			 (fixp(0.7) * AI_getHappinessWeight(iHappy,
 			 // Look farther ahead when not trading for a resource (trades are fickle)
 			 bTrade ? iExtraPop1 : iExtraPop2) +
-			 (fixp(0.3) + fixp(0.5) * rCivicsMod) *
-			 AI_getHappinessWeight(iHappy, iExtraPop2));
+			 fixp(0.3) * AI_getHappinessWeight(iHappy, iExtraPop2));
 	}
 	if (iHealth > 0)
 	{
