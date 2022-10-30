@@ -4872,10 +4872,13 @@ int CvTeam::getEspionageModifier(TeamTypes eTarget) const
 	/*	K-Mod. Scale the points modifier based on the teams' population.
 		(Note ESPIONAGE_SPENDING_MULTIPLIER is 100 in the default xml.) */
 	int iPopScale = 5 * GC.getInfo(GC.getMap().getWorldSize()).getTargetNumCities();
-	int iTargetPoints = 10 * kTarget.getEspionagePointsEver() /
-			std::max(1, iPopScale + kTarget.getTotalPopulation(false));
-	int iOurPoints = 10 * getEspionagePointsEver() /
-			std::max(1, iPopScale + getTotalPopulation(false));
+	int const iOurPop = getTotalPopulation(false) + iPopScale;
+	int const iTargetPop = kTarget.getTotalPopulation(false) + iPopScale;
+	int const iPrecision = 1000; // advc.120k: was 10 (and was magic constant)
+	int iTargetPoints = iPrecision * kTarget.getEspionagePointsEver() / std::max(1, //iTargetPop
+			3 * iTargetPop + iOurPop); // advc.120k
+	int iOurPoints = iPrecision * getEspionagePointsEver() / std::max(1, //iOurPop
+			3 * iOurPop + iTargetPop); // advc.120k
 	static int const iESPIONAGE_SPENDING_MULTIPLIER = GC.getDefineINT("ESPIONAGE_SPENDING_MULTIPLIER"); // advc.opt
 	return iESPIONAGE_SPENDING_MULTIPLIER *
 			std::max(1, 2 * iTargetPoints + iOurPoints) /
