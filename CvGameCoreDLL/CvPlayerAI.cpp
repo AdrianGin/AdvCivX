@@ -815,14 +815,14 @@ bool CvPlayerAI::AI_negotiatePeace(PlayerTypes eOther, int iTheirBenefit, int iO
 	TradeData peaceTreaty(TRADE_PEACE_TREATY);
 	/*	AI_counterPropose (and the EXE) don't like peace treaties on both sides
 		(not needed by AI_dealVal either) */
-	if (weGive.getLength() <= 0)
+	if (weGive.getLength() <= 0 && (theyGive.getLength() > 0 || iTheirBenefit > iOurBenefit))
 		theyGive.insertAtEnd(peaceTreaty);
 	else
 	{
 		FAssert(theyGive.getLength() <= 0);
 		weGive.insertAtEnd(peaceTreaty);
 	}
-	if(kOther.isHuman() && iTheirBenefit < iOurBenefit && theyGive.getLength() == 0)
+	if (kOther.isHuman() && iTheirBenefit < iOurBenefit && theyGive.getLength() == 0)
 	{
 		/*  Really can't make an attractive offer w/o considering all tradeable items,
 			including map and gpt. */
@@ -873,7 +873,7 @@ bool CvPlayerAI::AI_negotiatePeace(PlayerTypes eOther, int iTheirBenefit, int iO
 int CvPlayerAI::AI_negotiatePeace(PlayerTypes eRecipient, PlayerTypes eGiver,
 	int iDelta, int* iGold, TechTypes* eBestTech, CvCity const** pBestCity)
 {
-	int r = 0;
+	int iR = 0;
 	CvPlayerAI& kRecipient = GET_PLAYER(eRecipient);
 	CvPlayerAI& kGiver = GET_PLAYER(eGiver);
 	// <advc.104h> Pay gold if peace vals are similar. (Tbd.: gold per turn)
@@ -920,7 +920,7 @@ int CvPlayerAI::AI_negotiatePeace(PlayerTypes eRecipient, PlayerTypes eGiver,
 	if (*eBestTech != NO_TECH)
 	{
 		// advc.104h: techTradeVal reduced by passing peaceDeal=true
-		r += GET_TEAM(kRecipient.getTeam()).AI_techTradeVal(*eBestTech,
+		iR += GET_TEAM(kRecipient.getTeam()).AI_techTradeVal(*eBestTech,
 				kGiver.getTeam(), true, true);
 	}
 
@@ -930,7 +930,7 @@ int CvPlayerAI::AI_negotiatePeace(PlayerTypes eRecipient, PlayerTypes eGiver,
 		Instead, we just pretend that the receiver gets 1 point per gold,
 		and the giver loses nothing. (effectively a value of 2) */
 	{
-		int iTradeGold = std::min(iDelta - r, kGiver.AI_maxGoldTrade(eRecipient,
+		int iTradeGold = std::min(iDelta - iR, kGiver.AI_maxGoldTrade(eRecipient,
 				true)); // advc.134a
 		if (iTradeGold > 0)
 		{
@@ -938,12 +938,12 @@ int CvPlayerAI::AI_negotiatePeace(PlayerTypes eRecipient, PlayerTypes eGiver,
 				TRADE_GOLD, iTradeGold), true))
 			{
 				*iGold = iTradeGold;
-				r += iTradeGold;
+				iR += iTradeGold;
 			}
 		}
 	}
 	// advc.104h: Don't add a city to the trade if it's already almost square
-	if (iDelta - r > 0.2 * iDelta &&
+	if (iDelta - iR > 0.2 * iDelta &&
 		kGiver.canPossiblyTradeItem(eRecipient, TRADE_CITIES)) // advc.opt
 	{
 		CvCityAI const* pBestCityAI = NULL;
@@ -957,7 +957,7 @@ int CvPlayerAI::AI_negotiatePeace(PlayerTypes eRecipient, PlayerTypes eGiver,
 					city, but make it less strict. */
 				//(eRecipient == getID() || kRecipient.AI_cityTradeVal(*pLoopCity) <= iDelta - r)
 				kRecipient.AI_cityTradeVal(*pLoopCity) <=
-				iDelta - r + 0.2 * iDelta) // </advc.104h>
+				iDelta - iR + 0.2 * iDelta) // </advc.104h>
 			{
 				int iValue = pLoopCity->getPlot().calculateCulturePercent(eRecipient);
 				if (iValue > iBestValue)
@@ -969,11 +969,11 @@ int CvPlayerAI::AI_negotiatePeace(PlayerTypes eRecipient, PlayerTypes eGiver,
 		}
 		if (pBestCityAI != NULL)
 		{
-			r += kRecipient.AI_cityTradeVal(*pBestCityAI);
+			iR += kRecipient.AI_cityTradeVal(*pBestCityAI);
 			*pBestCity = pBestCityAI;
 		}
 	}
-	return r;
+	return iR;
 }
 
 void CvPlayerAI::AI_offerCapitulation(PlayerTypes eTo)
