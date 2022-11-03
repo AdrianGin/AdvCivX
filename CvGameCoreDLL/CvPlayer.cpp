@@ -11435,6 +11435,51 @@ void CvPlayer::doChangeCivicsPopup(CivicTypes eCivic)
 	}
 }
 
+// advc.120l:
+void CvPlayer::addEspionageReminderMsg(TeamTypes eTarget, CvPlot const* pAt) const
+{
+	// Only show reminder when all weights are 0
+	for (TeamIter<CIV_ALIVE,OTHER_KNOWN_TO> itRival(getTeam());
+		itRival.hasNext(); ++itRival)
+	{
+		if (getEspionageSpendingWeightAgainstTeam(itRival->getID()) != 0)
+			return;
+	}
+	CvWString szMsg;
+	/*int const iSpending = getEspionageSpending(eTarget);
+	if (iSpending == 0)
+	{
+		szMsg = gDLL->getText("TXT_KEY_ESPIONAGE_REMINDER_ZERO",
+				GET_TEAM(eTarget).getName().c_str());
+	}
+	else
+	{
+		szMsg = gDLL->getText("TXT_KEY_ESPIONAGE_REMINDER_POSITIVE",
+				iSpending, getCommerceRate(COMMERCE_ESPIONAGE),
+				GET_TEAM(eTarget).getName().c_str());
+	}*/
+	// Nicer (ignoring the new eTarget):
+	std::vector<std::pair<int,TeamTypes> > aieTargets;
+	for (TeamIter<CIV_ALIVE,OTHER_KNOWN_TO> itRival(getTeam());
+		itRival.hasNext(); ++itRival)
+	{
+		int iPts = getEspionageSpending(itRival->getID());
+		if (iPts > 0)
+			aieTargets.push_back(std::make_pair(iPts, itRival->getID()));
+	}
+	std::sort(aieTargets.rbegin(), aieTargets.rend());
+	bool bFirst = true;
+	for (size_t i = 0; i < aieTargets.size(); i++)
+	{
+		setListHelp(szMsg,
+				gDLL->getText("TXT_KEY_ESPIONAGE_REMINDER_DIVIDED_EVENLY").c_str(),
+				GET_TEAM(aieTargets[i].second).getName().c_str(), L", ", bFirst);
+	}
+	gDLL->UI().addMessage(getID(), false, -1, szMsg, NULL,
+			MESSAGE_TYPE_INFO, NULL, GC.getColorType("WHITE"),
+			pAt == NULL ? -1 : pAt->getX(), pAt == NULL ? -1 : pAt->getY());
+}
+
 // advc.004s: Rewritten, in part with code from doTurn and CvGame::updateScore.
 void CvPlayer::updateHistory(PlayerHistoryTypes eHistory, int iTurn)
 {

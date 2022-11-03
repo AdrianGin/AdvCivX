@@ -96,3 +96,4 @@ class BugAlertsOptionsTab(BugOptionsTab.BugOptionsTab):
 		self.addTextDropdown(screen, lRight, lRight, "Civ4lerts__OnFirstContact")
 		# (Leave the 'right' column empty)
 		# </advc.071>
+		self.addCheckbox(screen, lRight, "Civ4lerts__EspionageReminder") # advc.120l

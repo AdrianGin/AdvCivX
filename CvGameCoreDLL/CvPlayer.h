@@ -1329,6 +1329,8 @@ public:
 	DllExport void showSpaceShip();
 	DllExport void clearSpaceShipPopups();
 	void doChangeCivicsPopup(CivicTypes eCivic); // advc.004x
+	// advc.120l:
+	void addEspionageReminderMsg(TeamTypes eTarget, CvPlot const* pAt) const;
 	// <advc.004s> Replacing implementation based on stdext::hash_map
 	int getHistory(PlayerHistoryTypes eHistory, int iTurn) const
 	{

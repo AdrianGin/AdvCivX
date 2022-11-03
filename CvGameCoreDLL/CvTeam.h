@@ -292,8 +292,8 @@ public:
 		return (m_aiHasMetTurn.get(eOther) >= 0); // advc.091
 	}
 	int getHasMetTurn(TeamTypes eOther) { return m_aiHasMetTurn.get(eOther); } // advc.091  (exposed to Python)
-	void makeHasMet(TeamTypes eOther, bool bNewDiplo,
-			FirstContactData* pData = NULL); // advc.071
+	// advc.071: Return value, 2nd param added.
+	CvPlot* makeHasMet(TeamTypes eOther, bool bNewDiplo, FirstContactData* pData = NULL);
 	bool isHasSeen(TeamTypes eOther) const { return m_abHasSeen.get(eOther); }; // K-Mod
 	void makeHasSeen(TeamTypes eOther) { m_abHasSeen.set(eOther, true); }; // K-Mod
 	// <advc.134a>

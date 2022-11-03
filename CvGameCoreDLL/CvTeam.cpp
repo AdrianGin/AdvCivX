@@ -1608,8 +1608,24 @@ void CvTeam::meet(TeamTypes eTeam, bool bNewDiplo,
 	if (isHasMet(eTeam))
 		return;
 	CvTeam& kTeam = GET_TEAM(eTeam);
-	makeHasMet(eTeam, bNewDiplo, pData);
-	kTeam.makeHasMet(getID(), bNewDiplo, pData);
+	CvPlot const* pAt = makeHasMet(eTeam, bNewDiplo, pData);
+	CvPlot const* pOtherAt = kTeam.makeHasMet(getID(), bNewDiplo, pData);
+	// <advc.071> (Not in makeHasMet b/c all the has-met data needs to be set first)
+	if (pData != NULL &&
+		BUGOption::isEnabled("Civ4lerts__EspionageReminder") &&
+		!GC.getGame().isOption(GAMEOPTION_NO_ESPIONAGE))
+	{
+		if (TeamIter<CIV_ALIVE,OTHER_KNOWN_TO>::count(getID()) > 1)
+		{
+			for (MemberIter itMember(getID()); itMember.hasNext(); ++itMember)
+				itMember->addEspionageReminderMsg(eTeam, pAt);
+		}
+		if (TeamIter<CIV_ALIVE,OTHER_KNOWN_TO>::count(eTeam) > 1)
+		{
+			for (MemberIter itMember(eTeam); itMember.hasNext(); ++itMember)
+				itMember->addEspionageReminderMsg(getID(), pOtherAt);
+		}
+	} // </advc.071>
 
 	if (gTeamLogLevel >= 2 && GC.getGame().isFinalInitialized() && eTeam != getID() && isAlive() && GET_TEAM(eTeam).isAlive()) logBBAI("    Team %d (%S) meets team %d (%S)", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eTeam, GET_PLAYER(GET_TEAM(eTeam).getLeaderID()).getCivilizationDescription(0)); // BETTER_BTS_AI_MOD, AI logging, 02/20/10, jdog5000
 	// <advc.001> Moved from makeHasMet in order to get the attitude update right
@@ -2847,12 +2863,12 @@ void CvTeam::changeExtraMoves(DomainTypes eIndex, int iChange)
 	FAssert(getExtraMoves(eIndex) >= 0);
 }
 
-
-void CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
+// advc.071: Now returns the location of the meeting, if any.
+CvPlot* CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 	FirstContactData* pData) // advc.071
 {
-	if(isHasMet(eOther))
-		return;
+	if (isHasMet(eOther))
+		return NULL;
 
 	makeHasSeen(eOther); // K-Mod
 	//m_abHasMet.set(eOther, true);
@@ -2880,7 +2896,7 @@ void CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 	CvEventReporter::getInstance().firstContact(getID(), eOther);
 	// <advc.071> ^Moved EventReporter call up // advc.001n:
 	if(eOther == getID() || isBarbarian() || GET_TEAM(eOther).isBarbarian())
-		return; // </advc.071>
+		return NULL; // </advc.071>
 
 	// K-Mod: Initialize attitude cache for players on our team towards player's on their team.
 	// advc.001: Too early for that. Moved to caller (CvTeam::meet).
@@ -2889,7 +2905,7 @@ void CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 		gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 	// <advc.071>
 	bool bShowMessage = (isHuman() && pData != NULL);
-	if(bShowMessage || bNewDiplo)
+	if (bShowMessage || bNewDiplo)
 	{
 		int iOnFirstContact = 1;
 		// If met during the placement of free starting units, show only a diplo popup.
@@ -2919,15 +2935,13 @@ void CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 		}
 	}
 	// <advc.071>
-	if (!bShowMessage)
-		return;
-	FirstContactData fcData = *pData;
-	CvPlot const* pAt1 = GC.getMap().plot(fcData.x1, fcData.y1);
-	CvPlot const* pAt2 = GC.getMap().plot(fcData.x2, fcData.y2);
-	CvUnit const* pUnit1 = ::getUnit(fcData.u1);
-	CvUnit const* pUnit2 = ::getUnit(fcData.u2);
+	FirstContactData const& kData = *pData;
+	CvPlot* pAt1 = GC.getMap().plot(kData.x1, kData.y1);
+	CvPlot* pAt2 = GC.getMap().plot(kData.x2, kData.y2);
+	CvUnit const* pUnit1 = ::getUnit(kData.u1);
+	CvUnit const* pUnit2 = ::getUnit(kData.u2);
 	CvUnit const* pUnitMet = NULL;
-	CvPlot const* pAt = NULL;
+	CvPlot* pAt = NULL;
 	PlayerTypes ePlayerMet = NO_PLAYER;
 	if (pUnit1 != NULL && pUnit1->getTeam() == eOther)
 	{
@@ -2977,6 +2991,8 @@ void CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 			pAt = pUnit2->plot();
 		}
 	}
+	if (!bShowMessage)
+		return pAt;
 	CvWString szMsg = gDLL->getText("TXT_KEY_MISC_TEAM_MET",
 			GET_PLAYER(ePlayerMet).getCivilizationAdjectiveKey());
 	ColorTypes ePlayerColor = GET_PLAYER(ePlayerMet).getPlayerTextColor();
@@ -2988,7 +3004,8 @@ void CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 				MESSAGE_TYPE_MINOR_EVENT, icon, ePlayerColor,
 				pAt == NULL ? -1 : pAt->getX(), pAt == NULL ? -1 : pAt->getY(),
 				pAt != NULL, pAt != NULL);
-	} // </advc.071>
+	}
+	return pAt; // </advc.071>
 }
 
 // <advc.134a>
