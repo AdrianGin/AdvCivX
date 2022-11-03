@@ -11446,19 +11446,7 @@ void CvPlayer::addEspionageReminderMsg(TeamTypes eTarget, CvPlot const* pAt) con
 			return;
 	}
 	CvWString szMsg;
-	/*int const iSpending = getEspionageSpending(eTarget);
-	if (iSpending == 0)
-	{
-		szMsg = gDLL->getText("TXT_KEY_ESPIONAGE_REMINDER_ZERO",
-				GET_TEAM(eTarget).getName().c_str());
-	}
-	else
-	{
-		szMsg = gDLL->getText("TXT_KEY_ESPIONAGE_REMINDER_POSITIVE",
-				iSpending, getCommerceRate(COMMERCE_ESPIONAGE),
-				GET_TEAM(eTarget).getName().c_str());
-	}*/
-	// Nicer (ignoring the new eTarget):
+	// Let's actually ignore eTarget
 	std::vector<std::pair<int,TeamTypes> > aieTargets;
 	for (TeamIter<CIV_ALIVE,OTHER_KNOWN_TO> itRival(getTeam());
 		itRival.hasNext(); ++itRival)

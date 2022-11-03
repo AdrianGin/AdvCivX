@@ -4838,23 +4838,6 @@
 	</TEXT>
 
 	<!-- advc.120l -->
-	<!--TEXT>
-		<Tag>TXT_KEY_ESPIONAGE_REMINDER_POSITIVE</Tag>
-		<English>Now generating %d1/%d2 [ICON_ESPIONAGE] per Turn against %s3_TeamName</English>
-		<French>[ICON_ESPIONAGE] contre %s3_TeamName maintenant %d1/%d2 par tour</French>
-		<German>[ICON_ESPIONAGE] gegen %s3_TeamName nun %d1/%d2 pro Runde</German>
-		<Italian>[ICON_ESPIONAGE] contro %s3_TeamName addesso %d1/%d2 per turno</Italian>
-		<Spanish>[ICON_ESPIONAGE] contra %s3_TeamName ahora %d1/%d2 por turno</Spanish>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_ESPIONAGE_REMINDER_ZERO</Tag>
-		<English>No [ICON_ESPIONAGE] is generated against %s1_LeaderName</English>
-		<French>Aucun point [ICON_ESPIONAGE] n'est généré contre %s1_TeamName</French>
-		<German>Es werden keine [ICON_ESPIONAGE]-Punkte gegen %s1_TeamName aufgewendet</German>
-		<Italian>Non vengono generati punti [ICON_ESPIONAGE] contro %s1_TeamName</Italian>
-		<Spanish>No se generan puntos [ICON_ESPIONAGE] contra %s1_TeamName</Spanish>
-	</TEXT-->
-	<!-- Better: -->
 	<TEXT>
 		<Tag>TXT_KEY_ESPIONAGE_REMINDER_DIVIDED_EVENLY</Tag>
 		<English>Our [ICON_ESPIONAGE] is being divided evenly between[SPACE]</English>
@@ -4863,7 +4846,7 @@
 		<Italian>I nostri punti [ICON_ESPIONAGE] vengono divisi equamente tra[SPACE]</Italian>
 		<Spanish>Nuestros puntos [ICON_ESPIONAGE] se dividen en partes iguales entre[SPACE]</Spanish>
 	</TEXT>
-	
+
 	<!-- advc.103: The other help texts for active missions are in
 		 CIV4GameText_BTS_FourthRoundTranslation.xml. Romance translations
 		 based on TXT_KEY_ZOOM_CITY_HELP in CIV4GameText_Misc1.xml. -->
