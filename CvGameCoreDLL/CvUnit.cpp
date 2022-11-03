@@ -1684,7 +1684,8 @@ void CvUnit::addWithdrawalMessages(CvUnit const& kDefender) const
 void CvUnit::setHasBeenDefendedAgainstMessage(CvWString& kBuffer,
 	CvUnit const& kDefender, int iAttackSuccess) const
 {
-	static bool const bOdds = GC.getDefineBOOL("SHOW_ODDS_IN_COMBAT_MESSAGES");
+	static bool const bOdds = (GC.getDefineBOOL("SHOW_ODDS_IN_COMBAT_MESSAGES") &&
+			kDefender.canDefend());
 	CvWString szOdds, szDefStrength;
 	if (bOdds)
 	{
