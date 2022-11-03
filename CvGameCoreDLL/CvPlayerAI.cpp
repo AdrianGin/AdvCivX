@@ -11511,9 +11511,10 @@ int CvPlayerAI::AI_baseBonusVal(BonusTypes eBonus, /* advc.036: */ bool bTrade) 
 									  increase extra pop instead */
 			iExtraPop1 += iHappy;
 			iExtraPop2 += iHappy;
-			/*	advc.912c: Better not to ignore civics when it comes to
-				deal cancellation. Even inflate it a bit. */
-			rCivicsMod += fixp(4/3.) * per100(getLuxuryModifier());
+			/*	advc.912c: Better not to ignore civics when it comes to cancellation.
+				Even inflate it b/c the exact effect is difficult to predict w/o looking
+				at rounding in each city (which I'm too lazy to implement). */
+			rCivicsMod += fixp(1.4) * per100(getLuxuryModifier());
 		}
 		rValue += rScaleFactor * /* advc.912c: */ (1 + rCivicsMod) *
 			 (fixp(0.7) * AI_getHappinessWeight(iHappy,
