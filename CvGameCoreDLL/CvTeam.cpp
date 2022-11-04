@@ -1610,7 +1610,7 @@ void CvTeam::meet(TeamTypes eTeam, bool bNewDiplo,
 	CvTeam& kTeam = GET_TEAM(eTeam);
 	CvPlot const* pAt = makeHasMet(eTeam, bNewDiplo, pData);
 	CvPlot const* pOtherAt = kTeam.makeHasMet(getID(), bNewDiplo, pData);
-	// <advc.071> (Not in makeHasMet b/c all the has-met data needs to be set first)
+	// <advc.120l> (Not in makeHasMet b/c all the has-met data needs to be set first)
 	if (pData != NULL &&
 		BUGOption::isEnabled("Civ4lerts__EspionageReminder") &&
 		!GC.getGame().isOption(GAMEOPTION_NO_ESPIONAGE))
@@ -1625,7 +1625,7 @@ void CvTeam::meet(TeamTypes eTeam, bool bNewDiplo,
 			for (MemberIter itMember(eTeam); itMember.hasNext(); ++itMember)
 				itMember->addEspionageReminderMsg(getID(), pOtherAt);
 		}
-	} // </advc.071>
+	} // </advc.120l>
 
 	if (gTeamLogLevel >= 2 && GC.getGame().isFinalInitialized() && eTeam != getID() && isAlive() && GET_TEAM(eTeam).isAlive()) logBBAI("    Team %d (%S) meets team %d (%S)", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eTeam, GET_PLAYER(GET_TEAM(eTeam).getLeaderID()).getCivilizationDescription(0)); // BETTER_BTS_AI_MOD, AI logging, 02/20/10, jdog5000
 	// <advc.001> Moved from makeHasMet in order to get the attitude update right
