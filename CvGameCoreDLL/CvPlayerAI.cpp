@@ -18813,7 +18813,7 @@ int CvPlayerAI::AI_ideologyAttitudeChange(PlayerTypes eOther, IdeologicMarker eM
 	if (iTotal > 0)
 		rRatio = scaled(iMatching, iTotal);
 	scaled const rWeight = (eMarker == SAME_RELIGION ? fixp(0.5) :
-			(eMarker == SAME_CIVIC ? fixp(0.4) : fixp(1/3.)));
+			(eMarker == SAME_CIVIC ? fixp(0.4) : fixp(0.35)));
 	if (iLimit > 0)
 		iLimit -= (rWeight * rRatio * iLimit).round();
 	else
@@ -18821,18 +18821,19 @@ int CvPlayerAI::AI_ideologyAttitudeChange(PlayerTypes eOther, IdeologicMarker eM
 		/*	Decreased dislike when the ratio is either small (their ideology is
 			not threatening) or large (can't kill the world). */
 		if (rRatio > fixp(0.5))
-			rRatio.flipFraction();
+			rRatio = 1 - rRatio;
 		rRatio.decreaseTo(rWeight);
 		iLimit = (iLimit * rRatio / rWeight).round();
 	}
 	//return range(iCounter / iDivisor, -iLimit, iLimit)
 	// <advc.130x> Higher attitude changes take slightly more time
 	int iAbsDiv = abs(iDivisor);
+	int const iIncr = (iDivisor > 0 ? 1 : -1);
 	int iChange = 0;
 	while (iCounter >= iAbsDiv &&
-		iChange < iLimit && iChange > -iLimit)
+		(iDivisor > 0 ? iChange < iLimit : iChange > iLimit))
 	{
-		iChange = iChange + (iDivisor > 0 ? 1 : -1);
+		iChange += iIncr;
 		iCounter -= iAbsDiv;
 		iAbsDiv++;
 	}

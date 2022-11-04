@@ -9158,7 +9158,8 @@ void CvGame::write(FDataStreamBase* pStream)
 	//uiFlag = 23; // advc.124b: Need a plot group update for compatibility
 	/*	advc.enum: Bugfix in bool-valued ArrayEnumMap; advc.130c: tweak;
 		advc.130n: fave civic based on displayed leader type. */
-	uiFlag = 24;
+	//uiFlag = 24;
+	uiFlag = 25; // advc.130n (bugfix)
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9377,7 +9378,7 @@ void CvGame::onAllGameDataRead()
 		SAFE_DELETE_ARRAY(m_pLegacyOrgSeatData);
 	} // </advc.enum>
 	// <advc.130n>, advc.148, advc.130r, advc.130x, advc.130c
-	if (m_uiSaveFlag < 24 ||
+	if (m_uiSaveFlag < 25 ||
 		// <advc.127> Save created during AI Auto Play
 		(m_iAIAutoPlay != 0 && !isNetworkMultiPlayer()))
 	{
