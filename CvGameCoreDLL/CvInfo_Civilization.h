@@ -234,6 +234,8 @@ public: // advc: All the const functions are exposed to Python except those adde
 protected:
 	/*	advc.xmldefault (note): The copy-ctor relies on m_iWonderConstructRand
 		being the first data member */
+	/*	Also note: Data members added here should also be added to the list
+		in UWAI::applyPersonalityWeight */
 	int m_iWonderConstructRand;
 	int m_iBaseAttitude;
 	int m_iBasePeaceWeight;
@@ -323,6 +325,8 @@ protected:
 
 	bool* m_pbTraits;
 
+	/*	Caveat: UWAI::applyPersonalityWeight depends on these being implemented
+		as int arrays */
 	int* m_piFlavorValue;
 	int* m_piContactRand;
 	int* m_piContactDelay;
