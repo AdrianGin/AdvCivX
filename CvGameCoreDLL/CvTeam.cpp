@@ -2940,14 +2940,21 @@ CvPlot* CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 		}
 	}
 	// <advc.071>
-	FirstContactData const& kData = *pData;
-	CvPlot* pAt1 = GC.getMap().plot(kData.x1, kData.y1);
-	CvPlot* pAt2 = GC.getMap().plot(kData.x2, kData.y2);
-	CvUnit const* pUnit1 = ::getUnit(kData.u1);
-	CvUnit const* pUnit2 = ::getUnit(kData.u2);
+	CvPlot* pAt1 = NULL;
+	CvPlot* pAt2 = NULL;
+	CvUnit const* pUnit1 = NULL;
+	CvUnit const* pUnit2 = NULL;
 	CvUnit const* pUnitMet = NULL;
 	CvPlot* pAt = NULL;
 	PlayerTypes ePlayerMet = NO_PLAYER;
+	if (pData != NULL)
+	{
+		FirstContactData const& kData = *pData;
+		pAt1 = GC.getMap().plot(kData.x1, kData.y1);
+		pAt2 = GC.getMap().plot(kData.x2, kData.y2);
+		pUnit1 = ::getUnit(kData.u1);
+		pUnit2 = ::getUnit(kData.u2);
+	}
 	if (pUnit1 != NULL && pUnit1->getTeam() == eOther)
 	{
 		ePlayerMet = pUnit1->getOwner();
