@@ -5768,6 +5768,8 @@ void CvPlot::updatePlotGroup(PlayerTypes ePlayer, bool bRecalculate,
 		if (bRecalculate)
 		{
 			bool bConnected = false;
+			/*	advc (note): These trade network checks need to be consistent
+				with the plot count performed in CvPlotGroup::recalculatePlots */
 			if (isTradeNetwork(eTeam))
 			{
 				bConnected = true;

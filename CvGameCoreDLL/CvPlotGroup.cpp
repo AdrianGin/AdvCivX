@@ -3,6 +3,7 @@
 #include "CvPlayer.h"
 #include "CvCity.h"
 #include "CvMap.h"
+#include "DepthFirstPlotSearch.h" // advc.opt
 
 int CvPlotGroup::m_iRecalculating = 0; // advc.064d
 
@@ -68,6 +69,65 @@ void CvPlotGroup::removePlot(CvPlot* pPlot, /* advc.064d: */ bool bVerifyProduct
 	}
 }
 
+// advc.opt: Replacing CvGlobals::m_plotGroupFinder
+class CvPlotGroupSizeCheck : public SingleVisitPlotVisitor<false>
+{
+protected:
+	PlayerTypes m_eOwner;
+	TeamTypes m_eTeam;
+	int m_iCount;
+	int m_iMaxCount;
+public:
+	CvPlotGroupSizeCheck(CvPlayer const& kOwner, int iMaxCount = MAX_INT)
+	{
+		reset(kOwner, iMaxCount);
+	}
+	/*	Will have to reset before use if this ctor is used (owning player is required).
+		Intended for reusable instances (reuse saves a little bit of time in the
+		base class). */
+	CvPlotGroupSizeCheck(CvPlayer const* pOwner = NULL, int iMaxCount = MAX_INT)
+	{
+		reset(pOwner, iMaxCount);
+	}
+	void reset(CvPlayer const& kOwner, int iMaxCount = MAX_INT)
+	{
+		reset(&kOwner, iMaxCount);
+	}
+	int getCount() const { return m_iCount; }
+	bool canVisit(CvPlot const& kFrom, CvPlot const& kPlot) const
+	{
+		return (kFrom.isSamePlotGroup(kPlot, m_eOwner) &&
+				// These need to be consistent with CvPlot::updatePlotGroup
+				kPlot.isTradeNetwork(m_eTeam) &&
+				kPlot.isTradeNetworkConnected(kFrom, m_eTeam));
+	}
+	bool visit(CvPlot& kPlot)
+	{
+		m_iCount++;
+		if (m_iCount >= m_iMaxCount)
+			return false;
+		setVisited(kPlot);
+		return true;
+	}
+private:
+	void reset(CvPlayer const* pOwner, int iMaxCount)
+	{
+		if (pOwner == NULL)
+		{
+			m_eOwner = NO_PLAYER;
+			m_eTeam = NO_TEAM;
+		}
+		else
+		{
+			m_eOwner = pOwner->getID();
+			m_eTeam = pOwner->getTeam();
+		}
+		m_iCount = 0;
+		m_iMaxCount = iMaxCount;
+		SingleVisitPlotVisitor<false>::reset();
+	}
+};
+
 
 void CvPlotGroup::recalculatePlots(/* advc.064d: */ bool bVerifyProduction)
 {
@@ -75,17 +135,27 @@ void CvPlotGroup::recalculatePlots(/* advc.064d: */ bool bVerifyProduction)
 	{
 		CLLNode<XYCoords>* pPlotNode = headPlotsNode();
 		if (pPlotNode != NULL)
-		{	/*	advc: This takes up the bulk of the time. Try it w/o this check?
-				Derive a replacement from KmodPathFinder? (A function for exploring
-				all plots reachable from the source would have to be added.) */
+		{
 			PROFILE("CvPlotGroup::recalculatePlots PlotGroupFinder");
-			CvPlot const& kPlot = GC.getMap().getPlot(
+			int const iOldCount = getLengthPlots();
+			CvPlot& kPlot = GC.getMap().getPlot(
 					pPlotNode->m_data.iX, pPlotNode->m_data.iY);
-			int iCount = 0;
+			int iCount;/*= 0;
 			gDLL->getFAStarIFace()->SetData(&GC.getPlotGroupFinder(), &iCount);
 			gDLL->getFAStarIFace()->GeneratePath(&GC.getPlotGroupFinder(),
-					kPlot.getX(), kPlot.getY(), -1, -1, false, eOwner);
-			if (iCount == getLengthPlots())
+					kPlot.getX(), kPlot.getY(), -1, -1, false, eOwner);*/
+			/*	<advc.pf> This upfront check had taken up the bulk of the time.
+				Running a simple DFS seems about 4 times faster than using the
+				FAStar finder for this purpose. Semantically, it's the same check
+				as in BtS: whether all plots in the (old) group are still connected.
+				I guess expanding plot groups are handled by CvPlot::updatePlotGroup. */
+			// Static to avoid reallocating memory for visited flags
+			static CvPlotGroupSizeCheck check;
+			check.reset(GET_PLAYER(eOwner), iOldCount + 1);
+			DepthFirstPlotSearch<CvPlotGroupSizeCheck> dfs(kPlot, check);
+			iCount = check.getCount();
+			FAssert(iCount <= iOldCount); // </advc.pf>
+			if (iCount == iOldCount)
 				return;
 		}
 	}

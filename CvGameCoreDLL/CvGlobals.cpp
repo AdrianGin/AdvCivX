@@ -6,6 +6,7 @@
 #include "CvGameAI.h"
 #include "CvAgents.h" // advc.agent
 #include "CvMap.h"
+#include "FAStarFunc.h" // advc: only for getPlotGroupFinder
 #include "CvInfo_All.h"
 #include "CvXMLLoadUtility.h" // advc.003v
 // <advc.003o>
@@ -363,6 +364,24 @@ CMessageControl& CvGlobals::getMessageControl()
 CvDropMgr& CvGlobals::getDropMgr()
 {
 	return *m_dropMgr;
+}
+
+DllExport FAStar& CvGlobals::getPlotGroupFinder()
+{
+	/*	advc.pf: Unused within the DLL now (cf. CvPlotGroup::recalculatePlots).
+		I don't think the EXE uses this either, so I've moved the initialization
+		code from CvMap - to have the obsolete code in one place. */
+	FErrorMsg("Does this actually get called?"); // advc.test
+	if (m_plotGroupFinder == NULL)
+	{
+		CvMap const& kMap = getMap();
+		gDLL->getFAStarIFace()->Initialize(m_plotGroupFinder,
+				kMap.getGridWidth(), kMap.getGridHeight(),
+				kMap.isWrapX(), kMap.isWrapY(),
+				NULL, NULL, NULL, plotGroupValid,
+				NULL, countPlotGroup, NULL);
+	}
+	return *m_plotGroupFinder;
 }
 
 // advc.003j: unused

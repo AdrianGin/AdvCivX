@@ -129,8 +129,7 @@ public:
 	FAStar& getBorderFinder() const { return *m_borderFinder; }
 	DllExport FAStar& getAreaFinder() { CvGlobals const& kThis = *this; return kThis.getAreaFinder(); }
 	FAStar& getAreaFinder() const { return *m_areaFinder; }
-	DllExport FAStar& getPlotGroupFinder() { CvGlobals const& kThis = *this; return kThis.getPlotGroupFinder(); }
-	FAStar& getPlotGroupFinder() const { return *m_plotGroupFinder; }
+	DllExport FAStar& getPlotGroupFinder();
 	//NiPoint3& getPt3Origin(); // advc.003j: unused
 	//NiPoint3& getPt3CameraDir(); // advc.003j: unused
 	DllExport bool& getLogging() { return m_bLogging; }
@@ -562,7 +561,8 @@ public:
 		DO(TRUE_STARTS_SANITIZE_SCENARIOS) /* advc.tsl */ \
 		DO(RF_PLAYER_HANDICAP_ADJUSTMENT) /* advc.708 */ \
 		DO(BASE_UNIT_CAPTURE_CHANCE) /* advc.010 */ \
-		DO(DOW_UNIT_CAPTURE_CHANCE) /* advc.010 */
+		DO(DOW_UNIT_CAPTURE_CHANCE) /* advc.010 */ \
+		DO(SHOW_ODDS_IN_COMBAT_MESSAGES) /* advc.048 */
 	#define MAKE_ENUMERATOR(VAR) VAR,
 	enum GlobalDefines
 	{

@@ -612,9 +612,8 @@ protected:
 
 	void calculateAreas();
 	// <advc.030>
-	void calculateAreas_advc();
+	void calculateAreas_dfs();
 	void calculateReprAreas();
-	void calculateAreas_DFS(CvPlot const& p);
 	void updateLakes();
 	// </advc.030>
 	void updateNumPlots(); // advc.opt
