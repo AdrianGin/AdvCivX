@@ -71,7 +71,7 @@ void CvPlotGroup::removePlot(CvPlot* pPlot, /* advc.064d: */ bool bVerifyProduct
 
 void CvPlotGroup::recalculatePlots(/* advc.064d: */ bool bVerifyProduction)
 {
-	PlayerTypes eOwner = getOwner();
+	PlayerTypes const eOwner = getOwner();
 	{
 		CLLNode<XYCoords>* pPlotNode = headPlotsNode();
 		if (pPlotNode != NULL)

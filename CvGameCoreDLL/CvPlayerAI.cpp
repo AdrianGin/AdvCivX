@@ -14695,7 +14695,7 @@ bool CvPlayerAI::AI_isUnimprovedBonus(CvPlot const& p, CvPlot const* pFromPlot,
 	if (pFromPlot == NULL || !bCheckPath || gDLL->getFAStarIFace()->GeneratePath(
 		&GC.getBorderFinder(), pFromPlot->getX(), pFromPlot->getY(), p.getX(), p.getY(),
 		/*false*/ /* advc.001: Shouldn't allow diagonals in water. (A ship can
-			move in between an Ice and a land tile that  touch corners. But I'm
+			move in between an Ice and a land tile that touch corners. But I'm
 			not sure if GeneratePath checks for isImpassable at all.) */
 		!p.isWater(),
 		getID(), true))

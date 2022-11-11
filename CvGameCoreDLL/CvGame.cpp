@@ -7133,7 +7133,8 @@ void CvGame::createBarbarianUnits()
 		if (a.isWater() || a.getNumCities() == 0)
 			continue;
 		int iUnowned = 0, iTiles = 0;
-		std::vector<Shelf*> shelves; GC.getMap().getShelves(a, shelves);
+		std::vector<Shelf*> shelves;
+		GC.getMap().getShelves(a, shelves);
 		for (size_t i = 0; i < shelves.size(); i++)
 		{
 			// Shelves also count for land Barbarians, ...
@@ -7362,7 +7363,7 @@ int CvGame::numBarbariansToCreate(int iTilesPerUnit, int iTiles, int iUnowned,
 {
 	int const iOwned = iTiles - iUnowned;
 	scaled const rPeakRatio = barbarianPeakLandRatio();
-	if (iOwned == 0 || rPeakRatio == 0)
+	if (iOwned <= 0 || rPeakRatio <= 0)
 		return 0;
 	scaled rDivisor = iTilesPerUnit;
 	scaled rDividend;

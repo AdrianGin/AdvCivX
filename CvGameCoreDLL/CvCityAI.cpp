@@ -7270,48 +7270,47 @@ bool CvCityAI::AI_isEmphasize(EmphasizeTypes eIndex) const
 
 void CvCityAI::AI_setEmphasize(EmphasizeTypes eIndex, bool bNewValue)
 {
-	FAssertMsg(eIndex >= 0, "eIndex is expected to be non-negative (invalid Index)");
-	FAssertMsg(eIndex < GC.getNumEmphasizeInfos(), "eIndex is expected to be within maximum bounds (invalid Index)");
+	FAssert(eIndex >= 0);
+	FAssert(eIndex < GC.getNumEmphasizeInfos());
 
-	if (AI_isEmphasize(eIndex) != bNewValue)
+	if (AI_isEmphasize(eIndex) == bNewValue)
+		return;
+
+	m_pbEmphasize[eIndex] = bNewValue;
+
+	if (GC.getInfo(eIndex).isAvoidGrowth())
 	{
-		m_pbEmphasize[eIndex] = bNewValue;
-
-		if (GC.getInfo(eIndex).isAvoidGrowth())
-		{
-			m_iEmphasizeAvoidGrowthCount += (AI_isEmphasize(eIndex) ? 1 : -1);
-			FAssert(AI_getEmphasizeAvoidGrowthCount() >= 0);
-		}
-
-		if (GC.getInfo(eIndex).isGreatPeople())
-		{
-			m_iEmphasizeGreatPeopleCount += (AI_isEmphasize(eIndex) ? 1 : -1);
-			FAssert(AI_getEmphasizeGreatPeopleCount() >= 0);
-		}
-
-		FOR_EACH_ENUM(Yield)
-		{
-			if (GC.getInfo(eIndex).getYieldChange(eLoopYield))
-			{
-				m_aiEmphasizeYieldCount[eLoopYield] += (AI_isEmphasize(eIndex) ? 1 : -1);
-				FAssert(AI_getEmphasizeYieldCount(eLoopYield) >= 0);
-			}
-		}
-
-		FOR_EACH_ENUM(Commerce)
-		{
-			if (GC.getInfo(eIndex).getCommerceChange(eLoopCommerce))
-			{
-				m_aiEmphasizeCommerceCount[eLoopCommerce] += (AI_isEmphasize(eIndex) ? 1 : -1);
-				FAssert(AI_getEmphasizeCommerceCount(eLoopCommerce) >= 0);
-			}
-		}
-
-		AI_assignWorkingPlots();
-
-		if (isActiveOwned() && isCitySelected())
-			gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
+		m_iEmphasizeAvoidGrowthCount += (AI_isEmphasize(eIndex) ? 1 : -1);
+		FAssert(AI_getEmphasizeAvoidGrowthCount() >= 0);
 	}
+
+	if (GC.getInfo(eIndex).isGreatPeople())
+	{
+		m_iEmphasizeGreatPeopleCount += (AI_isEmphasize(eIndex) ? 1 : -1);
+		FAssert(AI_getEmphasizeGreatPeopleCount() >= 0);
+	}
+
+	FOR_EACH_ENUM(Yield)
+	{
+		if (GC.getInfo(eIndex).getYieldChange(eLoopYield))
+		{
+			m_aiEmphasizeYieldCount[eLoopYield] += (AI_isEmphasize(eIndex) ? 1 : -1);
+			FAssert(AI_getEmphasizeYieldCount(eLoopYield) >= 0);
+		}
+	}
+
+	FOR_EACH_ENUM(Commerce)
+	{
+		if (GC.getInfo(eIndex).getCommerceChange(eLoopCommerce))
+		{
+			m_aiEmphasizeCommerceCount[eLoopCommerce] += (AI_isEmphasize(eIndex) ? 1 : -1);
+			FAssert(AI_getEmphasizeCommerceCount(eLoopCommerce) >= 0);
+		}
+	}
+
+	AI_assignWorkingPlots();
+	if (isActiveOwned() && isCitySelected())
+		gDLL->UI().setDirty(SelectionButtons_DIRTY_BIT, true);
 }
 
 // advc.003j: Added in BtS, was never used as far as I can tell.
@@ -10192,8 +10191,8 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 	const int iBaseProductionValue = 8;
 	const int iBaseCommerceValue = 4;
 
-	bool bEmphasizeFood = AI_isEmphasizeYield(YIELD_FOOD);
-	bool bFoodIsProduction = isFoodProduction();
+	bool const bEmphasizeFood = AI_isEmphasizeYield(YIELD_FOOD);
+	bool const bFoodIsProduction = isFoodProduction();
 	//bool bCanPopRush = GET_PLAYER(getOwner()).canPopRush();
 
 	// a kludge to handle the NULL yields easily.
@@ -10201,12 +10200,15 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 	if (piYields == NULL)
 		piYields = aiZeroYields;
 
-	int iBaseProductionModifier = getBaseYieldRateModifier(YIELD_PRODUCTION);
-	int iExtraProductionModifier = getProductionModifier();
-	int iProductionTimes100 = piYields[YIELD_PRODUCTION] * (iBaseProductionModifier + iExtraProductionModifier);
-	int iCommerceYieldTimes100 = piYields[YIELD_COMMERCE] * getBaseYieldRateModifier(YIELD_COMMERCE);
-	int iFoodYieldTimes100 = piYields[YIELD_FOOD] * getBaseYieldRateModifier(YIELD_FOOD);
-	int iFoodYield = iFoodYieldTimes100/100;
+	int const iBaseProductionModifier = getBaseYieldRateModifier(YIELD_PRODUCTION);
+	int const iExtraProductionModifier = getProductionModifier();
+	int iProductionTimes100 = piYields[YIELD_PRODUCTION] *
+			(iBaseProductionModifier + iExtraProductionModifier);
+	int const iCommerceYieldTimes100 = piYields[YIELD_COMMERCE] *
+			getBaseYieldRateModifier(YIELD_COMMERCE);
+	int const iFoodYieldTimes100 = piYields[YIELD_FOOD] *
+			getBaseYieldRateModifier(YIELD_FOOD);
+	int const iFoodYield = iFoodYieldTimes100/100;
 
 	int iValue = 0; // total value
 
@@ -10651,7 +10653,7 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 	{
 		iProductionValue *= 75;
 		iProductionValue /= 100;
-		iProductionValue = std::max(1,iProductionValue);
+		iProductionValue = std::max(1, iProductionValue);
 	}
 
 	if (AI_isEmphasizeYield(YIELD_FOOD))

@@ -208,7 +208,7 @@ void CvMap::setup()
 {
 	PROFILE_FUNC();
 
-	CvDLLFAStarIFaceBase& kAStar = *gDLL->getFAStarIFace(); // advc
+	CvDLLFAStarIFaceBase& kAStar = *gDLL->getFAStarIFace();
 	kAStar.Initialize(&GC.getPathFinder(),
 			getGridWidth(),	getGridHeight(),isWrapX(),	isWrapY(),
 			pathDestValid,	pathHeuristic,	pathCost,	pathValid,
@@ -1474,10 +1474,10 @@ void CvMap::updateLakes()
 	// CvArea::getNumTiles no longer sufficient for identifying lakes
 	FOR_EACH_AREA_VAR(a)
 		a->updateLake();
-	for(int i = 0; i < numPlots(); i++)
+	for (int i = 0; i < numPlots(); i++)
 	{
 		CvPlot& kPlot = getPlotByIndex(i);
-		if(kPlot.isLake())
+		if (kPlot.isLake())
 			kPlot.updateYield();
 	}
 	computeShelves(); // advc.300
