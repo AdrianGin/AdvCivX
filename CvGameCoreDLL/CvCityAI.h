@@ -19,7 +19,7 @@ public:
 			int iOccupationTimer = 0); // advc.ctr
 
 	void AI_doTurn();
-	void AI_assignWorkingPlots();
+	void AI_assignWorkingPlots(/* advc.131d: */ bool bEmphasize = false);
 	void AI_updateAssignWork();
 
 	//bool AI_avoidGrowth(); // disabled by K-Mod
@@ -109,6 +109,9 @@ public:
 
 	bool AI_isEmphasize(EmphasizeTypes eIndex) const;
 	void AI_setEmphasize(EmphasizeTypes eIndex, bool bNewValue);
+	// <advc.131d>
+	bool AI_isStrongEmphasis() const { return m_bStrongEmphasis; }
+	void AI_setStrongEmphasis(bool bStrongEmphasis); // </advc.131d>
 	//void AI_forceEmphasizeCulture(bool bNewValue); // advc.003j
 
 	int AI_getBestBuildValue(/* advc.enum: */ CityPlotTypes ePlot) const
@@ -187,6 +190,7 @@ protected:
 	int* m_aiEmphasizeYieldCount;
 	int* m_aiEmphasizeCommerceCount;
 	bool m_bForceEmphasizeCulture; // advc.003j (comment): unused
+	bool m_bStrongEmphasis; // advc.131d
 	bool* m_pbEmphasize;
 
 	BuildTypes* m_aeBestBuild;
@@ -225,7 +229,7 @@ protected:
 	bool AI_addBestCitizen(bool bWorkers, bool bSpecialists, CityPlotTypes* peBestPlot = NULL,
 			SpecialistTypes* peBestSpecialist = NULL);
 	bool AI_removeWorstCitizen(SpecialistTypes eIgnoreSpecialist = NO_SPECIALIST);
-	void AI_juggleCitizens();
+	void AI_juggleCitizens(/* advc.131d: */ bool bEmphasize = false);
 	int AI_citizenSacrificeCost(int iCitLoss, int iHappyLevel = 0, int iNewAnger = 0, int iAngerTimer = 0); // K-Mod
 	// advc: Both unused
 	/*bool AI_potentialPlot(CvPlot const& kPlot) const; // advc.enum: param was 'short* piYields'
