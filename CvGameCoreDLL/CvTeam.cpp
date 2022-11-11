@@ -2174,7 +2174,8 @@ int CvTeam::getTypicalUnitValue(UnitAITypes eUnitAI, DomainTypes eDomain) const
 
 
 int CvTeam::getResearchCost(TechTypes eTech,
-	bool bGlobalModifiers, bool bTeamSizeModifiers) const // K-Mod: params added
+	bool bFreeBarbarianResearch, // advc.301: Replacing K-Mod's bGlobalModifiers
+	bool bTeamSizeModifiers) const // K-Mod
 {
 	CvGame const& kGame = GC.getGame();
 	CvTechInfo const& kTech = GC.getInfo(eTech);
@@ -2198,60 +2199,64 @@ int CvTeam::getResearchCost(TechTypes eTech,
 	rModifier += per100(iTECH_COST_MODIFIER);
 	// </advc.910>
 	rModifier += GC.getGame().groundbreakingNormalizationModifier(eTech); // advc.groundbr
-	if (bGlobalModifiers) // K-Mod
+	CvWorldInfo const& kWorld = GC.getInfo(GC.getMap().getWorldSize());
+	if (eTechEra > 0) // advc.910
 	{
-		CvWorldInfo const& kWorld = GC.getInfo(GC.getMap().getWorldSize());
-		if (eTechEra > 0) // advc.910
+		rCost *= per100(kWorld.getResearchPercent());
+		// <advc.910>
+		rCost *= per100(GC.getInfo(GC.getMap().getSeaLevel()).getResearchPercent());
+		if (kGame.isOption(GAMEOPTION_ALWAYS_PEACE) &&
+			!kGame.isOption(GAMEOPTION_ALWAYS_WAR))
 		{
-			rCost *= per100(kWorld.getResearchPercent());
-			// <advc.910>
-			rCost *= per100(GC.getInfo(GC.getMap().getSeaLevel()).getResearchPercent());
-			if (kGame.isOption(GAMEOPTION_ALWAYS_PEACE) &&
-				!kGame.isOption(GAMEOPTION_ALWAYS_WAR))
-			{
-				rCost *= per100(105);
-			}
+			rCost *= per100(105);
 		}
-		else if (kGame.isOption(GAMEOPTION_NO_GOODY_HUTS))
-			rCost /= per100(105); // </advc.910>
-		rCost *= per100(GC.getInfo(kGame.getGameSpeedType()).getResearchPercent());
-		rCost *= per100(GC.getInfo(kGame.getStartEra()).getResearchPercent());
-		// <advc.308>
-		if(kGame.isOption(GAMEOPTION_RAGING_BARBARIANS) && kGame.getStartEra() == 0)
-		{
-			if (eTechEra == 1)
-				rModifier -= per100(14);
-			else if (eTechEra == 2)
-				rModifier -= per100(7);
-		}
-		if(kGame.getStartEra() == 0 && kGame.isOption(GAMEOPTION_NO_BARBARIANS) &&
-			eTechEra <= 1)
-		{
-			rModifier += per100(3);
-		} // </advc.308>
-		// <advc.550d>
-		if (kGame.isOption(GAMEOPTION_NO_TECH_TRADING) &&
-			eTechEra > 0 && !kTech.isRepeat())
-		{
-			static scaled const rTECH_COST_NOTRADE_MODIFIER = per100(
-					GC.getDefineINT("TECH_COST_NOTRADE_MODIFIER"));
-			scaled rNoTradeAdjustment =
-					(rTECH_COST_NOTRADE_MODIFIER + per100(5) *
-					(eTechEra - fixp(2.5)).abs().pow(fixp(1.5))) *
-					scaled::clamp(scaled(kWorld.getDefaultPlayers() - 2,
-					11 - eTechEra), 0, fixp(8/3.));
-			rNoTradeAdjustment.decreaseTo(0); // No Tech Trading can only lower tech costs
-			rModifier += rNoTradeAdjustment;
-		} // </advc.550d>
-		/*	<advc.708> Tech costs shouldn't (fully) be affected by the
-			player handicap adjustment */
-		if (kGame.isOption(GAMEOPTION_RISE_FALL))
-		{
-			rCost *= 1 - per100(GC.getDefineINT(
-					CvGlobals::RF_PLAYER_HANDICAP_ADJUSTMENT) * 3);
-		} // </advc.708>
 	}
-
+	else if (kGame.isOption(GAMEOPTION_NO_GOODY_HUTS))
+		rCost /= per100(105); // </advc.910>
+	// advc.301: Excluding, as in K-Mod, map-based modifiers.
+	scaled rPaceModifier = 1; // (for lack of a better name)
+	rPaceModifier *= per100(GC.getInfo(kGame.getGameSpeedType()).getResearchPercent());
+	rPaceModifier *= per100(GC.getInfo(kGame.getStartEra()).getResearchPercent());
+	// <advc.301> Merely dilute; bGlobalModifiers=false had ignored these (K-Mod).
+	if (bFreeBarbarianResearch)
+		rPaceModifier = (fixp(0.5) + rPaceModifier) / fixp(1.5);
+	/*	(Or rModifier*=...? I don't recall why I decided to let some of these apply
+		directly to rCost.) */
+	rCost *= rPaceModifier; // </advc.301>
+	// <advc.308>
+	if (kGame.isOption(GAMEOPTION_RAGING_BARBARIANS) && kGame.getStartEra() == 0)
+	{
+		if (eTechEra == 1)
+			rModifier -= per100(14);
+		else if (eTechEra == 2)
+			rModifier -= per100(7);
+	}
+	if (kGame.getStartEra() == 0 && kGame.isOption(GAMEOPTION_NO_BARBARIANS) &&
+		eTechEra <= 1)
+	{
+		rModifier += per100(3);
+	} // </advc.308>
+	// <advc.550d>
+	if (kGame.isOption(GAMEOPTION_NO_TECH_TRADING) &&
+		eTechEra > 0 && !kTech.isRepeat())
+	{
+		static scaled const rTECH_COST_NOTRADE_MODIFIER = per100(
+				GC.getDefineINT("TECH_COST_NOTRADE_MODIFIER"));
+		scaled rNoTradeAdjustment =
+				(rTECH_COST_NOTRADE_MODIFIER + per100(5) *
+				(eTechEra - fixp(2.5)).abs().pow(fixp(1.5))) *
+				scaled::clamp(scaled(kWorld.getDefaultPlayers() - 2,
+				11 - eTechEra), 0, fixp(8/3.));
+		rNoTradeAdjustment.decreaseTo(0); // No Tech Trading can only lower tech costs
+		rModifier += rNoTradeAdjustment;
+	} // </advc.550d>
+	/*	<advc.708> Tech costs shouldn't (fully) be affected by the
+		player handicap adjustment */
+	if (kGame.isOption(GAMEOPTION_RISE_FALL))
+	{
+		rCost *= 1 - per100(GC.getDefineINT(
+				CvGlobals::RF_PLAYER_HANDICAP_ADJUSTMENT) * 3);
+	} // </advc.708>
 	if (bTeamSizeModifiers) // K-Mod
 	{
 		rCost *= scaled::max(per100(100 +
@@ -5235,19 +5240,23 @@ void CvTeam::doBarbarianResearch()
 			iCount = std::max(iCount, (2 * iHasTech) / 3);
 		static scaled const rBARBARIAN_FREE_TECH_PERCENT = // advc.opt
 				per100(GC.getDefineINT("BARBARIAN_FREE_TECH_PERCENT")); // advc.301
-		scaled rTechPercent = rBARBARIAN_FREE_TECH_PERCENT *
+		scaled rFreePortion = rBARBARIAN_FREE_TECH_PERCENT *
 				// <advc.301>
 				(1 + per100(GC.getInfo(eLoopTech).get(
 				CvTechInfo::BarbarianFreeTechModifier)));
-		if (rTechPercent <= 0)
+		if (rFreePortion <= 0)
 			continue; // </advc.301>
 		//changeResearchProgress(eLoopTech, (getResearchCost(eLoopTech) * ((iTechPercent * iCount) / iPossible)) / 100, getLeaderID());
 		/*	<K-Mod> Adjust research rate for game-speed & start-era -
 			but _not_ world-size. And fix the rounding error. */
-		scaled rBaseCost = per100(getResearchCost(eLoopTech, false) *
-				GC.getInfo(GC.getMap().getWorldSize()).getResearchPercent());
+		/*	advc.301, advc.910: Tell getResearchCost explicitly that this is for
+			Barbarian research, and let that function make the adjustments.
+			NB: By not - or only partially - adjusting the base cost to speed etc.,
+			the progress per turn, effectively, becomes adjusted.*/
+		int iBaseCost = getResearchCost(eLoopTech, true);
+				//* per100(GC.getInfo(GC.getMap().getWorldSize()).getResearchPercent());
 		changeResearchProgress(eLoopTech, scaled::clamp(
-				(rBaseCost * rTechPercent * iCount) / iPossible, 1,
+				(iBaseCost * rFreePortion * iCount) / iPossible, 1,
 				// <advc.301> No overflow
 				std::max(1, getResearchCost(eLoopTech)
 				- getResearchProgress(eLoopTech))).uround(), // </advc.301>

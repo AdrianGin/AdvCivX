@@ -1970,7 +1970,7 @@ int CvTeamAI::AI_techTradeVal(TechTypes eTech, TeamTypes eFromTeam,
 			/*	advc.551, advc.001: Revert the 2nd part of the K-Mod change.
 				A correct implementation would have to take the team size modifier
 				out of the research progress; but I think it'd still be a bad idea.*/
-			std::max(0, getResearchCost(eTech/*, true, false*/) -
+			std::max(0, getResearchCost(eTech/*, ..., false*/) -
 			getResearchProgress(eTech)); // K-Mod end
 	/*  <advc.104h> Peace for tech isn't that attractive for the receiving side
 		b/c they could continue the war and still get the tech when making peace
