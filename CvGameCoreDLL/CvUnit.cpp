@@ -5365,8 +5365,12 @@ bool CvUnit::canFound(const CvPlot* pPlot, bool bTestVisible) const
 {
 	if (!isFound())
 		return false;
-	if (!GET_PLAYER(getOwner()).canFound(pPlot->getX(), pPlot->getY(), bTestVisible))
+	if (!GET_PLAYER(getOwner()).canFound(*pPlot, bTestVisible,
+		// advc.181: Don't give away fogged cities when inspecting go-to plot
+		(at(*pPlot) || !isHuman())))
+	{
 		return false;
+	}
 	return true;
 }
 
