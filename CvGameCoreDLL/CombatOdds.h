@@ -8,7 +8,8 @@
 class CvUnit;
 
 // advc: Renamed from "getCombatOdds"
-int calculateCombatOdds(CvUnit const& kAttacker, CvUnit const& kDefender); // Exposed to Python
+int calculateCombatOdds(CvUnit const& kAttacker, CvUnit const& kDefender, // Exposed to Python
+		bool bHideFreeWins = true); // advc.048c
 
 // <advc>
 namespace combat_odds

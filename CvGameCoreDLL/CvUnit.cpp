@@ -1053,10 +1053,25 @@ void CvUnit::updateAirCombat(bool bQuick)
 	be changed if the combat resolution rules are changed. */
 void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible)
 {
-	#ifdef LOG_COMBAT_OUTCOMES
-		int iLoggedOdds = calculateCombatOdds(*this, *pDefender);
-		iLoggedOdds += (1000 - iLoggedOdds) * withdrawalProbability() / 100;
-	#endif
+	// <advc.048c> Preserve info for interface message (based on K-Mod code)
+	m_iAttackOdds = -1;
+#ifndef LOG_COMBAT_OUTCOMES
+	if (GC.getDefineBOOL(CvGlobals::SHOW_ODDS_IN_COMBAT_MESSAGES) &&
+		/*	To save time. addMessage will sometimes deliver messages to AI players,
+			but it's OK (with me) to omit odds from those messages. */
+		(isHuman() || pDefender->isHuman()))
+	{
+#endif
+		m_iAttackOdds = calculateCombatOdds(*this, *pDefender,
+				false); // Do reveal free wins vs. Barbarians
+		m_iAttackOdds += ((GC.getCOMBAT_DIE_SIDES() - m_iAttackOdds) *
+				withdrawalProbability()) / 100;
+		m_iPreCombatHP = currHitPoints();
+		pDefender->m_iPreCombatHP = pDefender->currHitPoints();
+#ifndef LOG_COMBAT_OUTCOMES
+	}
+#endif
+	// </advc.048c>
 
 	// K-Mod. Initialize battle info.
 	// Note: kBattle is only relevant if we are going to show the battle animation.
@@ -1084,12 +1099,6 @@ void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible)
 			iDefenderOdds, iDefenderStrength, iAttackerDamage, iDefenderDamage,
 			&cdDefenderDetails);
 	int iAttackerKillOdds = iDefenderOdds * (100 - withdrawalProbability()) / 100;
-	// <advc.048c> Preserve info for interface message
-	m_iAttackOdds = pDefender->m_iAttackOdds = GC.getCOMBAT_DIE_SIDES()
-			- iAttackerKillOdds;
-	m_iPreCombatHP = currHitPoints();
-	pDefender->m_iPreCombatHP = pDefender->currHitPoints(); // </advc.048c>
-
 	// advc.001: Replacing isHuman checks
 	if (isActiveOwned() || pDefender->isActiveOwned())
 	{
@@ -1252,14 +1261,17 @@ void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible)
 			gDLL->getEntityIFace()->AddMission(&kBattle);
 		}
 	}
-	#ifdef LOG_COMBAT_OUTCOMES
-		if (!isBarbarian() && !pDefender->isBarbarian()) // don't log barb battles, because they have special rules.
-		{
-			TCHAR message[20];
-			_snprintf(message, 20, "%.2f\t%d\n", (float)iLoggedOdds/1000, isDead() ? 0 : 1);
-			gDLL->logMsg("combat.txt", message ,false, false);
-		}
-	#endif
+#ifdef LOG_COMBAT_OUTCOMES
+	// (don't log barb battles, because they have special rules.)
+	if (!isBarbarian() && !pDefender->isBarbarian())
+	{
+		TCHAR message[20];
+		_snprintf(message, 20, "%.2f\t%d\n",
+				m_iAttackOdds / (float)GC.getCOMBAT_DIE_SIDES(),
+				isDead() ? 0 : 1);
+		gDLL->logMsg("combat.txt", message ,false, false);
+	}
+#endif
 }
 
 
@@ -1684,12 +1696,14 @@ void CvUnit::addWithdrawalMessages(CvUnit const& kDefender) const
 void CvUnit::setHasBeenDefendedAgainstMessage(CvWString& kBuffer,
 	CvUnit const& kDefender, int iAttackSuccess) const
 {
-	static bool const bOdds = (GC.getDefineBOOL("SHOW_ODDS_IN_COMBAT_MESSAGES") &&
-			kDefender.canDefend());
+	bool const bOdds = (GC.getDefineBOOL(CvGlobals::SHOW_ODDS_IN_COMBAT_MESSAGES) &&
+			m_iAttackOdds >= 0 && kDefender.canDefend());
 	CvWString szOdds, szDefStrength;
 	if (bOdds)
 	{
-		szOdds.Format(L"%.1f", (m_iAttackOdds * 100.f) / GC.getCOMBAT_DIE_SIDES());
+		szOdds.Format(L"%.1f", (std::min(
+				GC.getCOMBAT_DIE_SIDES() - 1, // Don't claim that the odds were 100%
+				m_iAttackOdds) * 100.f) / GC.getCOMBAT_DIE_SIDES());
 		if (kDefender.m_iPreCombatHP < kDefender.maxHitPoints())
 		{
 			CvWString szHurtStr;

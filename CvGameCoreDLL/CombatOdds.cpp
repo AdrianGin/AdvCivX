@@ -144,9 +144,10 @@ int setupCombatantsImpl(CvUnit const& kAttacker, CvUnit const& kDefender,
 	the combatants (it's assumed that the caller won't need them when the
 	odds are trivial). */
 int setupCombatants(CvUnit const& kAttacker, CvUnit const& kDefender,
-	Combatant& att, Combatant& def)
+	Combatant& att, Combatant& def,
+	bool bHideFreeWins = true) // advc.048c
 {
-	return setupCombatantsImpl<false>(kAttacker, kDefender, att, def);
+	return setupCombatantsImpl<false>(kAttacker, kDefender, att, def, bHideFreeWins);
 }
 
 float fBinomial(int iN, int iK) // advc: for convenience
@@ -690,7 +691,8 @@ void combat_odds::initCombatants(CvUnit const& kAttacker, CvUnit const& kDefende
 /*	Calculates combat odds, given two units
 	Returns value from 0-1000
 	Written by DeepO (advc: gutted) */
-int calculateCombatOdds(CvUnit const& kAttacker, CvUnit const& kDefender)
+int calculateCombatOdds(CvUnit const& kAttacker, CvUnit const& kDefender,
+	bool bHideFreeWins) // advc.048c
 {
 	PROFILE_FUNC(); // advc: OK - not called all that frequently.
 	// setup battle, calculate strengths and odds
