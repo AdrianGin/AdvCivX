@@ -11311,7 +11311,7 @@ void CvCity::read(FDataStreamBase* pStream)
 		m_aiReligionInfluence.readArray<int>(pStream);
 		m_aiStateReligionHappiness.readArray<int>(pStream);
 		m_aiUnitCombatFreeExperience.readArray<int>(pStream);
-		m_aiFreePromotionCount.readArray<int>(pStream);
+		m_aiFreePromotionCount.readArray<int>(pStream, /* advc.313: */ -1);
 		m_aiNumRealBuilding.readArray<int>(pStream);
 		m_aiNumFreeBuilding.readArray<int>(pStream);
 		m_abWorkingPlot.readArray<bool>(pStream);
@@ -11647,7 +11647,7 @@ void CvCity::write(FDataStreamBase* pStream)
 	//uiFlag = 14; // advc.179, advc.exp.1, advc.exp.2
 	//uiFlag = 15; // advc.912d: Partly reverted, adjust MaxFoodKept.
 	//uiFlag = 16; // advc.enum: m_aiShrine
-	uiFlag = 17; // advc.enum: Bugfix in bool-valued ArrayEnumMap
+	uiFlag = 17; // advc.313: Disorganized promo removed, advc.enum: bugfix.
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);

@@ -327,12 +327,19 @@ public:
 	{
 		/*	Allocating an array and calling Read(getLength(), array) might be faster,
 			might be slower. Reading one value at a time is at least easier to debug. */
-		int const iLen = getLength() - iSubtrahend;
+		int const iLen = getLength() - std::max(0, iSubtrahend);
 		for (E eKey = enum_traits<E>::first; eKey < iLen; ++eKey)
 		{
 			ValueType val;
 			pStream->Read(&val);
 			derived().setUnsafe(eKey, safeCast<V>(val));
+		}
+		/*	When a key type has become shorter, we discard the values that were
+			saved for the removed keys. */
+		for (E eKey = enum_traits<E>::first; eKey < -iSubtrahend; ++eKey)
+		{
+			ValueType val;
+			pStream->Read(&val);
 		}
 	}
 

@@ -10533,8 +10533,7 @@ void CvUnit::read(FDataStreamBase* pStream)
 		if (isKnownSeaBarbarian())
 			m_iExtraCombatPercent += 10;
 	}
-	else // </advc.313>
-		m_abHasPromotion.readArray<bool>(pStream);
+	else m_abHasPromotion.readArray<bool>(pStream, -1); // </advc.313>
 	if (uiFlag >= 7)
 	{
 		m_aiTerrainDoubleMoveCount.read(pStream);
