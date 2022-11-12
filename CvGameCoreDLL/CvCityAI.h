@@ -6,8 +6,6 @@
 #include "CvCity.h"
 #include "AIStrategies.h" // advc.enum
 
-typedef std::vector<std::pair<UnitAITypes, int> > UnitTypeWeightArray;
-
 class CvCityAI : public CvCity
 {
 public:
@@ -218,11 +216,14 @@ protected:
 	//int AI_calculateCulturePressure(bool bGreatWork = false) const; // disabled by K-Mod
 
 	bool AI_bestSpreadUnit(bool bMissionary, bool bExecutive, int iBaseChance, UnitTypes* eBestSpreadUnit, int* iBestSpreadUnitValue);
-	bool AI_chooseUnit(UnitAITypes eUnitAI = NO_UNITAI, int iOdds = -1); // bbai added iOdds
+	bool AI_chooseUnit(UnitAITypes eUnitAI = NO_UNITAI,
+			int iOdds = -1); // BETTER_BTS_AI_MOD, 01/09/10, jdog5000: City AI
 	bool AI_chooseUnit(UnitTypes eUnit, UnitAITypes eUnitAI);
 	bool AI_chooseDefender();
-	bool AI_chooseLeastRepresentedUnit(UnitTypeWeightArray &allowedTypes, int iOdds = -1); // bbai added iOdds
-	bool AI_chooseBuilding(int iFocusFlags = 0, int iMaxTurns = MAX_INT, int iMinThreshold = 0, int iOdds = -1); // bbai added iOdds.
+	bool AI_chooseLeastRepresentedUnit(UnitAIWeightMap const& kWeights,
+			int iOdds = -1); // BBAI
+	bool AI_chooseBuilding(int iFocusFlags = 0, int iMaxTurns = MAX_INT, int iMinThreshold = 0,
+			int iOdds = -1); // BBAI
 	//bool AI_chooseProject(); // advc.003j
 	bool AI_chooseProcess(CommerceTypes eCommerceType = NO_COMMERCE);
 

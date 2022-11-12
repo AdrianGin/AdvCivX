@@ -1171,13 +1171,13 @@ void CvCityAI::AI_chooseProduction()
  	int iTotalFloatingDefenders = (isBarbarian() ? 0 :
 			kPlayer.AI_getTotalFloatingDefenders(kArea));
 
-	UnitTypeWeightArray floatingDefenderTypes;
-	floatingDefenderTypes.reserve(4);
-	floatingDefenderTypes.push_back(std::make_pair(UNITAI_CITY_DEFENSE, 125));
-	floatingDefenderTypes.push_back(std::make_pair(UNITAI_CITY_COUNTER, 100));
-	//floatingDefenderTypes.push_back(std::make_pair(UNITAI_CITY_SPECIAL, 0));
-	floatingDefenderTypes.push_back(std::make_pair(UNITAI_RESERVE, 100));
-	floatingDefenderTypes.push_back(std::make_pair(UNITAI_COLLATERAL, 80)); // K-Mod, down from 100
+	// advc: Replacing raw vector of pairs "floatingDefenderTypes"
+	UnitAIWeightMap floatingDefenderWeight;
+	floatingDefenderWeight.set(UNITAI_CITY_DEFENSE, 125);
+	floatingDefenderWeight.set(UNITAI_CITY_COUNTER, 100);
+	//floatingDefenderWeight.set(UNITAI_CITY_SPECIAL, 0);
+	floatingDefenderWeight.set(UNITAI_RESERVE, 100);
+	floatingDefenderWeight.set(UNITAI_COLLATERAL, 80); // K-Mod, down from 100.
 
 	if (iTotalFloatingDefenders < (iNeededFloatingDefenders + 1) / (bGetBetterUnits ? 3 : 2))
 	{
@@ -1189,7 +1189,7 @@ void CvCityAI::AI_chooseProduction()
 				iTotalFloatingDefenders * (2*iUnitSpending + iMaxUnitSpending) /
 				std::max(1, 3*iMaxUnitSpending))
 			{
-				if (AI_chooseLeastRepresentedUnit(floatingDefenderTypes))
+				if (AI_chooseLeastRepresentedUnit(floatingDefenderWeight))
 				{
 					if (gCityLogLevel >= 2) logBBAI("      City %S uses choose floating defender 1", getName().GetCString());
 					return;
@@ -1204,16 +1204,17 @@ void CvCityAI::AI_chooseProduction()
 	// The normal unit selection function should know what kind of units we should be building...
 	if (bLandWar && iWarSuccessRating < -10 && iEnemyPowerPerc - iWarSuccessRating > 150)
 	{
-		UnitTypeWeightArray defensiveTypes;
-		defensiveTypes.push_back(std::make_pair(UNITAI_COUNTER, 100));
-		defensiveTypes.push_back(std::make_pair(UNITAI_ATTACK, 100));
-		defensiveTypes.push_back(std::make_pair(UNITAI_RESERVE, 60));
-		//defensiveTypes.push_back(std::make_pair(UNITAI_COLLATERAL, 60));
-		defensiveTypes.push_back(std::make_pair(UNITAI_COLLATERAL, 80));
-		if (bDanger || (iTotalFloatingDefenders < (5*iNeededFloatingDefenders)/(bGetBetterUnits ? 6 : 4)))
+		UnitAIWeightMap defensiveWeight; // advc: Was vector of pairs "defensiveTypes"
+		defensiveWeight.set(UNITAI_COUNTER, 100);
+		defensiveWeight.set(UNITAI_ATTACK, 100);
+		defensiveWeight.set(UNITAI_RESERVE, 60);
+		//defensiveWeight.push_back(std::make_pair(UNITAI_COLLATERAL, 60));
+		defensiveWeight.set(UNITAI_COLLATERAL, 80);
+		if (bDanger || (iTotalFloatingDefenders <
+			(5*iNeededFloatingDefenders) / (bGetBetterUnits ? 6 : 4)))
 		{
-			defensiveTypes.push_back(std::make_pair(UNITAI_CITY_DEFENSE, 200));
-			defensiveTypes.push_back(std::make_pair(UNITAI_CITY_COUNTER, 50));
+			defensiveWeight.set(UNITAI_CITY_DEFENSE, 200);
+			defensiveWeight.set(UNITAI_CITY_COUNTER, 50);
 		}
 		int iOdds = iBuildUnitProb;
 		if (iWarSuccessRating < -50)
@@ -1225,7 +1226,7 @@ void CvCityAI::AI_chooseProduction()
 		if (bDanger)
 			iOdds += 10;
 
-		if (AI_chooseLeastRepresentedUnit(defensiveTypes, iOdds))
+		if (AI_chooseLeastRepresentedUnit(defensiveWeight, iOdds))
 		{
 			if (gCityLogLevel >= 2) logBBAI("      City %S uses choose losing extra defense with odds %d", getName().GetCString(), iOdds);
 			return;
@@ -1720,12 +1721,13 @@ void CvCityAI::AI_chooseProduction()
 
 		if (bDefenseWar || (bLandWar && iWarSuccessRating < -30))
 		{
-			UnitTypeWeightArray panicDefenderTypes;
-			panicDefenderTypes.push_back(std::make_pair(UNITAI_RESERVE, 100));
-			panicDefenderTypes.push_back(std::make_pair(UNITAI_COUNTER, 100));
-			panicDefenderTypes.push_back(std::make_pair(UNITAI_COLLATERAL, 100));
-			panicDefenderTypes.push_back(std::make_pair(UNITAI_ATTACK, 100));
-			if (AI_chooseLeastRepresentedUnit(panicDefenderTypes, (bGetBetterUnits ? 40 : 60) - iWarSuccessRating/3))
+			UnitAIWeightMap panicDefenderWeight; // advc: Was vector of pairs "defensiveTypes"
+			panicDefenderWeight.set(UNITAI_RESERVE, 100);
+			panicDefenderWeight.set(UNITAI_COUNTER, 100);
+			panicDefenderWeight.set(UNITAI_COLLATERAL, 100);
+			panicDefenderWeight.set(UNITAI_ATTACK, 100);
+			if (AI_chooseLeastRepresentedUnit(panicDefenderWeight,
+				(bGetBetterUnits ? 40 : 60) - iWarSuccessRating/3))
 			{
 				if (gCityLogLevel >= 2) logBBAI("      City %S uses choose panic defender", getName().GetCString());
 				return;
@@ -2128,16 +2130,14 @@ void CvCityAI::AI_chooseProduction()
 				iTrainInvaderChance /= (5 - getPopulation());
 			}
 
-			UnitTypeWeightArray invaderTypes;
-			invaderTypes.push_back(std::make_pair(UNITAI_ATTACK_CITY, 110)); // was 100
-			invaderTypes.push_back(std::make_pair(UNITAI_COUNTER, 40)); // was 50
-			invaderTypes.push_back(std::make_pair(UNITAI_ATTACK, 50)); // was 40
+			UnitAIWeightMap invaderWeight; // advc: Was vector of pairs "defensiveTypes"
+			invaderWeight.set(UNITAI_ATTACK_CITY, 110); // was 100
+			invaderWeight.set(UNITAI_COUNTER, 40); // was 50
+			invaderWeight.set(UNITAI_ATTACK, 50); // was 40
 			if (kPlayer.AI_isDoStrategy(AI_STRATEGY_AIR_BLITZ))
-			{
-				invaderTypes.push_back(std::make_pair(UNITAI_PARADROP, 20));
-			}
+				invaderWeight.set(UNITAI_PARADROP, 20);
 
-			if (AI_chooseLeastRepresentedUnit(invaderTypes, iTrainInvaderChance))
+			if (AI_chooseLeastRepresentedUnit(invaderWeight, iTrainInvaderChance))
 			{
 				if (!bCultureCity && iUnitsToTransport >=
 					iLocalTransports*iBestSeaAssaultCapacity)
@@ -2150,8 +2150,7 @@ void CvCityAI::AI_chooseProduction()
 		}
 	}
 
-	UnitTypeWeightArray airUnitTypes;
-
+	UnitAIWeightMap airWeight; // advc: Was vector of pairs "airUnitTypes"
 	int iAircraftNeed = 0;
 	int iAircraftHave = 0;
 	UnitTypes eBestAttackAircraft = NO_UNIT;
@@ -2161,20 +2160,26 @@ void CvCityAI::AI_chooseProduction()
 	{
 		if (bLandWar || bAssault || iFreeAirExperience > 0 || SyncRandOneChanceIn(3))
 		{
-			int iBestAirValue = kPlayer.AI_bestCityUnitAIValue(UNITAI_ATTACK_AIR, this, &eBestAttackAircraft);
-			int iBestMissileValue = kPlayer.AI_bestCityUnitAIValue(UNITAI_MISSILE_AIR, this, &eBestMissile);
+			int iBestAirValue = kPlayer.AI_bestCityUnitAIValue(
+					UNITAI_ATTACK_AIR, this, &eBestAttackAircraft);
+			int iBestMissileValue = kPlayer.AI_bestCityUnitAIValue(
+					UNITAI_MISSILE_AIR, this, &eBestMissile);
 			if ((iBestAirValue + iBestMissileValue) > 0)
 			{
-				iAircraftHave = kPlayer.AI_totalUnitAIs(UNITAI_ATTACK_AIR) + kPlayer.AI_totalUnitAIs(UNITAI_DEFENSE_AIR) + kPlayer.AI_totalUnitAIs(UNITAI_MISSILE_AIR);
+				iAircraftHave = kPlayer.AI_totalUnitAIs(UNITAI_ATTACK_AIR) +
+						kPlayer.AI_totalUnitAIs(UNITAI_DEFENSE_AIR) +
+						kPlayer.AI_totalUnitAIs(UNITAI_MISSILE_AIR);
 				if (NO_UNIT != eBestAttackAircraft)
 				{
 					iAircraftNeed = (2 + kPlayer.getNumCities() *
 							(3 * GC.getInfo(eBestAttackAircraft).getAirCombat())) /
 							(2 * std::max(1, kGame.getBestLandUnitCombat()));
-					int iBestDefenseValue = kPlayer.AI_bestCityUnitAIValue(UNITAI_DEFENSE_AIR, this);
+					int iBestDefenseValue = kPlayer.AI_bestCityUnitAIValue(
+							UNITAI_DEFENSE_AIR, this);
 					if (iBestDefenseValue > 0)
-					{
-						iAircraftNeed = std::max(iAircraftNeed, kPlayer.AI_getTotalAirDefendersNeeded()); // K-Mod
+					{	// <K-Mod>
+						iAircraftNeed = std::max(iAircraftNeed,
+								kPlayer.AI_getTotalAirDefendersNeeded()); // </K-Mod>
 						if (iBestAirValue > iBestDefenseValue)
 							iAircraftNeed = iAircraftNeed*3/2;
 					}
@@ -2202,21 +2207,17 @@ void CvCityAI::AI_chooseProduction()
 					iAircraftNeed += 1;
 				}
 
-				airUnitTypes.push_back(std::make_pair(UNITAI_ATTACK_AIR, bAirBlitz ? 125 : 80));
-				airUnitTypes.push_back(std::make_pair(UNITAI_DEFENSE_AIR,
-						//bLandBlitz ? 100 : 100
-						100)); // advc: huh?
+				airWeight.set(UNITAI_ATTACK_AIR, bAirBlitz ? 125 : 80);
+				airWeight.set(UNITAI_DEFENSE_AIR, /*bLandBlitz ? 100 : 100*/ 100); // advc: huh?
 				if (iBestMissileValue > 0)
-				{
-					airUnitTypes.push_back(std::make_pair(UNITAI_MISSILE_AIR, bAssault ? 60 : 40));
-				}
+					airWeight.set(UNITAI_MISSILE_AIR, bAssault ? 60 : 40);
 
-				//airUnitTypes.push_back(std::make_pair(UNITAI_ICBM, 20));
-				airUnitTypes.push_back(std::make_pair(UNITAI_ICBM, 20 * iNukeWeight / 100)); // K-Mod
+				//airWeight.set(UNITAI_ICBM, 20);
+				airWeight.set(UNITAI_ICBM, 20 * iNukeWeight / 100); // K-Mod
 
 				if (iAircraftHave * 2 < iAircraftNeed)
 				{
-					if (AI_chooseLeastRepresentedUnit(airUnitTypes))
+					if (AI_chooseLeastRepresentedUnit(airWeight))
 					{
 						if (gCityLogLevel >= 2) logBBAI("      City %S uses build least represented air", getName().GetCString());
 						return;
@@ -2384,28 +2385,29 @@ void CvCityAI::AI_chooseProduction()
 				return;
 			}
 
-			UnitTypeWeightArray invaderTypes;
-			invaderTypes.push_back(std::make_pair(UNITAI_ATTACK_CITY,// 100
+			UnitAIWeightMap invaderWeight; // advc: Was vector of pairs "invaderTypes"
+			invaderWeight.set(UNITAI_ATTACK_CITY,// 100
 					// <advc.081>
-					bNavalSiege ? 96 : 100));
+					bNavalSiege ? 96 : 100);
 			if(bNavalSiege)
-				invaderTypes.push_back(std::make_pair(UNITAI_ATTACK_SEA, 8));
+				invaderWeight.set(UNITAI_ATTACK_SEA, 8);
 			if(bAssaultAlongCoast) {
-				invaderTypes.push_back(std::make_pair(UNITAI_ASSAULT_SEA, 8 -
-						(bNavalSiege ? 4 : 0)));
+				invaderWeight.set(UNITAI_ASSAULT_SEA, 8 -
+						(bNavalSiege ? 4 : 0));
 			} // </advc.081>
-			invaderTypes.push_back(std::make_pair(UNITAI_COUNTER, 50));
-			invaderTypes.push_back(std::make_pair(UNITAI_ATTACK, 40));
-			invaderTypes.push_back(std::make_pair(UNITAI_PARADROP,
+			invaderWeight.set(UNITAI_COUNTER, 50);
+			invaderWeight.set(UNITAI_ATTACK, 40);
+			invaderWeight.set(UNITAI_PARADROP,
 					(kPlayer.AI_isDoStrategy(AI_STRATEGY_AIR_BLITZ) ? 30 : 20) /
-					(bAssault ? 2 : 1)));
+					(bAssault ? 2 : 1));
 			//if (!bAssault)
 			//if (!bAssault && !bCrushStrategy) // K-Mod
 			if(!bCrushStrategy) // advc: !bAssault already guaranteed
 			{
-				if (kPlayer.AI_totalAreaUnitAIs(kArea, UNITAI_PILLAGE) <= (iNumCitiesInArea + 1) / 2)
+				if (kPlayer.AI_totalAreaUnitAIs(kArea, UNITAI_PILLAGE) <=
+					(iNumCitiesInArea + 1) / 2)
 				{
-					invaderTypes.push_back(std::make_pair(UNITAI_PILLAGE, 30));
+					invaderWeight.set(UNITAI_PILLAGE, 30);
 				}
 			}
 			// K-Mod - get more siege units for crush
@@ -2431,7 +2433,7 @@ void CvCityAI::AI_chooseProduction()
 					(!GC.getInfo(eCityAttackUnit).getUnitAIType(UNITAI_ATTACK_CITY) &&
 					kPlayer.AI_bestCityUnitAIValue(UNITAI_ATTACK_CITY, this, &eCityAttackUnit) <= 110))
 				iTrainInvaderChance /= 2;*/ // </cdtw.8>
-			if (AI_chooseLeastRepresentedUnit(invaderTypes, iTrainInvaderChance))
+			if (AI_chooseLeastRepresentedUnit(invaderWeight, iTrainInvaderChance))
 				return;
 		}
 	}
@@ -2504,9 +2506,10 @@ void CvCityAI::AI_chooseProduction()
 		FErrorMsg("AI_bestSpreadUnit should provide a valid unit when it returns true");
 	}
 
-	if (!bUnitExempt && iTotalFloatingDefenders < iNeededFloatingDefenders && (!bFinancialTrouble || bLandWar))
+	if (!bUnitExempt && iTotalFloatingDefenders < iNeededFloatingDefenders &&
+		(!bFinancialTrouble || bLandWar))
 	{
-		if (AI_chooseLeastRepresentedUnit(floatingDefenderTypes, 50))
+		if (AI_chooseLeastRepresentedUnit(floatingDefenderWeight, 50))
 		{
 			if (gCityLogLevel >= 2) logBBAI("      City %S uses choose floating defender 2", getName().GetCString());
 			return;
@@ -2605,7 +2608,7 @@ void CvCityAI::AI_chooseProduction()
 			int iOdds = 33;
 			if (iFreeAirExperience > 0 || iProductionRank <= 1 + kPlayer.getNumCities() / 2)
 				iOdds = -1;
-			if (AI_chooseLeastRepresentedUnit(airUnitTypes, iOdds))
+			if (AI_chooseLeastRepresentedUnit(airWeight, iOdds))
 				return;
 		}
 	}
@@ -9218,7 +9221,7 @@ void CvCityAI::AI_doEmphasize()
 	}
 }
 
-bool CvCityAI::AI_chooseUnit(UnitAITypes eUnitAI, int iOdds)
+bool CvCityAI::AI_chooseUnit(UnitAITypes eUnitAI, /* BBAI: */ int iOdds)
 {
 	UnitTypes eBestUnit;
 	if (eUnitAI != NO_UNITAI)
@@ -9286,25 +9289,23 @@ bool CvCityAI::AI_chooseDefender()
 	return false;
 }
 
-bool CvCityAI::AI_chooseLeastRepresentedUnit(UnitTypeWeightArray &allowedTypes, int iOdds)
-{	/*std::multimap<int, UnitAITypes, std::greater<int> > bestTypes;
- 	std::multimap<int, UnitAITypes, std::greater<int> >::iterator best_it;*/ // BtS
-	std::vector<std::pair<int, UnitAITypes> > bestTypes; // K-Mod
-	UnitTypeWeightArray::iterator it;
-	for (it = allowedTypes.begin(); it != allowedTypes.end(); ++it)
+// advc: Param was vector of pairs "allowedTypes"
+bool CvCityAI::AI_chooseLeastRepresentedUnit(UnitAIWeightMap const& kWeights,
+	int iOdds) // BBAI
+{
+	std::vector<std::pair<int, UnitAITypes> > bestTypes; // K-Mod (replacing multimap)
+	FOR_EACH_NON_DEFAULT_PAIR(kWeights, UnitAI, int)
 	{
-		int iValue = it->second;
+		UnitAITypes const eUnitAI = perUnitAIVal.first;
+		int iValue = perUnitAIVal.second;
 		iValue *= 750 + syncRand().get(250, "AI choose least represented unit",
-				it->first); // advc.007
-		iValue /= 1 + GET_PLAYER(getOwner()).AI_totalAreaUnitAIs(getArea(), it->first);
-		//bestTypes.insert(std::make_pair(iValue, it->first));
-		bestTypes.push_back(std::make_pair(iValue, it->first)); // K-Mod
+				eUnitAI); // advc.007
+		iValue /= 1 + GET_PLAYER(getOwner()).AI_totalAreaUnitAIs(getArea(), eUnitAI);
+		bestTypes.push_back(std::make_pair(iValue, eUnitAI)); // K-Mod
 	}
-
-	// K-Mod
+	// <K-Mod>
 	std::sort(bestTypes.begin(), bestTypes.end(), std::greater<std::pair<int, UnitAITypes> >());
-	std::vector<std::pair<int, UnitAITypes> >::iterator best_it;
-	// K-Mod end
+	std::vector<std::pair<int, UnitAITypes> >::iterator best_it; // </K-Mod>
  	for (best_it = bestTypes.begin(); best_it != bestTypes.end(); ++best_it)
  	{
 		if (AI_chooseUnit(best_it->second, iOdds))
@@ -9461,7 +9462,8 @@ bool CvCityAI::AI_bestSpreadUnit(bool bMissionary, bool bExecutive, int iBaseCha
 	return (*eBestSpreadUnit != NULL);
 }
 
-bool CvCityAI::AI_chooseBuilding(int iFocusFlags, int iMaxTurns, int iMinThreshold, int iOdds)
+bool CvCityAI::AI_chooseBuilding(int iFocusFlags, int iMaxTurns, int iMinThreshold,
+	int iOdds) // BBAI
 {
 	BuildingTypes eBestBuilding = NO_BUILDING; // advc
 	eBestBuilding = AI_bestBuildingThreshold(iFocusFlags, iMaxTurns, iMinThreshold);
@@ -12260,29 +12262,29 @@ void CvCityAI::AI_barbChooseProduction()
 		}
 	}
 
-	UnitTypeWeightArray barbarianTypes;
-	barbarianTypes.push_back(std::make_pair(UNITAI_ATTACK, //125
+	UnitAIWeightMap unitAIWeight; // advc: Was vector of pairs "barbarianTypes"
+	unitAIWeight.set(UNITAI_ATTACK, //125
 			// <advc.300>
 			std::max(65, 100 - 15 *
-			getPlot().plotCount(PUF_isUnitAIType, UNITAI_ATTACK, -1, getOwner()))));
+			getPlot().plotCount(PUF_isUnitAIType, UNITAI_ATTACK, -1, getOwner())));
 	AreaAITypes const eAreaAI = getArea().getAreaAIType(getTeam()); // </advc.300>
-	barbarianTypes.push_back(std::make_pair(UNITAI_ATTACK_CITY,
+	unitAIWeight.set(UNITAI_ATTACK_CITY,
 			//bRepelColonists ? 100 : 50
 			/*	advc.300: (Note that naval invaders for existing transports have
 				already been considered above) */
-			eAreaAI == AREAAI_OFFENSIVE ? 100 : (eAreaAI != AREAAI_ASSAULT ? 60 : 30)));
-	barbarianTypes.push_back(std::make_pair(UNITAI_COUNTER, //100
+			eAreaAI == AREAAI_OFFENSIVE ? 100 : (eAreaAI != AREAAI_ASSAULT ? 60 : 30));
+	unitAIWeight.set(UNITAI_COUNTER, //100
 			// <advc.300>
 			std::max(25, 100 - 20 *
-			getPlot().plotCount(PUF_isUnitAIType, UNITAI_COUNTER, -1, getOwner()))));
+			getPlot().plotCount(PUF_isUnitAIType, UNITAI_COUNTER, -1, getOwner())));
 			// </advc.300>
-	barbarianTypes.push_back(std::make_pair(UNITAI_CITY_DEFENSE, //50
+	unitAIWeight.set(UNITAI_CITY_DEFENSE, //50
 			// <advc.300>
 			25 + 10 * std::max(0,
 			GC.getInfo(GC.getGame().getHandicapType()).getBarbarianInitialDefenders() -
-			getPlot().plotCount(PUF_isMissionAIType, MISSIONAI_GUARD_CITY, -1, getOwner()))));
+			getPlot().plotCount(PUF_isMissionAIType, MISSIONAI_GUARD_CITY, -1, getOwner())));
 			// </advc.300>
-	if (AI_chooseLeastRepresentedUnit(barbarianTypes))
+	if (AI_chooseLeastRepresentedUnit(unitAIWeight))
 		return;
 
 	if (AI_chooseUnit())

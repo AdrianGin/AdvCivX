@@ -1448,15 +1448,15 @@ void CvPlayerAI::AI_doCentralizedProduction()
 	int iNeededFloatingDefenders = (isBarbarian() || bCrushStrategy) ?  0 : kPlayer.AI_getTotalFloatingDefendersNeeded(pArea);
  	int iTotalFloatingDefenders = (isBarbarian() ? 0 : kPlayer.AI_getTotalFloatingDefenders(pArea));
 
-	UnitTypeWeightArray floatingDefenderTypes;
-	floatingDefenderTypes.push_back(std::make_pair(UNITAI_CITY_DEFENSE, 125));
-	floatingDefenderTypes.push_back(std::make_pair(UNITAI_CITY_COUNTER, 100));
-	//floatingDefenderTypes.push_back(std::make_pair(UNITAI_CITY_SPECIAL, 0));
-	floatingDefenderTypes.push_back(std::make_pair(UNITAI_RESERVE, 100));
-	floatingDefenderTypes.push_back(std::make_pair(UNITAI_COLLATERAL, 100));
+	UnitAIWeightMap floatingDefenderWeight; // advc
+	floatingDefenderWeight.set(UNITAI_CITY_DEFENSE, 125);
+	floatingDefenderWeight.set(UNITAI_CITY_COUNTER, 100);
+	//floatingDefenderWeight.set(UNITAI_CITY_SPECIAL, 0);
+	floatingDefenderWeight.set(UNITAI_RESERVE, 100);
+	floatingDefenderWeight.set(UNITAI_COLLATERAL, 100);
 
 	if (iTotalFloatingDefenders < ((iNeededFloatingDefenders + 1) / (bGetBetterUnits ? 3 : 2)))
-	if (!bExempt && AI_chooseLeastRepresentedUnit(floatingDefenderTypes))
+	if (!bExempt && AI_chooseLeastRepresentedUnit(floatingDefenderWeight))
 	{
 		if (gCityLogLevel >= 2) logBBAI("      City %S uses choose floating defender 1", getName().GetCString());
 		return;

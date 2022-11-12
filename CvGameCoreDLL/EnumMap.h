@@ -1737,6 +1737,8 @@ class CivTeamMap : public SubSeqEnumMap<ArrayEnumMap<CivTeamTypes,V,CV,iDEFAULT>
 {};
 
 typedef ArrayEnumMap<CivicOptionTypes,CivicTypes> CivicMap; // Needed rather frequently
+// Replacing a vector of pairs that had been defined in CvCityAI.h
+typedef ListEnumMap<UnitAITypes,int> UnitAIWeightMap;
 
 #undef FOR_EACH_KEY
 
