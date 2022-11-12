@@ -73,6 +73,9 @@ public:
 	// For now, we can do all we need directly in the ctor.
 	DepthFirstPlotSearch(CvPlot& kStart, V& kVisitor)
 	{
+		// Relevant when kVisitor gets used for multiple searches
+		if (kVisitor.isVisited(kStart))
+			return;
 		kVisitor.visit(kStart);
 		/*	Explicit stack b/c memory can be an issue if a map has dimensions
 			considerably larger than Huge and very large areas.
