@@ -1570,17 +1570,24 @@ void CvMap::getShelves(CvArea const& kArea, std::vector<Shelf*>& kShelves) const
 
 void CvMap::computeShelves()
 {
+	if (m_shelves.empty() && getLandPlots() <= 0)
+		return; // Map still being generated, no need to waste time.
+	/*	NB: First call that gets here normally still has no shallow water.
+		But that's not guaranteed, so we have to see for ourselves. */
 	for (std::map<Shelf::Id,Shelf*>::iterator it = m_shelves.begin();
 		it != m_shelves.end(); ++it)
 	{
 		SAFE_DELETE(it->second);
 	}
 	m_shelves.clear();
-	for (int i = 0; i < numPlots(); i++)
+	FOR_EACH_ENUM(PlotNum)
 	{
-		CvPlot& p = getPlotByIndex(i);
-		if (!p.isWater() || p.isLake() || p.isImpassable() || !p.isHabitable())
+		CvPlot& p = getPlotByIndex(eLoopPlotNum);
+		if (p.getTerrainType() != GC.getWATER_TERRAIN(true) ||
+			p.isImpassable() || p.isLake() || !p.isHabitable())
+		{
 			continue;
+		}
 		// Add plot to shelves of all adjacent land areas
 		std::set<int> adjLands;
 		FOR_EACH_ADJ_PLOT(p)
