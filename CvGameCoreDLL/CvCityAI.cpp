@@ -9242,8 +9242,8 @@ bool CvCityAI::AI_chooseUnit(UnitAITypes eUnitAI, int iOdds)
 			SyncRandNum(100) < iOdds)*/ // BtS
 		// K-Mod. boost the odds based on our completion percentage.
 		if (iOdds < 0 || SyncRandSuccess100(iOdds +
-			/*	advc.131: Coefficient was 100. Should we re-roll at all
-				once production has been started? */
+			/*	advc.131: Coefficient was 100. Should we re-roll at all once
+				production has been started? Same issue in AI_chooseBuilding. */
 			(250 * getUnitProduction(eBestUnit)) /
 			std::max(1, getProductionNeeded(eBestUnit)))) // K-Mod end
 		{
@@ -9474,7 +9474,8 @@ bool CvCityAI::AI_chooseBuilding(int iFocusFlags, int iMaxTurns, int iMinThresho
 		int iRand=0;
 		if (iOdds < 0 ||
 			(iRand = SyncRandNum(100)) < iOdds ||
-			iRand < iOdds + (100*getBuildingProduction(eBestBuilding)) /
+			// advc.131: Coefficient was 100; cf. CvCityAI::AI_chooseUnit.
+			iRand < iOdds + (250 * getBuildingProduction(eBestBuilding)) /
 			std::max(1, getProductionNeeded(eBestBuilding)))
 		// K-Mod end
 		{
