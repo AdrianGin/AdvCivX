@@ -917,7 +917,7 @@ int CvMap::maxTypicalDistance() const
 
 void CvMap::changeLandPlots(int iChange)
 {
-	m_iLandPlots = (m_iLandPlots + iChange);
+	m_iLandPlots += iChange;
 	FAssert(getLandPlots() >= 0);
 }
 

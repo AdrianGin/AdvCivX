@@ -863,6 +863,7 @@ protected:
 	bool m_bAnyIsthmus:1; // advc.opt
 	bool m_bPotentialCityWork:1;
 	bool m_bShowCitySymbols:1;
+
 	bool m_bFlagDirty:1;
 	bool m_bPlotLayoutDirty:1;
 	bool m_bLayoutStateWorked:1;
@@ -880,6 +881,7 @@ protected:
 	char /*PlayerTypes*/ m_eSecondOwner; // advc.035
 
 	char m_iAdjPlots; // advc.opt
+
 	// advc.912f: Was short - which would overflow too easily at times-100 precision.
 	int m_iUpgradeProgress;
 	int m_iTotalCulture; // advc.opt
