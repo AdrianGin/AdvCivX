@@ -9160,7 +9160,8 @@ void CvGame::write(FDataStreamBase* pStream)
 	/*	advc.enum: Bugfix in bool-valued ArrayEnumMap; advc.130c: tweak;
 		advc.130n: fave civic based on displayed leader type. */
 	//uiFlag = 24;
-	uiFlag = 25; // advc.130n (bugfix)
+	//uiFlag = 25; // advc.130n (bugfix)
+	uiFlag = 26; // advc.130w: Cache for expansionist hate
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9378,13 +9379,22 @@ void CvGame::onAllGameDataRead()
 		}
 		SAFE_DELETE_ARRAY(m_pLegacyOrgSeatData);
 	} // </advc.enum>
-	// <advc.130n>, advc.148, advc.130r, advc.130x, advc.130c
-	if (m_uiSaveFlag < 25 ||
+	// <advc.130w>
+	bool bAttitudeUpdated = false;
+	if (m_uiSaveFlag < 26)
+	{
+		for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+			itPlayer->AI_updateExpansionistHate();
+		bAttitudeUpdated = true;
+	} // </advc.130w>
+	// <advc.130n>, advc.148, advc.130r, advc.130x, advc.130c, advc.130w
+	if (m_uiSaveFlag < 26 ||
 		// <advc.127> Save created during AI Auto Play
 		(m_iAIAutoPlay != 0 && !isNetworkMultiPlayer()))
 	{
 		m_iAIAutoPlay = 0; // </advc.127>
-		CvPlayerAI::AI_updateAttitudes();
+		if (!bAttitudeUpdated) // advc.130w
+			CvPlayerAI::AI_updateAttitudes();
 	} // </advc.130n>
 	// <advc.500c>
 	if (m_uiSaveFlag < 19)

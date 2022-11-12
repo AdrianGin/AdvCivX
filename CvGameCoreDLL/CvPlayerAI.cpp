@@ -236,6 +236,7 @@ void CvPlayerAI::AI_reset(bool bConstructor)
 			kLoopPlayer.m_aiPeacetimeGrantValue[getID()] = 0;
 			kLoopPlayer.m_aiGoldTradedTo[getID()] = 0;
 			kLoopPlayer.m_aiAttitudeExtra[getID()] = 0;
+			kLoopPlayer.m_arExpansionistHate.resetVal(getID()); // advc.130w
 			// <advc.079>
 			if(getID() < MAX_CIV_PLAYERS)
 			{
@@ -253,6 +254,7 @@ void CvPlayerAI::AI_reset(bool bConstructor)
 			}
 		}
 	}
+	m_arExpansionistHate.reset(); // advc.130w
 
 	for (iI = 0; iI < NUM_YIELD_TYPES; iI++)
 	{
@@ -447,7 +449,7 @@ void CvPlayerAI::AI_doTurnPost()
 	}
 	if (isHuman())
 		return;
-	AI_updateAttitude();
+	AI_updateExpansionistHate(); // advc.130w (also updates our attitude cache)
 	// </advc.001>
 
 	AI_doDiplo();
@@ -7675,24 +7677,6 @@ void CvPlayerAI::AI_changeCachedAttitude(PlayerTypes ePlayer, int iChange)
 	m_aiAttitude[ePlayer] += iChange;
 } // K-Mod end
 
-/*  advc.130w: Gained and lost cities may change expansionist hate and perhaps other
-	modifiers too. This function should be called on both the old and new city owner.
-	CvPlot param b/c the city may have been razed. */
-void CvPlayerAI::AI_updateCityAttitude(CvPlot const& kCityPlot)
-{
-	if (!isMajorCiv())
-		return;
-	for (PlayerAIIter<MAJOR_CIV,KNOWN_TO> itOther(getTeam());
-		itOther.hasNext(); ++itOther)
-	{
-		if(itOther->getID() != getID() &&
-			kCityPlot.isRevealed(itOther->getTeam()))
-		{
-			itOther->AI_updateAttitude(getID());
-		}
-	}
-}
-
 // K-Mod note: the bulk of this function has been moved into CvPlayerAI::AI_updateAttitude.
 int CvPlayerAI::AI_getAttitudeVal(PlayerTypes ePlayer, bool bForced) const
 {
@@ -8134,7 +8118,7 @@ int CvPlayerAI::AI_getExpansionistAttitude(PlayerTypes ePlayer) const
 	scaled rEra = GC.AI_getGame().AI_getCurrEraFactor();
 	if (rEra <= 2)
 		rCitiesPerCiv.decreaseTo(3 * (1 + rEra));
-	scaled rPersonalFactor = AI_expansionistHate(ePlayer);
+	scaled rPersonalFactor = m_arExpansionistHate.get(ePlayer);
 	return -std::min(4,
 			(rPersonalFactor * fixp(8/3.) * rForeignCities / rCitiesPerCiv).
 			round());
@@ -8177,7 +8161,7 @@ int CvPlayerAI::AI_getRivalVassalAttitude(PlayerTypes ePlayer) const
 		}
 	}
 	return AI_rivalPactAttitude(ePlayer, true) // advc.130t
-			- (AI_expansionistHate(ePlayer) * 5 * rTotalVassalSzFactor /
+			- (m_arExpansionistHate.get(ePlayer) * 5 * rTotalVassalSzFactor /
 			scaled(iEverAlive).sqrt()).round();
 	// BtS formula:
 	/*if(GET_TEAM(ePlayer).getVassalCount(getTeam()) > 0)
@@ -8228,15 +8212,25 @@ int CvPlayerAI::AI_rivalPactAttitude(PlayerTypes ePlayer, bool bVassalPacts) con
 }
 
 // advc.130w:
-scaled CvPlayerAI::AI_expansionistHate(PlayerTypes ePlayer) const
+void CvPlayerAI::AI_updateExpansionistHate()
 {
-	CvLeaderHeadInfo& kPers = GC.getInfo(getPersonalityType());
-	scaled r(5 + AI_getPeaceWeight() - kPers.getWarmongerRespect(), 12);
-	scaled rPowRatio(GET_TEAM(getTeam()).getPower(true),
-			GET_TEAM(ePlayer).getPower(true));
-	r.decreaseTo(rPowRatio);
-	r.clamp(0, 1);
-	return r;
+	for (PlayerIter<MAJOR_CIV,KNOWN_TO> itOther(getTeam());
+		itOther.hasNext(); ++itOther)
+	{
+		if (itOther->getID() == getID())
+			continue;
+		CvLeaderHeadInfo& kPers = GC.getInfo(getPersonalityType());
+		scaled r(5 + AI_getPeaceWeight() - kPers.getWarmongerRespect(), 12);
+		scaled rPowRatio(GET_TEAM(getTeam()).getPower(true),
+				GET_TEAM(itOther->getTeam()).getPower(true));
+		r.decreaseTo(rPowRatio);
+		r.clamp(0, 1);
+		/*	Can't update the AI attitude cache whenever the power ratio shifts;
+			that happens too frequently. Instead cache the expansionist hate ratio,
+			and update the cached ratio only at certain times. */
+		m_arExpansionistHate.set(itOther->getID(), r);
+	}
+	AI_updateAttitude();
 }
 
 // advc.130m: Ended up rewriting this function entirely
@@ -22887,6 +22881,9 @@ void CvPlayerAI::read(FDataStreamBase* pStream)
 	pStream->Read(MAX_PLAYERS, m_aiPeacetimeGrantValue);
 	pStream->Read(MAX_PLAYERS, m_aiGoldTradedTo);
 	pStream->Read(MAX_PLAYERS, m_aiAttitudeExtra);
+	// <advc.130w>
+	if (uiFlag >= 22) // (Otherwise, update it in CvGame::onAllGameDataRead.)
+		m_arExpansionistHate.read(pStream); // </advc.130w>
 	// <advc.079>
 	if(uiFlag >= 12)
 	{
@@ -23059,7 +23056,8 @@ void CvPlayerAI::write(FDataStreamBase* pStream)
 	//uiFlag = 18; // advc.130n
 	//uiFlag = 19; // advc.130n (mostly removed again)
 	//uiFlag = 20; // advc.115f
-	uiFlag = 21; // advc.130c (remove separate cache for score diff)
+	//uiFlag = 21; // advc.130c (remove separate cache for score diff)
+	uiFlag = 22; // advc.130w: Cache for expansionist hate
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iPeaceWeight);
@@ -23100,6 +23098,7 @@ void CvPlayerAI::write(FDataStreamBase* pStream)
 	pStream->Write(MAX_PLAYERS, m_aiPeacetimeGrantValue);
 	pStream->Write(MAX_PLAYERS, m_aiGoldTradedTo);
 	pStream->Write(MAX_PLAYERS, m_aiAttitudeExtra);
+	m_arExpansionistHate.write(pStream); // advc.130w
 	// <advc.079>
 	for(int i = 0; i < MAX_CIV_PLAYERS; i++)
 	{

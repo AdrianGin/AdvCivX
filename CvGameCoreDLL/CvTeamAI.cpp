@@ -4410,19 +4410,43 @@ void CvTeamAI::AI_changeWarSuccess(TeamTypes eTeam, scaled rChange)
 	// <advc.130m>
 	if (rChange <= 0 || eTeam == BARBARIAN_TEAM || isBarbarian())
 		return;
-
+	std::vector<CvTeamAI*> apAffectedTeams;
 	for (TeamAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
 	{
 		CvTeamAI& kWarAlly = *it;
 		if (eTeam == kWarAlly.getID() || kWarAlly.getID() == getID())
 			continue;
 		// Let our allies know that we've had a war success
-		if(kWarAlly.isAtWar(eTeam) && !kWarAlly.isAtWar(getID()))
+		if (kWarAlly.isAtWar(eTeam) && !kWarAlly.isAtWar(getID()))
+		{
 			kWarAlly.AI_reportSharedWarSuccess(rChange, getID(), eTeam);
+			apAffectedTeams.push_back(&kWarAlly);
+		}
 		/*  Let the allies of our enemy know that their ally has suffered a loss
 			from us, their shared enemy */
-		if(!kWarAlly.isAtWar(eTeam) && kWarAlly.isAtWar(getID()))
+		if (!kWarAlly.isAtWar(eTeam) && kWarAlly.isAtWar(getID()))
+		{
 			kWarAlly.AI_reportSharedWarSuccess(rChange, eTeam, getID());
+			apAffectedTeams.push_back(&kWarAlly);
+		}
+	}
+	/*	Attitude cache update - relevant for WarAttitude (advc.sha) and
+		ShareWarAttitude (advc.130m). */
+	/*	To save time. Not crucial to keep AI attitude up to date during AI turns.
+		Note that network games are treated as never being in between turns. */
+	if (!GC.getGame().isInBetweenTurns() &&
+		(isHuman() || GET_TEAM(eTeam).isHuman()))
+	{
+		apAffectedTeams.push_back(&GET_TEAM(eTeam));
+		apAffectedTeams.push_back(this);
+		for (size_t i = 0; i < apAffectedTeams.size(); i++)
+		{
+			for (size_t j = 0; j < apAffectedTeams.size(); j++)
+			{
+				if (i != j)
+					apAffectedTeams[i]->AI_updateAttitude(apAffectedTeams[j]->getID());
+			}
+		}
 	}
 }
 

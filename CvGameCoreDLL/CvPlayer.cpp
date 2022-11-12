@@ -2007,9 +2007,15 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 	   case where a dead player arranged a vassal agreement. */
 	if(eOldOwner != NO_PLAYER)
 		GET_PLAYER(eOldOwner).verifyAlive(); // </advc.001>
-	// <advc.130w>
-	AI().AI_updateCityAttitude(kCityPlot);
-	GET_PLAYER(eOldOwner).AI_updateCityAttitude(kCityPlot); // </advc.130w>
+	// <advc.130w> Major power shift; good time to update expansionist hate.
+	for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	{
+		if (GET_TEAM(getTeam()).isHasMet(itPlayer->getTeam()) ||
+			GET_TEAM(eOldOwner).isHasMet(itPlayer->getTeam()))
+		{
+			itPlayer->AI_updateExpansionistHate();
+		}
+	} // </advc.130w>
 }
 
 /*	advc: I've redirected calls that went directly to CvEventReporter here.
@@ -4513,9 +4519,13 @@ void CvPlayer::raze(CvCity& kCity) // advc: param was CvCity*
 
 	kCity.doPartisans(); // advc.003y
 	CvEventReporter::getInstance().cityRazed(&kCity, getID());
-	CvPlot const& kCityPlot = *kCity.plot(); // advc.130w
 	disband(kCity);
-	AI().AI_updateCityAttitude(kCityPlot); // advc.130w
+	// <advc.130w> (Cf. the end of acquireCity)
+	for (PlayerAIIter<MAJOR_CIV,KNOWN_TO> itOther(getTeam());
+		itOther.hasNext(); ++itOther)
+	{
+		itOther->AI_updateExpansionistHate();
+	} // </advc.130w>
 }
 
 
