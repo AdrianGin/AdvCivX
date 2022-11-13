@@ -140,7 +140,7 @@ void CvPlotGroup::recalculatePlots(/* advc.064d: */ bool bVerifyProduction)
 			int const iOldCount = getLengthPlots();
 			CvPlot& kPlot = GC.getMap().getPlot(
 					pPlotNode->m_data.iX, pPlotNode->m_data.iY);
-			int iCount;/*= 0;
+			/*int iCount= 0;
 			gDLL->getFAStarIFace()->SetData(&GC.getPlotGroupFinder(), &iCount);
 			gDLL->getFAStarIFace()->GeneratePath(&GC.getPlotGroupFinder(),
 					kPlot.getX(), kPlot.getY(), -1, -1, false, eOwner);*/
@@ -153,7 +153,7 @@ void CvPlotGroup::recalculatePlots(/* advc.064d: */ bool bVerifyProduction)
 			static CvPlotGroupSizeCheck check;
 			check.reset(GET_PLAYER(eOwner), iOldCount + 1);
 			DepthFirstPlotSearch<CvPlotGroupSizeCheck> dfs(kPlot, check);
-			iCount = check.getCount();
+			int iCount = check.getCount();
 			FAssert(iCount <= iOldCount); // </advc.pf>
 			if (iCount == iOldCount)
 				return;

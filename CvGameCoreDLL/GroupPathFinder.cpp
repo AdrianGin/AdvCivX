@@ -503,7 +503,7 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 		FOR_EACH_UNIT_IN(pGroupUnit, kGroup)
 		{
 			if (!pGroupUnit->canFight())
-				continue; // advc
+				continue;
 			iDefenceCount++;
 			if (pGroupUnit->canDefend(&kTo))
 			{

@@ -13112,10 +13112,10 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 	CvPlot* pBestExplorePlot = NULL;
 
 	bool const bAnyImpassable = GET_PLAYER(getOwner()).AI_isAnyImpassable(getUnitType());
-	CvTeam const& kTeam = GET_TEAM(getTeam()); // K-Mod
-	CvPlayerAI const& kOwner = GET_PLAYER(getOwner()); // advc
+	CvTeamAI const& kTeam = GET_TEAM(getTeam()); // K-Mod
+	CvPlayerAI const& kOwner = GET_PLAYER(getOwner());
 	CvMap const& kMap = GC.getMap();
-
+	MovementFlags const eFlags = MOVE_NO_ENEMY_TERRITORY;
 	int const iSearchRange = AI_searchRange(iRange);
 	for (SquareIter it(*this, iSearchRange, false); it.hasNext(); ++it)
 	{
@@ -13169,11 +13169,8 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 		{
 			int iPathTurns;
 			PROFILE("AI_exploreRange Path");
-			if (!generatePath(p,
-				MOVE_NO_ENEMY_TERRITORY, true, &iPathTurns, iRange))
-			{
+			if (!generatePath(p, eFlags, true, &iPathTurns, iRange))
 				continue;
-			}
 			if (iPathTurns > iRange)
 				continue;
 		}
@@ -13247,7 +13244,7 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 	if (pBestPlot != NULL && pBestExplorePlot != NULL)
 	{
 		PROFILE("AI_exploreRange push");
-		pushGroupMoveTo(*pBestPlot, MOVE_NO_ENEMY_TERRITORY, false, false,
+		pushGroupMoveTo(*pBestPlot, eFlags, false, false,
 				MISSIONAI_EXPLORE, pBestExplorePlot);
 		return true;
 	}
