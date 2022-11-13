@@ -796,7 +796,12 @@ void CvSelectionGroup::startMission()
 				attacking units that they can't see. */
 			if (isHuman() && !GC.getMap().getPlot(
 				headMissionQueueNode()->m_data.iData1,
-				headMissionQueueNode()->m_data.iData2).isVisible(getTeam()))
+				headMissionQueueNode()->m_data.iData2).isVisible(getTeam()) &&
+				/*	<advc> Future-proofing. OK to accidentally run into an
+					unseen enemy in an adjacent plot. */
+				stepDistance(getX(), getY(),
+				headMissionQueueNode()->m_data.iData1,
+				headMissionQueueNode()->m_data.iData2) > 1) // </advc>
 			{
 				headMissionQueueNode()->m_data.eFlags |= MOVE_NO_ATTACK;
 			}
