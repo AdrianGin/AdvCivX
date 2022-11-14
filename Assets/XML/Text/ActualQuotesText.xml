@@ -1236,11 +1236,22 @@
 		<Italian>Ho poco tempo da dedicare alle tue chiacchiere, [CT_NAME]. Taglia corto.</Italian>
 		<Spanish>Tengo poco tiempo para hablar con vos, [CT_NAME], en resumidas cuentas.</Spanish>
 	</TEXT>
+	<!-- Having looked up the French original, let's use that for F.
+		 Wrote a German translation (meh). -->
 	<TEXT>
 		<Tag>AI_DIPLO_GREETINGS_ATT_FUR_LEADER_NAPOLEON_2</Tag>
-		<English>You again. The great proof of madness is the disproportion of one's designs to one's means. You're mad, [CT_NAME].</English>
+		<English>You again. The great proof of madness is the disproportion of one's designs to one's means. You are mad, [CT_NAME].</English>
+		<French>La grande preuve de la folie est la disproportion de ses desseins avec ses moyens. Vous êtes [NUM1:fou:folle], [CT_NAME].</French>
+		<German>Wenn das nicht [CT_NAME] ist. Apropos, Tollheit erweist sich klar am Missverhältnis von Mitteln und Zielen.</German>
+		<Italian>Ho poco tempo da dedicare alle tue chiacchiere, [CT_NAME]. Taglia corto.</Italian>
+		<Spanish>Tengo poco tiempo para hablar con vos, [CT_NAME], en resumidas cuentas.</Spanish>
+	</TEXT>
+	<!-- Just a random find that seems worth including -->
+	<TEXT>
+		<Tag>AI_DIPLO_GREETINGS_ATT_FUR_LEADER_NAPOLEON_3</Tag>
+		<English>The fool, my dear [CT_NAME], has one great advantage over a man of sense - he is always satisfied with himself.</English>
 		<French>Je n'ai pas de temps &#224; perdre en bavardages, [CT_NAME]. Notre entrevue n'a dur&#233; que trop longtemps.</French>
-		<German>Eigentlich habe ich keine Zeit f&#252;r Euer Geplapper, [CT_NAME]! So ist es nun mal!</German>
+		<German>Man muss es Euch lassen, [NUM1:mon cher:ma chère] [CT_NAME]: Was Selbstzufriedenheit angeht, ist der Narr dem verständigen Mann weit voraus.</German>
 		<Italian>Ho poco tempo da dedicare alle tue chiacchiere, [CT_NAME]. Taglia corto.</Italian>
 		<Spanish>Tengo poco tiempo para hablar con vos, [CT_NAME], en resumidas cuentas.</Spanish>
 	</TEXT>
