@@ -2934,7 +2934,6 @@ void CvGame::updateScore(bool bForce)
 	setScoreDirty(false);
 
 	EagerEnumMap<PlayerTypes,bool> abPlayerScored;
-	std::vector<PlayerTypes> aeUpdateAttitude; // advc.001
 	FOR_EACH_ENUM(CivPlayer)
 	{
 		PlayerTypes eRank = (PlayerTypes)eLoopCivPlayer;
@@ -2954,9 +2953,6 @@ void CvGame::updateScore(bool bForce)
 		}
 		FAssert(iBestScore == 0 || GET_PLAYER(eBestPlayer).isAlive()); // advc
 		abPlayerScored.set(eBestPlayer, true);
-		// <advc.001>
-		if (eRank != getPlayerRank(eBestPlayer))
-			aeUpdateAttitude.push_back(eBestPlayer); // </advc.001>
 		setRankPlayer(eRank, eBestPlayer);
 		setPlayerRank(eBestPlayer, eRank);
 		setPlayerScore(eBestPlayer, iBestScore);
@@ -2965,13 +2961,6 @@ void CvGame::updateScore(bool bForce)
 			GET_PLAYER(eBestPlayer).updateHistory(PLAYER_HISTORY_SCORE, getGameTurn());
 		// </advc.004s>
 	}
-	/*for (size_t i = 0; i < aeUpdateAttitude.size(); i++)
-		GET_PLAYER(aeUpdateAttitude[i]).AI_updateAttitude();*/
-	/*	<advc.001> The above isn't enough; the attitudes of those outside
-		aeUpdateAttitude toward those inside could also change. */
-	if (!aeUpdateAttitude.empty())
-		CvPlayerAI::AI_updateAttitudes(); // </advc.001>
-
 	EagerEnumMap<TeamTypes,bool> abTeamScored;
 	FOR_EACH_ENUM(CivTeam)
 	{
@@ -3000,6 +2989,8 @@ void CvGame::updateScore(bool bForce)
 		setTeamRank(eBestTeam, eRank);
 		setTeamScore(eBestTeam, iBestScore);
 	}
+	// advc.130c, advc.001: Difficult to narrow down which players need an update
+	CvPlayerAI::AI_updateAttitudes();
 }
 
 // advc.003y: Ported from CvUtil.py
