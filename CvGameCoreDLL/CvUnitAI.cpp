@@ -13004,6 +13004,32 @@ bool CvUnitAI::AI_goody(int iRange)
 }
 
 
+// advc.031d:
+MovementFlags CvUnitAI::AI_exploreFlags() const
+{
+	MovementFlags eFlags = MOVE_NO_ENEMY_TERRITORY; // as in BtS
+	if (currHitPoints() * 10 < maxHitPoints() * 7)
+		return eFlags | MOVE_AVOID_DANGER;
+	CvGame const& kGame = GC.getGame();
+	/*	Would be better to let the pathfinder decide what units are dangerous,
+		but that's harder to implement. */
+	bool bAnimals = (kGame.getGameTurn() < kGame.getBarbarianStartTurn() &&
+			!kGame.isOption(GAMEOPTION_NO_BARBARIANS) &&
+			!kGame.isOption(GAMEOPTION_NO_ANIMALS));
+	bool bExplore = (m_pUnitInfo->getDefaultUnitAIType() == UNITAI_EXPLORE);
+	int iPower = m_pUnitInfo->getPowerValue();
+	if (bExplore && !bAnimals && iPower <= 1)
+		return eFlags | MOVE_AVOID_DANGER;
+	if (isHuman())
+	{	/*	Scouts on auto-explore always avoid danger,
+			Warriors do when no animals are expected. */
+		if (bExplore || (!bAnimals && iPower < 3))
+			return eFlags | MOVE_AVOID_DANGER;
+	}
+	return eFlags;
+}
+
+
 bool CvUnitAI::AI_explore()
 {
 	PROFILE_FUNC();
@@ -13015,7 +13041,7 @@ bool CvUnitAI::AI_explore()
 	const CvTeam& kTeam = GET_TEAM(getTeam()); // K-Mod
 	bool bFirst = false; // advc.007
 	CvMap const& kMap = GC.getMap();
-
+	MovementFlags const eFlags = AI_exploreFlags(); // advc.031d
 	int iBestValue = 0;
 	for (int iI = 0; iI < kMap.numPlots(); iI++)
 	{
@@ -13070,7 +13096,7 @@ bool CvUnitAI::AI_explore()
 			continue;
 		}
 		int iPathTurns;
-		if (at(kPlot) || !generatePath(kPlot, MOVE_NO_ENEMY_TERRITORY, true, &iPathTurns))
+		if (at(kPlot) || !generatePath(kPlot, eFlags, true, &iPathTurns))
 			continue;
 
 		iValue += SyncRandNum(250 *
@@ -13094,7 +13120,7 @@ bool CvUnitAI::AI_explore()
 
 	if (pBestPlot != NULL && pBestExplorePlot != NULL)
 	{
-		pushGroupMoveTo(*pBestPlot, MOVE_NO_ENEMY_TERRITORY, false, false,
+		pushGroupMoveTo(*pBestPlot, eFlags, false, false,
 				MISSIONAI_EXPLORE, pBestExplorePlot);
 		return true;
 	}
@@ -13115,7 +13141,7 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 	CvTeamAI const& kTeam = GET_TEAM(getTeam()); // K-Mod
 	CvPlayerAI const& kOwner = GET_PLAYER(getOwner());
 	CvMap const& kMap = GC.getMap();
-	MovementFlags const eFlags = MOVE_NO_ENEMY_TERRITORY;
+	MovementFlags const eFlags = AI_exploreFlags(); // advc.031d
 	int const iSearchRange = AI_searchRange(iRange);
 	for (SquareIter it(*this, iSearchRange, false); it.hasNext(); ++it)
 	{

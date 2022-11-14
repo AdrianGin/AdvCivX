@@ -73,7 +73,9 @@ bool GroupStepMetric::canStepThrough(CvPlot const& kPlot, CvSelectionGroup const
 		if (iPathTurns > 1 || iMoves == 0)
 		{
 			if (!(eFlags & MOVE_IGNORE_DANGER) &&
-				!kGroup.canFight() && !kGroup.alwaysInvisible() &&
+				(!kGroup.canFight() ||
+				(eFlags & MOVE_AVOID_DANGER)) && // advc.031d
+				!kGroup.alwaysInvisible() &&
 				GET_PLAYER(kGroup.getHeadOwner()).AI_isAnyPlotDanger(kPlot))
 			{
 				return false;
@@ -164,7 +166,9 @@ bool GroupStepMetric::isValidDest(CvPlot const& kPlot, CvSelectionGroup const& k
 			}
 		}
 		if (!(eFlags & MOVE_IGNORE_DANGER) &&
-			!kGroup.canFight() && !kGroup.alwaysInvisible() &&
+			(!kGroup.canFight() ||
+			(eFlags & MOVE_AVOID_DANGER)) && // advc.031d
+			!kGroup.alwaysInvisible() &&
 			GET_PLAYER(kGroup.getHeadOwner()).AI_isAnyPlotDanger(kPlot))
 		{
 			return false;
