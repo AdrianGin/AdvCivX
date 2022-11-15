@@ -8149,19 +8149,28 @@ int CvPlayerAI::AI_getRivalVassalAttitude(PlayerTypes ePlayer) const
 	CvGame const& kGame = GC.getGame();
 	int iEverAlive = kGame.getCivTeamsEverAlive();
 	scaled rAvgCities(kGame.getNumCities(), iEverAlive);
-	scaled rTotalVassalSzFactor;
+	scaled rCapitulatedScore;
 	for (TeamIter<CIV_ALIVE,VASSAL_OF> itVassal(TEAMID(ePlayer));
 		itVassal.hasNext(); ++itVassal)
 	{
 		if (itVassal->isCapitulated())
 		{
-			rTotalVassalSzFactor += scaled::clamp(
-					fixp(2.5) * itVassal->getNumCities() / rAvgCities,
+			scaled rSizeScore = scaled::clamp(
+					fixp(2.25) * itVassal->getNumCities() / rAvgCities,
 					fixp(0.5), fixp(1.5));
+			int iCapitulationTurn = itVassal->getCapitulationTurn();
+			FAssertBounds(kGame.getStartTurn(), kGame.getGameTurn() + 1, iCapitulationTurn);
+			int iTurnsThresh = (std::max(30, GC.getInfo(kGame.getGameSpeedType()).get(
+					CvGameSpeedInfo::AIMemoryRandPercent)) * 3) / 4;
+			// Time component goes from 1.6 to 0 over the course of 75 turns
+			scaled rTimeComponent(16 * (iTurnsThresh
+					- (kGame.getGameTurn() - iCapitulationTurn)),
+					10 * iTurnsThresh);
+			rCapitulatedScore += (rTimeComponent + rSizeScore) / 2;
 		}
 	}
 	return AI_rivalPactAttitude(ePlayer, true) // advc.130t
-			- (m_arExpansionistHate.get(ePlayer) * 5 * rTotalVassalSzFactor /
+			- (m_arExpansionistHate.get(ePlayer) * 5 * rCapitulatedScore /
 			scaled(iEverAlive).sqrt()).round();
 	// BtS formula:
 	/*if(GET_TEAM(ePlayer).getVassalCount(getTeam()) > 0)

@@ -3755,6 +3755,19 @@ void CvTeam::triggerWars(bool bForceUpdateAttitude)
 	bTriggeringWars = false;
 } // </kekm.26>
 
+// advc.130w: (Don't feel like caching this info right now)
+int CvTeam::getCapitulationTurn() const
+{
+	if (!isCapitulated())
+		return -1;
+	FOR_EACH_DEAL(pDeal)
+	{
+		if (pDeal->isVassalDeal() && pDeal->isBetween(getID(), getMasterTeam()))
+			return GC.getGame().getGameTurn() - pDeal->getAge();
+	}
+	return -1;
+}
+
 
 void CvTeam::changeRouteChange(RouteTypes eIndex, int iChange)
 {

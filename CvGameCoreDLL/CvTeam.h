@@ -369,6 +369,7 @@ public:
 	{
 		return (isCapitulated() && isVassal(eMaster));
 	} // </advc>
+	int getCapitulationTurn() const; // advc.130w
 	int getRouteChange(RouteTypes eIndex) const																// Exposed to Python
 	{
 		return m_aiRouteChange.get(eIndex);

@@ -9152,7 +9152,8 @@ void CvGame::write(FDataStreamBase* pStream)
 		advc.130n: fave civic based on displayed leader type. */
 	//uiFlag = 24;
 	//uiFlag = 25; // advc.130n (bugfix)
-	uiFlag = 26; // advc.130w: Cache for expansionist hate
+	//uiFlag = 26; // advc.130w: Cache for expansionist hate
+	uiFlag = 27; // advc.130w: RivalVassalAttitude tweak
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE("Game pt1");
 	pStream->Write(m_iElapsedGameTurns);
@@ -9379,7 +9380,7 @@ void CvGame::onAllGameDataRead()
 		bAttitudeUpdated = true;
 	} // </advc.130w>
 	// <advc.130n>, advc.148, advc.130r, advc.130x, advc.130c, advc.130w
-	if (m_uiSaveFlag < 26 ||
+	if (m_uiSaveFlag < 27 ||
 		// <advc.127> Save created during AI Auto Play
 		(m_iAIAutoPlay != 0 && !isNetworkMultiPlayer()))
 	{
