@@ -8153,7 +8153,7 @@ int CvPlayerAI::AI_getRivalVassalAttitude(PlayerTypes ePlayer) const
 	for (TeamIter<CIV_ALIVE,VASSAL_OF> itVassal(TEAMID(ePlayer));
 		itVassal.hasNext(); ++itVassal)
 	{
-		if(itVassal->isCapitulated())
+		if (itVassal->isCapitulated())
 		{
 			rTotalVassalSzFactor += scaled::clamp(
 					fixp(2.5) * itVassal->getNumCities() / rAvgCities,
@@ -8173,7 +8173,7 @@ int CvPlayerAI::AI_getRivalVassalAttitude(PlayerTypes ePlayer) const
 // advc.130t:
 int CvPlayerAI::AI_rivalPactAttitude(PlayerTypes ePlayer, bool bVassalPacts) const
 {
-	if(GET_PLAYER(ePlayer).getMasterTeam() == getMasterTeam())
+	if (GET_PLAYER(ePlayer).getMasterTeam() == getMasterTeam())
 		return 0;
 	CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
 	int iScore = 0;
@@ -8181,15 +8181,15 @@ int CvPlayerAI::AI_rivalPactAttitude(PlayerTypes ePlayer, bool bVassalPacts) con
 	for (TeamIter<MAJOR_CIV,OTHER_KNOWN_TO> it(getTeam()); it.hasNext(); ++it)
 	{
 		CvTeam const& kTheirAlly = *it;
-		// If we're at war, then apparently the DP isn't deterring us
-		if(kOurTeam.isAtWar(kTheirAlly.getID()) ||
+		// If we're at war, then apparently the DP isn't deterring us.
+		if (kOurTeam.isAtWar(kTheirAlly.getID()) ||
 			(bVassalPacts ? kTheirAlly.isCapitulated() : kTheirAlly.isAVassal()) ||
 			kTheirAlly.getID() == TEAMID(ePlayer))
 		{
 			continue;
 		}
 		iTotal++;
-		if((bVassalPacts && kTheirAlly.isVassal(TEAMID(ePlayer))) ||
+		if ((bVassalPacts && kTheirAlly.isVassal(TEAMID(ePlayer))) ||
 			(!bVassalPacts && GET_TEAM(ePlayer).isDefensivePact(kTheirAlly.getID()) &&
 			!kOurTeam.isDefensivePact(kTheirAlly.getID()) &&
 			scaled(kOurTeam.getPower(true), kTheirAlly.getPower(true)) > fixp(0.7)))
@@ -8205,7 +8205,7 @@ int CvPlayerAI::AI_rivalPactAttitude(PlayerTypes ePlayer, bool bVassalPacts) con
 				iScore++;
 		}
 	}
-	if(iTotal <= 0)
+	if (iTotal <= 0)
 		return 0;
 	// Moderate impact of the number of civs (sqrt)
 	return -std::min(5, (2 * iScore / scaled(iTotal).sqrt()).round());
