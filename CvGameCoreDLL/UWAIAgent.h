@@ -114,6 +114,7 @@ private:
 	void scheme(); // Consider new war plans
 	void alignAreaAI(bool bNaval);
 	int peaceThreshold(TeamTypes eTarget) const;
+	scaled peaceVoteProb(TeamTypes eEnemy, int iOurWarUtil) const;
 	scaled limitedWarWeight() const;
 	
 	scaled utilityToTradeVal(scaled rUtility) const;

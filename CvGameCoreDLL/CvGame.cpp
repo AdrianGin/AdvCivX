@@ -5825,7 +5825,21 @@ void CvGame::setVoteChosen(int iSelection, int iVoteId)
 {
 	VoteSelectionData* pVoteSelectionData = getVoteSelection(iVoteId);
 	if (pVoteSelectionData != NULL)
+	{
 		addVoteTriggered(*pVoteSelectionData, iSelection);
+		// <advc.104> Let AI know that peace might be imminent
+		if (GC.getInfo(pVoteSelectionData->aVoteOptions.at(iSelection).eVote).
+			isForcePeace())
+		{
+			PlayerTypes const ePeaceTarget = pVoteSelectionData->
+					aVoteOptions[iSelection].ePlayer;
+			for (TeamAIIter<MAJOR_CIV,KNOWN_TO> itTeam(TEAMID(ePeaceTarget));
+				itTeam.hasNext(); ++itTeam)
+			{
+				itTeam->AI_processChosenPeaceVote(TEAMID(ePeaceTarget));
+			}
+		} // </advc.104>
+	}
 	deleteVoteSelection(iVoteId);
 }
 
@@ -10026,6 +10040,24 @@ VoteTriggeredData* CvGame::addVoteTriggered(VoteSourceTypes eVoteSource,
 void CvGame::deleteVoteTriggered(int iID)
 {
 	m_votesTriggered.removeAt(iID);
+}
+
+// advc.104:
+bool CvGame::isVoteTriggered(VoteSourceTypes eVS, VoteTypes eVote,
+	PlayerTypes eTarget) const
+{
+	int iIter;
+	for (VoteTriggeredData* pVoteTriggered = m_votesTriggered.beginIter(&iIter);
+		pVoteTriggered != NULL; pVoteTriggered = m_votesTriggered.nextIter(&iIter))
+	{
+		if (pVoteTriggered->eVoteSource == eVS &&
+			pVoteTriggered->kVoteOption.eVote == eVote &&
+			(eTarget == NO_PLAYER || pVoteTriggered->kVoteOption.ePlayer == eTarget))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 

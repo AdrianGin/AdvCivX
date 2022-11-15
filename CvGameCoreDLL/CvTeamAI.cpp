@@ -1928,6 +1928,27 @@ int CvTeamAI::AI_endWarVal(TeamTypes eTeam) const // XXX this should consider ar
 	return AI_roundTradeVal(iValue);
 }
 
+// advc.104: When forced peace has been proposed but not yet voted on
+void CvTeamAI::AI_processChosenPeaceVote(TeamTypes eVoteTarget)
+{
+	if (!getUWAI().isEnabled() && !getUWAI().isEnabled(true))
+		return;
+	// Don't capitulate when a peace vote is imminent
+	if (getID() == eVoteTarget || isAtWar(eVoteTarget))
+	{
+		for (TeamIter<HUMAN,OTHER_KNOWN_TO> itMaster(getID());
+			itMaster.hasNext(); ++itMaster)
+		{
+			for (MemberAIIter itMember(getID()); itMember.hasNext(); ++itMember)
+			{
+FAssert(!itMember->uwai().getCache().isReadyToCapitulate(itMaster->getID()));//advc.tmp
+				itMember->uwai().getCache().setReadyToCapitulate(
+						itMaster->getID(), false);
+			}
+		}
+	}
+}
+
 /*	K-Mod: This is the tech value modifier for devaluing techs that are
 	known by other civs. Based on BtS code from AI_techTradeVal. */
 scaled CvTeamAI::AI_knownTechValModifier(TechTypes eTech) const

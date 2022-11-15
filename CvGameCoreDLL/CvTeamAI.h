@@ -108,6 +108,7 @@ public:
 	int AI_startWarVal(TeamTypes eTarget, WarPlanTypes eWarPlan, // K-Mod
 			bool bConstCache = false) const; // advc.001n
 	int AI_endWarVal(TeamTypes eTeam) const;
+	void AI_processChosenPeaceVote(TeamTypes eVoteTarget); // advc.104
 
 	scaled CvTeamAI::AI_knownTechValModifier(TechTypes eTech) const; // K-Mod
 

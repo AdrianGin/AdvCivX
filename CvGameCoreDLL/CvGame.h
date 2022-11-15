@@ -807,6 +807,9 @@ public:
 	VoteTriggeredData* addVoteTriggered(VoteSourceTypes eVoteSource,
 			VoteSelectionSubData const& kOptionData);
 	void deleteVoteTriggered(int iID);
+	// <advc.104>
+	bool isVoteTriggered(VoteSourceTypes eVS, VoteTypes eVote,
+			PlayerTypes eTarget = NO_PLAYER) const; // </advc.104>
 
 	CvRandom& getMapRand()																				// Exposed to Python
 	{

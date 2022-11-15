@@ -752,6 +752,9 @@ bool UWAI::Team::considerCapitulation(TeamTypes eMaster, int iAgentWarUtility,
 					" not low enough (%d>%d)", iAgentWarUtility, iUtilityThresh / 4);
 			return true;
 		}
+		// Less willing to capitulate if forced peace imminent
+		iAgentWarUtility = (iAgentWarUtility *
+				(1 - peaceVoteProb(eMaster, iAgentWarUtility))).round();
 		if (iAgentWarUtility > iUtilityThresh)
 		{
 			int iCapitulationUtility = iAgentWarUtility;
@@ -1240,6 +1243,104 @@ int UWAI::Team::peaceThreshold(TeamTypes eTarget) const
 }
 
 
+scaled UWAI::Team::peaceVoteProb(TeamTypes eEnemy, int iOurWarUtil) const
+{
+	/*	Let's get this special case out of the way. Won't really matter then
+		whether there'll be a peace vote. */
+	if (iOurWarUtil == 0)
+		return 0;
+	scaled rNoPeaceProb = 1;
+	CvGame const& kGame = GC.getGame();
+	// Cf. CvGame::doVoteSelection, addVoteSelection
+	FOR_EACH_ENUM2(VoteSource, eVS)
+	{
+		if (!kGame.isDiploVote(eVS) ||
+			// No peace vote anytime soon if election upcoming
+			kGame.getSecretaryGeneralTimer(eVS) <= 0)
+		{
+			continue;
+		}
+		TeamTypes const eSGTeam = kGame.getSecretaryGeneral(eVS);
+		if (eSGTeam == NO_TEAM)
+			continue;
+		CvTeamAI const& kSGTeam = GET_TEAM(eSGTeam);
+		int const iVoteTimer = kGame.getVoteTimer(eVS);
+		FOR_EACH_ENUM(Vote)
+		{
+			if (!GC.getInfo(eLoopVote).isForcePeace() ||
+				!GC.getInfo(eLoopVote).isVoteSourceType(eVS))
+			{
+				continue;
+			}
+			// Won't matter for this analysis which belligerent gets targeted
+			bool bValidTargetFound = false;
+			TeamTypes aeVoteTarget[] = { m_eAgent, eEnemy };
+			for (int i = 0; i < ARRAYSIZE(aeVoteTarget) &&
+				!bValidTargetFound; i++)
+			{
+				/*	If the vote is already underway for one target, then we want
+					to work with that target, not the other one. */
+				if (i == 0 && kGame.isVoteTriggered(eVS, eLoopVote,
+					GET_TEAM(aeVoteTarget[1]).getLeaderID()))
+				{
+					continue;
+				}
+				TeamTypes const eVoteTarget = aeVoteTarget[i];
+				// (Peace votes always target the team leader)
+				PlayerTypes const eTargetPlayer = GET_TEAM(eVoteTarget).getLeaderID();
+				VoteSelectionSubData voteData(eLoopVote);
+				voteData.ePlayer = eTargetPlayer;
+				if (!kGame.isValidVoteSelection(eVS, voteData))
+					continue;
+				bValidTargetFound = true;
+				scaled rPeaceProb = 1 - per100(GC.getInfo(eLoopVote).
+						getPopulationThreshold());
+				if (rPeaceProb <= 0)
+					continue;
+				/*	Rather than predict the behavior of every voter, we treat
+					the outcome entirely as random, with some bias for peace
+					being enforced b/c, once proposed, measures also get passed
+					more often than not. */
+				rPeaceProb *= fixp(4/3.);
+				if (!kGame.isVoteTriggered(eVS, eLoopVote, eTargetPlayer))
+				{
+					/*	Now, as for anticipating the SG's proposal, we assume that
+						the more we're losing and the SG likes us, the likelier
+						a peace proposal, and, well, vice versa.
+						Not really how CvPlayerAI::AI_diploVote works, but we
+						don't want to be tether ourselves to those details. */
+					if ((eSGTeam == m_eAgent && iOurWarUtil > 0) ||
+						(eSGTeam == eEnemy && iOurWarUtil < 0))
+					{
+						continue;
+					}
+					if (eSGTeam != m_eAgent && eSGTeam != eEnemy)
+					{
+						AttitudeTypes eTowardUs = kSGTeam.AI_getAttitude(m_eAgent);
+						if (eTowardUs < ATTITUDE_CAUTIOUS && iOurWarUtil < 0)
+							continue;
+						int iSGBias = 2 * eTowardUs - kSGTeam.AI_getAttitude(eEnemy);
+						rPeaceProb *= -per100(std::max(-100, iOurWarUtil)) *
+								scaled(iSGBias, 2 * ATTITUDE_FRIENDLY);
+						if (!kSGTeam.isHuman())
+						{
+							rPeaceProb += scaled(GET_PLAYER(kSGTeam.getSecretaryID()).
+									AI_getPeaceWeight() - 4, 25);
+						}
+					}
+					// Express a delay through a smaller probability
+					rPeaceProb -= scaled(iVoteTimer, 10);
+					rPeaceProb.clamp(0, 1);
+				}
+				rNoPeaceProb *= 1 - rPeaceProb;
+			}
+		}
+	}
+FAssert(rNoPeaceProb==1);//advc.tmp
+	return 1 - rNoPeaceProb;
+}
+
+
 int UWAI::Team::uJointWar(TeamTypes eTarget, TeamTypes eAlly) const
 {
 	// Only log about inter-AI war trades
@@ -1305,7 +1406,10 @@ int UWAI::Team::tradeValJointWar(TeamTypes eTarget, TeamTypes eAlly) const
 
 int UWAI::Team::reluctanceToPeace(TeamTypes eEnemy, bool bNonNegative) const
 {
-	int iR = -uEndWar(eEnemy) - std::min(0, peaceThreshold(eEnemy));
+	int iUtilEndWar = uEndWar(eEnemy);
+	int iR = -iUtilEndWar - std::min(0, peaceThreshold(eEnemy));
+	// Less reluctant if forced peace imminent
+	iR = (iR * (1 - peaceVoteProb(eEnemy, -iUtilEndWar))).round();
 	if (bNonNegative)
 		return std::max(0, iR);
 	return iR;
