@@ -136,6 +136,10 @@ struct EventTriggeredData
 
 struct VoteSelectionSubData
 {
+	VoteSelectionSubData(VoteTypes eVote = NO_VOTE) // advc: Ensure initialization
+	:	eVote(eVote), ePlayer(NO_PLAYER),
+		iCityId(FFreeList::INVALID_INDEX), eOtherPlayer(NO_PLAYER)
+	{}
 	VoteTypes eVote;
 	PlayerTypes ePlayer;
 	int iCityId;
@@ -144,7 +148,9 @@ struct VoteSelectionSubData
 };
 
 struct VoteSelectionData
-{
+{	// advc:
+	VoteSelectionData(VoteSourceTypes eVS = NO_VOTESOURCE)
+	:	eVoteSource(eVS), iId(FFreeList::INVALID_INDEX) {}
 	int iId;
 	VoteSourceTypes eVoteSource;
 	std::vector<VoteSelectionSubData> aVoteOptions;
@@ -156,7 +162,9 @@ struct VoteSelectionData
 };
 
 struct VoteTriggeredData
-{
+{	// advc:
+	VoteTriggeredData(VoteSourceTypes eVS = NO_VOTESOURCE)
+	:	eVoteSource(eVS), iId(FFreeList::INVALID_INDEX) {}
 	int iId;
 	VoteSourceTypes eVoteSource;
 	VoteSelectionSubData kVoteOption;

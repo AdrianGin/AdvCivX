@@ -4864,13 +4864,13 @@ bool CvGame::isValidVoteSelection(VoteSourceTypes eVoteSource,
 	if (kData.ePlayer!= NO_PLAYER)
 	{
 		CvPlayer& kPlayer = GET_PLAYER(kData.ePlayer);
-		if (!kPlayer.isAlive() || kPlayer.isBarbarian() || kPlayer.isMinorCiv())
+		if (!kPlayer.isAlive() || !kPlayer.isMajorCiv())
 			return false;
 	}
 	if (kData.eOtherPlayer != NO_PLAYER)
 	{
 		CvPlayer& kPlayer = GET_PLAYER(kData.eOtherPlayer);
-		if (!kPlayer.isAlive() || kPlayer.isBarbarian() || kPlayer.isMinorCiv())
+		if (!kPlayer.isAlive() || !kPlayer.isMajorCiv())
 			return false;
 	}
 	int iVoters = 0;

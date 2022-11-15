@@ -5,7 +5,11 @@
 #include "CoreAI.h"
 #include "CvMap.h"
 
-UWAI::UWAI() : m_bEnabled(false), m_bInBackground(false) {}
+UWAI::UWAI() : m_bEnabled(false), m_bInBackground(false)
+{
+	FAssertMsg(CvGlobals::getInstance().getGamePointer() == NULL,
+			"Accidental creation of another instance?");
+}
 
 
 void UWAI::invalidateUICache()
