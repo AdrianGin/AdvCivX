@@ -8163,8 +8163,8 @@ int CvPlayerAI::AI_getRivalVassalAttitude(PlayerTypes ePlayer) const
 			int iTurnsThresh = (std::max(30, GC.getInfo(kGame.getGameSpeedType()).get(
 					CvGameSpeedInfo::AIMemoryRandPercent)) * 3) / 4;
 			// Time component goes from 1.6 to 0 over the course of 75 turns
-			scaled rTimeComponent(16 * (iTurnsThresh
-					- (kGame.getGameTurn() - iCapitulationTurn)),
+			scaled rTimeComponent(16 * std::max(0,
+					iTurnsThresh - (kGame.getGameTurn() - iCapitulationTurn)),
 					10 * iTurnsThresh);
 			rCapitulatedScore += (rTimeComponent + rSizeScore) / 2;
 		}
