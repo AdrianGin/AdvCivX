@@ -28,6 +28,8 @@ def getNumPlotsPercent(argsList):
 		WorldSizeTypes.WORLDSIZE_LARGE:		74,
 		WorldSizeTypes.WORLDSIZE_HUGE:		72
 	}
+	if iWorldSize >= len(sizeModifiers):
+		return 70
 	return sizeModifiers[iWorldSize]
 
 def getDescription():

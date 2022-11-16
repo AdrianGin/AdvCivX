@@ -24,6 +24,8 @@ def getNumPlotsPercent(argsList):
 		WorldSizeTypes.WORLDSIZE_LARGE:		83,
 		WorldSizeTypes.WORLDSIZE_HUGE:		79
 	}
+	if iWorldSize >= len(sizeModifiers):
+		return 75
 	return sizeModifiers[iWorldSize]
 
 def isAdvancedMap():

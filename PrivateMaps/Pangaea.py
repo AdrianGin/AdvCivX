@@ -49,7 +49,10 @@ def getNumPlotsPercent(argsList):
 		WorldSizeTypes.WORLDSIZE_LARGE:		67,
 		WorldSizeTypes.WORLDSIZE_HUGE:		60
 	}
-	r = sizeModifiers[iWorldSize]
+	if iWorldSize >= len(sizeModifiers):
+		r = 52
+	else:
+		r = sizeModifiers[iWorldSize]
 	# Low sea level doesn't have as much impact on this map. Adjust the grid size in order to compensate.
 	if CyGlobalContext().getSeaLevelInfo(CyMap().getSeaLevel()).getSeaLevelChange() < 0:
 		r = (r * 6) // 5
@@ -226,7 +229,11 @@ class PangaeaMultilayeredFractal(CvMapGeneratorUtil.MultilayeredFractal):
 			WorldSizeTypes.WORLDSIZE_LARGE:     4,
 			WorldSizeTypes.WORLDSIZE_HUGE:      5
 			}
-		grain = sizevalues[sizekey]
+		# <advc.165> Tolerate bigger sizes
+		if sizekey >= len(sizevalues):
+			grain = 5
+		else: # </advc.165>
+			grain = sizevalues[sizekey]
 		
 		# Sea Level adjustment (from user input), limited to value of 5%.
 		sea = self.gc.getSeaLevelInfo(self.map.getSeaLevel()).getSeaLevelChange()
