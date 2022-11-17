@@ -7372,7 +7372,7 @@ int CvGame::numBarbariansToCreate(int iTilesPerUnit, int iTiles, int iUnowned,
 			rDividend = iOwned;
 		}
 	}
-	/*	For Rage, reduce divisor to 60% (50% in BtS), but
+	/*	For Rage, reduce divisor to 65% (50% in BtS), but
 		<advc.307> reduces it further based on the game era. */
 	if (isOption(GAMEOPTION_RAGING_BARBARIANS))
 	{
@@ -7381,7 +7381,7 @@ int CvGame::numBarbariansToCreate(int iTilesPerUnit, int iTiles, int iUnowned,
 			and Medieval starts b/c the starting defenders are mere Archers). */
 		if (iCurrentEra <= getStartEra())
 			iCurrentEra = 0;
-		scaled rRageMultiplier = fixp(0.6);
+		scaled rRageMultiplier = fixp(0.65);
 		rRageMultiplier.mulDiv(8 - iCurrentEra, 8);
 		rDivisor *= rRageMultiplier;
 		rDivisor.increaseTo(10);
