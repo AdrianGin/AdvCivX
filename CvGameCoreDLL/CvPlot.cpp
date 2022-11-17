@@ -7069,29 +7069,32 @@ void CvPlot::processArea(CvArea& kArea, int iChange)
 	// advc.opt:
 	/*if (getImprovementType() != NO_IMPROVEMENT)
 		kArea.changeNumImprovements(getImprovementType(), iChange);*/
-
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	bool const bAnyUnit = (m_units.getLength() > 0); // advc.opt
+	FOR_EACH_ENUM2(Player, ePlayer)
 	{
-		PlayerTypes ePlayer = (PlayerTypes)i;
 		if (GET_PLAYER(ePlayer).getStartingPlot() == this)
 			kArea.changeNumStartingPlots(iChange);
+		// <advc.opt>
+		if (!bAnyUnit)
+			continue; // </advc.opt>
 		kArea.changePower(ePlayer, getUnitPower(ePlayer) * iChange);
 		kArea.changeUnitsPerPlayer(ePlayer, plotCount(PUF_isPlayer, ePlayer) * iChange);
 		// advc: No longer kept track of
 		//kArea.changeAnimalsPerPlayer(ePlayer, plotCount(PUF_isAnimal, -1, -1, ePlayer) * iChange);
-		for (int j = 0; j < NUM_UNITAI_TYPES; j++)
+		FOR_EACH_ENUM(UnitAI)
 		{
-			UnitAITypes eUnitAI = (UnitAITypes)j;
-			kArea.changeNumAIUnits(ePlayer, eUnitAI,
-					plotCount(PUF_isUnitAIType, eUnitAI, -1, ePlayer) * iChange);
+			kArea.changeNumAIUnits(ePlayer, eLoopUnitAI,
+					plotCount(PUF_isUnitAIType, eLoopUnitAI, -1, ePlayer) * iChange);
 		}
 	}
-	FOR_EACH_ENUM(Team)
+	if (m_abRevealed.isAnyNonDefault()) // advc.opt
 	{
-		if (isRevealed(eLoopTeam))
-			kArea.changeNumRevealedTiles(eLoopTeam, iChange);
+		FOR_EACH_ENUM(Team)
+		{
+			if (isRevealed(eLoopTeam))
+				kArea.changeNumRevealedTiles(eLoopTeam, iChange);
+		}
 	}
-
 	CvCity* pCity = getPlotCity();
 	if (pCity == NULL)
 		return;
@@ -7109,9 +7112,9 @@ void CvPlot::processArea(CvArea& kArea, int iChange)
 		processArea call with iChange=1 would then lead to an incorrect
 		city count. I think this can only happen in a scenario with preplaced
 		cities though, and I'm not sure what to do about it. */
-	if(pWaterArea != NULL)
+	if (pWaterArea != NULL)
 	{
-		if(iChange > 0 || (iChange < 0 &&
+		if (iChange > 0 || (iChange < 0 &&
 			// See comment in CvCity::kill
 			pWaterArea->getCitiesPerPlayer(getOwner()) > 0, true))
 		{
@@ -7120,9 +7123,8 @@ void CvPlot::processArea(CvArea& kArea, int iChange)
 	} // </advc.030b>
 	kArea.changePopulationPerPlayer(pCity->getOwner(), pCity->getPopulation() * iChange);
 
-	for (int i = 0; i < GC.getNumBuildingInfos(); i++)
+	FOR_EACH_ENUM2(Building, eBuilding)
 	{
-		BuildingTypes eBuilding = (BuildingTypes)i;
 		int const iTotalChange = iChange * pCity->getNumActiveBuilding(eBuilding);
 		if (iTotalChange <= 0)
 			continue;
@@ -7146,10 +7148,10 @@ void CvPlot::processArea(CvArea& kArea, int iChange)
 		kArea.changeNumTrainAIUnits(pCity->getOwner(), eLoopUnitAI,
 				pCity->getNumTrainUnitAI(eLoopUnitAI) * iChange);
 	}
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	FOR_EACH_ENUM(Player)
 	{
-		if (kArea.AI_getTargetCity((PlayerTypes)i) == pCity)
-			kArea.AI_setTargetCity((PlayerTypes)i, NULL);
+		if (kArea.AI_getTargetCity(eLoopPlayer) == pCity)
+			kArea.AI_setTargetCity(eLoopPlayer, NULL);
 	}
 }
 

@@ -1118,7 +1118,9 @@ void CvMap::recalculateAreas(/* advc.opt: */bool bUpdateIsthmuses)
 			getPlotByIndex(i).updateAnyIsthmus();
 	} // </advc.opt>
 	for (int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).setArea(NULL);
+	{	// advc.opt: Don't update the old areas, we're about to delete them.
+		getPlotByIndex(i).setArea(NULL, false);
+	}
 	m_areas.removeAll();
 	calculateAreas();
 }
