@@ -2516,6 +2516,7 @@ int CvPlot::getFeatureProduction(BuildTypes eBuild, TeamTypes eTeam, CvCity** pp
 CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner,
 	/* <advc> */ DefenderFilters& kFilters) const
 {
+	PROFILE_FUNC();
 	// Ensure consistency of parameters
 	if (kFilters.m_pAttacker != NULL)
 	{

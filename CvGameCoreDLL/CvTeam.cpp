@@ -902,7 +902,7 @@ void CvTeam::processBuilding(BuildingTypes eBuilding, int iChange)
 
 void CvTeam::doTurn()
 {
-	PROFILE("CvTeam::doTurn()");
+	PROFILE_FUNC();
 
 	FAssert(isAlive());
 	FAssert(countWarEnemies() == m_iMajorWarEnemies); // advc.003m

@@ -8365,6 +8365,7 @@ int CvCityAI::AI_countBestBuilds(CvArea const& kArea) const
 // Note: this function has been somewhat mangled by K-Mod
 void CvCityAI::AI_updateBestBuild()
 {
+	PROFILE_FUNC(); // advc
 	CvPlayerAI& kOwner = GET_PLAYER(getOwner()); // K-Mod
 
 	int iFoodMultiplier, iProductionMultiplier, iCommerceMultiplier, iDesiredFoodChange;

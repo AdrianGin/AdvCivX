@@ -1249,6 +1249,7 @@ void CvSelectionGroup::continueMission()
 // return true if we are ready to take another step
 bool CvSelectionGroup::continueMission_bulk(int iSteps)
 {
+	PROFILE_FUNC(); // advc (This covers more ground than pushMission)
 	FAssert(!isBusy());
 	FAssert(getOwner() != NO_PLAYER);
 	FAssert(getActivityType() == ACTIVITY_MISSION);

@@ -1479,6 +1479,7 @@ CvCity* CvPlayer::initCity(int iX, int iY, bool bBumpUnits, bool bUpdatePlotGrou
 void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool bUpdatePlotGroups,
 	bool bPeaceDeal, bool bForFree) // advc.ctr
 {
+	PROFILE_FUNC(); // advc: Rare but slow
 	FAssert(!bConquest || !bTrade); // advc: mutually exclusive
 	// advc.ctr: bForFree isn't meaningful for conquests
 	FAssert(!bForFree || bTrade);

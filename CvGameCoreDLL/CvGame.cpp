@@ -3111,6 +3111,7 @@ void CvGame::updateGwPercentAnger()
 	instead of calling the CvEngine function directly. */
 void CvGame::autoSave(bool bInitial)
 {
+	PROFILE_FUNC();
 	/*	<advc.135c> Avoid overlapping auto-saves in test games played on a
 		single machine. Don't know how to check this properly. */
 	if (isNetworkMultiPlayer() && isDebugToolsAllowed(false) && getActivePlayer() % 2 == 0)

@@ -447,7 +447,7 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 
 void CvCity::doTurn()
 {
-	PROFILE("CvCity::doTurn()");
+	PROFILE_FUNC();
 
 	if (!isBombarded())
 		changeDefenseDamage(-GC.getDefineINT(CvGlobals::CITY_DEFENSE_DAMAGE_HEAL_RATE));
