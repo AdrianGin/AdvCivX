@@ -5035,7 +5035,8 @@ int CvUnit::sabotageProb(const CvPlot* pPlot, ProbabilityTypes eProbStyle) const
 	return iProb;
 }
 
-
+/*	advc (note): This function cheats with visibility, but I won't fix that
+	b/c it's disused since the BtS expansion. */
 bool CvUnit::canSabotage(const CvPlot* pPlot, bool bTestVisible) const
 {
 	if (!m_pUnitInfo->isSabotage())
@@ -5049,7 +5050,9 @@ bool CvUnit::canSabotage(const CvPlot* pPlot, bool bTestVisible) const
 
 	if (pPlot->isCity())
 		return false;
-
+	// <advc.001>
+	if (GC.getInfo(pPlot->getImprovementType()).isPermanent())
+		return false; // </advc.001>
 	if (!bTestVisible)
 	{
 		if (GET_PLAYER(getOwner()).getGold() < sabotageCost(pPlot))
