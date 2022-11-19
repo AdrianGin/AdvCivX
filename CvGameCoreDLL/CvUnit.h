@@ -162,11 +162,15 @@ public:
 	bool canRecon(const CvPlot* pPlot) const;																// Exposed to Python
 	bool canReconAt(const CvPlot* pPlot, int iX, int iY) const;												// Exposed to Python
 	bool recon(int iX, int iY);
-
-	bool canAirBomb(const CvPlot* pPlot) const;																// Exposed to Python
-	bool canAirBombAt(const CvPlot* pPlot, int iX, int iY) const;											// Exposed to Python
+	// <advc> Param lists changed for these two
+	bool canAirBomb(CvPlot const* pFrom = NULL) const;														// Exposed to Python
+	bool canAirBombAt(CvPlot const& kTarget, CvPlot const* pFrom = NULL) const; // </advc>					// Exposed to Python
+	// <advc.255>
+	enum StructureTypes { NO_STRUCTURE, STRUCTURE_IMPROVEMENT, STRUCTURE_ROUTE };
+	StructureTypes getDestructibleStructureAt(CvPlot const& kTarget,
+			bool bTestVisibility) const; // </advc.255>
 	int airBombDefenseDamage(CvCity const& kCity) const; // advc
-	bool airBomb(int iX, int iY, /* advc.004c: */ bool* pbIntercepted = NULL);
+	bool airBomb(CvPlot& kTarget, /* advc.004c: */ bool* pbIntercepted = NULL);
 
 	bool canAirStrike(CvPlot const& kPlot) const; // (advc.004c: was protected)
 

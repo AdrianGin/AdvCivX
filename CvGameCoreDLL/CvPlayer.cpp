@@ -12370,6 +12370,8 @@ bool CvPlayer::doEspionageMission(EspionageMissionTypes eMission, PlayerTypes eT
 			szBuffer = gDLL->getText("TXT_KEY_ESPIONAGE_TARGET_SOMETHING_DESTROYED",
 					GC.getInfo(pPlot->getRouteType()).getDescription()).GetCString();
 			pPlot->setRouteType(NO_ROUTE);
+					// (advc.255: Let's actually keep this as in BtS: no downgrade.)
+					//GC.getInfo(pPlot->getRouteType()).getRoutePillage());
 			bSomethingHappened = true;
 		}
 		if (bSomethingHappened)

@@ -32,6 +32,10 @@
 	<ElementType name="iValue" content="textOnly" dt:type="int"/>
 	<ElementType name="iMovement" content="textOnly" dt:type="int"/>
 	<ElementType name="iFlatMovement" content="textOnly" dt:type="int"/>
+	<!-- advc.255 -->
+	<ElementType name="iAirBombDefense" content="textOnly" dt:type="int"/>
+	<!-- advc.255 -->
+	<ElementType name="RoutePillage" content="textOnly"/>
 	<ElementType name="RouteInfo" content="eltOnly">
 		<element type="Type"/>
 		<element type="Description"/>
@@ -40,6 +44,11 @@
 		<element type="iAdvancedStartCostIncrease"/>
 		<element type="iMovement"/>
 		<element type="iFlatMovement"/>
+		<!-- advc.255: Set to 0 by default in the DLL. -1 means that the route
+			 cannot be air-bombed. -->
+		<element type="iAirBombDefense" minOccurs="0"/>
+		<!-- advc.255: By default, pillaging results in destruction w/o replacement. -->
+		<element type="RoutePillage" minOccurs="0"/>
 		<element type="BonusType"/>
 		<element type="PrereqOrBonuses"/>
 		<element type="Yields"/>

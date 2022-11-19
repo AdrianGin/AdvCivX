@@ -313,9 +313,26 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  class : CvRouteInfo
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-class CvRouteInfo : public CvInfoBase
+class CvRouteInfo : /* <advc.tag> */ public CvXMLInfo
 {
-	typedef CvInfoBase base_t;
+	typedef CvXMLInfo base_t;
+protected:
+	void addElements(ElementList& kElements) const
+	{
+		base_t::addElements(kElements);
+		kElements.addInt(AirBombDefense, "AirBombDefense"); // advc.255
+	}
+public:
+	enum IntElementTypes
+	{
+		AirBombDefense = base_t::NUM_INT_ELEMENT_TYPES, // advc.255
+		NUM_INT_ELEMENT_TYPES
+	};
+	int get(IntElementTypes e) const
+	{
+		return base_t::get(static_cast<base_t::IntElementTypes>(e));
+	}
+	// </advc.tag>
 public: // All the const functions are exposed to Python except those added by mods
 	CvRouteInfo();
 	~CvRouteInfo();
@@ -326,6 +343,7 @@ public: // All the const functions are exposed to Python except those added by m
 	int getValue() const;
 	int getMovementCost() const { return m_iMovementCost; }
 	int getFlatMovementCost() const { return m_iFlatMovementCost; }
+	RouteTypes getRoutePillage() const { return m_eRoutePillage; } // advc.255
 	BonusTypes getPrereqBonus() const { return m_ePrereqBonus; }
 
 	int getYieldChange(int i) const;
@@ -340,6 +358,7 @@ public: // All the const functions are exposed to Python except those added by m
 	int py_getPrereqOrBonus(int i) const;
 	// </advc.003t>
 	bool read(CvXMLLoadUtility* pXML);
+	bool readPass2(CvXMLLoadUtility* pXML); // advc.255
 
 protected:
 	int m_iAdvancedStartCost;
@@ -348,6 +367,7 @@ protected:
 	int m_iValue;
 	int m_iMovementCost;
 	int m_iFlatMovementCost;
+	RouteTypes m_eRoutePillage; // advc.255
 	BonusTypes m_ePrereqBonus;
 
 	int* m_piYieldChange;

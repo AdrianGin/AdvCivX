@@ -19205,7 +19205,7 @@ int CvUnitAI::AI_airOffenseBaseValue(CvPlot const& kPlot) // advc: param was CvP
 						iTempValue += (3*pLoopCity->getPopulation() + 30);
 
 						//if (canAirBomb(pPlot) && pLoopCity->isBombardable(this))
-						if (canAirBombAt(&kPlot, pLoopCity->getX(), pLoopCity->getY())) // K-Mod
+						if (canAirBombAt(pLoopCity->getPlot(), &kPlot)) // K-Mod
 							iTempValue *= 2;
 						if (p.getArea().AI_getTargetCity(getOwner()) == pLoopCity)
 							iTempValue *= 2;
@@ -19229,7 +19229,7 @@ int CvUnitAI::AI_airOffenseBaseValue(CvPlot const& kPlot) // advc: param was CvP
 						}
 
 						// Weight resources
-						if (canAirBombAt(&kPlot, p.getX(), p.getY()))
+						if (canAirBombAt(p, &kPlot))
 						{
 							if (p.getBonusType(getTeam()) != NO_BONUS)
 							{
@@ -19692,7 +19692,7 @@ int CvUnitAI::AI_airStrikeValue(CvPlot const& kPlot, int iCurrentBest, bool& bBo
 		}
 	}
 	// bombard (destroy improvement / city defences)
-	if (canAirBombAt(plot(), kPlot.getX(), kPlot.getY()))
+	if (canAirBombAt(kPlot))
 	{
 		if (kPlot.isCity())
 		{
@@ -19710,8 +19710,7 @@ int CvUnitAI::AI_airStrikeValue(CvPlot const& kPlot, int iCurrentBest, bool& bBo
 		else
 		{
 			BonusTypes eBonus = kPlot.getNonObsoleteBonusType(getTeam(), true);
-			if (eBonus != NO_BONUS && kPlot.isOwned() &&
-				canAirBombAt(plot(), kPlot.getX(), kPlot.getY()))
+			if (eBonus != NO_BONUS && kPlot.isOwned() && canAirBombAt(kPlot))
 			{
 				iBombValue = GET_PLAYER(kPlot.getOwner()).AI_bonusVal(eBonus, -1);
 				iBombValue += GET_PLAYER(kPlot.getOwner()).AI_bonusVal(eBonus, 0);
@@ -19827,59 +19826,59 @@ bool CvUnitAI::AI_airBombPlots()
 	for (SquareIter it(*this, airRange(), false); it.hasNext(); ++it)
 	{
 		CvPlot& p = *it;
-		if (p.isCity() || !p.isOwned() || !canAirBombAt(plot(), p.getX(), p.getY()))
+		if (p.isCity() || !p.isOwned() || !canAirBombAt(p))
 			continue;
 		int iValue = 0;
-		if (p.getBonusType(p.getTeam()) != NO_BONUS)
+		if (p.getBonusType(p.getTeam()) != NO_BONUS &&
+			p.isImproved()) // advc.255
 		{
 			iValue += AI_pillageValue(p, 15);
 			iValue += SyncRandNum(10);
 		}
 		else if (isSuicide())
 		{
-			//This should only be reached when the unit is desperate to die
+			// AI_airBombPlots should only be reached when the unit is desperate to die
 			iValue += AI_pillageValue(p);
-			// Guided missiles lean towards destroying resource-producing tiles as opposed to improvements like Towns
+			/*	Guided missiles lean towards destroying resource-producing tiles
+				as opposed to improvements like Towns */
 			if (p.getBonusType(p.getTeam()) != NO_BONUS)
 			{
-				//and even more so if it's a resource
 				iValue += GET_PLAYER(p.getOwner()).AI_bonusVal(
 						p.getBonusType(p.getTeam()), 0);
 			}
 		}
-		if (iValue > 0)
+		if (iValue <= 0)
+			continue;
+		/*pInterceptor = bestInterceptor(pLoopPlot);
+		if (pInterceptor != NULL) {
+			iInterceptProb = isSuicide() ? 100 : pInterceptor->currInterceptionProbability();
+			iInterceptProb *= std::max(0, (100 - evasionProbability()));
+			iInterceptProb /= 100;
+			iValue *= std::max(0, 100 - iInterceptProb / 2);
+			iValue /= 100;
+		}*/ // BtS
+		// K-Mod. Try to avoid using bestInterceptor... because that's a slow function.
+		if (isSuicide())
+			iValue /= 2;
+		else if (!canAirDefend()) // assume that air defenders are strong.. and that they are willing to fight
 		{
-			/*pInterceptor = bestInterceptor(pLoopPlot);
-			if (pInterceptor != NULL) {
-				iInterceptProb = isSuicide() ? 100 : pInterceptor->currInterceptionProbability();
+			CvUnit const* pInterceptor = bestInterceptor(p,
+					// advc.128: Don't always cheat with visibility (only 67% of the time)
+					m_iSearchRangeRandPercent > 33);
+			if (pInterceptor != NULL)
+			{
+				int iInterceptProb = pInterceptor->currInterceptionProbability();
 				iInterceptProb *= std::max(0, (100 - evasionProbability()));
 				iInterceptProb /= 100;
 				iValue *= std::max(0, 100 - iInterceptProb / 2);
 				iValue /= 100;
-			}*/ // BtS
-			// K-Mod. Try to avoid using bestInterceptor... because that's a slow function.
-			if (isSuicide())
-				iValue /= 2;
-			else if (!canAirDefend()) // assume that air defenders are strong.. and that they are willing to fight
-			{
-				CvUnit const* pInterceptor = bestInterceptor(p,
-						// advc.128: Don't always cheat with visibility (only 67% of the time)
-						m_iSearchRangeRandPercent > 33);
-				if (pInterceptor != NULL)
-				{
-					int iInterceptProb = pInterceptor->currInterceptionProbability();
-					iInterceptProb *= std::max(0, (100 - evasionProbability()));
-					iInterceptProb /= 100;
-					iValue *= std::max(0, 100 - iInterceptProb / 2);
-					iValue /= 100;
-				}
-			} // K-Mod end
-			if (iValue > iBestValue)
-			{
-				iBestValue = iValue;
-				pBestPlot = &p;
-				FAssert(!atPlot(pBestPlot));
 			}
+		} // K-Mod end
+		if (iValue > iBestValue)
+		{
+			iBestValue = iValue;
+			pBestPlot = &p;
+			FAssert(!atPlot(pBestPlot));
 		}
 	}
 
@@ -21313,7 +21312,7 @@ bool CvUnitAI::AI_defendPlot(CvPlot* pPlot)
 
 int CvUnitAI::AI_pillageValue(CvPlot const& kPlot, int iBonusValueThreshold)
 {
-	FAssert(canPillage(kPlot) || canAirBombAt(plot(), kPlot.getX(), kPlot.getY()) || (getGroup()->getCargo() > 0));
+	FAssert(canPillage(kPlot) || canAirBombAt(kPlot) || (getGroup()->getCargo() > 0));
 
 	if (!kPlot.isOwned())
 		return 0;
@@ -21338,31 +21337,31 @@ int CvUnitAI::AI_pillageValue(CvPlot const& kPlot, int iBonusValueThreshold)
 			return 0;
 	}
 
-	if (getDomainType() != DOMAIN_AIR)
+	if ((getDomainType() != DOMAIN_AIR ||
+		// advc.255: (Though the AI will currently not air bomb routes)
+		kPlot.getRevealedImprovementType(getTeam()) == NO_IMPROVEMENT) &&
+		kPlot.//isRoute()
+		getRevealedRouteType(getTeam()) != NO_ROUTE) // advc.001i
 	{
-		if (kPlot.//isRoute()
-			getRevealedRouteType(getTeam()) != NO_ROUTE) // advc.001i
+		iValue++;
+		if (eNonObsoleteBonus != NO_BONUS)
 		{
-			iValue++;
-			if (eNonObsoleteBonus != NO_BONUS)
+			//iValue += iBonusValue * 4;
+			// K-Mod. (many more iBonusValues will be added again later anyway)
+			iValue += iBonusValue;
+		}
+		FOR_EACH_ADJ_PLOT(kPlot) // K-Mod (bugfix): was *this
+		{
+			if (pAdj->getTeam() != kPlot.getTeam())
+				continue;
+			if (pAdj->isCity())
+				iValue += 10;
+			//if (!pAdj->isRoute())
+			// advc.001i:
+			if (pAdj->getRevealedRouteType(getTeam()) == NO_ROUTE)
 			{
-				//iValue += iBonusValue * 4;
-				iValue += iBonusValue; // K-Mod. (many more iBonusValues will be added again later anyway)
-			}
-
-			FOR_EACH_ADJ_PLOT(kPlot) // K-Mod (bugfix): was *this
-			{
-				if (pAdj->getTeam() != kPlot.getTeam())
-					continue;
-				if (pAdj->isCity())
-					iValue += 10;
-				//if (!pAdj->isRoute())
-				// advc.001i:
-				if (pAdj->getRevealedRouteType(getTeam()) == NO_ROUTE)
-				{
-					if (!pAdj->isWater() && !pAdj->isImpassable())
-						iValue += 2;
-				}
+				if (!pAdj->isWater() && !pAdj->isImpassable())
+					iValue += 2;
 			}
 		}
 	}
@@ -21386,11 +21385,12 @@ int CvUnitAI::AI_pillageValue(CvPlot const& kPlot, int iBonusValueThreshold)
 
 		if (getDomainType() != DOMAIN_AIR)
 			iValue += GC.getInfo(eImprovement).getPillageGold();
-
 		if (eNonObsoleteBonus != NO_BONUS)
 		{
 			//if (GC.getInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus))
-			if (GET_PLAYER(kPlot.getOwner()).doesImprovementConnectBonus(eImprovement, eNonObsoleteBonus)) // K-Mod
+			// <K-Mod>
+			if (GET_PLAYER(kPlot.getOwner()).doesImprovementConnectBonus(
+				eImprovement, eNonObsoleteBonus)) // </K-Mod>
 			{
 				int iTempValue = iBonusValue * 4;
 
@@ -21404,7 +21404,6 @@ int CvUnitAI::AI_pillageValue(CvPlot const& kPlot, int iBonusValueThreshold)
 			}
 		}
 	}
-
 	return iValue;
 }
 

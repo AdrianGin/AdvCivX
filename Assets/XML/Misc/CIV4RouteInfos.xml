@@ -14,6 +14,8 @@
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
 			<iMovement>30</iMovement>
 			<iFlatMovement>30</iFlatMovement>
+			<!-- advc.255 -->
+			<iAirBombDefense>10</iAirBombDefense>
 			<BonusType>NONE</BonusType>
 			<PrereqOrBonuses/>
 			<Yields/>
@@ -33,6 +35,10 @@
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
 			<iMovement>20</iMovement>
 			<iFlatMovement>6</iFlatMovement>
+			<!-- advc.255 -->
+			<iAirBombDefense>5</iAirBombDefense>
+			<!-- advc.255 -->
+			<RoutePillage>ROUTE_ROAD</RoutePillage>
 			<BonusType>NONE</BonusType>
 			<PrereqOrBonuses>
 				<PrereqOrBonus>

@@ -20832,11 +20832,8 @@ void CvGameTextMgr::getAirBombPlotHelp(CvPlot const& kPlot,
 {
 	CvUnit const* pBestSelectedUnit = gDLL->UI().getSelectionList()->AI().
 			AI_bestUnitForMission(MISSION_AIRBOMB, &kPlot);
-	if (pBestSelectedUnit == NULL || !pBestSelectedUnit->canAirBombAt(
-		pBestSelectedUnit->plot(), kPlot.getX(), kPlot.getY()))
-	{
+	if (pBestSelectedUnit == NULL || !pBestSelectedUnit->canAirBombAt(kPlot))
 		return;
-	}
 	setInterceptPlotHelp(kPlot, *pBestSelectedUnit, szHelp);
 
 	TeamTypes const eActiveTeam = getActiveTeam();
@@ -20865,40 +20862,46 @@ void CvGameTextMgr::getAirBombPlotHelp(CvPlot const& kPlot,
 		else szHelp.append(gDLL->getText("TXT_KEY_AIR_BOMB_MODE_HELP_CITY_DEFENSE_NO_DAMAGE",
 					pBombardCity->getNameKey()));
 		szHelp.append(NEWLINE);
-	}
-	else
+		return;
+	} 
+	// <advc.255>
+	CvUnit::StructureTypes const eStructure = kHeadSelectedUnit.
+			getDestructibleStructureAt(kPlot, true);
+	if (eStructure == CvUnit::NO_STRUCTURE)
+		return; // </advc.255>
+	// Formula matches dice roll in CvUnit::airBomb
+	int const iAttack = pBestSelectedUnit->airBombCurrRate();
+	bool const bRoute = (eStructure == CvUnit::STRUCTURE_ROUTE); // advc.255
+	ImprovementTypes const eImprov = kPlot.getRevealedImprovementType(eActiveTeam);
+	RouteTypes const eRoute = kPlot.getRevealedRouteType(eActiveTeam); // advc.255
+	int const iDefense = /* <advc.255> */ (bRoute ?
+			GC.getInfo(eRoute).get(CvRouteInfo::AirBombDefense) : // </advc.255>
+			GC.getInfo(eImprov).getAirBombDefense());
+	scaled rSuccessProb = 1;
+	if (iDefense > 0)
 	{
-		ImprovementTypes eImprov = kPlot.getRevealedImprovementType(eActiveTeam);
-		if (eImprov != NO_IMPROVEMENT)
-		{
-			// Formula matches dice roll in CvUnit::airBomb
-			int const iAttack = pBestSelectedUnit->airBombCurrRate();
-			int const iDefense = GC.getInfo(eImprov).getAirBombDefense();
-			scaled rSuccessProb = 1;
-			if (iDefense > 0)
-			{
-				if (iAttack <= 0)
-					rSuccessProb = 0;
-				else
-				{	/*	Probability of iAttack-sided die rolling greater than
-						or equal to iDefense-sided die */
-					rSuccessProb = (iAttack > iDefense ?
-							1 - scaled(iDefense - 1, 2 * iAttack) :
-							scaled(iAttack + 1, 2 * iDefense));
-				}
-			}
-			if (rSuccessProb > 0)
-			{
-				int iPercent = rSuccessProb.getPercent();
-				if (iPercent == 0) // Don't show uncertain outcome as certain
-					iPercent++;
-				if (iPercent == 100 && rSuccessProb < 1)
-					iPercent--;
-				szHelp.append(gDLL->getText("TXT_KEY_AIR_BOMB_MODE_HELP_DESTR_IMPROV",
-						GC.getInfo(eImprov).getDescription(), iPercent));
-				szHelp.append(NEWLINE);
-			}
+		if (iAttack <= 0)
+			rSuccessProb = 0;
+		else
+		{	/*	Probability of iAttack-sided die rolling greater than
+				or equal to iDefense-sided die */
+			rSuccessProb = (iAttack > iDefense ?
+					1 - scaled(iDefense - 1, 2 * iAttack) :
+					scaled(iAttack + 1, 2 * iDefense));
 		}
+	}
+	if (rSuccessProb > 0)
+	{
+		int iPercent = rSuccessProb.getPercent();
+		if (iPercent == 0) // Don't show uncertain outcome as certain
+			iPercent++;
+		if (iPercent == 100 && rSuccessProb < 1)
+			iPercent--;
+		szHelp.append(gDLL->getText("TXT_KEY_AIR_BOMB_MODE_HELP_DESTR_IMPROV",
+				bRoute ? GC.getInfo(eRoute).getDescription() : // advc.255
+				GC.getInfo(eImprov).getDescription(),
+				iPercent));
+		szHelp.append(NEWLINE);
 	}
 }
 

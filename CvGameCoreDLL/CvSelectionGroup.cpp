@@ -931,13 +931,13 @@ void CvSelectionGroup::startMission()
 		}
 		case MISSION_AIRBOMB:
 		{
-			CvPlot const& kMissionPlot = GC.getMap().getPlot(
+			CvPlot& kMissionPlot = GC.getMap().getPlot(
 					headMissionQueueNode()->m_data.iData1,
 					headMissionQueueNode()->m_data.iData2);
 			bool bIntercepted = false;
 			CvUnit* pUnit;
 			while ((pUnit = AI().AI_bestUnitForMission(MISSION_AIRBOMB, &kMissionPlot)) != NULL &&
-				pUnit->airBomb(kMissionPlot.getX(), kMissionPlot.getY(), &bIntercepted))
+				pUnit->airBomb(kMissionPlot, &bIntercepted))
 			{
 				bAction = true;
 				if (bIntercepted && !bStackAttack)
@@ -1886,7 +1886,7 @@ bool CvSelectionGroup::canDoInterfaceMode(InterfaceModeTypes eInterfaceMode)
 			break;
 
 		case INTERFACEMODE_AIRBOMB:
-			if (pUnit->canAirBomb(pUnit->plot()))
+			if (pUnit->canAirBomb())
 				return true;
 			break;
 
@@ -1957,7 +1957,7 @@ bool CvSelectionGroup::canDoInterfaceModeAt(InterfaceModeTypes eInterfaceMode, C
 				return true;
 			break;
 		case INTERFACEMODE_AIRBOMB:
-			if (pUnit->canAirBombAt(pUnit->plot(), pPlot->getX(), pPlot->getY()))
+			if (pUnit->canAirBombAt(*pPlot))
 				return true;
 			break;
 		case INTERFACEMODE_RANGE_ATTACK:
@@ -3428,7 +3428,7 @@ bool CvSelectionGroup::canDoMission(MissionTypes eMission, int iData1, int iData
 			break;
 
 		case MISSION_AIRBOMB:
-			if (pUnit->canAirBombAt(pPlot, iData1, iData2) &&
+			if (pUnit->canAirBombAt(GC.getMap().getPlot(iData1, iData2), pPlot) &&
 				(!bCheckMoves || pUnit->canMove()))
 			{
 				return true;
