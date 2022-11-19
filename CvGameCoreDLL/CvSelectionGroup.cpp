@@ -892,13 +892,17 @@ void CvSelectionGroup::startMission()
 		case MISSION_PILLAGE:
 		{	// <advc> K-Mod code moved into subroutine
 			CvUnit* pUnit;
-			while ((pUnit = AI().AI_bestUnitForMission(MISSION_PILLAGE)) != NULL) // </advc>
+			// Human units should pillage at most once per command
+			std::vector<int> aiHasPillaged;
+			while ((pUnit = AI().AI_bestUnitForMission(MISSION_PILLAGE,
+				NULL, &aiHasPillaged)) != NULL) // </advc>
 			{	// <K-Mod>
 				if (pUnit->pillage())
 				{
 					bAction = true;
-					/*	AI groups might want to reconsider their action after pillaging.
-						advc (note): Only relevant when pillaging upgraded improvements. */
+					if (!AI_isControlled())
+						aiHasPillaged.push_back(pUnit->getID());
+					// AI groups might want to reconsider their action after pillaging
 					if (!isHuman() && canAllMove())
 						break;
 				} // </K-Mod>
