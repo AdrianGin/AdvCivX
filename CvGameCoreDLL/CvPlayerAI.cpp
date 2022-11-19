@@ -23021,18 +23021,7 @@ void CvPlayerAI::read(FDataStreamBase* pStream)
 	if(isMajorCiv() && (uiFlag < 15 ? isEverAlive() : isAlive()))
 		m_pUWAI->read(pStream); // </advc.104>
 	if(getID() == MAX_PLAYERS - 1) // advc: After all players have been loaded ...
-	{
-		// <advc.148>
-		if(uiFlag < 9)
-		{
-			for(int i = 0; i < MAX_CIV_PLAYERS; i++)
-			{
-				CvPlayerAI& kPlayer = GET_PLAYER((PlayerTypes)i);
-				if(kPlayer.isAlive())
-					kPlayer.AI_updateAttitude();
-			}
-		} // </advc.148>
-		// <advc.104>
+	{	// <advc.104>
 		for (int i = 0; i < MAX_CIV_PLAYERS; i++)
 		{
 			CvPlayerAI& kPlayer = GET_PLAYER((PlayerTypes)i);
