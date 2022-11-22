@@ -15,6 +15,9 @@ class CvXMLLoadUtility;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CvAssetInfoBase : public CvInfoBase
 {
+	/*	advc.003k (caveat): Used to have an exported (blank) ctor. Not sure
+		what this means for this class and its derived classes, i.e. to what extent
+		their memory layout can be safely modified. */
 public: // Exposed to Python (except 'read')
 	const TCHAR* getTag() const;  // 'tag' is the same as 'type'
 	void setTag(const TCHAR* szDesc);

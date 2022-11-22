@@ -101,6 +101,7 @@ protected:
 class CvScalableInfo /* advc.003e: */ : private boost::noncopyable
 {
 public:
+	// advc.003k (note): Used to be exported, may have been inlined in the EXE.
 	CvScalableInfo() : m_fScale(1.0f), m_fInterfaceScale(1.0f) {}
 
 	DllExport float getScale() const; // Exposed to Python
@@ -110,10 +111,11 @@ public:
 
 	bool read(CvXMLLoadUtility* pXML);
 
-protected:
+protected: // advc.003k (caveat): Probably not safe to rearrange or remove these
 	float m_fScale;
 	float m_fInterfaceScale; 
 };
+BOOST_STATIC_ASSERT(sizeof(CvScalableInfo) == 8); // advc.003k
 
 /*	advc.tag: Abstract class that allows simple XML elements
 	(i.e. w/o child elements) to be added and accessed through enum values.
