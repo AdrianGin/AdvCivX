@@ -77,8 +77,9 @@
 			<iLandPercentLead>25</iLandPercentLead>
 			<!-- was 78 -->
 			<iLandPercent>71</iLandPercent>
-			<!-- was 51 -->
-			<iMinLandPercent>10</iMinLandPercent>
+			<!-- Was 51. So long as this is less than iLandPercentLead,
+				 the specific value isn't terribly relevant. -->
+			<iMinLandPercent>15</iMinLandPercent>
 			<!-- advc.254: end -->
 			<iReligionPercent>0</iReligionPercent>
 			<CityCulture>NONE</CityCulture>
