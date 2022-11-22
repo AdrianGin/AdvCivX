@@ -68,13 +68,13 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__AUTOOPENEVENTLOG_HOVER</Tag>
-		<English>When checked, the Event Log is opened at the start of a turn if the number of new messages to display exceeds a limit. Major events (e.g. declarations of war) are still announced on the main screen. Regardless of the limit, the Event Log is opened whenever an AI leader contacts the player. This option depends on the "Minimize Popups" option (STRG + O); without Minimize Popups, the Event Log is never opened.</English>
-		<German>Öffnet zu Beginn des Zuges das Ereignis-Log, wenn die Anzahl der neuen Nachrichten einen Grenzwert überschreitet. Nur wichtige Ereignisse (z.B. Kriegserklärungen) werden zusätzlich auf dem Hauptbildschirm angezeigt. Unabhängig von der Anzahl der Nachrichten, öffnet sich das Ereignis-Log außerdem bei jeder Kontaktaufnahme durch einen KI-Spieler. Wichtig: Die Option "Popups minimieren" (STRG + O) ist eine Voraussetzung für das automatische Öffnen des Ereignis-Logs.</German>
+		<English>When checked, the Event Log is opened at the start of your turn if the number of new messages to display exceeds a limit. Major events (e.g. declarations of war) are still announced on the main screen. Regardless of the limit, the Event Log is opened whenever an AI leader contacts you. This option requires the [COLOR_HIGHLIGHT_TEXT]Minimize Popups[COLOR_REVERT] option (Ctrl + O) to be enabled!</English>
+		<German>Öffnet zu Beginn Ihres Zuges das Ereignis-Log, wenn die Anzahl der neuen Nachrichten einen Grenzwert überschreitet. Nur wichtige Ereignisse (z.B. Kriegserklärungen) werden zusätzlich auf dem Hauptbildschirm angezeigt. Unabhängig von der Anzahl der Nachrichten, öffnet sich das Ereignis-Log außerdem bei jeder Kontaktaufnahme durch einen KI-Spieler. Wichtig: Die Option [COLOR_HIGHLIGHT_TEXT]Popups minimieren[COLOR_REVERT] (STRG + O) ist eine Voraussetzung für das automatische Öffnen des Ereignis-Logs.</German>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__MESSAGELIMIT_HOVER</Tag>
 		<English>The Event Log is opened when the number of new messages exceeds this limit.</English>
-		<German>Das Ereignis-Log wird automatisch geöffnet, wenn die Anzahl der neuen Nachrichten größer ist als die eingestellte Obergrenze.</German>
+		<German>Das Ereignis-Log wird automatisch geöffnet, wenn die Anzahl der neuen Nachrichten die eingestellte Obergrenze überschreitet.</German>
 	</TEXT>
 	
 	<!-- advc.002b -->
