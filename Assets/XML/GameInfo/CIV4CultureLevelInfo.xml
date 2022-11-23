@@ -11,6 +11,11 @@
 			<Description>TXT_KEY_CULTURELEVEL_NONE</Description>
 			<iCityDefenseModifier>0</iCityDefenseModifier>
 			<SpeedThresholds>
+				<!-- advc.252 -->
+				<SpeedThreshold>
+					<GameSpeedType>GAMESPEED_MARATHON_BTS</GameSpeedType>
+					<iThreshold>0</iThreshold>
+				</SpeedThreshold>
 				<SpeedThreshold>
 					<GameSpeedType>GAMESPEED_MARATHON</GameSpeedType>
 					<iThreshold>0</iThreshold>
@@ -34,6 +39,11 @@
 			<Description>TXT_KEY_CULTURELEVEL_POOR</Description>
 			<iCityDefenseModifier>0</iCityDefenseModifier>
 			<SpeedThresholds>
+				<!-- advc.252 -->
+				<SpeedThreshold>
+					<GameSpeedType>GAMESPEED_MARATHON_BTS</GameSpeedType>
+					<iThreshold>0</iThreshold>
+				</SpeedThreshold>
 				<SpeedThreshold>
 					<GameSpeedType>GAMESPEED_MARATHON</GameSpeedType>
 					<iThreshold>0</iThreshold>
@@ -57,6 +67,11 @@
 			<Description>TXT_KEY_CULTURELEVEL_FLEDGLING</Description>
 			<iCityDefenseModifier>20</iCityDefenseModifier>
 			<SpeedThresholds>
+				<!-- advc.252 -->
+				<SpeedThreshold>
+					<GameSpeedType>GAMESPEED_MARATHON_BTS</GameSpeedType>
+					<iThreshold>20</iThreshold>
+				</SpeedThreshold>
 				<SpeedThreshold>
 					<GameSpeedType>GAMESPEED_MARATHON</GameSpeedType>
 					<!-- advc.251: was 30 -->
@@ -82,6 +97,11 @@
 			<Description>TXT_KEY_CULTURELEVEL_DEVELOPING</Description>
 			<iCityDefenseModifier>40</iCityDefenseModifier>
 			<SpeedThresholds>
+				<!-- advc.252 -->
+				<SpeedThreshold>
+					<GameSpeedType>GAMESPEED_MARATHON_BTS</GameSpeedType>
+					<iThreshold>200</iThreshold>
+				</SpeedThreshold>
 				<SpeedThreshold>
 					<GameSpeedType>GAMESPEED_MARATHON</GameSpeedType>
 					<!-- advc.251: was 300 -->
@@ -107,6 +127,11 @@
 			<Description>TXT_KEY_CULTURELEVEL_REFINED</Description>
 			<iCityDefenseModifier>60</iCityDefenseModifier>
 			<SpeedThresholds>
+				<!-- advc.252 -->
+				<SpeedThreshold>
+					<GameSpeedType>GAMESPEED_MARATHON_BTS</GameSpeedType>
+					<iThreshold>1000</iThreshold>
+				</SpeedThreshold>
 				<SpeedThreshold>
 					<GameSpeedType>GAMESPEED_MARATHON</GameSpeedType>
 					<!-- advc.251: was 1500 -->
@@ -132,6 +157,11 @@
 			<Description>TXT_KEY_CULTURELEVEL_INFLUENTIAL</Description>
 			<iCityDefenseModifier>80</iCityDefenseModifier>
 			<SpeedThresholds>
+				<!-- advc.252: -->
+				<SpeedThreshold>
+					<GameSpeedType>GAMESPEED_MARATHON_BTS</GameSpeedType>
+					<iThreshold>10000</iThreshold>
+				</SpeedThreshold>
 				<SpeedThreshold>
 					<GameSpeedType>GAMESPEED_MARATHON</GameSpeedType>
 					<!-- advc.251: was 15000 -->
@@ -159,6 +189,11 @@
 			<Description>TXT_KEY_CULTURELEVEL_LEGENDARY</Description>
 			<iCityDefenseModifier>100</iCityDefenseModifier>
 			<SpeedThresholds>
+				<!-- advc.252 -->
+				<SpeedThreshold>
+					<GameSpeedType>GAMESPEED_MARATHON_BTS</GameSpeedType>
+					<iThreshold>125000</iThreshold>
+				</SpeedThreshold>
 				<SpeedThreshold>
 					<GameSpeedType>GAMESPEED_MARATHON</GameSpeedType>
 					<iThreshold>100000</iThreshold>

@@ -1871,6 +1871,12 @@ void CvInitCore::read(FDataStreamBase* pStream)
 	pStream->Read((int*)&m_eSeaLevel);
 	pStream->Read((int*)&m_eEra);
 	pStream->Read((int*)&m_eGameSpeed);
+	// <advc.252>
+	if (uiFlag < 8)
+	{
+		m_eGameSpeed++;
+		FAssertEnumBounds(m_eGameSpeed);
+	} // </advc.252>
 	pStream->Read((int*)&m_eTurnTimer);
 	pStream->Read((int*)&m_eCalendar);
 
@@ -2036,7 +2042,8 @@ void CvInitCore::write(FDataStreamBase* pStream)
 	//uiFlag = 4; // advc.enum: m_abOptions as byte map
 	//uiFlag = 5; // advc.190c
 	//uiFlag = 6; // advc.enum: new enum map save behavior
-	uiFlag = 7; // advc.tsl: Additional game option
+	//uiFlag = 7; // advc.tsl: Additional game option
+	uiFlag = 8; // advc.252
 
 	pStream->Write(uiFlag);
 

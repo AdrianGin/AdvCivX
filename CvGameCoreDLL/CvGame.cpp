@@ -59,7 +59,20 @@ CvGame::~CvGame()
 void CvGame::init(HandicapTypes eHandicap)
 {
 	CvInitCore& ic = GC.getInitCore();
-
+	// <advc.252> Translate the external speed ID to the internal one
+	CvGameSpeedInfo const& kExtSpeed = CvGlobals::getInstance().
+			getGameSpeedInfoExternal(getGameSpeedType());
+	FAssert(!kExtSpeed.get(CvGameSpeedInfo::Hide));
+	GameSpeedTypes eActualSpeed = NO_GAMESPEED;
+	FOR_EACH_ENUM(GameSpeed)
+	{
+		if (&GC.getInfo(eLoopGameSpeed) == &kExtSpeed)
+		{
+			eActualSpeed = eLoopGameSpeed;
+			break;
+		}
+	}
+	ic.setGameSpeed(eActualSpeed); // </advc.252>
 	reset(eHandicap); // Reset serialized data
 
 	// Init containers ...

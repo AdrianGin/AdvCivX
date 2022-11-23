@@ -1422,6 +1422,24 @@
 		<Italian>Questa velocit&#224; di gioco incredibilmente lunga permetter&#224; una quantit&#224; di turni pari a quelli di una partita normale per ogni era.</Italian>
 		<Spanish>A esta velocidad prolongada, se tarda casi tantos turnos en completar cada &#233;poca como en una partida normal.</Spanish>
 	</TEXT>
+	<!-- advc.252: Based on TXT_KEY_GAMESPEED_MARATHON in
+		 Civ4GameTextInfos_Objects.xml -->
+	<TEXT>
+		<Tag>TXT_KEY_GAMESPEED_MARATHON_BTS</Tag>
+		<English>Marathon (BtS)</English>
+		<Italian>Maratona (BtS)</Italian>
+		<Spanish>Marat&#243;n (BtS)</Spanish>
+	</TEXT>
+	<!-- advc.252: Legacy Marathon setting (normally hidden through
+		 Civ4GameSpeedInfos.xml) -->
+	<TEXT>
+		<Tag>TXT_KEY_GAMESPEED_MARATHON_BTS_HELP</Tag>
+		<English>Up to 1500 turns. Research, growth and building production take 3 times longer than on normal speed, but unit production takes only 2 times longer. This setting favors warfare and demands much patience.</English>
+		<French>Cette vitesse de jeu tr&#232;s lente permet de faire entrer dans chaque &#232;re le m&#234;me nombre de tours que pour une partie classique.</French>
+		<German>Bis zu 1500 Züge. Forschung, Wachstum und Bau dauern 3-mal so lange wie bei normaler Geschwindigkeit, während Einheitenproduktion nur 2-mal so lange dauert, was Eroberungskriege begünstigt. Diese Option erfordert ein hohes Durchhaltevermögen.</German>
+		<Italian>Questa velocit&#224; di gioco incredibilmente lunga permetter&#224; una quantit&#224; di turni pari a quelli di una partita normale per ogni era.</Italian>
+		<Spanish>A esta velocidad prolongada, se tarda casi tantos turnos en completar cada &#233;poca como en una partida normal.</Spanish>
+	</TEXT>
 	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_GAMESPEED_EPIC_HELP</Tag>
 		<English>Up to 750 turns. Research, growth and production take 50% longer than on normal speed. As unit movement is unaffected by game speed, this setting allows more time for warfare in each era.</English>

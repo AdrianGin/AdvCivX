@@ -440,6 +440,47 @@ int& CvGlobals::getNumAIPlayableCivilizationInfos()
 	return m_iNumAIPlayableCivilizationInfos;
 }
 
+// <advc.252> Hide invisible speed settings from the game setup screens
+int CvGlobals::getNumGameSpeedInfosExternal()
+{
+	if (getGame().isAllGameDataRead())
+	{
+		FErrorMsg("Does this actually get called outside of a game setup screen?"); // advc.test
+		return getNumGameSpeedInfos();
+	}
+	int iVisible = 0;
+	FOR_EACH_ENUM(GameSpeed)
+	{
+		if (!getInfo(eLoopGameSpeed).get(CvGameSpeedInfo::Hide))
+			iVisible++;
+	}
+	return iVisible;
+}
+
+CvGameSpeedInfo& CvGlobals::getGameSpeedInfoExternal(GameSpeedTypes eGameSpeed)
+{
+	if (getGame().isAllGameDataRead())
+	{
+		FErrorMsg("Does this actually get called outside of a game setup screen?"); // advc.test
+		return getInfo(eGameSpeed);
+	}
+	// Map to index that skips hidden speed settings
+	int iNewIndex = eGameSpeed;
+	for (int i = 0; i < eGameSpeed; i++)
+	{
+		if (getInfo((GameSpeedTypes)i).get(CvGameSpeedInfo::Hide))
+			iNewIndex++;
+	}
+	for (; iNewIndex < getNumGameSpeedInfos(); iNewIndex++)
+	{
+		if (!getInfo((GameSpeedTypes)iNewIndex).get(CvGameSpeedInfo::Hide))
+			break;
+	}
+	CvGameSpeedInfo& kResult = getInfo((GameSpeedTypes)iNewIndex);
+	FAssert(!kResult.get(CvGameSpeedInfo::Hide));
+	return kResult;
+} // </advc.252>
+
 int& CvGlobals::getNumEntityEventTypes()
 {
 	return m_iNumEntityEventTypes;

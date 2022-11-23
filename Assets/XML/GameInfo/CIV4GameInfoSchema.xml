@@ -349,8 +349,10 @@
 	<ElementType name="iHurryPercent" content="textOnly" dt:type="int"/>
 	<ElementType name="iHurryConscriptAngerPercent" content="textOnly" dt:type="int"/>
 	<ElementType name="iInflationPercent" content="textOnly" dt:type="int"/>
-	<!-- advc.252 -->
+	<!-- advc.252: start -->
 	<ElementType name="iExtraFreeOutsideUnits" content="textOnly" dt:type="int"/>
+	<ElementType name="bHide" content="textOnly" dt:type="boolean"/>
+	<!-- advc.252: end -->
 	<!-- advc.101 -->
 	<ElementType name="iForeignCultureStrength" content="textOnly" dt:type="int"/>
 	<ElementType name="iHealthBonus" content="textOnly" dt:type="int"/>
@@ -945,6 +947,8 @@
 		<element type="Type"/>
 		<element type="Description"/>
 		<element type="Help"/>
+		<!-- advc.252: Set to 1 to hide this speed on the game setup screens -->
+		<element type="bHide" minOccurs="0"/>
 		<element type="iGrowthPercent"/>
 		<element type="iTrainPercent"/>
 		<element type="iConstructPercent"/>

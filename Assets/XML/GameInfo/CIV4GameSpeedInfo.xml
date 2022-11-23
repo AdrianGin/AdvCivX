@@ -7,11 +7,91 @@
 <!-- NOTE: If you remove any of these you need to update GameInfo/CultureLevelInfos.xml. Also you will need to update the GlobalDefines.xml if you remove GAMESPEED_STANDARD -->
 <Civ4GameSpeedInfo xmlns="x-schema:CIV4GameInfoSchema.xml">
 	<GameSpeedInfos>
+		<!-- advc.252: This setting more or less preserves the BtS Marathon
+			 modifiers. It's normally hidden; to unhide it, set the bHide
+			 element to 0. You may or may not want to hide the AdvCiv version
+			 of Marathon (GAMESPEED_MARATHON) then. -->
+		<GameSpeedInfo>
+			<Type>GAMESPEED_MARATHON_BTS</Type>
+			<Description>TXT_KEY_GAMESPEED_MARATHON_BTS</Description>
+			<Help>TXT_KEY_GAMESPEED_MARATHON_BTS_HELP</Help>
+			<bHide>1</bHide>
+			<iGrowthPercent>300</iGrowthPercent>
+			<iTrainPercent>200</iTrainPercent>
+			<iConstructPercent>300</iConstructPercent>
+			<iCreatePercent>300</iCreatePercent>
+			<iResearchPercent>300</iResearchPercent>
+			<iBuildPercent>300</iBuildPercent>
+			<iImprovementPercent>300</iImprovementPercent>
+			<iGreatPeoplePercent>300</iGreatPeoplePercent>
+			<iCulturePercent>200</iCulturePercent>
+			<iAnarchyPercent>200</iAnarchyPercent>
+			<iBarbPercent>250</iBarbPercent>
+			<iFeatureProductionPercent>300</iFeatureProductionPercent>
+			<iUnitDiscoverPercent>300</iUnitDiscoverPercent>
+			<iUnitHurryPercent>300</iUnitHurryPercent>
+			<iUnitTradePercent>300</iUnitTradePercent>
+			<iUnitGreatWorkPercent>300</iUnitGreatWorkPercent>
+			<iGoldenAgePercent>200</iGoldenAgePercent>
+			<iHurryPercent>33</iHurryPercent>
+			<iHurryConscriptAngerPercent>300</iHurryConscriptAngerPercent>
+			<iInflationPercent>10</iInflationPercent>
+			<iInflationOffset>-270</iInflationOffset>
+			<iUnitCostPercent>80</iUnitCostPercent>
+			<iExtraFreeOutsideUnits>1</iExtraFreeOutsideUnits>
+			<iVictoryDelayPercent>200</iVictoryDelayPercent>
+			<iAIMemoryRandPercent>200</iAIMemoryRandPercent>
+			<iAIContactRandPercent>167</iAIContactRandPercent>
+			<iAIContactDelayPercent>200</iAIContactDelayPercent>
+			<iFullTradeCreditPercent>200</iFullTradeCreditPercent>
+			<iRevoltDivPercent>200</iRevoltDivPercent>
+			<iReligionSpreadDivPercent>300</iReligionSpreadDivPercent>
+			<iEventRollSidesPercent>200</iEventRollSidesPercent>
+			<iVoteIntervalPercent>300</iVoteIntervalPercent>
+			<GameTurnInfos>
+				<GameTurnInfo>
+					<iMonthIncrement>180</iMonthIncrement>
+					<iTurnsPerIncrement>150</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>120</iMonthIncrement>
+					<iTurnsPerIncrement>210</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>60</iMonthIncrement>
+					<iTurnsPerIncrement>240</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>24</iMonthIncrement>
+					<iTurnsPerIncrement>100</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>12</iMonthIncrement>
+					<iTurnsPerIncrement>110</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>6</iMonthIncrement>
+					<iTurnsPerIncrement>190</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>3</iMonthIncrement>
+					<iTurnsPerIncrement>320</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>1</iMonthIncrement>
+					<iTurnsPerIncrement>180</iTurnsPerIncrement>
+				</GameTurnInfo>
+			</GameTurnInfos>
+		</GameSpeedInfo>
 		<GameSpeedInfo>
 			<Type>GAMESPEED_MARATHON</Type>
 			<Description>TXT_KEY_GAMESPEED_MARATHON</Description>
 			<Help>TXT_KEY_GAMESPEED_MARATHON_HELP</Help>
-			<!-- advc.252: all 300 percentages reduced to 250 -->
+			<!-- advc.252: All 300 percentages reduced to 250.
+				 To restore the BtS percentages, this modified version of
+				 Marathon can be hidden and GAMESPEED_MARATHON_BTS (see above)
+				 unhidden. They can also coexist (neither being hidden). -->
+			<bHide>0</bHide>
 			<iGrowthPercent>250</iGrowthPercent>
 			<iTrainPercent>200</iTrainPercent>
 			<iConstructPercent>250</iConstructPercent>
@@ -64,44 +144,6 @@
 			<!-- advc.252: start -->
 			<iEventRollSidesPercent>200</iEventRollSidesPercent>
 			<iVoteIntervalPercent>250</iVoteIntervalPercent>
-			<!-- advc.252: end -->
-			<!-- advc.910: Changed all of the turn counts -->
-			<!-- advc.252: Progression for 1500 game turns - kept in case that
-				 the 300% modifiers need to be restored. -->
-			<!--GameTurnInfos>
-				<GameTurnInfo>
-					<iMonthIncrement>180</iMonthIncrement>
-					<iTurnsPerIncrement>150</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>120</iMonthIncrement>
-					<iTurnsPerIncrement>210</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>60</iMonthIncrement>
-					<iTurnsPerIncrement>240</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>24</iMonthIncrement>
-					<iTurnsPerIncrement>100</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>12</iMonthIncrement>
-					<iTurnsPerIncrement>110</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>6</iMonthIncrement>
-					<iTurnsPerIncrement>190</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>3</iMonthIncrement>
-					<iTurnsPerIncrement>320</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>1</iMonthIncrement>
-					<iTurnsPerIncrement>180</iTurnsPerIncrement>
-				</GameTurnInfo>
-			</GameTurnInfos-->
 			<GameTurnInfos>
 				<GameTurnInfo>
 					<iMonthIncrement>240</iMonthIncrement>
@@ -136,6 +178,7 @@
 					<iTurnsPerIncrement>240</iTurnsPerIncrement>
 				</GameTurnInfo>
 			</GameTurnInfos>
+			<!-- advc.252: end -->
 		</GameSpeedInfo>
 		<GameSpeedInfo>
 			<Type>GAMESPEED_EPIC</Type>

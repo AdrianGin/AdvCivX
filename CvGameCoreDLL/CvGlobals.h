@@ -264,10 +264,12 @@ public:
 	DllExport int getNumRouteInfos() { CvGlobals const& kThis = *this; return kThis.getNumRouteInfos(); }
 	DllExport int getNumImprovementInfos() { CvGlobals const& kThis = *this; return kThis.getNumImprovementInfos(); }
 	DllExport int getNumHandicapInfos() { CvGlobals const& kThis = *this; return kThis.getNumHandicapInfos(); }
-	DllExport int getNumGameSpeedInfos() { CvGlobals const& kThis = *this; return kThis.getNumGameSpeedInfos(); }
 	DllExport int getNumTurnTimerInfos() { CvGlobals const& kThis = *this; return kThis.getNumTurnTimerInfos(); }
 	DllExport int getNumEraInfos() { CvGlobals const& kThis = *this; return kThis.getNumEraInfos(); }
 	DllExport int getNumVictoryInfos() { CvGlobals const& kThis = *this; return kThis.getNumVictoryInfos(); }
+	// <advc.252> Both exported through def file
+	int getNumGameSpeedInfosExternal();
+	CvGameSpeedInfo& getGameSpeedInfoExternal(GameSpeedTypes eGameSpeed);
 
 	DllExport CvEffectInfo& getEffectInfo(int iEffect) { return getInfo((EffectTypes)iEffect); }
 	DllExport CvAttachableInfo& getAttachableInfo(int iAttachable) { return getInfo((AttachableTypes)iAttachable); }
@@ -294,7 +296,6 @@ public:
 	DllExport CvImprovementInfo& getImprovementInfo(ImprovementTypes eImprovement) { return getInfo(eImprovement); }
 	DllExport CvBuildInfo& getBuildInfo(BuildTypes eBuild) { return getInfo(eBuild); }
 	DllExport CvHandicapInfo& getHandicapInfo(HandicapTypes eHandicap) { return getInfo(eHandicap); }
-	DllExport CvGameSpeedInfo& getGameSpeedInfo(GameSpeedTypes eGameSpeed) { return getInfo(eGameSpeed); }
 	DllExport CvTurnTimerInfo& getTurnTimerInfo(TurnTimerTypes eTurnTimer) { return getInfo(eTurnTimer); }
 	DllExport CvMissionInfo& getMissionInfo(MissionTypes eMission) { return getInfo(eMission); }
 	DllExport CvEraInfo& getEraInfo(EraTypes eEra) { return getInfo(eEra); }

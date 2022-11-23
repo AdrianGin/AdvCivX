@@ -27,3 +27,5 @@ EXPORTS
 ?nextUnitNode@CvPlot@@QBEPAV?$CLLNode@UIDInfo@@@@PAV2@@Z=?nextUnitNodeExternal@CvPlot@@QBEPAV?$CLLNode@UIDInfo@@@@PAV2@@Z
 ?shuffle@@YAPAHHAAVCvRandom@@@Z=?shuffleExternal@@YAPAHHAAVCvRandom@@@Z
 ?getDefineINT@CvGlobals@@QBEHPBD@Z=?getDefineINTExternal@CvGlobals@@QBEHPBD@Z
+?getNumGameSpeedInfos@CvGlobals@@QAEHXZ=?getNumGameSpeedInfosExternal@CvGlobals@@QAEHXZ
+?getGameSpeedInfo@CvGlobals@@QAEAAVCvGameSpeedInfo@@W4GameSpeedTypes@@@Z=?getGameSpeedInfoExternal@CvGlobals@@QAEAAVCvGameSpeedInfo@@W4GameSpeedTypes@@@Z

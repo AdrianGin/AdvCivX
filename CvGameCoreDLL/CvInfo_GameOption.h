@@ -238,6 +238,7 @@ protected:
 	void addElements(ElementList& kElements) const
 	{
 		base_t::addElements(kElements);
+		kElements.addBool(Hide, "Hide", false); // advc.252
 		// <advc.130r>
 		kElements.addInt(AIMemoryRandPercent, "AIMemoryRandPercent", 100);
 		kElements.addInt(AIContactRandPercent, "AIContactRandPercent", 100);
@@ -272,9 +273,18 @@ public:
 		ExtraFreeOutsideUnits, // </advc.252>
 		NUM_INT_ELEMENT_TYPES
 	};
+	enum BoolElementTypes
+	{
+		Hide = CvXMLInfo::NUM_BOOL_ELEMENT_TYPES, // advc.252
+		NUM_BOOL_ELEMENT_TYPES
+	};
 	int get(IntElementTypes e) const
 	{
 		return base_t::get(static_cast<base_t::IntElementTypes>(e));
+	}
+	int get(BoolElementTypes e) const
+	{
+		return base_t::get(static_cast<base_t::BoolElementTypes>(e));
 	} // </advc.tag>
 
 	// All the const functions are exposed to Python except those added by mods
