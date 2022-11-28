@@ -1249,7 +1249,7 @@
 	<!-- Just a random find that seems worth including -->
 	<TEXT>
 		<Tag>AI_DIPLO_GREETINGS_ATT_FUR_LEADER_NAPOLEON_3</Tag>
-		<English>The fool, my dear [CT_NAME], has one great advantage over a man of sense - he is always satisfied with himself.</English>
+		<English>The fool, my dear [CT_NAME], has one great advantage over a man of sense - [NUM1:he:she] is always satisfied with [NUM1:himself:herself].</English>
 		<French>Je n'ai pas de temps &#224; perdre en bavardages, [CT_NAME]. Notre entrevue n'a dur&#233; que trop longtemps.</French>
 		<German>Man muss es Euch lassen, [NUM1:mon cher:ma chère] [CT_NAME]: Was Selbstzufriedenheit angeht, ist der Narr dem verständigen Mann weit voraus.</German>
 		<Italian>Ho poco tempo da dedicare alle tue chiacchiere, [CT_NAME]. Taglia corto.</Italian>
