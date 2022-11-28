@@ -174,7 +174,11 @@ public:
 	bool canAdopt(boost::python::list& kNewCivics);
 	void revolution(boost::python::list& kNewCivics, bool bForce); // </advc.001>
 	int getCivicPercentAnger(int /*CivicTypes*/ eCivic);
-
+	// <advc.130n>
+	CivicTypes getFavoriteCivic();
+	bool isFavoriteCivicKnown();
+	ReligionTypes getFavoriteReligion();
+	bool isFavoriteReligionKnown(); // </advc.130n>
 	bool canDoReligion(int /*ReligionTypes*/ eReligion);
 	bool canChangeReligion();
 	bool canConvert(int /*ReligionTypes*/ iIndex);

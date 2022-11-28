@@ -139,7 +139,10 @@ public:
 	// K-Mod:
 	int getTypicalUnitValue(UnitAITypes eUnitAI, DomainTypes eDomain = NO_DOMAIN) const;
 
-	int getResearchCost(TechTypes eTech, bool bGlobalModifiers = true, bool bTeamSizeModifiers = true) const; // (K-Mod added bools) Exposed to Python
+	int getResearchCost(TechTypes eTech,																// Exposed to Python
+			//bool bGlobalModifiers = true, // K-Mod
+			bool bFreeBarbarianResearch = false, // advc.301
+			bool bTeamSizeModifiers = true) const; // K-Mod
 	int getResearchLeft(TechTypes eTech) const;																// Exposed to Python
 
 	bool hasHolyCity(ReligionTypes eReligion) const;																		// Exposed to Python
@@ -292,8 +295,8 @@ public:
 		return (m_aiHasMetTurn.get(eOther) >= 0); // advc.091
 	}
 	int getHasMetTurn(TeamTypes eOther) { return m_aiHasMetTurn.get(eOther); } // advc.091  (exposed to Python)
-	void makeHasMet(TeamTypes eOther, bool bNewDiplo,
-			FirstContactData* pData = NULL); // advc.071
+	// advc.071: Return value, 2nd param added.
+	CvPlot* makeHasMet(TeamTypes eOther, bool bNewDiplo, FirstContactData* pData = NULL);
 	bool isHasSeen(TeamTypes eOther) const { return m_abHasSeen.get(eOther); }; // K-Mod
 	void makeHasSeen(TeamTypes eOther) { m_abHasSeen.set(eOther, true); }; // K-Mod
 	// <advc.134a>
@@ -366,6 +369,7 @@ public:
 	{
 		return (isCapitulated() && isVassal(eMaster));
 	} // </advc>
+	int getCapitulationTurn() const; // advc.130w
 	int getRouteChange(RouteTypes eIndex) const																// Exposed to Python
 	{
 		return m_aiRouteChange.get(eIndex);
@@ -539,6 +543,7 @@ public:
 		return m_abRevealedBonuses.get(eBonus);
 	}
 	bool isBonusRevealed(BonusTypes eBonus) const; // K-Mod. (the definitive answer)
+	bool canDiscoverBonus(BonusTypes eBonus) const; // advc
 
 	void revealSurroundingPlots(CvPlot const& kCenter, int iRange) const; // advc.108
 

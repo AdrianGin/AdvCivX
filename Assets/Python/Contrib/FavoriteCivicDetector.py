@@ -79,6 +79,9 @@ def doUpdate ():
 				if (not pActiveTeam.isHasMet(iTeam)):
 					BugUtil.debug(" -- Skipping; active team has not met team we are updating")
 					continue
+				# <advc.130n> Future-proof for only some players having hidden fave civics
+				if pPlayer.isFavoriteCivicKnown():
+					continue # </advc.130n>
 				favorite = gFavoriteByPlayer[iPlayer]
 				# Check Diplomacy first (if necessary)
 				if not favorite.isKnown():
@@ -159,7 +162,17 @@ def initHelpers ():
 	specific category instead of having to iterate over all civics each time.
 	"""
 	global gDetectionNecessary
-	gDetectionNecessary = gc.getGame().isOption(GameOptionTypes.GAMEOPTION_RANDOM_PERSONALITIES)
+	#gDetectionNecessary = gc.getGame().isOption(GameOptionTypes.GAMEOPTION_RANDOM_PERSONALITIES)
+	# <advc.130n>
+	gDetectionNecessary = False
+	if not gc.getGame().isOption(GameOptionTypes.GAMEOPTION_RANDOM_PERSONALITIES):
+		return
+	for iPlayer in range(gc.getMAX_CIV_PLAYERS()):
+		kPlayer = gc.getPlayer(iPlayer)
+		if kPlayer.isAlive() and not kPlayer.isFavoriteCivicKnown():
+			gDetectionNecessary = True
+			break
+	# </advc.130n>
 	BugUtil.debug("FavoriteCivicDetector.initHelpers() gDetectionNecessary: %s" % (str(gDetectionNecessary)))
 	if gDetectionNecessary:
 		BugUtil.debug("FavoriteCivicDetector.initHelpers() initializing gCivicsByCategory")
@@ -346,7 +359,13 @@ class FavoriteCivicDetector:
 						bNeedToSave = True
 						break
 				if (bNeedToSave):
-					SdToolKit.sdSetGlobal(SD_MOD_ID, SD_VAR_ID, gFavoriteByPlayer)
+					#SdToolKit.sdSetGlobal(SD_MOD_ID, SD_VAR_ID, gFavoriteByPlayer)
+					# advc.001: This is not working correctly. Since advc.130n
+					# makes civic detection unnecessary, I'm not going to hunt
+					# for the bug. If the BtS rules are restored, then it'll still
+					# be better to fail silently than to show a Python error
+					# each time that the game is (auto-)saved.
+					pass
 					#BugUtil.debug("Data Saved to sdtoolkit")
 
 	def onCivicDemanded(self, argsList):

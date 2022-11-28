@@ -6,8 +6,6 @@
 #include "CvCity.h"
 #include "AIStrategies.h" // advc.enum
 
-typedef std::vector<std::pair<UnitAITypes, int> > UnitTypeWeightArray;
-
 class CvCityAI : public CvCity
 {
 public:
@@ -19,7 +17,7 @@ public:
 			int iOccupationTimer = 0); // advc.ctr
 
 	void AI_doTurn();
-	void AI_assignWorkingPlots();
+	void AI_assignWorkingPlots(/* advc.131d: */ bool bEmphasize = false);
 	void AI_updateAssignWork();
 
 	//bool AI_avoidGrowth(); // disabled by K-Mod
@@ -109,6 +107,9 @@ public:
 
 	bool AI_isEmphasize(EmphasizeTypes eIndex) const;
 	void AI_setEmphasize(EmphasizeTypes eIndex, bool bNewValue);
+	// <advc.131d>
+	bool AI_isStrongEmphasis() const { return m_bStrongEmphasis; }
+	void AI_setStrongEmphasis(bool bStrongEmphasis); // </advc.131d>
 	//void AI_forceEmphasizeCulture(bool bNewValue); // advc.003j
 
 	int AI_getBestBuildValue(/* advc.enum: */ CityPlotTypes ePlot) const
@@ -187,6 +188,7 @@ protected:
 	int* m_aiEmphasizeYieldCount;
 	int* m_aiEmphasizeCommerceCount;
 	bool m_bForceEmphasizeCulture; // advc.003j (comment): unused
+	bool m_bStrongEmphasis; // advc.131d
 	bool* m_pbEmphasize;
 
 	BuildTypes* m_aeBestBuild;
@@ -214,18 +216,21 @@ protected:
 	//int AI_calculateCulturePressure(bool bGreatWork = false) const; // disabled by K-Mod
 
 	bool AI_bestSpreadUnit(bool bMissionary, bool bExecutive, int iBaseChance, UnitTypes* eBestSpreadUnit, int* iBestSpreadUnitValue);
-	bool AI_chooseUnit(UnitAITypes eUnitAI = NO_UNITAI, int iOdds = -1); // bbai added iOdds
+	bool AI_chooseUnit(UnitAITypes eUnitAI = NO_UNITAI,
+			int iOdds = -1); // BETTER_BTS_AI_MOD, 01/09/10, jdog5000: City AI
 	bool AI_chooseUnit(UnitTypes eUnit, UnitAITypes eUnitAI);
 	bool AI_chooseDefender();
-	bool AI_chooseLeastRepresentedUnit(UnitTypeWeightArray &allowedTypes, int iOdds = -1); // bbai added iOdds
-	bool AI_chooseBuilding(int iFocusFlags = 0, int iMaxTurns = MAX_INT, int iMinThreshold = 0, int iOdds = -1); // bbai added iOdds.
+	bool AI_chooseLeastRepresentedUnit(UnitAIWeightMap const& kWeights,
+			int iOdds = -1); // BBAI
+	bool AI_chooseBuilding(int iFocusFlags = 0, int iMaxTurns = MAX_INT, int iMinThreshold = 0,
+			int iOdds = -1); // BBAI
 	//bool AI_chooseProject(); // advc.003j
 	bool AI_chooseProcess(CommerceTypes eCommerceType = NO_COMMERCE);
 
 	bool AI_addBestCitizen(bool bWorkers, bool bSpecialists, CityPlotTypes* peBestPlot = NULL,
 			SpecialistTypes* peBestSpecialist = NULL);
 	bool AI_removeWorstCitizen(SpecialistTypes eIgnoreSpecialist = NO_SPECIALIST);
-	void AI_juggleCitizens();
+	void AI_juggleCitizens(/* advc.131d: */ bool bEmphasize = false);
 	int AI_citizenSacrificeCost(int iCitLoss, int iHappyLevel = 0, int iNewAnger = 0, int iAngerTimer = 0); // K-Mod
 	// advc: Both unused
 	/*bool AI_potentialPlot(CvPlot const& kPlot) const; // advc.enum: param was 'short* piYields'
@@ -247,7 +252,7 @@ protected:
 	bool AI_timeWeightedImprovementYields(CvPlot const& kPlot, ImprovementTypes eImprovement,
 			int iTimeScale, EagerEnumMap<YieldTypes,scaled>& kWeightedYields) const;
 	// value for working a plot in addition to its yields
-	int AI_specialPlotImprovementValue(CvPlot* pPlot) const;
+	int AI_specialPlotImprovementValue(CvPlot const& kPlot) const;
 	int AI_growthValuePerFood() const;
 	// K-Mod end  // <advc.901>
 	int AI_healthHappyImprovementValue(CvPlot const& kPlot, ImprovementTypes eImprovement,

@@ -16,6 +16,7 @@
 #include "CvPlotGroup.h"
 #include "CvFractal.h"
 #include "CvMapGenerator.h"
+#include "DepthFirstPlotSearch.h" // advc.030
 #include "GroupPathFinder.h"
 #include "FAStarFunc.h"
 #include "FAStarNode.h"
@@ -208,7 +209,7 @@ void CvMap::setup()
 {
 	PROFILE_FUNC();
 
-	CvDLLFAStarIFaceBase& kAStar = *gDLL->getFAStarIFace(); // advc
+	CvDLLFAStarIFaceBase& kAStar = *gDLL->getFAStarIFace();
 	kAStar.Initialize(&GC.getPathFinder(),
 			getGridWidth(),	getGridHeight(),isWrapX(),	isWrapY(),
 			pathDestValid,	pathHeuristic,	pathCost,	pathValid,
@@ -233,10 +234,8 @@ void CvMap::setup()
 			getGridWidth(), getGridHeight(), isWrapX(), isWrapY(),
 			NULL,			NULL,			NULL,		areaValid,
 			NULL,			joinArea,		NULL);
-	kAStar.Initialize(&GC.getPlotGroupFinder(),
-			getGridWidth(), getGridHeight(), isWrapX(), isWrapY(),
-			NULL,			NULL,			NULL,		plotGroupValid,
-			NULL,			countPlotGroup,	NULL);
+	/*	(PlotGroupFinder now probably unused, gets instantiated,
+		if necessary, by CvGlobals::getPlotGroupFinder.) */
 	// advc (note): IrrigatedFinder gets instantiated in updateIrrigated
 	// <advc.pf>
 	CvSelectionGroup::initPathFinder();
@@ -910,7 +909,7 @@ int CvMap::maxTypicalDistance() const
 	if(isWrapY())
 		iWraps++;
 	CvWorldInfo const& kWorld = GC.getInfo(getWorldSize());
-	scaled r = (kWorld.getGridWidth() * kWorld.getGridHeight() * rCivRatio *
+	scaled r = (kWorld.getGridWidth() * kWorld.getGridHeight() * rCivRatio.sqrt() *
 			rSeaLvlModifier).sqrt() * fixp(3.5) - 5 * iWraps;
 	return std::max(1, r.round());
 }
@@ -918,7 +917,7 @@ int CvMap::maxTypicalDistance() const
 
 void CvMap::changeLandPlots(int iChange)
 {
-	m_iLandPlots = (m_iLandPlots + iChange);
+	m_iLandPlots += iChange;
 	FAssert(getLandPlots() >= 0);
 }
 
@@ -1119,7 +1118,9 @@ void CvMap::recalculateAreas(/* advc.opt: */bool bUpdateIsthmuses)
 			getPlotByIndex(i).updateAnyIsthmus();
 	} // </advc.opt>
 	for (int i = 0; i < numPlots(); i++)
-		getPlotByIndex(i).setArea(NULL);
+	{	// advc.opt: Don't update the old areas, we're about to delete them.
+		getPlotByIndex(i).setArea(NULL, false);
+	}
 	m_areas.removeAll();
 	calculateAreas();
 }
@@ -1154,6 +1155,8 @@ void CvMap::updateIrrigated(CvPlot& kPlot)
 	if (!GC.getGame().isFinalInitialized())
 		return;
 
+	/*	advc.opt (note): Perhaps better to use singleton (at CvGlobals) for this?
+		Might avoid repeated memory allocation that way. */
 	FAStar* pIrrigatedFinder = gDLL->getFAStarIFace()->create();
 	if (kPlot.isIrrigated())
 	{
@@ -1420,7 +1423,7 @@ void CvMap::calculateAreas()
 			based on areas. Also, some scenarios don't call CvGame::
 			setInitialItems; these only get the initial calculation based on
 			land, sea and peaks (not ice). */
-		calculateAreas_advc();
+		calculateAreas_dfs();
 		calculateReprAreas();
 		return;
 	} // </advc.030>
@@ -1442,27 +1445,50 @@ void CvMap::calculateAreas()
 }
 
 // <advc.030>
-void CvMap::calculateAreas_advc()
+class CvAreaAggregator : public PlotVisitor<>
 {
-	for(int iPass = 0; iPass <= 1; iPass++)
+protected:
+	CvMap& m_kMap;
+	CvArea& m_kArea;
+public:
+	CvAreaAggregator(CvMap& kMap, CvArea& kArea) : m_kMap(kMap), m_kArea(kArea) {}
+	bool isVisited(CvPlot const& kPlot) const
 	{
-		for(int i = 0; i < numPlots(); i++)
+		return (kPlot.area() != NULL);
+	}
+	bool canVisit(CvPlot const& kFrom, CvPlot const& kPlot) const
+	{
+		return (kFrom.isWater() == kPlot.isWater() &&
+				!m_kMap.isSeparatedByIsthmus(kFrom, kPlot) &&
+				/*	At an impassable plot, continue only to other impassables
+					so that mountain ranges and ice packs end up in one area. */
+				(!kFrom.isImpassable() || kPlot.isImpassable()));
+	}
+	bool visit(CvPlot& kPlot)
+	{
+		kPlot.setArea(&m_kArea);
+		return true;
+	}
+};
+
+void CvMap::calculateAreas_dfs()
+{
+	for (int iPass = 0; iPass <= 1; iPass++)
+	{
+		FOR_EACH_ENUM(PlotNum)
 		{
-			CvPlot& p = getPlotByIndex(i);
-			if(iPass == 0)
-			{
-				/*  Second pass for impassables; can't handle
-					all-peak/ice areas otherwise. */
-				if(p.isImpassable())
-					continue;
-			}
-			if(p.area() != NULL)
+			CvPlot& kPlot = getPlotByIndex(eLoopPlotNum);
+			if (kPlot.area() != NULL)
 				continue;
-			FAssert(iPass == 0 || p.isImpassable());
-			CvArea& a = *addArea();
-			a.init(p.isWater());
-			p.setArea(&a);
-			calculateAreas_DFS(p);
+			/*	Second pass for impassables; can't handle
+				all-peak/ice areas otherwise. */
+			if (iPass == 0 && kPlot.isImpassable())
+				continue;
+			FAssert(iPass == 0 || kPlot.isImpassable());
+			CvArea& kArea = *addArea();
+			kArea.init(kPlot.isWater());
+			CvAreaAggregator aggr(*this, kArea);
+			DepthFirstPlotSearch<CvAreaAggregator> dfs(kPlot, aggr);
 			gDLL->callUpdater(); // Allow UI to update
 		}
 	}
@@ -1474,10 +1500,10 @@ void CvMap::updateLakes()
 	// CvArea::getNumTiles no longer sufficient for identifying lakes
 	FOR_EACH_AREA_VAR(a)
 		a->updateLake();
-	for(int i = 0; i < numPlots(); i++)
+	for (int i = 0; i < numPlots(); i++)
 	{
 		CvPlot& kPlot = getPlotByIndex(i);
-		if(kPlot.isLake())
+		if (kPlot.isLake())
 			kPlot.updateYield();
 	}
 	computeShelves(); // advc.300
@@ -1528,38 +1554,6 @@ void CvMap::calculateReprAreas()
 		}
 	} while(iReprChanged > 0);
 	updateLakes();
-}
-
-
-void CvMap::calculateAreas_DFS(CvPlot const& kStart)
-{
-	/*  Explicit stack b/c memory can be an issue if a map has dimensions
-		considerably larger than Huge and very large areas.
-		I've run out of memory with a recursive implementation (with an attached
-		debugger) after about 20000 calls on a 148x148 map generated by LPlate2's
-		Eyeball Planet script. With the stack, at least the Release build should
-		be pretty safe. */
-	std::stack<CvPlot const*> stack;
-	stack.push(&kStart);
-	while(!stack.empty())
-	{
-		CvPlot const& p = *stack.top();
-		stack.pop();
-		FOR_EACH_ADJ_PLOT_VAR2(pAdjacent, p)
-		{
-			CvPlot& q = *pAdjacent;
-			if(q.area() == NULL && p.isWater() == q.isWater() &&
-				!isSeparatedByIsthmus(p, q) &&
-				/*  Depth-first search that doesn't continue at impassables
-					except to other impassables so that mountain ranges and
-					ice packs end up in one CvArea. */
-				(!p.isImpassable() || q.isImpassable()))
-			{
-				q.setArea(p.area());
-				stack.push(&q);
-			}
-		}
-	}
 } // </advc.030>
 
 // <advc.300>
@@ -1578,17 +1572,24 @@ void CvMap::getShelves(CvArea const& kArea, std::vector<Shelf*>& kShelves) const
 
 void CvMap::computeShelves()
 {
+	if (m_shelves.empty() && getLandPlots() <= 0)
+		return; // Map still being generated, no need to waste time.
+	/*	NB: First call that gets here normally still has no shallow water.
+		But that's not guaranteed, so we have to see for ourselves. */
 	for (std::map<Shelf::Id,Shelf*>::iterator it = m_shelves.begin();
 		it != m_shelves.end(); ++it)
 	{
 		SAFE_DELETE(it->second);
 	}
 	m_shelves.clear();
-	for (int i = 0; i < numPlots(); i++)
+	FOR_EACH_ENUM(PlotNum)
 	{
-		CvPlot& p = getPlotByIndex(i);
-		if (!p.isWater() || p.isLake() || p.isImpassable() || !p.isHabitable())
+		CvPlot& p = getPlotByIndex(eLoopPlotNum);
+		if (p.getTerrainType() != GC.getWATER_TERRAIN(true) ||
+			p.isImpassable() || p.isLake() || !p.isHabitable())
+		{
 			continue;
+		}
 		// Add plot to shelves of all adjacent land areas
 		std::set<int> adjLands;
 		FOR_EACH_ADJ_PLOT(p)

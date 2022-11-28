@@ -1632,20 +1632,23 @@ DenialTypes UWAI::Team::declareWarTrade(TeamTypes eTarget, TeamTypes eSponsor) c
 					{
 						int iMemberTradeVal=-1;
 						itAgentMember->uwai().canTradeAssets(
-								utilityToTradeVal(iUtilityThresh).round(),
+								utilityToTradeVal(-iUtilityThresh).round(),
 								itSponsorMember->getID(), &iMemberTradeVal);
 						iHumanTradeVal = std::max(iHumanTradeVal, iMemberTradeVal);
 					}
 				}
 				iUtilityThresh = std::max(iUtilityThresh,
 						- (tradeValToUtility(iHumanTradeVal) +
-						// Add 5 for gold that the human might be able to procure
+						// For gold that the human might be able to procure
 						((GET_TEAM(eSponsor).isGoldTrading() ||
 						kAgent.isGoldTrading() ||
 						// Or they could ask nicely
 						(GET_TEAM(eSponsor).isAtWar(eTarget) &&
-						kAgent.AI_getAttitude(eSponsor) >=
-						ATTITUDE_PLEASED)) ? 5 : 0)).round());
+						kAgent.AI_getAttitude(eSponsor) >= ATTITUDE_PLEASED)) ?
+						(GC.getGame().isOption(GAMEOPTION_NO_TECH_TRADING) ? 6 : 4) : 0) +
+						// For tech that the human might get access to soon
+						(GET_TEAM(eSponsor).isTechTrading() ||
+						kAgent.isTechTrading() ? 4 : 0)).round());
 			}
 			if (iU > iUtilityThresh)
 				return NO_DENIAL;

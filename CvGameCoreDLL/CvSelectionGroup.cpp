@@ -365,16 +365,23 @@ bool CvSelectionGroup::showMoves(/* advc.102: */ CvPlot const& kFromPlot) const
 		if(!itHuman->isOption(PLAYEROPTION_SHOW_FRIENDLY_MOVES))
 			continue;
 		// <advc.102b>
-		if (std::max(1, /*	kToPlot may not be visible at all,
-							but the move still gets animated. */
-			kToPlot.plotCount(PUF_isVisible, itHuman->getID(), -1, eGroupOwner)) <
-			iFriendlyStackThresh)
+		if (iFriendlyStackThresh > 0)
 		{
-			if (eGroupDomain != DOMAIN_SEA || // just to save time
-				getCargoSpace() <= 1)
+			int iPlotCount = 0;
+			if (kToPlot.isVisible(itHuman->getTeam()))
 			{
-				continue;
+				iPlotCount += kToPlot.plotCount(
+						PUF_isVisible, itHuman->getID(), -1, eGroupOwner, NO_TEAM,
+						PUF_canDefend);
 			}
+			// Treat all but one unit as having already arrived
+			if (canDefend())
+				iPlotCount += getNumUnits() - 1;
+			// Assume that cargo is full
+			if (eGroupDomain == DOMAIN_SEA) // just to save time
+				iPlotCount += getCargoSpace();
+			if (iPlotCount < iFriendlyStackThresh)
+				continue;
 		} // </advc.102b>
 		// <advc.102> Hide uninteresting friendly moves
 		TeamTypes const eObs = itHuman->getTeam();
@@ -691,45 +698,6 @@ CvPlot* CvSelectionGroup::lastMissionPlot() const
 				return pTargetUnit->plot();
 			break;
 		}
-		case MISSION_SKIP:
-		case MISSION_SLEEP:
-		case MISSION_FORTIFY:
-		case MISSION_PLUNDER:
-		case MISSION_AIRPATROL:
-		case MISSION_SEAPATROL:
-		case MISSION_HEAL:
-		case MISSION_SENTRY_HEAL: // advc.004l
-		case MISSION_SENTRY:
-		case MISSION_AIRLIFT:
-		case MISSION_NUKE:
-		case MISSION_RECON:
-		case MISSION_PARADROP:
-		case MISSION_AIRBOMB:
-		case MISSION_BOMBARD:
-		case MISSION_RANGE_ATTACK:
-		case MISSION_PILLAGE:
-		case MISSION_SABOTAGE:
-		case MISSION_DESTROY:
-		case MISSION_STEAL_PLANS:
-		case MISSION_FOUND:
-		case MISSION_SPREAD:
-		case MISSION_SPREAD_CORPORATION:
-		case MISSION_JOIN:
-		case MISSION_CONSTRUCT:
-		case MISSION_DISCOVER:
-		case MISSION_HURRY:
-		case MISSION_TRADE:
-		case MISSION_GREAT_WORK:
-		case MISSION_INFILTRATE:
-		case MISSION_GOLDEN_AGE:
-		case MISSION_BUILD:
-		case MISSION_LEAD:
-		case MISSION_ESPIONAGE:
-		case MISSION_DIE_ANIMATION:
-			break;
-		default:
-			FAssert(false);
-			break;
 		}
 		pMissionNode = prevMissionQueueNode(pMissionNode);
 	}
@@ -828,7 +796,12 @@ void CvSelectionGroup::startMission()
 				attacking units that they can't see. */
 			if (isHuman() && !GC.getMap().getPlot(
 				headMissionQueueNode()->m_data.iData1,
-				headMissionQueueNode()->m_data.iData2).isVisible(getTeam()))
+				headMissionQueueNode()->m_data.iData2).isVisible(getTeam()) &&
+				/*	<advc> Future-proofing. OK to accidentally run into an
+					unseen enemy in an adjacent plot. */
+				stepDistance(getX(), getY(),
+				headMissionQueueNode()->m_data.iData1,
+				headMissionQueueNode()->m_data.iData2) > 1) // </advc>
 			{
 				headMissionQueueNode()->m_data.eFlags |= MOVE_NO_ATTACK;
 			}
@@ -919,13 +892,17 @@ void CvSelectionGroup::startMission()
 		case MISSION_PILLAGE:
 		{	// <advc> K-Mod code moved into subroutine
 			CvUnit* pUnit;
-			while ((pUnit = AI().AI_bestUnitForMission(MISSION_PILLAGE)) != NULL) // </advc>
+			// Human units should pillage at most once per command
+			std::vector<int> aiHasPillaged;
+			while ((pUnit = AI().AI_bestUnitForMission(MISSION_PILLAGE,
+				NULL, &aiHasPillaged)) != NULL) // </advc>
 			{	// <K-Mod>
 				if (pUnit->pillage())
 				{
 					bAction = true;
-					/*	AI groups might want to reconsider their action after pillaging.
-						advc (note): Only relevant when pillaging upgraded improvements. */
+					if (!AI_isControlled())
+						aiHasPillaged.push_back(pUnit->getID());
+					// AI groups might want to reconsider their action after pillaging
 					if (!isHuman() && canAllMove())
 						break;
 				} // </K-Mod>
@@ -954,13 +931,13 @@ void CvSelectionGroup::startMission()
 		}
 		case MISSION_AIRBOMB:
 		{
-			CvPlot const& kMissionPlot = GC.getMap().getPlot(
+			CvPlot& kMissionPlot = GC.getMap().getPlot(
 					headMissionQueueNode()->m_data.iData1,
 					headMissionQueueNode()->m_data.iData2);
 			bool bIntercepted = false;
 			CvUnit* pUnit;
 			while ((pUnit = AI().AI_bestUnitForMission(MISSION_AIRBOMB, &kMissionPlot)) != NULL &&
-				pUnit->airBomb(kMissionPlot.getX(), kMissionPlot.getY(), &bIntercepted))
+				pUnit->airBomb(kMissionPlot, &bIntercepted))
 			{
 				bAction = true;
 				if (bIntercepted && !bStackAttack)
@@ -1248,7 +1225,11 @@ void CvSelectionGroup::startMission()
 			else if (getActivityType() == ACTIVITY_MISSION)
 				continueMission();
 			// K-Mod
-			else if (isActiveOwned() && IsSelected() && !canAnyMove())
+			else if (isActiveOwned() && IsSelected() && //!canAnyMove()
+				/*	advc.001: Mission won't start unless all can move.
+					Need to cycle if mission not started. BtS already
+					gets this wrong. */
+				!canAllMove())
 			{
 				GC.getGame().cycleSelectionGroups_delayed(kOwner.
 						isOption(PLAYEROPTION_QUICK_MOVES) ? 1 : 2, true);
@@ -1272,6 +1253,7 @@ void CvSelectionGroup::continueMission()
 // return true if we are ready to take another step
 bool CvSelectionGroup::continueMission_bulk(int iSteps)
 {
+	PROFILE_FUNC(); // advc (This covers more ground than pushMission)
 	FAssert(!isBusy());
 	FAssert(getOwner() != NO_PLAYER);
 	FAssert(getActivityType() == ACTIVITY_MISSION);
@@ -1904,7 +1886,7 @@ bool CvSelectionGroup::canDoInterfaceMode(InterfaceModeTypes eInterfaceMode)
 			break;
 
 		case INTERFACEMODE_AIRBOMB:
-			if (pUnit->canAirBomb(pUnit->plot()))
+			if (pUnit->canAirBomb())
 				return true;
 			break;
 
@@ -1975,7 +1957,7 @@ bool CvSelectionGroup::canDoInterfaceModeAt(InterfaceModeTypes eInterfaceMode, C
 				return true;
 			break;
 		case INTERFACEMODE_AIRBOMB:
-			if (pUnit->canAirBombAt(pUnit->plot(), pPlot->getX(), pPlot->getY()))
+			if (pUnit->canAirBombAt(*pPlot))
 				return true;
 			break;
 		case INTERFACEMODE_RANGE_ATTACK:
@@ -3286,7 +3268,7 @@ bool CvSelectionGroup::readyForMission() const
 	// direct attack is a special case...    sorry about that.
 	bool bCheckMoves = true;
 
-	if (kData.eMissionType == MISSION_MOVE_TO && kData.eFlags & MOVE_DIRECT_ATTACK)
+	if (kData.eMissionType == MISSION_MOVE_TO && (kData.eFlags & MOVE_DIRECT_ATTACK))
 	{
 		if (canAnyMove())
 			bCheckMoves = false;
@@ -3446,7 +3428,7 @@ bool CvSelectionGroup::canDoMission(MissionTypes eMission, int iData1, int iData
 			break;
 
 		case MISSION_AIRBOMB:
-			if (pUnit->canAirBombAt(pPlot, iData1, iData2) &&
+			if (pUnit->canAirBombAt(GC.getMap().getPlot(iData1, iData2), pPlot) &&
 				(!bCheckMoves || pUnit->canMove()))
 			{
 				return true;

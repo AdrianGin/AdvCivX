@@ -25,6 +25,8 @@ void CyGameTextMgrInterface()
 		// advc.069:
 		.def("getBasicUnitHelp", &CyGameTextMgr::getBasicUnitHelp, "wstring (int iUnit, bool bCivilopediaText)")
 		.def("getSpecificUnitHelp", &CyGameTextMgr::getSpecificUnitHelp, "wstring (CyUnit* pUnit, bool bOneLine, bool bShort)")
+		// advc.004:
+		.def("getHurtUnitStrength", &CyGameTextMgr::getHurtUnitStrength, "wstring (CyUnit* pUnit)")
 		.def("getBuildingHelp", &CyGameTextMgr::getBuildingHelp, "wstring (int iBuilding, bool bCivilopediaText, bool bStrategyText, bool bTechChooserText, CyCity* pCity)")
 		.def("getProjectHelp", &CyGameTextMgr::getProjectHelp, "wstring (int iProject, bool bCivilopediaText, CyCity* pCity)")
 		.def("getPromotionHelp", &CyGameTextMgr::getPromotionHelp, "wstring (int iPromotion, bool bCivilopediaText)")

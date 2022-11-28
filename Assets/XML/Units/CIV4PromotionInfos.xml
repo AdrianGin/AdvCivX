@@ -4497,8 +4497,12 @@
 			<iHotKeyPriority>0</iHotKeyPriority>
 			<Button>,Art/Interface/Buttons/TechTree/Corporation.dds,Art/Interface/Buttons/Beyond_the_Sword_Atlas.dds,5,15</Button>
 		</PromotionInfo>
-		<!-- K-Mod, special penalty promotion -->
-		<PromotionInfo>
+		<!-- K-Mod, special penalty promotion.
+			 advc.905a: iMovesChange set to -1
+			 advc.313: Replaced with handicap-based modifiers.
+			 broken_combat.dds has also been botted from AdvCiv, will need to
+			 copy it from K-Mod to restore this promotion. -->
+		<!--PromotionInfo>
 			<Type>PROMOTION_DISORGANIZED</Type>
 			<Description>TXT_KEY_PROMOTION_DISORGANIZED</Description>
 			<Sound>AS2D_IF_LEVELUP</Sound>
@@ -4517,7 +4521,6 @@
 			<bHillsDoubleMove>0</bHillsDoubleMove>
 			<bImmuneToFirstStrikes>0</bImmuneToFirstStrikes>
 			<iVisibilityChange>0</iVisibilityChange>
-			<!-- advc.905a: was 0 -->
 			<iMovesChange>-1</iMovesChange>
 			<iMoveDiscountChange>0</iMoveDiscountChange>
 			<iAirRangeChange>0</iAirRangeChange>
@@ -4560,6 +4563,6 @@
 			<bCtrlDown>0</bCtrlDown>
 			<iHotKeyPriority>0</iHotKeyPriority>
 			<Button>Art/Interface/Buttons/Promotions/broken_combat.dds</Button>
-		</PromotionInfo>
+		</PromotionInfo-->
 	</PromotionInfos>
 </Civ4PromotionInfos>

@@ -84,13 +84,13 @@ std::wstring CyGameTextMgr::getUnitHelp(int iUnit, bool bCivilopediaText, bool b
 	return szBuffer.getCString();
 }
 
-// <advc.069>
+// advc.069:
 std::wstring CyGameTextMgr::getBasicUnitHelp(int iUnit, bool bCivilopediaText) {
 
 	CvWStringBuffer szBuffer;
 	GAMETEXT.setBasicUnitHelp(szBuffer, (UnitTypes)iUnit, bCivilopediaText);
 	return szBuffer.getCString();
-} // </advc.069>
+}
 
 
 std::wstring CyGameTextMgr::getSpecificUnitHelp(CyUnit* pUnit, bool bOneLine, bool bShort)
@@ -101,6 +101,15 @@ std::wstring CyGameTextMgr::getSpecificUnitHelp(CyUnit* pUnit, bool bOneLine, bo
 		GAMETEXT.setUnitHelp(szBuffer, pUnit->getUnit(), bOneLine, bShort);
 	}
 	return szBuffer.getCString();
+}
+
+// advc.004:
+std::wstring CyGameTextMgr::getHurtUnitStrength(CyUnit* pUnit)
+{
+	CvWString szBuffer;
+	if (pUnit != NULL && pUnit->getUnit() != NULL)
+		GAMETEXT.setHurtUnitStrength(szBuffer, *pUnit->getUnit());
+	return szBuffer.c_str();
 }
 
 std::wstring CyGameTextMgr::getBuildingHelp(int iBuilding, bool bCivilopediaText, bool bStrategyText, bool bTechChooserText, CyCity* pCity)

@@ -447,7 +447,7 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 
 void CvCity::doTurn()
 {
-	PROFILE("CvCity::doTurn()");
+	PROFILE_FUNC();
 
 	if (!isBombarded())
 		changeDefenseDamage(-GC.getDefineINT(CvGlobals::CITY_DEFENSE_DAMAGE_HEAL_RATE));
@@ -655,7 +655,20 @@ void CvCity::doRevolt()
 	{
 		if (GET_PLAYER(eCulturalOwner).isOneCityChallenge())
 			kill(true);
-		else getPlot().setOwner(eCulturalOwner, true, true); // will delete pCity
+		else
+		{	/*	<advc.023> Make sure that allowing cities to flip repeatedly
+				while at war can't be exploited for racking up WS.
+				Doesn't take care of shared war success, but that's hardly
+				worth exploiting. */
+			if (eCulturalOwner != BARBARIAN_PLAYER &&
+				GET_TEAM(eCulturalOwner).isAtWar(getTeam()))
+			{
+				GET_TEAM(getTeam()).AI_changeWarSuccess(TEAMID(eCulturalOwner),
+						-scaled::min(GC.getWAR_SUCCESS_CITY_CAPTURING(),
+						GET_TEAM(getTeam()).AI_getWarSuccess(TEAMID(eCulturalOwner))));
+			} // </advc.023>
+			getPlot().setOwner(eCulturalOwner, true, true); // will delete pCity
+		}
 		/*  advc (comment): setOwner doesn't actually delete this object; just
 			calls CvCity::kill. Messages also handled by setOwner (through
 			CvPlayer::acquireCity). */
@@ -2565,43 +2578,36 @@ int CvCity::computeOverflow(int iRawOverflow, int iProductionModifier,
 	OrderTypes eOrderType, int* piProductionGold, int* piLostProduction,
 	int iPopulationChange) const
 {
-	if(piProductionGold != NULL)
-		*piProductionGold = 0;
-	if(piLostProduction != NULL)
-		*piLostProduction = 0;
+	LOCAL_REF(int, iProductionGold, piProductionGold, 0);
+	LOCAL_REF(int, iLostProduction, piLostProduction, 0);
 	/*  (BtS and the unofficial patch cap overflow before factoring out the modifiers.
 		However, they also apply generic production modifiers to the overflow once
 		work on the next order starts, which AdvCiv no longer does.) */
 	int iOverflow = unmodifyOverflow(iRawOverflow, iProductionModifier);
 	int iMaxOverflow = overflowCapacity(iProductionModifier, iPopulationChange);
-	int iLostProduction = iOverflow - iMaxOverflow;
+	iLostProduction = iOverflow - iMaxOverflow;
 	iOverflow = std::min(iMaxOverflow, iOverflow);
-	if(iLostProduction <= 0)
+	if (iLostProduction <= 0)
 		return iOverflow;
-	if(piLostProduction != NULL)
-		*piLostProduction = iLostProduction;
-	if(piProductionGold != NULL)
-		*piProductionGold = (iLostProduction * failGoldPercent(eOrderType)) / 100;
+	iProductionGold = (iLostProduction * failGoldPercent(eOrderType)) / 100;
 	return iOverflow;
 } // </advc.064b>
 
 // BUG - Hurry Overflow: (advc.064)
 bool CvCity::hurryOverflow(HurryTypes eHurry, int* piProduction, int* piGold, bool bCountThisTurn) const
 {
-	if(piProduction != NULL)
-		*piProduction = 0;
-	if(piGold != NULL)
-		*piGold = 0;
+	LOCAL_REF(int, iProduction, piProduction, 0);
+	LOCAL_REF(int, iGold, piGold, 0);
 
-	if(!canHurry(eHurry))
+	if (!canHurry(eHurry))
 		return false;
 
-	if(GC.getInfo(eHurry).getProductionPerPopulation() == 0)
+	if (GC.getInfo(eHurry).getProductionPerPopulation() == 0)
 		return true;
 
 	int iTotal, iCurrent, iModifier;
 	OrderTypes eOrder = NO_ORDER; // advc.064b
-	if(isProductionUnit())
+	if (isProductionUnit())
 	{
 		UnitTypes eUnit = getProductionUnit();
 		iTotal = getProductionNeeded(eUnit);
@@ -2609,7 +2615,7 @@ bool CvCity::hurryOverflow(HurryTypes eHurry, int* piProduction, int* piGold, bo
 		iModifier = getProductionModifier(eUnit);
 		eOrder = ORDER_TRAIN;
 	}
-	else if(isProductionBuilding())
+	else if (isProductionBuilding())
 	{
 		BuildingTypes eBuilding = getProductionBuilding();
 		iTotal = getProductionNeeded(eBuilding);
@@ -2634,11 +2640,8 @@ bool CvCity::hurryOverflow(HurryTypes eHurry, int* piProduction, int* piGold, bo
 				option. However: Feature production can no longer contribute to
 				overflow, so ignore that in any case. */
 			getCurrentProductionDifference(!bCountThisTurn, true, true, !bCountThisTurn);
-	if (piProduction != NULL)
-	{
-		*piProduction = computeOverflow(iRawOverflow, iModifier, eOrder, piGold, NULL,
-				-hurryPopulation(eHurry)); // </advc.064b>
-	}
+	iProduction = computeOverflow(iRawOverflow, iModifier, eOrder, piGold, NULL,
+			-hurryPopulation(eHurry)); // </advc.064b>
 	return true;
 }
 
@@ -3984,6 +3987,7 @@ int CvCity::cultureDistance(int iDX, int iDY)
 
 // advc.101: Replaced most of the code, but it's still the same structure as in BtS.
 int CvCity::cultureStrength(PlayerTypes ePlayer,
+	bool bIgnoreWar, bool bIgnoreOccupation, // advc.023
 	std::vector<GrievanceTypes>* paGrievances) const // Out parameter for UI support
 {
 	//int iStrength = 1 + getHighestPopulation() * 2; // BtS
@@ -4017,8 +4021,8 @@ int CvCity::cultureStrength(PlayerTypes ePlayer,
 		rEraFactor++;
 	}
 	CvPlot const& kCityPlot = getPlot();
-	bool bCanFlip = (canCultureFlip(ePlayer, false) &&
-			ePlayer == kCityPlot.calculateCulturalOwner());
+	PlayerTypes const eCulturalOwner = kCityPlot.calculateCulturalOwner();
+	bool bCanFlip = (canCultureFlip(ePlayer, false) && ePlayer == eCulturalOwner);
 	scaled rStrengthFromInnerRadius;
 	CvPlayer const& kOwner = GET_PLAYER(getOwner());
 	// <advc.099c>
@@ -4175,7 +4179,15 @@ int CvCity::cultureStrength(PlayerTypes ePlayer,
 	if(rGrievanceModifier < 0)
 		rGrievanceModifier /= 2;
 	rStrength *= (1 + scaled::max(-1, rGrievanceModifier));
-
+	/*	<advc.023> Occupation state helps the garrison. Kind of a negative grievance,
+		but I think multiplying with grievances will be more intuitive. */
+	int iOccupationDiv = 1;
+	if (!bIgnoreOccupation && isOccupation())
+		iOccupationDiv *= 2;
+	if (!bIgnoreWar && isMartialLaw(eCulturalOwner))
+		iOccupationDiv *= 2;
+	rStrength /= iOccupationDiv;
+	// </advc.023>
 	return rStrength.round();
 }
 
@@ -4939,19 +4951,19 @@ void CvCity::updateSurroundingHealthHappiness()
 			}
 		}
 	}
+	bool bDirty = false;
 	if (getSurroundingGoodHappiness() != iNewGoodHappiness)
 	{
 		m_iSurroundingGoodHappiness = iNewGoodHappiness;
 		FAssert(getSurroundingGoodHappiness() >= 0);
-		AI_setAssignWorkDirty(true);
+		bDirty = true;
 	}
 	if (getSurroundingBadHappiness() != iNewBadHappiness)
 	{
 		m_iSurroundingBadHappiness = iNewBadHappiness;
 		FAssert(getSurroundingBadHappiness() <= 0);
-		AI_setAssignWorkDirty(true);
+		bDirty = true;
 	}
-
 	std::pair<int,int> iiGoodBad = calculateSurroundingHealth(); // advc.901: Moved into new function
 	if (getSurroundingGoodHealth() != iiGoodBad.first ||
 		getSurroundingBadHealth() != iiGoodBad.second)
@@ -4960,6 +4972,10 @@ void CvCity::updateSurroundingHealthHappiness()
 		m_iSurroundingBadHealth = iiGoodBad.second;
 		FAssert(getSurroundingGoodHealth() >= 0);
 		FAssert(getSurroundingBadHealth() <= 0);
+		bDirty = true;
+	}
+	if (bDirty)
+	{
 		AI_setAssignWorkDirty(true);
 		if (isActiveTeam())
 			setInfoDirty(true);
@@ -7835,29 +7851,18 @@ scaled CvCity::revoltProbability(bool bIgnoreWar,
 	{
 		return 0;
 	}
-	// <advc.023>
-	scaled rOccupationFactor = 1;
-	if (isOccupation() && !bIgnoreOccupation)
-	{
-		if(!bIgnoreWar && !isBarbarian() && !GET_TEAM(getTeam()).isMinorCiv() &&
-			GET_PLAYER(eCulturalOwner).isAlive() &&
-			GET_TEAM(getTeam()).isAtWar(TEAMID(eCulturalOwner)))
-		{
-			return 0;
-		}
-		rOccupationFactor = fixp(0.5);
-	} // </advc.023>
-	int iCityStrength = cultureStrength(eCulturalOwner);
+	int iCityStrength = cultureStrength(eCulturalOwner,
+			bIgnoreWar, bIgnoreOccupation); // advc.023
 	int iGarrison =
 			(bIgnoreGarrison ? 0 : // advc.023
 			cultureGarrison(eCulturalOwner));
-	if(iCityStrength <= iGarrison)
+	if (iCityStrength <= iGarrison)
 		return 0;
 	/*  About the two revolt tests: I guess the first one checks if the city tries
 		to revolt, and the second if the garrison can stop the revolt.
 		Restored the BtS formula for the second test. */
 	scaled r = scaled::max(0, (1 - scaled(iGarrison, iCityStrength))) *
-			getRevoltTestProbability() * rOccupationFactor;
+			getRevoltTestProbability();
 	// Don't use probabilities that are too small to be displayed
 	if (r.getPermille() < 1)
 		return 0;
@@ -7894,8 +7899,9 @@ scaled CvCity::probabilityOccupationDecrement() const
 	return r;
 }
 
-// K-Mod: The following function defines whether or not the city is allowed to flip to the given player
-bool CvCity::canCultureFlip(PlayerTypes eToPlayer, /* advc.101: */ bool bCheckPriorRevolts) const
+// K-Mod: Whether or not the city is allowed to flip to the given player
+bool CvCity::canCultureFlip(PlayerTypes eToPlayer,
+	bool bCheckPriorRevolts) const // advc.101
 {
 	/*if (isBarbarian())
 		return true;*/ // advc.101: Commented out
@@ -7918,6 +7924,14 @@ bool CvCity::canCultureFlip(PlayerTypes eToPlayer, /* advc.101: */ bool bCheckPr
 			(!bCheckPriorRevolts || // advc.101
 			getNumRevolts(eToPlayer) >= GC.getDefineINT(CvGlobals::NUM_WARNING_REVOLTS)
 			- (isBarbarian() ? 1 : 0))); // advc.101
+}
+
+// advc.023: Conditions for easier suppression while at war
+bool CvCity::isMartialLaw(PlayerTypes eRevoltPlayer) const
+{
+	CvPlayer const& kRevoltPlayer = GET_PLAYER(eRevoltPlayer);
+	return (kRevoltPlayer.isAlive() && kRevoltPlayer.isMajorCiv() &&
+			GET_TEAM(getTeam()).isAtWar(kRevoltPlayer.getTeam()));
 }
 
 
@@ -8842,9 +8856,7 @@ void CvCity::alterWorkingPlot(CityPlotTypes ePlot)
 {
 	if (ePlot == CITY_HOME_PLOT)
 	{
-		setCitizensAutomated(//true
-				// advc.004t: toggle
-				!isCitizensAutomated());
+		setCitizensAutomated(true);
 		return;
 	}
 	CvPlot* pPlot = getCityIndexPlot(ePlot);
@@ -11258,8 +11270,16 @@ void CvCity::read(FDataStreamBase* pStream)
 		m_aiNumRealBuilding.read(pStream);
 		m_aiNumFreeBuilding.read(pStream);
 		m_abWorkingPlot.read(pStream);
-		m_abHasReligion.read(pStream);
-		m_abHasCorporation.read(pStream);
+		if (uiFlag >= 17)
+		{
+			m_abHasReligion.read(pStream);
+			m_abHasCorporation.read(pStream);
+		}
+		else
+		{
+			LegacyArrayEnumMap<ReligionTypes,bool>::convert(m_abHasReligion, pStream);
+			LegacyArrayEnumMap<CorporationTypes,bool>::convert(m_abHasCorporation, pStream);
+		}
 	}
 	else
 	{
@@ -11291,7 +11311,7 @@ void CvCity::read(FDataStreamBase* pStream)
 		m_aiReligionInfluence.readArray<int>(pStream);
 		m_aiStateReligionHappiness.readArray<int>(pStream);
 		m_aiUnitCombatFreeExperience.readArray<int>(pStream);
-		m_aiFreePromotionCount.readArray<int>(pStream);
+		m_aiFreePromotionCount.readArray<int>(pStream, /* advc.313: */ -1);
 		m_aiNumRealBuilding.readArray<int>(pStream);
 		m_aiNumFreeBuilding.readArray<int>(pStream);
 		m_abWorkingPlot.readArray<bool>(pStream);
@@ -11626,7 +11646,8 @@ void CvCity::write(FDataStreamBase* pStream)
 	//uiFlag = 13; // advc.201: Cathedrals restored to BtS stats
 	//uiFlag = 14; // advc.179, advc.exp.1, advc.exp.2
 	//uiFlag = 15; // advc.912d: Partly reverted, adjust MaxFoodKept.
-	uiFlag = 16; // advc.enum: m_aiShrine
+	//uiFlag = 16; // advc.enum: m_aiShrine
+	uiFlag = 17; // advc.313: Disorganized promo removed, advc.enum: bugfix.
 	pStream->Write(uiFlag);
 
 	pStream->Write(m_iID);

@@ -1362,4 +1362,14 @@
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
+	<!-- advc.048c: Set to 1 (recommended) to include the attacker's combat odds
+		 (survival odds if withdrawal possible) in on-screen messages about
+		 the outcomes of combat that happens in between turns. Set to 0 to
+		 restore the BtS messages. The attacker's odds can, in any case, be
+		 found on the Combat tab of the Turn Log. -->
+	<Define>
+		<DefineName>SHOW_ODDS_IN_COMBAT_MESSAGES</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+
 </Civ4Defines>

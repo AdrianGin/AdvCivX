@@ -2005,7 +2005,7 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct,
 	szTemp.Format(SETCOLR L"%s" ENDCOLR , TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),
 			kAction.getHotKeyDescription().c_str());
 	szBuffer.assign(szTemp);
-	CvDLLInterfaceIFaceBase& kUI = *gDLL->getInterfaceIFace(); // advc
+	CvDLLInterfaceIFaceBase& kUI = *gDLL->getInterfaceIFace();
 
 	CvUnit const* pHeadSelectedUnit = kUI.getHeadSelectedUnit();
 	if (pHeadSelectedUnit != NULL)
@@ -2026,7 +2026,7 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct,
 			}
 			else if (kAction.getCommandType() == COMMAND_UPGRADE)
 			{
-				UnitTypes eTo = (UnitTypes)kAction.getCommandData(); // advc
+				UnitTypes const eTo = (UnitTypes)kAction.getCommandData();
 				GAMETEXT.setBasicUnitHelp(szBuffer, eTo);
 
 				// <advc.080>
@@ -3077,17 +3077,15 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 				bool bFirst = true;
 				FOR_EACH_ENUM2(Bonus, eRandBonus)
 				{
-					if (kUnitTeam.isHasTech(GC.getInfo(eRandBonus).getTechReveal()))
+					if (kUnitTeam.canDiscoverBonus(eRandBonus) &&
+						kImprov.getImprovementBonusDiscoverRand(eRandBonus) > 0 &&
+						kMissionPlot.canHaveBonus(eRandBonus, false, // advc.rom3
+						true)) // advc.129
 					{
-						if (kImprov.getImprovementBonusDiscoverRand(eRandBonus) > 0 &&
-							kMissionPlot.canHaveBonus(eRandBonus, false, // advc.rom3
-							true)) // advc.129
-						{
-							szFirstBuffer.Format(L"%s%s", NEWLINE,
-									gDLL->getText("TXT_KEY_ACTION_CHANCE_DISCOVER").c_str());
-							szTempBuffer.Format(L"%c", GC.getInfo(eRandBonus).getChar());
-							setListHelp(szBuffer, szFirstBuffer, szTempBuffer, L", ", bFirst);
-						}
+						szFirstBuffer.Format(L"%s%s", NEWLINE,
+								gDLL->getText("TXT_KEY_ACTION_CHANCE_DISCOVER").c_str());
+						szTempBuffer.Format(L"%c", GC.getInfo(eRandBonus).getChar());
+						setListHelp(szBuffer, szFirstBuffer, szTempBuffer, L", ", bFirst);
 					}
 				}
 			}
@@ -3467,7 +3465,8 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 	GAMETEXT.parsePlayerTraits(szBuffer, ePlayer);*/ // BtS
 	if (eActivePlayer != ePlayer && // advc.085
 			!kActiveTeam.isHasMet(eTeam))
-	{	// K-Mod. If we haven't met the player yet - don't say "contact". Because we can't actually contact them!
+	{	/*	K-Mod. If we haven't met the player yet - don't say "contact".
+			Because we can't actually contact them! */
 		szBuffer.append(CvWString::format(SETCOLR L"%s" ENDCOLR,
 				TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), kPlayer.getName())); // K-Mod end
 		// <advc.007>
@@ -4656,8 +4655,14 @@ void CvDLLWidgetData::parseTradeItem(CvWidgetDataStruct &widgetDataStruct,
 		GAMETEXT.setBonusHelp(szBuffer, (BonusTypes)widgetDataStruct.m_iData2);
 		break;
 	case TRADE_CITIES:
-		szBuffer.assign(gDLL->getText("TXT_KEY_TRADE_CITIES"));
+	{	// <advc.ctr>
+		CvCity const* pCity = GET_PLAYER(eWhoFrom).getCity(widgetDataStruct.m_iData2);
+		if (pCity != NULL)
+			GAMETEXT.setCityTradeHelp(szBuffer, *pCity, eWhoTo, false, false);
+		else // </advc.ctr>
+			szBuffer.assign(gDLL->getText("TXT_KEY_TRADE_CITIES"));
 		break;
+	}
 	case TRADE_PEACE:
 		szBuffer.append(gDLL->getText("TXT_KEY_TRADE_MAKE_PEACE",
 				GET_TEAM(eWhoFrom).getName().GetCString(),
@@ -5027,32 +5032,31 @@ void CvDLLWidgetData::parseNationalityHelp(CvWidgetDataStruct &widgetDataStruct,
 	std::vector<CvCity::GrievanceTypes> aeGrievances;
 	// <advc.023>
 	scaled const rDecrementProb = c.probabilityOccupationDecrement();
-	scaled const rProbToDisplay = c.revoltProbability(true, false, true);
-	int const iCultureStr = c.cultureStrength(eCulturalOwner, &aeGrievances);
+	scaled const rHypotheticalProb = c.revoltProbability(true, false, true);
+	int const iCultureStr = c.cultureStrength(eCulturalOwner, false, false,
+			&aeGrievances);
 	int const iGarrisonStr = c.cultureGarrison(eCulturalOwner);
 	scaled const rTrueProb = c.revoltProbability() * (1 - rDecrementProb);
-	if (rProbToDisplay > 0)
+	if (rHypotheticalProb > 0)
 	{
 		swprintf(szTempBuffer, (rTrueProb == 0 ? L"%.0f" : L"%.1f"),
 				100 * rTrueProb.getFloat()); // </advc.023>
 		// </advc.101>
 		szBuffer.append(NEWLINE);
 		szBuffer.append(gDLL->getText("TXT_KEY_MISC_CHANCE_OF_REVOLT", szTempBuffer));
-		// <advc.023> Probability after occupation
-		if (rTrueProb != rProbToDisplay)
+		/*	<advc.023> Probability after occupation and war. (If only either ends,
+			a third probability may apply, but I don't to bother showing that.) */
+		if (rTrueProb != rHypotheticalProb)
 		{
 			szBuffer.append(NEWLINE);
-			swprintf(szTempBuffer, L"%.1f", 100 * rProbToDisplay.getFloat());
-			if(eCulturalOwner == BARBARIAN_PLAYER || !GET_PLAYER(eCulturalOwner).isAlive())
-			{
-				szBuffer.append(gDLL->getText(
-						"TXT_KEY_NO_BARB_REVOLT_IN_OCCUPATION", szTempBuffer));
-			}
-			else
-			{
-				szBuffer.append(gDLL->getText(
-						"TXT_KEY_NO_REVOLT_IN_OCCUPATION", szTempBuffer));
-			}
+			swprintf(szTempBuffer, L"%.1f", 100 * rHypotheticalProb.getFloat());
+			CvWString szKey;
+			if (c.isMartialLaw(eCulturalOwner) && c.isOccupation())
+				szKey = "TXT_KEY_REVOLT_CHANCE_AFTER_WAR_OCCUPATION";
+			else if (c.isMartialLaw(eCulturalOwner))
+				szKey = "TXT_KEY_REVOLT_CHANCE_AFTER_WAR";
+			else szKey = "TXT_KEY_REVOLT_CHANCE_AFTER_OCCUPTAION";
+			szBuffer.append(gDLL->getText(szKey, szTempBuffer));
 		} // </advc.023>
 		// <advc.101>
 		szBuffer.append(NEWLINE);
@@ -5064,11 +5068,14 @@ void CvDLLWidgetData::parseNationalityHelp(CvWidgetDataStruct &widgetDataStruct,
 				iCultureStrength, iCultureStrength,
 				::round(100 * c.getRevoltTestProbability())));
 		// Also show c.getRevoltProtection()? */
-		szBuffer.append(gDLL->getText("TXT_KEY_GARRISON_STRENGTH_NEEDED",
-				iCultureStr - iGarrisonStr));
+		if (iCultureStr > iGarrisonStr)
+		{
+			szBuffer.append(gDLL->getText("TXT_KEY_GARRISON_STRENGTH_NEEDED",
+					iCultureStr - iGarrisonStr));
+		}
 	}
-	if (!c.isOccupation() && rProbToDisplay <= 0 && eCulturalOwner != c.getOwner() &&
-		iGarrisonStr >= iCultureStr)
+	if (!c.isOccupation() && rHypotheticalProb <= 0 &&
+		eCulturalOwner != c.getOwner() && iGarrisonStr >= iCultureStr)
 	{
 		szBuffer.append(NEWLINE);
 		szBuffer.append(gDLL->getText("TXT_KEY_GARRISON_STRENGTH_EXCESS",
@@ -5095,7 +5102,7 @@ void CvDLLWidgetData::parseNationalityHelp(CvWidgetDataStruct &widgetDataStruct,
 		szBuffer.append(NEWLINE);
 		szBuffer.append(gDLL->getText("TXT_KEY_MISC_PRIOR_REVOLTS",
 				c.getNumRevolts(eCulturalOwner)));
-		if (rProbToDisplay > 0 && rTrueProb > 0 && c.canCultureFlip(eCulturalOwner))
+		if (rTrueProb > 0 && c.canCultureFlip(eCulturalOwner))
 		{
 			szBuffer.append(NEWLINE);
 			szBuffer.append(gDLL->getText("TXT_KEY_MISC_FLIP_WARNING"));

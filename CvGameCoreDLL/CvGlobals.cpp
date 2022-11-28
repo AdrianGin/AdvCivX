@@ -6,6 +6,7 @@
 #include "CvGameAI.h"
 #include "CvAgents.h" // advc.agent
 #include "CvMap.h"
+#include "FAStarFunc.h" // advc: only for getPlotGroupFinder
 #include "CvInfo_All.h"
 #include "CvXMLLoadUtility.h" // advc.003v
 // <advc.003o>
@@ -178,29 +179,9 @@ void CvGlobals::init() // allocate
 		{NO_CITYPLOT, 13, 12,  11, NO_CITYPLOT,}
 	};
 
-	DirectionTypes aeTurnRightDirection[NUM_DIRECTION_TYPES] =
-	{
-		DIRECTION_NORTHEAST,	// DIRECTION_NORTH
-		DIRECTION_EAST,			// DIRECTION_NORTHEAST
-		DIRECTION_SOUTHEAST,	// DIRECTION_EAST
-		DIRECTION_SOUTH,		// DIRECTION_SOUTHEAST
-		DIRECTION_SOUTHWEST,	// DIRECTION_SOUTH
-		DIRECTION_WEST,			// DIRECTION_SOUTHWEST
-		DIRECTION_NORTHWEST,	// DIRECTION_WEST
-		DIRECTION_NORTH,		// DIRECTION_NORTHWEST
-	};
-
-	DirectionTypes aeTurnLeftDirection[NUM_DIRECTION_TYPES] =
-	{
-		DIRECTION_NORTHWEST,	// DIRECTION_NORTH
-		DIRECTION_NORTH,		// DIRECTION_NORTHEAST
-		DIRECTION_NORTHEAST,	// DIRECTION_EAST
-		DIRECTION_EAST,			// DIRECTION_SOUTHEAST
-		DIRECTION_SOUTHEAST,	// DIRECTION_SOUTH
-		DIRECTION_SOUTH,		// DIRECTION_SOUTHWEST
-		DIRECTION_SOUTHWEST,	// DIRECTION_WEST
-		DIRECTION_WEST,			// DIRECTION_NORTHWEST
-	};
+	// advc: unused
+	/*DirectionTypes aeTurnRightDirection[NUM_DIRECTION_TYPES] = ...
+	DirectionTypes aeTurnLeftDirection[NUM_DIRECTION_TYPES] = ...*/
 
 	DirectionTypes aaeXYDirection[DIRECTION_DIAMETER][DIRECTION_DIAMETER] =
 	{
@@ -246,8 +227,9 @@ void CvGlobals::init() // allocate
 	memcpy(m_aiCityPlotX, aiCityPlotX, sizeof(m_aiCityPlotX));
 	memcpy(m_aiCityPlotY, aiCityPlotY, sizeof(m_aiCityPlotY));
 	memcpy(m_aiCityPlotPriority, aiCityPlotPriority, sizeof(m_aiCityPlotPriority));
-	memcpy(m_aeTurnLeftDirection, aeTurnLeftDirection, sizeof(m_aeTurnLeftDirection));
-	memcpy(m_aeTurnRightDirection, aeTurnRightDirection, sizeof(m_aeTurnRightDirection));
+	// advc: unused
+	/*memcpy(m_aeTurnLeftDirection, aeTurnLeftDirection, sizeof(m_aeTurnLeftDirection));
+	memcpy(m_aeTurnRightDirection, aeTurnRightDirection, sizeof(m_aeTurnRightDirection));*/
 	memcpy(m_aaeXYCityPlot, aaiXYCityPlot, sizeof(m_aaeXYCityPlot));
 	memcpy(m_aaeXYDirection, aaeXYDirection,sizeof(m_aaeXYDirection));
 }
@@ -382,6 +364,24 @@ CMessageControl& CvGlobals::getMessageControl()
 CvDropMgr& CvGlobals::getDropMgr()
 {
 	return *m_dropMgr;
+}
+
+DllExport FAStar& CvGlobals::getPlotGroupFinder()
+{
+	/*	advc.pf: Unused within the DLL now (cf. CvPlotGroup::recalculatePlots).
+		I don't think the EXE uses this either, so I've moved the initialization
+		code from CvMap - to have the obsolete code in one place. */
+	FErrorMsg("Does this actually get called?"); // advc.test
+	if (m_plotGroupFinder == NULL)
+	{
+		CvMap const& kMap = getMap();
+		gDLL->getFAStarIFace()->Initialize(m_plotGroupFinder,
+				kMap.getGridWidth(), kMap.getGridHeight(),
+				kMap.isWrapX(), kMap.isWrapY(),
+				NULL, NULL, NULL, plotGroupValid,
+				NULL, countPlotGroup, NULL);
+	}
+	return *m_plotGroupFinder;
 }
 
 // advc.003j: unused

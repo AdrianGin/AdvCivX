@@ -92,7 +92,8 @@ public:
 	DllExport bool isRiverCrossingFlowClockwise(DirectionTypes eDirection) const;
 	bool isRiverSide() const;																		// Exposed to Python
 	bool isRiver() const { return (getRiverCrossingCount() > 0); }									// Exposed to Python
-	bool isRiverConnection(DirectionTypes eDirection) const;										// Exposed to Python
+	bool isRiverConnection(DirectionTypes eDir) const;												// Exposed to Python
+	bool isRiverToRiverConnection(CvPlot const& kOther) const; // advc.124b
 	// advc.500:
 	bool isConnectRiverSegments() const;
 	// advc.121: A kind of canal detection
@@ -512,7 +513,7 @@ public:
 	{
 		return (RouteTypes)m_eRouteType;
 	}
-	void setRouteType(RouteTypes eNewValue, bool bUpdatePlotGroup);									// Exposed to Python
+	void setRouteType(RouteTypes eNewValue, bool bUpdatePlotGroup /*advc:*/= true);					// Exposed to Python
 	void updateCityRoute(bool bUpdatePlotGroup);
 
 	DllExport CvCity* getPlotCity() const;															// Exposed to Python
@@ -862,6 +863,7 @@ protected:
 	bool m_bAnyIsthmus:1; // advc.opt
 	bool m_bPotentialCityWork:1;
 	bool m_bShowCitySymbols:1;
+
 	bool m_bFlagDirty:1;
 	bool m_bPlotLayoutDirty:1;
 	bool m_bLayoutStateWorked:1;
@@ -879,6 +881,7 @@ protected:
 	char /*PlayerTypes*/ m_eSecondOwner; // advc.035
 
 	char m_iAdjPlots; // advc.opt
+
 	// advc.912f: Was short - which would overflow too easily at times-100 precision.
 	int m_iUpgradeProgress;
 	int m_iTotalCulture; // advc.opt

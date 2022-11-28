@@ -1479,6 +1479,7 @@ CvCity* CvPlayer::initCity(int iX, int iY, bool bBumpUnits, bool bUpdatePlotGrou
 void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool bUpdatePlotGroups,
 	bool bPeaceDeal, bool bForFree) // advc.ctr
 {
+	PROFILE_FUNC(); // advc: Rare but slow
 	FAssert(!bConquest || !bTrade); // advc: mutually exclusive
 	// advc.ctr: bForFree isn't meaningful for conquests
 	FAssert(!bForFree || bTrade);
@@ -2007,9 +2008,15 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 	   case where a dead player arranged a vassal agreement. */
 	if(eOldOwner != NO_PLAYER)
 		GET_PLAYER(eOldOwner).verifyAlive(); // </advc.001>
-	// <advc.130w>
-	AI().AI_updateCityAttitude(kCityPlot);
-	GET_PLAYER(eOldOwner).AI_updateCityAttitude(kCityPlot); // </advc.130w>
+	// <advc.130w> Major power shift; good time to update expansionist hate.
+	for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	{
+		if (GET_TEAM(getTeam()).isHasMet(itPlayer->getTeam()) ||
+			GET_TEAM(eOldOwner).isHasMet(itPlayer->getTeam()))
+		{
+			itPlayer->AI_updateExpansionistHate();
+		}
+	} // </advc.130w>
 }
 
 /*	advc: I've redirected calls that went directly to CvEventReporter here.
@@ -3654,7 +3661,7 @@ void CvPlayer::handleDiploEvent(DiploEventTypes eDiploEvent, PlayerTypes ePlayer
 		AI().AI_changeMemoryCount(ePlayer, MEMORY_ACCEPTED_CIVIC, 1);
 		CivicMap aeNewCivics;
 		GET_PLAYER(ePlayer).getCivics(aeNewCivics);
-		CivicTypes eFavCivic = GC.getInfo(getPersonalityType()).getFavoriteCivic();
+		CivicTypes eFavCivic = getFavoriteCivic();
 		aeNewCivics.set(GC.getInfo(eFavCivic).getCivicOptionType(), eFavCivic);
 		GET_PLAYER(ePlayer).revolution(aeNewCivics, true);
 		break;
@@ -4513,9 +4520,13 @@ void CvPlayer::raze(CvCity& kCity) // advc: param was CvCity*
 
 	kCity.doPartisans(); // advc.003y
 	CvEventReporter::getInstance().cityRazed(&kCity, getID());
-	CvPlot const& kCityPlot = *kCity.plot(); // advc.130w
 	disband(kCity);
-	AI().AI_updateCityAttitude(kCityPlot); // advc.130w
+	// <advc.130w> (Cf. the end of acquireCity)
+	for (PlayerAIIter<MAJOR_CIV,KNOWN_TO> itOther(getTeam());
+		itOther.hasNext(); ++itOther)
+	{
+		itOther->AI_updateExpansionistHate();
+	} // </advc.130w>
 }
 
 
@@ -5981,7 +5992,7 @@ int CvPlayer::calculatePollution(PollutionFlags ePollution) const
 	return iTotal;
 }
 
-// <K-Mod>
+// K-Mod:
 void CvPlayer::setGwPercentAnger(int iNewValue)
 {
 	if (iNewValue != m_iGwPercentAnger)
@@ -5991,13 +6002,12 @@ void CvPlayer::setGwPercentAnger(int iNewValue)
 	}
 } 
 
-
+// K-Mod: Cut from calculateUnitCost
 int CvPlayer::getUnitCostMultiplier() const
 {
 	int iMultiplier = 100;
 	iMultiplier *= GC.getInfo(getHandicapType()).getUnitCostPercent();
 	iMultiplier /= 100;
-
 	if (!isHuman() && !isBarbarian())
 	{
 		iMultiplier *= GC.getInfo(GC.getGame().getHandicapType()).getAIUnitCostPercent();
@@ -6006,9 +6016,16 @@ int CvPlayer::getUnitCostMultiplier() const
 		/*iMultiplier *= std::max(0, ((GC.getInfo(GC.getGame().getHandicapType()).getAIPerEraModifier() * getCurrentEra()) + 100));
 		iMultiplier /= 100;*/
 	}
-
+	// <advc.252>
+	iMultiplier *= GC.getInfo(GC.getGame().getGameSpeedType()).get(
+			CvGameSpeedInfo::UnitCostPercent);
+	iMultiplier /= 100;
+	iMultiplier *= GC.getInfo(GC.getMap().getWorldSize()).get(
+			CvWorldInfo::UnitCostPercent);
+	iMultiplier /= 100;
+	// </advc.252>
 	return iMultiplier;
-} // </K-Mod>
+}
 
 
 int CvPlayer::calculateUnitCost(int& iFreeUnits, int& iFreeMilitaryUnits, int& iPaidUnits,
@@ -6101,9 +6118,13 @@ int CvPlayer::calculateUnitSupply(int& iPaidUnits, int& iBaseSupplyCost,
 	static int iINITIAL_FREE_OUTSIDE_UNITS = GC.getDefineINT("INITIAL_FREE_OUTSIDE_UNITS"); // advc.opt
 	static int iINITIAL_OUTSIDE_UNIT_GOLD_PERCENT = GC.getDefineINT("INITIAL_OUTSIDE_UNIT_GOLD_PERCENT"); // advc.opt
 
+	int iFreeOutsideUnits = iINITIAL_FREE_OUTSIDE_UNITS +
+			// <advc.252>
+			GC.getInfo(GC.getGame().getGameSpeedType()).get(
+			CvGameSpeedInfo::ExtraFreeOutsideUnits); // </advc.252>
 	iPaidUnits = std::max(0, getNumOutsideUnits()
-		+ iExtraOutsideUnits // advc.004b
-		- iINITIAL_FREE_OUTSIDE_UNITS);
+			+ iExtraOutsideUnits // advc.004b
+			- iFreeOutsideUnits);
 
 	iBaseSupplyCost = iPaidUnits * iINITIAL_OUTSIDE_UNIT_GOLD_PERCENT;
 	iBaseSupplyCost /= 100;
@@ -6185,18 +6206,12 @@ int CvPlayer::calculateInflatedCosts() const
 int CvPlayer::calculateResearchModifier(TechTypes eTech,  // <advc.910>
 		int* piFromOtherKnown, int* piFromPaths, int* piFromTeam) const
 {
-	// So that the caller isn't required to provide the pointer params
-	int iFromOtherKnown, iFromPaths, iFromTeam;
-	if(piFromOtherKnown == NULL)
-		piFromOtherKnown = &iFromOtherKnown;
-	if(piFromPaths == NULL)
-		piFromPaths = &iFromPaths;
-	if(piFromTeam == NULL)
-		piFromTeam = &iFromTeam;
-	*piFromOtherKnown = *piFromPaths = *piFromTeam = 0;
+	LOCAL_REF(int, iFromOtherKnown, piFromOtherKnown, 0);
+	LOCAL_REF(int, iFromPaths, piFromPaths, 0);
+	LOCAL_REF(int, iFromTeam, piFromTeam, 0);
 	// </advc.910>
 	int iModifier = 100;
-	if(NO_TECH == eTech)
+	if (eTech == NO_TECH)
 		return iModifier;
 
 	// BETTER_BTS_AI_MOD, Tech Diffusion, 07/27/09, jdog5000: START
@@ -6219,7 +6234,7 @@ int CvPlayer::calculateResearchModifier(TechTypes eTech,  // <advc.910>
 		static int const iTechDiffMod = GC.getDefineINT("TECH_DIFFUSION_KNOWN_TEAM_MODIFIER", 30);
 		if (rKnownExp > 0)
 		{
-			*piFromOtherKnown += // advc.910
+			iFromOtherKnown += // advc.910
 					iTechDiffMod - (iTechDiffMod * fixp(0.85).pow(rKnownExp)).round();
 		}
 		// Tech flows downhill to those who are far behind
@@ -6230,7 +6245,7 @@ int CvPlayer::calculateResearchModifier(TechTypes eTech,  // <advc.910>
 			if (rKnownExp > 0)
 			{
 				static int const iWelfareModifier = GC.getDefineINT("TECH_DIFFUSION_WELFARE_MODIFIER", 30);
-				*piFromOtherKnown += // advc.910
+				iFromOtherKnown += // advc.910
 						(iWelfareModifier * GC.getGame().getCurrentEra() *
 						(iWelfareThreshold - iTechScorePercent)) / 200;
 			}
@@ -6248,11 +6263,11 @@ int CvPlayer::calculateResearchModifier(TechTypes eTech,  // <advc.910>
 		if (iPossibleKnownCount > 0)
 		{
 			static int iTECH_COST_TOTAL_KNOWN_TEAM_MODIFIER = GC.getDefineINT("TECH_COST_TOTAL_KNOWN_TEAM_MODIFIER"); // advc.opt
-			*piFromOtherKnown += // advc.910
+			iFromOtherKnown += // advc.910
 				(iTECH_COST_TOTAL_KNOWN_TEAM_MODIFIER * iKnownCount) / iPossibleKnownCount;
 		}
 	}
-	iModifier += *piFromOtherKnown; // advc.910
+	iModifier += iFromOtherKnown; // advc.910
 
 	int iPossiblePaths = 0;
 	int iUnknownPaths = 0;
@@ -6265,26 +6280,26 @@ int CvPlayer::calculateResearchModifier(TechTypes eTech,  // <advc.910>
 	FAssert(iPossiblePaths >= iUnknownPaths);
 	if(iPossiblePaths > iUnknownPaths)
 	{
-		*piFromPaths += // advc.910
+		iFromPaths += // advc.910
 				GC.getDefineINT(CvGlobals::TECH_COST_FIRST_KNOWN_PREREQ_MODIFIER);
 		iPossiblePaths--;
-		*piFromPaths += (iPossiblePaths - iUnknownPaths) *
+		iFromPaths += (iPossiblePaths - iUnknownPaths) *
 				GC.getDefineINT(CvGlobals::TECH_COST_KNOWN_PREREQ_MODIFIER);
 	}
 	// BETTER_BTS_AI_MOD: END
-	iModifier += *piFromPaths;
+	iModifier += iFromPaths;
 	// <advc.156>
 	for (MemberIter it(getTeam()); it.hasNext(); ++it)
 	{
 		CvPlayer const& kMember = *it;
 		if (kMember.getID() != getID() && kMember.getCurrentResearch() == eTech)
 		{
-			*piFromTeam = // advc.910
+			iFromTeam = // advc.910
 					GC.getDefineINT(CvGlobals::RESEARCH_MODIFIER_EXTRA_TEAM_MEMBER); // advc.210
 			break; // Or should the penalty stack?
 		}
 	}
-	iModifier += *piFromTeam; // advc.910
+	iModifier += iFromTeam; // advc.910
 	// </advc.156>
 	iModifier -= groundbreakingPenalty(eTech); // advc.groundbr
 	return iModifier;
@@ -6819,6 +6834,33 @@ int CvPlayer::getCivicPercentAnger(CivicTypes eCivic, bool bIgnore) const
 
 	return (GC.getInfo(eCivic).getCivicPercentAnger() * iCount) / iPossibleCount;
 }
+
+/*	<advc.130n> Functions that allow favorite ideologies to be tied to either
+	to personality or leader type in a single place. (This distinction matters
+	only for the Random Personalities option.)
+	Could argue that these should be CvPlayerAI functions b/c only the AI
+	should care about favorite ideologies, but mods might want to reward
+	human players for roleplaying their leader.
+	NB: AttitudeChanges remain tied to personality. */
+CivicTypes CvPlayer::getFavoriteCivic() const
+{
+	return GC.getInfo(
+			//getPersonalityType() // BtS
+			getLeaderType()).getFavoriteCivic();
+}
+bool CvPlayer::isFavoriteCivicKnown() const
+{
+	return isAlive();
+	//&& !GC.getGame().isOption(GAMEOPTION_RANDOM_PERSONALITIES) // BtS
+}
+ReligionTypes CvPlayer::getFavoriteReligion() const
+{
+	return GC.getInfo(getLeaderType()).getFavoriteReligion(); // (as in BtS)
+}
+bool CvPlayer::isFavoriteReligionKnown() const
+{
+	return isAlive(); // (as in BtS)
+} // </advc.130n>
 
 
 bool CvPlayer::canChangeReligion() const
@@ -11404,6 +11446,39 @@ void CvPlayer::doChangeCivicsPopup(CivicTypes eCivic)
 	}
 }
 
+// advc.120l:
+void CvPlayer::addEspionageReminderMsg(TeamTypes eTarget, CvPlot const* pAt) const
+{
+	// Only show reminder when all weights are 0
+	for (TeamIter<CIV_ALIVE,OTHER_KNOWN_TO> itRival(getTeam());
+		itRival.hasNext(); ++itRival)
+	{
+		if (getEspionageSpendingWeightAgainstTeam(itRival->getID()) != 0)
+			return;
+	}
+	CvWString szMsg;
+	// Let's actually ignore eTarget
+	std::vector<std::pair<int,TeamTypes> > aieTargets;
+	for (TeamIter<CIV_ALIVE,OTHER_KNOWN_TO> itRival(getTeam());
+		itRival.hasNext(); ++itRival)
+	{
+		int iPts = getEspionageSpending(itRival->getID());
+		if (iPts > 0)
+			aieTargets.push_back(std::make_pair(iPts, itRival->getID()));
+	}
+	std::sort(aieTargets.rbegin(), aieTargets.rend());
+	bool bFirst = true;
+	for (size_t i = 0; i < aieTargets.size(); i++)
+	{
+		setListHelp(szMsg,
+				gDLL->getText("TXT_KEY_ESPIONAGE_REMINDER_DIVIDED_EVENLY").c_str(),
+				GET_TEAM(aieTargets[i].second).getName().c_str(), L", ", bFirst);
+	}
+	gDLL->UI().addMessage(getID(), false, -1, szMsg, NULL,
+			MESSAGE_TYPE_INFO, NULL, GC.getColorType("WHITE"),
+			pAt == NULL ? -1 : pAt->getX(), pAt == NULL ? -1 : pAt->getY());
+}
+
 // advc.004s: Rewritten, in part with code from doTurn and CvGame::updateScore.
 void CvPlayer::updateHistory(PlayerHistoryTypes eHistory, int iTurn)
 {
@@ -12294,7 +12369,9 @@ bool CvPlayer::doEspionageMission(EspionageMissionTypes eMission, PlayerTypes eT
 		{
 			szBuffer = gDLL->getText("TXT_KEY_ESPIONAGE_TARGET_SOMETHING_DESTROYED",
 					GC.getInfo(pPlot->getRouteType()).getDescription()).GetCString();
-			pPlot->setRouteType(NO_ROUTE, true);
+			pPlot->setRouteType(NO_ROUTE);
+					// (advc.255: Let's actually keep this as in BtS: no downgrade.)
+					//GC.getInfo(pPlot->getRouteType()).getRoutePillage());
 			bSomethingHappened = true;
 		}
 		if (bSomethingHappened)
@@ -12780,7 +12857,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 		}
 		else // Remove City from the map
 		{
-			pPlot->setRouteType(NO_ROUTE, true);
+			pPlot->setRouteType(NO_ROUTE);
 			pPlot->getPlotCity()->kill(true);
 			pPlot->setImprovementType(NO_IMPROVEMENT);
 			changeAdvancedStartPoints(iCost);
@@ -12906,7 +12983,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 		{
 			if (getAdvancedStartPoints() >= iCost)
 			{
-				pPlot->setRouteType(eRoute, true);
+				pPlot->setRouteType(eRoute);
 				changeAdvancedStartPoints(-iCost);
 			}
 		}
@@ -12919,7 +12996,7 @@ void CvPlayer::doAdvancedStartAction(AdvancedStartActionTypes eAction, int iX, i
 			}
 			if (iCost < 0)
 				return;
-			pPlot->setRouteType(NO_ROUTE, true);
+			pPlot->setRouteType(NO_ROUTE);
 			changeAdvancedStartPoints(iCost);
 		}
 		if (isActive())
@@ -14220,7 +14297,9 @@ void CvPlayer::read(FDataStreamBase* pStream)
 		m_aiHasCorporationCount.read(pStream);
 		m_aiUpkeepCount.read(pStream);
 		m_aiSpecialistValidCount.read(pStream);
-		m_abResearchingTech.read(pStream);
+		if (uiFlag >= 21)
+			m_abResearchingTech.read(pStream);
+		else LegacyArrayEnumMap<TechTypes,bool>::convert(m_abResearchingTech, pStream);
 	}
 	else
 	{
@@ -14266,7 +14345,9 @@ void CvPlayer::read(FDataStreamBase* pStream)
 	} // </advc.091>
 	if (uiFlag >= 16)
 	{
-		m_abLoyalMember.read(pStream);
+		if (uiFlag >= 21)
+			m_abLoyalMember.read(pStream);
+		else LegacyArrayEnumMap<VoteSourceTypes,bool,void*,true>::convert(m_abLoyalMember, pStream);
 		m_aeCivics.read(pStream);
 		m_aeeiSpecialistExtraYield.read(pStream);
 		m_aeeiImprovementYieldChange.read(pStream);
@@ -14595,7 +14676,8 @@ void CvPlayer::write(FDataStreamBase* pStream)
 	//uiFlag = 17; // advc.157
 	//uiFlag = 18; // advc.251 (city maintenance changed in handicap XML)
 	//uiFlag = 19; // advc.708
-	uiFlag = 20; // advc.912g
+	//uiFlag = 20; // advc.912g
+	uiFlag = 21; // advc.enum: Bugfix in bool-valued ArrayEnumMap
 	pStream->Write(uiFlag);
 
 	// <advc.027>

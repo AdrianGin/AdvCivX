@@ -45,6 +45,9 @@ public:
 			bool bColorAllegiance = false, // advc.048
 			bool bOmitOwner = false, // advc.061
 			bool bIndicator = false); // advc.007
+	// advc.004 (Exposed to Python, replacing redunant code in CyMainInterface.py)
+	void setHurtUnitStrength(CvWString& szBuffer, CvUnit const& kUnit,
+			int iHP = -1); // advc.048c
 	void setPlotListHelp(CvWStringBuffer &szString, CvPlot const& kPlot, bool bOneLine, bool bShort,
 			bool bIndicator = false); // advc.061
 	// <advc.004c>
@@ -105,7 +108,7 @@ public:
 	void setDiscoverPathHelp(CvWStringBuffer& szBuffer, UnitTypes eUnit);
 	// <advc.ctr>
 	void setCityTradeHelp(CvWStringBuffer& szBuffer, CvCity const& kCity,
-			PlayerTypes eWhoTo, bool bListMore); // </advc.ctr>
+			PlayerTypes eWhoTo, bool bListMore, bool bReason = true); // </advc.ctr>
 	void setBasicUnitHelp(CvWStringBuffer &szBuffer, UnitTypes eUnit, bool bCivilopediaText = false);
 	void setUnitHelp(CvWStringBuffer &szBuffer, UnitTypes eUnit, bool bCivilopediaText = false, bool bStrategyText = false, bool bTechChooserText = false, CvCity* pCity = NULL);
 	void setBuildingHelp(CvWStringBuffer &szBuffer, BuildingTypes eBuilding, bool bCivilopediaText = false, bool bStrategyText = false, bool bTechChooserText = false, CvCity* pCity = NULL);

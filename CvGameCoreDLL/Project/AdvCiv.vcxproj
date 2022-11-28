@@ -329,6 +329,7 @@
     <ClInclude Include="..\CySelectionGroup.h" />
     <ClInclude Include="..\CyTeam.h" />
     <ClInclude Include="..\CyUnit.h" />
+    <ClInclude Include="..\DepthFirstPlotSearch.h" />
     <ClInclude Include="..\EnumMap.h" />
     <ClInclude Include="..\EnumTraits.h" />
     <ClInclude Include="..\FAStarFunc.h" />

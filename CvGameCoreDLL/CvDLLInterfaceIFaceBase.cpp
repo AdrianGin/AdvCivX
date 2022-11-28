@@ -54,8 +54,8 @@ void CvDLLInterfaceIFaceBase::addMessage(PlayerTypes ePlayer, bool bForce,
 		return;
 	}
 	// <advc.106>
-	if (!gDLL->getEngineIFace()->isGlobeviewUp())
-		bForce = true; // </advc.106>
+	if (gDLL->getEngineIFace()->isGlobeviewUp())
+		bForce = false; // </advc.106>
 	addMessageExternal(ePlayer, bForce, iLength, szString,
 			pszSound, eType, pszIcon, eFlashColor, iFlashX, iFlashY,
 			bShowOffScreenArrows, bShowOnScreenArrows);

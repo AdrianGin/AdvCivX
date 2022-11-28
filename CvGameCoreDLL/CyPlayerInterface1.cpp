@@ -157,6 +157,11 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 		.def("canAdopt", &CyPlayer::canAdopt, "bool (int* (CivicTypes*) paeNewCivics)") // </advc.001>
 		.def("revolution", &CyPlayer::revolution, "void (int* (CivicTypes*) paeNewCivics, bool bForce)")
 		.def("getCivicPercentAnger", &CyPlayer::getCivicPercentAnger, "int (int /*CivicTypes*/ eCivic)")
+		// <advc.130n>
+		.def("getFavoriteCivic", &CyPlayer::getFavoriteCivic, "CivicTypes ()")
+		.def("isFavoriteCivicKnown", &CyPlayer::isFavoriteCivicKnown, "bool ()")
+		.def("getFavoriteReligion", &CyPlayer::getFavoriteReligion, "ReligionTypes ()")
+		.def("isFavoriteReligionKnown", &CyPlayer::isFavoriteReligionKnown, "bool ()") // </advc.130n>
 
 		.def("canDoReligion", &CyPlayer::canDoReligion, "int (int /*ReligionTypes*/ eReligion)")
 		.def("canChangeReligion", &CyPlayer::canChangeReligion, "bool ()")

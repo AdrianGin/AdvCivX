@@ -191,8 +191,8 @@ void CvMapGenerator::addLakes()
 	FOR_EACH_ENUM(PlotNum)
 	{
 		CvPlot& p = GC.getMap().getPlotByIndex(eLoopPlotNum);
-		// (Same condition as in BtS)
-		if (!p.isWater() && !p.isCoastalLand() && !p.isRiver())
+		if (!p.isWater() && !p.isCoastalLand() && !p.isRiver() && // as in BtS
+			p.getPlotType() != PLOT_PEAK)
 		{
 			bool bDesert = (p.getTerrainType() == eDesert);
 			apbCandidates.push_back(std::make_pair(&p, bDesert));
@@ -204,11 +204,13 @@ void CvMapGenerator::addLakes()
 	int const iCandidates = (int)apbCandidates.size();
 	if (iCandidates > 0)
 	{	// This keeps the expected number of lakes the same as in BtS
-		iLakeRollSides = ((iLakeRollSides *
-				(iDesert * rDesertProbMult + iCandidates - iDesert)) / iCandidates)
+		iLakeRollSides = (iLakeRollSides *
+				// Important to divide first, to avoid overflow.
+				((iDesert * rDesertProbMult + iCandidates - iDesert) / iCandidates))
 				.round();
 	}
 	gDLL->callUpdater(); // Moved out of the loop
+	std::vector<CvPlot*> apLakes; // advc.opt
 	for (int i = 0; i < iCandidates; i++)
 	{
 		CvPlot& p = *apbCandidates[i].first;
@@ -216,9 +218,15 @@ void CvMapGenerator::addLakes()
 			(!apbCandidates[i].second ||
 			MapRandSuccess(rDesertProbMult)))
 		{
-			p.setPlotType(PLOT_OCEAN); // (as in BtS)
+			apLakes.push_back(&p);
 		}
 	} // </advc.129e>
+	// <advc.opt> Recalc only once
+	for (size_t i = 0; i < apLakes.size(); i++)
+	{
+		bool bRecalc = (i + 1 == apLakes.size());
+		apLakes[i]->setPlotType(PLOT_OCEAN, bRecalc, bRecalc);
+	} // </advc.opt>
 }
 
 void CvMapGenerator::addRivers()
@@ -1059,15 +1067,6 @@ int CvMapGenerator::calculateNumBonusesToAdd(BonusTypes eBonus)
 {
 	CvBonusInfo const& kBonus = GC.getInfo(eBonus);
 	CvMap const& kMap = GC.getMap();
-
-	int iBaseCount = kBonus.getConstAppearance();
-	{
-		int iRand1 = MapRandNum(kBonus.getRandAppearance1());
-		int iRand2 = MapRandNum(kBonus.getRandAppearance2());
-		int iRand3 = MapRandNum(kBonus.getRandAppearance3());
-		int iRand4 = MapRandNum(kBonus.getRandAppearance4());
-		iBaseCount += iRand1 + iRand2 + iRand3 + iRand4;
-	}
 	bool const bIgnoreLatitude = GC.getPythonCaller()->isBonusIgnoreLatitude();
 
 	//int iLandTiles = 0; // advc: misleadingly named
@@ -1110,8 +1109,14 @@ int CvMapGenerator::calculateNumBonusesToAdd(BonusTypes eBonus)
 			per100(kBonus.getPercentPerPlayer());
 	/*	<advc.129> Same as in BtS for 8 players, a bit less for high player counts,
 		a bit more for small player counts. */
-	rFromPlayers.exponentiate(fixp(0.8));
-	rFromPlayers *= fixp(1.5); // </advc.129>
-	int iBonusCount = (iBaseCount * (iFromTiles + rFromPlayers.round())) / 100;
+	rFromPlayers.exponentiate(fixp(0.85));
+	rFromPlayers *= fixp(4/3.); // </advc.129>
+	int iMult = kBonus.getConstAppearance();
+	iMult +=
+			MapRandNum(kBonus.getRandAppearance1()) +
+			MapRandNum(kBonus.getRandAppearance2()) +
+			MapRandNum(kBonus.getRandAppearance3()) +
+			MapRandNum(kBonus.getRandAppearance4());
+	int iBonusCount = (iMult * (iFromTiles + rFromPlayers.round())) / 100;
 	return std::max(1, iBonusCount);
 }

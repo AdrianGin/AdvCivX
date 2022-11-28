@@ -300,12 +300,16 @@ def getFavoriteCivic(playerOrID):
 	
 	This works even when the Random Personalities option is enabled.
 	"""
+	'''
 	eLeaderType = getPlayer(playerOrID).getPersonalityType()
 	if eLeaderType != -1:
 		leader = gc.getLeaderHeadInfo(eLeaderType)
 		if leader:
 			return leader.getFavoriteCivic()
 	return CivicTypes.NO_CIVIC
+	'''
+	# advc.130n (DLL takes care of dead civs that have no leader info)
+	return getPlayer(playerOrID).getFavoriteCivic()
 
 def getWorstEnemy(playerOrID, askingPlayerOrID=None):
 	"""

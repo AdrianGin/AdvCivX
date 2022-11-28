@@ -300,6 +300,7 @@ public:
 	static int cultureDistance(int iDX, int iDY); // advc: static												// Exposed to Python
 	enum GrievanceTypes { GRIEVANCE_HURRY, GRIEVANCE_CONSCRIPT, GRIEVANCE_RELIGION }; // advc.101
 	int cultureStrength(PlayerTypes ePlayer,																	// Exposed to Python
+			bool bIgnoreWar = false, bool bIgnoreOccupation = false, // advc.023
 			std::vector<GrievanceTypes>* paGrievances = NULL) const; // advc.101
 	int cultureGarrison(PlayerTypes ePlayer) const;																// Exposed to Python
 	PlayerTypes calculateCulturalOwner() const; // advc.099c
@@ -888,6 +889,7 @@ public:
 	// K-Mod: (advc.ctr: exposed to Python)
 	bool canCultureFlip(PlayerTypes eToPlayer /* <advc.101> */ = NO_PLAYER,
 			bool bCheckPriorRevolts = true) const; // </advc.101>
+	bool isMartialLaw(PlayerTypes eRevoltPlayer) const; // advc.023
 	int calculateCulturePercent(PlayerTypes ePlayer) const;														// Exposed to Python
 	int calculateTeamCulturePercent(TeamTypes eTeam) const;														// Exposed to Python
 	void setCulture(PlayerTypes ePlayer, int iNewValue, bool bPlots, bool bUpdatePlotGroups);					// Exposed to Python

@@ -379,8 +379,7 @@ void CvPlot::doImprovement()
 	{
 		FOR_EACH_ENUM(Bonus)
 		{
-			CvBonusInfo const& kLoopBonus = GC.getInfo(eLoopBonus);
-			if (!GET_TEAM(kOwner.getTeam()).isHasTech(kLoopBonus.getTechReveal()))
+			if (!GET_TEAM(kOwner.getTeam()).canDiscoverBonus(eLoopBonus))
 				continue;
 			/*if (GC.getInfo(getImprovementType()).getImprovementBonusDiscoverRand(eLoopBonus) > 0) { // BtS
 				if (SyncRandOneChanceIn(GC.getInfo(getImprovementType()).getImprovementBonusDiscoverRand(eLoopBonus))) {*/
@@ -402,9 +401,9 @@ void CvPlot::doImprovement()
 				if (pCity != NULL)
 				{
 					CvWString szBuffer = gDLL->getText("TXT_KEY_MISC_DISCOVERED_NEW_RESOURCE",
-							kLoopBonus.getTextKeyWide(), pCity->getNameKey());
+							GC.getInfo(eLoopBonus).getTextKeyWide(), pCity->getNameKey());
 					gDLL->UI().addMessage(kOwner.getID(), false, -1, szBuffer, *this,
-							"AS2D_DISCOVERBONUS", MESSAGE_TYPE_MINOR_EVENT, kLoopBonus.getButton());
+							"AS2D_DISCOVERBONUS", MESSAGE_TYPE_MINOR_EVENT, GC.getInfo(eLoopBonus).getButton());
 				}
 				break;
 			}
@@ -1599,31 +1598,56 @@ bool CvPlot::isRiverSide() const
 }
 
 
-bool CvPlot::isRiverConnection(DirectionTypes eDirection) const
+bool CvPlot::isRiverConnection(DirectionTypes eDir) const
 {
-	switch (eDirection)
+	// advc: Rewritten; had been implemented through switch(eDir).
+	int const iRot = (isCardinalDirection(eDir) ? 2 : 1);
+	return (isRiverCrossing(rotateDirClockw(eDir, iRot)) ||
+			isRiverCrossing(rotateDirCounterClockw(eDir, iRot)));
+	/*	advc.124b (note): Now that this function is only used for checking
+		river-to-sea connections, a crossing in eDir would mean that a river
+		runs along the coast. I think isRiverToRiverConnection will handle
+		that case, so we don't need to check isRiverCrossing(eDir) here.
+		(And such rivers don't really have to be supported anyway.) */
+}
+
+/*	advc.124b: Allows connections between separate rivers only
+	when one of the plots is adjacent to both rivers.
+	(Could cache the result in an EnumMap<DirectionTypes,bool> member, i.e.
+	in a single byte, but I doubt that performance is that crucial here.) */
+bool CvPlot::isRiverToRiverConnection(CvPlot const& kOther) const
+{
+	FAssert(stepDistance(this, &kOther) == 1);
+	/*	Alias. Want the param name to communicate a symmetrical relation,
+		but, internally, we work with a (single) DirectionTypes value. */
+	CvPlot const& kTo = kOther;
+	DirectionTypes const eDir = directionXY(*this, kTo);
+	// Always allow trade straight across the river
+	if (isRiverCrossing(eDir))
+		return true;
+	if (isCardinalDirection(eDir))
 	{
-	case NO_DIRECTION: return false; // advc.opt (instead of checking it upfront)
-	case DIRECTION_NORTH:
-		return (isRiverCrossing(DIRECTION_EAST) || isRiverCrossing(DIRECTION_WEST));
-	case DIRECTION_NORTHEAST:
-		return (isRiverCrossing(DIRECTION_NORTH) || isRiverCrossing(DIRECTION_EAST));
-	case DIRECTION_EAST:
-		return (isRiverCrossing(DIRECTION_NORTH) || isRiverCrossing(DIRECTION_SOUTH));
-	case DIRECTION_SOUTHEAST:
-		return (isRiverCrossing(DIRECTION_SOUTH) || isRiverCrossing(DIRECTION_EAST));
-	case DIRECTION_SOUTH:
-		return (isRiverCrossing(DIRECTION_EAST) || isRiverCrossing(DIRECTION_WEST));
-	case DIRECTION_SOUTHWEST:
-		return (isRiverCrossing(DIRECTION_SOUTH) || isRiverCrossing(DIRECTION_WEST));
-	case DIRECTION_WEST:
-		return (isRiverCrossing(DIRECTION_NORTH) || isRiverCrossing(DIRECTION_SOUTH));
-	case DIRECTION_NORTHWEST:
-		return (isRiverCrossing(DIRECTION_NORTH) || isRiverCrossing(DIRECTION_WEST));
-	default:
-		FAssert(false);
-		return false;
+		DirectionTypes const ePerpClockw = rotateDirClockw(eDir, 2);
+		DirectionTypes const ePerpCounterClockw = rotateDirCounterClockw(eDir, 2);
+		if ((isRiverCrossing(ePerpClockw) && // as in BtS
+			(kTo.isRiverCrossing(ePerpClockw) ||
+			kTo.isRiverCrossing(rotateDirClockw(eDir, 3)))) ||
+			(isRiverCrossing(ePerpCounterClockw) && // as in BtS
+			(kTo.isRiverCrossing(ePerpCounterClockw) ||
+			kTo.isRiverCrossing(rotateDirCounterClockw(eDir, 3)))))
+		{
+			return true;
+		}
+		// Symmetrical to the additions above
+		return ((kTo.isRiverCrossing(ePerpClockw) &&
+				isRiverCrossing(rotateDirClockw(eDir))) ||
+				(kTo.isRiverCrossing(ePerpCounterClockw) &&
+				isRiverCrossing(rotateDirCounterClockw(eDir))));
 	}
+	return ((isRiverCrossing(rotateDirCounterClockw(eDir)) && // as in BtS
+			kTo.isRiverCrossing(rotateDirCounterClockw(eDir, 3))) ||
+			(isRiverCrossing(rotateDirClockw(eDir)) && // as in BtS
+			kTo.isRiverCrossing(rotateDirClockw(eDir, 3))));
 }
 
 
@@ -1923,9 +1947,8 @@ bool CvPlot::shouldProcessDisplacementPlot(int iDX, int iDY, //int iRange, // ad
 	if (fTheta >= -fSpread / 2 && fTheta <= fSpread / 2)
 		return true;
 	return false;
-
-	/*DirectionTypes eLeftDirection = GC.getTurnLeftDirection(eFacingDirection);
-	DirectionTypes eRightDirection = GC.getTurnRightDirection(eFacingDirection);
+	/*DirectionTypes eLeftDirection = ::rotateDirCounterClockw(eFacingDirection);
+	DirectionTypes eRightDirection = ::rotateDirClockw(eFacingDirection);
 	//test which sides of the line equation (cross product)
 	int iLeftSide = aaiDdisplacements[eLeftDirection][0] * iDY - aaiDisplacements[eLeftDirection][1] * iDX;
 	int iRightSide = displacements[eRightDirection][0] * iDY - displacements[rightDirection][1] * iDX;
@@ -2493,6 +2516,7 @@ int CvPlot::getFeatureProduction(BuildTypes eBuild, TeamTypes eTeam, CvCity** pp
 CvUnit* CvPlot::getBestDefender(PlayerTypes eOwner,
 	/* <advc> */ DefenderFilters& kFilters) const
 {
+	PROFILE_FUNC();
 	// Ensure consistency of parameters
 	if (kFilters.m_pAttacker != NULL)
 	{
@@ -2840,7 +2864,7 @@ PlayerTypes CvPlot::calculateCulturalOwner(/* advc.099c: */ bool bIgnoreCultureR
 				iBestCulture = -1;
 			if (iCulture <= iBestCulture) // </advc.035>
 				continue;
-			if (/* advc.099c: */ bIgnoreCultureRange ||
+			if (bIgnoreCultureRange || // advc.099c
 				isWithinCultureRange(ePlayer))
 			{
 				if (iCulture > iBestCulture ||
@@ -3389,9 +3413,12 @@ bool CvPlot::isTradeNetworkConnected(CvPlot const& kOther, TeamTypes eTeam) cons
 	// <advc.opt> Moved up
 	bool const bNetworkTerrain = isNetworkTerrain(eTeam);
 	bool const bOtherNetworkTerrain = kOther.isNetworkTerrain(eTeam);
-	if (bNetworkTerrain && bOtherNetworkTerrain)
+	if (bNetworkTerrain && bOtherNetworkTerrain /*&&
+		// (BtS doesn't check for isthmi, and I guess that's OK.)
+		!GC.getMap().isSeparatedByIsthmus(*this, kOther)*/)
+	{
 		return true; // </advc.opt>
-
+	}
 	if (isRoute() /* advc.124: */ && getRevealedRouteType(eTeam) != NO_ROUTE)
 	{
 		if (kOther.isRoute() &&
@@ -3412,13 +3439,10 @@ bool CvPlot::isTradeNetworkConnected(CvPlot const& kOther, TeamTypes eTeam) cons
 		if (GET_TEAM(eTeam).isRevealedCityTrade(kOther)) // advc.124
 			return true;
 
-		if (kOther.isRiverNetwork(eTeam))
+		if (kOther.isRiverNetwork(eTeam) &&
+			kOther.isRiverConnection(directionXY(kOther, *this)))
 		{
-			/*	advc (comment): Could argue that the river direction should matter here.
-				If a river flows away from a water plot, then, at least graphically,
-				they're not quite connected. (Same goes for the isRiverNetwork branch below.) */
-			if (kOther.isRiverConnection(directionXY(kOther, *this)))
-				return true;
+			return true;
 		}
 		/*	<advc.124> Case 1: kOther has a route and this plot has network terrain.
 			(Note: The isCityRadius check is just for performance.) */
@@ -3437,14 +3461,14 @@ bool CvPlot::isTradeNetworkConnected(CvPlot const& kOther, TeamTypes eTeam) cons
 
 	if (isRiverNetwork(eTeam))
 	{
-		if (bOtherNetworkTerrain)
+		if (bOtherNetworkTerrain &&
+			isRiverConnection(directionXY(*this, kOther)))
 		{
-			if (isRiverConnection(directionXY(*this, kOther)))
-				return true;
+			return true;
 		}
-
-		if (isRiverConnection(directionXY(*this, kOther)) ||
-			kOther.isRiverConnection(directionXY(kOther, *this)))
+		/*if (isRiverConnection(directionXY(*this, kOther)) ||
+			kOther.isRiverConnection(directionXY(kOther, *this)))*/
+		if (isRiverToRiverConnection(kOther)) // advc.124b
 		{
 			if (kOther.isRiverNetwork(eTeam))
 				return true;
@@ -4801,7 +4825,7 @@ void CvPlot::setImprovementType(ImprovementTypes eNewValue,
 
 void CvPlot::setRouteType(RouteTypes eNewValue, bool bUpdatePlotGroups)
 {
-	if(getRouteType() == eNewValue)
+	if (getRouteType() == eNewValue)
 		return;
 
 	bool const bOldRoute = isRoute(); // XXX is this right???
@@ -5745,6 +5769,8 @@ void CvPlot::updatePlotGroup(PlayerTypes ePlayer, bool bRecalculate,
 		if (bRecalculate)
 		{
 			bool bConnected = false;
+			/*	advc (note): These trade network checks need to be consistent
+				with the plot count performed in CvPlotGroup::recalculatePlots */
 			if (isTradeNetwork(eTeam))
 			{
 				bConnected = true;
@@ -6120,25 +6146,23 @@ void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly,
 	FAssertBounds(0, MAX_TEAMS, eTeam);
 
 	CvCity* pCity = getPlotCity();
-	bool bOldValue = isRevealed(eTeam); // advc.124
+	bool const bOldValue = isRevealed(eTeam); // advc.124
 	if (bOldValue != bNewValue)
 	{
 		m_abRevealed.set(eTeam, bNewValue);
 		getArea().changeNumRevealedTiles(eTeam, isRevealed(eTeam) ? 1 : -1);
-	}  // <advc.124> Need to update plot group if any revealed info changes
+	}
+	// <advc.124> Need to update plot group if any revealed info changes
 	if (bUpdatePlotGroup &&
-		(bOldValue != bNewValue ||
+		!(bOldValue != bNewValue ||
 		getRevealedOwner(eTeam) != getOwner() ||
 		getRevealedImprovementType(eTeam) != getImprovementType() ||
 		getRevealedRouteType(eTeam) != getRouteType() ||
-		(pCity != NULL && !pCity->isRevealed(eTeam)))) // </advc.124>
+		(pCity != NULL && !pCity->isRevealed(eTeam))))
 	{
-		for (MemberIter itMember(eTeam); itMember.hasNext(); ++itMember)
-		{
-			updatePlotGroup(itMember->getID());
-		}
+		bUpdatePlotGroup = false;
 	}
-	if (bOldValue != bNewValue) // advc.124
+	if (bOldValue != bNewValue) // </advc.124>
 	{
 		if (eTeam == getActiveTeam())
 		{
@@ -6168,10 +6192,8 @@ void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly,
 
 		if (pCity != NULL)
 			pCity->setRevealed(eTeam, false);
-		return; // advc
 	}
-
-	if (eFromTeam == NO_TEAM)
+	else if (eFromTeam == NO_TEAM)
 	{
 		setRevealedOwner(eTeam, getOwner());
 		setRevealedImprovementType(eTeam, getImprovementType());
@@ -6194,6 +6216,14 @@ void CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, bool bTerrainOnly,
 		if (pCity != NULL && pCity->isRevealed(eFromTeam))
 			pCity->setRevealed(eTeam, true);
 	}
+	// <advc.124> Moved down; all revealed status changes need to be applied first.
+	if (bUpdatePlotGroup)
+	{
+		for (MemberIter itMember(eTeam); itMember.hasNext(); ++itMember)
+		{
+			updatePlotGroup(itMember->getID());
+		}
+	} // </advc.124>
 }
 
 
@@ -6301,7 +6331,7 @@ bool CvPlot::changeBuildProgress(BuildTypes eBuild, int iChange,
 		setImprovementType(kBuild.getImprovement());
 
 	if (kBuild.getRoute() != NO_ROUTE)
-		setRouteType(kBuild.getRoute(), true);
+		setRouteType(kBuild.getRoute());
 
 	if (isFeature() && kBuild.isFeatureRemove(getFeatureType()))
 	{
@@ -7040,29 +7070,32 @@ void CvPlot::processArea(CvArea& kArea, int iChange)
 	// advc.opt:
 	/*if (getImprovementType() != NO_IMPROVEMENT)
 		kArea.changeNumImprovements(getImprovementType(), iChange);*/
-
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	bool const bAnyUnit = (m_units.getLength() > 0); // advc.opt
+	FOR_EACH_ENUM2(Player, ePlayer)
 	{
-		PlayerTypes ePlayer = (PlayerTypes)i;
 		if (GET_PLAYER(ePlayer).getStartingPlot() == this)
 			kArea.changeNumStartingPlots(iChange);
+		// <advc.opt>
+		if (!bAnyUnit)
+			continue; // </advc.opt>
 		kArea.changePower(ePlayer, getUnitPower(ePlayer) * iChange);
 		kArea.changeUnitsPerPlayer(ePlayer, plotCount(PUF_isPlayer, ePlayer) * iChange);
 		// advc: No longer kept track of
 		//kArea.changeAnimalsPerPlayer(ePlayer, plotCount(PUF_isAnimal, -1, -1, ePlayer) * iChange);
-		for (int j = 0; j < NUM_UNITAI_TYPES; j++)
+		FOR_EACH_ENUM(UnitAI)
 		{
-			UnitAITypes eUnitAI = (UnitAITypes)j;
-			kArea.changeNumAIUnits(ePlayer, eUnitAI,
-					plotCount(PUF_isUnitAIType, eUnitAI, -1, ePlayer) * iChange);
+			kArea.changeNumAIUnits(ePlayer, eLoopUnitAI,
+					plotCount(PUF_isUnitAIType, eLoopUnitAI, -1, ePlayer) * iChange);
 		}
 	}
-	FOR_EACH_ENUM(Team)
+	if (m_abRevealed.isAnyNonDefault()) // advc.opt
 	{
-		if (isRevealed(eLoopTeam))
-			kArea.changeNumRevealedTiles(eLoopTeam, iChange);
+		FOR_EACH_ENUM(Team)
+		{
+			if (isRevealed(eLoopTeam))
+				kArea.changeNumRevealedTiles(eLoopTeam, iChange);
+		}
 	}
-
 	CvCity* pCity = getPlotCity();
 	if (pCity == NULL)
 		return;
@@ -7080,9 +7113,9 @@ void CvPlot::processArea(CvArea& kArea, int iChange)
 		processArea call with iChange=1 would then lead to an incorrect
 		city count. I think this can only happen in a scenario with preplaced
 		cities though, and I'm not sure what to do about it. */
-	if(pWaterArea != NULL)
+	if (pWaterArea != NULL)
 	{
-		if(iChange > 0 || (iChange < 0 &&
+		if (iChange > 0 || (iChange < 0 &&
 			// See comment in CvCity::kill
 			pWaterArea->getCitiesPerPlayer(getOwner()) > 0, true))
 		{
@@ -7091,9 +7124,8 @@ void CvPlot::processArea(CvArea& kArea, int iChange)
 	} // </advc.030b>
 	kArea.changePopulationPerPlayer(pCity->getOwner(), pCity->getPopulation() * iChange);
 
-	for (int i = 0; i < GC.getNumBuildingInfos(); i++)
+	FOR_EACH_ENUM2(Building, eBuilding)
 	{
-		BuildingTypes eBuilding = (BuildingTypes)i;
 		int const iTotalChange = iChange * pCity->getNumActiveBuilding(eBuilding);
 		if (iTotalChange <= 0)
 			continue;
@@ -7117,10 +7149,10 @@ void CvPlot::processArea(CvArea& kArea, int iChange)
 		kArea.changeNumTrainAIUnits(pCity->getOwner(), eLoopUnitAI,
 				pCity->getNumTrainUnitAI(eLoopUnitAI) * iChange);
 	}
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	FOR_EACH_ENUM(Player)
 	{
-		if (kArea.AI_getTargetCity((PlayerTypes)i) == pCity)
-			kArea.AI_setTargetCity((PlayerTypes)i, NULL);
+		if (kArea.AI_getTargetCity(eLoopPlayer) == pCity)
+			kArea.AI_setTargetCity(eLoopPlayer, NULL);
 	}
 }
 
@@ -7948,10 +7980,10 @@ void CvPlot::applyEvent(EventTypes eEvent)
 	if (kEvent.getRouteChange() > 0)
 	{
 		if (NO_ROUTE != kEvent.getRoute())
-			setRouteType((RouteTypes)kEvent.getRoute(), true);
+			setRouteType((RouteTypes)kEvent.getRoute());
 	}
 	else if (kEvent.getRouteChange() < 0)
-		setRouteType(NO_ROUTE, true);
+		setRouteType(NO_ROUTE);
 
 	FOR_EACH_ENUM(Yield)
 	{

@@ -12,6 +12,11 @@
 	<ElementType name="Advisor" content="textOnly"/>
 	<ElementType name="iAIWeight" content="textOnly" dt:type="int"/>
 	<ElementType name="iAITradeModifier" content="textOnly" dt:type="int"/>
+	<!-- advc.301: Adjustment to the speed of diffusion to the Barbarians.
+		 Treated as a percentage to which 100 is added and then used as a
+		 multiplier. -100 will prevent diffusion entirely, e.g. 50 speeds up
+		 diffusion by 50%. -->
+	<ElementType name="iBarbarianFreeTechModifier" content="textOnly" dt:type="int"/>
 	<ElementType name="iCost" content="textOnly" dt:type="int"/>
 	<ElementType name="iAdvancedStartCost" content="textOnly" dt:type="int"/>
 	<ElementType name="iAdvancedStartCostIncrease" content="textOnly" dt:type="int"/>
@@ -114,6 +119,8 @@
 		<element type="Advisor"/>
 		<element type="iAIWeight"/>
 		<element type="iAITradeModifier"/>
+		<!-- advc.301 -->
+		<element type="iBarbarianFreeTechModifier" minOccurs="0"/>
 		<element type="iCost"/>
 		<element type="iAdvancedStartCost"/>
 		<element type="iAdvancedStartCostIncrease"/>

@@ -162,11 +162,15 @@ public:
 	bool canRecon(const CvPlot* pPlot) const;																// Exposed to Python
 	bool canReconAt(const CvPlot* pPlot, int iX, int iY) const;												// Exposed to Python
 	bool recon(int iX, int iY);
-
-	bool canAirBomb(const CvPlot* pPlot) const;																// Exposed to Python
-	bool canAirBombAt(const CvPlot* pPlot, int iX, int iY) const;											// Exposed to Python
+	// <advc> Param lists changed for these two
+	bool canAirBomb(CvPlot const* pFrom = NULL) const;														// Exposed to Python
+	bool canAirBombAt(CvPlot const& kTarget, CvPlot const* pFrom = NULL) const; // </advc>					// Exposed to Python
+	// <advc.255>
+	enum StructureTypes { NO_STRUCTURE, STRUCTURE_IMPROVEMENT, STRUCTURE_ROUTE };
+	StructureTypes getDestructibleStructureAt(CvPlot const& kTarget,
+			bool bTestVisibility) const; // </advc.255>
 	int airBombDefenseDamage(CvCity const& kCity) const; // advc
-	bool airBomb(int iX, int iY, /* advc.004c: */ bool* pbIntercepted = NULL);
+	bool airBomb(CvPlot& kTarget, /* advc.004c: */ bool* pbIntercepted = NULL);
 
 	bool canAirStrike(CvPlot const& kPlot) const; // (advc.004c: was protected)
 
@@ -327,6 +331,13 @@ public:
 	}
 
 	bool isBarbarian() const;																				// Exposed to Python
+	// advc.313:
+	bool isKnownSeaBarbarian() const
+	{
+		return (isBarbarian() && getDomainType() == DOMAIN_SEA &&
+				// Future-proof for Barbarian Privateers
+				!m_pUnitInfo->isHiddenNationality());
+	}
 	bool isHuman() const;																					// Exposed to Python
 
 	int visibilityRange() const;																			// Exposed to Python
@@ -1108,6 +1119,9 @@ protected:
 	int m_iCargoCapacity;
 	int m_iAttackPlotX;
 	int m_iAttackPlotY;
+	// <advc.048c>
+	int m_iAttackOdds;
+	int m_iPreCombatHP; // </advc.048c>
 	int m_iCombatTimer;
 	int m_iCombatFirstStrikes;
 	//int m_iCombatDamage; // advc.003j: unused
@@ -1217,6 +1231,10 @@ protected:
 	void resolveCombat(CvUnit* pDefender, CvPlot* pPlot, bool bVisible); // K-Mod
 	void addAttackSuccessMessages(CvUnit const& kDefender, bool bFought) const; // advc.010
 	void addDefenseSuccessMessages(CvUnit const& kDefender) const; // advc
+	void addWithdrawalMessages(CvUnit const& kDefender) const; // advc
+	// <advc.048c>
+	void setHasBeenDefendedAgainstMessage(CvWString& kBuffer, CvUnit const& kDefender,
+			int iAttackSuccess) const; // </advc.048c>
 	bool suppressStackAttackSound(CvUnit const& kDefender) const; // advc.002l
 	void resolveAirCombat(CvUnit* pInterceptor, CvPlot* pPlot, CvAirMissionDefinition& kBattle);
 	void checkRemoveSelectionAfterAttack();
@@ -1231,6 +1249,10 @@ private:
 struct CombatDetails											// Exposed to Python
 {
 	int iExtraCombatPercent;
+	/*	advc.313 (note): Not sure what these suffixes are supposed to abbreviate.
+		I'll be assuming "T" for "This", meaning the defender, and then:
+		"TA" = "This is Animal", "AA" = "Attacker is Animal",
+		"TB" = "This is Barbarian", "AB" = "Attacker is Barbarian". */
 	int iAnimalCombatModifierTA;
 	int iAIAnimalCombatModifierTA;
 	int iAnimalCombatModifierAA;
@@ -1239,6 +1261,10 @@ struct CombatDetails											// Exposed to Python
 	int iAIBarbarianCombatModifierTB;
 	int iBarbarianCombatModifierAB;
 	int iAIBarbarianCombatModifierAB;
+	// <advc.313>
+	int iBarbarianCityAttackModifier;
+	int iSeaBarbarianModifierTB;
+	int iSeaBarbarianModifierAB; // </advc.313>
 	int iPlotDefenseModifier;
 	int iFortifyModifier;
 	int iCityDefenseModifier;
@@ -1250,7 +1276,7 @@ struct CombatDetails											// Exposed to Python
 	int iTerrainDefenseModifier;
 	int iCityAttackModifier;
 	int iDomainDefenseModifier;
-	int iCityBarbarianDefenseModifier;
+	//int iCityBarbarianDefenseModifier; // advc.313: replaced above
 	int iClassDefenseModifier;
 	int iClassAttackModifier;
 	int iCombatModifierT;
@@ -1277,8 +1303,8 @@ struct CombatDetails											// Exposed to Python
 	{
 		/*	Not nice - but we mustn't zero the string, and we don't want to
 			repeat all the int members. */
-		ZeroMemory(this, 39 * sizeof(int));
-		BOOST_STATIC_ASSERT(sizeof(CombatDetails) == 39 * sizeof(int) + 2 * sizeof(PlayerTypes) + sizeof(std::wstring));
+		ZeroMemory(this, 41 * sizeof(int));
+		BOOST_STATIC_ASSERT(sizeof(CombatDetails) == 41 * sizeof(int) + 2 * sizeof(PlayerTypes) + sizeof(std::wstring));
 		this->eOwner = eOwner;
 		this->eVisualOwner = eVisualOwner;
 		this->sUnitName = sUnitName;

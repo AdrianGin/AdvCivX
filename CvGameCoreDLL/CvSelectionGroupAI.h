@@ -44,7 +44,8 @@ public:
 			bool bCheckCanAttack = false) const;
 	// <advc.004c>
 	CvUnit* AI_bestUnitForMission(MissionTypes eMission,
-			CvPlot const* pMissionPlot = NULL); // </advc.004c>
+			CvPlot const* pMissionPlot = NULL,
+			std::vector<int> const* pUnitsToSkip = NULL); // </advc.004c>
 
 	void AI_queueGroupAttack(int iX, int iY);
 	void AI_cancelGroupAttack() { m_bGroupAttack = false; } // K-Mod (made inline)

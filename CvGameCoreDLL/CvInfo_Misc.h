@@ -579,6 +579,8 @@ public:
 	// </advc.xmldefault>
 
 	DllExport const TCHAR* getPath() const { return m_szPath; }
+	/*	advc.003k (note): These used to be exported and have probably been
+		inline-expanded in the EXE */
 	void setPath(const TCHAR* szVal) { m_szPath = szVal; }
 	float getUpdateRate() const { return m_fUpdateRate; };
 	void setUpdateRate(float fUpdateRate) { m_fUpdateRate = fUpdateRate; }
@@ -586,9 +588,10 @@ public:
 	float getProjectileSpeed() const { return m_fProjectileSpeed; };
 	float getProjectileArc() const { return m_fProjectileArc; };
 	bool isSticky() const { return m_bSticky; };
+
 	bool read(CvXMLLoadUtility* pXML);
 
-private:
+private: // advc.003k (caveat): Probably not safe to rearrange data members
 	CvString m_szPath;
 	float m_fUpdateRate;
 	bool m_bProjectile;
@@ -596,6 +599,9 @@ private:
 	float m_fProjectileSpeed;
 	float m_fProjectileArc;
 };
+/*	advc.003k: Probably OK to increase the size, but new data members should be
+	added only after m_fProjectileArc. */
+BOOST_STATIC_ASSERT(sizeof(CvEffectInfo) == 44 + sizeof(CvInfoBase) + sizeof(CvScalableInfo));
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  class : CvAttachableInfo
@@ -614,7 +620,8 @@ public:
 
 	bool read(CvXMLLoadUtility* pXML);
 
-private:
+private: /*	advc.003k (caveat): Might not be safe to add data before m_szPath b/c
+			setPath used to be exported and may have been inlined in the EXE */
 	CvString m_szPath;
 	float m_fUpdateRate;
 };

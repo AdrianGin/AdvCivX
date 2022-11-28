@@ -85,7 +85,7 @@ void CyInfoPythonInterface1()
 		.def("isIgnoreIrrigation", &CvTechInfo::isIgnoreIrrigation, "bool ()")
 		.def("isWaterWork", &CvTechInfo::isWaterWork, "bool ()")
 		.def("isRiverTrade", &CvTechInfo::isRiverTrade, "bool ()")
-		.def("isNoFearForSafety", &CvTechInfo::isNoFearForSafety, "int ()") // advc.500c
+		.def("isNoFearForSafety", &CvTechInfo::py_isNoFearForSafety, "bool ()") // advc.500c
 
 		.def("getQuote", &CvTechInfo::getQuote, "wstring ()")
 		.def("getSound", &CvTechInfo::getSound, "string ()")

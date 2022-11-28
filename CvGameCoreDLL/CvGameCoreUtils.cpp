@@ -90,19 +90,6 @@ DirectionTypes cardinalDirectionToDirection(CardinalDirectionTypes eCard)
 	return NO_DIRECTION;
 }
 
-bool isCardinalDirection(DirectionTypes eDirection)
-{
-	switch (eDirection)
-	{
-	case DIRECTION_EAST:
-	case DIRECTION_NORTH:
-	case DIRECTION_SOUTH:
-	case DIRECTION_WEST:
-		return true;
-	}
-	return false;
-}
-
 DirectionTypes estimateDirection(int iDX, int iDY)
 {
 	const int displacementSize = 8;

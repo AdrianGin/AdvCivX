@@ -199,6 +199,7 @@ protected:
 	bool AI_safety();
 	bool AI_hide();
 	bool AI_goody(int iRange);
+	MovementFlags AI_exploreFlags() const; // advc.255
 	bool AI_explore();
 	bool AI_exploreRange(int iRange);
 	bool AI_foundFirstCity(); // advc.108

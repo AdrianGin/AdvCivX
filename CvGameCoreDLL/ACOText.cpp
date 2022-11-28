@@ -558,13 +558,13 @@ void CvGameTextMgr::setACOPlotHelp(CvWStringBuffer &szString,
 	if (kAttacker.withdrawalProbability() > 0)//if there are retreat odds
 	{
 		szString.append(NEWLINE);
+		//szString.append(gDLL->getText("TXT_ACO_Retreat"));
+		szString.append(gDLL->getText("TXT_ACO_Retreat")); // advc.048b
 		szTempBuffer.Format(L": " SETCOLR L"%.2f%% " ENDCOLR SETCOLR L"%d" ENDCOLR,
 				TEXT_COLOR("COLOR_UNIT_TEXT"),
 				100.0f * RetreatOdds,
 				TEXT_COLOR("COLOR_POSITIVE_TEXT"),
 				GC.getDefineINT(CvGlobals::EXPERIENCE_FROM_WITHDRAWL));
-		//szString.append(gDLL->getText("TXT_ACO_Retreat"));
-		szString.append(gDLL->getText("TXT_ACO_Withdraw")); // advc.048b
 		szString.append(szTempBuffer.GetCString());
 		if (iAttackerExperienceModifier > 0)
 		{

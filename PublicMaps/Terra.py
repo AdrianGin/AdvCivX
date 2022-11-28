@@ -69,6 +69,8 @@ def getNumPlotsPercent(argsList):
 		WorldSizeTypes.WORLDSIZE_LARGE:		90,
 		WorldSizeTypes.WORLDSIZE_HUGE:		87
 	}
+	if iWorldSize >= len(sizeModifiers):
+		return 83
 	return sizeModifiers[iWorldSize]
 
 def getDescription():
@@ -190,7 +192,11 @@ class TerraMultilayeredFractal(CvMapGeneratorUtil.MultilayeredFractal):
 			WorldSizeTypes.WORLDSIZE_LARGE:     (4,2,1,2),
 			WorldSizeTypes.WORLDSIZE_HUGE:      (5,2,1,2)
 			}
-		(archGrain, contGrain, gaeaGrain, eurasiaGrain) = sizevalues[sizekey]
+		# <advc.165> Tolerate bigger sizes
+		if sizekey >= len(sizevalues):
+			(archGrain, contGrain, gaeaGrain, eurasiaGrain) = (5, 2, 1, 2)
+		else: # </advc.165>
+			(archGrain, contGrain, gaeaGrain, eurasiaGrain) = sizevalues[sizekey]
 		
 		# Sea Level adjustment (from user input), limited to value of 5%.
 		sea = self.gc.getSeaLevelInfo(self.map.getSeaLevel()).getSeaLevelChange()

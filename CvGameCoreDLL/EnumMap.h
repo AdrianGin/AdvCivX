@@ -283,9 +283,9 @@ public:
 	{
 		derived().writeArray<CompactV>(pStream);
 	}
-	void read(FDataStreamBase* pStream, uint uiSubtrahend = 0)
+	void read(FDataStreamBase* pStream, int iSubtrahend = 0)
 	{
-		derived().readArray<CompactV>(pStream, uiSubtrahend);
+		derived().readArray<CompactV>(pStream, iSubtrahend);
 	}
 	template<typename SizeType, typename ValueType>
 	void writeLazyArray(FDataStreamBase* pStream) const
@@ -299,13 +299,13 @@ public:
 	}
 	template<typename SizeType, typename ValueType>
 	void readLazyArray(FDataStreamBase* pStream,
-		uint uiSubtrahend = 0) // (Could also get this from sz)
+		int iSubtrahend = 0) // (Could also get this from sz)
 	{
 		SizeType sz;
 		pStream->Read(&sz);
 		if (sz == 0)
 			return;
-		derived().readArray<ValueType>(pStream, uiSubtrahend);
+		derived().readArray<ValueType>(pStream, iSubtrahend);
 	}
 	template<class DataStream>
 	void writeLazyIntArray(DataStream* pStream) const
@@ -323,16 +323,23 @@ public:
 			writeVal(pStream, safeCast<ValueType>(derived().getUnsafe(eKey)));
 	}
 	template<typename ValueType>
-	void readArray(FDataStreamBase* pStream, uint uiSubtrahend = 0)
+	void readArray(FDataStreamBase* pStream, int iSubtrahend = 0)
 	{
 		/*	Allocating an array and calling Read(getLength(), array) might be faster,
 			might be slower. Reading one value at a time is at least easier to debug. */
-		int const iLen = getLength() - (int)uiSubtrahend;
+		int const iLen = getLength() - std::max(0, iSubtrahend);
 		for (E eKey = enum_traits<E>::first; eKey < iLen; ++eKey)
 		{
 			ValueType val;
 			pStream->Read(&val);
 			derived().setUnsafe(eKey, safeCast<V>(val));
+		}
+		/*	When a key type has become shorter, we discard the values that were
+			saved for the removed keys. */
+		for (E eKey = enum_traits<E>::first; eKey < -iSubtrahend; ++eKey)
+		{
+			ValueType val;
+			pStream->Read(&val);
 		}
 	}
 
@@ -1284,7 +1291,15 @@ protected:
 			(enum_traits<E>::len + BITSIZE(BitBlock) - 1) / BITSIZE(BitBlock)); // round up
 	static int arraySize()
 	{
-		return (bSTATIC_MEMORY ? iSTATIC_ARRAY_SIZE : getLength());
+		if (bSTATIC_MEMORY)
+			return iSTATIC_ARRAY_SIZE;
+		int iLen = getLength();
+		if (bBIT_BLOCKS)
+		{
+			iLen += BITSIZE(BitBlock) - 1;
+			iLen /= BITSIZE(BitBlock);
+		}
+		return iLen;
 	}
 	/*	Allow derived classes to handle initial values.
 		(Cleaner solution might be to make this class CRT-poolymorphic.) */
@@ -1411,16 +1426,16 @@ public:
 			pStream->Write(false);
 		}
 	}
-	void read(FDataStreamBase* pStream, uint uiSubtrahend = 0)
+	void read(FDataStreamBase* pStream, int iSubtrahend = 0)
 	{
-		FAssert(!bBIT_BLOCKS || uiSubtrahend == 0);
+		FAssert(!bBIT_BLOCKS || iSubtrahend == 0);
 		bool bAnyNonDefault;
 		pStream->Read(&bAnyNonDefault);
 		if (bAnyNonDefault)
 		{
 			if (!isAllocated())
 				allocate();
-			pStream->Read(arraySize() - (int)uiSubtrahend, values());
+			pStream->Read(arraySize() - iSubtrahend, values());
 		}
 	}
 
@@ -1523,6 +1538,39 @@ protected:
 	}
 };
 #undef ArrayEnumMapBase
+
+/*	AdvCiv 1.08 fixes a bug in ArrayEnumMap. Convenient to wrap code for
+	maintaining save-compatibility in a derived class. */
+template<typename E, class V,
+	class CV = void*,
+	int iDEFAULT = (int)enum_traits<V>::none>
+class LegacyArrayEnumMap : public ArrayEnumMap<E,V,CV,iDEFAULT,false,8>
+{
+private: LegacyArrayEnumMap() {} // Not going to instantiate this
+public:
+	template<class OtherEnumMap>
+	static void convert(OtherEnumMap& kOther, FDataStreamBase* pStream, int iSubtrahend = 0)
+	{
+		BOOST_STATIC_ASSERT(bBIT_BLOCKS && !isStaticMemory);
+		bool bAnyNonDefault;
+		pStream->Read(&bAnyNonDefault);
+		if (!bAnyNonDefault)
+			return;
+		int const iLen = getLength() - iSubtrahend;
+		/*	Allocate one 4-byte block per value.
+			(That's the bug that got fixed in AdvCiv 1.08.) */
+		CompactV* aValues = new CompactV[iLen];
+		pStream->Read(iLen, aValues);
+		for (E eKey = enum_traits<E>::first; eKey < std::min<int>(iLen, getLength()); eKey++)
+		{
+			bool bVal = BitUtil::GetBit(
+					aValues[eKey / BITSIZE(BitBlock)],
+					eKey % BITSIZE(BitBlock));
+			kOther.set(eKey, bVal);
+		}
+		delete[] aValues;
+	}
+};
 
 // For convenience - as the bEAGER_ALLOC param is pretty far down the list.
 template<typename E, class V,
@@ -1689,6 +1737,8 @@ class CivTeamMap : public SubSeqEnumMap<ArrayEnumMap<CivTeamTypes,V,CV,iDEFAULT>
 {};
 
 typedef ArrayEnumMap<CivicOptionTypes,CivicTypes> CivicMap; // Needed rather frequently
+// Replacing a vector of pairs that had been defined in CvCityAI.h
+typedef ListEnumMap<UnitAITypes,int> UnitAIWeightMap;
 
 #undef FOR_EACH_KEY
 
@@ -2160,12 +2210,12 @@ public:
 			lookup(eOuterKey).writeArray<ValueType>(pStream);
 	}
 	template<typename ValueType>
-	void readArray(FDataStreamBase* pStream, uint uiSubtrahend = 0)
+	void readArray(FDataStreamBase* pStream, int iSubtrahend = 0)
 	{
 		FOR_EACH_OUTER_KEY(eOuterKey)
 		{
 			InnerEncodableMap innerMap;
-			innerMap.readArray<ValueType>(pStream, uiSubtrahend);
+			innerMap.readArray<ValueType>(pStream, iSubtrahend);
 			set(eOuterKey, innerMap.encode());
 		}
 	}

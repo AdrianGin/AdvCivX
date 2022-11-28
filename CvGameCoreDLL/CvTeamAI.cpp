@@ -249,7 +249,7 @@ scaled CvTeamAI::AI_estimateYieldRate(PlayerTypes ePlayer,
 		break;
 	}
 	FAssert(eHistory != NO_PLAYER_HISTORY);
-	return AI_estimateDemographic(ePlayer, eHistory, iSamples);;
+	return AI_estimateDemographic(ePlayer, eHistory, iSamples);
 }
 
 /*	K-Mod: return the total yield of the team, estimated by averaging
@@ -1970,7 +1970,7 @@ int CvTeamAI::AI_techTradeVal(TechTypes eTech, TeamTypes eFromTeam,
 			/*	advc.551, advc.001: Revert the 2nd part of the K-Mod change.
 				A correct implementation would have to take the team size modifier
 				out of the research progress; but I think it'd still be a bad idea.*/
-			std::max(0, getResearchCost(eTech/*, true, false*/) -
+			std::max(0, getResearchCost(eTech/*, ..., false*/) -
 			getResearchProgress(eTech)); // K-Mod end
 	/*  <advc.104h> Peace for tech isn't that attractive for the receiving side
 		b/c they could continue the war and still get the tech when making peace
@@ -3979,13 +3979,23 @@ DenialTypes CvTeamAI::AI_openBordersTrade(TeamTypes eWithTeam) const
 	}
 	if (AI_getWorstEnemy() == eWithTeam)
 		return DENIAL_WORST_ENEMY;
-
-	int iOurAttitude = AI_getAttitude(eWithTeam);
+	/*	<advc.124> If personalities are hidden, then avoid giving away
+		attitude thresholds in the early game (i.e. when territory not yet
+		located). Attitude is typically Cautious at that point, which should
+		mean that everyone (except Toku) accepts OB if located and refuses
+		otherwise. */
+	int const iAttitudeThreshFloor =
+			(GC.getGame().isOption(GAMEOPTION_RANDOM_PERSONALITIES) &&
+			!AI_isTerritoryAccessible(eWithTeam) ?
+			ATTITUDE_ANNOYED : NO_ATTITUDE); // </advc.124>
+	int const iOurAttitude = AI_getAttitude(eWithTeam);
 	for (MemberIter it(getID()); it.hasNext(); ++it)
 	{
 		// <advc.124>
-		int const iAttitudeThresh = GC.getInfo(it->getPersonalityType()).
-				getOpenBordersRefuseAttitudeThreshold();
+		int const iAttitudeThresh = std::max(
+				GC.getInfo(it->getPersonalityType()).
+				getOpenBordersRefuseAttitudeThreshold(),
+				iAttitudeThreshFloor);
 		if (iOurAttitude < iAttitudeThresh)
 			return DENIAL_ATTITUDE;
 		if (iOurAttitude > iAttitudeThresh + 1)
@@ -4400,19 +4410,43 @@ void CvTeamAI::AI_changeWarSuccess(TeamTypes eTeam, scaled rChange)
 	// <advc.130m>
 	if (rChange <= 0 || eTeam == BARBARIAN_TEAM || isBarbarian())
 		return;
-
+	std::vector<CvTeamAI*> apAffectedTeams;
 	for (TeamAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
 	{
 		CvTeamAI& kWarAlly = *it;
 		if (eTeam == kWarAlly.getID() || kWarAlly.getID() == getID())
 			continue;
 		// Let our allies know that we've had a war success
-		if(kWarAlly.isAtWar(eTeam) && !kWarAlly.isAtWar(getID()))
+		if (kWarAlly.isAtWar(eTeam) && !kWarAlly.isAtWar(getID()))
+		{
 			kWarAlly.AI_reportSharedWarSuccess(rChange, getID(), eTeam);
+			apAffectedTeams.push_back(&kWarAlly);
+		}
 		/*  Let the allies of our enemy know that their ally has suffered a loss
 			from us, their shared enemy */
-		if(!kWarAlly.isAtWar(eTeam) && kWarAlly.isAtWar(getID()))
+		if (!kWarAlly.isAtWar(eTeam) && kWarAlly.isAtWar(getID()))
+		{
 			kWarAlly.AI_reportSharedWarSuccess(rChange, eTeam, getID());
+			apAffectedTeams.push_back(&kWarAlly);
+		}
+	}
+	/*	Attitude cache update - relevant for WarAttitude (advc.sha) and
+		ShareWarAttitude (advc.130m). */
+	/*	To save time. Not crucial to keep AI attitude up to date during AI turns.
+		Note that network games are treated as never being in between turns. */
+	if (!GC.getGame().isInBetweenTurns() &&
+		(isHuman() || GET_TEAM(eTeam).isHuman()))
+	{
+		apAffectedTeams.push_back(&GET_TEAM(eTeam));
+		apAffectedTeams.push_back(this);
+		for (size_t i = 0; i < apAffectedTeams.size(); i++)
+		{
+			for (size_t j = 0; j < apAffectedTeams.size(); j++)
+			{
+				if (i != j)
+					apAffectedTeams[i]->AI_updateAttitude(apAffectedTeams[j]->getID());
+			}
+		}
 	}
 }
 
@@ -6515,7 +6549,7 @@ int CvTeamAI::AI_getTechMonopolyValue(TechTypes eTech, TeamTypes eTeam) const
 {
 	PROFILE_FUNC(); // advc: called not that infrequently
 	//bool bWarPlan = (getAnyWarPlanCount(eTeam) > 0);
-	bool bWarPlan = (AI_getWarPlan(eTeam) != NO_WARPLAN); // advc.001
+	bool const bWarPlan = (AI_getWarPlan(eTeam) != NO_WARPLAN); // advc.001
 	int iValue = 0;
 	// <advc.550c> Evaluate each team member so that UU and UB can be taken into account
 	MemberIter it(eTeam);
@@ -6538,9 +6572,10 @@ int CvTeamAI::AI_getTechMonopolyValue(TechTypes eTech, TeamTypes eTeam) const
 				continue;
 
 			int iNavalValue = 0;
-			int iCombatRatio = (kUnit.getCombat() * 100) / std::max(1, GC.getGame().getBestLandUnitCombat());
+			int iCombatRatio = (kUnit.getCombat() * 100) /
+					std::max(1, GC.getGame().getBestLandUnitCombat());
 			if (iCombatRatio > 50)
-				iValue += ((bWarPlan ? 100 : 50) * (iCombatRatio - 40)) / 50;
+				iValue += (bWarPlan ? 2 : 1) * (iCombatRatio - 40);
 
 			switch (kUnit.getDefaultUnitAIType())
 			{

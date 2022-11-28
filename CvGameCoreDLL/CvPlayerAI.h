@@ -218,6 +218,7 @@ public:
 	}
 	int AI_getAttitudeVal(PlayerTypes ePlayer, bool bForced = true) const;
 	static AttitudeTypes AI_getAttitudeFromValue(int iAttitudeVal);
+	void AI_updateExpansionistHate(); // advc.130w
 
 	int AI_calculateStolenCityRadiusPlots(PlayerTypes ePlayer,
 			bool bOnlyNonWorkable = false) const; // advc.147
@@ -453,7 +454,13 @@ public:
 	// <advc.139>
 	void AI_attackMadeAgainst(CvUnit const& kDefender);
 	void AI_humanEnemyStackMovedInTerritory(CvPlot const& kFrom, CvPlot const& kTo);
-	// </advc.139>
+	// </advc.139>  advc:
+	int AI_neededCityAttackers(/* advc.104p: */ CvArea const& kArea,
+			int iHash = -1) const;
+	// <advc.300>
+	scaled AI_neededCityAttackersVsBarbarians() const;
+	int AI_estimateBarbarianGarrisonSize() const;
+	scaled AI_barbarianTargetCityScore(CvArea const& kArea) const; // </advc.300>
 
 	CivicTypes AI_bestCivic(CivicOptionTypes eCivicOption, int* iBestValue = 0) const;
 	int AI_civicValue(CivicTypes eCivic) const;						// Exposed to Python
@@ -801,6 +808,7 @@ protected:
 	int* m_aiPeacetimeGrantValue;
 	int* m_aiGoldTradedTo;
 	int* m_aiAttitudeExtra;
+	ArrayEnumMap<PlayerTypes,scaled> m_arExpansionistHate; // advc.130w
 	// <advc.079>
 	mutable UnitTypes m_aeLastBrag[MAX_CIV_PLAYERS];
 	mutable TeamTypes m_aeLastWarn[MAX_CIV_PLAYERS]; // </advc.079>
@@ -850,7 +858,6 @@ protected:
 	void AI_proposeWarTrade(PlayerTypes eAIPlayer); // </advc>
 
 	int AI_rivalPactAttitude(PlayerTypes ePlayer, bool bVassalPacts) const; // advc.130t
-	scaled AI_expansionistHate(PlayerTypes ePlayer) const; //advc.130w
 
 	bool AI_canBeAttackedBy(CvUnit const& u) const; // advc.315
 
@@ -934,7 +941,6 @@ protected:
 	int AI_knownRankDifference(PlayerTypes eOther, scaled& rOutrankingBothRatio) const;
 	// advc.042: Relies on caller to reset GC.getBorderFinder()
 	bool AI_isUnimprovedBonus(CvPlot const& p, CvPlot const* pFromPlot, bool bCheckPath) const;
-	void AI_updateCityAttitude(CvPlot const& kCityPlot); // advc.130w
 	int AI_neededExplorers_bulk(CvArea const& kArea) const; // advc.opt
 	// BETTER_BTS_AI_MOD, Victory Strategy AI, 03/17/10, jdog5000: START
 	// (advc: moved here from the public section)

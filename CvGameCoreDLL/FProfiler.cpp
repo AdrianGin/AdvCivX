@@ -183,7 +183,8 @@ void IFPEnd(void)
 
 	QueryPerformanceFrequency(&freq);
 
-	gDLL->logMsg("IFP_log.txt","Fn\tTime (mS)\tAvg time\t#calls\tChild time\tParent\n");
+	gDLL->logMsg("IFP_log.txt","Fn\tTime (mS)\tAvg time\t#calls\tChild time\tParent\n",
+			false, false); // advc.003o: Don't timestamp
 
 	for(int i = 0; i < numSamples; i++ )
 	{
@@ -197,7 +198,7 @@ void IFPEnd(void)
 					sampleList[i]->ProfileInstances,
 					(int)((1000*sampleList[i]->ChildrenSampleTime.QuadPart)/freq.QuadPart),
 					sampleList[i]->Parent == -1 ? "" : sampleList[sampleList[i]->Parent]->Name);
-			gDLL->logMsg("IFP_log.txt",buffer);
+			gDLL->logMsg("IFP_log.txt",buffer, /* advc.003o: */ false, false);
 		}
 	}
 }

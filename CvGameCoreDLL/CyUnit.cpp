@@ -9,6 +9,7 @@
 #include "CvUnitAI.h" // advc.003u
 #include "CvArea.h"
 #include "CvPlot.h"
+#include "CvMap.h" // advc: For canAirBombAt
 
 CyUnit::CyUnit() : m_pUnit(NULL) {}
 // advc.003y: (see CyCity.cpp)
@@ -237,9 +238,16 @@ bool CyUnit::canAirBomb(CyPlot* pPlot)
 	return m_pUnit ? m_pUnit->canAirBomb(pPlot->getPlot()) : false;
 }
 
+// advc: Adjusted to changed param list of CvUnit::canAirBombAt
 bool CyUnit::canAirBombAt(CyPlot* pPlot, int iX, int iY)
 {
-	return m_pUnit ? m_pUnit->canAirBombAt(pPlot->getPlot(), iX, iY) : false;
+	if (m_pUnit == NULL)
+		return false;
+	CvPlot const* pTarget = GC.getMap().plot(iX, iY);
+	if (pTarget == NULL)
+		return false;
+	return m_pUnit->canAirBombAt(*pTarget,
+			pPlot == NULL ? NULL : pPlot->getPlot());
 }
 
 CyCity* CyUnit::bombardTarget(CyPlot* pPlot)

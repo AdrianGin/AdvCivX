@@ -369,4 +369,16 @@
 		<German>Bei der ersten Begegnung mit einem Gegner:[NEWLINE][COLOR_HIGHLIGHT_TEXT]Meldung[COLOR_REVERT] - Nachricht auf dem Hauptbildschirm, die auch anzeigt, wo die Begegnung stattgefunden hat.[NEWLINE][COLOR_HIGHLIGHT_TEXT]Kontakt[COLOR_REVERT] - Der Gegner kontaktiert Sie und stellt sich vor (wie in BtS).[NEWLINE][COLOR_HIGHLIGHT_TEXT]Beides[COLOR_REVERT] - Anzeige auf dem Hauptbildschirm und Kontaktaufnahme.</German>
 	</TEXT>
 
+	<!-- advc.120l -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_CIV4LERTS__ESPIONAGEREMINDER_TEXT</Tag>
+		<English>Espionage Reminder</English>
+		<German>Spionage-Hinweis</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_CIV4LERTS__ESPIONAGEREMINDER_HOVER</Tag>
+		<English>If checked, so long as all [ICON_ESPIONAGE] weights are 0 and at least one rival has been met previously, a message is shown on first contact that says how many [ICON_ESPIONAGE] points per turn will be assigned to the newly met rival. Intended as a reminder to set positive [ICON_ESPIONAGE] weights at some point of the early game.</English>
+		<German>Zeigt bei Erst-Begegnung in einer Nachricht an, wie viele [ICON_ESPIONAGE]-Punkte dem Gegner pro Runde zugewiesen werden. Diese Nachricht wird erst ab dem zweiten getroffenen Gegner angezeigt, und nur falls alle [ICON_ESPIONAGE]-Gewichte auf 0 stehen. Als Erinnerung, sinnvolle [ICON_ESPIONAGE]-Gewichte einzustellen.</German>
+	</TEXT>
+
 </Civ4GameText>

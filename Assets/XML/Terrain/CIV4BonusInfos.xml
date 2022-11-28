@@ -220,8 +220,10 @@
 				<iRandApp3>0</iRandApp3>
 				<iRandApp4>0</iRandApp4>
 			</Rands>
-			<iPlayer>100</iPlayer>
-			<iTilesPer>256</iTilesPer>
+			<!-- advc.129: was 100 -->
+			<iPlayer>75</iPlayer>
+			<!-- advc.129: was 256 -->
+			<iTilesPer>128</iTilesPer>
 			<iMinLandPercent>0</iMinLandPercent>
 			<!-- advc.129: was 6 -->
 			<iUnique>5</iUnique>
@@ -279,7 +281,9 @@
 				<iRandApp3>0</iRandApp3>
 				<iRandApp4>0</iRandApp4>
 			</Rands>
-			<iPlayer>100</iPlayer>
+			<!-- advc.129: was 100 -->
+			<iPlayer>75</iPlayer>
+			<!-- advc.129: was 256 -->
 			<iTilesPer>128</iTilesPer>
 			<iMinLandPercent>0</iMinLandPercent>
 			<iUnique>7</iUnique>
@@ -344,8 +348,10 @@
 				<iRandApp3>0</iRandApp3>
 				<iRandApp4>0</iRandApp4>
 			</Rands>
-			<iPlayer>50</iPlayer>
-			<iTilesPer>0</iTilesPer>
+			<!-- advc.129: was 50 -->
+			<iPlayer>30</iPlayer>
+			<!-- advc.129: was 0 -->
+			<iTilesPer>128</iTilesPer>
 			<iMinLandPercent>0</iMinLandPercent>
 			<iUnique>0</iUnique>
 			<iGroupRange>0</iGroupRange>
@@ -474,8 +480,10 @@
 				<iRandApp3>0</iRandApp3>
 				<iRandApp4>0</iRandApp4>
 			</Rands>
-			<iPlayer>50</iPlayer>
-			<iTilesPer>0</iTilesPer>
+			<!-- advc.129: was 50 -->
+			<iPlayer>30</iPlayer>
+			<!-- advc.129: was 0 -->
+			<iTilesPer>128</iTilesPer>
 			<iMinLandPercent>0</iMinLandPercent>
 			<iUnique>0</iUnique>
 			<iGroupRange>0</iGroupRange>

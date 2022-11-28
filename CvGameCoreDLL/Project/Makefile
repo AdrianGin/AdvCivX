@@ -20,6 +20,8 @@
 #   difficult to associate error messages with a translation unit; but don't need
 #   a slow version of every config.]
 # YOURMOD2 and YOURLOGS (see under "Paths").
+# /Z option for debug builds obtained from Makefile.project, the default being /Z7.
+#   To make it easier to switch, temporarily, to /Zd, which links much faster.
 # PROJECT_Profile_CFLAGS, PROJECT_Debug_CFLAGS, PROJECT_DebugOpt_CFLAGS added to Makefile.project.
 # For selecting a profiler and for balancing speed vs. fidelity of debug builds.
 # Removed unused /DCVGAMECOREDLL_EXPORTS from Debug_DEFINES
@@ -141,9 +143,9 @@ SUBDIRPATH15 = ../
 !ENDIF
 !IF [ECHO PROJECT_Profile_CFLAGS = >> Makefile.project]
 !ENDIF
-!IF [ECHO PROJECT_Debug_CFLAGS = >> Makefile.project]
+!IF [ECHO PROJECT_Debug_CFLAGS = /Z7 >> Makefile.project]
 !ENDIF
-!IF [ECHO PROJECT_DebugOpt_CFLAGS = >> Makefile.project]
+!IF [ECHO PROJECT_DebugOpt_CFLAGS = /Z7 >> Makefile.project]
 !ENDIF
 !IF [ECHO PRECOMPILE_DEPENDENCIES = >> Makefile.project]
 !ENDIF
@@ -191,11 +193,11 @@ CUSTOM_LDFLAGS =
 FILE_DEPENDS = $(TEMP_TARGET_FILES)\depends
 
 #### CFLAGS ####
-GLOBAL_CFLAGS=/GR /Gy /EHsc /Gd /Gm- /Fd"$(Target_PDB)" $(CUSTOM_CFLAGS) $(PROJECT_CFLAGS)
-Debug_CFLAGS=/MD /Z7 /Od /RTC1 $(Debug_DEFINES) $(GLOBAL_CFLAGS) $(PROJECT_Debug_CFLAGS)
-Release_CFLAGS=/MD /O2 /G7 /arch:SSE2 $(Release_DEFINES) $(GLOBAL_CFLAGS)
+GLOBAL_CFLAGS=/MD /GR /Gy /EHsc /Gd /Gm- /Fd"$(Target_PDB)" $(CUSTOM_CFLAGS) $(PROJECT_CFLAGS)
+Debug_CFLAGS=/Od /RTC1 $(Debug_DEFINES) $(GLOBAL_CFLAGS) $(PROJECT_Debug_CFLAGS)
+Release_CFLAGS=/O2 /G7 /arch:SSE2 $(Release_DEFINES) $(GLOBAL_CFLAGS)
 Final_Release_CFLAGS=$(Release_CFLAGS) /GL
-Debug_Opt_CFLAGS=$(Release_CFLAGS) /Z7 $(PROJECT_DebugOpt_CFLAGS)
+Debug_Opt_CFLAGS=$(Release_CFLAGS) $(PROJECT_DebugOpt_CFLAGS)
 
 PRECOMPILE_CFLAGS1 = /Yu"
 PRECOMPILE_CFLAGS2 = CvGameCoreDLL.h" /Fp"$(Target_PCH)"
@@ -290,7 +292,7 @@ clean:
 $(Target_BIN): $(Target_BIN_TEMP)
 	-COPY "$(Target_BIN_TEMP)" "$(Target_BIN)"
 
-		
+
 build: $(Target_BIN)
 !IFDEF YOURMOD
 	-COPY "$(Target_BIN)" "$(YOURMOD)\Assets\."
@@ -336,9 +338,9 @@ $(Target_BIN_TEMP): $(OBJS) $(Target_RESOURCE)
 
 {$(SOURCE_DIR)\.}.cpp{$(TEMP_TARGET_FILES)\.}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
-	
+
 {$(SOURCE_DIR)\$(SUBDIR1)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR1)}.obj:
 	@ECHO.>"$*.obj.@"
     @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH1)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
@@ -346,74 +348,74 @@ $(Target_BIN_TEMP): $(OBJS) $(Target_RESOURCE)
 
 {$(SOURCE_DIR)\$(SUBDIR2)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR2)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH2)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH2)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
 
 {$(SOURCE_DIR)\$(SUBDIR3)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR3)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH3)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH3)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
 
 {$(SOURCE_DIR)\$(SUBDIR4)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR4)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH4)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH4)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
 	
 {$(SOURCE_DIR)\$(SUBDIR5)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR5)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH5)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH5)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
 
 {$(SOURCE_DIR)\$(SUBDIR6)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR6)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH6)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH6)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
 
 {$(SOURCE_DIR)\$(SUBDIR7)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR7)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH7)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH7)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
 
 {$(SOURCE_DIR)\$(SUBDIR8)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR8)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH8)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH8)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
-	
+
 {$(SOURCE_DIR)\$(SUBDIR9)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR9)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH9)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH9)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
 
 {$(SOURCE_DIR)\$(SUBDIR10)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR10)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH10)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH10)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
 
 {$(SOURCE_DIR)\$(SUBDIR11)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR11)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH11)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH11)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
 
 {$(SOURCE_DIR)\$(SUBDIR12)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR12)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH12)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH12)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
 
 {$(SOURCE_DIR)\$(SUBDIR13)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR13)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH13)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH13)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
 
 {$(SOURCE_DIR)\$(SUBDIR14)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR14)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH14)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH14)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
 
 {$(SOURCE_DIR)\$(SUBDIR15)}.cpp{$(TEMP_TARGET_FILES)\$(SUBDIR15)}.obj:
 	@ECHO.>"$*.obj.@"
-    @$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH15)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
+	@$(CPP) /nologo $(CFLAGS) $(PRECOMPILE_CFLAGS1)$(SUBDIRPATH15)$(PRECOMPILE_CFLAGS2) $(INCS) /Fo$*.obj /c $<
 	@DEL "$*.obj.@"
-	
+
 
 $(Target_PCH) $(TEMP_TARGET_FILES)\_precompile.obj: $(PRECOMPILE_DEPENDENCIES)
 	@ECHO.>"$(Target_PCH).@"

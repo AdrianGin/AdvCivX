@@ -11,7 +11,9 @@
 			<Type>GAMESPEED_MARATHON</Type>
 			<Description>TXT_KEY_GAMESPEED_MARATHON</Description>
 			<Help>TXT_KEY_GAMESPEED_MARATHON_HELP</Help>
-			<!-- advc.252: all 300 percentages reduced to 250 -->
+			<!-- advc.252: all 300 percentages reduced to 250. (To revert this
+				 change, the GAMESPEED_MARATHON element below this one can be
+				 uncommented.) -->
 			<iGrowthPercent>250</iGrowthPercent>
 			<iTrainPercent>200</iTrainPercent>
 			<iConstructPercent>250</iConstructPercent>
@@ -36,12 +38,17 @@
 			<!-- advc.252: was 33 -->
 			<iHurryPercent>40</iHurryPercent>
 			<iHurryConscriptAngerPercent>250</iHurryConscriptAngerPercent>
-			<!-- advc.252: was 10 -->
+			<!-- advc.252: start -->
+			<!-- was 10 -->
 			<iInflationPercent>12</iInflationPercent>
-			<!-- advc.252: was -270 -->
+			<!-- was -270 -->
 			<iInflationOffset>-225</iInflationOffset>
-			<!-- advc.252: was 300 -->
+			<!-- Reduce unit expenses ... -->
+			<iUnitCostPercent>85</iUnitCostPercent>
+			<iExtraFreeOutsideUnits>1</iExtraFreeOutsideUnits>
+			<!-- was 300 -->
 			<iVictoryDelayPercent>200</iVictoryDelayPercent>
+			<!-- advc.252: end -->
 			<!-- advc.130r: start -->
 			<iAIMemoryRandPercent>200</iAIMemoryRandPercent>
 			<iAIContactRandPercent>167</iAIContactRandPercent>
@@ -59,44 +66,6 @@
 			<!-- advc.252: start -->
 			<iEventRollSidesPercent>200</iEventRollSidesPercent>
 			<iVoteIntervalPercent>250</iVoteIntervalPercent>
-			<!-- advc.252: end -->
-			<!-- advc.910: Changed all of the turn counts -->
-			<!-- advc.252: Pogression for 1500 game turns - kept in case that
-				 the 300% modifiers need to be restored. -->
-			<!--GameTurnInfos>
-				<GameTurnInfo>
-					<iMonthIncrement>180</iMonthIncrement>
-					<iTurnsPerIncrement>150</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>120</iMonthIncrement>
-					<iTurnsPerIncrement>210</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>60</iMonthIncrement>
-					<iTurnsPerIncrement>240</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>24</iMonthIncrement>
-					<iTurnsPerIncrement>100</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>12</iMonthIncrement>
-					<iTurnsPerIncrement>110</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>6</iMonthIncrement>
-					<iTurnsPerIncrement>190</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>3</iMonthIncrement>
-					<iTurnsPerIncrement>320</iTurnsPerIncrement>
-				</GameTurnInfo>
-				<GameTurnInfo>
-					<iMonthIncrement>1</iMonthIncrement>
-					<iTurnsPerIncrement>180</iTurnsPerIncrement>
-				</GameTurnInfo>
-			</GameTurnInfos-->
 			<GameTurnInfos>
 				<GameTurnInfo>
 					<iMonthIncrement>240</iMonthIncrement>
@@ -131,7 +100,83 @@
 					<iTurnsPerIncrement>240</iTurnsPerIncrement>
 				</GameTurnInfo>
 			</GameTurnInfos>
+			<!-- advc.252: end -->
 		</GameSpeedInfo>
+		<!-- advc.252: Can uncomment this (and delete the one above)
+			 to restore, by and large, the BtS Marathon modifiers.
+			 May then also want to increase the threshold for Legendary culture
+			 in Civ4CultureLevelInfos.xml. -->
+		<!--GameSpeedInfo>
+			<Type>GAMESPEED_MARATHON</Type>
+			<Description>TXT_KEY_GAMESPEED_MARATHON</Description>
+			<Help>TXT_KEY_GAMESPEED_MARATHON_HELP</Help>
+			<iGrowthPercent>300</iGrowthPercent>
+			<iTrainPercent>200</iTrainPercent>
+			<iConstructPercent>300</iConstructPercent>
+			<iCreatePercent>300</iCreatePercent>
+			<iResearchPercent>300</iResearchPercent>
+			<iBuildPercent>300</iBuildPercent>
+			<iImprovementPercent>300</iImprovementPercent>
+			<iGreatPeoplePercent>300</iGreatPeoplePercent>
+			<iCulturePercent>200</iCulturePercent>
+			<iAnarchyPercent>200</iAnarchyPercent>
+			<iBarbPercent>250</iBarbPercent>
+			<iFeatureProductionPercent>300</iFeatureProductionPercent>
+			<iUnitDiscoverPercent>300</iUnitDiscoverPercent>
+			<iUnitHurryPercent>300</iUnitHurryPercent>
+			<iUnitTradePercent>300</iUnitTradePercent>
+			<iUnitGreatWorkPercent>300</iUnitGreatWorkPercent>
+			<iGoldenAgePercent>200</iGoldenAgePercent>
+			<iHurryPercent>33</iHurryPercent>
+			<iHurryConscriptAngerPercent>300</iHurryConscriptAngerPercent>
+			<iInflationPercent>10</iInflationPercent>
+			<iInflationOffset>-270</iInflationOffset>
+			<iUnitCostPercent>80</iUnitCostPercent>
+			<iExtraFreeOutsideUnits>1</iExtraFreeOutsideUnits>
+			<iVictoryDelayPercent>200</iVictoryDelayPercent>
+			<iAIMemoryRandPercent>200</iAIMemoryRandPercent>
+			<iAIContactRandPercent>167</iAIContactRandPercent>
+			<iAIContactDelayPercent>200</iAIContactDelayPercent>
+			<iFullTradeCreditPercent>200</iFullTradeCreditPercent>
+			<iRevoltDivPercent>200</iRevoltDivPercent>
+			<iReligionSpreadDivPercent>300</iReligionSpreadDivPercent>
+			<iEventRollSidesPercent>200</iEventRollSidesPercent>
+			<iVoteIntervalPercent>300</iVoteIntervalPercent>
+			<GameTurnInfos>
+				<GameTurnInfo>
+					<iMonthIncrement>180</iMonthIncrement>
+					<iTurnsPerIncrement>150</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>120</iMonthIncrement>
+					<iTurnsPerIncrement>210</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>60</iMonthIncrement>
+					<iTurnsPerIncrement>240</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>24</iMonthIncrement>
+					<iTurnsPerIncrement>100</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>12</iMonthIncrement>
+					<iTurnsPerIncrement>110</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>6</iMonthIncrement>
+					<iTurnsPerIncrement>190</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>3</iMonthIncrement>
+					<iTurnsPerIncrement>320</iTurnsPerIncrement>
+				</GameTurnInfo>
+				<GameTurnInfo>
+					<iMonthIncrement>1</iMonthIncrement>
+					<iTurnsPerIncrement>180</iTurnsPerIncrement>
+				</GameTurnInfo>
+			</GameTurnInfos>
+		</GameSpeedInfo-->
 		<GameSpeedInfo>
 			<Type>GAMESPEED_EPIC</Type>
 			<Description>TXT_KEY_GAMESPEED_EPIC</Description>
