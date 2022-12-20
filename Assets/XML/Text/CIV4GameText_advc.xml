@@ -6999,4 +6999,15 @@
 		<Spanish>Ya no podemos permitirnos ser tolerantes. &#161;Os exigimos que cancel&#233;is vuestro trato con [NUM2:el vil:la vil:los viles:las viles] %s2!</Spanish>
 	</TEXT>
 
+	<!-- advc.009e: Hints about CivilizationIV. ini appended
+		 to the original text from CIV4GameText_Misc1.xml. -->
+	<TEXT> <!-- redefine -->
+		<Tag>TXT_KEY_INVALID_CAPTURE_DESC</Tag>
+		<English>You have selected an unusable voice capture device. Voice capture disabled. To disable this message, set EnableVoice=0 in CivilizationIV.ini under \My Games\Beyond the Sword\.</English>
+	</TEXT>
+	<TEXT> <!-- redefine -->
+		<Tag>TXT_KEY_RECOMMENDED_SPECS_MESSAGE</Tag>
+		<English>Your machine is below recommended specifications. The graphic settings were altered to accommodate this. To avoid this adjustment and warning in the future, please set HideMinSpecWarning=1 in CivilizationIV.ini under \My Games\Beyond the Sword\.</English>
+	</TEXT>
+
 </Civ4GameText>
