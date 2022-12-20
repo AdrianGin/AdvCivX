@@ -874,6 +874,9 @@ class CvMainInterface:
 			# Somehow the adjustment to map dimensions doesn't quite work out
 			iMiniMapPanelWidth += iMiniMapPanelRMargin
 			iMiniMapPanelWidth = min(iMiniMapPanelWidth, iMaxMiniMapPanelWidth)
+			# Need enough space atop the panel for the minimap buttons
+			# (would be better to calculate here how much space those actually take up ...)
+			iMiniMapPanelWidth = max(iMiniMapPanelWidth, 204)
 		# Center the panel within the available space
 		iMiniMapPanelRMargin += (iDefaultMiniMapPanelWidth - iMiniMapPanelWidth) / 2
 		# </advc.137>
@@ -1035,7 +1038,7 @@ class CvMainInterface:
 			if self.bScaleHUD:
 				# Make room for the Turn Log, whose (default) position I can't change.
 				gPoint("PercentText" + str(i)).move(0, -3)
-		iX = 35 + HSPACE(35) # Space for the PercentText label
+		iX = 36 + HSPACE(36) # Space for the PercentText label
 		for i in range(4): # Up to 4 buttons per row (2 for BUG - Min/Max Sliders)
 			lSliderBtns = ColumnLayout(gRect("Top"),
 					iX, gPoint("PercentText0").y(),
@@ -1353,15 +1356,13 @@ class CvMainInterface:
 # BUG - city specialist - end
 
 	def setCityBonusRects(self):
-		if self.isShowSpecialistLabel():
-			iSpecialistButtonsY = gRect("SpecialistLabelBackground").y()
-		else:
-			iSpecialistButtonsY = gRect("SpecialistLabelBackground").yBottom()
 		iMaxRMargin = gRect("Top").xRight() - gRect("CityRightPanelContents").x()
 		gSetRect("BonusPane0", "CityRightPanelContents",
 				0, 0,
 				# advc.004: Was 57; don't need quite this much space.
-				HLEN(53), -(gRect("CityRightPanelContents").yBottom() - iSpecialistButtonsY))
+				HLEN(53),
+				-(gRect("CityRightPanelContents").yBottom() -
+				gRect("SpecialistLabelBackground").y()))
 		gSetRect("BonusBack0", "CityRightPanelContents",
 				0, 0,
 				# Width was 157 in BtS. Perhaps the idea was to get all the scrollbars
