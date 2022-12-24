@@ -453,7 +453,7 @@ public:
 	// <advc.003r> Akin to deferCall in BugUtil.py
 	enum UpdateTimerTypes {
 		UPDATE_COLLAPSE_SCORE_BOARD, // advc.085
-		UPDATE_DIRTY_SCORE_BOARD, // advc.085
+		UPDATE_DIRTY_SCORE_HELP, // advc.085
 		UPDATE_MOUSE_FOCUS, // advc.001w
 		UPDATE_LOOK_AT_STARTING_PLOT, // advc.004j
 		UPDATE_STORE_REPLAY_TEXTURE, // advc.106n

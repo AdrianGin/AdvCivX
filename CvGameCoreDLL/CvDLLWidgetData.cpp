@@ -1508,7 +1508,7 @@ void CvDLLWidgetData::doContactCiv(CvWidgetDataStruct &widgetDataStruct)
 	}  /* <advc.085> Give the player time to move the cursor off the scoreboard
 		  (cf. comments in CvPlayer::setScoreboardExpanded) */
 	if (BUGOption::isEnabled("Scores__ExpandOnHover", false, false))
-		GC.getGame().setUpdateTimer(CvGame::UPDATE_DIRTY_SCORE_BOARD, 4); // </advc.085>
+		GC.getGame().setUpdateTimer(CvGame::UPDATE_DIRTY_SCORE_HELP, 4); // </advc.085>
 	// BETTER_BTS_AI_MOD, Player Interface, 01/11/09, jdog5000: START
 	if (GC.shiftKey() && !GC.altKey())
 	{

@@ -1699,6 +1699,7 @@ enum InterfaceDirtyBits
 	Espionage_Advisor_DIRTY_BIT,
 	Advanced_Start_DIRTY_BIT,
 	Tech_Screen_DIRTY_BIT, // advc.068
+	ScoreHelp_DIRTY_BIT, // advc.085
 #ifdef _USRDLL
 	NUM_INTERFACE_DIRTY_BITS
 #endif

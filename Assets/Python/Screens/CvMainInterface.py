@@ -91,6 +91,7 @@ g_NumActionInfos = 0
 g_eEndTurnButtonState = -1
 g_pSelectedUnit = 0
 g_szTimeText = ""
+gAlignedScoreboard = None # advc.085
 # BUG - NJAGC - start
 g_bShowTimeTextAlt = False
 g_iTimeTextCounter = -1
@@ -2395,6 +2396,12 @@ class CvMainInterface:
 			self.updateScoreStrings()
 			CyInterface().setDirty(InterfaceDirtyBits.Score_DIRTY_BIT, False)
 			bScoreStringsUpdated = True # advc.004z
+		# <advc.085>
+		if CyInterface().isDirty(InterfaceDirtyBits.ScoreHelp_DIRTY_BIT):
+			if gAlignedScoreboard:
+				gAlignedScoreboard.hide(screen, True)
+			CyInterface().setDirty(InterfaceDirtyBits.ScoreHelp_DIRTY_BIT, False)
+		# </advc.085>
 		if (CyInterface().isDirty(InterfaceDirtyBits.GlobeInfo_DIRTY_BIT) == True):
 			# Globeview and Globelayer buttons
 			CyInterface().setDirty(InterfaceDirtyBits.GlobeInfo_DIRTY_BIT, False)
@@ -6283,6 +6290,9 @@ class CvMainInterface:
 		bAlignIcons = ScoreOpt.isAlignIcons()
 		if bAlignIcons:
 			scores = Scoreboard.Scoreboard()
+			# <advc.085>
+			global gAlignedScoreboard
+			gAlignedScoreboard = scores # </advc.085>
 		# <advc>
 		else:
 			scores = None # </advc>

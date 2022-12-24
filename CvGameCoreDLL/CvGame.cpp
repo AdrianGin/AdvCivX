@@ -8634,8 +8634,8 @@ void CvGame::handleUpdateTimer(UpdateTimerTypes eTimerType)
 		case UPDATE_COLLAPSE_SCORE_BOARD:
 			GET_PLAYER(getActivePlayer()).setScoreboardExpanded(false);
 			break;
-		case UPDATE_DIRTY_SCORE_BOARD:
-			gDLL->getInterfaceIFace()->setDirty(Score_DIRTY_BIT, true);
+		case UPDATE_DIRTY_SCORE_HELP:
+			gDLL->getInterfaceIFace()->setDirty(ScoreHelp_DIRTY_BIT, true);
 			break; // </advc.085>
 		// <advc.001w>
 		case UPDATE_MOUSE_FOCUS:

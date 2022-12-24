@@ -388,15 +388,25 @@ class Scoreboard:
 		if maxPlayers > 0 and len(self._playerScores) > maxPlayers:
 			self._playerScores = self._playerScores[len(self._playerScores) - maxPlayers:]
 		
-	def hide(self, screen):
+	def hide(self, screen,
+			bUnhide = False): # advc.085
 		"""Hides the text from the screen before building the scoreboard."""
 		#screen.hide( "ScoreBackground" ) # advc.004z: Handled by CvMainInterface now
 		for p in range( gc.getMAX_CIV_PLAYERS() ):
 			name = "ScoreText%d" %( p ) # the part that flashes? holds the score and name
 			screen.hide( name )
+			# <advc.085> (The point is to trigger a mouse-over check for widget help,
+			# resulting in a call to CvDLLWidgetData::parseHelp)
+			if bUnhide:
+				screen.show(name) # </advc.085>
 			for c in range( NUM_PARTS ):
 				name = "ScoreText%d-%d" %( p, c )
 				screen.hide( name )
+				# <advc.085>
+				if bUnhide:
+					screen.show(name) # </advc.085>
+
+	
 		
 	def draw(self, screen):
 		"""Sorts and draws the scoreboard right-to-left, bottom-to-top."""

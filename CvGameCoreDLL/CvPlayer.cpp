@@ -18512,11 +18512,12 @@ void CvPlayer::setScoreboardExpanded(bool b)
 				gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 			/*  The EXE calls CvDLLWidgetData::parseHelp when the cursor is moved
 				onto a widget - but not while the cursor rests there. Workaround:
-				Redraw the scoreboard and its widgets. That also causes a parseHelp
-				call (if the cursor is on a widget). Must still allow game updates
-				in between though (otherwise, e.g. animations will start lagging).
-				Therefore, don't set the dirty bit until the next game update. */
-			else kGame.setUpdateTimer(CvGame::UPDATE_DIRTY_SCORE_BOARD, iDelay - 1);
+				Hiding (and immediately unhiding) the scoreboard causes a
+				parseHelp call if the cursor is on a widget. Originally, I had
+				instead redrawn the scoreboard. Delaying that until the next
+				game update had kept the resulting lag in check. Perhaps not needed
+				anymore, but doesn't hurt, so I'm keeping the delay in place. */
+			else kGame.setUpdateTimer(CvGame::UPDATE_DIRTY_SCORE_HELP, iDelay - 1);
 			m_bScoreboardExpanded = true;
 		}
 		else m_bScoreboardExpanded = false;
