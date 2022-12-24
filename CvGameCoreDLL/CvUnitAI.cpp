@@ -13192,8 +13192,8 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 				continue;
 			}
 		}
+		int iPathTurns;
 		{
-			int iPathTurns;
 			PROFILE("AI_exploreRange Path");
 			if (!generatePath(p, eFlags, true, &iPathTurns, iRange))
 				continue;
@@ -13256,7 +13256,9 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 			iValue *= iDirectionModifier;
 			iValue /= 100;
 		}
-
+		/*	advc.pf: It's much better not to rely on the pathfinder for our
+			immediate move. The pathfinder won't optimize exploration at all. */
+		iValue /= iPathTurns + 1;
 		if (iValue > iBestValue)
 		{
 			iBestValue = iValue;
