@@ -974,8 +974,11 @@ void CvGame::selectionListGameNetMessage(int eMessage, int iData2, int iData3, i
 				}
 			} // <advc.011b>
 			bool bModified = false;
-			if (iData2 == MISSION_BUILD)
-				bModified = GC.ctrlKey(); // </advc.001b>
+			if (iData2 == MISSION_BUILD ||
+				iData2 == MISSION_PILLAGE || iData2 == MISSION_AIRBOMB) // advc.111
+			{
+				bModified = GC.ctrlKey();
+			} // </advc.011b>
 			// <advc.048>
 			if (iData2 == MISSION_MOVE_TO)
 				bModified = GC.altKey(); // </advc.048>

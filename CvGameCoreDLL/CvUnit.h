@@ -168,9 +168,11 @@ public:
 	// <advc.255>
 	enum StructureTypes { NO_STRUCTURE, STRUCTURE_IMPROVEMENT, STRUCTURE_ROUTE };
 	StructureTypes getDestructibleStructureAt(CvPlot const& kTarget,
-			bool bTestVisibility) const; // </advc.255>
+			bool bTestVisibility, // </advc.255>
+			bool bForceImprovement = false) const; // advc.111
 	int airBombDefenseDamage(CvCity const& kCity) const; // advc
-	bool airBomb(CvPlot& kTarget, /* advc.004c: */ bool* pbIntercepted = NULL);
+	bool airBomb(CvPlot& kTarget, /* advc.004c: */ bool* pbIntercepted = NULL,
+			bool bForceImprovement = false); // advc.111
 
 	bool canAirStrike(CvPlot const& kPlot) const; // (advc.004c: was protected)
 
@@ -184,7 +186,7 @@ public:
 	bool paradrop(int iX, int iY, /* advc.004c: */ IDInfo* pInterceptor = NULL);
 
 	bool canPillage(CvPlot const& kPlot) const;																// Exposed to Python
-	bool pillage();
+	bool pillage(/* advc.111: */ bool bForceImprovement = false);
 
 	bool canPlunder(CvPlot const& kPlot, bool bTestVisible = false) const;									// Exposed to Python
 	bool plunder();

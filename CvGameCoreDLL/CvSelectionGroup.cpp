@@ -571,7 +571,7 @@ void CvSelectionGroup::pushMission(MissionTypes eMission, int iData1, int iData2
 	mission.iData2 = iData2;
 	mission.eFlags = eFlags;
 	mission.iPushTurn = GC.getGame().getGameTurn();
-	mission.bModified = bModified; //advc.011b
+	mission.bModified = bModified; // advc.011b
 
 	if (canAllMove()) // K-Mod. Do not set the AI mission type if this is just a "follow" command!
 		AI().AI_setMissionAI(eMissionAI, pMissionAIPlot, pMissionAIUnit);
@@ -897,7 +897,8 @@ void CvSelectionGroup::startMission()
 			while ((pUnit = AI().AI_bestUnitForMission(MISSION_PILLAGE,
 				NULL, &aiHasPillaged)) != NULL) // </advc>
 			{	// <K-Mod>
-				if (pUnit->pillage())
+				if (pUnit->pillage(
+					headMissionQueueNode()->m_data.bModified)) // advc.111
 				{
 					bAction = true;
 					if (!AI_isControlled())
@@ -937,7 +938,8 @@ void CvSelectionGroup::startMission()
 			bool bIntercepted = false;
 			CvUnit* pUnit;
 			while ((pUnit = AI().AI_bestUnitForMission(MISSION_AIRBOMB, &kMissionPlot)) != NULL &&
-				pUnit->airBomb(kMissionPlot, &bIntercepted))
+				pUnit->airBomb(kMissionPlot, &bIntercepted,
+				headMissionQueueNode()->m_data.bModified)) // advc.111
 			{
 				bAction = true;
 				if (bIntercepted && !bStackAttack)

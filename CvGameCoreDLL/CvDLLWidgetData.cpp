@@ -2328,16 +2328,24 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 		break;
 	}
 	case MISSION_PILLAGE:
-	{	// <advc.111> Matching a change in CvUnit::pillage
-		if (kMissionPlot.getTeam() == kUnitTeam.getID())
+	{	// <advc.111>
+		if (kUnit.getDestructibleStructureAt(kMissionPlot, true, GC.ctrlKey()) ==
+			CvUnit::STRUCTURE_IMPROVEMENT)
 		{
-			if (!GAMETEXT.setPillageHelp(szBuffer, kMissionPlot.getRouteType()))
-				GAMETEXT.setPillageHelp(szBuffer, kMissionPlot.getImprovementType());
+			GAMETEXT.setPillageHelp(szBuffer, kMissionPlot.getImprovementType());
 		}
 		else
 		{
-			if (!GAMETEXT.setPillageHelp(szBuffer, kMissionPlot.getImprovementType()))
-				GAMETEXT.setPillageHelp(szBuffer, kMissionPlot.getRouteType());
+			GAMETEXT.setPillageHelp(szBuffer, kMissionPlot.getRouteType());
+			if (!GC.ctrlKey() && kUnit.getDestructibleStructureAt(kMissionPlot, true, true) ==
+				CvUnit::STRUCTURE_IMPROVEMENT)
+			{
+				szBuffer.append(L". (");
+				szBuffer.append(gDLL->getText("TXT_KEY_MISC_DESTROY_OWN_STRUCTURE",
+						GC.getInfo(kMissionPlot.getRevealedImprovementType(
+						getActiveTeam())).getTextKeyWide()));
+				szBuffer.append(L".)");
+			}
 		} // </advc.111>
 		break;
 	}

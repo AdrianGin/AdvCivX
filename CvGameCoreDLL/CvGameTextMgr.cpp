@@ -20866,7 +20866,7 @@ void CvGameTextMgr::getAirBombPlotHelp(CvPlot const& kPlot,
 	} 
 	// <advc.255>
 	CvUnit::StructureTypes const eStructure = kHeadSelectedUnit.
-			getDestructibleStructureAt(kPlot, true);
+			getDestructibleStructureAt(kPlot, true, /* advc.111: */ GC.ctrlKey());
 	if (eStructure == CvUnit::NO_STRUCTURE)
 		return; // </advc.255>
 	// Formula matches dice roll in CvUnit::airBomb

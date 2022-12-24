@@ -7010,4 +7010,14 @@
 		<English>Your machine is below recommended specifications. The graphic settings were altered to accommodate this. To avoid this adjustment and warning in the future, please set HideMinSpecWarning=1 in CivilizationIV.ini under \My Games\Beyond the Sword\.</English>
 	</TEXT>
 
+	<!-- advc.111 -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_DESTROY_OWN_STRUCTURE</Tag>
+		<English>Hold [COLOR_POSITIVE_TEXT]&lt;Ctrl&gt;[COLOR_REVERT] to Destroy %s1_Structure instead</English>
+		<French>[COLOR_POSITIVE_TEXT]&lt;Ctrl&gt;[COLOR_REVERT] détruit %s1_Structure plutôt</French>
+		<German>[COLOR_POSITIVE_TEXT]&lt;Strg&gt;[COLOR_REVERT]-Taste zerstört stattdessen %s1_Structure</German>
+		<Italian>[COLOR_POSITIVE_TEXT]&lt;Ctrl&gt;[COLOR_REVERT] invece distrugge %s1_Structure</Italian>
+		<Spanish>[COLOR_POSITIVE_TEXT]&lt;Ctrl&gt;[COLOR_REVERT] destruye %s1_Structure en lugar</Spanish>
+	</TEXT>
+
 </Civ4GameText>
