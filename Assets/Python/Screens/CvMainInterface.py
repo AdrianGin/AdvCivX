@@ -1358,12 +1358,15 @@ class CvMainInterface:
 
 	def setCityBonusRects(self):
 		iMaxRMargin = gRect("Top").xRight() - gRect("CityRightPanelContents").x()
+		iBonusBackrOverhang = min(VSPACE(16),
+				gRect("SpecialistLabelBackground").height())
 		gSetRect("BonusPane0", "CityRightPanelContents",
 				0, 0,
 				# advc.004: Was 57; don't need quite this much space.
 				HLEN(53),
 				-(gRect("CityRightPanelContents").yBottom() -
-				gRect("SpecialistLabelBackground").y()))
+				(gRect("SpecialistLabelBackground").yBottom() -
+				iBonusBackrOverhang)))
 		gSetRect("BonusBack0", "CityRightPanelContents",
 				0, 0,
 				# Width was 157 in BtS. Perhaps the idea was to get all the scrollbars
@@ -1374,7 +1377,8 @@ class CvMainInterface:
 				# Scrolling is only relevant when the height is insufficient for the
 				# list of bonus resources. That should never be the case with the
 				# BtS/AdvCiv rules, even at the lowest resolution.
-				iMaxRMargin, gRect("BonusPane0").height() + VSPACE(16))
+				iMaxRMargin,
+				gRect("BonusPane0").height() + iBonusBackrOverhang)
 		gSetRect("BonusPane1", "CityRightPanelContents",
 				gRect("BonusPane0").width(), 0,
 				# advc.002b: Was 68 in BtS; need less space in the third col now
