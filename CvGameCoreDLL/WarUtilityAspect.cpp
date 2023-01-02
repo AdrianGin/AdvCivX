@@ -4523,10 +4523,13 @@ int ThirdPartyIntervention::preEvaluate()
 	/*	The timing of the intervention is difficult to predict. They may or may not
 		need to build up units, and we may be weakest early in the simulation or
 		late, but, even in the latter case, they might attack early b/c we already
-		appear weak enough ... I'm just going to look at the current power values
-		b/c that's easy to implement. */
-	m_rDefPow = /*(militAnalyst().gainedPower(eWe, ARMY) +
-			militAnalyst().gainedPower(eWe, HOME_GUARD)) / 2 +*/ // Count gains half?
+		appear weak enough ... Too complicated to estimate their build-up, but it'll
+		probably be less than ours because we'll start right away and won't stop
+		until the war ends. So let's count our estimated change in power half
+		and theirs not at all - and later adjust our power a bit to account for
+		distraction. */
+	m_rDefPow = (militAnalyst().gainedPower(eWe, ARMY) +
+			militAnalyst().gainedPower(eWe, HOME_GUARD)) / 2 + // Count gains half
 			// The cache includes HOME_GUARD in ARMY
 			ourCache().getPowerValues()[ARMY]->power();
 	m_rDefPow.increaseTo(scaled::epsilon());
@@ -4648,8 +4651,8 @@ void ThirdPartyIntervention::evaluate()
 		int iOurDefPow = kOurTeam.getDefensivePower();
 		iOurDefPow = (iOurDefPow * (1 - rOurLostPowRatio)).uround();
 		int iParanoia = kWe.AI_paranoiaRating(eThey, iOurDefPow, false, true);
-		iParanoia = std::min(iParanoia, 190);
-		rInterventionProb = scaled(iParanoia - 25, 215);
+		iParanoia = std::min(iParanoia, 220);
+		rInterventionProb = scaled(iParanoia - 30, 250);
 		if (rInterventionProb > 0)
 		{
 			log("Our paranoia rating: %d", iParanoia);

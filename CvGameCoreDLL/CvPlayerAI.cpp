@@ -26468,7 +26468,8 @@ int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
 {
 	CvPlayerAI const& kRival = GET_PLAYER(eRival);
 	CvTeamAI const& kRivalTeam = GET_TEAM(eRival);
-	if (GET_TEAM(getTeam()).AI_getWarPlan(kRivalTeam.getID()) != NO_WARPLAN)
+	CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
+	if (kOurTeam.AI_getWarPlan(kRivalTeam.getID()) != NO_WARPLAN)
 		return 0;
 	bool const bRivalFocusWar = kRival.AI_isFocusWar();
 	// <advc.022> Don't fear (AI) civs that are busy
@@ -26531,13 +26532,13 @@ int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
 				pow(fixp(0.23))).round();
 	} // </advc.022>
 	if (iCloseness > 0 ||
-		GET_TEAM(getTeam()).AI_hasCitiesInPrimaryArea(kRivalTeam.getID())) // K-Mod
+		kOurTeam.AI_hasCitiesInPrimaryArea(kRivalTeam.getID())) // K-Mod
 	{	// <advc.022>
 		// Humans tend to reciprocate our feelings
 		int iHumanWarProb = 70 - AI_getAttitude(eRival) * 10;
 		int iAttitudeWarProb = (kRival.isHuman() ? iHumanWarProb :
 				// Now based on rival's personality and attitude
-				100 - kRivalTeam.AI_noWarProbAdjusted(getTeam()));
+				100 - kRivalTeam.AI_noWarProbAdjusted(kOurTeam.getID()));
 		// (BBAI military power check deleted)
 		//iValue += std::max(0, iAttitudeWarProb/2); // K-Mod
 		iValue += std::max(0, (std::min(3, (1 + kRival.AI_getCurrEra()))
@@ -26557,7 +26558,7 @@ int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
 				2 * iOurDefPow);
 		iValue /= std::max(1, iOurDefPow);
 		// <K-Mod>
-		if (kRivalTeam.AI_getWorstEnemy() == getTeam())
+		if (kRivalTeam.AI_getWorstEnemy() == kOurTeam.getID())
 		{
 			//iTempParanoia *= 2;
 			// advc.022: Don't give their attitude too much weight
@@ -26573,10 +26574,50 @@ int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
 	else if (kRival.AI_atVictoryStage(AI_VICTORY_DOMINATION3))
 		iVictStratParanoia += 75; // advc.022: was 50
 	/*  advc.022: Too high in K-Mod I think; who knows when they'll get around
-		to attacking us. (Could count the alternative targets I guess ...). */
+		to attacking us. */
 	iValue += iVictStratParanoia / 2;
 	if (iValue <= 0)
 		return 0;
+	/*	<advc.104> Somewhat important for large, overcrowded-continents
+		to adjust for alternative targets of eRival. */
+	if (kRival.hasCapital() && hasCapital())
+	{
+		CvCity const& kRivalCapital = *kRival.getCapital();
+		if (kOurTeam.AI_deduceCitySite(kRivalCapital))
+		{
+			int const iDistUsRival = plotDistance(
+					getCapital()->plot(), kRivalCapital.plot());
+			/*	Doesn't really matter how powerful the third party is; if they're
+				strong, then eRival will fear their attack; if they're very weak,
+				an attack by eRival will still be a major distraction. */
+			int iAltTargets = 0;
+			for (PlayerAIIter<CIV_ALIVE,KNOWN_POTENTIAL_ENEMY_OF> itThirdParty(
+				kRivalTeam.getID()); itThirdParty.hasNext(); ++itThirdParty)
+			{
+				if (itThirdParty->getMasterTeam() == getMasterTeam() ||
+					!kOurTeam.isHasMet(itThirdParty->getTeam()) ||
+					(kRivalTeam.isHuman() ?
+					GET_TEAM(itThirdParty->getTeam()).AI_isAvoidWar(kRivalTeam.getID()) :
+					kRivalTeam.AI_isAvoidWar(itThirdParty->getTeam())) ||
+					!itThirdParty->hasCapital())
+				{
+					continue;
+				}
+				CvCity const& kThirdCapital = *itThirdParty->getCapital();
+				if (!kOurTeam.AI_deduceCitySite(kThirdCapital))
+					continue;
+				if (kThirdCapital.sameArea(kRivalCapital) &&
+					5 * plotDistance(
+					kThirdCapital.plot(), kRivalCapital.plot()) < iDistUsRival * 7)
+				{
+					iAltTargets++;
+				}
+			}
+			scaled rAltTargetMult = fixp(1.24) - fixp(0.18) * iAltTargets;
+			rAltTargetMult.increaseTo(fixp(0.4));
+			iValue = (iValue * rAltTargetMult).uceil();
+		}
+	} // </advc.104>
 	/*if (iCloseness == 0)
 		iTempParanoia /= 2;*/
 	// <advc.022> Do something smoother
