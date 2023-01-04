@@ -1955,7 +1955,7 @@ class CvMainInterface:
 				PanelStyles.PANEL_STYLE_HUD_HELP)
 		screen.hide("ScoreBackground")
 
-		for i in range(gc.getMAX_PLAYERS()):
+		for i in range(gc.getMAX_CIV_PLAYERS()):
 			szName = "ScoreText" + str(i)
 			screen.setText(szName, "Background",
 					u"", CvUtil.FONT_RIGHT_JUSTIFY,
@@ -6303,73 +6303,58 @@ class CvMainInterface:
 # BUG - Align Icons - end
 		# (BUG - Power Rating)  advc: Moved into the loop
 		i = gc.getMAX_CIV_TEAMS() - 1
-		while (i > -1):
+		while i > -1:
 			eTeam = gc.getGame().getRankTeam(i)
-			# advc.004v: Show members of unmet dead teams
-			if (gc.getTeam(gc.getGame().getActiveTeam()).isHasMet(eTeam) or
-					gc.getTeam(eTeam).isHuman() or
-					gc.getGame().isDebugMode() or
-					(not gc.getTeam(eTeam).isAlive() and
-					gc.getTeam(eTeam).isEverAlive() and
-					ScoreOpt.isShowDeadCivs())):
+			# advc.085: Moved to BUG Scoreboard (static method)
+			if Scoreboard.Scoreboard.isShowTeamScore(eTeam):
 # BUG - Align Icons - start
-				if (bAlignIcons):
+				if bAlignIcons:
 					scores.addTeam(gc.getTeam(eTeam), i)
 # BUG - Align Icons - end
 				j = gc.getMAX_CIV_PLAYERS() - 1
-				while (j > -1):
+				while j > -1:
 					ePlayer = gc.getGame().getRankPlayer(j)
-					if (not CyInterface().isScoresMinimized() or
-							gc.getGame().getActivePlayer() == ePlayer):
-# BUG - Dead Civs - start
-						if (gc.getPlayer(ePlayer).isEverAlive() and
-								not gc.getPlayer(ePlayer).isBarbarian()
-								and (gc.getPlayer(ePlayer).isAlive() or
-								ScoreOpt.isShowDeadCivs())):
-# BUG - Dead Civs - end
-# BUG - Minor Civs - start
-							if (not gc.getPlayer(ePlayer).isMinorCiv() or
-									ScoreOpt.isShowMinorCivs()):
-# BUG - Minor Civs - end
-								if (gc.getPlayer(ePlayer).getTeam() == eTeam):
-									szBuffer = u"<font=2>"
+					# advc.085: Moved to BUG Scoreboard
+					if (Scoreboard.Scoreboard.isShowPlayerScore(ePlayer) and
+							gc.getPlayer(ePlayer).getTeam() == eTeam):
+						szBuffer = u"<font=2>"
 # BUG - Align Icons - start
-									if (bAlignIcons):
-										scores.addPlayer(gc.getPlayer(ePlayer), j)
+						if bAlignIcons:
+							scores.addPlayer(gc.getPlayer(ePlayer), j)
 # BUG - Align Icons - end
-									# advc: Code moved into auxiliary function
-									szBuffer += self.playerScoreString(ePlayer, scores, bAlignIcons)
-									szBuffer = szBuffer + "</font>"
+						# advc: Code moved into auxiliary function
+						szBuffer += self.playerScoreString(ePlayer, scores, bAlignIcons)
+						szBuffer = szBuffer + "</font>"
 # BUG - Align Icons - start
-									if not bAlignIcons:
-										if CyInterface().determineWidth(szBuffer) > iWidth:
-											iWidth = CyInterface().determineWidth(szBuffer)
-										szName = "ScoreText" + str(ePlayer)
+						if not bAlignIcons:
+							if CyInterface().determineWidth(szBuffer) > iWidth:
+								iWidth = CyInterface().determineWidth(szBuffer)
+							szName = "ScoreText" + str(ePlayer)
 # BUG - Dead Civs - start
-										# Don't try to contact dead civs
-										if gc.getPlayer(ePlayer).isAlive():
-											iWidgetType = WidgetTypes.WIDGET_CONTACT_CIV
-											eContactPlayer = ePlayer
-										else:
-											iWidgetType = WidgetTypes.WIDGET_GENERAL
-											eContactPlayer = -1
-										yCoord = gPoint("ScoreTextLowerRight").y() - iBtnHeight
-										screen.setText(szName, "Background",
-												szBuffer, CvUtil.FONT_RIGHT_JUSTIFY,
-												gPoint("ScoreTextLowerRight").x(),
-												yCoord - iCount * iBtnHeight,
-												-0.3, FontTypes.SMALL_FONT,
-												iWidgetType, eContactPlayer, -1)
+							# Don't try to contact dead civs
+							if gc.getPlayer(ePlayer).isAlive():
+								iWidgetType = WidgetTypes.WIDGET_CONTACT_CIV
+								eContactPlayer = ePlayer
+							else:
+								iWidgetType = WidgetTypes.WIDGET_GENERAL
+								eContactPlayer = -1
+							yCoord = gPoint("ScoreTextLowerRight").y() - iBtnHeight
+							screen.setText(szName, "Background",
+									szBuffer, CvUtil.FONT_RIGHT_JUSTIFY,
+									gPoint("ScoreTextLowerRight").x(),
+									yCoord - iCount * iBtnHeight,
+									-0.3, FontTypes.SMALL_FONT,
+									iWidgetType, eContactPlayer, -1)
 # BUG - Dead Civs - end
-										screen.show(szName)
-										CyInterface().checkFlashReset(ePlayer)
-										iCount += 1
+							screen.show(szName)
+							CyInterface().checkFlashReset(ePlayer)
+							iCount += 1
 # BUG - Align Icons - end
 					j = j - 1
 			i = i - 1
 
 # BUG - Align Icons - start
-		if (bAlignIcons):
+		if bAlignIcons:
 			scores.draw(screen)
 		else:
 			self.updateScoreBackgrSize(iWidth, iBtnHeight * iCount) # advc.092

@@ -395,16 +395,52 @@ class Scoreboard:
 		for p in range( gc.getMAX_CIV_PLAYERS() ):
 			name = "ScoreText%d" %( p ) # the part that flashes? holds the score and name
 			screen.hide( name )
-			# <advc.085> (The point is to trigger a mouse-over check for widget help,
-			# resulting in a call to CvDLLWidgetData::parseHelp)
-			if bUnhide:
-				screen.show(name) # </advc.085>
 			for c in range( NUM_PARTS ):
 				name = "ScoreText%d-%d" %( p, c )
 				screen.hide( name )
-				# <advc.085>
-				if bUnhide:
-					screen.show(name) # </advc.085>
+		# <advc.085>
+		if not bUnhide:
+			return
+		# (The point is to trigger a mouse-over check for widget help,
+		# resulting in a call to CvDLLWidgetData::parseHelp)
+		for iPlayer in range(gc.getMAX_CIV_PLAYERS()):
+			if (not Scoreboard.isShowTeamScore(gc.getPlayer(iPlayer).getTeam()) or
+					not Scoreboard.isShowPlayerScore(iPlayer)):
+				continue
+			sName = "ScoreText%d" %(iPlayer)
+			screen.show(sName)
+			for iPart in range(NUM_PARTS):
+				sName = "ScoreText%d-%d" %(iPlayer, iPart)
+				screen.show(sName)
+			
+
+	# Both cut from CvMainInterface.updateScoreStrings
+	@staticmethod
+	def isShowTeamScore(iTeam):
+		t = gc.getTeam(iTeam)
+		if not t.isEverAlive():
+			return False
+		if not t.isAlive() and not ScoreOpt.isShowDeadCivs(): # BUG - Dead Civs
+			return False
+		if t.isBarbarian():
+			return False
+		if (t.isMinorCiv() and not ScoreOpt.isShowMinorCivs()): # BUG - Minor Civs
+			return False
+		return (gc.getTeam(gc.getGame().getActiveTeam()).isHasMet(iTeam) or
+				t.isHuman() or
+				gc.getGame().isDebugMode() or
+				# advc.004v: Show members of unmet dead teams
+				(not t.isAlive() and ScoreOpt.isShowDeadCivs()))
+
+	@staticmethod
+	def isShowPlayerScore(iPlayer):
+		p = gc.getPlayer(iPlayer)
+		if (CyInterface().isScoresMinimized() and
+				gc.getGame().getActivePlayer() != iPlayer):
+			return False
+		# BUG - Dead Civs:
+		return ((ScoreOpt.isShowDeadCivs() and p.isEverAlive()) or p.isAlive())
+	# </advc.085>
 
 	
 		
@@ -500,7 +536,8 @@ class Scoreboard:
 				value = column.text
 				x -= spacing
 				for p, playerScore in enumerate(self._playerScores):
-					name = "ScoreText%d-%d" %( p, c ) # advc.085: Moved up
+					# advc.085: Moved up, insert player ID (not _playerScores index)
+					name = "ScoreText%d-%d" %( playerScore.getID(), c )
 					if (playerScore.has(c) and playerScore.value(c)):
 						widget = playerScore.widget(c)
 						if widget is None:
@@ -550,7 +587,8 @@ class Scoreboard:
 					continue
 				x -= spacing
 				for p, playerScore in enumerate(self._playerScores):
-					name = "ScoreText%d-%d" %( p, c ) # advc.085: Moved up
+					# advc.085: Moved up, insert player ID.
+					name = "ScoreText%d-%d" %( playerScore.getID(), c )
 					if (playerScore.has(c)):
 						value = playerScore.value(c)
 						if (c == NAME and playerScore.isVassal() and ScoreOpt.isGroupVassals()):
@@ -561,7 +599,7 @@ class Scoreboard:
 						align = CvUtil.FONT_RIGHT_JUSTIFY
 						adjustX = 0
 						if (c == NAME):
-							name = "ScoreText%d" % p
+							name = "ScoreText%d" % playerScore.getID() # advc.085: was p
 							if (ScoreOpt.isLeftAlignName()):
 								align = CvUtil.FONT_LEFT_JUSTIFY
 								adjustX = width
@@ -605,7 +643,7 @@ class Scoreboard:
 					for p, playerScore in enumerate(self._playerScores):
 						if (playerScore.has(c)):
 							tech = playerScore.value(c)
-							name = "ScoreTech%d" % p
+							name = "ScoreTech%d" % playerScore.getID() # advc.085: was p
 							info = gc.getTechInfo(tech)
 							iData2 = 0 # advc.085: was -1
 							screen.addDDSGFC(name, info.getButton(),
@@ -621,7 +659,7 @@ class Scoreboard:
 					for p, playerScore in enumerate(self._playerScores):
 						if (playerScore.has(c)):
 							leader = playerScore.value(c)
-							name = "ScoreLeader%d" % p
+							name = "ScoreLeader%d" % playerScore.getID() # advc.085: was p
 							info = gc.getLeaderHeadInfo(leader)
 							screen.addDDSGFC(name, info.getButton(),
 									x - techIconSize, y - p * height + iYIconOffset,
@@ -635,7 +673,7 @@ class Scoreboard:
 					for p, playerScore in enumerate(self._playerScores):
 						if (playerScore.has(c)):
 							civ = playerScore.value(c)
-							name = "ScoreCiv%d" % p
+							name = "ScoreCiv%d" % playerScore.getID() # advc.085: was p
 							info = gc.getCivilizationInfo(civ)
 							screen.addDDSGFC(name, info.getButton(),
 									x - techIconSize, y - p * height + iYIconOffset,
