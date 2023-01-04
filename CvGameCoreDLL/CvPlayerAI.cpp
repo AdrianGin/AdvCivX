@@ -24599,28 +24599,36 @@ int CvPlayerAI::AI_calculateDominationVictoryStage() const
 			std::max(1, GC.getMap().getLandPlots());
 
 	// <advc.104c>
-	int iPopObjective = std::max(1, kGame.getAdjustedPopulationPercent(eDomination));
-	int iLandObjective = std::max(1, kGame.getAdjustedLandPercent(eDomination));
-	bool bBlockedByFriend = false;
-	for (TeamAIIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itRival(getTeam());
-		itRival.hasNext(); ++itRival)
+	int const iPopObjective = std::max(1, kGame.getAdjustedPopulationPercent(eDomination));
+	int const iLandObjective = std::max(1, kGame.getAdjustedLandPercent(eDomination));
+	bool bBlockedByFriends = false;
 	{
-		int iTheirPopPercent = (100 * itRival->getTotalPopulation()) /
-				std::max(1, kGame.getTotalPopulation());
-		int iTheirLandPercent = (100 * itRival->getTotalLand()) /
-				std::max(1, GC.getMap().getLandPlots());
-		if (kTeam.AI_getAttitude(itRival->getID()) >= ATTITUDE_FRIENDLY &&
-			(iTheirPopPercent >= iPopObjective - iOurPopPercent ||
-			iTheirLandPercent >= iLandObjective - iOurLandPercent))
+		int iPopNonFriendsPercent = 0;
+		int iLandNonFriendsPercent = 0;
+		for (TeamAIIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itRival(getTeam());
+			itRival.hasNext(); ++itRival)
 		{
-			bBlockedByFriend = true;
+			int iTheirPopPercent = (100 * itRival->getTotalPopulation()) /
+					std::max(1, kGame.getTotalPopulation());
+			int iTheirLandPercent = (100 * itRival->getTotalLand()) /
+					std::max(1, GC.getMap().getLandPlots());
+			if (kTeam.AI_getAttitude(itRival->getID()) < ATTITUDE_FRIENDLY)
+			{
+				iPopNonFriendsPercent += iTheirPopPercent;
+				iLandNonFriendsPercent += iTheirLandPercent;
+			}
+		}
+		if (iPopNonFriendsPercent < iPopObjective - iOurPopPercent ||
+			iLandNonFriendsPercent < iLandObjective - iOurLandPercent)
+		{
+			bBlockedByFriends = true;
 		}
 	} // </advc.104c>
 	iPercentOfDomination = (100 * iOurPopPercent) /
 			iPopObjective; // advc.104c
 	iPercentOfDomination = std::min(iPercentOfDomination, (100 * iOurLandPercent) /
 			iLandObjective); // advc.104c
-	if (!bBlockedByFriend) // advc.104c
+	if (!bBlockedByFriends) // advc.104c
 	{
 		// <advc.115>
 		int iEverAlive = kGame.getCivPlayersEverAlive();
