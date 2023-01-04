@@ -24592,34 +24592,30 @@ int CvPlayerAI::AI_calculateDominationVictoryStage() const
 	if (iWeight < 0)
 		return 0; // </advc.115f>
 
+	int const iGamePop = std::max(1, kGame.getTotalPopulation());
+	int const iGameLand = std::max(1, GC.getMap().getLandPlots());
 	int iPercentOfDomination = 0;
-	int iOurPopPercent = (100 * kTeam.getTotalPopulation()) /
-			std::max(1, kGame.getTotalPopulation());
-	int iOurLandPercent = (100 * kTeam.getTotalLand()) /
-			std::max(1, GC.getMap().getLandPlots());
+	int iOurPopPercent = (100 * kTeam.getTotalPopulation()) / iGamePop;
+	int iOurLandPercent = (100 * kTeam.getTotalLand()) / iGameLand;
 
 	// <advc.104c>
 	int const iPopObjective = std::max(1, kGame.getAdjustedPopulationPercent(eDomination));
 	int const iLandObjective = std::max(1, kGame.getAdjustedLandPercent(eDomination));
 	bool bBlockedByFriends = false;
 	{
-		int iPopNonFriendsPercent = 0;
-		int iLandNonFriendsPercent = 0;
-		for (TeamAIIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itRival(getTeam());
+		scaled rPopNonFriends;
+		scaled rLandNonFriends;
+		for (TeamAIIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itRival(getTeam());
 			itRival.hasNext(); ++itRival)
 		{
-			int iTheirPopPercent = (100 * itRival->getTotalPopulation()) /
-					std::max(1, kGame.getTotalPopulation());
-			int iTheirLandPercent = (100 * itRival->getTotalLand()) /
-					std::max(1, GC.getMap().getLandPlots());
 			if (kTeam.AI_getAttitude(itRival->getID()) < ATTITUDE_FRIENDLY)
 			{
-				iPopNonFriendsPercent += iTheirPopPercent;
-				iLandNonFriendsPercent += iTheirLandPercent;
+				rPopNonFriends += scaled(itRival->getTotalPopulation(), iGamePop);
+				rLandNonFriends += scaled(itRival->getTotalLand(), iGameLand);
 			}
 		}
-		if (iPopNonFriendsPercent < iPopObjective - iOurPopPercent ||
-			iLandNonFriendsPercent < iLandObjective - iOurLandPercent)
+		if ((rPopNonFriends * 100).floor() + iOurPopPercent < iPopObjective ||
+			(rLandNonFriends * 100).floor() + iOurLandPercent < iLandObjective)
 		{
 			bBlockedByFriends = true;
 		}
