@@ -1452,20 +1452,30 @@ void CvDLLWidgetData::doResearch(CvWidgetDataStruct &widgetDataStruct)
 	bool bShift = GC.shiftKey();
 
 	// UNOFFICIAL_PATCH, Bugfix (Free Tech Popup Fix), 12/07/09, EmperorFool: START
+	CvPlayer& kActivePlayer = GET_PLAYER(getActivePlayer());
 	if (widgetDataStruct.m_iData2 > 0)
 	{
-		CvPlayer& kPlayer = GET_PLAYER(getActivePlayer());
-		if (!kPlayer.isChoosingFreeTech())
+		if (!kActivePlayer.isChoosingFreeTech())
 		{
 			gDLL->UI().addMessage(getActivePlayer(), true, -1,
 					gDLL->getText("TXT_KEY_CHEATERS_NEVER_PROSPER"), NULL, MESSAGE_TYPE_MAJOR_EVENT);
 			FErrorMsg("doResearch called for free tech when !isChoosingFreeTech()");
 			return;
 		}
-		else kPlayer.changeChoosingFreeTechCount(-1);
+		else kActivePlayer.changeChoosingFreeTechCount(-1);
 	} // UNOFFICIAL_PATCH: END
-
-	CvMessageControl::getInstance().sendResearch(((TechTypes)widgetDataStruct.m_iData1), widgetDataStruct.m_iData2, bShift);
+	TechTypes eNewActiveResearch = (TechTypes)widgetDataStruct.m_iData1;
+	/*	<advc.001> The main interface now passes the tech ID when the name of
+		the current research is clicked (for the right-click Pedia jump). But
+		we still want to clear the current research on left-click, so we mustn't
+		pass the tech ID along here. */
+	if (widgetDataStruct.m_eWidgetType == WIDGET_RESEARCH &&
+		eNewActiveResearch == kActivePlayer.getCurrentResearch())
+	{
+		eNewActiveResearch = NO_TECH;
+	} // </advc.001>
+	CvMessageControl::getInstance().sendResearch(eNewActiveResearch,
+			widgetDataStruct.m_iData2, bShift);
 }
 
 

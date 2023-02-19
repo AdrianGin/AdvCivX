@@ -4167,15 +4167,17 @@ class CvMainInterface:
 				RectLayout.CENTER, self.stackBarDefaultTextOffset())
 		bAnarchy = gc.getPlayer(ePlayer).isAnarchy()
 		szText = None
+		iTech = -1 # advc.001: Need tech id for jump to Pedia
 		if bAnarchy:
 			szText = localText.getText("INTERFACE_ANARCHY",
 					(gc.getPlayer(ePlayer).getAnarchyTurns(),))
 		elif gc.getPlayer(ePlayer).getCurrentResearch() != -1:
 			szText = CyGameTextMgr().getResearchStr(ePlayer)
+			iTech = gc.getPlayer(ePlayer).getCurrentResearch() # advc.001
 		if szText:
 			self.setText("ResearchText", "Background", szText,
 					CvUtil.FONT_CENTER_JUSTIFY, FontTypes.GAME_FONT, -0.4,
-					WidgetTypes.WIDGET_RESEARCH)
+					WidgetTypes.WIDGET_RESEARCH, iTech) # advc.001: Pass along tech id
 			# advc.004x: Always show ResearchText (i.e. anarchy turns)
 			#if not bAnarchy:
 			screen.show("ResearchText")
