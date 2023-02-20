@@ -2348,12 +2348,22 @@ void CvPlayer::killUnits()
 
 // advc.154: Cut from cycleSelectionGroups except for the non-const parts
 CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
-	bool bWorkers, bool* pbWrap) const
+	bool bWorkers, bool* pbWrap,
+	std::set<int>* pCycledGroups) const
 {
 	FAssert(isActive() && isHuman());
 	LOCAL_REF(bool, bWrap, pbWrap, false); // K-Mod
-	// advc.154: Copy the set
-	std::set<int> kCycledGroups = GC.getGame().getActivePlayerCycledGroups(); // K-Mod
+	//std::set<int>& kCycledGroups = GC.getGame().getActivePlayerCycledGroups(); // K-Mod
+	// <advc.154>
+	std::set<int> kCycledGroupsCopy;
+	if (pCycledGroups == NULL)
+	{
+		// Don't want to mark groups as cycled; therefore make a copy.
+		kCycledGroupsCopy = GC.getGame().getActivePlayerCycledGroups();
+	}
+	std::set<int>& kCycledGroups = (pCycledGroups == NULL ?
+			kCycledGroupsCopy : *pCycledGroups);
+	// </advc.154>
 	CLLNode<int>* pSelectionGroupNode = headGroupCycleNode();
 	if (pUnit != NULL)
 	{
@@ -2459,9 +2469,10 @@ CvSelectionGroup* CvPlayer::cycleSelectionGroups(CvUnit* pUnit, bool bForward,
 			pSelectionGroupNode = nextGroupCycleNode(pSelectionGroupNode);
 		}
 	}
-	// advc.154: Moved into new const function
-	CvSelectionGroup* pGroup = getNextGroupInCycle(pUnit, bForward, bWorkers, pbWrap);
-	if (pbWrap != NULL && pbWrap)
+	// <advc.154> Moved into new const function
+	CvSelectionGroup* pGroup = getNextGroupInCycle(pUnit, bForward,
+			bWorkers, pbWrap, &kCycledGroups); // </advc.154>
+	if (pbWrap != NULL && *pbWrap)
 		kCycledGroups.clear(); // </K-Mod>
 	return pGroup;
 }

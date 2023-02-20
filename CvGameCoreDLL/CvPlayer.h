@@ -103,7 +103,8 @@ public:
 	void killUnits();																								// Exposed to Python
 	// <advc.154>
 	CvSelectionGroup* getNextGroupInCycle(CvUnit* pUnit, bool bForward,
-			bool bWorkers, bool* pbWrap) const; // </advc.154>
+			bool bWorkers, bool* pbWrap,
+			std::set<int>* pCycledGroup = NULL) const; // </advc.154>
 	CvSelectionGroup* cycleSelectionGroups(CvUnit* pUnit, bool bForward,
 			bool bWorkers, bool* pbWrap);
 

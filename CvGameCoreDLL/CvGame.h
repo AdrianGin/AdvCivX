@@ -98,7 +98,7 @@ public:
 	DllExport void cycleCities(bool bForward = true, bool bAdd = false) const;							// Exposed to Python
 	// <advc.154>
 	CvSelectionGroup* getNextGroupInCycle(bool bForward, bool bWorkers,
-			bool& bWrap, CvUnit*& pCycleUnit) const;
+			bool& bWrap, CvUnit*& pCycleUnit, std::set<int>* pCycledGroups = NULL) const;
 	CvUnit* getCycleButtonUnit(bool bForward, bool bWorkers) const; // </advc.154>						// Exposed to Python
 	void cycleSelectionGroups(bool bClear,																// Exposed to Python
 			bool bForward = true, bool bWorkers = false);

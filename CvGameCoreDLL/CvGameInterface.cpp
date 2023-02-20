@@ -562,7 +562,8 @@ void CvGame::cycleCities(bool bForward, bool bAdd) const
 
 // advc.154: Extracted the const part out of cycleSelectionGroups
 CvSelectionGroup* CvGame::getNextGroupInCycle(bool bForward, bool bWorkers,
-	bool& bWrap, CvUnit*& pCycleUnit) const // out-params
+	bool& bWrap, CvUnit*& pCycleUnit, // out-params
+	std::set<int>* pCycledGroups) const
 {
 	bWrap = false;
 	pCycleUnit = gDLL->UI().getHeadSelectedUnit();
@@ -572,7 +573,7 @@ CvSelectionGroup* CvGame::getNextGroupInCycle(bool bForward, bool bWorkers,
 		if (pCycleUnit->getOwner() != getActivePlayer())
 			pCycleUnit = NULL;
 		pGroup = GET_PLAYER(getActivePlayer()).getNextGroupInCycle(
-				pCycleUnit, bForward, bWorkers, &bWrap);
+				pCycleUnit, bForward, bWorkers, &bWrap, pCycledGroups);
 	}
 	else
 	{
@@ -624,9 +625,9 @@ void CvGame::cycleSelectionGroups(bool bClear, bool bForward, bool bWorkers)
 {
 	bool bWrap=false;
 	CvUnit* pCycleUnit=NULL;
-	// advc.154: Moved into a const function
+	// <advc.154> Moved into a const function ...
 	CvSelectionGroup* pNextSelectionGroup = getNextGroupInCycle(
-			bForward, bWorkers, bWrap, pCycleUnit);
+			bForward, bWorkers, bWrap, pCycleUnit); // </advc.154>
 	if (gDLL->UI().getHeadSelectedUnit() != NULL)
 	{
 		GET_PLAYER(getActivePlayer()).cycleSelectionGroups(
