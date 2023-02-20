@@ -3041,12 +3041,12 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot const& kPlot)
 						aieCulturePerPlayer.push_back(std::make_pair(iCulture, kPlayer.getID()));
 					}
 				}
-			} // <advc.099g>
+			}  // <advc.099g>
 			std::stable_sort(aieCulturePerPlayer.begin(), aieCulturePerPlayer.end());
-			if(eActivePlayer != eRevealedOwner)
+			if (eActivePlayer != eRevealedOwner)
 			{
 				int iCulture = kPlot.calculateCulturePercent(eActivePlayer);
-				if(iCulture >= 1)
+				if (iCulture >= 1)
 					aieCulturePerPlayer.push_back(std::make_pair(iCulture, eActivePlayer));
 			}
 			if(eRevealedOwner != NO_PLAYER) // advc.099f
@@ -8502,6 +8502,8 @@ void CvGameTextMgr::setDiscoverPathHelp(CvWStringBuffer& szBuffer, UnitTypes eUn
 	{
 		if (!kPlayer.canResearch(eResearchOption))
 			continue;
+		/*	(Would not be so difficult to do this cleanly - pass eResearchOption
+			to CvPlayer::canResearch via CvPlayer::getDiscoveryTech; tbd.?) */
 		kTeam.setHasTechTemporarily(eResearchOption, true);
 		TechTypes eNextDiscover = kPlayer.getDiscoveryTech(eUnit);
 		kTeam.setHasTechTemporarily(eResearchOption, false);

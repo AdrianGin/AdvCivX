@@ -27477,7 +27477,7 @@ void CvPlayerAI::AI_advancedStartRouteTerritory()
 
 void CvPlayerAI::AI_doAdvancedStart(bool bNoExit)
 {
-	FAssertMsg(!isBarbarian(), "Should not be called for barbarians!");
+	FAssert(!isBarbarian());
 
 	if (getStartingPlot() == NULL)
 	{

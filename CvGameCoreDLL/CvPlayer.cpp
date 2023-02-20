@@ -2404,8 +2404,8 @@ CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
 				// advc.153: with moves
 				pLoopSelectionGroup->hasWorkerWithMoves())
 			{
-				/*if (pUnit && pLoopSelectionGroup == pUnit->getGroup())
-					if (pbWrap != NULL) *pbWrap = true;*/
+				/*if (pUnit != NULL && pLoopSelectionGroup == pUnit->getGroup())
+					bWrap = true;*/ // K-Mod: disabled
 				return pLoopSelectionGroup;
 			}
 		}
@@ -2415,7 +2415,7 @@ CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
 			if (pSelectionGroupNode == NULL)
 			{
 				pSelectionGroupNode = headGroupCycleNode();
-				// if (pbWrap != NULL) *pbWrap = true;
+				//bWrap = true; // K-Mod: disabled
 			}
 		}
 		else
@@ -2424,17 +2424,15 @@ CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
 			if (pSelectionGroupNode == NULL)
 			{
 				pSelectionGroupNode = tailGroupCycleNode();
-				// if (pbWrap != NULL) *pbWrap = true;
+				//bWrap = true; // K-Mod: disabled
 			}
 		}
 		if (pSelectionGroupNode == pFirstSelectionGroupNode)
 		{
-			// break;
-			// K-Mod
+			// break; /* <K-Mod> */
 			if (bWrap)
 				break;
-			bWrap = true;
-			// K-Mod end
+			bWrap = true; // </K-Mod>
 		}
 	}
 	return NULL;

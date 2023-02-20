@@ -1509,7 +1509,7 @@ bool CvPlot::canHavePotentialIrrigation() const
 {
 	//PROFILE_FUNC(); // advc (not called very frequently)
 	// <advc.opt>
-	if(isWater())
+	if (isWater())
 		return false; // </advc.opt>
 	// advc: 2nd condition was !isHills. Mods might allow cities on peaks.
 	if (isCity() && isFlatlands())
@@ -2163,9 +2163,11 @@ bool CvPlot::canHaveImprovement(ImprovementTypes eImprovement, TeamTypes eTeam, 
 			return false;
 	}
 
-	if (getBonusType(eTeam) != NO_BONUS && GC.getInfo(eImprovement).isImprovementBonusMakesValid(getBonusType(eTeam)))
+	if (getBonusType(eTeam) != NO_BONUS &&
+		GC.getInfo(eImprovement).isImprovementBonusMakesValid(getBonusType(eTeam)))
+	{
 		return true;
-
+	}
 	if (GC.getInfo(eImprovement).isNoFreshWater() && isFreshWater())
 		return false;
 
@@ -2178,14 +2180,17 @@ bool CvPlot::canHaveImprovement(ImprovementTypes eImprovement, TeamTypes eTeam, 
 		bool bValid = false;
 		if (GC.getInfo(eImprovement).isHillsMakesValid() && isHills())
 			bValid = true;
-		if (GC.getInfo(eImprovement).isFreshWaterMakesValid() && isFreshWater())
+		else if (GC.getInfo(eImprovement).isFreshWaterMakesValid() && isFreshWater())
 			bValid = true;
-		if (GC.getInfo(eImprovement).isRiverSideMakesValid() && isRiverSide())
+		else if (GC.getInfo(eImprovement).isRiverSideMakesValid() && isRiverSide())
 			bValid = true;
-		if (GC.getInfo(eImprovement).getTerrainMakesValid(getTerrainType()))
+		else if (GC.getInfo(eImprovement).getTerrainMakesValid(getTerrainType()))
 			bValid = true;
-		if (isFeature() && GC.getInfo(eImprovement).getFeatureMakesValid(getFeatureType()))
+		else if (isFeature() &&
+			GC.getInfo(eImprovement).getFeatureMakesValid(getFeatureType()))
+		{
 			bValid = true;
+		}
 		if (!bValid)
 			return false;
 	}
@@ -2374,7 +2379,7 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible,
 	if (isFeature())
 	{
 		if (GC.getInfo(eBuild).isFeatureRemove(getFeatureType()))
-		{	/*if (isOwned() && (GET_PLAYER(ePlayer).getTeam() != getTeam()) && !atWar(GET_PLAYER(ePlayer).getTeam(), getTeam()))
+		{	/*if (isOwned() && TEAMID(ePlayer) != getTeam() && !GET_TEAM(ePlayer).isAtWar(getTeam()))
 				return false;
 			bValid = true;*/
 			// <advc.119> Replacing the above
@@ -2397,8 +2402,8 @@ int CvPlot::getBuildTime(BuildTypes eBuild, /* advc.251: */ PlayerTypes ePlayer)
 	iTime *= std::max(0, GC.getInfo(getTerrainType()).getBuildModifier() + 100);
 	iTime /= 100;
 	// <advc.251>
-	iTime = (int)(GC.getInfo(GET_PLAYER(ePlayer).getHandicapType()).
-			getBuildTimePercent() * 0.01 * iTime);
+	iTime = (per100(GC.getInfo(GET_PLAYER(ePlayer).getHandicapType()).
+			getBuildTimePercent()) * iTime).floor();
 	iTime -= (iTime % 50); // Round down to a multiple of 50
 	// </advc.251>
 	iTime *= GC.getInfo(GC.getGame().getGameSpeedType()).getBuildPercent();

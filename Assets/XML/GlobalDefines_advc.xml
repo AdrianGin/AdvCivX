@@ -1355,8 +1355,8 @@
 		<iDefineIntVal>50</iDefineIntVal>
 	</Define>
 	<!-- Replaces the base chance above on the turn that war has been declared
-		 on a captured unit. Use 100 for BtS behavior. Recommended: 0, to
-		 discourage surprise attacks on workers. -->
+		 on a captured unit's owner. Use 100 for BtS behavior. Recommended: 0,
+		 to discourage surprise attacks against workers. -->
 	<Define>
 		<DefineName>DOW_UNIT_CAPTURE_CHANCE</DefineName>
 		<iDefineIntVal>0</iDefineIntVal>
