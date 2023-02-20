@@ -944,8 +944,10 @@ void CvPlayer::initFreeUnits()
 	// </advc.027>
 	if (kGame.isOption(GAMEOPTION_ADVANCED_START) &&
 		(!isHuman() || !kGame.isOption(GAMEOPTION_SPAH))) // advc.250b
-	{
-		int iPoints = kGame.getNumAdvancedStartPoints();
+	{	// <advc.250b> Don't overwrite pts. already assigned by SPaH
+		int iPoints = getAdvancedStartPoints();
+		if (iPoints < 0) // </advc.250b>
+			iPoints = kGame.getNumAdvancedStartPoints();
 		// advc.250b (comment): Disabled through Handicap XML
 		iPoints *= GC.getInfo(getHandicapType()).getAdvancedStartPointsMod();
 		iPoints /= 100;

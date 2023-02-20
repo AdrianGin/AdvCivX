@@ -148,6 +148,8 @@ void StartPointsAsHandicap::gatherCivs() {
 bool StartPointsAsHandicap::assignPoints() {
 
 	int pointsEntered = GC.getInitCore().getNumAdvancedStartPoints();
+	// (This value should not be used in a SPaH game)
+	GC.getInitCore().setNumAdvancedStartPoints(-1);
 	FAssert(pointsEntered > 0);
 	report += CvString::format("Points entered: %d\n", pointsEntered);
 	bool flatDistrib = (pointsEntered < 10000);
