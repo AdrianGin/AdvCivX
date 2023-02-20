@@ -14172,20 +14172,38 @@ bool CvUnitAI::AI_leaveAttack(int iRange, int iOddsThreshold, int iStrengthThres
 			if (p.getNumVisibleEnemyDefenders(this) > 0)*/ // BtS
 		if (!p.isVisibleEnemyDefender(this)) // K-Mod
 			continue;
-
-		if (generatePath(p, NO_MOVEMENT_FLAGS, true, 0, iRange))
+		if (!generatePath(p, NO_MOVEMENT_FLAGS, true, 0, iRange))
+			continue;
+		/*	<advc.114f> Enter hostile territory only if we can attack straight away
+			or if we'll have moves left for seeking safety */
+		if (getPathFinder().getPathTurns() > 1 &&
+			getPathFinder().getFinalMoves() <= 0)
 		{
-			//iValue = getGroup()->AI_attackOdds(&p, true);
-			int iValue = AI_getGroup()->AI_getWeightedOdds(&p, false); // K-Mod
-			//if (iValue >= AI_finalOddsThreshold(&p, iOddsThreshold))
-			if (iValue >= iOddsThreshold) // K-Mod
+			if (p.isOwned() && GET_TEAM(p.getTeam()).isAtWar(getTeam()))
+				continue;
+			/*	Don't make multi-turn moves in non-hostile territory either
+				if this is a non-lethal group. Can still damage them if and when
+				they come closer. */
+			bool bAnyLethal = false;
+			FOR_EACH_UNIT_IN(pGroupUnit, *getGroup())
 			{
-				if (iValue > iBestValue)
+				if (pGroupUnit->combatLimit() >= 100)
 				{
-					iBestValue = iValue;
-					pBestPlot = &getPathEndTurnPlot();
+					bAnyLethal = true;
+					break;
 				}
 			}
+			if (!bAnyLethal)
+				continue;
+		} // </advc.114f>
+		//iValue = getGroup()->AI_attackOdds(&p, true);
+		int iValue = AI_getGroup()->AI_getWeightedOdds(&p, false); // K-Mod
+		//if (iValue >= AI_finalOddsThreshold(&p, iOddsThreshold))
+		if (iValue >= iOddsThreshold && // K-Mod
+			iValue > iBestValue)
+		{
+			iBestValue = iValue;
+			pBestPlot = &getPathEndTurnPlot();
 		}
 	}
 
