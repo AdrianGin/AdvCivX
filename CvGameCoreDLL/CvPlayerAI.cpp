@@ -16365,8 +16365,8 @@ int CvPlayerAI::AI_neededCityAttackers(
 scaled CvPlayerAI::AI_neededCityAttackersVsBarbarians() const
 {
 	FAssert(!isBarbarian());
-	return fixp(1.25) * AI_estimateBarbarianGarrisonSize() +
-			GET_PLAYER(BARBARIAN_PLAYER).getCurrentEra() - AI_getCurrEraFactor();
+	return scaled::max(1, fixp(1.25) * AI_estimateBarbarianGarrisonSize() +
+			GET_PLAYER(BARBARIAN_PLAYER).getCurrentEra() - AI_getCurrEraFactor());
 }
 
 
