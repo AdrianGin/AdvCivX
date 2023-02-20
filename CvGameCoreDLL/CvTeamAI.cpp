@@ -1054,7 +1054,7 @@ void CvTeamAI::AI_preMakePeace(TeamTypes eTarget, CLinkList<TradeData> const* pR
 {
 	CvTeamAI& kTarget = GET_TEAM(eTarget);
 	// <advc.104> Report who won the war before war success is reset
-	if (getUWAI().isEnabled())
+	if (getUWAI().isEnabled() && getUWAI().isReady())
 	{
 		uwai().reportWarEnding(eTarget, pReparations, NULL);
 		kTarget.uwai().reportWarEnding(getID(), NULL, pReparations);

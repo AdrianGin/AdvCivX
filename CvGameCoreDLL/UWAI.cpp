@@ -84,7 +84,8 @@ bool UWAI::isReady() const
 	/*  In scenarios, CvTeamAI functions aren't properly called during the first
 		turn. Should skip war planning in the first two turns to make sure that
 		all AI data is properly initialized and updated. */
-	return (!GC.getGame().isScenario() || GC.getGame().getElapsedGameTurns() > 1);
+	return ((!GC.getGame().isScenario() && !GC.getInitCore().getScenario()) ||
+			GC.getGame().getElapsedGameTurns() > 1);
 }
 
 
