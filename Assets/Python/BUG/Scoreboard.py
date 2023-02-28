@@ -403,15 +403,17 @@ class Scoreboard:
 			return
 		# (The point is to trigger a mouse-over check for widget help,
 		# resulting in a call to CvDLLWidgetData::parseHelp)
-		for iPlayer in range(gc.getMAX_CIV_PLAYERS()):
+		for p, playerScore in enumerate(self._playerScores):
+			iPlayer = playerScore.getID()
 			if (not Scoreboard.isShowTeamScore(gc.getPlayer(iPlayer).getTeam()) or
 					not Scoreboard.isShowPlayerScore(iPlayer)):
 				continue
 			sName = "ScoreText%d" %(iPlayer)
 			screen.show(sName)
 			for iPart in range(NUM_PARTS):
-				sName = "ScoreText%d-%d" %(iPlayer, iPart)
-				screen.show(sName)
+				if playerScore.has(iPart):
+					sName = "ScoreText%d-%d" %(iPlayer, iPart)
+					screen.show(sName)
 			
 
 	# Both cut from CvMainInterface.updateScoreStrings
