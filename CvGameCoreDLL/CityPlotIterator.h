@@ -8,7 +8,7 @@
 #include "CvMap.h"
 #include "CvCity.h"
 
-/*  Iterator over the CvPlot objects in the city radius around a plot in the center.
+/*  Iterator over the CvPlot instances in the city radius around a plot in the center.
 	NULL plots - plots whose coordinates are past the edges of the map - are skipped.
 	Dereferencing the iterator yields a CvPlot reference. For accessing the city plot id
 	(see aaiXYCityPlot in CvGlobals::init), use the currID function.

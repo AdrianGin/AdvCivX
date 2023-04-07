@@ -2389,7 +2389,7 @@ void CvGame::normalizeAddExtras(/* advc.027: */ NormalizationTarget const* pTarg
 					if (!kLoopPlot.canHaveFeature(eLoopFeature))
 						continue;
 					// <advc.108> (Partly duplicated in the second extra feature loop)
-					CvFeatureInfo const& kFeature = GC.getFeatureInfo(eLoopFeature);
+					CvFeatureInfo const& kFeature = GC.getInfo(eLoopFeature);
 					bool bFood = (kFeature.getYieldChange(YIELD_FOOD) > 0);
 					bool bProduction = (kFeature.getYieldChange(YIELD_PRODUCTION) > 0);
 					if ((!bFood && !bProduction) ||

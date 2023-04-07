@@ -413,19 +413,19 @@ void CvPlot::doImprovement()
 		Makes clearer which conditions are ensured by the caller. */
 	if (!isImproved())
 		return;
-	ImprovementTypes eImprovementUpdrade = GC.getInfo(getImprovementType()).
+	ImprovementTypes eImprovementUpgrade = GC.getInfo(getImprovementType()).
 			getImprovementUpgrade();
-	if (eImprovementUpdrade != NO_IMPROVEMENT)
+	if (eImprovementUpgrade != NO_IMPROVEMENT)
 	{
 		/*	advc: Caller already ensures isBeingWorked (and isOwned()).
 			In other words, improvement upgrades outside of borders
 			aren't correctly implemented, and I'm not going to fix that. */
-		//if (isBeingWorked() || GC.getInfo(eImprovementUpdrade).isOutsideBorders())
+		//if (isBeingWorked() || GC.getInfo(eImprovementUpgrade).isOutsideBorders())
 		changeUpgradeProgress(kOwner.getImprovementUpgradeRate());
 		if (getUpgradeProgress() >= GC.getGame().
 			getImprovementUpgradeTime(getImprovementType()) * 100)
 		{
-			setImprovementType(eImprovementUpdrade);
+			setImprovementType(eImprovementUpgrade);
 		}
 	}
 }

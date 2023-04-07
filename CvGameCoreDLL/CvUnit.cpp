@@ -5492,7 +5492,8 @@ bool CvUnit::spread(ReligionTypes eReligion)
 		if (pCity->getTeam() != getTeam())
 			iSpreadProb /= 2;
 		bool bSuccess;
-		iSpreadProb += (((GC.getNumReligionInfos() - pCity->getReligionCount()) * (100 - iSpreadProb)) / GC.getNumReligionInfos());*/ // BtS
+		iSpreadProb += ((100 - iSpreadProb)*(GC.getNumReligionInfos() - pCity->getReligionCount())) /
+				GC.getNumReligionInfos();*/ // BtS
 		// K-Mod. A more dynamic formula
 		int const iPresentReligions = pCity->getReligionCount();
 		int const iMissingReligions = GC.getNumReligionInfos() - iPresentReligions;

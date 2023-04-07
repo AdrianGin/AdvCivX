@@ -5808,8 +5808,7 @@ void CvGameTextMgr::setCityBarHelp(CvWStringBuffer &szString, CvCity const& kCit
 }
 
 /*  advc.101: Similar to code added in CvDLLWidgetData::parseNationalityHelp;
-	replacing BULL's "Revolt Chance" code (which has never been merged into
-	K-Mod/AdvCiv). */
+	replacing BULL's "Revolt Chance" code (which was never merged into K-Mod/AdvCiv). */
 void CvGameTextMgr::setRevoltHelp(CvWStringBuffer &szString, CvCity const& kCity)
 {
 	if (!kCity.getPlot().isActiveVisible(true))
