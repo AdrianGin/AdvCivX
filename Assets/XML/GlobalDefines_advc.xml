@@ -1372,4 +1372,14 @@
 		<iDefineIntVal>1</iDefineIntVal>
 	</Define>
 
+	<!-- advc.119: Set to 1 to allow workers to chop Forest and Jungle on
+		 unowned tiles. This restores the BtS rule - except that BtS also
+		 allows chopping on hostile tiles when at war. 0 allows chopping
+		 only on tiles owned by the worker's owner or by a teammate
+		 (recommended in order to slow down global deforestation a bit). -->
+	<Define>
+		<DefineName>CAN_CHOP_UNOWNED_FEATURES</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+
 </Civ4Defines>

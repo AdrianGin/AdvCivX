@@ -2295,17 +2295,21 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible,
 		if (bPyOverride)
 			return bCanBuild;
 	}
+	TeamTypes const eTeam = TEAMID(ePlayer);
 	bool bValid = false;
+	// <advc.181>
+	TeamTypes const ePlotTeam = (bIgnoreFoW ? getTeam() :
+			getRevealedTeam(eTeam, false)); // </advc.181>
 	ImprovementTypes const eImprovement = GC.getInfo(eBuild).getImprovement();
 	if (eImprovement != NO_IMPROVEMENT)
 	{
-		if (!canHaveImprovement(eImprovement, TEAMID(ePlayer), bTestVisible,
+		if (!canHaveImprovement(eImprovement, eTeam, bTestVisible,
 			eBuild, false)) // kekm.9
 		{
 			return false;
 		}
 		ImprovementTypes const eOldImprov = (bIgnoreFoW ? getImprovementType() :
-				getRevealedImprovementType(TEAMID(ePlayer)));
+				getRevealedImprovementType(eTeam));
 		if (eOldImprov != NO_IMPROVEMENT) // advc.181
 		//if (isImproved())
 		{
@@ -2323,12 +2327,12 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible,
 		}
 		if (!bTestVisible)
 		{
-			if (TEAMID(ePlayer) != getTeam())
+			if (eTeam != ePlotTeam)
 			{
 				//outside borders can't be built in other's culture
 				if (GC.getInfo(eImprovement).isOutsideBorders())
 				{
-					if (getTeam() != NO_TEAM)
+					if (ePlotTeam != NO_TEAM)
 						return false;
 				}
 				else return false; //only buildable in own culture
@@ -2342,7 +2346,7 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible,
 	{
 		// <advc.181>
 		RouteTypes const eOldRoute = (bIgnoreFoW ? getRouteType() :
-				getRevealedRouteType(TEAMID(ePlayer)));
+				getRevealedRouteType(eTeam));
 		if (eOldRoute != NO_ROUTE) // </advc.181>
 		//if (isRoute())
 		{
@@ -2375,16 +2379,18 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible,
 		}
 		bValid = true;
 	}
-
 	if (isFeature())
 	{
 		if (GC.getInfo(eBuild).isFeatureRemove(getFeatureType()))
-		{	/*if (isOwned() && TEAMID(ePlayer) != getTeam() && !GET_TEAM(ePlayer).isAtWar(getTeam()))
+		{	/*if (isOwned() && eTeam != ePlotTeam && !GET_TEAM(eTeam).isAtWar(ePlotTeam))
 				return false;
 			bValid = true;*/
 			// <advc.119> Replacing the above
-			if(getTeam() == TEAMID(ePlayer))
+			if (ePlotTeam == eTeam || (ePlotTeam == NO_TEAM &&
+				GC.getDefineBOOL(CvGlobals::CAN_CHOP_UNOWNED_FEATURES)))
+			{
 				bValid = true;
+			}
 			else return false; // </advc.119>
 		}
 	}
