@@ -1666,6 +1666,13 @@ void CvGameTextMgr::setPlotListHelpPerOwner(CvWStringBuffer& szString,
 		iLineLimit--;
 	if(kPlot.isFreshWater())
 		iLineLimit--;
+	/*	<advc.101> (Can even take up 2 lines, but checking for that gets too complicated;
+		not checking MainInterface__RevoltHelp BUG option either.) */
+	if (kPlot.isCity() && kPlot.getTeam() == eActiveTeam &&
+		kPlot.getPlotCity()->revoltProbability() > 0)
+	{
+		iLineLimit--;
+	} // </advc.101>
 	for(int i = 0; i < MAX_PLAYERS; i++)
 	{
 		if(kPlot.calculateCulturePercent((PlayerTypes)i) > 0)
@@ -5824,6 +5831,8 @@ void CvGameTextMgr::setRevoltHelp(CvWStringBuffer &szString, CvCity const& kCity
 			kCity.cultureGarrison(eCulturalOwner) : -1);
 	int const iCultureStr = (bActiveOwned ?
 			kCity.cultureStrength(eCulturalOwner) : -1);
+	int iExcessStrength = 0;
+	CvUnit const* pSelectedUnit = gDLL->UI().getHeadSelectedUnit();
 	if (rRevoltProb > 0)
 	{
 		/*  CvCity::revoltProbability rounds probabilities that are too small to
@@ -5843,6 +5852,7 @@ void CvGameTextMgr::setRevoltHelp(CvWStringBuffer &szString, CvCity const& kCity
 			szString.append(gDLL->getText(
 					"TXT_KEY_GARRISON_STRENGTH_NEEDED_SHORT",
 					iGarrisonStrNeeded));
+			iExcessStrength = -iGarrisonStrNeeded;
 		}
 		int const iPriorRevolts = kCity.getNumRevolts();
 		if (kCity.canCultureFlip())
@@ -5873,8 +5883,7 @@ void CvGameTextMgr::setRevoltHelp(CvWStringBuffer &szString, CvCity const& kCity
 		eCulturalOwner != kCity.getOwner() && iGarrisonStr >= iCultureStr)
 	{
 		// Show it only when a local unit is selected? Eh ...
-		/*CvUnit* pSelectedUnit = gDLL->UI().getHeadSelectedUnit();
-		if (pSelectedUnit != NULL && pSelectedUnit->at(kPlot))*/
+		//if (pSelectedUnit != NULL && pSelectedUnit->at(kPlot))
 		{
 			int iSafeToRemove = iGarrisonStr - iCultureStr;
 			if (iSafeToRemove < iGarrisonStr)
@@ -5884,7 +5893,30 @@ void CvGameTextMgr::setRevoltHelp(CvWStringBuffer &szString, CvCity const& kCity
 				szString.append(gDLL->getText(
 						"TXT_KEY_GARRISON_STRENGTH_EXCESS_SHORT",
 						std::min(999, iSafeToRemove)));
+				iExcessStrength = iSafeToRemove;
 			}
+		}
+	}
+	if (iExcessStrength != 0 && pSelectedUnit != NULL)
+	{
+		int iSelected = 0;
+		int iSelectedStrength = 0;
+		FOR_EACH_UNIT_IN(pUnit, *gDLL->UI().getSelectionList())
+		{
+			int iStr = pUnit->garrisonStrength();
+			if (iStr != 0)
+			{
+				iSelectedStrength += iStr;
+				iSelected++;
+			}
+		}
+		if (iSelectedStrength != 0 && (iExcessStrength < 0 ||
+			pSelectedUnit->at(kCity.getPlot()))/* && iSelected > 1*/)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText(
+					"TXT_KEY_GARRISON_STRENGTH_SELECTED",
+					intdiv::uround(iSelectedStrength, 100)));
 		}
 	}
 }

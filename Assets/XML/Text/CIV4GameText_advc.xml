@@ -391,6 +391,14 @@
 		<Spanish>Ciudad puede rebelarse si &gt; %d1[ICON_STRENGTH] son retiradas</Spanish>
 	</TEXT>
 	<TEXT>
+		<Tag>TXT_KEY_GARRISON_STRENGTH_SELECTED</Tag>
+		<English>(Selected: %d1[ICON_STRENGTH])</English>
+		<French>%d1[ICON_STRENGTH] s&#233;lectionn&#233;es</French>
+		<German>%d1[ICON_STRENGTH] ausgewählt</German>
+		<Italian>%d1[ICON_STRENGTH] selezionate</Italian>
+		<Spanish>%d1[ICON_STRENGTH] seleccionadas</Spanish>
+	</TEXT>
+	<TEXT>
 		<Tag>TXT_KEY_INCREASED_BY_GRIEVANCE</Tag>
 		<English>Increased opposition due to</English>
 		<French>Opposition renforcée par</French>
