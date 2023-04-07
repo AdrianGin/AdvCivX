@@ -8776,7 +8776,9 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 			// Increase odds of defiance, particularly on AggressiveAI
 			if (iBestCivicValue * 100 >
 				iNewCivicValue * (140 + SyncRandNum(
-				kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ? 60 : 80)))
+				kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ? 60 : 80)) &&
+				// advc.118b: The absolute difference should very much matter too
+				iBestCivicValue - iNewCivicValue > AI_defianceAngerCost(eVoteSource))
 			{	// BETTER_BTS_AI_MOD: END
 				bDefy = true;
 			}
@@ -9393,6 +9395,19 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 		return PLAYER_VOTE_NEVER;
 
 	return (bValid ? PLAYER_VOTE_YES : PLAYER_VOTE_NO);
+}
+
+/*	advc.118b: Ideally, all defiance decisions should take this into account.
+	So far, only used for forced civics. Scale: 1 gold per turn.
+	The calculation corresponds to CvPlayer::setDefiedResolution and
+	CvCity::getDefyResolutionPercentAnger. */
+int CvPlayerAI::AI_defianceAngerCost(VoteSourceTypes eVS) const
+{
+	ReligionTypes const eVSReligion = GC.getGame().getVoteSourceReligion(eVS);
+	int iTotalCost = 0;
+	FOR_EACH_CITYAI(pCity, *this)
+		iTotalCost += pCity->AI_defianceAngerCost(eVSReligion);
+	return iTotalCost;
 }
 
 

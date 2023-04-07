@@ -3520,9 +3520,9 @@ int CvCity::getDefyResolutionPercentAnger(int iExtra) const
 	if (getDefyResolutionAngerTimer() == 0)
 		return 0;
 	// advc.opt:
-	static int const iDEFY_RESOLUTION_POP_ANGER = GC.getDefineINT("DEFY_RESOLUTION_POP_ANGER");
 	return 1 + (((((getDefyResolutionAngerTimer() - 1) / flatDefyResolutionAngerLength()) + 1) *
-			iDEFY_RESOLUTION_POP_ANGER * GC.getPERCENT_ANGER_DIVISOR()) /
+			GC.getDefineINT(CvGlobals::DEFY_RESOLUTION_POP_ANGER) *
+			GC.getPERCENT_ANGER_DIVISOR()) /
 			std::max(1, getPopulation() + iExtra));
 }
 
