@@ -17898,10 +17898,10 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 			/*iValue *= 5;
 			iValue /= 4;
 			iValue += 20;*/
-			/*	advc.131> The +20 might encourage Monarchy too much (AI_techValue).
+			/*	<advc.131> The +20 might encourage Monarchy too much (AI_techValue).
 				Also, early fav civics shouldn't need that much encouragement as
 				they have few alternatives. */
-			iValue *= 135;
+			iValue *= 133;
 			iValue /= 100; // </advc.131>
 			iValue += 6 * iCities;
 		}
