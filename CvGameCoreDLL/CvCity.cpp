@@ -3974,9 +3974,9 @@ int CvCity::hurryAngerLength(HurryTypes eHurry) const
 
 
 int CvCity::maxHurryPopulation() const
-{
-	return std::min(3, // advc.064c: Allow at most 3 pop to be sacrificed at once
-			getPopulation() / 2);
+{	// <advc.064c>
+	static int const iMAX_HURRY_POP = GC.getDefineINT("MAX_HURRY_POP");
+	return std::min(iMAX_HURRY_POP, /* </advc.064c> */ getPopulation() / 2);
 }
 
 

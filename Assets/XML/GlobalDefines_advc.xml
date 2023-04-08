@@ -1382,4 +1382,15 @@
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
+	<!-- advc.064c: Until AdvCiv 1.09, the number of citizens sacrificed in a
+		 single use of Slavery was capped at 3, even in cities with 8 or more
+		 population. Recommended: A high value such as 1000 to keep this cap
+		 disabled, meaning that up to half a city's population, rounded down,
+		 can be sacrificed as in BtS. Or 3 to restore the AdvCiv 1.08 behavior,
+		 i.e. an additional cap at 3 sacrificed citizens. -->
+	<Define>
+		<DefineName>MAX_HURRY_POP</DefineName>
+		<iDefineIntVal>1000</iDefineIntVal>
+	</Define>
+
 </Civ4Defines>
