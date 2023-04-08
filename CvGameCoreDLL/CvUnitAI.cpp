@@ -450,7 +450,7 @@ void CvUnitAI::AI_upgrade()
 
 	if (eBestUnit != NO_UNIT)
 	{
-		if (gUnitLogLevel > 0) logBBAI("    %S (unit %d - %S) upgrading to %S (value: %d)", getName().GetCString(), getID(), GC.getUnitAIInfo(AI_getUnitAIType()).getDescription(), GC.getUnitInfo(eBestUnit).getDescription(), iBestValue); // advc.mnai
+		if (gUnitLogLevel > 0) logBBAI("    %S (unit %d - %S) upgrading to %S (value: %d)", getName().GetCString(), getID(), GC.getUnitAIInfo(AI_getUnitAIType()).getDescription(), GC.getInfo(eBestUnit).getDescription(), iBestValue); // advc.mnai
 		/*upgrade(eBestUnit);
 		doDelayedDeath(); */ // BtS
 		// K-Mod. Ungroup the unit, so that we don't cause the whole group to miss their turn.
@@ -19699,7 +19699,7 @@ int CvUnitAI::AI_airStrikeValue(CvPlot const& kPlot, int iCurrentBest, bool& bBo
 			{	/*	(isRevealedCityHeal would use the same team
 					for the heal and visibility checks) */
 				ImprovementTypes eImprov = kPlot.getRevealedImprovementType(getTeam());
-				if (eImprov != NO_IMPROVEMENT && GC.getImprovementInfo(eImprov).isActsAsCity())
+				if (eImprov != NO_IMPROVEMENT && GC.getInfo(eImprov).isActsAsCity())
 				{	// </advc>
 					iStrikeValue *= 3;
 					iStrikeValue /= 4;

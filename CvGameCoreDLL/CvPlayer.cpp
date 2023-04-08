@@ -713,7 +713,7 @@ void CvPlayer::changeLeader(LeaderHeadTypes eNewLeader,
 	GC.getInitCore().setLeader(getID(), eNewLeader);
 	// <advc.tsl>
 	if (bChangeName && (!isHuman() || // Preserve human custom name
-		wcscmp(getName(), GC.getLeaderHeadInfo(eOldLeader).getDescription()) == 0))
+		wcscmp(getName(), GC.getInfo(eOldLeader).getDescription()) == 0))
 	{
 		CvWString szEmpty; // Means that leaderhead description gets used
 		GC.getInitCore().setLeaderName(getID(), szEmpty);

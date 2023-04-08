@@ -2245,8 +2245,8 @@ void CvGame::updateSeaPatrolColors(CvUnit const& kSelectedUnit)
 		if (kSelectedUnit.canReachBySeaPatrol(*itPlot))
 		{
 			gDLL->getEngineIFace()->fillAreaBorderPlot(itPlot->getX(), itPlot->getY(),
-					GC.getColorInfo(GC.getInfoTypeForString("COLOR_CITY_BLUE")).getColor(),
-					AREA_BORDER_LAYER_PATROLLED);
+					GC.getInfo((ColorTypes)GC.getInfoTypeForString("COLOR_CITY_BLUE")).
+					getColor(), AREA_BORDER_LAYER_PATROLLED);
 		}
 	}
 }

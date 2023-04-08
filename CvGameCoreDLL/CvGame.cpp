@@ -2364,7 +2364,7 @@ void CvGame::normalizeAddExtras(/* advc.027: */ NormalizationTarget const* pTarg
 		{
 			if (itPlot->isFeature())
 			{
-				CvFeatureInfo const& kFeature = GC.getFeatureInfo(itPlot->getFeatureType());
+				CvFeatureInfo const& kFeature = GC.getInfo(itPlot->getFeatureType());
 				if (kFeature.getYieldChange(YIELD_FOOD) > 0)
 					iFoodFeatures++;
 				if (kFeature.getYieldChange(YIELD_PRODUCTION) > 0)
@@ -2532,9 +2532,9 @@ void CvGame::normalizeAddExtras(/* advc.027: */ NormalizationTarget const* pTarg
 						if (p.isFeature() &&
 							//iFeatureCount > 4 &&
 							// <advc.108> Don't clear food features
-							GC.getFeatureInfo(p.getFeatureType()).
+							GC.getInfo(p.getFeatureType()).
 							getYieldChange(YIELD_FOOD) <= 0 &&
-							(GC.getFeatureInfo(p.getFeatureType()).
+							(GC.getInfo(p.getFeatureType()).
 							getYieldChange(YIELD_PRODUCTION) <= 0 ||
 							// Don't clear production features if they're scarce
 							iProductionFeatures >= 4) && // </advc.108>
@@ -2572,7 +2572,7 @@ void CvGame::normalizeAddExtras(/* advc.027: */ NormalizationTarget const* pTarg
 				if (!p.canHaveFeature(eLoopFeature))
 					continue;
 				// <advc.108> (Similar to the first place-feature loop)
-				CvFeatureInfo const& kFeature = GC.getFeatureInfo(eLoopFeature);
+				CvFeatureInfo const& kFeature = GC.getInfo(eLoopFeature);
 				bool bFood = (kFeature.getYieldChange(YIELD_FOOD) > 0);
 				bool bProduction = (kFeature.getYieldChange(YIELD_PRODUCTION) > 0);
 				if ((!bFood && !bProduction) ||

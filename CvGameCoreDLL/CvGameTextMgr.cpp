@@ -5782,7 +5782,7 @@ void CvGameTextMgr::setCityBarHelp(CvWStringBuffer &szString, CvCity const& kCit
 				FAssert(eMode == DISPLAY_ICONS);
 				// BULL - Building Icons - start (advc: BULL had used size 24)
 				szTempBuffer.Format(L"<img=%S size=32></img>",
-						GC.getBuildingInfo(aszeBuildingsByName[i].second).getButton());
+						GC.getInfo(aszeBuildingsByName[i].second).getButton());
 				setListHelp(szString, NEWLINE, szTempBuffer, L"", bFirst);
 				// BULL - Building Icons - end
 			}
@@ -7124,7 +7124,7 @@ void CvGameTextMgr::parseSingleCivicRevealHelp(CvWStringBuffer& szBuffer, CivicT
 {
 	szBuffer.append(CvWString::format(SETCOLR L"%s" ENDCOLR,
 			TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),
-			GC.getCivicInfo(eCivic).getDescription()));
+			GC.getInfo(eCivic).getDescription()));
 	CvWStringBuffer szCivicHelp;
 	GAMETEXT.parseCivicInfo(szCivicHelp, eCivic,
 			true, true, true); // bCiviliopedia=true to hide tech prereq
@@ -18071,7 +18071,7 @@ void CvGameTextMgr::parseGreatPeopleHelp(CvWStringBuffer &szBuffer, CvCity const
 			{
 				iRate += (kCity.getSpecialistCount(eLoopSpecialist) +
 						kCity.getFreeSpecialistCount(eLoopSpecialist)) *
-						GC.getSpecialistInfo(eLoopSpecialist).getGreatPeopleRateChange();
+						GC.getInfo(eLoopSpecialist).getGreatPeopleRateChange();
 			}
 			if (iRate > 0)
 			{
@@ -18095,7 +18095,7 @@ void CvGameTextMgr::parseGreatPeopleHelp(CvWStringBuffer &szBuffer, CvCity const
 					!GET_TEAM(kCity.getTeam()).isObsoleteBuilding(eBuilding))
 				{
 					iRate += kCity.getNumBuilding(eBuilding) *
-							GC.getBuildingInfo(eBuilding).getGreatPeopleRateChange();
+							GC.getInfo(eBuilding).getGreatPeopleRateChange();
 				}
 			}
 			if (iRate > 0)

@@ -8466,7 +8466,7 @@ bool CvCity::is##Order##ProductionDecay(Order##Types e##Order) const \
 			get##Order##Production(e##Order) > 0 && \
 			100 * get##Order##ProductionTime(e##Order) >= \
 			GC.getDefineINT(CvGlobals::ORDER##_PRODUCTION_DECAY_TIME) * \
-			GC.getGameSpeedInfo(GC.getGame().getGameSpeedType()).get##Verb##Percent()); \
+			GC.getInfo(GC.getGame().getGameSpeedType()).get##Verb##Percent()); \
 } \
 \
 /*	Returns the amount by which the given order will decay once it reaches the limit. */ \
@@ -8485,7 +8485,7 @@ int CvCity::get##Order##ProductionDecayTurns(Order##Types e##Order) const \
 	return 1 + std::max(0, \
 			intdiv::uceil( \
 			GC.getDefineINT(CvGlobals::ORDER##_PRODUCTION_DECAY_TIME) * \
-			GC.getGameSpeedInfo(GC.getGame().getGameSpeedType()).get##Verb##Percent(), \
+			GC.getInfo(GC.getGame().getGameSpeedType()).get##Verb##Percent(), \
 			100) \
 			- get##Order##ProductionTime(e##Order)); \
 }

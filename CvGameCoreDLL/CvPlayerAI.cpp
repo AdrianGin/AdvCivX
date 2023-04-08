@@ -15918,7 +15918,7 @@ int CvPlayerAI::AI_corporationValue(CorporationTypes eCorporation,
 // advc.121:
 void CvPlayerAI::AI_processNewBuild(BuildTypes eBuild)
 {
-	bool const bRoute = (GC.getBuildInfo(eBuild).getRoute() != NO_ROUTE);
+	bool const bRoute = (GC.getInfo(eBuild).getRoute() != NO_ROUTE);
 	FOR_EACH_CITYAI_VAR(pCity, *this)
 	{
 		pCity->AI_updateBestBuild();
@@ -22827,7 +22827,7 @@ scaled CvPlayerAI::AI_targetAmortizationTurns() const
 			kStartEra.getConstructPercent() +
 			kStartEra.getTrainPercent(), 400);
 	{
-		CvHandicapInfo const& kHandicap = GC.getHandicapInfo(getHandicapType());
+		CvHandicapInfo const& kHandicap = GC.getInfo(getHandicapType());
 		r *= scaled(kHandicap.getResearchPercent() +
 			kHandicap.getConstructPercent() +
 			kHandicap.getTrainPercent(), 300);
@@ -25124,7 +25124,7 @@ bool CvPlayerAI::AI_isDoStrategy(AIStrategy eStrategy, /* advc.007: */ bool bDeb
 // advc.erai: Cached for performance
 void CvPlayerAI::AI_updateEraFactor()
 {
-	m_rCurrEraFactor = per100(GC.getEraInfo(getCurrentEra()).get(CvEraInfo::AIEraFactor));
+	m_rCurrEraFactor = per100(GC.getInfo(getCurrentEra()).get(CvEraInfo::AIEraFactor));
 }
 
 // K-Mod. Macros to help log changes in the AI strategy.
