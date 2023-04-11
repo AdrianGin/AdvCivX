@@ -171,6 +171,42 @@ void CvArtFileMgr::buildArtFileInfoMaps()
 {
 	for(size_t i = 0; i < m_artInfoItems.size(); i++)
 		m_artInfoItems[i]->buildMap();
+	testThemePath(); // advc.002b
+}
+
+// advc.002b: (The install location gets checked by CvGlobals::testInstallLocation)
+void CvArtFileMgr::testThemePath()
+{
+	std::string sThmPath = getMiscArtPath("DEFAULT_THEME_NAME");
+	size_t posMods = sThmPath.find("Mods/");
+	size_t posRes = sThmPath.find("/Resource");
+	std::string sModName = GC.getModName().getName();
+	if (posMods == std::string::npos || posRes == std::string::npos)
+	{
+		/*	Has apparently been edited by the user - possibly reverted to the
+			BtS theme, which is fine. */
+		return;
+	}
+	std::string sThmPathModName = sThmPath.substr(posMods + 5, posRes - 5);
+	// Temp. copy for lower case - the mod name isn't case-sensitive.
+	std::string sModNameLC = sModName;
+	if (cstring::tolower(sThmPathModName) == sModNameLC)
+		return;
+	CvString sMsg = "The DEFAULT_THEME_NAME path set in\n"
+			"Mods\\";
+	sMsg += sModName;
+	sMsg += "\\Assets\\XML\\CIV4ArtDefines_Misc.xml\n"
+			"does not appear to match the name of the mod folder.\n"
+			"If you've renamed the mod folder, the name also needs\n"
+			"to be changed in CIV4ArtDefines_Misc.xml and (twice) in\n"
+			"Mods\\";
+	sMsg += sModName;
+	sMsg += "\\Resource\\Civ4.thm - otherwise,\n"
+			"the UI theme will probably fail to load.\n";
+	char szMessage[1024];
+	sprintf(szMessage, sMsg);
+	CvString sHeading = "Invalid path to UI theme";
+	gDLL->MessageBox(szMessage, sHeading);
 }
 
 // advc.095: Hack for getting the EXE to switch between wide and narrow city bars

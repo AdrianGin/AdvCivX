@@ -74,6 +74,7 @@ public:
 	DllExport void init();
 	DllExport void uninit();
 	void clearTypesMap();
+	void testInstallLocation(); // advc.002b
 
 	DllExport CvDiplomacyScreen* getDiplomacyScreen();
 	DllExport CMPDiplomacyScreen* getMPDiplomacyScreen();
