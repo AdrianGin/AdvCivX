@@ -24,7 +24,7 @@ namespace cstring
 		for (size_t i = 0; i < s.length(); i++)
 			s[i] = static_cast<char>(::tolower(s[i]));
 		return s;
-		}
+	}
 }
 
 // wide string
