@@ -190,7 +190,7 @@ void CvArtFileMgr::testThemePath()
 	std::string sThmPathModName = sThmPath.substr(posMods + 5, posRes - 5);
 	// Temp. copy for lower case - the mod name isn't case-sensitive.
 	std::string sModNameLC = sModName;
-	if (cstring::tolower(sThmPathModName) == sModNameLC)
+	if (cstring::tolower(sThmPathModName) == cstring::tolower(sModNameLC))
 		return;
 	CvString sMsg = "The DEFAULT_THEME_NAME path set in\n"
 			"Mods\\";
