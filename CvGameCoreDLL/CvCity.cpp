@@ -9761,6 +9761,11 @@ void CvCity::popOrder(int iNum, bool bFinish,
 	case ORDER_TRAIN:
 	{
 		eTrainUnit = (UnitTypes)pOrderNode->m_data.iData1;
+		/*	<advc.064b> Moved into new function, and moved up to ensure that the
+			next order isn't already being produced when calculating production
+			modifiers for the overflow cap. */
+		handleOverflow(getUnitProduction(eTrainUnit) - getProductionNeeded(eTrainUnit),
+				getProductionModifier(eTrainUnit), eOrderType); // </advc.064b>
 		UnitAITypes eTrainAIUnit = (UnitAITypes)pOrderNode->m_data.iData2;
 		FAssert(eTrainUnit != NO_UNIT);
 		FAssert(eTrainAIUnit != NO_UNITAI);
@@ -9774,11 +9779,8 @@ void CvCity::popOrder(int iNum, bool bFinish,
 		doPopOrder(pOrderNode); // advc.064d (see case ORDER_CONSTRUCT)
 		if(!bFinish)
 			break;
-		// <advc.064b> Moved into new function
-		handleOverflow(getUnitProduction(eTrainUnit) - getProductionNeeded(eTrainUnit),
-				getProductionModifier(eTrainUnit), eOrderType);
-		// 14 March 2019: K-Mod multi-production code removed (including bugfix advc.001v)
-		// Instead restored (two lines):
+		/*	<advc.064b> 14 March 2019: K-Mod multi-production code removed
+			(including bugfix advc.001v). Instead restored (two lines): */
 		setUnitProduction(eTrainUnit, 0);
 		setUnitProductionTime(eTrainUnit, 0); // EmperorFool, Bugfix, 06/10/10
 		// </advc.064b>
@@ -9830,6 +9832,11 @@ void CvCity::popOrder(int iNum, bool bFinish,
 	case ORDER_CONSTRUCT:
 	{
 		eConstructBuilding = (BuildingTypes)pOrderNode->m_data.iData1;
+		// <advc.064b> Moved into new function (and moved up)
+		handleOverflow(getBuildingProduction(eConstructBuilding) -
+				getProductionNeeded(eConstructBuilding),
+				getProductionModifier(eConstructBuilding), eOrderType);
+		// </advc.064b>
 		BuildingClassTypes eBuildingClass = GC.getInfo(eConstructBuilding).getBuildingClassType();
 		kOwner.changeBuildingClassMaking(eBuildingClass, -1);
 		CvBuildingClassInfo const& kConstructClass = GC.getInfo(eBuildingClass);
@@ -9846,11 +9853,6 @@ void CvCity::popOrder(int iNum, bool bFinish,
 		}
 		setNumRealBuilding(eConstructBuilding, getNumRealBuilding(eConstructBuilding) + 1,
 				bEndOfTurn); // advc.001x
-		// <advc.064b> Moved into new function
-		handleOverflow(getBuildingProduction(eConstructBuilding) -
-				getProductionNeeded(eConstructBuilding),
-				getProductionModifier(eConstructBuilding), eOrderType);
-		// </advc.064b>
 		setBuildingProduction(eConstructBuilding, 0);
 		setBuildingProductionTime(eConstructBuilding, 0); // Bugfix, 06/10/10, EmperorFool
 		// <advc.123f>
@@ -9867,6 +9869,11 @@ void CvCity::popOrder(int iNum, bool bFinish,
 	case ORDER_CREATE:
 	{
 		eCreateProject = (ProjectTypes)pOrderNode->m_data.iData1;
+		// <advc.064b> Moved into new function (and moved up)
+		handleOverflow(getProjectProduction(eCreateProject) -
+				getProductionNeeded(eCreateProject),
+				getProductionModifier(eCreateProject), eOrderType);
+		// </advc.064b>
 		GET_TEAM(getTeam()).changeProjectMaking(eCreateProject, -1);
 		doPopOrder(pOrderNode); // advc.064d
 		if(!bFinish)
@@ -9920,11 +9927,6 @@ void CvCity::popOrder(int iNum, bool bFinish,
 				GET_TEAM(getTeam()).setProjectArtType(eCreateProject, iProjectCount - 1, iDefaultArtType);
 			}
 		}
-		// <advc.064b> Moved into new function
-		handleOverflow(getProjectProduction(eCreateProject) -
-				getProductionNeeded(eCreateProject),
-				getProductionModifier(eCreateProject), eOrderType);
-		// </advc.064b>
 		setProjectProduction(eCreateProject, 0);
 		// <advc.123f>
 		if(GC.getGame().isProjectMaxedOut(eCreateProject))
