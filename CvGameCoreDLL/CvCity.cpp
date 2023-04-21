@@ -10453,6 +10453,32 @@ void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
 		{
 			rCultureToAdd *= rCultureToMaster;
 		} // </advc.025>
+		// <advc.098> Don't spread too deep into foreign territory
+		if (rCultureToAdd > 0 && p.getOwner() != getOwner())
+		{
+			int const iDistToOwnedCap = plotCultureExtraRange() + 2;
+			int iDistToOwned = iDistToOwnedCap;
+			for (PlotCircleIter itInnerLoopPlot(p, iDistToOwned - 1, false);
+				itInnerLoopPlot.hasNext(); ++itInnerLoopPlot)
+			{
+				if (itInnerLoopPlot.currPlotDist() < iDistToOwned)
+				{
+					if (itInnerLoopPlot->getOwner() == getOwner())
+						iDistToOwned = itInnerLoopPlot.currPlotDist();
+				}
+				/*	Take advantage of the iterator's spiral pattern to
+					cancel the search asap */
+				else if (itInnerLoopPlot.currPlotDist() > iDistToOwned)
+					break;
+			}
+			if (iDistToOwned >= plotCultureExtraRange())
+			{
+				if (iDistToOwned >= iDistToOwnedCap)
+					continue;
+				rCultureToAdd *= scaled(iDistToOwnedCap - iDistToOwned,
+						iDistToOwnedCap - iDistToOwned + 1);
+			}
+		} // </advc.098>
 		// <kekm.23> Loss of tile culture upon city trade
 		if (rCultureToAdd.isNegative())
 			rCultureToAdd.increaseTo(-p.getCulture(ePlayer)); // </kekm.23>
