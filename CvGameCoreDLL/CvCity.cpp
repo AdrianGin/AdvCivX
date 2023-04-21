@@ -2569,7 +2569,7 @@ int CvCity::overflowCapacity(int iProductionModifier, int iPopulationChange) con
 	// New: Take out build-specific modifiers
 	iBound1 = unmodifyOverflow(iBound1, iProductionModifier);
 	// Was the production cost of the completed order in BtS/K-Mod
-	int iBound2 = growthThreshold(iPopulationChange);
+	int iBound2 = growthThreshold(iPopulationChange, true);
 	return std::max(iBound1, iBound2);
 }
 
@@ -3798,10 +3798,11 @@ int CvCity::foodDifference(bool bBottom, bool bIgnoreProduction) const
 }
 
 
-int CvCity::growthThreshold(/* advc.064b: */ int iPopulationChange) const
+int CvCity::growthThreshold(/* <advc.064b> */ int iPopulationChange,
+	bool bIgnoreModifiers) const // </advc.064b>
 {
 	return (GET_PLAYER(getOwner()).getGrowthThreshold(getPopulation()
-			+ iPopulationChange)); // advc.064b
+			+ iPopulationChange, bIgnoreModifiers)); // advc.064b
 }
 
 

@@ -275,7 +275,8 @@ public:
 	int healthRate(bool bNoAngry = false, int iExtra = 0) const;												// Exposed to Python
 	int foodConsumption(bool bNoAngry = false, int iExtra = 0) const;											// Exposed to Python
 	int foodDifference(bool bBottom = true, bool bIgnoreProduction = false) const;	// Exposed to Python, K-Mod added bIgnoreProduction
-	int growthThreshold(/* advc.064b: */int iPopulationChange = 0) const;										// Exposed to Python
+	int growthThreshold(/* <advc.064b> */int iPopulationChange = 0,												// Exposed to Python
+			bool bIgnoreModifiers = false) const; // </advc.064b>
 
 	int productionLeft() const { return (getProductionNeeded() - getProduction()); }							// Exposed to Python
 	int hurryCost(bool bExtra) const																			// Exposed to Python

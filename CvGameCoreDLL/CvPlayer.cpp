@@ -18409,7 +18409,8 @@ int CvPlayer::getNewCityProductionValue() const
 }
 
 
-int CvPlayer::getGrowthThreshold(int iPopulation) const
+int CvPlayer::getGrowthThreshold(int iPopulation,
+	bool bIgnoreModifiers) const // advc.064b
 {
 	CvGame const& kGame = GC.getGame(); // advc
 	// <advc.251>
@@ -18419,19 +18420,22 @@ int CvPlayer::getGrowthThreshold(int iPopulation) const
 			GC.getInfo(getHandicapType()).getBaseGrowthThresholdPercent())).uround();
 	int iThreshold = iBaseThreshold + // </advc.251>
 			(iPopulation * iCITY_GROWTH_MULTIPLIER);
-	// <advc.251>
-	int iAIModifier = 100;
-	if (!isHuman()) // Also apply it to Barbarians
+	if (!bIgnoreModifiers) // advc.064b
 	{
-		CvHandicapInfo const& h = GC.getInfo(kGame.getHandicapType());
-		iAIModifier = h.getAIGrowthPercent() +
-				//h.getAIPerEraModifier() * getCurrentEra()
-				kGame.AIHandicapAdjustment();
-	} // Reduce rounding error:
-	iThreshold = (iThreshold * per100(iAIModifier) *
-			per100(GC.getInfo(kGame.getGameSpeedType()).getGrowthPercent()) *
-			per100(GC.getInfo(kGame.getStartEra()).getGrowthPercent())).round();
-	// </advc.251>
+		// <advc.251>
+		int iAIModifier = 100;
+		if (!isHuman()) // Also apply it to Barbarians
+		{
+			CvHandicapInfo const& h = GC.getInfo(kGame.getHandicapType());
+			iAIModifier = h.getAIGrowthPercent() +
+					//h.getAIPerEraModifier() * getCurrentEra()
+					kGame.AIHandicapAdjustment();
+		} // Reduce rounding error:
+		iThreshold = (iThreshold * per100(iAIModifier) *
+				per100(GC.getInfo(kGame.getGameSpeedType()).getGrowthPercent()) *
+				per100(GC.getInfo(kGame.getStartEra()).getGrowthPercent())).round();
+		// </advc.251>
+	}
 	return std::max(1, iThreshold);
 }
 

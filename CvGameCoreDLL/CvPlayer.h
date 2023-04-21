@@ -1415,7 +1415,8 @@ public:
 	bool canSpiesEnterBorders(PlayerTypes ePlayer) const;
 	int getNewCityProductionValue() const;
 
-	int getGrowthThreshold(int iPopulation) const;
+	int getGrowthThreshold(int iPopulation,
+			bool bIgnoreModifiers = false) const; // advc.064b
 
 	void verifyUnitStacksValid();
 	UnitTypes getTechFreeUnit(TechTypes eTech) const;
