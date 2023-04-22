@@ -846,7 +846,12 @@ class CvMainInterface:
 				iPlotListUnitBtnSz)
 		gSetRect("DefaultHelpArea", "Top",
 				HSPACE(7),
-				-(VSPACE(5) + gRect("CenterBottomPanel").height() + self.plotListUnitButtonSize()),
+				# Turns out that this overlaps with the lower left corner on very high resolutions
+				#-(VSPACE(5) + gRect("CenterBottomPanel").height() + self.plotListUnitButtonSize())
+				# BtS leaves some space here, but we want the text area as low as possible
+				# to maximize the amount of text we can display (while also having tall corners
+				# for the sake of a large minimap).
+				gRect("LowerLeftCornerBackgr").y(),
 				# Default area will actually ignore this, but it's relevant
 				# for the PLE Info Pane.
 				gRect("LowerLeftCorner").width() + HLEN(6), 0)
