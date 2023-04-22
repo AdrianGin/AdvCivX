@@ -481,7 +481,7 @@ class CvMainInterface:
 		gSetRectangle("Top", RectLayout(None, 0, 0, self.xResolution, self.yResolution))
 		self.bScaleHUD = MainOpt.isEnlargeHUD()
 		if self.bScaleHUD:
-			# Divide by the aspects that the original HUD works was (presumably)
+			# Divide by the aspects that the original HUD was (presumably)
 			# optimized for.
 			xRatio = math.pow(self.xResolution / 1024.0, 0.4)
 			yRatio = math.pow(self.yResolution / 768.0, 0.4)
