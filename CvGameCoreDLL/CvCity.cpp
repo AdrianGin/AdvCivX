@@ -10464,8 +10464,12 @@ void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
 			{
 				if (itInnerLoopPlot.currPlotDist() < iDistToOwned)
 				{
-					if (itInnerLoopPlot->getOwner() == getOwner())
+					if (itInnerLoopPlot->getOwner() == getOwner() ||
+						// Needed when the city is just being founded
+						&*itInnerLoopPlot == plot())
+					{
 						iDistToOwned = itInnerLoopPlot.currPlotDist();
+					}
 				}
 				/*	Take advantage of the iterator's spiral pattern to
 					cancel the search asap */
