@@ -847,7 +847,8 @@ class CvMainInterface:
 				iPlotListUnitBtnSz)
 		gSetRect("DefaultHelpArea", "Top",
 				HSPACE(7),
-				# Turns out that this overlaps with the lower left corner on very high resolutions
+				# (The center bottom panel doesn't fully scale up, so we shouldn't
+				# use that as our point of reference.)
 				#-(VSPACE(5) + gRect("CenterBottomPanel").height() + self.plotListUnitButtonSize())
 				# BtS leaves some space here, but we want the text area as low as possible
 				# to maximize the amount of text we can display (while also having tall corners
@@ -2013,10 +2014,13 @@ class CvMainInterface:
 	def bottomListBtnSize(self):
 # BUG - Build/Action Icon Size - start
 		if MainOpt.isBuildIconSizeLarge():
-			return 64
+			iSize = 64
 		elif MainOpt.isBuildIconSizeMedium():
-			return 48
-		return 36
+			iSize = 48
+		else:
+			iSize = 36
+		# advc.092: Also apply some HUD scaling
+		return BTNSZ(iSize, 0.7)
 # BUG - Build/Action Icon Size - end
 
 	def updateBottomButtonList(self):
@@ -2025,8 +2029,6 @@ class CvMainInterface:
 		# EF: minimum icon size for disabled buttons to work is 33 so these sizes won't fly
 		# iButtonSize=32, iHeight=102
 		# iButtonSize=24, iHeight=104
-		# advc.092: Apply only some HUD scaling
-		iButtonSize = BTNSZ(iButtonSize, 0.75)
 		# advc: I don't know why the BUG heights were chosen.
 		# I think they should be multiples of the button size. That was
 		# almost exactly the case for the three button sizes above 33.
@@ -3446,7 +3448,7 @@ class CvMainInterface:
 							# (Safety margin - seems that MultiListControl can't use its entire width.)
 							-10) / self.bottomListBtnSize())
 					# Can display any number of them, but we don't want a scrollbar.
-					iMaxRows = int((gRect("BottomButtonList").height() - 5) /
+					iMaxRows = int(gRect("BottomButtonList").height() /
 							self.bottomListBtnSize())
 					iRow0Count = 0
 					iRow1Count = 0
