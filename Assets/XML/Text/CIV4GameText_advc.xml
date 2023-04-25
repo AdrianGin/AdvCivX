@@ -7028,4 +7028,24 @@
 		<Spanish>[COLOR_POSITIVE_TEXT]&lt;Ctrl&gt;[COLOR_REVERT] destruye %s1_Structure en lugar</Spanish>
 	</TEXT>
 
+	<!-- advc.001: These two Spanish translations (originally in
+		 Civ4GameText_Misc1.xml) were accessing nonexistent params.
+		 Fixed translations by BristonXII. -->
+	<TEXT> <!-- redefine -->
+		<Tag>TXT_KEY_COMBAT_MESSAGE_HIT</Tag>
+		<English>%[s1_CivName]'s %[s2_UnitName] is hit for %[d3_damage] (%[d4]/%[d5]HP)</English>
+		<French>Les %[s1_CivName] (%[s2_UnitName] infligent %[d3] points de d&#233;g&#226;ts (%[d4]/%[d5]PV)) !</French>
+		<German>%[s1_CivName]s Einheit %[s2_UnitName] f&#252;gt Einheit %[d3] (%[d4]/%[d5]TP)</German>
+		<Italian>L'unit&#224; %[s2_UnitName] dell'%[s1_CivName] viene colpita subendo %[d3] punti di danno (%[d4]/%[d5]PV)</Italian>
+		<Spanish>%[s2_UnitName] de %[s1_CivName] ha recibido %[d3_damage] puntos de da&#241;o (%[d4]/%[d5]HP).</Spanish>
+	</TEXT>
+	<TEXT> <!-- redefine -->
+		<Tag>TXT_KEY_COMBAT_MESSAGE_DEFEATED</Tag>
+		<English>%[s1_CivName]'s %[s2_UnitName] has defeated %[s3_CivName]'s %[s4_UnitName]!</English>
+		<French>Les %[s1_CivName] (%[s2_UnitName]) ont vaincu l'unit&#233; des %[s3_CivName] (%[s4_UnitName]) !</French>
+		<German>%[s1_CivName]s Einheit %[s2_UnitName] hat %[s3_CivName]s Einheit %[s4_UnitName] besiegt!</German>
+		<Italian>L'unit&#224; %[s2_UnitName] dell'%[s1_CivName] ha sconfitto l'unit&#224; %[s4_UnitName] dell'%[s3_CivName]!</Italian>
+		<Spanish>&#161;%[s2_UnitName] de %[s1_CivName] ha vencido a %[s4_UnitName] de %[s3_CivName]!</Spanish>
+	</TEXT>
+
 </Civ4GameText>
