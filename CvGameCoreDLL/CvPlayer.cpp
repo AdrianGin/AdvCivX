@@ -2400,7 +2400,8 @@ CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
 		CvSelectionGroup* pLoopSelectionGroup = getSelectionGroup(
 				pSelectionGroupNode->m_data);
 		if (pLoopSelectionGroup->readyToSelect(/* advc.153: */ true) &&
-			kCycledGroups.count(pSelectionGroupNode->m_data) <= 0) // K-Mod
+			(kCycledGroups.count(pSelectionGroupNode->m_data) <= 0 || // K-Mod
+			bWrap)) // advc.154: Don't want to return NULL upon wrapping
 		{
 			if (!bWorkers ||
 				// advc.153: with moves
@@ -2432,7 +2433,7 @@ CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
 		if (pSelectionGroupNode == pFirstSelectionGroupNode)
 		{
 			// break; /* <K-Mod> */
-			if (bWrap)
+			if (bWrap) // (advc.154: Maybe can't occur anymore)
 				break;
 			bWrap = true; // </K-Mod>
 		}
