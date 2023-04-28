@@ -9755,7 +9755,7 @@ int CvGame::getCultureThreshold(CultureLevelTypes eLevel) const
 		static int const iNO_ESPIONAGE_CULTURE_LEVEL_MODIFIER = GC.getDefineINT("NO_ESPIONAGE_CULTURE_LEVEL_MODIFIER"); // advc.opt
 		iThreshold *= 100 + iNO_ESPIONAGE_CULTURE_LEVEL_MODIFIER;
 		iThreshold /= 100;
-	} // <advc.126>
+	}  // <advc.126>
 	int const iExempt = 50; // Don't adjust thresholds below "developing"
 	if (iThreshold >= iExempt)
 	{

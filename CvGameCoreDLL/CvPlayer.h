@@ -103,10 +103,10 @@ public:
 	void killUnits();																								// Exposed to Python
 	// <advc.154>
 	CvSelectionGroup* getNextGroupInCycle(CvUnit* pUnit, bool bForward,
-			bool bWorkers, bool* pbWrap,
+			bool bWorkers, bool* pbWrap = NULL,
 			std::set<int>* pCycledGroup = NULL) const; // </advc.154>
 	CvSelectionGroup* cycleSelectionGroups(CvUnit* pUnit, bool bForward,
-			bool bWorkers, bool* pbWrap);
+			bool bWorkers, bool* pbWrap /* advc: */ = NULL);
 
 	bool hasTrait(TraitTypes eTrait) const { return GC.getInfo(getLeaderType()).hasTrait(eTrait); }					// Exposed to Python
 	// BETTER_BTS_AI_MOD, 12/30/08, jdog5000: START
