@@ -5574,8 +5574,9 @@ class CvMainInterface:
 			aCorpRows = self.cityOrgRects(
 					len(aCorporations), gc.getNumCorporationInfos())
 			# Move corps under religions
-			for lCorpRow in aCorpRows:
-				lCorpRow.move(0, gRect("CityReligions").height() + iReligionCorpsMargin)
+			if gIsRect("CityReligions"):
+				for lCorpRow in aCorpRows:
+					lCorpRow.move(0, gRect("CityReligions").height() + iReligionCorpsMargin)
 			for i in range(len(aCorporations)):
 				lCorp = None
 				# Find next free spot
