@@ -21,7 +21,7 @@
 	(according to the publisher's website). Enables some more macros;
 	who knows, maybe also more optimized code. */
 #define _WIN32_WINNT 0x0500
-#include <windows.h>
+#include <Windows.h>
 // advc.fract: Commented out, originally in CvGameCoreUtils.h.
 //#undef max
 //#undef min
