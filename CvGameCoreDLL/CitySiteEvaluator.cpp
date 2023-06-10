@@ -200,7 +200,7 @@ scaled CitySiteEvaluator::evaluateWorkablePlot(CvPlot const& kPlot) const
 		{
 			if (it->isCoastalLand(-1))
 				iScore += 2;
-			if (GC.getTerrainInfo(it->getTerrainType()).getYield(YIELD_FOOD) > 0)
+			if (GC.getInfo(it->getTerrainType()).getYield(YIELD_FOOD) > 0)
 				iScore++;
 		}
 		else
@@ -1250,7 +1250,7 @@ bool AIFoundValue::isRemovableFeature(CvPlot const& p, bool& bPersistent,
 	bPersistent = true;
 	FOR_EACH_ENUM(Build)
 	{
-		CvBuildInfo const& kLoopBuild = GC.getBuildInfo (eLoopBuild);
+		CvBuildInfo const& kLoopBuild = GC.getInfo (eLoopBuild);
 		if (!kLoopBuild.isFeatureRemove(eFeature))
 			continue;
 
@@ -1522,7 +1522,7 @@ int AIFoundValue::calculateCultureModifier(CvPlot const& p, bool bForeignOwned,
 			advc.045 hides foreign buildings, but it should, in theory, be possible
 			to infer culture buildings from visible tile culture percentages.
 			But will then also have to predict our own culture rate. */
-		static BuildingTypes const eCapitalBuilding = GC.getCivilizationInfo(
+		static BuildingTypes const eCapitalBuilding = GC.getInfo(
 				pForeignCity->getCivilizationType()).
 				getCivilizationBuildings(GC.getDefineINT("CAPITAL_BUILDINGCLASS"));
 		if (eCapitalBuilding != NO_BUILDING)

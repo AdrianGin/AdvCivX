@@ -562,7 +562,8 @@ void CvGame::cycleCities(bool bForward, bool bAdd) const
 
 // advc.154: Extracted the const part out of cycleSelectionGroups
 CvSelectionGroup* CvGame::getNextGroupInCycle(bool bForward, bool bWorkers,
-	bool& bWrap, CvUnit*& pCycleUnit) const // out-params
+	bool& bWrap, CvUnit*& pCycleUnit, // out-params
+	std::set<int>* pCycledGroups) const
 {
 	bWrap = false;
 	pCycleUnit = gDLL->UI().getHeadSelectedUnit();
@@ -572,7 +573,7 @@ CvSelectionGroup* CvGame::getNextGroupInCycle(bool bForward, bool bWorkers,
 		if (pCycleUnit->getOwner() != getActivePlayer())
 			pCycleUnit = NULL;
 		pGroup = GET_PLAYER(getActivePlayer()).getNextGroupInCycle(
-				pCycleUnit, bForward, bWorkers, &bWrap);
+				pCycleUnit, bForward, bWorkers, &bWrap, pCycledGroups);
 	}
 	else
 	{
@@ -624,9 +625,9 @@ void CvGame::cycleSelectionGroups(bool bClear, bool bForward, bool bWorkers)
 {
 	bool bWrap=false;
 	CvUnit* pCycleUnit=NULL;
-	// advc.154: Moved into a const function
+	// <advc.154> Moved into a const function ...
 	CvSelectionGroup* pNextSelectionGroup = getNextGroupInCycle(
-			bForward, bWorkers, bWrap, pCycleUnit);
+			bForward, bWorkers, bWrap, pCycleUnit); // </advc.154>
 	if (gDLL->UI().getHeadSelectedUnit() != NULL)
 	{
 		GET_PLAYER(getActivePlayer()).cycleSelectionGroups(
@@ -636,7 +637,7 @@ void CvGame::cycleSelectionGroups(bool bClear, bool bForward, bool bWorkers)
 	{	/*	K-Mod: I've weakend this condition so that the group cycle order
 			can be refreshed by automoves.
 			(Maybe I should create & use "sendCycleRefresh" instead.) */
-		if (pNextSelectionGroup ||
+		if (pNextSelectionGroup != NULL ||
 			GET_PLAYER(getActivePlayer()).hasAutoUnit())
 		{
 			CvMessageControl::getInstance().sendAutoMoves();
@@ -974,8 +975,11 @@ void CvGame::selectionListGameNetMessage(int eMessage, int iData2, int iData3, i
 				}
 			} // <advc.011b>
 			bool bModified = false;
-			if (iData2 == MISSION_BUILD)
-				bModified = GC.ctrlKey(); // </advc.001b>
+			if (iData2 == MISSION_BUILD ||
+				iData2 == MISSION_PILLAGE || iData2 == MISSION_AIRBOMB) // advc.111
+			{
+				bModified = GC.ctrlKey();
+			} // </advc.011b>
 			// <advc.048>
 			if (iData2 == MISSION_MOVE_TO)
 				bModified = GC.altKey(); // </advc.048>
@@ -2241,8 +2245,8 @@ void CvGame::updateSeaPatrolColors(CvUnit const& kSelectedUnit)
 		if (kSelectedUnit.canReachBySeaPatrol(*itPlot))
 		{
 			gDLL->getEngineIFace()->fillAreaBorderPlot(itPlot->getX(), itPlot->getY(),
-					GC.getColorInfo(GC.getInfoTypeForString("COLOR_CITY_BLUE")).getColor(),
-					AREA_BORDER_LAYER_PATROLLED);
+					GC.getInfo((ColorTypes)GC.getInfoTypeForString("COLOR_CITY_BLUE")).
+					getColor(), AREA_BORDER_LAYER_PATROLLED);
 		}
 	}
 }
@@ -2445,10 +2449,7 @@ int CvGame::getNextSoundtrack(EraTypes eLastEra, int iLastSoundtrack) const
 			aiTracks.push_back(iTrack);
 	}
 	if (aiTracks.empty())
-	{
-		FAssert(!aiTracks.empty());
 		aiTracks.push_back(iLastSoundtrack);
-	}
 	return aiTracks[GC.getASyncRand().get(
 			aiTracks.size(), "Pick Song ASYNC")]; // </advc.002o>
 }

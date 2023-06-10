@@ -4415,7 +4415,8 @@ bool CvUnit::canAirBombAt(CvPlot const& kTarget, CvPlot const* pFrom) const
 	target plot would be an improvement, a route or none - assuming that the unit
 	has the ability to pillage or air bomb the plot (not checked). */
 CvUnit::StructureTypes CvUnit::getDestructibleStructureAt(CvPlot const& kTarget,
-	bool bTestVisibility) const
+	bool bTestVisibility,
+	bool bForceImprovement) const // advc.111
 {
 	ImprovementTypes eImprov = (bTestVisibility ?
 			kTarget.getRevealedImprovementType(getTeam()) :
@@ -4434,6 +4435,9 @@ CvUnit::StructureTypes CvUnit::getDestructibleStructureAt(CvPlot const& kTarget,
 	}
 	if (eImprov == NO_IMPROVEMENT && eRoute == NO_ROUTE)
 		return NO_STRUCTURE;
+	// <advc.111>
+	if (bForceImprovement && eImprov != NO_IMPROVEMENT)
+		eRoute = NO_ROUTE; // </advc.111>
 	if (getTeam() == (bTestVisibility ?
 		kTarget.getRevealedTeam(getTeam(), false) : kTarget.getTeam()))
 	{
@@ -4457,8 +4461,9 @@ int CvUnit::airBombDefenseDamage(CvCity const& kCity) const
 }
 
 // advc: Target plot was given as coordinates
-bool CvUnit::airBomb(CvPlot& kTarget, /* <advc.004c> */ bool* pbIntercepted)
-{
+bool CvUnit::airBomb(CvPlot& kTarget, /* advc.004c: */ bool* pbIntercepted,
+	bool bForceImprovement) // advc.111
+{	// <advc.004c>
 	if (pbIntercepted != NULL)
 		*pbIntercepted = false; // </advc.004c>
 	if (!canAirBombAt(kTarget))
@@ -4496,7 +4501,8 @@ bool CvUnit::airBomb(CvPlot& kTarget, /* <advc.004c> */ bool* pbIntercepted)
 	{	// <advc.255> 
 		bool const bValidOwner = (!kTarget.isOwned() || isEnemy(kTarget) || // advc.004c
 				kTarget.getOwner() == getOwner());
-		StructureTypes const eStructure = getDestructibleStructureAt(kTarget, false);
+		StructureTypes const eStructure = getDestructibleStructureAt(kTarget, false,
+				bForceImprovement); // advc.111
 		if (bValidOwner && eStructure != NO_STRUCTURE)
 		{
 			bool const bRoute = (eStructure == STRUCTURE_ROUTE);
@@ -4766,7 +4772,7 @@ bool CvUnit::canPillage(CvPlot const& kPlot) const
 }
 
 
-bool CvUnit::pillage()
+bool CvUnit::pillage(/* advc.111: */ bool bForceImprovement)
 {
 	CvPlot& kPlot = getPlot();
 	if (!canPillage(kPlot))
@@ -4799,7 +4805,7 @@ bool CvUnit::pillage()
 	RouteTypes const eOldRoute = kPlot.getRouteType();
 	// <advc.111>
 	bool bPillaged = false;
-	if (getDestructibleStructureAt(kPlot, false) == STRUCTURE_ROUTE)
+	if (getDestructibleStructureAt(kPlot, false, bForceImprovement) == STRUCTURE_ROUTE)
 		bPillaged = pillageRoute();
 	else bPillaged = pillageImprovement(); // </advc.111>
 	changeMoves(GC.getMOVE_DENOMINATOR());
@@ -5486,7 +5492,8 @@ bool CvUnit::spread(ReligionTypes eReligion)
 		if (pCity->getTeam() != getTeam())
 			iSpreadProb /= 2;
 		bool bSuccess;
-		iSpreadProb += (((GC.getNumReligionInfos() - pCity->getReligionCount()) * (100 - iSpreadProb)) / GC.getNumReligionInfos());*/ // BtS
+		iSpreadProb += ((100 - iSpreadProb)*(GC.getNumReligionInfos() - pCity->getReligionCount())) /
+				GC.getNumReligionInfos();*/ // BtS
 		// K-Mod. A more dynamic formula
 		int const iPresentReligions = pCity->getReligionCount();
 		int const iMissingReligions = GC.getNumReligionInfos() - iPresentReligions;

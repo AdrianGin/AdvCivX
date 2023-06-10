@@ -1666,6 +1666,13 @@ void CvGameTextMgr::setPlotListHelpPerOwner(CvWStringBuffer& szString,
 		iLineLimit--;
 	if(kPlot.isFreshWater())
 		iLineLimit--;
+	/*	<advc.101> (Can even take up 2 lines, but checking for that gets too complicated;
+		not checking MainInterface__RevoltHelp BUG option either.) */
+	if (kPlot.isCity() && kPlot.getTeam() == eActiveTeam &&
+		kPlot.getPlotCity()->revoltProbability() > 0)
+	{
+		iLineLimit--;
+	} // </advc.101>
 	for(int i = 0; i < MAX_PLAYERS; i++)
 	{
 		if(kPlot.calculateCulturePercent((PlayerTypes)i) > 0)
@@ -3041,18 +3048,21 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot const& kPlot)
 						aieCulturePerPlayer.push_back(std::make_pair(iCulture, kPlayer.getID()));
 					}
 				}
-			} // <advc.099g>
+			}  // <advc.099g>
 			std::stable_sort(aieCulturePerPlayer.begin(), aieCulturePerPlayer.end());
-			if(eActivePlayer != eRevealedOwner)
+			if (eActivePlayer != eRevealedOwner)
 			{
 				int iCulture = kPlot.calculateCulturePercent(eActivePlayer);
-				if(iCulture >= 1)
+				if (iCulture >= 1)
 					aieCulturePerPlayer.push_back(std::make_pair(iCulture, eActivePlayer));
 			}
-			if(eRevealedOwner != NO_PLAYER) // advc.099f
-			{
+			if (eRevealedOwner != NO_PLAYER) // advc.099f
+			{	/*	<advc.001> Relevant when a plot attains an owner only due to
+					being surrounded by owned plots */
+				int iOwnerCulture = (aieCulturePerPlayer.empty() ? 100 :
+						kPlot.calculateCulturePercent(eRevealedOwner)); // </advc.001>
 				aieCulturePerPlayer.push_back(std::make_pair(
-						kPlot.calculateCulturePercent(eRevealedOwner), eRevealedOwner));
+						iOwnerCulture, eRevealedOwner));
 			}
 			std::reverse(aieCulturePerPlayer.begin(), aieCulturePerPlayer.end());
 			for (size_t i = 0; i < aieCulturePerPlayer.size(); i++)
@@ -5772,7 +5782,7 @@ void CvGameTextMgr::setCityBarHelp(CvWStringBuffer &szString, CvCity const& kCit
 				FAssert(eMode == DISPLAY_ICONS);
 				// BULL - Building Icons - start (advc: BULL had used size 24)
 				szTempBuffer.Format(L"<img=%S size=32></img>",
-						GC.getBuildingInfo(aszeBuildingsByName[i].second).getButton());
+						GC.getInfo(aszeBuildingsByName[i].second).getButton());
 				setListHelp(szString, NEWLINE, szTempBuffer, L"", bFirst);
 				// BULL - Building Icons - end
 			}
@@ -5805,8 +5815,7 @@ void CvGameTextMgr::setCityBarHelp(CvWStringBuffer &szString, CvCity const& kCit
 }
 
 /*  advc.101: Similar to code added in CvDLLWidgetData::parseNationalityHelp;
-	replacing BULL's "Revolt Chance" code (which has never been merged into
-	K-Mod/AdvCiv). */
+	replacing BULL's "Revolt Chance" code (which was never merged into K-Mod/AdvCiv). */
 void CvGameTextMgr::setRevoltHelp(CvWStringBuffer &szString, CvCity const& kCity)
 {
 	if (!kCity.getPlot().isActiveVisible(true))
@@ -5822,6 +5831,8 @@ void CvGameTextMgr::setRevoltHelp(CvWStringBuffer &szString, CvCity const& kCity
 			kCity.cultureGarrison(eCulturalOwner) : -1);
 	int const iCultureStr = (bActiveOwned ?
 			kCity.cultureStrength(eCulturalOwner) : -1);
+	int iExcessStrength = 0;
+	CvUnit const* pSelectedUnit = gDLL->UI().getHeadSelectedUnit();
 	if (rRevoltProb > 0)
 	{
 		/*  CvCity::revoltProbability rounds probabilities that are too small to
@@ -5841,6 +5852,7 @@ void CvGameTextMgr::setRevoltHelp(CvWStringBuffer &szString, CvCity const& kCity
 			szString.append(gDLL->getText(
 					"TXT_KEY_GARRISON_STRENGTH_NEEDED_SHORT",
 					iGarrisonStrNeeded));
+			iExcessStrength = -iGarrisonStrNeeded;
 		}
 		int const iPriorRevolts = kCity.getNumRevolts();
 		if (kCity.canCultureFlip())
@@ -5871,8 +5883,7 @@ void CvGameTextMgr::setRevoltHelp(CvWStringBuffer &szString, CvCity const& kCity
 		eCulturalOwner != kCity.getOwner() && iGarrisonStr >= iCultureStr)
 	{
 		// Show it only when a local unit is selected? Eh ...
-		/*CvUnit* pSelectedUnit = gDLL->UI().getHeadSelectedUnit();
-		if (pSelectedUnit != NULL && pSelectedUnit->at(kPlot))*/
+		//if (pSelectedUnit != NULL && pSelectedUnit->at(kPlot))
 		{
 			int iSafeToRemove = iGarrisonStr - iCultureStr;
 			if (iSafeToRemove < iGarrisonStr)
@@ -5882,7 +5893,30 @@ void CvGameTextMgr::setRevoltHelp(CvWStringBuffer &szString, CvCity const& kCity
 				szString.append(gDLL->getText(
 						"TXT_KEY_GARRISON_STRENGTH_EXCESS_SHORT",
 						std::min(999, iSafeToRemove)));
+				iExcessStrength = iSafeToRemove;
 			}
+		}
+	}
+	if (iExcessStrength != 0 && pSelectedUnit != NULL)
+	{
+		int iSelected = 0;
+		int iSelectedStrength = 0;
+		FOR_EACH_UNIT_IN(pUnit, *gDLL->UI().getSelectionList())
+		{
+			int iStr = pUnit->garrisonStrength();
+			if (iStr != 0)
+			{
+				iSelectedStrength += iStr;
+				iSelected++;
+			}
+		}
+		if (iSelectedStrength != 0 && (iExcessStrength < 0 ||
+			pSelectedUnit->at(kCity.getPlot()))/* && iSelected > 1*/)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText(
+					"TXT_KEY_GARRISON_STRENGTH_SELECTED",
+					intdiv::uround(iSelectedStrength, 100)));
 		}
 	}
 }
@@ -7090,7 +7124,7 @@ void CvGameTextMgr::parseSingleCivicRevealHelp(CvWStringBuffer& szBuffer, CivicT
 {
 	szBuffer.append(CvWString::format(SETCOLR L"%s" ENDCOLR,
 			TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),
-			GC.getCivicInfo(eCivic).getDescription()));
+			GC.getInfo(eCivic).getDescription()));
 	CvWStringBuffer szCivicHelp;
 	GAMETEXT.parseCivicInfo(szCivicHelp, eCivic,
 			true, true, true); // bCiviliopedia=true to hide tech prereq
@@ -8502,6 +8536,8 @@ void CvGameTextMgr::setDiscoverPathHelp(CvWStringBuffer& szBuffer, UnitTypes eUn
 	{
 		if (!kPlayer.canResearch(eResearchOption))
 			continue;
+		/*	(Would not be so difficult to do this cleanly - pass eResearchOption
+			to CvPlayer::canResearch via CvPlayer::getDiscoveryTech; tbd.?) */
 		kTeam.setHasTechTemporarily(eResearchOption, true);
 		TechTypes eNextDiscover = kPlayer.getDiscoveryTech(eUnit);
 		kTeam.setHasTechTemporarily(eResearchOption, false);
@@ -18035,7 +18071,7 @@ void CvGameTextMgr::parseGreatPeopleHelp(CvWStringBuffer &szBuffer, CvCity const
 			{
 				iRate += (kCity.getSpecialistCount(eLoopSpecialist) +
 						kCity.getFreeSpecialistCount(eLoopSpecialist)) *
-						GC.getSpecialistInfo(eLoopSpecialist).getGreatPeopleRateChange();
+						GC.getInfo(eLoopSpecialist).getGreatPeopleRateChange();
 			}
 			if (iRate > 0)
 			{
@@ -18059,7 +18095,7 @@ void CvGameTextMgr::parseGreatPeopleHelp(CvWStringBuffer &szBuffer, CvCity const
 					!GET_TEAM(kCity.getTeam()).isObsoleteBuilding(eBuilding))
 				{
 					iRate += kCity.getNumBuilding(eBuilding) *
-							GC.getBuildingInfo(eBuilding).getGreatPeopleRateChange();
+							GC.getInfo(eBuilding).getGreatPeopleRateChange();
 				}
 			}
 			if (iRate > 0)
@@ -20866,7 +20902,7 @@ void CvGameTextMgr::getAirBombPlotHelp(CvPlot const& kPlot,
 	} 
 	// <advc.255>
 	CvUnit::StructureTypes const eStructure = kHeadSelectedUnit.
-			getDestructibleStructureAt(kPlot, true);
+			getDestructibleStructureAt(kPlot, true, /* advc.111: */ GC.ctrlKey());
 	if (eStructure == CvUnit::NO_STRUCTURE)
 		return; // </advc.255>
 	// Formula matches dice roll in CvUnit::airBomb

@@ -183,7 +183,7 @@ __inline typename enum_traits<E>::compact_t compactEnum(E e)
 template<typename E>
 bool checkEnumBounds(E eIndex)
 {
-	return (eIndex >= 0 && eIndex < getEnumLength());
+	return (eIndex >= 0 && eIndex < enum_traits<E>::length());
 }
 namespace enum_traits_detail
 {

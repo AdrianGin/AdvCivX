@@ -74,6 +74,7 @@ public:
 	DllExport void init();
 	DllExport void uninit();
 	void clearTypesMap();
+	void testInstallLocation(); // advc.002b
 
 	DllExport CvDiplomacyScreen* getDiplomacyScreen();
 	DllExport CMPDiplomacyScreen* getMPDiplomacyScreen();
@@ -562,7 +563,9 @@ public:
 		DO(RF_PLAYER_HANDICAP_ADJUSTMENT) /* advc.708 */ \
 		DO(BASE_UNIT_CAPTURE_CHANCE) /* advc.010 */ \
 		DO(DOW_UNIT_CAPTURE_CHANCE) /* advc.010 */ \
-		DO(SHOW_ODDS_IN_COMBAT_MESSAGES) /* advc.048 */
+		DO(SHOW_ODDS_IN_COMBAT_MESSAGES) /* advc.048 */ \
+		DO(CAN_CHOP_UNOWNED_FEATURES) /* advc.119 */ \
+		DO(DEFY_RESOLUTION_POP_ANGER) /* advc.118b */
 	#define MAKE_ENUMERATOR(VAR) VAR,
 	enum GlobalDefines
 	{

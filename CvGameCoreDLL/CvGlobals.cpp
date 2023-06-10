@@ -285,6 +285,38 @@ void CvGlobals::clearTypesMap()
 		m_VarSystem->UnInit();
 }
 
+// <advc.002b> (from "We the People")
+namespace
+{
+	std::string GetCurrentDirectory(bool bDLLPath)
+	{
+		char buffer[MAX_PATH];
+		GetModuleFileNameA(bDLLPath ? GetModuleHandle(_T("CvGameCoreDLL.dll")) :
+				NULL, buffer, MAX_PATH);
+		std::string::size_type pos = std::string(buffer).find_last_of("\\/");
+		return std::string(buffer).substr(0, pos);
+	}
+}
+
+void CvGlobals::testInstallLocation()
+{
+	/*	(Would be nice to disable this check through a global define in XML, but this
+		needs to happen long before XML gets loaded. Therefore, the theme path also
+		can't be checked here, CvArtFileMgr::testThemePath will handle it.) */
+	std::string sNameExe = GetCurrentDirectory(false);
+	std::string sNameDll = GetCurrentDirectory(true);
+	sNameDll.resize(sNameExe.size());
+	if (sNameExe == sNameDll)
+		return;
+	CvString sMsg = "The mod does not appear to be installed in\n"
+			"\"Beyond the Sword\\Mods\" under program files or steam apps.\n"
+			"May not be able to locate the UI theme this way.";
+	char szMessage[1024];
+	sprintf(szMessage, sMsg);
+	CvString sHeading = "Invalid mod install location";
+	gDLL->MessageBox(szMessage, sHeading);
+} // </advc.002b>
+
 
 CvDiplomacyScreen* CvGlobals::getDiplomacyScreen()
 {
@@ -939,6 +971,7 @@ void CvGlobals::setDLLIFace(CvDLLUtilityIFaceBase* pDll)
 				pDll->getExternalModName(false));
 	} // </advc.106i>
 	m_pDLL = pDll;
+	testInstallLocation(); // advc.002b
 }
 
 void CvGlobals::setDLLProfiler(FProfiler* prof)

@@ -8776,7 +8776,9 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 			// Increase odds of defiance, particularly on AggressiveAI
 			if (iBestCivicValue * 100 >
 				iNewCivicValue * (140 + SyncRandNum(
-				kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ? 60 : 80)))
+				kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ? 60 : 80)) &&
+				// advc.118b: The absolute difference should very much matter too
+				iBestCivicValue - iNewCivicValue > AI_defianceAngerCost(eVoteSource))
 			{	// BETTER_BTS_AI_MOD: END
 				bDefy = true;
 			}
@@ -9393,6 +9395,19 @@ PlayerVoteTypes CvPlayerAI::AI_diploVote(const VoteSelectionSubData& kVoteData,
 		return PLAYER_VOTE_NEVER;
 
 	return (bValid ? PLAYER_VOTE_YES : PLAYER_VOTE_NO);
+}
+
+/*	advc.118b: Ideally, all defiance decisions should take this into account.
+	So far, only used for forced civics. Scale: 1 gold per turn.
+	The calculation corresponds to CvPlayer::setDefiedResolution and
+	CvCity::getDefyResolutionPercentAnger. */
+int CvPlayerAI::AI_defianceAngerCost(VoteSourceTypes eVS) const
+{
+	ReligionTypes const eVSReligion = GC.getGame().getVoteSourceReligion(eVS);
+	int iTotalCost = 0;
+	FOR_EACH_CITYAI(pCity, *this)
+		iTotalCost += pCity->AI_defianceAngerCost(eVSReligion);
+	return iTotalCost;
 }
 
 
@@ -15903,7 +15918,7 @@ int CvPlayerAI::AI_corporationValue(CorporationTypes eCorporation,
 // advc.121:
 void CvPlayerAI::AI_processNewBuild(BuildTypes eBuild)
 {
-	bool const bRoute = (GC.getBuildInfo(eBuild).getRoute() != NO_ROUTE);
+	bool const bRoute = (GC.getInfo(eBuild).getRoute() != NO_ROUTE);
 	FOR_EACH_CITYAI_VAR(pCity, *this)
 	{
 		pCity->AI_updateBestBuild();
@@ -16365,8 +16380,8 @@ int CvPlayerAI::AI_neededCityAttackers(
 scaled CvPlayerAI::AI_neededCityAttackersVsBarbarians() const
 {
 	FAssert(!isBarbarian());
-	return fixp(1.25) * AI_estimateBarbarianGarrisonSize() +
-			GET_PLAYER(BARBARIAN_PLAYER).getCurrentEra() - AI_getCurrEraFactor();
+	return scaled::max(1, fixp(1.25) * AI_estimateBarbarianGarrisonSize() +
+			GET_PLAYER(BARBARIAN_PLAYER).getCurrentEra() - AI_getCurrEraFactor());
 }
 
 
@@ -17883,10 +17898,10 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 			/*iValue *= 5;
 			iValue /= 4;
 			iValue += 20;*/
-			/*	advc.131> The +20 might encourage Monarchy too much (AI_techValue).
+			/*	<advc.131> The +20 might encourage Monarchy too much (AI_techValue).
 				Also, early fav civics shouldn't need that much encouragement as
 				they have few alternatives. */
-			iValue *= 135;
+			iValue *= 133;
 			iValue /= 100; // </advc.131>
 			iValue += 6 * iCities;
 		}
@@ -22812,7 +22827,7 @@ scaled CvPlayerAI::AI_targetAmortizationTurns() const
 			kStartEra.getConstructPercent() +
 			kStartEra.getTrainPercent(), 400);
 	{
-		CvHandicapInfo const& kHandicap = GC.getHandicapInfo(getHandicapType());
+		CvHandicapInfo const& kHandicap = GC.getInfo(getHandicapType());
 		r *= scaled(kHandicap.getResearchPercent() +
 			kHandicap.getConstructPercent() +
 			kHandicap.getTrainPercent(), 300);
@@ -24592,35 +24607,39 @@ int CvPlayerAI::AI_calculateDominationVictoryStage() const
 	if (iWeight < 0)
 		return 0; // </advc.115f>
 
+	int const iGamePop = std::max(1, kGame.getTotalPopulation());
+	int const iGameLand = std::max(1, GC.getMap().getLandPlots());
 	int iPercentOfDomination = 0;
-	int iOurPopPercent = (100 * kTeam.getTotalPopulation()) /
-			std::max(1, kGame.getTotalPopulation());
-	int iOurLandPercent = (100 * kTeam.getTotalLand()) /
-			std::max(1, GC.getMap().getLandPlots());
+	int iOurPopPercent = (100 * kTeam.getTotalPopulation()) / iGamePop;
+	int iOurLandPercent = (100 * kTeam.getTotalLand()) / iGameLand;
 
 	// <advc.104c>
-	int iPopObjective = std::max(1, kGame.getAdjustedPopulationPercent(eDomination));
-	int iLandObjective = std::max(1, kGame.getAdjustedLandPercent(eDomination));
-	bool bBlockedByFriend = false;
-	for (TeamAIIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itRival(getTeam());
-		itRival.hasNext(); ++itRival)
+	int const iPopObjective = std::max(1, kGame.getAdjustedPopulationPercent(eDomination));
+	int const iLandObjective = std::max(1, kGame.getAdjustedLandPercent(eDomination));
+	bool bBlockedByFriends = false;
 	{
-		int iTheirPopPercent = (100 * itRival->getTotalPopulation()) /
-				std::max(1, kGame.getTotalPopulation());
-		int iTheirLandPercent = (100 * itRival->getTotalLand()) /
-				std::max(1, GC.getMap().getLandPlots());
-		if (kTeam.AI_getAttitude(itRival->getID()) >= ATTITUDE_FRIENDLY &&
-			(iTheirPopPercent >= iPopObjective - iOurPopPercent ||
-			iTheirLandPercent >= iLandObjective - iOurLandPercent))
+		scaled rPopNonFriends;
+		scaled rLandNonFriends;
+		for (TeamAIIter<MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF> itRival(getTeam());
+			itRival.hasNext(); ++itRival)
 		{
-			bBlockedByFriend = true;
+			if (kTeam.AI_getAttitude(itRival->getID()) < ATTITUDE_FRIENDLY)
+			{
+				rPopNonFriends += scaled(itRival->getTotalPopulation(), iGamePop);
+				rLandNonFriends += scaled(itRival->getTotalLand(), iGameLand);
+			}
+		}
+		if ((rPopNonFriends * 100).floor() + iOurPopPercent < iPopObjective ||
+			(rLandNonFriends * 100).floor() + iOurLandPercent < iLandObjective)
+		{
+			bBlockedByFriends = true;
 		}
 	} // </advc.104c>
 	iPercentOfDomination = (100 * iOurPopPercent) /
 			iPopObjective; // advc.104c
 	iPercentOfDomination = std::min(iPercentOfDomination, (100 * iOurLandPercent) /
 			iLandObjective); // advc.104c
-	if (!bBlockedByFriend) // advc.104c
+	if (!bBlockedByFriends) // advc.104c
 	{
 		// <advc.115>
 		int iEverAlive = kGame.getCivPlayersEverAlive();
@@ -25105,7 +25124,7 @@ bool CvPlayerAI::AI_isDoStrategy(AIStrategy eStrategy, /* advc.007: */ bool bDeb
 // advc.erai: Cached for performance
 void CvPlayerAI::AI_updateEraFactor()
 {
-	m_rCurrEraFactor = per100(GC.getEraInfo(getCurrentEra()).get(CvEraInfo::AIEraFactor));
+	m_rCurrEraFactor = per100(GC.getInfo(getCurrentEra()).get(CvEraInfo::AIEraFactor));
 }
 
 // K-Mod. Macros to help log changes in the AI strategy.
@@ -26468,7 +26487,8 @@ int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
 {
 	CvPlayerAI const& kRival = GET_PLAYER(eRival);
 	CvTeamAI const& kRivalTeam = GET_TEAM(eRival);
-	if (GET_TEAM(getTeam()).AI_getWarPlan(kRivalTeam.getID()) != NO_WARPLAN)
+	CvTeamAI const& kOurTeam = GET_TEAM(getTeam());
+	if (kOurTeam.AI_getWarPlan(kRivalTeam.getID()) != NO_WARPLAN)
 		return 0;
 	bool const bRivalFocusWar = kRival.AI_isFocusWar();
 	// <advc.022> Don't fear (AI) civs that are busy
@@ -26531,13 +26551,13 @@ int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
 				pow(fixp(0.23))).round();
 	} // </advc.022>
 	if (iCloseness > 0 ||
-		GET_TEAM(getTeam()).AI_hasCitiesInPrimaryArea(kRivalTeam.getID())) // K-Mod
+		kOurTeam.AI_hasCitiesInPrimaryArea(kRivalTeam.getID())) // K-Mod
 	{	// <advc.022>
 		// Humans tend to reciprocate our feelings
 		int iHumanWarProb = 70 - AI_getAttitude(eRival) * 10;
 		int iAttitudeWarProb = (kRival.isHuman() ? iHumanWarProb :
 				// Now based on rival's personality and attitude
-				100 - kRivalTeam.AI_noWarProbAdjusted(getTeam()));
+				100 - kRivalTeam.AI_noWarProbAdjusted(kOurTeam.getID()));
 		// (BBAI military power check deleted)
 		//iValue += std::max(0, iAttitudeWarProb/2); // K-Mod
 		iValue += std::max(0, (std::min(3, (1 + kRival.AI_getCurrEra()))
@@ -26557,7 +26577,7 @@ int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
 				2 * iOurDefPow);
 		iValue /= std::max(1, iOurDefPow);
 		// <K-Mod>
-		if (kRivalTeam.AI_getWorstEnemy() == getTeam())
+		if (kRivalTeam.AI_getWorstEnemy() == kOurTeam.getID())
 		{
 			//iTempParanoia *= 2;
 			// advc.022: Don't give their attitude too much weight
@@ -26573,10 +26593,50 @@ int CvPlayerAI::AI_paranoiaRating(PlayerTypes eRival, int iOurDefPow,
 	else if (kRival.AI_atVictoryStage(AI_VICTORY_DOMINATION3))
 		iVictStratParanoia += 75; // advc.022: was 50
 	/*  advc.022: Too high in K-Mod I think; who knows when they'll get around
-		to attacking us. (Could count the alternative targets I guess ...). */
+		to attacking us. */
 	iValue += iVictStratParanoia / 2;
 	if (iValue <= 0)
 		return 0;
+	/*	<advc.104> Somewhat important for large, overcrowded-continents
+		to adjust for alternative targets of eRival. */
+	if (kRival.hasCapital() && hasCapital())
+	{
+		CvCity const& kRivalCapital = *kRival.getCapital();
+		if (kOurTeam.AI_deduceCitySite(kRivalCapital))
+		{
+			int const iDistUsRival = plotDistance(
+					getCapital()->plot(), kRivalCapital.plot());
+			/*	Doesn't really matter how powerful the third party is; if they're
+				strong, then eRival will fear their attack; if they're very weak,
+				an attack by eRival will still be a major distraction. */
+			int iAltTargets = 0;
+			for (PlayerAIIter<CIV_ALIVE,KNOWN_POTENTIAL_ENEMY_OF> itThirdParty(
+				kRivalTeam.getID()); itThirdParty.hasNext(); ++itThirdParty)
+			{
+				if (itThirdParty->getMasterTeam() == getMasterTeam() ||
+					!kOurTeam.isHasMet(itThirdParty->getTeam()) ||
+					(kRivalTeam.isHuman() ?
+					GET_TEAM(itThirdParty->getTeam()).AI_isAvoidWar(kRivalTeam.getID()) :
+					kRivalTeam.AI_isAvoidWar(itThirdParty->getTeam())) ||
+					!itThirdParty->hasCapital())
+				{
+					continue;
+				}
+				CvCity const& kThirdCapital = *itThirdParty->getCapital();
+				if (!kOurTeam.AI_deduceCitySite(kThirdCapital))
+					continue;
+				if (kThirdCapital.sameArea(kRivalCapital) &&
+					5 * plotDistance(
+					kThirdCapital.plot(), kRivalCapital.plot()) < iDistUsRival * 7)
+				{
+					iAltTargets++;
+				}
+			}
+			scaled rAltTargetMult = fixp(1.24) - fixp(0.18) * iAltTargets;
+			rAltTargetMult.increaseTo(fixp(0.4));
+			iValue = (iValue * rAltTargetMult).uceil();
+		}
+	} // </advc.104>
 	/*if (iCloseness == 0)
 		iTempParanoia /= 2;*/
 	// <advc.022> Do something smoother
@@ -27432,7 +27492,7 @@ void CvPlayerAI::AI_advancedStartRouteTerritory()
 
 void CvPlayerAI::AI_doAdvancedStart(bool bNoExit)
 {
-	FAssertMsg(!isBarbarian(), "Should not be called for barbarians!");
+	FAssert(!isBarbarian());
 
 	if (getStartingPlot() == NULL)
 	{

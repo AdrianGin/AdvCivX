@@ -926,6 +926,7 @@ protected:
 	void AI_foldDeals(CvDeal& d1, CvDeal& d2) const; // </advc.036>
 	scaled AI_bonusImportValue(PlayerTypes eFrom) const; // advc.149
 	int AI_anarchyTradeVal(CivicTypes eCivic = NO_CIVIC) const; // advc.132
+	int AI_defianceAngerCost(VoteSourceTypes eVS) const; // advc.118b
 
 	void AI_updateCacheData(); // K-Mod
 	int AI_calculateEspionageWeight() const; // advc.001

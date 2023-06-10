@@ -2569,7 +2569,7 @@ int CvCity::overflowCapacity(int iProductionModifier, int iPopulationChange) con
 	// New: Take out build-specific modifiers
 	iBound1 = unmodifyOverflow(iBound1, iProductionModifier);
 	// Was the production cost of the completed order in BtS/K-Mod
-	int iBound2 = growthThreshold(iPopulationChange);
+	int iBound2 = growthThreshold(iPopulationChange, true);
 	return std::max(iBound1, iBound2);
 }
 
@@ -3520,9 +3520,9 @@ int CvCity::getDefyResolutionPercentAnger(int iExtra) const
 	if (getDefyResolutionAngerTimer() == 0)
 		return 0;
 	// advc.opt:
-	static int const iDEFY_RESOLUTION_POP_ANGER = GC.getDefineINT("DEFY_RESOLUTION_POP_ANGER");
 	return 1 + (((((getDefyResolutionAngerTimer() - 1) / flatDefyResolutionAngerLength()) + 1) *
-			iDEFY_RESOLUTION_POP_ANGER * GC.getPERCENT_ANGER_DIVISOR()) /
+			GC.getDefineINT(CvGlobals::DEFY_RESOLUTION_POP_ANGER) *
+			GC.getPERCENT_ANGER_DIVISOR()) /
 			std::max(1, getPopulation() + iExtra));
 }
 
@@ -3798,10 +3798,11 @@ int CvCity::foodDifference(bool bBottom, bool bIgnoreProduction) const
 }
 
 
-int CvCity::growthThreshold(/* advc.064b: */ int iPopulationChange) const
+int CvCity::growthThreshold(/* <advc.064b> */ int iPopulationChange,
+	bool bIgnoreModifiers) const // </advc.064b>
 {
 	return (GET_PLAYER(getOwner()).getGrowthThreshold(getPopulation()
-			+ iPopulationChange)); // advc.064b
+			+ iPopulationChange, bIgnoreModifiers)); // advc.064b
 }
 
 
@@ -3974,9 +3975,9 @@ int CvCity::hurryAngerLength(HurryTypes eHurry) const
 
 
 int CvCity::maxHurryPopulation() const
-{
-	return std::min(3, // advc.064c: Allow at most 3 pop to be sacrificed at once
-			getPopulation() / 2);
+{	// <advc.064c>
+	static int const iMAX_HURRY_POP = GC.getDefineINT("MAX_HURRY_POP");
+	return std::min(iMAX_HURRY_POP, /* </advc.064c> */ getPopulation() / 2);
 }
 
 
@@ -8466,7 +8467,7 @@ bool CvCity::is##Order##ProductionDecay(Order##Types e##Order) const \
 			get##Order##Production(e##Order) > 0 && \
 			100 * get##Order##ProductionTime(e##Order) >= \
 			GC.getDefineINT(CvGlobals::ORDER##_PRODUCTION_DECAY_TIME) * \
-			GC.getGameSpeedInfo(GC.getGame().getGameSpeedType()).get##Verb##Percent()); \
+			GC.getInfo(GC.getGame().getGameSpeedType()).get##Verb##Percent()); \
 } \
 \
 /*	Returns the amount by which the given order will decay once it reaches the limit. */ \
@@ -8485,7 +8486,7 @@ int CvCity::get##Order##ProductionDecayTurns(Order##Types e##Order) const \
 	return 1 + std::max(0, \
 			intdiv::uceil( \
 			GC.getDefineINT(CvGlobals::ORDER##_PRODUCTION_DECAY_TIME) * \
-			GC.getGameSpeedInfo(GC.getGame().getGameSpeedType()).get##Verb##Percent(), \
+			GC.getInfo(GC.getGame().getGameSpeedType()).get##Verb##Percent(), \
 			100) \
 			- get##Order##ProductionTime(e##Order)); \
 }
@@ -9761,6 +9762,11 @@ void CvCity::popOrder(int iNum, bool bFinish,
 	case ORDER_TRAIN:
 	{
 		eTrainUnit = (UnitTypes)pOrderNode->m_data.iData1;
+		/*	<advc.064b> Moved into new function, and moved up to ensure that the
+			next order isn't already being produced when calculating production
+			modifiers for the overflow cap. */
+		handleOverflow(getUnitProduction(eTrainUnit) - getProductionNeeded(eTrainUnit),
+				getProductionModifier(eTrainUnit), eOrderType); // </advc.064b>
 		UnitAITypes eTrainAIUnit = (UnitAITypes)pOrderNode->m_data.iData2;
 		FAssert(eTrainUnit != NO_UNIT);
 		FAssert(eTrainAIUnit != NO_UNITAI);
@@ -9774,11 +9780,8 @@ void CvCity::popOrder(int iNum, bool bFinish,
 		doPopOrder(pOrderNode); // advc.064d (see case ORDER_CONSTRUCT)
 		if(!bFinish)
 			break;
-		// <advc.064b> Moved into new function
-		handleOverflow(getUnitProduction(eTrainUnit) - getProductionNeeded(eTrainUnit),
-				getProductionModifier(eTrainUnit), eOrderType);
-		// 14 March 2019: K-Mod multi-production code removed (including bugfix advc.001v)
-		// Instead restored (two lines):
+		/*	<advc.064b> 14 March 2019: K-Mod multi-production code removed
+			(including bugfix advc.001v). Instead restored (two lines): */
 		setUnitProduction(eTrainUnit, 0);
 		setUnitProductionTime(eTrainUnit, 0); // EmperorFool, Bugfix, 06/10/10
 		// </advc.064b>
@@ -9830,6 +9833,11 @@ void CvCity::popOrder(int iNum, bool bFinish,
 	case ORDER_CONSTRUCT:
 	{
 		eConstructBuilding = (BuildingTypes)pOrderNode->m_data.iData1;
+		// <advc.064b> Moved into new function (and moved up)
+		handleOverflow(getBuildingProduction(eConstructBuilding) -
+				getProductionNeeded(eConstructBuilding),
+				getProductionModifier(eConstructBuilding), eOrderType);
+		// </advc.064b>
 		BuildingClassTypes eBuildingClass = GC.getInfo(eConstructBuilding).getBuildingClassType();
 		kOwner.changeBuildingClassMaking(eBuildingClass, -1);
 		CvBuildingClassInfo const& kConstructClass = GC.getInfo(eBuildingClass);
@@ -9846,11 +9854,6 @@ void CvCity::popOrder(int iNum, bool bFinish,
 		}
 		setNumRealBuilding(eConstructBuilding, getNumRealBuilding(eConstructBuilding) + 1,
 				bEndOfTurn); // advc.001x
-		// <advc.064b> Moved into new function
-		handleOverflow(getBuildingProduction(eConstructBuilding) -
-				getProductionNeeded(eConstructBuilding),
-				getProductionModifier(eConstructBuilding), eOrderType);
-		// </advc.064b>
 		setBuildingProduction(eConstructBuilding, 0);
 		setBuildingProductionTime(eConstructBuilding, 0); // Bugfix, 06/10/10, EmperorFool
 		// <advc.123f>
@@ -9867,6 +9870,11 @@ void CvCity::popOrder(int iNum, bool bFinish,
 	case ORDER_CREATE:
 	{
 		eCreateProject = (ProjectTypes)pOrderNode->m_data.iData1;
+		// <advc.064b> Moved into new function (and moved up)
+		handleOverflow(getProjectProduction(eCreateProject) -
+				getProductionNeeded(eCreateProject),
+				getProductionModifier(eCreateProject), eOrderType);
+		// </advc.064b>
 		GET_TEAM(getTeam()).changeProjectMaking(eCreateProject, -1);
 		doPopOrder(pOrderNode); // advc.064d
 		if(!bFinish)
@@ -9920,11 +9928,6 @@ void CvCity::popOrder(int iNum, bool bFinish,
 				GET_TEAM(getTeam()).setProjectArtType(eCreateProject, iProjectCount - 1, iDefaultArtType);
 			}
 		}
-		// <advc.064b> Moved into new function
-		handleOverflow(getProjectProduction(eCreateProject) -
-				getProductionNeeded(eCreateProject),
-				getProductionModifier(eCreateProject), eOrderType);
-		// </advc.064b>
 		setProjectProduction(eCreateProject, 0);
 		// <advc.123f>
 		if(GC.getGame().isProjectMaxedOut(eCreateProject))
@@ -10451,6 +10454,36 @@ void CvCity::doPlotCultureTimes100(bool bUpdate, PlayerTypes ePlayer,
 		{
 			rCultureToAdd *= rCultureToMaster;
 		} // </advc.025>
+		// <advc.098> Don't spread too deep into foreign territory
+		if (rCultureToAdd > 0 && p.getOwner() != getOwner())
+		{
+			int const iDistToOwnedCap = plotCultureExtraRange() + 2;
+			int iDistToOwned = iDistToOwnedCap;
+			for (PlotCircleIter itInnerLoopPlot(p, iDistToOwned - 1, false);
+				itInnerLoopPlot.hasNext(); ++itInnerLoopPlot)
+			{
+				if (itInnerLoopPlot.currPlotDist() < iDistToOwned)
+				{
+					if (itInnerLoopPlot->getOwner() == getOwner() ||
+						// Needed when the city is just being founded
+						&*itInnerLoopPlot == plot())
+					{
+						iDistToOwned = itInnerLoopPlot.currPlotDist();
+					}
+				}
+				/*	Take advantage of the iterator's spiral pattern to
+					cancel the search asap */
+				else if (itInnerLoopPlot.currPlotDist() > iDistToOwned)
+					break;
+			}
+			if (iDistToOwned >= plotCultureExtraRange())
+			{
+				if (iDistToOwned >= iDistToOwnedCap)
+					continue;
+				rCultureToAdd *= scaled(iDistToOwnedCap - iDistToOwned,
+						iDistToOwnedCap - iDistToOwned + 1);
+			}
+		} // </advc.098>
 		// <kekm.23> Loss of tile culture upon city trade
 		if (rCultureToAdd.isNegative())
 			rCultureToAdd.increaseTo(-p.getCulture(ePlayer)); // </kekm.23>

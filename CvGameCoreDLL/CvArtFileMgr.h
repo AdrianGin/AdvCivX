@@ -85,6 +85,7 @@ public:
 
 	// Builds Maps
 	DllExport void buildArtFileInfoMaps();																	// Exposed to Python
+	void testThemePath(); // advc.002b
 
 	// Adds an Art File List
 	void addArtInfoItem(CvArtFileMgr::ArtInfoItem* item) { m_artInfoItems.push_back(item); }

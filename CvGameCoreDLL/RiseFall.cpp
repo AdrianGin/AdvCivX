@@ -1483,12 +1483,9 @@ void RiseFall::substituteDiploText(bool gift) {
 	CvDiplomacyResponse* resp = findThanks();
 	if(resp == NULL || resp->getNumDiplomacyText() <= 0)
 		return;
-	CvWString noThanks = gDLL->getText("TXT_KEY_RF_NO_THANKS");
 	/*  Conversion from wstring: breaks if multi-byte chars are involved
 		(i.e. non-ASCII). */
-	CvString replacement;
-	for(size_t k = 0; k < noThanks.length(); k++)
-		replacement += (char)noThanks.at(k);
+	CvString replacement(gDLL->getText("TXT_KEY_RF_NO_THANKS"));
 	clearDiploStrings();
 	for(int j = 0; j < resp->getNumDiplomacyText(); j++) {
 		originalThanks.push_back(new CvString(resp->getDiplomacyText(j)));

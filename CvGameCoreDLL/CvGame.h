@@ -98,7 +98,7 @@ public:
 	DllExport void cycleCities(bool bForward = true, bool bAdd = false) const;							// Exposed to Python
 	// <advc.154>
 	CvSelectionGroup* getNextGroupInCycle(bool bForward, bool bWorkers,
-			bool& bWrap, CvUnit*& pCycleUnit) const;
+			bool& bWrap, CvUnit*& pCycleUnit, std::set<int>* pCycledGroups = NULL) const;
 	CvUnit* getCycleButtonUnit(bool bForward, bool bWorkers) const; // </advc.154>						// Exposed to Python
 	void cycleSelectionGroups(bool bClear,																// Exposed to Python
 			bool bForward = true, bool bWorkers = false);
@@ -453,7 +453,7 @@ public:
 	// <advc.003r> Akin to deferCall in BugUtil.py
 	enum UpdateTimerTypes {
 		UPDATE_COLLAPSE_SCORE_BOARD, // advc.085
-		UPDATE_DIRTY_SCORE_BOARD, // advc.085
+		UPDATE_DIRTY_SCORE_HELP, // advc.085
 		UPDATE_MOUSE_FOCUS, // advc.001w
 		UPDATE_LOOK_AT_STARTING_PLOT, // advc.004j
 		UPDATE_STORE_REPLAY_TEXTURE, // advc.106n

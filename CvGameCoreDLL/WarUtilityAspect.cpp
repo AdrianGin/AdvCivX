@@ -4520,16 +4520,9 @@ int ThirdPartyIntervention::preEvaluate()
 			/*	Squared b/c logistics power is only the cargo capacity.
 				(Fixme: should track power of cargo ships separately.) */
 			SQR(militAnalyst().lostPower(eWe, LOGISTICS));
-	/*	The timing of the intervention is difficult to predict. They may or may not
-		need to build up units, and we may be weakest early in the simulation or
-		late, but, even in the latter case, they might attack early b/c we already
-		appear weak enough ... I'm just going to look at the current power values
-		b/c that's easy to implement. */
-	m_rDefPow = /*(militAnalyst().gainedPower(eWe, ARMY) +
-			militAnalyst().gainedPower(eWe, HOME_GUARD)) / 2 +*/ // Count gains half?
-			// The cache includes HOME_GUARD in ARMY
-			ourCache().getPowerValues()[ARMY]->power();
-	m_rDefPow.increaseTo(scaled::epsilon());
+	scaled const rGainedPow = militAnalyst().gainedPower(eWe, ARMY) +
+			militAnalyst().gainedPower(eWe, HOME_GUARD);
+	m_rDefPow = ourCache().getPowerValues()[ARMY]->power(); // includes HOME_GUARD
 	for (PlayerAIIter<MAJOR_CIV,OTHER_KNOWN_TO> itAlly(eOurTeam);
 		itAlly.hasNext(); ++itAlly)
 	{
@@ -4546,8 +4539,18 @@ int ThirdPartyIntervention::preEvaluate()
 			rOurLostPow += militAnalyst().lostPower(itAlly->getID(), ARMY);
 		}
 	}
-	m_rLostDefPowRatio = rOurLostPow / m_rDefPow;
+	m_rLostDefPowRatio = rOurLostPow / std::max(m_rDefPow,
+			m_rDefPow + rGainedPow);
 	m_rLostDefPowRatio.clamp(0, fixp(0.5));
+	/*	The timing of the intervention is difficult to predict. They may or may not
+		need to build up units, and we may be weakest early in the simulation or
+		late, but, even in the latter case, they might attack early b/c we already
+		appear weak enough ... Too complicated to estimate their build-up, but it'll
+		probably be less than ours because we'll start right away and won't stop
+		until the war ends. So let's count our estimated change in power half
+		and theirs not at all - and later adjust our power to account for
+		m_rLostDefPowRatio (losses, distraction). */
+	m_rDefPow.increaseTo(m_rDefPow + rGainedPow / 2);
 	return 0;
 }
 
@@ -4648,8 +4651,8 @@ void ThirdPartyIntervention::evaluate()
 		int iOurDefPow = kOurTeam.getDefensivePower();
 		iOurDefPow = (iOurDefPow * (1 - rOurLostPowRatio)).uround();
 		int iParanoia = kWe.AI_paranoiaRating(eThey, iOurDefPow, false, true);
-		iParanoia = std::min(iParanoia, 190);
-		rInterventionProb = scaled(iParanoia - 25, 215);
+		iParanoia = std::min(iParanoia, 210);
+		rInterventionProb = scaled(iParanoia - 28, 233);
 		if (rInterventionProb > 0)
 		{
 			log("Our paranoia rating: %d", iParanoia);
@@ -4752,7 +4755,7 @@ void ThirdPartyIntervention::evaluate()
 		hence sqrt). We want to avoid any tough fights with 2nd parties, when a
 		dangerous 3rd-party intervention looms. */
 	scaled rCost = rInterventionProb * 85 * rOurLostPowRatio.sqrt();
-	{	// These formulas are a mess
+	{	// These formulas are a bit of a mess
 		scaled const rPowRatioThresh = 2;
 		if (rTheirPowToOurs > rPowRatioThresh)
 		{

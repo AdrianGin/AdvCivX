@@ -432,13 +432,13 @@ CvMainMenuInfo* CyGlobalContext::getMainMenus(int i) const
 
 CvVoteSourceInfo* CyGlobalContext::getVoteSourceInfo(int i) const
 {
-	return ((i >= 0 && i < GC.getNumVoteSourceInfos()) ? &GC.getVoteSourceInfo((VoteSourceTypes)i) : NULL);
+	return ((i >= 0 && i < GC.getNumVoteSourceInfos()) ? &GC.getInfo((VoteSourceTypes)i) : NULL);
 }
 
 
 CvInfoBase* CyGlobalContext::getInvisibleInfo(int i) const
 {
-	return ((i >= 0 && i < GC.getNumInvisibleInfos()) ? &GC.getInvisibleInfo((InvisibleTypes)i) : NULL);
+	return ((i >= 0 && i < GC.getNumInvisibleInfos()) ? &GC.getInfo((InvisibleTypes)i) : NULL);
 }
 
 

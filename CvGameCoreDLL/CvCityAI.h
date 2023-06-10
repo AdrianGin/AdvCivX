@@ -158,6 +158,7 @@ public:
 	//bool AI_isFrontlineCity() const; // K-Mod // advc.003j: unused
 	int AI_calculateMilitaryOutput() const; // K-Mod
 	int AI_cityThreat(/*bool bDangerPercent = false*/) const; // advc: param was (and has always been) unused
+	int AI_defianceAngerCost(ReligionTypes eVSReligion) const; // advc.118b
 
 	int AI_getWorkersHave() const;
 	int AI_getWorkersNeeded() const;
@@ -232,6 +233,7 @@ protected:
 	bool AI_removeWorstCitizen(SpecialistTypes eIgnoreSpecialist = NO_SPECIALIST);
 	void AI_juggleCitizens(/* advc.131d: */ bool bEmphasize = false);
 	int AI_citizenSacrificeCost(int iCitLoss, int iHappyLevel = 0, int iNewAnger = 0, int iAngerTimer = 0); // K-Mod
+	int AI_citizenValue() const; // advc
 	// advc: Both unused
 	/*bool AI_potentialPlot(CvPlot const& kPlot) const; // advc.enum: param was 'short* piYields'
 	bool AI_foodAvailable(int iExtra = 0) const;*/

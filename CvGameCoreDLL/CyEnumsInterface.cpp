@@ -221,6 +221,8 @@ void CyEnumsPythonInterface()
 		.value("Advanced_Start_DIRTY_BIT", Advanced_Start_DIRTY_BIT)
 		// advc.068:
 		.value("Tech_Screen_DIRTY_BIT", Tech_Screen_DIRTY_BIT)
+		// advc.085:
+		.value("ScoreHelp_DIRTY_BIT", ScoreHelp_DIRTY_BIT)
 		.value("NUM_INTERFACE_DIRTY_BITS", NUM_INTERFACE_DIRTY_BITS)
 		;
 

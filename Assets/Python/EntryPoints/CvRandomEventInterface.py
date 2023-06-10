@@ -2713,7 +2713,8 @@ def canTriggerCrusadeDone(argsList):
 	kActualTriggeredDataObject = player.getEventTriggered(kTriggeredData.iId)
 	kActualTriggeredDataObject.iCityId = holyCity.getID()
 	kActualTriggeredDataObject.eOtherPlayer = kOrigTriggeredData.eOtherPlayer
-	kActualTriggeredDataObject.eReligion = kOrigTriggeredData.eReligion
+	# advc.001 (from CloseToHome mod): was =kOrigTriggeredData.eReligion
+	kActualTriggeredDataObject.eReligion = ReligionTypes(player.getStateReligion())
 	
 	for iBuilding in range(gc.getNumBuildingInfos()):
 		if gc.getBuildingInfo(iBuilding).getHolyCity() == kOrigTriggeredData.eReligion:
@@ -3185,7 +3186,8 @@ def canTriggerWarChariotsDone(argsList):
 	
 	kOrigTriggeredData = player.getEventOccured(trigger.getPrereqEvent(0))
 	kActualTriggeredDataObject = player.getEventTriggered(kTriggeredData.iId)
-	kActualTriggeredDataObject.eReligion = kOrigTriggeredData.eReligion
+	# advc.001 (see canTriggerCrusadeDone)
+	kActualTriggeredDataObject.eReligion = ReligionTypes(player.getStateReligion())
 		
 	return true
 
@@ -3361,7 +3363,8 @@ def canTriggerNobleKnightsDone(argsList):
 	trigger = gc.getEventTriggerInfo(kTriggeredData.eTrigger)
 	kOrigTriggeredData = player.getEventOccured(trigger.getPrereqEvent(0))
 	kActualTriggeredDataObject = player.getEventTriggered(kTriggeredData.iId)
-	kActualTriggeredDataObject.eReligion = kOrigTriggeredData.eReligion
+	# advc.001 (see canTriggerCrusadeDone)
+	kActualTriggeredDataObject.eReligion = ReligionTypes(player.getStateReligion())
 
 	iBuilding = CvUtil.findInfoTypeNum(gc.getBuildingInfo, gc.getNumBuildingInfos(), 'BUILDING_ORACLE')
 	

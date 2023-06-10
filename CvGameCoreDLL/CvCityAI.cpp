@@ -3731,10 +3731,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 	CvTeamAI const& kTeam = GET_TEAM(kOwner.getTeam()); // kekm.16
 	CvGame const& kGame = GC.getGame();
 	int const iOwnerEra = kOwner.getCurrentEra();
-	/*	advc: K-Mod formula that was used in two places. advc.erai (comment):
-		Kek-Mod normalizes the era here, but I don't think we should assume (implicitly)
-		that mods with fewer eras have more perks (like extra tile yields) per era. */
-	int const iCitizenValue = 6 + iOwnerEra;
+	int const iCitizenValue = AI_citizenValue(); // advc
 	CvBuildingInfo const& kBuilding = GC.getInfo(eBuilding);
 	BuildingClassTypes const eBuildingClass = kBuilding.getBuildingClassType();
 	int const iLimitedWonderLimit = GC.getInfo(eBuildingClass).getLimit();
@@ -9926,7 +9923,7 @@ void CvCityAI::AI_juggleCitizens(/* advc.131d: */ bool bEmphasize)
 #endif
 }
 
-/*	K-Mod. Estimate the cost of recovery after losing iQuantity number of citizens
+/*	K-Mod: Estimate the cost of recovery after losing iQuantity number of citizens
 	in this city. (units of 4x commerce.) Replacing AI_citizenLossCost in BtS. */
 int CvCityAI::AI_citizenSacrificeCost(int iCitLoss, int iHappyLevel, int iNewAnger, int iAngerTimer)
 {
@@ -10121,7 +10118,17 @@ int CvCityAI::AI_citizenSacrificeCost(int iCitLoss, int iHappyLevel, int iNewAng
 	}
 
 	return iCost;
-} // K-Mod end
+}
+
+/*	advc: K-Mod formula that was used in two places. I also want to use it in a
+	third place. */
+int CvCityAI::AI_citizenValue() const
+{
+	/*	advc.erai (note): Kek-Mod normalizes the era here, but
+		I don't think we should assume (implicitly) that mods with fewer eras
+		have more perks (like extra tile yields) per era. */
+	return 6 + GET_PLAYER(getOwner()).getCurrentEra();
+}
 
 //  advc.enum: Param was a pointer to a CvPlot member array of yields.
 //	Replaced all uses of that param with kPlot.getYield(YieldTypes), which,
@@ -13261,6 +13268,25 @@ int CvCityAI::AI_calculateSettlerPriority(int iAreaSites, int iBestAreaFoundValu
 	// Imperialistic trait? Awkward to check ...
 	// I don't think the number of sites should matter(?)
 	return std::min(100, iPriority);
+}
+
+// advc.118b (see comments about the corresponding CvPlayerAI function)
+int CvCityAI::AI_defianceAngerCost(ReligionTypes eVSReligion) const
+{
+	if (eVSReligion != NO_RELIGION && !isHasReligion(eVSReligion))
+		return 0;
+	/*	(For a more sophisticated calculation, CvPlayerAI::AI_getHappinessWeight
+		should be split up between CvPlayerAI and CvCityAI.) */
+	if (isNoUnhappiness())
+		return 0;
+	int const iHappy = happyLevel();
+	int const iUnhappy = unhappyLevel();
+	int const iUnhappyIncr = std::max(0,
+			GC.getDefineINT(CvGlobals::DEFY_RESOLUTION_POP_ANGER) +
+			iUnhappy - iHappy) - std::max(0, iUnhappy - iHappy);
+	return iUnhappyIncr * AI_citizenValue() *
+			// Discourage repeated denial
+			(getDefyResolutionAngerTimer() > 0 ? 2 : 1);
 }
 
 //Workers have/needed is not intended to be a strict

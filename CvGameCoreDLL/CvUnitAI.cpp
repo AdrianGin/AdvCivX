@@ -450,7 +450,7 @@ void CvUnitAI::AI_upgrade()
 
 	if (eBestUnit != NO_UNIT)
 	{
-		if (gUnitLogLevel > 0) logBBAI("    %S (unit %d - %S) upgrading to %S (value: %d)", getName().GetCString(), getID(), GC.getUnitAIInfo(AI_getUnitAIType()).getDescription(), GC.getUnitInfo(eBestUnit).getDescription(), iBestValue); // advc.mnai
+		if (gUnitLogLevel > 0) logBBAI("    %S (unit %d - %S) upgrading to %S (value: %d)", getName().GetCString(), getID(), GC.getUnitAIInfo(AI_getUnitAIType()).getDescription(), GC.getInfo(eBestUnit).getDescription(), iBestValue); // advc.mnai
 		/*upgrade(eBestUnit);
 		doDelayedDeath(); */ // BtS
 		// K-Mod. Ungroup the unit, so that we don't cause the whole group to miss their turn.
@@ -13192,8 +13192,8 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 				continue;
 			}
 		}
+		int iPathTurns;
 		{
-			int iPathTurns;
 			PROFILE("AI_exploreRange Path");
 			if (!generatePath(p, eFlags, true, &iPathTurns, iRange))
 				continue;
@@ -13256,7 +13256,9 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 			iValue *= iDirectionModifier;
 			iValue /= 100;
 		}
-
+		/*	advc.pf: It's much better not to rely on the pathfinder for our
+			immediate move. The pathfinder won't optimize exploration at all. */
+		iValue /= iPathTurns + 1;
 		if (iValue > iBestValue)
 		{
 			iBestValue = iValue;
@@ -14170,20 +14172,38 @@ bool CvUnitAI::AI_leaveAttack(int iRange, int iOddsThreshold, int iStrengthThres
 			if (p.getNumVisibleEnemyDefenders(this) > 0)*/ // BtS
 		if (!p.isVisibleEnemyDefender(this)) // K-Mod
 			continue;
-
-		if (generatePath(p, NO_MOVEMENT_FLAGS, true, 0, iRange))
+		if (!generatePath(p, NO_MOVEMENT_FLAGS, true, 0, iRange))
+			continue;
+		/*	<advc.114f> Enter hostile territory only if we can attack straight away
+			or if we'll have moves left for seeking safety */
+		if (getPathFinder().getPathTurns() > 1 &&
+			getPathFinder().getFinalMoves() <= 0)
 		{
-			//iValue = getGroup()->AI_attackOdds(&p, true);
-			int iValue = AI_getGroup()->AI_getWeightedOdds(&p, false); // K-Mod
-			//if (iValue >= AI_finalOddsThreshold(&p, iOddsThreshold))
-			if (iValue >= iOddsThreshold) // K-Mod
+			if (p.isOwned() && GET_TEAM(p.getTeam()).isAtWar(getTeam()))
+				continue;
+			/*	Don't make multi-turn moves in non-hostile territory either
+				if this is a non-lethal group. Can still damage them if and when
+				they come closer. */
+			bool bAnyLethal = false;
+			FOR_EACH_UNIT_IN(pGroupUnit, *getGroup())
 			{
-				if (iValue > iBestValue)
+				if (pGroupUnit->combatLimit() >= 100)
 				{
-					iBestValue = iValue;
-					pBestPlot = &getPathEndTurnPlot();
+					bAnyLethal = true;
+					break;
 				}
 			}
+			if (!bAnyLethal)
+				continue;
+		} // </advc.114f>
+		//iValue = getGroup()->AI_attackOdds(&p, true);
+		int iValue = AI_getGroup()->AI_getWeightedOdds(&p, false); // K-Mod
+		//if (iValue >= AI_finalOddsThreshold(&p, iOddsThreshold))
+		if (iValue >= iOddsThreshold && // K-Mod
+			iValue > iBestValue)
+		{
+			iBestValue = iValue;
+			pBestPlot = &getPathEndTurnPlot();
 		}
 	}
 
@@ -19679,7 +19699,7 @@ int CvUnitAI::AI_airStrikeValue(CvPlot const& kPlot, int iCurrentBest, bool& bBo
 			{	/*	(isRevealedCityHeal would use the same team
 					for the heal and visibility checks) */
 				ImprovementTypes eImprov = kPlot.getRevealedImprovementType(getTeam());
-				if (eImprov != NO_IMPROVEMENT && GC.getImprovementInfo(eImprov).isActsAsCity())
+				if (eImprov != NO_IMPROVEMENT && GC.getInfo(eImprov).isActsAsCity())
 				{	// </advc>
 					iStrikeValue *= 3;
 					iStrikeValue /= 4;

@@ -74,7 +74,18 @@ public:
 	virtual void updateFoundingBorder() = 0;
 	virtual void addLandmark(CvPlot *plot, const wchar *caption) = 0;
 
-	virtual void TriggerEffect(int iEffect, NiPoint3 pt3Point, float rotation = 0.0f) = 0;
+	virtual void TriggerEffectExternal(int iEffect, NiPoint3 pt3Point, float fRotation = 0) = 0;
+	// <advc> Renamed the above and added this wrapper:
+	void TriggerEffect(EffectTypes eEffect, NiPoint3 pt3Point, float fRotation = 0)
+	{	/*	Seems that ibvalid effects (or none) can crash the EXE at a later point,
+			i.e. in a way that is difficult to debug. The WtP mod had this problem. */
+		if (!checkEnumBounds(eEffect))
+		{
+			FAssert(eEffect == NO_EFFECT);
+			return;
+		}
+		TriggerEffectExternal(eEffect, pt3Point, fRotation);
+	} // </advc>
 	virtual void printProfileText() = 0;
 
 	virtual void clearSigns() = 0;

@@ -2620,7 +2620,7 @@ bool CvDLLButtonPopup::launchEventPopup(CvPopup* pPopup, CvPopupInfo &info)
 			kTrigger.getEvent(i), *pTriggeredData))
 		{
 			m_kUI.popupAddGenericButton(pPopup,
-					GC.getEventInfo((EventTypes)kTrigger.getEvent(i)).getDescription(),
+					GC.getInfo((EventTypes)kTrigger.getEvent(i)).getDescription(),
 					GC.getInfo((EventTypes)kTrigger.getEvent(i)).getButton(),
 					kTrigger.getEvent(i), WIDGET_CHOOSE_EVENT, kTrigger.getEvent(i), info.getData1());
 			bEventAvailable = true;

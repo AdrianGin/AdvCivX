@@ -1612,6 +1612,7 @@ void CvTeam::meet(TeamTypes eTeam, bool bNewDiplo,
 	CvPlot const* pOtherAt = kTeam.makeHasMet(getID(), bNewDiplo, pData);
 	// <advc.120l> (Not in makeHasMet b/c all the has-met data needs to be set first)
 	if (pData != NULL &&
+		GC.IsGraphicsInitialized() && // No reminder while initializing a scenario
 		BUGOption::isEnabled("Civ4lerts__EspionageReminder") &&
 		!GC.getGame().isOption(GAMEOPTION_NO_ESPIONAGE))
 	{

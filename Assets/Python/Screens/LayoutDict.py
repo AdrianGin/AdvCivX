@@ -58,6 +58,8 @@ def gSetSquare(szKeyName, szParentKey, fX, fY, fSideLen, bOffScreen = False):
 			fX, fY, fSideLen, bOffScreen))
 def gRect(szKeyName):
 	return gRectLayoutDict[szKeyName]
+def gIsRect(szKeyName):
+	return szKeyName in gRectLayoutDict
 # Same deal for 2D points
 gPointLayoutDict = {}
 def gSetPoint(szKeyName, lPoint):

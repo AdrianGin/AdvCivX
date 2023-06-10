@@ -413,19 +413,19 @@ void CvPlot::doImprovement()
 		Makes clearer which conditions are ensured by the caller. */
 	if (!isImproved())
 		return;
-	ImprovementTypes eImprovementUpdrade = GC.getInfo(getImprovementType()).
+	ImprovementTypes eImprovementUpgrade = GC.getInfo(getImprovementType()).
 			getImprovementUpgrade();
-	if (eImprovementUpdrade != NO_IMPROVEMENT)
+	if (eImprovementUpgrade != NO_IMPROVEMENT)
 	{
 		/*	advc: Caller already ensures isBeingWorked (and isOwned()).
 			In other words, improvement upgrades outside of borders
 			aren't correctly implemented, and I'm not going to fix that. */
-		//if (isBeingWorked() || GC.getInfo(eImprovementUpdrade).isOutsideBorders())
+		//if (isBeingWorked() || GC.getInfo(eImprovementUpgrade).isOutsideBorders())
 		changeUpgradeProgress(kOwner.getImprovementUpgradeRate());
 		if (getUpgradeProgress() >= GC.getGame().
 			getImprovementUpgradeTime(getImprovementType()) * 100)
 		{
-			setImprovementType(eImprovementUpdrade);
+			setImprovementType(eImprovementUpgrade);
 		}
 	}
 }
@@ -1491,28 +1491,28 @@ bool CvPlot::isAdjacentSaltWater() const
 }
 
 
-bool CvPlot::isPotentialIrrigation() const
+bool CvPlot::isPotentialIrrigation(/* advc: */ bool bIgnoreTeam) const
 {
-	// advc: 2nd condition was !isHills. Mods might allow cities on peaks.
-	if ((isCity() && isFlatlands()) ||
-		(isImproved() && GC.getInfo(getImprovementType()).isCarriesIrrigation()))
+	// advc.opt: Moved up
+	if (!isOwned() || (!GET_TEAM(getTeam()).isIrrigation() &&
+		!bIgnoreTeam)) // advc
 	{
-		if (isOwned() && GET_TEAM(getTeam()).isIrrigation())
-			return true;
+		return false;
 	}
-
-	return false;
+	// advc: 2nd condition was !isHills. Mods might allow cities on peaks.
+	return ((isCity() && isFlatlands()) ||
+			(isImproved() && GC.getInfo(getImprovementType()).isCarriesIrrigation()));
 }
 
-
+// advc (note): Only used by AI code
 bool CvPlot::canHavePotentialIrrigation() const
 {
 	//PROFILE_FUNC(); // advc (not called very frequently)
 	// <advc.opt>
-	if(isWater())
+	if (isWater())
 		return false; // </advc.opt>
-	// advc: 2nd condition was !isHills. Mods might allow cities on peaks.
-	if (isCity() && isFlatlands())
+	// advc: Rather than repeat the flat city special rule here
+	if (isPotentialIrrigation(true))
 		return true;
 	FOR_EACH_ENUM(Improvement)
 	{
@@ -2163,9 +2163,11 @@ bool CvPlot::canHaveImprovement(ImprovementTypes eImprovement, TeamTypes eTeam, 
 			return false;
 	}
 
-	if (getBonusType(eTeam) != NO_BONUS && GC.getInfo(eImprovement).isImprovementBonusMakesValid(getBonusType(eTeam)))
+	if (getBonusType(eTeam) != NO_BONUS &&
+		GC.getInfo(eImprovement).isImprovementBonusMakesValid(getBonusType(eTeam)))
+	{
 		return true;
-
+	}
 	if (GC.getInfo(eImprovement).isNoFreshWater() && isFreshWater())
 		return false;
 
@@ -2178,14 +2180,17 @@ bool CvPlot::canHaveImprovement(ImprovementTypes eImprovement, TeamTypes eTeam, 
 		bool bValid = false;
 		if (GC.getInfo(eImprovement).isHillsMakesValid() && isHills())
 			bValid = true;
-		if (GC.getInfo(eImprovement).isFreshWaterMakesValid() && isFreshWater())
+		else if (GC.getInfo(eImprovement).isFreshWaterMakesValid() && isFreshWater())
 			bValid = true;
-		if (GC.getInfo(eImprovement).isRiverSideMakesValid() && isRiverSide())
+		else if (GC.getInfo(eImprovement).isRiverSideMakesValid() && isRiverSide())
 			bValid = true;
-		if (GC.getInfo(eImprovement).getTerrainMakesValid(getTerrainType()))
+		else if (GC.getInfo(eImprovement).getTerrainMakesValid(getTerrainType()))
 			bValid = true;
-		if (isFeature() && GC.getInfo(eImprovement).getFeatureMakesValid(getFeatureType()))
+		else if (isFeature() &&
+			GC.getInfo(eImprovement).getFeatureMakesValid(getFeatureType()))
+		{
 			bValid = true;
+		}
 		if (!bValid)
 			return false;
 	}
@@ -2290,17 +2295,21 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible,
 		if (bPyOverride)
 			return bCanBuild;
 	}
+	TeamTypes const eTeam = TEAMID(ePlayer);
 	bool bValid = false;
+	// <advc.181>
+	TeamTypes const ePlotTeam = (bIgnoreFoW ? getTeam() :
+			getRevealedTeam(eTeam, false)); // </advc.181>
 	ImprovementTypes const eImprovement = GC.getInfo(eBuild).getImprovement();
 	if (eImprovement != NO_IMPROVEMENT)
 	{
-		if (!canHaveImprovement(eImprovement, TEAMID(ePlayer), bTestVisible,
+		if (!canHaveImprovement(eImprovement, eTeam, bTestVisible,
 			eBuild, false)) // kekm.9
 		{
 			return false;
 		}
 		ImprovementTypes const eOldImprov = (bIgnoreFoW ? getImprovementType() :
-				getRevealedImprovementType(TEAMID(ePlayer)));
+				getRevealedImprovementType(eTeam));
 		if (eOldImprov != NO_IMPROVEMENT) // advc.181
 		//if (isImproved())
 		{
@@ -2318,12 +2327,12 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible,
 		}
 		if (!bTestVisible)
 		{
-			if (TEAMID(ePlayer) != getTeam())
+			if (eTeam != ePlotTeam)
 			{
 				//outside borders can't be built in other's culture
 				if (GC.getInfo(eImprovement).isOutsideBorders())
 				{
-					if (getTeam() != NO_TEAM)
+					if (ePlotTeam != NO_TEAM)
 						return false;
 				}
 				else return false; //only buildable in own culture
@@ -2337,7 +2346,7 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible,
 	{
 		// <advc.181>
 		RouteTypes const eOldRoute = (bIgnoreFoW ? getRouteType() :
-				getRevealedRouteType(TEAMID(ePlayer)));
+				getRevealedRouteType(eTeam));
 		if (eOldRoute != NO_ROUTE) // </advc.181>
 		//if (isRoute())
 		{
@@ -2370,16 +2379,18 @@ bool CvPlot::canBuild(BuildTypes eBuild, PlayerTypes ePlayer, bool bTestVisible,
 		}
 		bValid = true;
 	}
-
 	if (isFeature())
 	{
 		if (GC.getInfo(eBuild).isFeatureRemove(getFeatureType()))
-		{	/*if (isOwned() && (GET_PLAYER(ePlayer).getTeam() != getTeam()) && !atWar(GET_PLAYER(ePlayer).getTeam(), getTeam()))
+		{	/*if (isOwned() && eTeam != ePlotTeam && !GET_TEAM(eTeam).isAtWar(ePlotTeam))
 				return false;
 			bValid = true;*/
 			// <advc.119> Replacing the above
-			if(getTeam() == TEAMID(ePlayer))
+			if (ePlotTeam == eTeam || (ePlotTeam == NO_TEAM &&
+				GC.getDefineBOOL(CvGlobals::CAN_CHOP_UNOWNED_FEATURES)))
+			{
 				bValid = true;
+			}
 			else return false; // </advc.119>
 		}
 	}
@@ -2397,8 +2408,8 @@ int CvPlot::getBuildTime(BuildTypes eBuild, /* advc.251: */ PlayerTypes ePlayer)
 	iTime *= std::max(0, GC.getInfo(getTerrainType()).getBuildModifier() + 100);
 	iTime /= 100;
 	// <advc.251>
-	iTime = (int)(GC.getInfo(GET_PLAYER(ePlayer).getHandicapType()).
-			getBuildTimePercent() * 0.01 * iTime);
+	iTime = (per100(GC.getInfo(GET_PLAYER(ePlayer).getHandicapType()).
+			getBuildTimePercent()) * iTime).floor();
 	iTime -= (iTime % 50); // Round down to a multiple of 50
 	// </advc.251>
 	iTime *= GC.getInfo(GC.getGame().getGameSpeedType()).getBuildPercent();

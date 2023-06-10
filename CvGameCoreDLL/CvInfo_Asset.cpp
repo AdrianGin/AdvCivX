@@ -38,6 +38,13 @@ bool CvAssetInfoBase::read(CvXMLLoadUtility* pXML)
 
 const TCHAR* CvArtInfoAsset::getNIF() const
 {
+	/*	advc.007 (from WtP): To find the XML type tag that causes a
+		"texture failed to load" error in resmgr.log. NB: Failures to load
+		FlagDECAL.dds and PlayerColor01.tga, ...02.tga are issues introduced
+		by the BUG mod, difficult to diagnose, probably (pretty) harmless. */
+	/*CvString szMsg;
+	szMsg.Format("Opening nif for tag: %s", getTag());
+	gDLL->logMsg("resmgr.log", szMsg);*/
 	return m_szNIF;
 }
 

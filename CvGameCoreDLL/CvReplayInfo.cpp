@@ -52,7 +52,7 @@ CvReplayInfo::~CvReplayInfo()
 	{
 		SAFE_DELETE(m_listReplayMessages[i]);
 	}
-	SAFE_DELETE(m_pcMinimapPixels);
+	SAFE_DELETE_ARRAY(m_pcMinimapPixels); // advc.001 (was SAFE_DELETE)
 	SAFE_DELETE(m); // advc.003k
 }
 
@@ -229,7 +229,7 @@ void CvReplayInfo::createInfo(PlayerTypes ePlayer)
 	if (pTexture == NULL)
 		pTexture = gDLL->UI().getMinimapBaseTexture();
 	// </advc.106n>
-	SAFE_DELETE(m_pcMinimapPixels);
+	SAFE_DELETE_ARRAY(m_pcMinimapPixels); // advc.001 (was SAFE_DELETE)
 	m_pcMinimapPixels = new byte[/* advc.106m: */ minimapPixels()];
 	if (pTexture != NULL)
 		memcpy((void*)m_pcMinimapPixels, pTexture, /* advc.106m: */ minimapPixels());
@@ -829,7 +829,7 @@ bool CvReplayInfo::read(FDataStreamBase& stream)
 		if(!checkBounds(m_iMapWidth, 1, 1000)) return false; // advc.106i
 		stream.Read(&m_iMapHeight);
 		if(!checkBounds(m_iMapHeight, 1, 1000)) return false; // advc.106i
-		SAFE_DELETE(m_pcMinimapPixels);
+		SAFE_DELETE_ARRAY(m_pcMinimapPixels); // advc.001 (was SAFE_DELETE)
 		m_pcMinimapPixels = new byte[/* advc.106m: */ minimapPixels()];
 		stream.Read(/* advc.106m: */ minimapPixels(),
 				const_cast<byte*>(m_pcMinimapPixels)); // advc.106n: cast

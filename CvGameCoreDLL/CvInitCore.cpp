@@ -1739,7 +1739,7 @@ void CvInitCore::reRandomizeCivsAndLeaders()
 		bool bPlayable = false;
 		FOR_EACH_ENUM2(Civilization, eCiv)
 		{
-			if (GC.getCivilizationInfo(eCiv).isLeaders(eLeader) &&
+			if (GC.getInfo(eCiv).isLeaders(eLeader) &&
 				GC.getInfo(eCiv).isPlayable())
 			{
 				leadersPerCiv[eCiv].push_back(eLeader);

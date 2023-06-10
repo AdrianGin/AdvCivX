@@ -681,7 +681,7 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 		break;
 	// K-Mod. Global commerce modifiers, extra specialist commerce
 	case WIDGET_HELP_GLOBAL_COMMERCE_MODIFIER:
-		GAMETEXT.setCommerceChangeHelp(szBuffer, L"", L"", gDLL->getText("TXT_KEY_CIVIC_IN_ALL_CITIES").GetCString(), GC.getTechInfo((TechTypes)(widgetDataStruct.m_iData1)).getCommerceModifierArray(), true, false);
+		GAMETEXT.setCommerceChangeHelp(szBuffer, L"", L"", gDLL->getText("TXT_KEY_CIVIC_IN_ALL_CITIES").GetCString(), GC.getInfo((TechTypes)(widgetDataStruct.m_iData1)).getCommerceModifierArray(), true, false);
 		break;
 	case WIDGET_HELP_EXTRA_SPECIALIST_COMMERCE:
 		GAMETEXT.setCommerceChangeHelp(szBuffer, L"", L"", gDLL->getText("TXT_KEY_CIVIC_PER_SPECIALIST").GetCString(), GC.getInfo((TechTypes)(widgetDataStruct.m_iData1)).getSpecialistExtraCommerceArray(), false, false);
@@ -1452,20 +1452,30 @@ void CvDLLWidgetData::doResearch(CvWidgetDataStruct &widgetDataStruct)
 	bool bShift = GC.shiftKey();
 
 	// UNOFFICIAL_PATCH, Bugfix (Free Tech Popup Fix), 12/07/09, EmperorFool: START
+	CvPlayer& kActivePlayer = GET_PLAYER(getActivePlayer());
 	if (widgetDataStruct.m_iData2 > 0)
 	{
-		CvPlayer& kPlayer = GET_PLAYER(getActivePlayer());
-		if (!kPlayer.isChoosingFreeTech())
+		if (!kActivePlayer.isChoosingFreeTech())
 		{
 			gDLL->UI().addMessage(getActivePlayer(), true, -1,
 					gDLL->getText("TXT_KEY_CHEATERS_NEVER_PROSPER"), NULL, MESSAGE_TYPE_MAJOR_EVENT);
 			FErrorMsg("doResearch called for free tech when !isChoosingFreeTech()");
 			return;
 		}
-		else kPlayer.changeChoosingFreeTechCount(-1);
+		else kActivePlayer.changeChoosingFreeTechCount(-1);
 	} // UNOFFICIAL_PATCH: END
-
-	CvMessageControl::getInstance().sendResearch(((TechTypes)widgetDataStruct.m_iData1), widgetDataStruct.m_iData2, bShift);
+	TechTypes eNewActiveResearch = (TechTypes)widgetDataStruct.m_iData1;
+	/*	<advc.001> The main interface now passes the tech ID when the name of
+		the current research is clicked (for the right-click Pedia jump). But
+		we still want to clear the current research on left-click, so we mustn't
+		pass the tech ID along here. */
+	if (widgetDataStruct.m_eWidgetType == WIDGET_RESEARCH &&
+		eNewActiveResearch == kActivePlayer.getCurrentResearch())
+	{
+		eNewActiveResearch = NO_TECH;
+	} // </advc.001>
+	CvMessageControl::getInstance().sendResearch(eNewActiveResearch,
+			widgetDataStruct.m_iData2, bShift);
 }
 
 
@@ -1508,7 +1518,7 @@ void CvDLLWidgetData::doContactCiv(CvWidgetDataStruct &widgetDataStruct)
 	}  /* <advc.085> Give the player time to move the cursor off the scoreboard
 		  (cf. comments in CvPlayer::setScoreboardExpanded) */
 	if (BUGOption::isEnabled("Scores__ExpandOnHover", false, false))
-		GC.getGame().setUpdateTimer(CvGame::UPDATE_DIRTY_SCORE_BOARD, 4); // </advc.085>
+		GC.getGame().setUpdateTimer(CvGame::UPDATE_DIRTY_SCORE_HELP, 4); // </advc.085>
 	// BETTER_BTS_AI_MOD, Player Interface, 01/11/09, jdog5000: START
 	if (GC.shiftKey() && !GC.altKey())
 	{
@@ -2328,16 +2338,24 @@ void CvDLLWidgetData::parseActionHelp_Mission(CvActionInfo const& kAction,
 		break;
 	}
 	case MISSION_PILLAGE:
-	{	// <advc.111> Matching a change in CvUnit::pillage
-		if (kMissionPlot.getTeam() == kUnitTeam.getID())
+	{	// <advc.111>
+		if (kUnit.getDestructibleStructureAt(kMissionPlot, true, GC.ctrlKey()) ==
+			CvUnit::STRUCTURE_IMPROVEMENT)
 		{
-			if (!GAMETEXT.setPillageHelp(szBuffer, kMissionPlot.getRouteType()))
-				GAMETEXT.setPillageHelp(szBuffer, kMissionPlot.getImprovementType());
+			GAMETEXT.setPillageHelp(szBuffer, kMissionPlot.getImprovementType());
 		}
 		else
 		{
-			if (!GAMETEXT.setPillageHelp(szBuffer, kMissionPlot.getImprovementType()))
-				GAMETEXT.setPillageHelp(szBuffer, kMissionPlot.getRouteType());
+			GAMETEXT.setPillageHelp(szBuffer, kMissionPlot.getRouteType());
+			if (!GC.ctrlKey() && kUnit.getDestructibleStructureAt(kMissionPlot, true, true) ==
+				CvUnit::STRUCTURE_IMPROVEMENT)
+			{
+				szBuffer.append(L". (");
+				szBuffer.append(gDLL->getText("TXT_KEY_MISC_DESTROY_OWN_STRUCTURE",
+						GC.getInfo(kMissionPlot.getRevealedImprovementType(
+						getActiveTeam())).getTextKeyWide()));
+				szBuffer.append(L".)");
+			}
 		} // </advc.111>
 		break;
 	}

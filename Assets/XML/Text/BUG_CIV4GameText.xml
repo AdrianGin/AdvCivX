@@ -1423,6 +1423,16 @@
 			<Plural>1</Plural>
 		</Spanish>
 	</TEXT>
+
+	<!-- advc.007d (from BUG 4.5): Trigger Event -->
+	<TEXT>
+		<Tag>TXT_KEY_POPUP_SELECT_EVENT</Tag>
+		<English>Choose an event which should be triggered.</English>
+		<French>Choose an event which should be triggered.</French>
+		<German>Event aussuchen, das gestartet werden soll.</German>
+		<Italian>Choose an event which should be triggered.</Italian>
+		<Spanish>Choose an event which should be triggered.</Spanish>
+	</TEXT>
 	
 	<!-- BULL -->
 	<!-- advc: Commented out -->

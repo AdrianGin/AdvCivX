@@ -713,7 +713,7 @@ void CvPlayer::changeLeader(LeaderHeadTypes eNewLeader,
 	GC.getInitCore().setLeader(getID(), eNewLeader);
 	// <advc.tsl>
 	if (bChangeName && (!isHuman() || // Preserve human custom name
-		wcscmp(getName(), GC.getLeaderHeadInfo(eOldLeader).getDescription()) == 0))
+		wcscmp(getName(), GC.getInfo(eOldLeader).getDescription()) == 0))
 	{
 		CvWString szEmpty; // Means that leaderhead description gets used
 		GC.getInitCore().setLeaderName(getID(), szEmpty);
@@ -944,8 +944,10 @@ void CvPlayer::initFreeUnits()
 	// </advc.027>
 	if (kGame.isOption(GAMEOPTION_ADVANCED_START) &&
 		(!isHuman() || !kGame.isOption(GAMEOPTION_SPAH))) // advc.250b
-	{
-		int iPoints = kGame.getNumAdvancedStartPoints();
+	{	// <advc.250b> Don't overwrite pts. already assigned by SPaH
+		int iPoints = getAdvancedStartPoints();
+		if (iPoints < 0) // </advc.250b>
+			iPoints = kGame.getNumAdvancedStartPoints();
 		// advc.250b (comment): Disabled through Handicap XML
 		iPoints *= GC.getInfo(getHandicapType()).getAdvancedStartPointsMod();
 		iPoints /= 100;
@@ -2348,12 +2350,22 @@ void CvPlayer::killUnits()
 
 // advc.154: Cut from cycleSelectionGroups except for the non-const parts
 CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
-	bool bWorkers, bool* pbWrap) const
+	bool bWorkers, bool* pbWrap,
+	std::set<int>* pCycledGroups) const
 {
 	FAssert(isActive() && isHuman());
 	LOCAL_REF(bool, bWrap, pbWrap, false); // K-Mod
-	// advc.154: Copy the set
-	std::set<int> kCycledGroups = GC.getGame().getActivePlayerCycledGroups(); // K-Mod
+	//std::set<int>& kCycledGroups = GC.getGame().getActivePlayerCycledGroups(); // K-Mod
+	// <advc.154>
+	std::set<int> kCycledGroupsCopy;
+	if (pCycledGroups == NULL)
+	{
+		// Don't want to mark groups as cycled; therefore make a copy.
+		kCycledGroupsCopy = GC.getGame().getActivePlayerCycledGroups();
+	}
+	std::set<int>& kCycledGroups = (pCycledGroups == NULL ?
+			kCycledGroupsCopy : *pCycledGroups);
+	// </advc.154>
 	CLLNode<int>* pSelectionGroupNode = headGroupCycleNode();
 	if (pUnit != NULL)
 	{
@@ -2388,14 +2400,15 @@ CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
 		CvSelectionGroup* pLoopSelectionGroup = getSelectionGroup(
 				pSelectionGroupNode->m_data);
 		if (pLoopSelectionGroup->readyToSelect(/* advc.153: */ true) &&
-			kCycledGroups.count(pSelectionGroupNode->m_data) <= 0) // K-Mod
+			(kCycledGroups.count(pSelectionGroupNode->m_data) <= 0 || // K-Mod
+			bWrap)) // advc.154: Don't want to return NULL upon wrapping
 		{
 			if (!bWorkers ||
 				// advc.153: with moves
 				pLoopSelectionGroup->hasWorkerWithMoves())
 			{
-				/*if (pUnit && pLoopSelectionGroup == pUnit->getGroup())
-					if (pbWrap != NULL) *pbWrap = true;*/
+				/*if (pUnit != NULL && pLoopSelectionGroup == pUnit->getGroup())
+					bWrap = true;*/ // K-Mod: disabled
 				return pLoopSelectionGroup;
 			}
 		}
@@ -2405,7 +2418,7 @@ CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
 			if (pSelectionGroupNode == NULL)
 			{
 				pSelectionGroupNode = headGroupCycleNode();
-				// if (pbWrap != NULL) *pbWrap = true;
+				//bWrap = true; // K-Mod: disabled
 			}
 		}
 		else
@@ -2414,17 +2427,15 @@ CvSelectionGroup* CvPlayer::getNextGroupInCycle(CvUnit* pUnit, bool bForward,
 			if (pSelectionGroupNode == NULL)
 			{
 				pSelectionGroupNode = tailGroupCycleNode();
-				// if (pbWrap != NULL) *pbWrap = true;
+				//bWrap = true; // K-Mod: disabled
 			}
 		}
 		if (pSelectionGroupNode == pFirstSelectionGroupNode)
 		{
-			// break;
-			// K-Mod
-			if (bWrap)
+			// break; /* <K-Mod> */
+			if (bWrap) // (advc.154: Maybe can't occur anymore)
 				break;
-			bWrap = true;
-			// K-Mod end
+			bWrap = true; // </K-Mod>
 		}
 	}
 	return NULL;
@@ -2459,9 +2470,10 @@ CvSelectionGroup* CvPlayer::cycleSelectionGroups(CvUnit* pUnit, bool bForward,
 			pSelectionGroupNode = nextGroupCycleNode(pSelectionGroupNode);
 		}
 	}
-	// advc.154: Moved into new const function
-	CvSelectionGroup* pGroup = getNextGroupInCycle(pUnit, bForward, bWorkers, pbWrap);
-	if (pbWrap != NULL && pbWrap)
+	// <advc.154> Moved into new const function
+	CvSelectionGroup* pGroup = getNextGroupInCycle(pUnit, bForward,
+			bWorkers, pbWrap, &kCycledGroups); // </advc.154>
+	if (pbWrap != NULL && *pbWrap)
 		kCycledGroups.clear(); // </K-Mod>
 	return pGroup;
 }
@@ -18398,7 +18410,8 @@ int CvPlayer::getNewCityProductionValue() const
 }
 
 
-int CvPlayer::getGrowthThreshold(int iPopulation) const
+int CvPlayer::getGrowthThreshold(int iPopulation,
+	bool bIgnoreModifiers) const // advc.064b
 {
 	CvGame const& kGame = GC.getGame(); // advc
 	// <advc.251>
@@ -18408,19 +18421,22 @@ int CvPlayer::getGrowthThreshold(int iPopulation) const
 			GC.getInfo(getHandicapType()).getBaseGrowthThresholdPercent())).uround();
 	int iThreshold = iBaseThreshold + // </advc.251>
 			(iPopulation * iCITY_GROWTH_MULTIPLIER);
-	// <advc.251>
-	int iAIModifier = 100;
-	if (!isHuman()) // Also apply it to Barbarians
+	if (!bIgnoreModifiers) // advc.064b
 	{
-		CvHandicapInfo const& h = GC.getInfo(kGame.getHandicapType());
-		iAIModifier = h.getAIGrowthPercent() +
-				//h.getAIPerEraModifier() * getCurrentEra()
-				kGame.AIHandicapAdjustment();
-	} // Reduce rounding error:
-	iThreshold = (iThreshold * per100(iAIModifier) *
-			per100(GC.getInfo(kGame.getGameSpeedType()).getGrowthPercent()) *
-			per100(GC.getInfo(kGame.getStartEra()).getGrowthPercent())).round();
-	// </advc.251>
+		// <advc.251>
+		int iAIModifier = 100;
+		if (!isHuman()) // Also apply it to Barbarians
+		{
+			CvHandicapInfo const& h = GC.getInfo(kGame.getHandicapType());
+			iAIModifier = h.getAIGrowthPercent() +
+					//h.getAIPerEraModifier() * getCurrentEra()
+					kGame.AIHandicapAdjustment();
+		} // Reduce rounding error:
+		iThreshold = (iThreshold * per100(iAIModifier) *
+				per100(GC.getInfo(kGame.getGameSpeedType()).getGrowthPercent()) *
+				per100(GC.getInfo(kGame.getStartEra()).getGrowthPercent())).round();
+		// </advc.251>
+	}
 	return std::max(1, iThreshold);
 }
 
@@ -18512,11 +18528,12 @@ void CvPlayer::setScoreboardExpanded(bool b)
 				gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 			/*  The EXE calls CvDLLWidgetData::parseHelp when the cursor is moved
 				onto a widget - but not while the cursor rests there. Workaround:
-				Redraw the scoreboard and its widgets. That also causes a parseHelp
-				call (if the cursor is on a widget). Must still allow game updates
-				in between though (otherwise, e.g. animations will start lagging).
-				Therefore, don't set the dirty bit until the next game update. */
-			else kGame.setUpdateTimer(CvGame::UPDATE_DIRTY_SCORE_BOARD, iDelay - 1);
+				Hiding (and immediately unhiding) the scoreboard causes a
+				parseHelp call if the cursor is on a widget. Originally, I had
+				instead redrawn the scoreboard. Delaying that until the next
+				game update had kept the resulting lag in check. Perhaps not needed
+				anymore, but doesn't hurt, so I'm keeping the delay in place. */
+			else kGame.setUpdateTimer(CvGame::UPDATE_DIRTY_SCORE_HELP, iDelay - 1);
 			m_bScoreboardExpanded = true;
 		}
 		else m_bScoreboardExpanded = false;

@@ -26,12 +26,13 @@ class BugAlertsOptionsTab(BugOptionsTab.BugOptionsTab):
 		# City management
 		self.addLabel(screen, left, "Alerts_City", "Cities:")
 		leftL, leftR = self.addTwoColumnLayout(screen, left, "Civ4lerts_TableGrowth")
-		self.addCheckbox(screen, leftL, "Civ4lerts__CityPendingGrowth")
-		self.addCheckbox(screen, leftR, "Civ4lerts__CityGrowth")		
-		self.addCheckbox(screen, leftL, "Civ4lerts__CityPendingHealthiness")
-		self.addCheckbox(screen, leftR, "Civ4lerts__CityHealthiness")		
-		self.addCheckbox(screen, leftL, "Civ4lerts__CityPendingHappiness")
-		self.addCheckbox(screen, leftR, "Civ4lerts__CityHappiness")
+		# advc.004: Swapped the "pending" boxes to the right column ...
+		self.addCheckbox(screen, leftR, "Civ4lerts__CityPendingGrowth")
+		self.addCheckbox(screen, leftL, "Civ4lerts__CityGrowth")		
+		self.addCheckbox(screen, leftR, "Civ4lerts__CityPendingHealthiness")
+		self.addCheckbox(screen, leftL, "Civ4lerts__CityHealthiness")		
+		self.addCheckbox(screen, leftR, "Civ4lerts__CityPendingHappiness")
+		self.addCheckbox(screen, leftL, "Civ4lerts__CityHappiness")
 		# advc.106d:
 		self.addCheckbox(screen, left, "Civ4lerts__CityPendingPositive")
 		# <advc.210b> Replacing these two left/right boxes with a single one

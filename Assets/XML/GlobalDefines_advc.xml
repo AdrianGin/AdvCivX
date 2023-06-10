@@ -1355,8 +1355,8 @@
 		<iDefineIntVal>50</iDefineIntVal>
 	</Define>
 	<!-- Replaces the base chance above on the turn that war has been declared
-		 on a captured unit. Use 100 for BtS behavior. Recommended: 0, to
-		 discourage surprise attacks on workers. -->
+		 on a captured unit's owner. Use 100 for BtS behavior. Recommended: 0,
+		 to discourage surprise attacks against workers. -->
 	<Define>
 		<DefineName>DOW_UNIT_CAPTURE_CHANCE</DefineName>
 		<iDefineIntVal>0</iDefineIntVal>
@@ -1370,6 +1370,27 @@
 	<Define>
 		<DefineName>SHOW_ODDS_IN_COMBAT_MESSAGES</DefineName>
 		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+
+	<!-- advc.119: Set to 1 to allow workers to chop Forest and Jungle on
+		 unowned tiles. This restores the BtS rule - except that BtS also
+		 allows chopping on hostile tiles when at war. 0 allows chopping
+		 only on tiles owned by the worker's owner or by a teammate
+		 (recommended in order to slow down global deforestation a bit). -->
+	<Define>
+		<DefineName>CAN_CHOP_UNOWNED_FEATURES</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+
+	<!-- advc.064c: Until AdvCiv 1.09, the number of citizens sacrificed in a
+		 single use of Slavery was capped at 3, even in cities with 8 or more
+		 population. Recommended: A high value such as 1000 to keep this cap
+		 disabled, meaning that up to half a city's population, rounded down,
+		 can be sacrificed as in BtS. Or 3 to restore the AdvCiv 1.08 behavior,
+		 i.e. an additional cap at 3 sacrificed citizens. -->
+	<Define>
+		<DefineName>MAX_HURRY_POP</DefineName>
+		<iDefineIntVal>1000</iDefineIntVal>
 	</Define>
 
 </Civ4Defines>

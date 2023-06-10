@@ -1209,8 +1209,11 @@ scaled UWAICache::teamThreat(TeamTypes eRival) const
 		rDiploFactor -= fixp(0.2);
 	rDiploFactor.clamp(0, 1);
 	// Less likely to attack us if there are many targets to choose from
-	scaled rAltTargetsDivisor = TeamIter<FREE_MAJOR_CIV>::count();
-	return rDiploFactor * rPowFactor / std::max(fixp(0.35), rAltTargetsDivisor / 5);
+	scaled rAltTargetsDivisor(TeamIter<FREE_MAJOR_CIV,KNOWN_POTENTIAL_ENEMY_OF>::
+			count(eRival) + 1, 5);
+	rAltTargetsDivisor.exponentiate(fixp(0.7));
+	rAltTargetsDivisor.increaseTo(fixp(0.35));
+	return rDiploFactor * rPowFactor / rAltTargetsDivisor;
 }
 
 

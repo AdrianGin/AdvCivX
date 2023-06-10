@@ -171,6 +171,71 @@ void CvArtFileMgr::buildArtFileInfoMaps()
 {
 	for(size_t i = 0; i < m_artInfoItems.size(); i++)
 		m_artInfoItems[i]->buildMap();
+	testThemePath(); // advc.002b
+}
+
+// advc.002b: (The install location gets checked by CvGlobals::testInstallLocation)
+void CvArtFileMgr::testThemePath()
+{
+	std::string sThmPath = getMiscArtPath("DEFAULT_THEME_NAME");
+	size_t posMods = sThmPath.find("Mods/");
+	size_t posRes = sThmPath.find("/Resource");
+	std::string sModName = GC.getModName().getName();
+	if (posMods == std::string::npos || posRes == std::string::npos)
+	{
+		/*	Has apparently been edited by the user - possibly reverted to the
+			BtS theme, which is fine. */
+		return;
+	}
+	std::string sThmPathModName = sThmPath.substr(posMods + 5, posRes - 5);
+	// Temp. copy for lower case - the mod name isn't case-sensitive.
+	std::string sModNameLC = sModName;
+	if (cstring::tolower(sThmPathModName) == cstring::tolower(sModNameLC))
+		return;
+	CvString sMsg = "The DEFAULT_THEME_NAME path set in\n"
+			"Mods\\";
+	sMsg += sModName;
+	sMsg += "\\Assets\\XML\\CIV4ArtDefines_Misc.xml\n"
+			"does not appear to match the name of the mod folder.\n"
+			"If you've renamed the mod folder, the name also needs\n"
+			"to be changed in CIV4ArtDefines_Misc.xml and (twice) in\n"
+			"Mods\\";
+	sMsg += sModName;
+	sMsg += "\\Resource\\Civ4.thm - otherwise,\n"
+			"the UI theme will probably fail to load.\n";
+	char szMessage[1024];
+	sprintf(szMessage, sMsg);
+	CvString sHeading = "Invalid path to UI theme";
+	gDLL->MessageBox(szMessage, sHeading);
+}
+
+// advc.095: Hack for getting the EXE to switch between wide and narrow city bars
+void CvArtFileMgr::swapCityBarPaths()
+{
+	m_bCityBarPathsSwapped = !m_bCityBarPathsSwapped;
+	char const* aaszCityBarTags[][2] =
+	{
+		{ "INTERFACE_CITY_BAR_MODEL", "INTERFACE_WIDE_CITY_BAR_MODEL" },
+		{ "INTERFACE_CITY_BAR_REGULAR_GLOW", "INTERFACE_WIDE_CITY_BAR_REGULAR_GLOW" },
+		{ "INTERFACE_CITY_BAR_CAPITAL_GLOW", "INTERFACE_WIDE_CITY_BAR_CAPITAL_GLOW" }
+	};
+	int const iCityBarTags = ARRAYSIZE(aaszCityBarTags);
+	CvArtInfoInterface* aapCityBarArtInfos[iCityBarTags][2];
+	for (int i = 0; i < iCityBarTags; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			aapCityBarArtInfos[i][j] = getInterfaceArtInfo(aaszCityBarTags[i][j]);
+			if (aapCityBarArtInfos[i][j] == NULL)
+				return; // Art file manager not ready (or tags missing in XML)
+		}
+	}
+	for (int i = 0; i < iCityBarTags; i++)
+	{
+		CvString sTmp(aapCityBarArtInfos[i][0]->getPath());
+		aapCityBarArtInfos[i][0]->setPath(aapCityBarArtInfos[i][1]->getPath());
+		aapCityBarArtInfos[i][1]->setPath(sTmp);
+	}
 }
 
 // advc.095: Hack for getting the EXE to switch between wide and narrow city bars

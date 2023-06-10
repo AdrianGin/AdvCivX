@@ -73,15 +73,15 @@
 		<iDefineIntVal>1</iDefineIntVal>
 	</Define>
 
-	<!-- The power health entries have not been changed
-	<Define>
+	<!-- The power health entries have not been changed -->
+	<!--Define>
 		<DefineName>POWER_HEALTH_CHANGE</DefineName>
 		<iDefineIntVal>-2</iDefineIntVal>
 	</Define>
 	<Define>
 		<DefineName>DIRTY_POWER_HEALTH_CHANGE</DefineName>
 		<iDefineIntVal>-2</iDefineIntVal>
-	</Define>-->
+	</Define-->
 	<!-- warming prob is out of 1000, not pecent. -->
 	<Define> <!-- redefine -->
 		<DefineName>GLOBAL_WARMING_PROB</DefineName>
@@ -106,11 +106,19 @@
 		<DefineName>GLOBAL_WARMING_BASE_ANGER_PERCENT</DefineName>
 		<iDefineIntVal>30</iDefineIntVal>
 	</Define>
-	<!-- unused
-	<Define>
+	<!-- No longer used: -->
+	<!--Define>
 		<DefineName>GLOBAL_WARMING_FOREST</DefineName>
 		<iDefineIntVal>25</iDefineIntVal>
-	</Define> -->
+	</Define>
+	<Define>
+		<DefineName>GLOBAL_WARMING_NUKE_WEIGHT</DefineName>
+		<iDefineIntVal>50</iDefineIntVal>
+	</Define>
+	<Define>
+		<DefineName>BONUS_OBSOLETE_VALUE_MODIFIER</DefineName>
+		<iDefineIntVal>150</iDefineIntVal>
+	</Define-->
 	<Define>
 		<DefineName>GLOBAL_WARMING_BUILDING_WEIGHT</DefineName>
 		<iDefineIntVal>20</iDefineIntVal>
@@ -127,14 +135,6 @@
 		<DefineName>GLOBAL_WARMING_POPULATION_WEIGHT</DefineName>
 		<iDefineIntVal>10</iDefineIntVal>
 	</Define>
-	<!--<Define>
-		<DefineName>GLOBAL_WARMING_NUKE_WEIGHT</DefineName>
-		<iDefineIntVal>50</iDefineIntVal>
-	</Define>
-	<Define>
-		<DefineName>BONUS_OBSOLETE_VALUE_MODIFIER</DefineName>
-		<iDefineIntVal>150</iDefineIntVal>
-	</Define>-->
 	<Define>
 		<DefineName>RELIGION_SPREAD_DIVISOR_BASE</DefineName>
 		<iDefineIntVal>5</iDefineIntVal>
