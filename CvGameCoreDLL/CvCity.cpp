@@ -386,7 +386,7 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 	GET_TEAM(getTeam()).changeNumCities(-1);
 
 	GC.getGame().changeNumCities(-1);
-
+#ifdef FASSERT_ENABLE
 	FAssert(getWorkingPopulation() == 0);
 	FAssert(!isWorkingPlot(CITY_HOME_PLOT));
 	FAssert(getSpecialistPopulation() == 0);
@@ -395,8 +395,12 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 	FAssert(getBaseYieldRate(YIELD_PRODUCTION) == 0);
 	FAssert(getBaseYieldRate(YIELD_COMMERCE) == 0);
 	FAssert(!isProduction());
-
-	PlayerTypes const eOwner = getOwner();
+	// <advc>
+	FOR_EACH_ENUM(Commerce)
+		FAssertMsg(getCommerceRate(eLoopCommerce) == 0,
+				"Part of lost city's special commerce not subtracted from owner's cache");
+	// </advc>
+#endif
 	bool const bCapital = isCapital();
 	// <advc.106> Moved up so that the old capital can be announced
 	if (bCapital)

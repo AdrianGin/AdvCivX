@@ -9851,6 +9851,18 @@ void CvPlayer::updateCommerceRates()
 	FOR_EACH_ENUM2(Commerce, eCommerce)
 	{
 		int iRate = m_aiCommerceRateTimes100.get(eCommerce);
+		// <advc>
+#ifdef FASSERT_ENABLE
+{
+		int iTotalRate = 0;
+		FOR_EACH_CITY(pCity, *this)
+		{
+			iTotalRate += pCity->getCommerceRateTimes100(eCommerce);
+		}
+		FAssertMsg(iTotalRate == iRate, "Player's special commerce did not equal the sum of their cities'");
+}
+#endif
+		// </advc>
 		if (GC.getGame().isOption(GAMEOPTION_NO_ESPIONAGE))
 		{
 			if (eCommerce == COMMERCE_CULTURE)
