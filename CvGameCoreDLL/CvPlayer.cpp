@@ -5884,13 +5884,17 @@ int CvPlayer::getImprovementUpgradeRate() const
 }
 
 
-int CvPlayer::calculateTotalYield(YieldTypes eYield) const
+int CvPlayer::calculateTotalYield(YieldTypes eYield,
+	bool bExludeCitiesInDisorder) const // advc.001 (for Financial Advisor)
 {
 	PROFILE_FUNC();
 
 	int iTotalCommerce = 0;
 	FOR_EACH_CITY(pLoopCity, *this)
-		iTotalCommerce += pLoopCity->getYieldRate(eYield);
+	{
+		if (!bExludeCitiesInDisorder || !pLoopCity->isDisorder()) // advc.001
+			iTotalCommerce += pLoopCity->getYieldRate(eYield);
+	}
 	return iTotalCommerce;
 }
 

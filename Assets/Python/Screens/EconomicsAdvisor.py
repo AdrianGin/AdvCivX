@@ -262,7 +262,8 @@ class EconomicsAdvisor:
 			iCommerce += iSpecialists
 
 		# buildings
-		iTotalCommerce = player.calculateTotalYield(YieldTypes.YIELD_COMMERCE)
+		# advc.001: "Current" total yield - i.e. excluding cities in disorder
+		iTotalCommerce = player.calculateCurrentTotalYield(YieldTypes.YIELD_COMMERCE)
 		# buildings includes 50% capital bonus for Bureaucracy civic
 		iBuildings = iTotalCommerce - iCommerce
 		if iBuildings != 0: # advc.004: was >0

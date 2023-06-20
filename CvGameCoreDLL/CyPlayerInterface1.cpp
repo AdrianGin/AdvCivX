@@ -114,6 +114,8 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 		.def("canBuild", &CyPlayer::canBuild, "bool (CyPlot* pPlot, int (BuildTypes) eBuild, bool bTestEra, bool bTestVisible)")
 
 		.def("calculateTotalYield", &CyPlayer::calculateTotalYield, "int (int /*YieldTypes*/ eYield) - Returns the total sum of all city yield")
+		// advc.001: For Financial Advisor
+		.def("calculateCurrentTotalYield", &CyPlayer::calculateCurrentTotalYield, "int (int /*YieldTypes*/ eYield) - Returns the total sum of all city yield excluding cities currently in disorder")
 		.def("calculateTotalExports", &CyPlayer::calculateTotalExports, "int (int /*YieldTypes*/ eYield) - Returns the total sum of all city gold generated for other civs via trade routes")
 		.def("calculateTotalImports", &CyPlayer::calculateTotalImports, "int (int /*YieldTypes*/ eYield) - Returns the total sum of all city gold generated for this civ via trade routes with others")
 

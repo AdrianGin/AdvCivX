@@ -129,6 +129,7 @@ public:
 	int getImprovementUpgradeRate() const;
 
 	int calculateTotalYield(int /*YieldTypes*/ eYield);
+	int calculateCurrentTotalYield(int /*YieldTypes*/ eYield); // advc.001
 	int calculateTotalExports(int /*YieldTypes*/ eYield);
 	int calculateTotalImports(int /*YieldTypes*/ eYield);
 
