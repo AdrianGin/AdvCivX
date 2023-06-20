@@ -14621,6 +14621,20 @@ void CvPlayer::read(FDataStreamBase* pStream)
 	} // </advc.912c>
 	if (uiFlag < 18)
 		updateMaintenance();
+	// <advc>
+	if (uiFlag < 22 && isMajorCiv())
+	{
+		FOR_EACH_ENUM(Commerce)
+		{
+			m_aiCommerceRateTimes100.set(eLoopCommerce, 0);
+			FOR_EACH_CITY(pCity, *this)
+			{
+				m_aiCommerceRateTimes100.add(eLoopCommerce,
+						pCity->getCommerceRateTimes100(eLoopCommerce));
+			}
+		}
+		updateCommerceRates();
+	} // </advc>
 	// <advc.708>
 	if (uiFlag < 19 && GC.getGame().isOption(GAMEOPTION_RISE_FALL) && isAlive())
 	{
@@ -14658,7 +14672,8 @@ void CvPlayer::write(FDataStreamBase* pStream)
 	//uiFlag = 18; // advc.251 (city maintenance changed in handicap XML)
 	//uiFlag = 19; // advc.708
 	//uiFlag = 20; // advc.912g
-	uiFlag = 21; // advc.enum: Bugfix in bool-valued ArrayEnumMap
+	//uiFlag = 21; // advc.enum: Bugfix in bool-valued ArrayEnumMap
+	uiFlag = 22; // advc: Bugs fixed with civ-wide special commerce rate cache
 	pStream->Write(uiFlag);
 
 	// <advc.027>
