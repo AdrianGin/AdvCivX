@@ -356,6 +356,13 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 	/*  UNOFFICIAL_PATCH, Bugfix, 08/04/09, jdog5000:
 		Need to clear trade routes of dead city, else they'll be claimed for the owner forever. */
 	clearTradeRoutes();
+	/*	<advc.001> The culture rate isn't relevant for gameplay, but let's still
+		keep a correct count. (And other commerce types can be relevant in mods.) */
+	FOR_EACH_ENUM(Commerce)
+	{
+		changeCommerceRateTimes100(eLoopCommerce,
+				-100 * kOwner.getFreeCityCommerce(eLoopCommerce));
+	} // </advc.001>
 
 	kPlot.setPlotCity(NULL);
 	kPlot.setRuinsName(getName()); // advc.005c
