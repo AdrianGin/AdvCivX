@@ -191,6 +191,7 @@ class EconomicsAdvisor:
 		# move to MapUtil?
 		iWorkedTileCount = 0
 		iWorkedTiles = 0
+		bMultipliers = False # advc.004: in Bureaucracy (or sth. similar)?
 		for city in PlayerUtil.playerCities(player):
 			if not city.isDisorder():
 				for i in range(gc.getNUM_CITY_PLOTS()):
@@ -199,6 +200,9 @@ class EconomicsAdvisor:
 						if city.isWorkingPlot(plot):
 							iWorkedTileCount += 1
 							iWorkedTiles += plot.getYield(YieldTypes.YIELD_COMMERCE)
+				# <advc.004>
+				if city.getBaseYieldRateModifier(YieldTypes.YIELD_COMMERCE, 0) != 100:
+					bMultipliers = True # </advc.004>
 
 		yLocation += 1.5 * self.Y_SPACING
 		screen.setLabel(self.getNextWidgetName(), "Background", u"<font=3>" + localText.getText("TXT_KEY_CONCEPT_WORKED_TILES", (iWorkedTileCount,)) + "</font>", CvUtil.FONT_LEFT_JUSTIFY, self.X_LEFT_PANEL + self.TEXT_MARGIN, yLocation + self.TEXT_MARGIN, self.Z_CONTROLS + self.DZ, FontTypes.GAME_FONT, WidgetTypes.WIDGET_GENERAL, -1, -1 )
@@ -261,9 +265,15 @@ class EconomicsAdvisor:
 		iTotalCommerce = player.calculateTotalYield(YieldTypes.YIELD_COMMERCE)
 		# buildings includes 50% capital bonus for Bureaucracy civic
 		iBuildings = iTotalCommerce - iCommerce
-		if iBuildings > 0:
+		if iBuildings != 0: # advc.004: was >0
 			yLocation += self.Y_SPACING
-			screen.setLabel(self.getNextWidgetName(), "Background", u"<font=3>" + localText.getText("TXT_KEY_CONCEPT_BUILDINGS", ()) + "</font>", CvUtil.FONT_LEFT_JUSTIFY, self.X_LEFT_PANEL + self.TEXT_MARGIN, yLocation + self.TEXT_MARGIN, self.Z_CONTROLS + self.DZ, FontTypes.GAME_FONT, WidgetTypes.WIDGET_GENERAL, -1, -1 )
+			suLabel = u"<font=3>" + localText.getText("TXT_KEY_CONCEPT_BUILDINGS", ())
+			# <advc.004>
+			if bMultipliers:
+				suLabel += u", " + localText.getText("TXT_KEY_MISC_CIVICS_MULTIPLIERS", ())
+			# </advc.004>
+			suLabel += u"</font>"
+			screen.setLabel(self.getNextWidgetName(), "Background", suLabel, CvUtil.FONT_LEFT_JUSTIFY, self.X_LEFT_PANEL + self.TEXT_MARGIN, yLocation + self.TEXT_MARGIN, self.Z_CONTROLS + self.DZ, FontTypes.GAME_FONT, WidgetTypes.WIDGET_GENERAL, -1, -1 )
 			screen.setLabel(self.getNextWidgetName(), "Background", u"<font=3>" + unicode(iBuildings) + "</font>", CvUtil.FONT_RIGHT_JUSTIFY, self.X_LEFT_PANEL + self.PANE_WIDTH - self.TEXT_MARGIN, yLocation + self.TEXT_MARGIN, self.Z_CONTROLS + self.DZ, FontTypes.GAME_FONT, WidgetTypes.WIDGET_GENERAL, -1, -1 )
 			iCommerce += iBuildings
 
