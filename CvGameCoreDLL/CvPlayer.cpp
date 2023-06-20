@@ -1699,7 +1699,7 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 	}
 
 	pOldCity->kill(false, /* advc.001: */ false); // Don't bump units yet
-	pOldCity = NULL; // advc: Mustn't access that past this point
+	pOldCity = NULL; // advc: Mustn't be accessed past this point
 
 	if (bTrade) // Repercussions of cession: tile culture, war success (city culture: further down)
 	{
