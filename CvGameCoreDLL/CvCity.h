@@ -1529,6 +1529,9 @@ protected:
 	void doGreatPeople();
 	void doMeltdown();
 
+	// <advc>
+	void changeCommerceRateTimes100(CommerceTypes eCommerce, int iChange);
+	void setCommerceRateTimes100(CommerceTypes eCommerce, int iRate); // </advc>
 	int getExtraProductionDifference(int iExtra, UnitTypes eUnit) const
 	{
 		return getExtraProductionDifference(iExtra, getProductionModifier(eUnit));
