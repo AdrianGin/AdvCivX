@@ -637,6 +637,7 @@ public:
 	TeamTypes getRevealedTeam(TeamTypes eTeam, bool bDebug) const;									// Exposed to Python
 	void setRevealedOwner(TeamTypes eTeam, PlayerTypes eNewValue);
 	void updateRevealedOwner(TeamTypes eTeam);
+	CvPlot* plotThatRevealsOwner(TeamTypes eTeam) const; // advc.071
 
 	DllExport bool isRiverCrossing(DirectionTypes eDirection) const									// Exposed to Python+
 	{
