@@ -762,8 +762,9 @@
 			<iBaseGrowthThresholdPercent>100</iBaseGrowthThresholdPercent>
 			<iGPThresholdPercent>100</iGPThresholdPercent>
 			<iCultureLevelPercent>106</iCultureLevelPercent>
+			<!-- was 120 -->
+			<iResearchPercent>118</iResearchPercent>
 			<!-- advc.251 (end) -->
-			<iResearchPercent>120</iResearchPercent>
 			<!-- advc.251 (start) -->
 			<iTrainPercent>100</iTrainPercent>
 			<iConstructPercent>100</iConstructPercent>
