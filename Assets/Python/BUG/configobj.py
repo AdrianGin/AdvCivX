@@ -2015,6 +2015,9 @@ class ConfigObj(Section):
             output = BOM_UTF8 + output
         if outfile is not None:
             outfile.write(output)
+            # <f1rpo> (from Taurus) Need to remember filename
+            if self.filename is None:
+                self.filename = outfile.name # </f1rpo>
         else:
             h = open(self.filename, 'w')
             h.write(output)
