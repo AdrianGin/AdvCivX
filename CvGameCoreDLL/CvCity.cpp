@@ -413,11 +413,11 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 	bool const bCapital = isCapital();
 	/*	<advc.106> For anouncement in case that capital moves.
 		(Mustn't look for a new capital until the old one has been deleted.) */
-	wchar const* szNameKey = NULL;
+	CvWString sNameKey;
 	EagerEnumMap<PlayerTypes,bool> abRevealed;
 	if (bCapital)
 	{
-		szNameKey = getNameKey();
+		sNameKey = getNameKey();
 		for (PlayerIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
 		{
 			abRevealed.set(itPlayer->getID(), isRevealed(itPlayer->getTeam(),
@@ -463,9 +463,9 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 		{
 			CvWString szFullInfo = gDLL->getText("TXT_KEY_MISC_CAPITAL_MOVED",
 					pNewCapital->getNameKey(),
-					kOwner.getCivilizationShortDescriptionKey(), szNameKey);
+					kOwner.getCivilizationShortDescriptionKey(), sNameKey.c_str());
 			CvWString szOnlyOldKnown = gDLL->getText("TXT_KEY_MISC_NO_LONGER_CAPITAL",
-					kOwner.getCivilizationShortDescriptionKey(), szNameKey);
+					kOwner.getCivilizationShortDescriptionKey(), sNameKey.c_str());
 			CvWString szOnlyNewKnown = gDLL->getText("TXT_KEY_MISC_IS_NOW_CAPITAL",
 					pNewCapital->getNameKey(),
 					kOwner.getCivilizationShortDescriptionKey());
