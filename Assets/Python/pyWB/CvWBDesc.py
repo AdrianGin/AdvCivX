@@ -1474,7 +1474,10 @@ class CvSignDesc:
 		f.write("\tplotX=%d\n" %(sign.getPlot().getX(),))
 		f.write("\tplotY=%d\n" %(sign.getPlot().getY(),))
 		f.write("\tplayerType=%d\n" %(sign.getPlayerType(),))
-		f.write("\tcaption=%s\n" %(sign.getCaption(),))
+		uCaption = sign.getCaption()
+		# f1rpo: Strip non-ascii
+		uCaption = uCaption.encode('ascii', 'ignore').decode()
+		f.write("\tcaption=%s\n" %(uCaption,))
 		f.write("EndSign\n")
 
 	def read(self, f):
