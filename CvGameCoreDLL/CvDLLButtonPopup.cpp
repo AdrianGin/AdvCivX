@@ -2132,7 +2132,7 @@ bool CvDLLButtonPopup::launchMainMenuPopup(CvPopup* pPopup, CvPopupInfo &info)
 	m_kUI.popupSetStyle(pPopup, "Window_NoTitleBar_Style");
 
 	// 288,72
-	m_kUI.popupAddDDS(pPopup, "resource/temp/civ4_title_small.dds", 192, 48);
+	m_kUI.popupAddDDS(pPopup, "Resource/Temp/civ4_title_small.dds", 192, 48);
 
 	m_kUI.popupAddSeparator(pPopup);
 
