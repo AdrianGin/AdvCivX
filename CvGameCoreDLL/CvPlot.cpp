@@ -1491,14 +1491,12 @@ bool CvPlot::isAdjacentSaltWater() const
 }
 
 
-bool CvPlot::isPotentialIrrigation(/* advc: */ bool bIgnoreTeam) const
+bool CvPlot::isPotentialIrrigation(/* advc: */ bool bIgnoreTech) const
 {
-	// advc.opt: Moved up
-	if (!isOwned() || (!GET_TEAM(getTeam()).isIrrigation() &&
-		!bIgnoreTeam)) // advc
-	{
+	if (!isOwned()) // advc.opt: Moved up
 		return false;
-	}
+	if (!GET_TEAM(getTeam()).isIrrigation() && /* advc: */ !bIgnoreTech)
+		return false;
 	// advc: 2nd condition was !isHills. Mods might allow cities on peaks.
 	return ((isCity() && isFlatlands()) ||
 			(isImproved() && GC.getInfo(getImprovementType()).isCarriesIrrigation()));
