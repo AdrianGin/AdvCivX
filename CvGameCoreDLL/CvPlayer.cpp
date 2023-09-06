@@ -9810,7 +9810,8 @@ void CvPlayer::updateCommerceRates()
 		int iTotalRate = 0;
 		FOR_EACH_CITY(pCity, *this)
 			iTotalRate += pCity->getCommerceRateTimes100(eCommerce);
-		FAssertMsg(iTotalRate == iRate, "Player's special commerce did not equal the sum of their cities'");
+		FAssertMsg(!GC.getGame().isAllGameDataRead() || // advc.201: Updates may occur while loading old saves
+				iTotalRate == iRate, "Player's special commerce did not equal the sum of their cities'");
 }
 #endif
 		// </advc>
@@ -14617,8 +14618,6 @@ void CvPlayer::read(FDataStreamBase* pStream)
 			changeLuxuryModifier(kCivic.getLuxuryModifier() - iPreviousLux);
 		}
 	} // </advc.912c>
-	if (uiFlag < 18)
-		updateMaintenance();
 	// <advc>
 	if (uiFlag < 22)
 	{
