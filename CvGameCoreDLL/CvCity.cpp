@@ -4278,8 +4278,12 @@ int CvCity::cultureGarrison(PlayerTypes ePlayer) const
 	int iGarrison = 0; // was 1
 	FOR_EACH_UNIT_IN(pUnit, getPlot())
 	{
-		if (pUnit->getTeam() == getTeam()) // advc.184: Had been counting all units
+		// <advc.184> Had been counting all units
+		if (pUnit->getTeam() != TEAMID(ePlayer) &&
+			pUnit->isGarrisonInTeamCity()) // </advc.184>
+		{
 			iGarrison += pUnit->garrisonStrength();
+		}
 	}
 	/*if (atWar(TEAMID(ePlayer), getTeam()))
 		iGarrison *= 2;*/ // advc.023: commented out

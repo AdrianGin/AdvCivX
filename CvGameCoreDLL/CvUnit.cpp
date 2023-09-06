@@ -7100,10 +7100,20 @@ bool CvUnit::isNoUnitCapture() const
 
 bool CvUnit::isMilitaryHappiness() const
 {
-	return m_pUnitInfo->isMilitaryHappiness() &&
-			/* <advc.184> */ getPlot().isCity() &&
-			(getPlot().getTeam() == getTeam() ||
-			getPlot().getTeam() == GET_TEAM(getTeam()).getMasterTeam()); // </advc.184>
+	return (m_pUnitInfo->isMilitaryHappiness() &&
+			isGarrisonInTeamCity()); // advc.184
+}
+
+// advc.184: Whether it is available for suppressing unhappiness and revolts
+bool CvUnit::isGarrisonInTeamCity() const
+{
+	if (!getPlot().isCity())
+		return false;
+	CvTeam const& kCityTeam = GET_TEAM(getPlot().getTeam());
+	if (isInvisible(kCityTeam.getID(), false))
+		return false;
+	return (kCityTeam.getMasterTeam() == getTeam() ||
+			kCityTeam.getID() == GET_TEAM(getTeam()).getMasterTeam());
 }
 
 /*	advc.101: Replacing iCultureGarrison in XML, which increases too slowly
