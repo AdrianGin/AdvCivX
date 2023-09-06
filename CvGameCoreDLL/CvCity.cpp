@@ -358,10 +358,15 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 	clearTradeRoutes();
 	/*	<advc.001> The culture rate isn't relevant for gameplay, but let's still
 		keep a correct count. (And other commerce types can be relevant in mods.) */
-	FOR_EACH_ENUM(Commerce)
+	/*	When in disorder the trait culture should already have been subtracted -
+		or may never have been added when razing a city. (fix by keldath) */
+	if (!isDisorder())
 	{
-		changeCommerceRateTimes100(eLoopCommerce,
-				-100 * kOwner.getFreeCityCommerce(eLoopCommerce));
+		FOR_EACH_ENUM(Commerce)
+		{
+			changeCommerceRateTimes100(eLoopCommerce,
+					-100 * kOwner.getFreeCityCommerce(eLoopCommerce));
+		}
 	} // </advc.001>
 
 	kPlot.setPlotCity(NULL);
