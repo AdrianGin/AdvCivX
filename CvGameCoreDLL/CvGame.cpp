@@ -9372,6 +9372,12 @@ void CvGame::onAllGameDataRead()
 		}
 		SAFE_DELETE_ARRAY(m_pLegacyOrgSeatData);
 	} // </advc.enum>
+	// <advc.251> Maintenance changed in XML
+	if (m_uiSaveFlag < 25)
+	{
+		for (PlayerIter<ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+			itPlayer->updateMaintenance();
+	} // </advc.251>
 	// <advc.130w>
 	bool bAttitudeUpdated = false;
 	if (m_uiSaveFlag < 26)
