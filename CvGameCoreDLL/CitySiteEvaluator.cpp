@@ -534,27 +534,31 @@ short AIFoundValue::evaluate()
 						bRemovableFeature, eBonus != NO_BONUS);
 			}
 			// <advc.031>
-			FOR_EACH_ENUM(Yield)
+			if (!kSet.isStartingLoc()) // Don't factor traits into starting sites
 			{
-				if (kSet.isStartingLoc()) // Don't factor traits into starting sites
-					continue;
+				FOR_EACH_ENUM(Yield)
 				{
-					int iThresh = kPlayer.getExtraYieldThreshold(eLoopYield);
-					if (iThresh > 0 &&
-						aiNatureYield[eLoopYield] >= iThresh)
+					
 					{
-						aiNatureYield[eLoopYield] += GC.getDefineINT(CvGlobals::EXTRA_YIELD);
+						int iThresh = kPlayer.getExtraYieldThreshold(eLoopYield);
+						if (iThresh > 0 &&
+							aiNatureYield[eLoopYield] >= iThresh)
+						{
+							aiNatureYield[eLoopYield] += GC.getDefineINT(
+									CvGlobals::EXTRA_YIELD);
+						}
 					}
+					// <advc.908a>
+					{
+						int iThresh = kPlayer.getExtraYieldNaturalThreshold(eLoopYield);
+						if (iThresh > 0 &&
+							aiNatureYield[eLoopYield] + 1 >= iThresh)
+						{
+							aiNatureYield[eLoopYield] += GC.getDefineINT(
+									CvGlobals::EXTRA_YIELD);
+						}
+					} // </advc.908a>
 				}
-				// <advc.908a>
-				{
-					int iThresh = kPlayer.getExtraYieldNaturalThreshold(eLoopYield);
-					if (iThresh > 0 &&
-						aiNatureYield[eLoopYield] + 1 >= iThresh)
-					{
-						aiNatureYield[eLoopYield] += GC.getDefineINT(CvGlobals::EXTRA_YIELD);
-					}
-				} // </advc.908a>
 			} // </advc.031>
 			// K-Mod. add non-home plot production to BaseProduction.
 			if (!bShare)

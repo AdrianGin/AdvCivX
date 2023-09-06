@@ -1,4 +1,5 @@
-// advc.agent: Test code for the AgentIterator class
+/*	advc.agent: Test code for the AgentIterator class.
+	Only speed tests (profiling) at this point. */
 
 #include "CvGameCoreDLL.h"
 #include "CvAgents.h"

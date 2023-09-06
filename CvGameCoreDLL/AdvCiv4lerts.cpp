@@ -22,7 +22,7 @@ AdvCiv4lert::AdvCiv4lert(PlayerTypes eOwner) : m_eOwner(eOwner)
 }
 
 
-void AdvCiv4lert::showMessage(CvWString szMsg, LPCSTR szIcon, int iX, int iY,
+void AdvCiv4lert::showMessage(CvWString szMsg, char const* szIcon, int iX, int iY,
 	ColorTypes eColor) const
 {
 	if (m_bSilent)
@@ -50,8 +50,8 @@ void AdvCiv4lert::check(bool bSilent)
 {
 	if (m_eOwner == NO_PLAYER || (!m_bDebug && !GET_PLAYER(m_eOwner).isHuman()))
 	{
-		/*	Normally no need to check during Auto Play. Wouldn't hurt, except
-			that the checks aren't super fast. */
+		/*	Normally no need to check during Auto Play. Wouldn't hurt
+			except that the checks aren't super fast. */
 		return;
 	}
 	bool const bWasSilent = m_bSilent;
