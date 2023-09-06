@@ -19277,7 +19277,7 @@ void CvPlayer::markTradeOffers(CLinkList<TradeData>& kOurInventory,
 int CvPlayer::getIntroMusicScriptId(PlayerTypes eForPlayer) const
 {
 	EraTypes eEra = GET_PLAYER(eForPlayer).getCurrentEra();
-	CvLeaderHeadInfo const& kLeader = GC.getInfo(getPersonalityType());
+	CvLeaderHeadInfo const& kLeader = GC.getInfo(getLeaderType());
 	if (GET_TEAM(eForPlayer).isAtWar(getTeam()))
 		return kLeader.getDiploWarIntroMusicScriptIds(eEra);
 	return kLeader.getDiploPeaceIntroMusicScriptIds(eEra);
