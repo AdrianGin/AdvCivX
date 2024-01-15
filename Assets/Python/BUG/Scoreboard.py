@@ -605,6 +605,9 @@ class Scoreboard:
 							if (ScoreOpt.isLeftAlignName()):
 								align = CvUtil.FONT_LEFT_JUSTIFY
 								adjustX = width
+								# advc.001: Only a workaround? Can't figure out exactly
+								# why the string ends up too far too the right.
+								adjustX += 3
 						widget = playerScore.widget(c)
 						if widget is None:
 							#if (playerScore.value(ALIVE)):
