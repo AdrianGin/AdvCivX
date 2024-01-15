@@ -9744,12 +9744,28 @@ void CvGame::setVoteSourceReligion(VoteSourceTypes eVoteSource,
 	}
 }
 
+// advc.001: For culturalVictoryNumCultureCities. Infinity that doesn't easily overflow.
+namespace
+{
+	enum CultVictCityThresh
+	{
+		CULT_VICT_CITY_TRESH_INFINITE = arithm_traits<short>::max,
+	};
+}
+
+
+int CvGame::culturalVictoryNumCultureCities() const
+{
+	//return m_iNumCultureVictoryCities;
+	/*	advc.001: Easier to return infinity here than to ensure that all
+		call locations check for culturalVictoryValid */
+	return (culturalVictoryValid() ? m_iNumCultureVictoryCities : CULT_VICT_CITY_TRESH_INFINITE);
+}
+
 
 CultureLevelTypes CvGame::culturalVictoryCultureLevel() const
 {
-	if (m_iNumCultureVictoryCities > 0)
-		return m_eCultureVictoryCultureLevel;
-	return NO_CULTURELEVEL;
+	return (culturalVictoryValid() ? m_eCultureVictoryCultureLevel : NO_CULTURELEVEL);
 }
 
 

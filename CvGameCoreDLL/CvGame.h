@@ -876,13 +876,10 @@ public:
 	void changeShrineBuilding(BuildingTypes eBuilding, ReligionTypes eReligion, bool bRemove = false);*/
 
 	bool culturalVictoryValid() const
-	{
+	{	// (advc, note: Important not to call culturalVictoryNumCultureCities here.)
 		return (m_iNumCultureVictoryCities > 0);
 	}
-	int culturalVictoryNumCultureCities() const
-	{
-		return m_iNumCultureVictoryCities;
-	}
+	int culturalVictoryNumCultureCities() const;
 	CultureLevelTypes culturalVictoryCultureLevel() const;
 	int getCultureThreshold(CultureLevelTypes eLevel) const;
 	int freeCityCultureFromTrait(TraitTypes eTrait) const; // advc.908b
