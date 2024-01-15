@@ -11541,7 +11541,7 @@ void CvCityAI::AI_bestPlotBuild(CvPlot const& kPlot, int* piBestValue, BuildType
 								{
 									/*	could use more sophisticated logic
 										however this would rely on things like 
-										mart irrigation chaining of out-of-city plots */
+										smart irrigation chaining of out-of-city plots */
 									eBestIrrigationPlot = pDistTwoPlot;
 									break;
 								}
