@@ -178,6 +178,7 @@ public:
 	PlayerTypes getActivePlayer() const { return m_eActivePlayer; }
 	DllExport void setActivePlayer(PlayerTypes eActivePlayer);
 	TeamTypes getActiveTeam() const { return m_eActiveTeam; } // advc.opt
+	void updateActiveTeam(); // advc.opt
 
 	DllExport GameType getType() const { return m_eType; }
 	DllExport void setType(GameType eType);
