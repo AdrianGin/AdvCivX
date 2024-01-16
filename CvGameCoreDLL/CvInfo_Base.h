@@ -76,7 +76,9 @@ public: // All the const functions are exposed to Python
 	}
 
 protected:
-
+	/*	advc.003k (caveat): Changing the memory layout of this class is probably
+		not safe b/c it's a base class of CvArtInfoScalableAsset, which employs
+		multiple inheritance and gets cast unsafely in the EXE. */
 	bool m_bGraphicalOnly;
 
 	CvString m_szType;

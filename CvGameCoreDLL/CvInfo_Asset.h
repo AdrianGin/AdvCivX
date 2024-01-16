@@ -9,6 +9,10 @@
 
 class CvXMLLoadUtility;
 
+/*	advc.003k (caveat): Changing the memory layout of CvArtInfoScalableAsset
+	or any of its direct or indirect base classes is probably not safe b/c of
+	multiple inheritance and type casts in the EXE. */
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  class : CvAssetInfoBase
 //  Base for classes that store data from Art\Civ4ArtDefines.xml
