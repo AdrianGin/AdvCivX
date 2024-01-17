@@ -8,5 +8,5 @@ Discussion thread on CivFanatics:
 	https://forums.civfanatics.com/threads/advanced-civ.614217
 Since July 2020, there is also a dedicated subforum:
 	https://forums.civfanatics.com/forums/civ-4-advanced-civ.603/
-A half-finished Earth scenario for AdvCiv:
-	https://github.com/f1rpo/Civ4EuroWorld
+DeepWell's Ethnic Artstyles pack (Animations Frozen option not supported):
+	https://forums.civfanatics.com/threads/ethnic-artstyles-graphics-mod.683057/
