@@ -35,7 +35,7 @@ template<class T>
 struct arithm_traits<T, false, true, false>
 {
 	static bool const is_arithmetic = true;
-	/*	min and max are for asserting bounds. 'none' is often a sensible value,
+	/*	min and max are for asserting bounds. 'none' is often a valid value,
 		'len' usually isn't. */
 	static int const min = std::min(enum_traits<T>::none, enum_traits<T>::first);
 	static int const max = enum_traits<T>::len - 1;

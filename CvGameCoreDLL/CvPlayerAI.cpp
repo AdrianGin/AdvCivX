@@ -2450,10 +2450,12 @@ void CvPlayerAI::AI_updateCommerceWeights()
 	int const iVictoryCities = kGame.culturalVictoryNumCultureCities();
 
 	// Use culture slider to decide whether a human player is going for cultural victory
-	bool const bUseCultureRank = (AI_atVictoryStage(AI_VICTORY_CULTURE2) ||
-			getCommercePercent(COMMERCE_CULTURE) >= 40);
-	bool const bC3 = (AI_atVictoryStage(AI_VICTORY_CULTURE3) ||
-			getCommercePercent(COMMERCE_CULTURE) >= 70);
+	bool const bUseCultureRank = ((AI_atVictoryStage(AI_VICTORY_CULTURE2) ||
+			getCommercePercent(COMMERCE_CULTURE) >= 40) &&
+			kGame.culturalVictoryValid()); // advc.001
+	bool const bC3 = ((AI_atVictoryStage(AI_VICTORY_CULTURE3) ||
+			getCommercePercent(COMMERCE_CULTURE) >= 70) &&
+			bUseCultureRank); // advc.001
 	bool const bWarPlans = AI_isFocusWar(); // advc.105
 			//GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0;
 

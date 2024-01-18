@@ -7286,6 +7286,9 @@ void CvCityAI::AI_setEmphasize(EmphasizeTypes eIndex, bool bNewValue)
 	{
 		m_iEmphasizeAvoidGrowthCount += (AI_isEmphasize(eIndex) ? 1 : -1);
 		FAssert(AI_getEmphasizeAvoidGrowthCount() >= 0);
+		// <advc.002f> Can affect label of the food bar or city bar icon
+		gDLL->UI().setDirty(gDLL->UI().isCityScreenUp() ?
+				CityScreen_DIRTY_BIT : CityInfo_DIRTY_BIT, true); // </advc.002f>
 	}
 
 	if (GC.getInfo(eIndex).isGreatPeople())
@@ -11538,7 +11541,7 @@ void CvCityAI::AI_bestPlotBuild(CvPlot const& kPlot, int* piBestValue, BuildType
 								{
 									/*	could use more sophisticated logic
 										however this would rely on things like 
-										mart irrigation chaining of out-of-city plots */
+										smart irrigation chaining of out-of-city plots */
 									eBestIrrigationPlot = pDistTwoPlot;
 									break;
 								}

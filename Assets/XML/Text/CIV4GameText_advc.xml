@@ -7048,6 +7048,14 @@
 		<Spanish>&#161;%[s2_UnitName] de %[s1_CivName] ha vencido a %[s4_UnitName] de %[s3_CivName]!</Spanish>
 	</TEXT>
 
-	
+	<!-- advc.004: For Financial Advisor (commerce breakdown) -->
+	<TEXT>
+		<Tag>TXT_KEY_MISC_CIVICS_MULTIPLIERS</Tag>
+		<English>Civics Factor</English>
+		<French>factuer doctrine</French>
+		<German>Staatsform-Faktor</German>
+		<Italian>fattore governo</Italian>
+		<Spanish>factor principios</Spanish>
+	</TEXT>
 
 </Civ4GameText>

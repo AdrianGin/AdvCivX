@@ -5073,7 +5073,7 @@ void CvDLLWidgetData::parseNationalityHelp(CvWidgetDataStruct &widgetDataStruct,
 				szKey = "TXT_KEY_REVOLT_CHANCE_AFTER_WAR_OCCUPATION";
 			else if (c.isMartialLaw(eCulturalOwner))
 				szKey = "TXT_KEY_REVOLT_CHANCE_AFTER_WAR";
-			else szKey = "TXT_KEY_REVOLT_CHANCE_AFTER_OCCUPTAION";
+			else szKey = "TXT_KEY_REVOLT_CHANCE_AFTER_OCCUPATION";
 			szBuffer.append(gDLL->getText(szKey, szTempBuffer));
 		} // </advc.023>
 		// <advc.101>

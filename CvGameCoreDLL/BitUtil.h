@@ -6,7 +6,7 @@
 /*  advc.enum: Helper functions for bitwise operations. Copied from the
 	"We the People" mod (WtP) in 2020 (all code by Nightinggale).
 	WtP used to keep these functions in the global namespace (in CvGameCoreDLL.h);
-	the current WtP code wraps them into a "BoolToken" struct. */
+	newer WtP code wraps them into a "BoolToken" struct. */
 
 namespace BitUtil
 {

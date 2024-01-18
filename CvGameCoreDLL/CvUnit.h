@@ -392,6 +392,7 @@ public:
 		return m_pUnitInfo->isRivalTerritory();
 	}
 	bool isMilitaryHappiness() const;																		// Exposed to Python
+	bool isGarrisonInTeamCity() const; // advc.184
 	int garrisonStrength() const; // advc.101
 	bool isInvestigate() const																				// Exposed to Python
 	{

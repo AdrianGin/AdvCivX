@@ -1030,13 +1030,19 @@ void CvInitCore::setActivePlayer(PlayerTypes eActivePlayer)
 		}
 	} // </advc.004s>
 	m_eActivePlayer = eActivePlayer;
+	updateActiveTeam(); // advc.opt
 	if (m_eActivePlayer != NO_PLAYER)
-	{
-		m_eActiveTeam = GET_PLAYER(m_eActivePlayer).getTeam(); // advc.opt
-		// Automatically claim this slot
+	{	// Automatically claim this slot
 		setSlotClaim(m_eActivePlayer, SLOTCLAIM_ASSIGNED);
 	}
 	else m_eActiveTeam = NO_TEAM; // advc.opt
+}
+
+// advc.opt:
+void CvInitCore::updateActiveTeam()
+{
+	m_eActiveTeam = (m_eActivePlayer == NO_PLAYER ? NO_TEAM :
+			GET_PLAYER(m_eActivePlayer).getTeam());
 }
 
 void CvInitCore::setType(GameType eType)
@@ -1355,11 +1361,13 @@ void CvInitCore::setLeader(PlayerTypes eID, LeaderHeadTypes eLeader)
 void CvInitCore::setTeam(PlayerTypes eID, TeamTypes eTeam)
 {
 	FAssertBounds(0, MAX_PLAYERS, eID);
-	if (getTeam(eID) != eTeam)
+	if (getTeam(eID) == eTeam)
+		return;
+	m_aeTeam.set(eID, eTeam);
+	if (CvPlayer::areStaticsInitialized())
 	{
-		m_aeTeam.set(eID, eTeam);
-		if(CvPlayer::areStaticsInitialized())
-			GET_PLAYER(eID).updateTeamType();
+		GET_PLAYER(eID).updateTeamType();
+		updateActiveTeam(); // advc.opt
 	}
 }
 

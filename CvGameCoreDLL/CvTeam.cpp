@@ -2973,6 +2973,7 @@ CvPlot* CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 	{
 		if (pAt1->isVisible(getID()))
 			pAt = pAt1;
+		else pAt = pAt1->plotThatRevealsOwner(getID());
 		if (ePlayerMet == NO_PLAYER)
 			ePlayerMet = pAt1->getOwner();
 	}
@@ -2980,6 +2981,7 @@ CvPlot* CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 	{
 		if (pAt2->isVisible(getID()))
 			pAt = pAt2;
+		else pAt = pAt2->plotThatRevealsOwner(getID());
 		if (ePlayerMet == NO_PLAYER)
 			ePlayerMet = pAt2->getOwner();
 	}

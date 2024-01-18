@@ -305,7 +305,9 @@ void CvCity::reloadEntity()
 
 void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 {
-	CvPlot& kPlot = *plot();
+	CvPlot& kPlot = getPlot();
+	PlayerTypes const eOwner = getOwner();
+	CvPlayer& kOwner = GET_PLAYER(eOwner);
 
 	if (isCitySelected())
 		gDLL->UI().clearSelectedCities();
@@ -354,6 +356,18 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 	/*  UNOFFICIAL_PATCH, Bugfix, 08/04/09, jdog5000:
 		Need to clear trade routes of dead city, else they'll be claimed for the owner forever. */
 	clearTradeRoutes();
+	/*	<advc.001> The culture rate isn't relevant for gameplay, but let's still
+		keep a correct count. (And other commerce types can be relevant in mods.) */
+	/*	When in disorder the trait culture should already have been subtracted -
+		or may never have been added when razing a city. (fix by keldath) */
+	if (!isDisorder())
+	{
+		FOR_EACH_ENUM(Commerce)
+		{
+			changeCommerceRateTimes100(eLoopCommerce,
+					-100 * kOwner.getFreeCityCommerce(eLoopCommerce));
+		}
+	} // </advc.001>
 
 	kPlot.setPlotCity(NULL);
 	kPlot.setRuinsName(getName()); // advc.005c
@@ -376,17 +390,17 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 	// <advc.104>
 	for (PlayerAIIter<MAJOR_CIV> it; it.hasNext(); ++it)
 		it->AI_cityKilled(*this); // </advc.104>
-	getArea().changeCitiesPerPlayer(getOwner(), -1);
+	getArea().changeCitiesPerPlayer(eOwner, -1);
 	// <advc.030b>
 	CvArea* pWaterArea = waterArea(true);
 	/*  Can't really handle ice melted by global warming, but at least ensure
 		that CitiesPerPlayer doesn't become negative. */
-	if(pWaterArea != NULL && pWaterArea->getCitiesPerPlayer(getOwner(), true) > 0)
-		pWaterArea->changeCitiesPerPlayer(getOwner(), -1); // </advc.030b>
-	GET_TEAM(getTeam()).changeNumCities(-1);
+	if (pWaterArea != NULL && pWaterArea->getCitiesPerPlayer(eOwner, true) > 0)
+		pWaterArea->changeCitiesPerPlayer(eOwner, -1); // </advc.030b>
+	GET_TEAM(eOwner).changeNumCities(-1);
 
 	GC.getGame().changeNumCities(-1);
-
+#ifdef FASSERT_ENABLE
 	FAssert(getWorkingPopulation() == 0);
 	FAssert(!isWorkingPlot(CITY_HOME_PLOT));
 	FAssert(getSpecialistPopulation() == 0);
@@ -395,15 +409,29 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 	FAssert(getBaseYieldRate(YIELD_PRODUCTION) == 0);
 	FAssert(getBaseYieldRate(YIELD_COMMERCE) == 0);
 	FAssert(!isProduction());
-
-	PlayerTypes const eOwner = getOwner();
+	// <advc>
+	FOR_EACH_ENUM(Commerce)
+		FAssertMsg(getCommerceRate(eLoopCommerce) == 0,
+				"Part of lost city's special commerce not subtracted from owner's cache");
+	// </advc>
+#endif
 	bool const bCapital = isCapital();
-	// <advc.106> Moved up so that the old capital can be announced
+	/*	<advc.106> For anouncement in case that capital moves.
+		(Mustn't look for a new capital until the old one has been deleted.) */
+	CvWString sNameKey;
+	EagerEnumMap<PlayerTypes,bool> abRevealed;
 	if (bCapital)
-		GET_PLAYER(eOwner).findNewCapital(); // </advc.106>
+	{
+		sNameKey = getNameKey();
+		for (PlayerIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		{
+			abRevealed.set(itPlayer->getID(), isRevealed(itPlayer->getTeam(),
+					itPlayer->isSpectator())); // advc.127
+		}
+	} // </advc.106>
 	kPlot.setImprovementType(GC.getRUINS_IMPROVEMENT());
 	CvEventReporter::getInstance().cityLost(this);
-	GET_PLAYER(getOwner()).deleteCity(getID());
+	kOwner.deleteCity(getID());
 
 	kPlot.updateCulture(/*true*/ bBumpUnits, false); // advc.001
 	/*	advc (note): setCultureLevel already updates culture in surrounding plots.
@@ -427,13 +455,60 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 		}
 	}
 
-	GET_PLAYER(eOwner).updateMaintenance();
+	kOwner.updateMaintenance();
 	GC.getMap().updateWorkingCity();
 	GC.getGame().AI_makeAssignWorkDirty();
 
 	if (bCapital)
 	{
-		//GET_PLAYER(eOwner).findNewCapital(); // advc.106: Moved up
+		kOwner.findNewCapital();
+		// <advc.106> Announce new (and old) capital
+		CvCity const* pNewCapital = kOwner.getCapital();
+		if (pNewCapital != NULL)
+		{
+			CvWString szFullInfo = gDLL->getText("TXT_KEY_MISC_CAPITAL_MOVED",
+					pNewCapital->getNameKey(),
+					kOwner.getCivilizationShortDescriptionKey(), sNameKey.c_str());
+			CvWString szOnlyOldKnown = gDLL->getText("TXT_KEY_MISC_NO_LONGER_CAPITAL",
+					kOwner.getCivilizationShortDescriptionKey(), sNameKey.c_str());
+			CvWString szOnlyNewKnown = gDLL->getText("TXT_KEY_MISC_IS_NOW_CAPITAL",
+					pNewCapital->getNameKey(),
+					kOwner.getCivilizationShortDescriptionKey());
+			for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
+			{
+				CvPlayer const& kObs = *it;
+				if (kObs.getID() == getID())
+					continue;
+				if (GET_TEAM(getTeam()).isHasMet(kObs.getTeam()) ||
+					 kObs.isSpectator()) // advc.127
+				{
+					CvWString* pszMsg = NULL;
+					bool const bOldRevealed = abRevealed.get(kObs.getID());
+					bool const bNewRevealed = pNewCapital->isRevealed(kObs.getTeam(),
+							kObs.isSpectator()); // advc.127
+					if (bOldRevealed && bNewRevealed)
+						pszMsg = &szFullInfo;
+					else if (bOldRevealed)
+						pszMsg = &szOnlyOldKnown;
+					else if (bNewRevealed)
+						pszMsg = &szOnlyNewKnown;
+					if (pszMsg != NULL)
+					{
+						CvPlot const& kFlashPlot = (bNewRevealed ?
+								pNewCapital->getPlot() : kPlot);
+						/*	<advc.127> Not really a major event, but minor events
+							don't get shown in spectator mode. */
+						InterfaceMessageTypes eMsgType = (kObs.isSpectator() ?
+								MESSAGE_TYPE_MAJOR_EVENT : MESSAGE_TYPE_MINOR_EVENT);
+						// </advc.127>
+						gDLL->UI().addMessage(kObs.getID(), false, -1, *pszMsg, NULL,
+								eMsgType, ARTFILEMGR.getInterfaceArtInfo(
+								"INTERFACE_CITY_BAR_CAPITAL_TEXTURE")->getPath(),
+								NO_COLOR, kFlashPlot.getX(), kFlashPlot.getY());
+					}
+				}
+			}
+		} // </advc.106>
 		GET_TEAM(eOwner).resetVictoryProgress();
 	}
 
@@ -4203,8 +4278,12 @@ int CvCity::cultureGarrison(PlayerTypes ePlayer) const
 	int iGarrison = 0; // was 1
 	FOR_EACH_UNIT_IN(pUnit, getPlot())
 	{
-		if (pUnit->getTeam() == getTeam()) // advc.184: Had been counting all units
+		// <advc.184> Had been counting all units
+		if (pUnit->getTeam() != TEAMID(ePlayer) &&
+			pUnit->isGarrisonInTeamCity()) // </advc.184>
+		{
 			iGarrison += pUnit->garrisonStrength();
+		}
 	}
 	/*if (atWar(TEAMID(ePlayer), getTeam()))
 		iGarrison *= 2;*/ // advc.023: commented out
@@ -7161,6 +7240,24 @@ int CvCity::getCommerceRateTimes100(CommerceTypes eCommerce) const
 	return iRate;
 }
 
+// <advc> Now that these are needed in two places
+void CvCity::changeCommerceRateTimes100(CommerceTypes eCommerce, int iChange)
+{
+	setCommerceRateTimes100(eCommerce, m_aiCommerceRate.get(eCommerce) + iChange);
+}
+
+// Based on code cut from updateCommerce
+void CvCity::setCommerceRateTimes100(CommerceTypes eCommerce, int iRate)
+{
+	int const iOldRate = m_aiCommerceRate.get(eCommerce);
+	if (iOldRate != iRate)
+	{
+		m_aiCommerceRate.set(eCommerce, iRate);
+		FAssert(m_aiCommerceRate.get(eCommerce) >= 0);
+		GET_PLAYER(getOwner()).changeCommerceRateTimes100(eCommerce, iRate - iOldRate);
+	}
+} // </advc>
+
 
 int CvCity::getCommerceFromPercent(CommerceTypes eCommerce, int iYieldRate) const
 {
@@ -7204,24 +7301,15 @@ int CvCity::getTotalCommerceRateModifier(CommerceTypes eCommerce) const
 
 void CvCity::updateCommerce(CommerceTypes eCommerce)
 {
+	int iNewRate = 0;
+	if (!isDisorder())
 	{
-		int const iOldRate = m_aiCommerceRate.get(eCommerce);
-		int iNewRate = 0;
-		if (!isDisorder())
-		{
-			iNewRate += (getBaseCommerceRateTimes100(eCommerce) *
-					getTotalCommerceRateModifier(eCommerce)) / 100;
-			iNewRate += getYieldRate(YIELD_PRODUCTION) *
-					getProductionToCommerceModifier(eCommerce);
-		}
-		if (iOldRate == iNewRate)
-			return;
-
-		m_aiCommerceRate.set(eCommerce, iNewRate);
-		FAssert(m_aiCommerceRate.get(eCommerce) >= 0);
-		GET_PLAYER(getOwner()).changeCommerceRateTimes100(eCommerce,
-				iNewRate - iOldRate);
+		iNewRate += (getBaseCommerceRateTimes100(eCommerce) *
+				getTotalCommerceRateModifier(eCommerce)) / 100;
+		iNewRate += getYieldRate(YIELD_PRODUCTION) *
+				getProductionToCommerceModifier(eCommerce);
 	}
+	setCommerceRateTimes100(eCommerce, iNewRate); // advc: Moved into aux. function
 	GET_PLAYER(getOwner()).invalidateCommerceRankCache(eCommerce);
 	if (isCitySelected())
 	{

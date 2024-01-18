@@ -84,7 +84,7 @@ public:
 	bool isFreshWater() const;																		// Exposed to Python
 	bool isAdjacentFreshWater() const; // advc.108
 	bool isAdjacentSaltWater() const; // advc.041
-	bool isPotentialIrrigation(/* advc: */ bool bIgnoreTeam = false) const;							// Exposed to Python
+	bool isPotentialIrrigation(/* advc: */ bool bIgnoreTech = false) const;							// Exposed to Python
 	bool canHavePotentialIrrigation() const;														// Exposed to Python
 	DllExport bool isIrrigationAvailable(bool bIgnoreSelf = false) const;							// Exposed to Python
 
@@ -637,6 +637,7 @@ public:
 	TeamTypes getRevealedTeam(TeamTypes eTeam, bool bDebug) const;									// Exposed to Python
 	void setRevealedOwner(TeamTypes eTeam, PlayerTypes eNewValue);
 	void updateRevealedOwner(TeamTypes eTeam);
+	CvPlot* plotThatRevealsOwner(TeamTypes eTeam) const; // advc.071
 
 	DllExport bool isRiverCrossing(DirectionTypes eDirection) const									// Exposed to Python+
 	{

@@ -494,6 +494,12 @@ int CyPlayer::calculateTotalYield(int /*YieldTypes*/ eYield)
 	return m_pPlayer ? m_pPlayer->calculateTotalYield((YieldTypes)eYield) : -1;
 }
 
+// advc.001: For Financial Advisor
+int CyPlayer::calculateCurrentTotalYield(int /*YieldTypes*/ eYield)
+{
+	return m_pPlayer ? m_pPlayer->calculateTotalYield((YieldTypes)eYield, true) : -1;
+}
+
 int CyPlayer::calculateTotalExports(int /*YieldTypes*/ eYield)
 {
 	return m_pPlayer ? m_pPlayer->calculateTotalExports((YieldTypes)eYield) : -1;

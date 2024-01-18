@@ -21,7 +21,7 @@ namespace intdiv
 	// The "u" functions are only for nonnegative numbers ...
 	inline int uround(int iDividend, int iDivisor)
 	{
-		FAssert((iDividend ^ iDivisor) >= 0); // Both negative is OK
+		FAssert((iDividend ^ iDivisor) >= 0); // Both negative is actually OK
 		return (iDividend + iDivisor / 2) / iDivisor;
 	}
 

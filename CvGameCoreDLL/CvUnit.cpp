@@ -7100,10 +7100,20 @@ bool CvUnit::isNoUnitCapture() const
 
 bool CvUnit::isMilitaryHappiness() const
 {
-	return m_pUnitInfo->isMilitaryHappiness() &&
-			/* <advc.184> */ getPlot().isCity() &&
-			(getPlot().getTeam() == getTeam() ||
-			getPlot().getTeam() == GET_TEAM(getTeam()).getMasterTeam()); // </advc.184>
+	return (m_pUnitInfo->isMilitaryHappiness() &&
+			isGarrisonInTeamCity()); // advc.184
+}
+
+// advc.184: Whether it is available for suppressing unhappiness and revolts
+bool CvUnit::isGarrisonInTeamCity() const
+{
+	if (!getPlot().isCity())
+		return false;
+	CvTeam const& kCityTeam = GET_TEAM(getPlot().getTeam());
+	if (isInvisible(kCityTeam.getID(), false))
+		return false;
+	return (kCityTeam.getMasterTeam() == getTeam() ||
+			kCityTeam.getID() == GET_TEAM(getTeam()).getMasterTeam());
 }
 
 /*	advc.101: Replacing iCultureGarrison in XML, which increases too slowly
@@ -10794,38 +10804,38 @@ void CvUnit::collateralCombat(CvPlot const* pPlot, CvUnit const* pSkipUnit)
 	for (int i = 0; i < iPossibleTargets; i++)
 	{
 		CvUnit& kTargetUnit = *::getUnit(aTargetUnits[i].second);
-
-		if (getUnitCombatType() == NO_UNITCOMBAT ||
-			!kTargetUnit.m_pUnitInfo->getUnitCombatCollateralImmune(getUnitCombatType()))
+		if (getUnitCombatType() != NO_UNITCOMBAT &&
+			kTargetUnit.m_pUnitInfo->getUnitCombatCollateralImmune(getUnitCombatType()))
 		{
-			int iTheirStrength = kTargetUnit.baseCombatStr();
-			int iStrengthFactor = ((iCollateralStrength + iTheirStrength + 1) / 2);
-			/*	advc (note): This makes the damage proportional to (3*r + 1) / (3 + r)
-				where r is the ratio of the attacker's to the defender's base combat str.
-				This ratio is used again a few lines below in the iMaxDamage formula. */
-			int iCollateralDamage = (GC.getDefineINT(CvGlobals::COLLATERAL_COMBAT_DAMAGE) *
-					(iCollateralStrength + iStrengthFactor)) /
-					(iTheirStrength + iStrengthFactor);
-			iCollateralDamage *= 100 + getExtraCollateralDamage();
-			iCollateralDamage *= std::max(0, 100 - kTargetUnit.getCollateralDamageProtection());
+			continue;
+		}
+		int iTheirStrength = kTargetUnit.baseCombatStr();
+		int iStrengthFactor = ((iCollateralStrength + iTheirStrength + 1) / 2);
+		/*	advc (note): This makes the damage proportional to (3*r + 1) / (3 + r)
+			where r is the ratio of the attacker's to the defender's base combat str.
+			This ratio is used again a few lines below in the iMaxDamage formula. */
+		int iCollateralDamage = (GC.getDefineINT(CvGlobals::COLLATERAL_COMBAT_DAMAGE) *
+				(iCollateralStrength + iStrengthFactor)) /
+				(iTheirStrength + iStrengthFactor);
+		iCollateralDamage *= 100 + getExtraCollateralDamage();
+		iCollateralDamage *= std::max(0, 100 - kTargetUnit.getCollateralDamageProtection());
+		iCollateralDamage /= 100;
+		if (pCity != NULL)
+		{
+			iCollateralDamage *= 100 + pCity->getAirModifier();
 			iCollateralDamage /= 100;
-			if (pCity != NULL)
-			{
-				iCollateralDamage *= 100 + pCity->getAirModifier();
-				iCollateralDamage /= 100;
-			}
-			iCollateralDamage = std::max(0, iCollateralDamage/100);
-			int iMaxDamage = std::min(collateralDamageLimit(),
-					(collateralDamageLimit() *
-					(iCollateralStrength + iStrengthFactor)) /
-					(iTheirStrength + iStrengthFactor));
-			int iUnitDamage = std::max(kTargetUnit.getDamage(),
-					std::min(kTargetUnit.getDamage() + iCollateralDamage, iMaxDamage));
-			if (kTargetUnit.getDamage() != iUnitDamage)
-			{
-				kTargetUnit.setDamage(iUnitDamage, getOwner());
-				iDamageCount++;
-			}
+		}
+		iCollateralDamage = std::max(0, iCollateralDamage/100);
+		int iMaxDamage = std::min(collateralDamageLimit(),
+				(collateralDamageLimit() *
+				(iCollateralStrength + iStrengthFactor)) /
+				(iTheirStrength + iStrengthFactor));
+		int iUnitDamage = std::max(kTargetUnit.getDamage(),
+				std::min(kTargetUnit.getDamage() + iCollateralDamage, iMaxDamage));
+		if (kTargetUnit.getDamage() != iUnitDamage)
+		{
+			kTargetUnit.setDamage(iUnitDamage, getOwner());
+			iDamageCount++;
 		}
 	}
 

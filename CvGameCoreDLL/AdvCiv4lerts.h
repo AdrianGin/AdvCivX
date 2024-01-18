@@ -3,21 +3,21 @@
 #ifndef ADVCIV4LERTS_H
 #define ADVCIV4LERTS_H
 
-/*	advc.210: I can't write this in Python, so I'm having Civ4lerts.py call
-	this class. Will need to make changes in Civ4lerts.py, Civ4lerts.xml,
-	BugAlertsOptionsTab.py, CvPlayer.cpp and some file for game text
-	(like CIV4GameText_advc.xml) to add more alerts. */
+/*	advc.210: I don't want to implement alerts in Python, so I'm having
+	Civ4lerts.py call this class. Will need to make changes in Civ4lerts.py,
+	Civ4lerts.xml, BugAlertsOptionsTab.py, CvPlayer.cpp and some file for
+	game text (like CIV4GameText_advc.xml) to add more alerts. */
 class AdvCiv4lert
 {
 public:
 	AdvCiv4lert(PlayerTypes eOwner);
 	virtual ~AdvCiv4lert() {}
-	// Silent calls are for initializing data after loading a savegame
+	// (Silent calls are for initializing data after loading a savegame)
 	void check(bool bSilent);
 
 protected:
 	virtual void check()=0;
-	void showMessage(CvWString szMsg, LPCSTR szIcon = NULL, int iX = -1, int iY = -1,
+	void showMessage(CvWString szMsg, char const* szIcon = NULL, int iX = -1, int iY = -1,
 			ColorTypes eColor = NO_COLOR) const;
 	PlayerTypes m_eOwner;
 	bool m_bSilent;

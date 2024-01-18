@@ -1699,7 +1699,7 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 	}
 
 	pOldCity->kill(false, /* advc.001: */ false); // Don't bump units yet
-	pOldCity = NULL; // advc: Mustn't access that past this point
+	pOldCity = NULL; // advc: Mustn't be accessed past this point
 
 	if (bTrade) // Repercussions of cession: tile culture, war success (city culture: further down)
 	{
@@ -4445,11 +4445,10 @@ void CvPlayer::findNewCapital()
 
 	if (pBestCity != NULL)
 	{
-		FAssert(pBestCity->getNumRealBuilding(eCapitalBuilding) == 0);
-		pBestCity->setNumRealBuilding(eCapitalBuilding, 1);
-		// advc.106: Moved down so that setCapital can announce the old capital
 		if (pOldCapital != NULL)
 			pOldCapital->setNumRealBuilding(eCapitalBuilding, 0);
+		FAssert(pBestCity->getNumRealBuilding(eCapitalBuilding) == 0);
+		pBestCity->setNumRealBuilding(eCapitalBuilding, 1);
 	}
 	// advc: Important for hasCapital after map regen
 	else setCapital(NULL);
@@ -5884,13 +5883,17 @@ int CvPlayer::getImprovementUpgradeRate() const
 }
 
 
-int CvPlayer::calculateTotalYield(YieldTypes eYield) const
+int CvPlayer::calculateTotalYield(YieldTypes eYield,
+	bool bExludeCitiesInDisorder) const // advc.001 (for Financial Advisor)
 {
 	PROFILE_FUNC();
 
 	int iTotalCommerce = 0;
 	FOR_EACH_CITY(pLoopCity, *this)
-		iTotalCommerce += pLoopCity->getYieldRate(eYield);
+	{
+		if (!bExludeCitiesInDisorder || !pLoopCity->isDisorder()) // advc.001
+			iTotalCommerce += pLoopCity->getYieldRate(eYield);
+	}
 	return iTotalCommerce;
 }
 
@@ -8403,52 +8406,6 @@ void CvPlayer::setCapital(CvCity* pNewCapital)
 		pNewCapital->updateCommerce();
 		pNewCapital->setInfoDirty(true);
 	}
-	// <advc.106> Announcement:
-	if (pOldCapital != NULL && pNewCapital != NULL)
-	{
-		CvWString szFullInfo = gDLL->getText("TXT_KEY_MISC_CAPITAL_MOVED",
-				pNewCapital->getNameKey(), getCivilizationShortDescriptionKey(),
-				pOldCapital->getNameKey());
-		CvWString szOnlyOldKnown = gDLL->getText("TXT_KEY_MISC_NO_LONGER_CAPITAL",
-				getCivilizationShortDescriptionKey(), pOldCapital->getNameKey());
-		CvWString szOnlyNewKnown = gDLL->getText("TXT_KEY_MISC_IS_NOW_CAPITAL",
-				pNewCapital->getNameKey(), getCivilizationShortDescriptionKey());
-		for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
-		{
-			CvPlayer const& kObs = *it;
-			if (kObs.getID() == getID())
-				continue;
-			if (GET_TEAM(getTeam()).isHasMet(kObs.getTeam()) ||
-				 kObs.isSpectator()) // advc.127
-			{
-				CvWString* pszMsg = NULL;
-				bool bOldRevealed = pOldCapital->isRevealed(kObs.getTeam(),
-						kObs.isSpectator()); // advc.127
-				bool bNewRevealed = pNewCapital->isRevealed(kObs.getTeam(),
-						kObs.isSpectator()); // advc.127
-				if (bOldRevealed && bNewRevealed)
-					pszMsg = &szFullInfo;
-				else if (bOldRevealed)
-					pszMsg = &szOnlyOldKnown;
-				else if (bNewRevealed)
-					pszMsg = &szOnlyNewKnown;
-				if (pszMsg != NULL)
-				{
-					CvPlot const& kFlashPlot = (bNewRevealed ?
-							pNewCapital->getPlot() : pOldCapital->getPlot());
-					/*	<advc.127> Not really a major event, but minor events
-						don't get shown in spectator mode. */
-					InterfaceMessageTypes eMsgType = (kObs.isSpectator() ?
-							MESSAGE_TYPE_MAJOR_EVENT : MESSAGE_TYPE_MINOR_EVENT);
-					// </advc.127>
-					gDLL->UI().addMessage(kObs.getID(), false, -1, *pszMsg, NULL,
-							eMsgType, ARTFILEMGR.getInterfaceArtInfo(
-							"INTERFACE_CITY_BAR_CAPITAL_TEXTURE")->getPath(),
-							NO_COLOR, kFlashPlot.getX(), kFlashPlot.getY());
-				}
-			}
-		}
-	} // </advc.106>
 }
 
 // <advc.127b>
@@ -9847,6 +9804,17 @@ void CvPlayer::updateCommerceRates()
 	FOR_EACH_ENUM2(Commerce, eCommerce)
 	{
 		int iRate = m_aiCommerceRateTimes100.get(eCommerce);
+		// <advc>
+#ifdef FASSERT_ENABLE
+{
+		int iTotalRate = 0;
+		FOR_EACH_CITY(pCity, *this)
+			iTotalRate += pCity->getCommerceRateTimes100(eCommerce);
+		FAssertMsg(!GC.getGame().isAllGameDataRead() || // advc.201: Updates may occur while loading old saves
+				iTotalRate == iRate, "Player's special commerce did not equal the sum of their cities'");
+}
+#endif
+		// </advc>
 		if (GC.getGame().isOption(GAMEOPTION_NO_ESPIONAGE))
 		{
 			if (eCommerce == COMMERCE_CULTURE)
@@ -14650,8 +14618,20 @@ void CvPlayer::read(FDataStreamBase* pStream)
 			changeLuxuryModifier(kCivic.getLuxuryModifier() - iPreviousLux);
 		}
 	} // </advc.912c>
-	if (uiFlag < 18)
-		updateMaintenance();
+	// <advc>
+	if (uiFlag < 22)
+	{
+		FOR_EACH_ENUM(Commerce)
+		{
+			m_aiCommerceRateTimes100.set(eLoopCommerce, 0);
+			FOR_EACH_CITY(pCity, *this)
+			{
+				m_aiCommerceRateTimes100.add(eLoopCommerce,
+						pCity->getCommerceRateTimes100(eLoopCommerce));
+			}
+		}
+		updateCommerceRates();
+	} // </advc>
 	// <advc.708>
 	if (uiFlag < 19 && GC.getGame().isOption(GAMEOPTION_RISE_FALL) && isAlive())
 	{
@@ -14689,7 +14669,8 @@ void CvPlayer::write(FDataStreamBase* pStream)
 	//uiFlag = 18; // advc.251 (city maintenance changed in handicap XML)
 	//uiFlag = 19; // advc.708
 	//uiFlag = 20; // advc.912g
-	uiFlag = 21; // advc.enum: Bugfix in bool-valued ArrayEnumMap
+	//uiFlag = 21; // advc.enum: Bugfix in bool-valued ArrayEnumMap
+	uiFlag = 22; // advc: Bugs fixed with civ-wide special commerce rate cache
 	pStream->Write(uiFlag);
 
 	// <advc.027>
@@ -19296,7 +19277,7 @@ void CvPlayer::markTradeOffers(CLinkList<TradeData>& kOurInventory,
 int CvPlayer::getIntroMusicScriptId(PlayerTypes eForPlayer) const
 {
 	EraTypes eEra = GET_PLAYER(eForPlayer).getCurrentEra();
-	CvLeaderHeadInfo const& kLeader = GC.getInfo(getPersonalityType());
+	CvLeaderHeadInfo const& kLeader = GC.getInfo(getLeaderType());
 	if (GET_TEAM(eForPlayer).isAtWar(getTeam()))
 		return kLeader.getDiploWarIntroMusicScriptIds(eEra);
 	return kLeader.getDiploPeaceIntroMusicScriptIds(eEra);

@@ -186,7 +186,7 @@ class CityPlotIter : public CityPlotIterator<>
 {
 public:
 	CityPlotIter(CvCity const& kCity, bool bIncludeHomePlot = true) :
-		 CityPlotIterator<>(kCity, bIncludeHomePlot) {}
+		CityPlotIterator<>(kCity, bIncludeHomePlot) {}
 
 	CityPlotIter(CvPlot const& kCenter, bool bIncludeHomePlot = true) :
 		CityPlotIterator<>(kCenter, bIncludeHomePlot) {}

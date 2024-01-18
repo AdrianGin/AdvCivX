@@ -2870,12 +2870,18 @@ void CvGame::update()
 			{
 				autoSave(true); // advc.106l
 			}
-			/*	<advc.004m> This seems to be the earliest place where plot indicators
-				can be enabled w/o crashing. */
+		}
+		/*	<advc.004m> Slice 0 seems to be the earliest time when plot indicators
+			can be enabled w/o crashing. But it appears that, for some players,
+			the indicators do not actually appear then - race condition? Slice 1
+			doesn't seem to help either. Try 2? (It's a continuous count.) */
+		if (getTurnSlice() == 2 &&
+			// Leave it up to the savegame when loading an initial autosave
+			m_iTurnLoadedFromSave != m_iElapsedGameTurns)
+		{
 			if (BUGOption::isEnabled("MainInterface__StartWithResourceIcons", true))
 				gDLL->getEngineIFace()->setResourceLayer(true);
-			// </advc.004m>
-		}
+		} // </advc.004m>
 		if (getNumGameTurnActive() == 0)
 		{
 			if (!isPbem() || !getPbemTurnSent())
@@ -9372,6 +9378,12 @@ void CvGame::onAllGameDataRead()
 		}
 		SAFE_DELETE_ARRAY(m_pLegacyOrgSeatData);
 	} // </advc.enum>
+	// <advc.251> Maintenance changed in XML
+	if (m_uiSaveFlag < 25)
+	{
+		for (PlayerIter<ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
+			itPlayer->updateMaintenance();
+	} // </advc.251>
 	// <advc.130w>
 	bool bAttitudeUpdated = false;
 	if (m_uiSaveFlag < 26)
@@ -9738,12 +9750,28 @@ void CvGame::setVoteSourceReligion(VoteSourceTypes eVoteSource,
 	}
 }
 
+// advc.001: For culturalVictoryNumCultureCities. Infinity that doesn't easily overflow.
+namespace
+{
+	enum CultVictCityThresh
+	{
+		CULT_VICT_CITY_TRESH_INFINITE = arithm_traits<short>::max,
+	};
+}
+
+
+int CvGame::culturalVictoryNumCultureCities() const
+{
+	//return m_iNumCultureVictoryCities;
+	/*	advc.001: Easier to return infinity here than to ensure that all
+		call locations check for culturalVictoryValid */
+	return (culturalVictoryValid() ? m_iNumCultureVictoryCities : CULT_VICT_CITY_TRESH_INFINITE);
+}
+
 
 CultureLevelTypes CvGame::culturalVictoryCultureLevel() const
 {
-	if (m_iNumCultureVictoryCities > 0)
-		return m_eCultureVictoryCultureLevel;
-	return NO_CULTURELEVEL;
+	return (culturalVictoryValid() ? m_eCultureVictoryCultureLevel : NO_CULTURELEVEL);
 }
 
 

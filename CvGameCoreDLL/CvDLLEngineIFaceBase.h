@@ -77,7 +77,7 @@ public:
 	virtual void TriggerEffectExternal(int iEffect, NiPoint3 pt3Point, float fRotation = 0) = 0;
 	// <advc> Renamed the above and added this wrapper:
 	void TriggerEffect(EffectTypes eEffect, NiPoint3 pt3Point, float fRotation = 0)
-	{	/*	Seems that ibvalid effects (or none) can crash the EXE at a later point,
+	{	/*	Seems that invalid effects (or none) can crash the EXE at a later point,
 			i.e. in a way that is difficult to debug. The WtP mod had this problem. */
 		if (!checkEnumBounds(eEffect))
 		{
