@@ -905,6 +905,15 @@ class RefusesToTalk(AbstractStatefulAlert):
 	def onChangeWar(self, argsList):
 		if isSilent(): return # advc.127
 		bIsWar, eTeam, eRivalTeam = argsList
+		# <advc.001> (from Taurus) Barbarian wars can cause problems
+		# b/c CvGame::initDiplomacy happens so early
+		if (eTeam != TeamTypes.NO_TEAM and
+			(gc.getTeam(eTeam).isBarbarian() or gc.getTeam(eTeam).isMinorCiv())):
+			return
+		if (eRivalTeam != TeamTypes.NO_TEAM and
+			(gc.getTeam(eRivalTeam).isBarbarian() or gc.getTeam(eRivalTeam).isMinorCiv())):
+			return
+		# </advc.001>
 		self.checkIfIsAnyOrHasMetAllTeams(eTeam, eRivalTeam)
 		
 	def onCityRazed(self, argsList):
