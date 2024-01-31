@@ -6944,7 +6944,6 @@ int CvPlayerAI::AI_techReligionValue(TechTypes eTech, int iPathLength,
 	CvTechInfo const& kTech = GC.getInfo(eTech);
 	ReligionTypes const eFavoriteReligion = getFavoriteReligion();
 	// <advc.171>
-	bool const bChooseReligion = GC.getGame().isOption(GAMEOPTION_PICK_RELIGION);
 	bool bLateFavoriteReligion = false;
 	bool bLateReligion = false; // </advc.171>
 	// <kekm.36>
@@ -7007,61 +7006,58 @@ int CvPlayerAI::AI_techReligionValue(TechTypes eTech, int iPathLength,
 			!GC.getGame().isReligionSlotTaken(eLoopReligion))
 		{
 			int iRoll = 200; // advc.171: Was 400 in BtS, 150 in K-Mod 1.46.
-			if (eFavoriteReligion != NO_RELIGION) // <advc.171> //&& !bChooseReligion
+			if (!GC.getGame().isOption(GAMEOPTION_PICK_RELIGION) &&
+				eFavoriteReligion != NO_RELIGION)
 			{
-				if (bChooseReligion ?
-					!GC.getGame().isReligionSlotTaken(eFavoriteReligion) :
-					(eLoopReligion == eFavoriteReligion)) // as before
+				if (eLoopReligion == eFavoriteReligion)
 				{
+					// <advc.171>
 					bool bPrereqFoundsReligion = false;
-					if (!bChooseReligion)
+					FOR_EACH_ENUM2(Religion, ePrereqReligion)
 					{
-						FOR_EACH_ENUM2(Religion, ePrereqReligion)
+						if (ePrereqReligion == eLoopReligion ||
+							GC.getGame().isReligionSlotTaken(ePrereqReligion))
 						{
-							if (ePrereqReligion == eLoopReligion ||
-								GC.getGame().isReligionSlotTaken(ePrereqReligion))
+							continue;
+						}
+						TechTypes ePrereqTech = GC.getInfo(ePrereqReligion).
+								getTechPrereq();
+						if (GET_TEAM(getTeam()).isHasTech(ePrereqTech))
+							continue;
+						/*	Would like to know whether eLoopReligion requires any
+							other tech that will found a religion. Can't easily check
+							that for the full path here, so I'll only check the
+							proximate prereqs. */
+						if (kTech.getNumOrTechPrereqs() == 1)
+						{
+							if (kTech.getPrereqOrTechs(0) == ePrereqTech)
+								bPrereqFoundsReligion = true;
+						}
+						if (!bPrereqFoundsReligion)
+						{
+							for (int i = 0; i < kTech.getNumAndTechPrereqs(); i++)
 							{
-								continue;
-							}
-							TechTypes ePrereqTech = GC.getInfo(ePrereqReligion).
-									getTechPrereq();
-							if (GET_TEAM(getTeam()).isHasTech(ePrereqTech))
-								continue;
-							/*	Would like to know whether eLoopReligion requires any
-								other tech that will found a religion. Can't easily
-								check that for the full path here, so I'll only check
-								the proximate prereqs. */
-							if (kTech.getNumOrTechPrereqs() == 1)
-							{
-								if (kTech.getPrereqOrTechs(0) == ePrereqTech)
-									bPrereqFoundsReligion = true;
-							}
-							if (!bPrereqFoundsReligion)
-							{
-								for (int i = 0; i < kTech.getNumAndTechPrereqs(); i++)
+								if (kTech.getPrereqAndTechs(i) == ePrereqTech)
 								{
-									if (kTech.getPrereqAndTechs(i) == ePrereqTech)
-									{
-										bPrereqFoundsReligion = true;
-										break;
-									}
+									bPrereqFoundsReligion = true;
+									break;
 								}
 							}
-							if (bPrereqFoundsReligion)
-								break;
 						}
+						if (bPrereqFoundsReligion)
+							break;
 					}
 					if (bPrereqFoundsReligion)
 						iRoll = iRoll * 3/4;
 					/*	Encourage only a little (NB: there's further multi-religion
 						discouragement farther below) */
-					else if (countHolyCities() > 0 || bChooseReligion)
+					else if (countHolyCities() > 0)
 						iRoll = iRoll * 4/3;
 					// Full encouragement
 					else iRoll = iRoll * 5/3; // was *3/2
 					// </advc.171>
 				}
-				else iRoll = iRoll * /*2/3*/ (bChooseReligion ? 15 : 12)/20; // advc.171
+				else iRoll = iRoll * /*2/3*/ 6/10; // advc.171
 			}
 			iRoll *= 200 + iRaceModifier;
 			iRoll /= 200;
