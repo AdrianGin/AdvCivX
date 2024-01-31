@@ -6944,6 +6944,7 @@ int CvPlayerAI::AI_techReligionValue(TechTypes eTech, int iPathLength,
 	CvTechInfo const& kTech = GC.getInfo(eTech);
 	ReligionTypes const eFavoriteReligion = getFavoriteReligion();
 	// <advc.171>
+	bool const bChooseReligion = GC.getGame().isOption(GAMEOPTION_PICK_RELIGION);
 	bool bLateFavoriteReligion = false;
 	bool bLateReligion = false; // </advc.171>
 	// <kekm.36>
@@ -6974,7 +6975,10 @@ int CvPlayerAI::AI_techReligionValue(TechTypes eTech, int iPathLength,
 		{
 			iLaterReligions++;
 			if (eLoopReligion == eFavoriteReligion)
+			{	/*	Even if bChooseReligion? Yes, I think; will play better
+					with some leaders aiming for the later techs. */
 				bLateFavoriteReligion = true;
+			}
 			if (eTech == GC.getInfo(eLoopReligion).getTechPrereq())
 				bLateReligion = true;
 		} // </advc.171>
@@ -6986,7 +6990,7 @@ int CvPlayerAI::AI_techReligionValue(TechTypes eTech, int iPathLength,
 	{
 		TechTypes eReligionTech = GC.getInfo(eLoopReligion).getTechPrereq();
 		/*if (kTeam.isHasTech(eReligionTech)) {
-			if (!(GC.getGame().isReligionSlotTaken((ReligionTypes)iJ)))
+			if (!GC.getGame().isReligionSlotTaken(eLoopReligion))
 				iPotentialReligions++;
 		}*/ // BtS
 		/*	K-Mod. iPotentialReligions will only be non-zero during the
@@ -7003,57 +7007,61 @@ int CvPlayerAI::AI_techReligionValue(TechTypes eTech, int iPathLength,
 			!GC.getGame().isReligionSlotTaken(eLoopReligion))
 		{
 			int iRoll = 200; // advc.171: Was 400 in BtS, 150 in K-Mod 1.46.
-			if (!GC.getGame().isOption(GAMEOPTION_PICK_RELIGION) &&
-				eFavoriteReligion != NO_RELIGION)
+			if (eFavoriteReligion != NO_RELIGION) // <advc.171> //&& !bChooseReligion
 			{
-				if (eLoopReligion == eFavoriteReligion)
+				if (bChooseReligion ?
+					!GC.getGame().isReligionSlotTaken(eFavoriteReligion) :
+					(eLoopReligion == eFavoriteReligion)) // as before
 				{
-					// <advc.171>
 					bool bPrereqFoundsReligion = false;
-					FOR_EACH_ENUM2(Religion, ePrereqReligion)
+					if (!bChooseReligion)
 					{
-						if (ePrereqReligion == eLoopReligion ||
-							GC.getGame().isReligionSlotTaken(ePrereqReligion))
+						FOR_EACH_ENUM2(Religion, ePrereqReligion)
 						{
-							continue;
-						}
-						TechTypes ePrereqTech = GC.getInfo(ePrereqReligion).
-								getTechPrereq();
-						if (GET_TEAM(getTeam()).isHasTech(ePrereqTech))
-							continue;
-						/*	Would like to know whether eLoopReligion requires any
-							other tech that will found a religion. Can't easily check
-							that for the full path here, so I'll only check the
-							proximate prereqs. */
-						if (kTech.getNumOrTechPrereqs() == 1)
-						{
-							if (kTech.getPrereqOrTechs(0) == ePrereqTech)
-								bPrereqFoundsReligion = true;
-						}
-						if (!bPrereqFoundsReligion)
-						{
-							for (int i = 0; i < kTech.getNumAndTechPrereqs(); i++)
+							if (ePrereqReligion == eLoopReligion ||
+								GC.getGame().isReligionSlotTaken(ePrereqReligion))
 							{
-								if (kTech.getPrereqAndTechs(i) == ePrereqTech)
-								{
+								continue;
+							}
+							TechTypes ePrereqTech = GC.getInfo(ePrereqReligion).
+									getTechPrereq();
+							if (GET_TEAM(getTeam()).isHasTech(ePrereqTech))
+								continue;
+							/*	Would like to know whether eLoopReligion requires any
+								other tech that will found a religion. Can't easily
+								check that for the full path here, so I'll only check
+								the proximate prereqs. */
+							if (kTech.getNumOrTechPrereqs() == 1)
+							{
+								if (kTech.getPrereqOrTechs(0) == ePrereqTech)
 									bPrereqFoundsReligion = true;
-									break;
+							}
+							if (!bPrereqFoundsReligion)
+							{
+								for (int i = 0; i < kTech.getNumAndTechPrereqs(); i++)
+								{
+									if (kTech.getPrereqAndTechs(i) == ePrereqTech)
+									{
+										bPrereqFoundsReligion = true;
+										break;
+									}
 								}
 							}
+							if (bPrereqFoundsReligion)
+								break;
 						}
-						if (bPrereqFoundsReligion)
-							break;
 					}
 					if (bPrereqFoundsReligion)
 						iRoll = iRoll * 3/4;
-					/*	(In addition to multi-religion
+					/*	Encourage only a little (NB: there's further multi-religion
 						discouragement farther below) */
-					else if (countHolyCities() > 0)
+					else if (countHolyCities() > 0 || bChooseReligion)
 						iRoll = iRoll * 4/3;
+					// Full encouragement
 					else iRoll = iRoll * 5/3; // was *3/2
 					// </advc.171>
 				}
-				else iRoll = iRoll * /*2/3*/ 6/10; // advc.171
+				else iRoll = iRoll * /*2/3*/ (bChooseReligion ? 15 : 12)/20; // advc.171
 			}
 			iRoll *= 200 + iRaceModifier;
 			iRoll /= 200;
@@ -12171,8 +12179,9 @@ int CvPlayerAI::AI_bonusTradeVal(BonusTypes eBonus, PlayerTypes eFromPlayer, int
 	/*  To make resource vs. resource trades more compatible. A multiple of 5
 		would lead to a rounding error when gold is paid for a resource b/c
 		2 gpt correspond to 1 tradeVal. */
-	if (r >= 3 && !GET_TEAM(getTeam()).isGoldTrading() &&
-		!GET_TEAM(eFromPlayer).isGoldTrading())
+	// Let's actually apply this even once gold trading is available
+	if (r >= 3 /*&& !GET_TEAM(getTeam()).isGoldTrading() &&
+		!GET_TEAM(eFromPlayer).isGoldTrading()*/)
 	{
 		iR = r.roundToMultiple(4);
 	}
