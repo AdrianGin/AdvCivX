@@ -14893,7 +14893,7 @@ void CvPlayer::write(FDataStreamBase* pStream)
 		/*	<advc.001> Don't store popups for AI players. The EXE sometimes adds popups
 			to AI players through CvPlayer::getPopups; not sure when and why. Those popups
 			linger and appear when switching to an AI player through Alt+Z. */
-		if (!isActive())
+		if (!isHuman())
 		{
 			currentPopups.clear();
 			clearPopups();
