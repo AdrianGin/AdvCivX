@@ -7058,4 +7058,20 @@
 		<Spanish>factor principios</Spanish>
 	</TEXT>
 
+	<!-- advc.005h: Helpers for WORST_ENEMY_PRONOUN macros
+		 (see CvDLLTranslator.cpp). "_1" is for the first grammatical
+		 case (in the way that Germans like to number them), i.e. nominative. -->
+	<TEXT>
+		<Tag>TXT_KEY_DIPLO_LEADER_PRONOUN_1</Tag>
+		<English>[NUM1:he:she]%s1</English>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_DIPLO_HUMAN_PRONOUN_1</Tag>
+		<English>they</English>
+		<French>il/elle</French>
+		<German>er/sie</German>
+		<Italian>lui/lei</Italian>
+		<Spanish>&#233;l/ella</Spanish>
+	</TEXT>
+
 </Civ4GameText>

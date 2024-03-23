@@ -2,6 +2,7 @@
 #include "CvDllTranslator.h"
 #include "CvGame.h"
 #include "CvPlayer.h"
+#include "CvTeamAI.h" // advc.005h
 
 void CvDllTranslator::initializeTags(CvWString& szTagStartIcon, CvWString& szTagStartOur, CvWString& szTagStartCT, CvWString& szTagStartColor, CvWString& szTagStartLink, CvWString& szTagEndLink, CvWString& szEndLinkReplacement, std::map<std::wstring, CvWString>& aIconMap, std::map<std::wstring, CvWString>& aColorMap)
 {
@@ -97,6 +98,25 @@ bool CvDllTranslator::replaceOur(const CvWString& szKey, int iForm, CvWString& s
 	{
 		szReplacement = kPlayer.getWorstEnemyName();
 	}
+	// <advc.005h>
+	else if (szKey == L"[OUR_WORST_ENEMY_PRONOUN_1")
+	{
+		TeamTypes const eWorstEnemy = GET_TEAM(kPlayer.getTeam()).AI_getWorstEnemy();
+		if (kPlayer.isHuman() || eWorstEnemy == NO_TEAM)
+			szReplacement = gDLL->getText("TXT_KEY_DIPLO_HUMAN_PRONOUN_1");
+		else
+		{
+			CvLeaderHeadInfo const& kEnemyLeader = GC.getInfo(GET_PLAYER(
+					GET_TEAM(eWorstEnemy).getLeaderID()).getLeaderType());
+			wchar const* szEnemyLeaderName = 
+			szReplacement = gDLL->getText("TXT_KEY_DIPLO_LEADER_PRONOUN_1",
+					kEnemyLeader.getTextKeyWide());
+			/*	The TXT_KEY has to include the argument that we pass, but we're
+				only interested in the gendered pronoun at the start. */
+			szReplacement.resize(szReplacement.length()
+					- std::wcslen(kEnemyLeader.getText()));
+		}
+	} // </advc.005h>
 	else
 	{
 		FErrorMsg("Unknown Diplomacy String");
