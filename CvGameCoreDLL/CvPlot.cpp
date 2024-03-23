@@ -649,23 +649,26 @@ void CvPlot::updateCenterUnit()
 	}
 	if (setCenterUnit(getBestDefender(eActivePlayer)))
 		return;
+	CvUnit const* pHeadSelected = gDLL->UI().getHeadSelectedUnit();
+	// <advc.001> Can occur when loading a Hotseat savegame
+	if (pHeadSelected != NULL && pHeadSelected->getOwner() != eActivePlayer)
+		pHeadSelected = NULL; // </advc.001>
 	{
-		//setCenterUnit(getBestDefender(NO_PLAYER, eActivePlayer, gDLL->UI().getHeadSelectedUnit(), true));
+		//setCenterUnit(getBestDefender(NO_PLAYER, eActivePlayer, pHeadSelected, true));
 		/*	disabled by K-Mod. I don't think it's relevant
 			whether or not the best defender can move. */
 		/*	advc.001: Restored the code (with some changes for advc.028).
 			This is not the code that karadoc had meant to disable. */
 		// <advc.028>
-		DefenderFilters defFilters(eActivePlayer, gDLL->UI().getHeadSelectedUnit(),
-				true);
+		DefenderFilters defFilters(eActivePlayer, pHeadSelected, true);
 		defFilters.m_bTestVisible = true; // advc.061
 		if (setCenterUnit(getBestDefender(NO_PLAYER, defFilters)))
 			return; // </advc.028>
 	}
 	{
-		//setCenterUnit(getBestDefender(NO_PLAYER, eActivePlayer, gDLL->UI().getHeadSelectedUnit()));
+		//setCenterUnit(getBestDefender(NO_PLAYER, eActivePlayer, pHeadSelected));
 		// <advc.028>
-		DefenderFilters defFilters(eActivePlayer, gDLL->UI().getHeadSelectedUnit());
+		DefenderFilters defFilters(eActivePlayer, pHeadSelected);
 		defFilters.m_bTestVisible = true; // advc.061
 		if (setCenterUnit(getBestDefender(NO_PLAYER, defFilters)))
 			return; // </advc.028>
