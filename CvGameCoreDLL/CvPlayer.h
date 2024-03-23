@@ -1667,6 +1667,7 @@ protected:  // <advc.210>
 	std::vector<AdvCiv4lert*> m_paAlerts; // advc.210
 	// <advc.106b>
 	std::vector<CvTalkingHeadMessage*> m_aMajorMsgs;
+	std::vector<CvTalkingHeadMessage*> m_aHotSeatMsgs;
 	int m_iNewMessages; // </advc.106b>
 	// advc.074:
 	mutable CLinkList<std::pair<PlayerTypes,BonusTypes> > m_cancelingExport;
@@ -1708,6 +1709,8 @@ protected:  // <advc.210>
 	void doWarnings();
 	void doEvents();
 	// <advc.106b>
+	void clearMessageCopies(std::vector<CvTalkingHeadMessage*>* pContainer = NULL);
+	void showMessageCopies(std::vector<CvTalkingHeadMessage*>* pContainer = NULL);
 	void postProcessMessages();
 	int getStartOfTurnMessageLimit() const;
 	// </advc.106b>
