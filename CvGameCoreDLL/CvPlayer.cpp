@@ -2813,7 +2813,7 @@ void CvPlayer::doTurn()
 		m_iNewMessages = 0;
 	/*  This way, NewMessages is never reset for non-humans. It is reset in
 		setHumanDisabled though, i.e. when coming out of AI Auto Play. */
-	if (isHuman())
+	if (isHuman() && isActive())
 		gDLL->UI().clearEventMessages();
 	// </advc.106b>
 
