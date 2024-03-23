@@ -2106,7 +2106,7 @@
 		<Italian>Attenzione, le nostre parole sono supportate da armi nucleari!</Italian>
 		<Spanish>&#161;Cuidado, respaldamos nuestras palabras con armas nucleares!</Spanish>
 	</TEXT>
-	<!-- Replacing "watch out for your worst enemy" -->
+	<!-- Replacing "watch out for our worst enemy" -->
 	<TEXT>
 		<Tag>AI_DIPLO_WORST_ENEMY_1</Tag>
 		<English>[OUR_WORST_ENEMY] is a scheming, lying murderer. Beware!</English>

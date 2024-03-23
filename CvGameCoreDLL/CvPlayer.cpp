@@ -3265,12 +3265,12 @@ bool CvPlayer::hasBusyUnit() const
 
 void CvPlayer::chooseTech(int iDiscover, CvWString szText, bool bFront)
 {
-	// K-Mod
+	// <K-Mod> (based on UNOFFICIAL_PATCH, Free Tech Popup Fix, 12/07/09, EmperorFool)
 	FAssert(isHuman());
 	if (iDiscover > 0)
-	{	// note: if iDiscover is > 1, this function will be called again with iDiscover-=1
+	{	// (K-Mod note: if iDiscover is > 1, this function will be called again with iDiscover-=1)
 		changeChoosingFreeTechCount(1);
-	} // K-Mod end
+	} // </K-Mod>
 
 	CvPopupInfo* pInfo = new CvPopupInfo(BUTTONPOPUP_CHOOSETECH);
 	if (pInfo != NULL)
@@ -6921,7 +6921,8 @@ void CvPlayer::convert(ReligionTypes eReligion, /* <advc.001v> */ bool bForce)
 	if (isActive())
 	{
 		killAll(BUTTONPOPUP_CHANGERELIGION);
-		if(iAnarchyLength > 0) {
+		if (iAnarchyLength > 0)
+		{
 			killAll(BUTTONPOPUP_CHOOSEPRODUCTION);
 			killAll(BUTTONPOPUP_CHOOSETECH);
 		}
@@ -10981,7 +10982,7 @@ void CvPlayer::addMessage(CvTalkingHeadMessage const& kMessage)
 {
 	// <advc.706> Remove messages arriving during interlude from display immediately
 	CvGame const& kGame = GC.getGame();
-	if(kGame.isOption(GAMEOPTION_RISE_FALL) && isActive() &&
+	if (kGame.isOption(GAMEOPTION_RISE_FALL) && isActive() &&
 		kGame.getRiseFall().getInterludeCountdown() >= 0)
 	{
 		gDLL->UI().clearEventMessages();
@@ -10989,14 +10990,14 @@ void CvPlayer::addMessage(CvTalkingHeadMessage const& kMessage)
 	m_listGameMessages.push_back(kMessage);
 	// <advc.106b>
 	// Special treatment only for events in other civs' turns.
-	if(!kGame.isInBetweenTurns() && isActive())
+	if (!kGame.isInBetweenTurns() && isActive())
 		return;
 	/* DISPLAY_ONLY, COMBAT, CHAT, QUEST don't show up on the Event tab
 	   of the Turn Log, and therefore shouldn't count.
 	   (That is assuming that quests also send INFO messages, which I haven't
 	   verified - tbd.) */
 	InterfaceMessageTypes eMessage = kMessage.getMessageType();
-	if(eMessage == MESSAGE_TYPE_INFO || eMessage == MESSAGE_TYPE_MINOR_EVENT ||
+	if (eMessage == MESSAGE_TYPE_INFO || eMessage == MESSAGE_TYPE_MINOR_EVENT ||
 		eMessage == MESSAGE_TYPE_MAJOR_EVENT || eMessage == MESSAGE_TYPE_MAJOR_EVENT_LOG_ONLY)
 	{
 		m_iNewMessages++; // See comment in postProcessBeginTurnEvents
@@ -11035,33 +11036,33 @@ void CvPlayer::postProcessMessages()
 	   b/c of the splash screen. Don't want to suppress it b/c it should go
 	   into the log, but don't count it when deciding whether to open the log
 	   b/c the tech finished message doesn't take up much attention. */
-	if(getCurrentResearch() == NO_TECH)
+	if (getCurrentResearch() == NO_TECH)
 		m_iNewMessages--;
 	// Don't open the Turn Log when there's only first-contact diplo
 	bool bRelevantDiplo = false;
-	if(!m_listDiplomacy.empty() && m_iNewMessages > 0)
+	if (!m_listDiplomacy.empty() && m_iNewMessages > 0)
 	{
 		TCHAR const* aszRelevantNonOffers[] = { "CANCEL_DEAL", "RELIGION_PRESSURE",
 			"CIVIC_PRESSURE", "JOIN_WAR", "STOP_TRADING",
 		};
-		for(CvDiploQueue::const_iterator it = m_listDiplomacy.begin(); it !=
+		for (CvDiploQueue::const_iterator it = m_listDiplomacy.begin(); it !=
 			m_listDiplomacy.end(); ++it)
 		{
 			CvDiploParameters* dp = *it;
-			if(dp == NULL)
+			if (dp == NULL)
 			{
 				FAssert(dp != NULL);
 				continue;
 			}
-			if(dp->getHumanDiplo() || dp->getOurOfferList().getLength() > 0 ||
+			if (dp->getHumanDiplo() || dp->getOurOfferList().getLength() > 0 ||
 				dp->getTheirOfferList().getLength() > 0)
 			{
 				bRelevantDiplo = true;
 				break;
 			}
-			for(int i = 0; i < ARRAYSIZE(aszRelevantNonOffers); i++)
+			for (int i = 0; i < ARRAYSIZE(aszRelevantNonOffers); i++)
 			{
-				if(dp->getDiploComment() == GC.getAIDiploCommentType(aszRelevantNonOffers[i]))
+				if (dp->getDiploComment() == GC.getAIDiploCommentType(aszRelevantNonOffers[i]))
 				{
 					bRelevantDiplo = true;
 					break;
@@ -11096,10 +11097,10 @@ void CvPlayer::postProcessMessages()
 
 int CvPlayer::getStartOfTurnMessageLimit() const
 {
-	if(!BUGOption::isEnabled("MainInterface__AutoOpenEventLog", true))
+	if (!BUGOption::isEnabled("MainInterface__AutoOpenEventLog", true))
 		return -1;
 	int iR = BUGOption::getValue("MainInterface__MessageLimit", 3);
-	if(!isOption(PLAYEROPTION_MINIMIZE_POP_UPS) &&
+	if (!isOption(PLAYEROPTION_MINIMIZE_POP_UPS) &&
 		GC.getDefineINT("MESSAGE_LIMIT_WITHOUT_MPU") == 0)
 	{
 		return -1;

@@ -197,10 +197,8 @@ public:
 	bool hasAutoUnit() const;
 	DllExport bool hasBusyUnit() const;
 
-	// K-Mod
-	bool isChoosingFreeTech() const { return m_iChoosingFreeTechCount > 0; }
-	void changeChoosingFreeTechCount(int iChange) { m_iChoosingFreeTechCount += iChange; }
-	// K-Mod end
+	bool isChoosingFreeTech() const { return m_iChoosingFreeTechCount > 0; } // K-Mod
+	void changeChoosingFreeTechCount(int iChange) { m_iChoosingFreeTechCount += iChange; } // K-Mod
 
 	void chooseTech(int iDiscover = 0, CvWString szText = "", bool bFront = false);									// Exposed to Python
 

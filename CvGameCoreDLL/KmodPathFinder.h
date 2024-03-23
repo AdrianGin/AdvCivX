@@ -58,7 +58,7 @@ public:
 		m_iPathLength = iPathLength;
 	}
 protected:
-	CvPlot* m_pPlot; // FAStarNode::m_iX, m_iY in K-MMod
+	CvPlot* m_pPlot; // FAStarNode::m_iX, m_iY in K-Mod
 	int m_iPathLength; // FAStarNode::m_iData2 in K-Mod
 public: // Keeping these public (for now) for interchangeability with FAStarNode
 	// Path costs need to have a fairly high resolution; short int won't do.

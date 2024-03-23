@@ -1134,8 +1134,9 @@ void CvMap::resetPathDistance()
 
 int CvMap::calculatePathDistance(CvPlot const* pSource, CvPlot const* pDest) const
 {
-	if(pSource == NULL || pDest == NULL)
+	if (pSource == NULL || pDest == NULL)
 		return -1;
+	// advc.pf (tbd.): Replace with TeamPathFinder for better performance?
 	if (gDLL->getFAStarIFace()->GeneratePath(&GC.getStepFinder(),
 		pSource->getX(), pSource->getY(), pDest->getX(), pDest->getY(), false, 0, true))
 	{
