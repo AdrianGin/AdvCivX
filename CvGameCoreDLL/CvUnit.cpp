@@ -11784,7 +11784,9 @@ bool CvUnit::isCombatVisible(CvUnit const* pDefender,
 			else if (pDefender != NULL && pDefender->isHuman())
 			{
 				if (!GET_PLAYER(pDefender->getOwner()).isOption(PLAYEROPTION_QUICK_DEFENSE) &&
-					!gDLL->getEngineIFace()->isGlobeviewUp()) // advc.102
+					!gDLL->getEngineIFace()->isGlobeviewUp() && // advc.102
+					// advc.001: Camera won't catch AI-vs-human combat in Hotseat
+					(isHuman() || !GC.getGame().isHotSeat()))
 				{
 					bVisible = true;
 				}
