@@ -309,7 +309,7 @@
 				<choice id="Disable"/>
 			</list>
 
-			<!-- advc.002f: -->
+			<!-- advc.002f: start -->
 			<option id="AvoidGrowthIcon" key="Avoid Growth Icon" 
 					type="boolean" default="True" dirtyBit="CityInfo"/>
 			<option id="CityNetworkIcon" key="City Network Icon" 
@@ -334,6 +334,7 @@
 					type="boolean" default="False" dirtyBit="CityInfo"/>
 			<option id="NoBadHealthIcon" key="No Bad Health Icon" 
 					type="boolean" default="False" dirtyBit="CityInfo"/-->
+			<!-- advc.002f: end -->
 			<!-- advc.101 -->
 			<option id="RevoltChanceIcon" key="Revolt Chance Icon" 
 					type="boolean" default="False" dirtyBit="CityInfo"/>
