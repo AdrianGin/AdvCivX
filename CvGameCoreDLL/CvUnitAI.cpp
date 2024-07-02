@@ -1044,8 +1044,10 @@ int CvUnitAI::AI_currEffectiveStr(CvPlot const* pPlot, CvUnit const* pOther,
 		{
 			/*	collateral damage is not trivial to calculate. This estimate is pretty rough.
 				(Note: collateralDamage() and iBaseCollateral both include factors of 100.) */
-			iCombatStrengthPercent += baseCombatStr() * iBaseCollateral *
-					collateralDamage() * iPossibleTargets / 10000;
+			iCombatStrengthPercent += (baseCombatStr() * iBaseCollateral *
+					iPossibleTargets * //collateralDamage()
+					AI_collateralDmgFactor()) // advc.159
+					/ 10000;
 		}
 	} // </K-Mod>
 	FAssert(iCombatStrengthPercent < 100000); // A conservative guard against overflow
@@ -1207,7 +1209,9 @@ void CvUnitAI::LFBgetBetterAttacker(CvUnitAI** ppAttacker, // advc.003u: param w
 				collateralDamageMaxUnits());
 		if (iPossibleTargets > 0)
 		{
-			iValue *= 100 + (collateralDamage() * iPossibleTargets) / 5;
+			iValue *= 100 + (//collateralDamage()
+					AI_collateralDmgFactor() // advc.159
+					* iPossibleTargets) / 5;
 			iValue /= 100;
 		}
 	}
@@ -19686,7 +19690,7 @@ int CvUnitAI::AI_airStrikeValue(CvPlot const& kPlot, int iCurrentBest, bool& bBo
 			iStrikeValue = std::max(0,
 					std::min(pDefender->getDamage() + iDamage, airCombatLimit())
 					- pDefender->getDamage());
-			iStrikeValue += iDamage * collateralDamage() *
+			iStrikeValue += iDamage * AI_collateralDmgFactor() *
 					std::min(iDefenders - 1, collateralDamageMaxUnits()) / 200;
 			iStrikeValue *= (3 + iAdjacentAttackers + iAssaultEnRoute / 2);
 			iStrikeValue /= (iAdjacentAttackers + iAssaultEnRoute > 0 ? 4 : 6) +
@@ -19793,7 +19797,7 @@ bool CvUnitAI::AI_defendBaseAirStrike()
 		int const iDamage = airCombatDamage(pDefender);
 		iValue = std::max(0, (std::min((pDefender->getDamage() + iDamage),
 				airCombatLimit()) - pDefender->getDamage()));
-		iValue += ((iDamage * collateralDamage()) *
+		iValue += ((iDamage * AI_collateralDmgFactor()) *
 				std::min((p.getNumVisibleEnemyDefenders(this) - 1),
 				collateralDamageMaxUnits())) / (2*100);
 

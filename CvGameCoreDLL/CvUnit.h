@@ -581,7 +581,7 @@ public:
 	int withdrawalProbability() const;																		// Exposed to Python
 
 	int collateralDamage() const																			// Exposed to Python
-	{
+	{	// advc.159 (note): getExtraCollateralDamage works multiplicatively since BtS 3.17
 		return std::max(0, m_pUnitInfo->getCollateralDamage());
 	}
 	int collateralDamageLimit() const																		// Exposed to Python
