@@ -22,7 +22,7 @@
 # YOURMOD2 and YOURLOGS (see under "Paths").
 # PROJECT_Profile_CFLAGS, PROJECT_Debug_CFLAGS, PROJECT_DebugOpt_CFLAGS added to Makefile.project.
 # For selecting a profiler and for balancing speed vs. fidelity of debug builds.
-# Removed unused /DCVGAMECOREDLL_EXPORTS from Debug_DEFINES
+# Removed unused /DCVGAMECOREDLL_EXPORTS
 # devolution (Erik) has added the target 'Final_Release' with
 #   whole-program optimization. [There is also a Firaxis define called
 #   FINAL_RELEASE, which merely disables the OutputDebugString function from
@@ -85,7 +85,7 @@ FD="bin\fastdep.exe"
 
 #### DEFINES ####
 Debug_DEFINES=/DWIN32 /D_WINDOWS /D_USRDLL /D_DEBUG
-Release_DEFINES=/DWIN32 /D_WINDOWS /D_USRDLL /DCVGAMECOREDLL_EXPORTS /DNDEBUG /DFINAL_RELEASE
+Release_DEFINES=/DWIN32 /D_WINDOWS /D_USRDLL /DNDEBUG /DFINAL_RELEASE
 ## Optional: Copy the flags above into "Additional options" in NMAKE properties (Configuration Properties)
 ## to make VC++ aware of what is defined and what isn't, which affects the help popup and red lines.
 ## Use the Release_DEFINES for all targets except debug. Assert adds /DFASSERT_ENABLE,
