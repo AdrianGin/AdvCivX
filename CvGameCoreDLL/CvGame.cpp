@@ -2842,93 +2842,119 @@ void CvGame::update()
 {
 	startProfilingDLL(false);
 	PROFILE_BEGIN("CvGame::update");
-
-	if (!gDLL->GetWorldBuilderMode() || isInAdvancedStart())
+	// <advc.256> Based on C2C, originally mostly from Rise of Mankind, I think.
+	CvPlayer const& kActivePlayer = GET_PLAYER(getActivePlayer());
+	int iSuccessiveUpdates = 1;
+	if (getTurnSlice() > 0) // Wait for BUG initialization
 	{
-		sendPlayerOptions();
-
-		// sample generic event
-		CyArgsList pyArgs;
-		pyArgs.add(getTurnSlice());
-		/*	advc.210: To prevent BUG alerts from being checked at the start of a
-			game turn. I've tried doing that through BugEventManager.py, but soon
-			gave up. Tagging advc.706 b/c it's especially important to supress
-			the update when R&F is enabled. */
-		if (!isInBetweenTurns())
-		{
-			CvEventReporter::getInstance().genericEvent("gameUpdate", pyArgs.makeFunctionArgs());
-			// <advc.003r>
-			for (int i = 0; i < NUM_UPDATE_TIMER_TYPES; i++)
-				handleUpdateTimer((UpdateTimerTypes)i); // </advc.003r>
-		}
-		if (getTurnSlice() == 0) // advc (note): Implies 0 elapsed game turns
-		{	// <advc.700> Delay initial auto-save until RiseFall is initialized
-			if (!isOption(GAMEOPTION_RISE_FALL) && // </advc.700>
-				m_iTurnLoadedFromSave != m_iElapsedGameTurns && // advc.044
-				// advc: Necessary now that re-gen resets turn slice
-				m_iMapRegens <= 0)
-			{
-				autoSave(true); // advc.106l
-			}
-		}
-		/*	<advc.004m> Slice 0 seems to be the earliest time when plot indicators
-			can be enabled w/o crashing. But it appears that, for some players,
-			the indicators do not actually appear then - race condition? Slice 1
-			doesn't seem to help either. Try 2? (It's a continuous count.) */
-		if (getTurnSlice() == 2 &&
-			// Leave it up to the savegame when loading an initial autosave
-			m_iTurnLoadedFromSave != m_iElapsedGameTurns)
-		{
-			if (BUGOption::isEnabled("MainInterface__StartWithResourceIcons", true))
-				gDLL->getEngineIFace()->setResourceLayer(true);
-		} // </advc.004m>
-		if (getNumGameTurnActive() == 0)
-		{
-			if (!isPbem() || !getPbemTurnSent())
-				doTurn();
-		}
-		updateScore();
-		updateWar();
-		updateMoves();
-		updateTimers();
-		updateTurnTimer();
-		AI().AI_updateAssignWork();
-		testAlive();
-		if (getAIAutoPlay() == 0 && !gDLL->GetAutorun() &&
-			getGameState() != GAMESTATE_EXTENDED)
-		{
-			if (countHumanPlayersAlive() == 0 &&
-				!isOption(GAMEOPTION_RISE_FALL)) // advc.707
-			{
-				setGameState(GAMESTATE_OVER);
-			}
-		}
-		changeTurnSlice(1);
-		/*	<advc.104l> Make sure that UI (specifically willing-to-talk indicator)
-			doesn't become outdated throughout a turn. Or at least not for long.
-			advc.085: Invalidating on every turn slice might slightly hurt
-			responsiveness when hovering over the scoreboard. (Not sure.) */
-		if (getTurnSlice() % 4 == 0)
-			AI().uwai().invalidateUICache(); // </advc.104l>
-		/*	<advc.004n> (Disassembly suggests that the EXE caches this info,
-			so this check is fast.) */
-		bool bCityScreenUp = gDLL->UI().isCityScreenUp();
-		if (bCityScreenUp != m_bCityScreenUp)
-		{
-			m_bCityScreenUp = bCityScreenUp;
-			onCityScreenChange();
-		} // </advc004n>
-		if (getActivePlayer() != NO_PLAYER && GET_PLAYER(getActivePlayer()).getAdvancedStartPoints() >= 0 &&
-			!gDLL->UI().isInAdvancedStart())
-		{
-			gDLL->UI().setInAdvancedStart(true);
-			gDLL->UI().setWorldBuilder(true);
-		} // <advc.705>
-		if (isOption(GAMEOPTION_RISE_FALL))
-			m_pRiseFall->restoreDiploText(); // </advc.705>
+		// Needs to match the value range set in XML
+		int const iDefaultGraphicsUpdateRate = 12;
+		int iGraphicsUpdateRate = BUGOption::getValue("MainInterface__GraphicsUpdateRate",
+				iDefaultGraphicsUpdateRate);
+		if (iGraphicsUpdateRate <= 0)
+			iSuccessiveUpdates = 128; // Not quite infinite, but a lot in a row.
+		else iSuccessiveUpdates = iDefaultGraphicsUpdateRate / iGraphicsUpdateRate;
 	}
+	if (isGameMultiPlayer() || !kActivePlayer.isAlive())
+		iSuccessiveUpdates = 1;
+	if (kActivePlayer.isTurnActive() &&
+		(!kActivePlayer.isAutoMoves() ||
+		!kActivePlayer.isOption(PLAYEROPTION_QUICK_MOVES)))
+	{
+		iSuccessiveUpdates = 1;
+	}
+	if (gDLL->GetWorldBuilderMode() && !isInAdvancedStart()) // As in BtS
+		iSuccessiveUpdates = 0;
+	for (int i = 0; i < iSuccessiveUpdates; i++)
+		updateUnprofiled(); // </advc.256>
 	PROFILE_END();
 	stopProfilingDLL(false);
+}
+
+// advc.256: Cut from update
+void CvGame::updateUnprofiled()
+{
+	sendPlayerOptions();
+
+	// sample generic event
+	CyArgsList pyArgs;
+	pyArgs.add(getTurnSlice());
+	/*	advc.210: To prevent BUG alerts from being checked at the start of a
+		game turn. I've tried doing that through BugEventManager.py, but soon
+		gave up. Tagging advc.706 b/c it's especially important to supress
+		the update when R&F is enabled. */
+	if (!isInBetweenTurns())
+	{
+		CvEventReporter::getInstance().genericEvent("gameUpdate", pyArgs.makeFunctionArgs());
+		// <advc.003r>
+		for (int i = 0; i < NUM_UPDATE_TIMER_TYPES; i++)
+			handleUpdateTimer((UpdateTimerTypes)i); // </advc.003r>
+	}
+	if (getTurnSlice() == 0) // advc (note): Implies 0 elapsed game turns
+	{	// <advc.700> Delay initial auto-save until RiseFall is initialized
+		if (!isOption(GAMEOPTION_RISE_FALL) && // </advc.700>
+			m_iTurnLoadedFromSave != m_iElapsedGameTurns && // advc.044
+			// advc: Necessary now that re-gen resets turn slice
+			m_iMapRegens <= 0)
+		{
+			autoSave(true); // advc.106l
+		}
+	}
+	/*	<advc.004m> Slice 0 seems to be the earliest time when plot indicators
+		can be enabled w/o crashing. But it appears that, for some players,
+		the indicators do not actually appear then - race condition? Slice 1
+		doesn't seem to help either. Try 2? (It's a continuous count.) */
+	if (getTurnSlice() == 2 &&
+		// Leave it up to the savegame when loading an initial autosave
+		m_iTurnLoadedFromSave != m_iElapsedGameTurns)
+	{
+		if (BUGOption::isEnabled("MainInterface__StartWithResourceIcons", true))
+			gDLL->getEngineIFace()->setResourceLayer(true);
+	} // </advc.004m>
+	if (getNumGameTurnActive() == 0)
+	{
+		if (!isPbem() || !getPbemTurnSent())
+			doTurn();
+	}
+	updateScore();
+	updateWar();
+	updateMoves();
+	updateTimers();
+	updateTurnTimer();
+	AI().AI_updateAssignWork();
+	testAlive();
+	if (getAIAutoPlay() == 0 && !gDLL->GetAutorun() &&
+		getGameState() != GAMESTATE_EXTENDED)
+	{
+		if (countHumanPlayersAlive() == 0 &&
+			!isOption(GAMEOPTION_RISE_FALL)) // advc.707
+		{
+			setGameState(GAMESTATE_OVER);
+		}
+	}
+	changeTurnSlice(1);
+	/*	<advc.104l> Make sure that UI (specifically willing-to-talk indicator)
+		doesn't become outdated throughout a turn. Or at least not for long.
+		advc.085: Invalidating on every turn slice might slightly hurt
+		responsiveness when hovering over the scoreboard. (Not sure.) */
+	if (getTurnSlice() % 4 == 0)
+		AI().uwai().invalidateUICache(); // </advc.104l>
+	/*	<advc.004n> (Disassembly suggests that the EXE caches this info,
+		so this check is fast.) */
+	bool bCityScreenUp = gDLL->UI().isCityScreenUp();
+	if (bCityScreenUp != m_bCityScreenUp)
+	{
+		m_bCityScreenUp = bCityScreenUp;
+		onCityScreenChange();
+	} // </advc004n>
+	if (getActivePlayer() != NO_PLAYER && GET_PLAYER(getActivePlayer()).getAdvancedStartPoints() >= 0 &&
+		!gDLL->UI().isInAdvancedStart())
+	{
+		gDLL->UI().setInAdvancedStart(true);
+		gDLL->UI().setWorldBuilder(true);
+	} // <advc.705>
+	if (isOption(GAMEOPTION_RISE_FALL))
+		m_pRiseFall->restoreDiploText(); // </advc.705>
 }
 
 
