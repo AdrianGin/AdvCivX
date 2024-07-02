@@ -56,7 +56,7 @@ public:
 			int iCurrentHP = -1, bool bAssumePromotion = false) const; // advc.139
 	/*	collateralDamage no longer includes promotions since Patch 3.13, but
 		the AI should take promotions into account when estimating coll. damage.
-		Not currently used for deciding whether a unit deals coll. damage at all. */
+		Not currently used for deciding whether a unit deals _any_ coll. damage. */
 	int AI_collateralDmgFactor() const
 	{	/*	Multiplication would be closer to how collateralCombat works, but,
 			for most units, it won't matter much, and addition is faster. */
