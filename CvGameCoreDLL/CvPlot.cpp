@@ -5025,7 +5025,7 @@ void CvPlot::updateWorkingCity()
 	CvCity* pOldWorkingCity = getWorkingCity();
 	if (pOldWorkingCity == pBestCity &&
 		// advc.001 (from WtP): Allow proper update upon CvCity::kill
-		(pOldWorkingCity != NULL || m_workingCity.isValid()))
+		(pOldWorkingCity != NULL || !m_workingCity.isIDSet()))
 	{
 		return;
 	}

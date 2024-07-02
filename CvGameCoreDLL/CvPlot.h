@@ -273,7 +273,7 @@ public:
 	// advc.inl:
 	bool isCity() const
 	{
-		return m_plotCity.isValid(); // avoid ::getCity call
+		return m_plotCity.isIDSet(); // avoid ::getCity call
 	}
 	/*	advc: Deprecated; exported through .def file. Should use more specific checks
 		such as isCity (inline) or (CvTeam) isBase, isCityTrade, isCityDefense, isCityHeal. */
