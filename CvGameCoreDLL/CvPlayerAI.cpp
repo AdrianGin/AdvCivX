@@ -5330,7 +5330,7 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 					planned sites - but even that isn't exactly what we want. */
 				iBuildValue += 28; // advc: instead of 40
 			}
-			iBuildValue += 4 + iChopValue * (countCityFeatures(eFeature) + 4);
+			iBuildValue += 4 + iChopValue * (AI_countCityFeatures(eFeature) + 4);
 			/*  <advc.129> Very early game: Is the feature blocking a resource?
 				(especially Silver, which can now appear on Grassland Forest) */
 			if (pCapital != NULL && getNumCities() <= 2)
@@ -14738,6 +14738,24 @@ bool CvPlayerAI::AI_isUnimprovedBonus(CvPlot const& p, CvPlot const* pFromPlot,
 	return false;
 }
 
+/*	advc.042: Moved from CvPlayer, to be consistent with other AI counts moved.
+	May in the future want to exclude rival-owned plots unlikely to flip. */
+int CvPlayerAI::AI_countCityFeatures(FeatureTypes eFeature) const
+{
+	PROFILE_FUNC();
+
+	int iCount = 0;
+	FOR_EACH_CITY(pLoopCity, *this)
+	{
+		for (CityPlotIter it(*pLoopCity); it.hasNext(); ++it)
+		{
+			if (it->getFeatureType() == eFeature)
+				iCount++;
+		}
+	}
+	return iCount;
+}
+
 
 int CvPlayerAI::AI_neededWorkers(CvArea const& kArea) const
 {
@@ -17768,13 +17786,11 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 					AI_getHappinessWeight(iS * iTempValue, 1))/100;
 		}
 	}
-	for (int iI = 0; iI < GC.getNumFeatureInfos(); iI++)
+	FOR_EACH_ENUM(Feature)
 	{
-		int iHappiness = kCivic.getFeatureHappinessChanges(iI);
-		if (iHappiness != 0)
-		{
-			iValue += (iHappiness * countCityFeatures((FeatureTypes)iI) * 5);
-		}
+		int iHappiness = kCivic.getFeatureHappinessChanges(eLoopFeature);
+		if (iHappiness != 0) // (time saving)
+			iValue += (iHappiness * AI_countCityFeatures(eLoopFeature) * 5);
 	}
 
 	FOR_EACH_ENUM(Hurry)

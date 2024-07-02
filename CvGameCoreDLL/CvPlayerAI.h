@@ -347,6 +347,7 @@ public:
 			CvPlot const* pFromPlot = NULL, int iLookAhead = 0) const;
 	int AI_countOwnedBonuses(BonusTypes eBonus, // </advc.042>											// Exposed to Python
 			/* <advc.opt> */ int iMaxCount = MAX_INT) const;
+	int AI_countCityFeatures(FeatureTypes eFeature) const; // advc.042									// Exposed to Python
 	bool AI_isAnyOwnedBonus(BonusTypes eBonus) const
 	{
 		return (AI_countOwnedBonuses(eBonus, 1) > 0);

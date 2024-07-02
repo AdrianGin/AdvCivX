@@ -218,8 +218,8 @@ public:
 	int countNumCoastalCitiesByArea(CvArea const& kArea) const;														// Exposed to Python
 	int countTotalCulture() const;																					// Exposed to Python
 
-	// advc.042: countUnimprovedBonuses, countOwnedBonuses moved to CvPlayerAI
-	int countCityFeatures(FeatureTypes eFeature) const;																// Exposed to Python
+	/*	advc.042: countUnimprovedBonuses, countOwnedBonuses, countCityFeatures
+		moved to CvPlayerAI */
 	int countNumBuildings(BuildingTypes eBuilding) const;															// Exposed to Python
 	int countNumCitiesConnectedToCapital() const;																	// Exposed to Python
 	/* int countPotentialForeignTradeCities(CvArea* pIgnoreArea = NULL) const;

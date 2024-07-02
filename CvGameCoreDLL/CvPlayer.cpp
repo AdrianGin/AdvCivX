@@ -3455,23 +3455,6 @@ int CvPlayer::countTotalCulture() const
 }
 
 
-int CvPlayer::countCityFeatures(FeatureTypes eFeature) const
-{
-	PROFILE_FUNC();
-
-	int iCount = 0;
-	FOR_EACH_CITY(pLoopCity, *this)
-	{
-		for (CityPlotIter it(*pLoopCity); it.hasNext(); ++it)
-		{
-			if (it->getFeatureType() == eFeature)
-				iCount++;
-		}
-	}
-	return iCount;
-}
-
-
 int CvPlayer::countNumBuildings(BuildingTypes eBuilding) const
 {
 	PROFILE_FUNC();
