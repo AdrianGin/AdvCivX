@@ -6070,7 +6070,9 @@ void CvPlot::updateWorkingCity()
 
 	pOldWorkingCity = getWorkingCity();
 
-	if (pOldWorkingCity != pBestCity)
+	if (pOldWorkingCity != pBestCity
+		// f1rpo (from WtP): Allow proper update upon CvCity::kill
+		|| (pOldWorkingCity == NULL && m_workingCity.iID != FFreeList::INVALID_INDEX))
 	{
 		if (pOldWorkingCity != NULL)
 		{
