@@ -1353,7 +1353,36 @@ bool CvSelectionGroup::continueMission_bulk(int iSteps)
 					}
 				}
 			}
-			else bDone = true;
+			else
+			{
+				bDone = true;
+				/*	<advc.pf> Failure to find a path here can be normal if the move
+					was scheduled on an earlier turn; it's probably also normal for
+					units ready to defend. If the unit doesn't get stuck in a loop
+					subsequently (separate assertion), it's probably fine anyway.
+					If it does get stuck, then this earlier assertion should help
+					diagnose the problem. It could then well be a rare issue with
+					a worker retreating from enemy units, caused by the use of
+					path data in GroupStepMetric::canStepThrough or ::cost.
+					Probably not worth trying to fix (if indeed very rare). */
+				if (missionData.iPushTurn >= GC.getGame().getGameTurn() &&
+					(!canFight() || (missionData.eFlags & MOVE_AVOID_DANGER)) &&
+					!hasMoved())
+				{
+				#ifdef FASSERT_ENABLE
+					// Ad-hoc cache to avoid repeating the assertion popup
+					static int iLastGroupID = FFreeList::INVALID_INDEX;
+					if (iLastGroupID != getID())
+					{
+						FErrorMsg("Danger-averse unit failed to move?");
+						iLastGroupID = getID();
+					}
+				#endif
+					if (AI_isControlled())
+						pushMission(MISSION_SKIP);
+				}
+				// </advc.pf>
+			}
 			break;
 
 		case MISSION_ROUTE_TO:
@@ -2903,9 +2932,6 @@ bool CvSelectionGroup::groupPathTo(int iX, int iY, MovementFlags eFlags)
 			Also, I've changed it to use a different pathfinder,
 			to avoid clearing the path data - and to avoid OOS errors. */
 		kFinalPath.setGroup(*this, eFlags & ~MOVE_DECLARE_WAR);
-		/*	advc.pf (note): If no path is found here for a worker retreating from
-			enemy units, then the use of path data in GroupStepMetric::cost
-			could be responsible. OK (with me) so long as it's very rare. */
 		if (!kFinalPath.generatePath(kDestPlot))
 			return false;
 

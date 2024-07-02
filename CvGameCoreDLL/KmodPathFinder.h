@@ -654,7 +654,10 @@ void KmodPathFinder<StepMetric,Node>::processChild(
 				then we might be able to enter via a shorter path and avoid ending
 				the turn in kChildPlot that way. I don't see a reasonably fast way
 				to address this rare problem. (And it's not really a problem
-				with this base class but with GroupPathFinder.)*/
+				with this base class but with GroupPathFinder.) I guess we could
+				add a function isValidStep2 that gets checked only after
+				canStepThrough and move the danger checks into that function.
+				But there may be similar issues with the cost function. */
 			kChild.setState(PATHNODE_CLOSED);
 		}
 	}
