@@ -1718,8 +1718,14 @@ bool CvSelectionGroup::continueMission_bulk(int iSteps)
 						}
 					}
 				}
-				else if (!GET_PLAYER(kGame.getActivePlayer()).isEndTurn())
-				{	// Split group. Based on K-Mod code in startMission.
+				/*	Don't want to split the group if currently selected by a player.
+					But how can we tell in network games? We know only the selection
+					of the active player. Let's decide based on mission type. */
+				if ((kGame.isNetworkMultiPlayer() ?
+					missionData.eMissionType == MISSION_BUILD :
+					!IsSelected()) &&
+					!GET_PLAYER(getOwner()).isEndTurn())
+				{	// Based on K-Mod code in startMission
 					std::vector<CvUnit*> apCanMove;
 					FOR_EACH_UNIT_VAR_IN(pUnit, *this)
 					{
