@@ -5591,7 +5591,11 @@ int CvPlot::getFoundValue(PlayerTypes eIndex, /* advc.052: */ bool bRandomize) c
 	{
 		short iValue = GC.getPythonCaller()->AI_foundValue(eIndex, *this);
 		if (iValue == -1)
+		{
+			// advc: Otherwise bStartingLoc=true probably isn't correct
+			FAssert(GC.getGame().getElapsedGameTurns() <= 0);
 			m_aiFoundValue.set(eIndex, GET_PLAYER(eIndex).AI_foundValue(getX(), getY(), -1, true));
+		}
 		if (m_aiFoundValue.get(eIndex) > getArea().getBestFoundValue(eIndex))
 			getArea().setBestFoundValue(eIndex, m_aiFoundValue.get(eIndex));
 	}
