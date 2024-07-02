@@ -5094,7 +5094,7 @@ void CvPlot::setWorkingCityOverride(CvCity* pCity)
 
 	if (pCity != NULL)
 	{
-		FAssert(pNewValue->getOwner() == getOwner());
+		FAssert(pCity->getOwner() == getOwner());
 		m_workingCityOverride = pCity->getIDInfo();
 	}
 	else m_workingCityOverride.reset();
