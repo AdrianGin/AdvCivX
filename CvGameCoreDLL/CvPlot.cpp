@@ -5087,15 +5087,15 @@ CvCity const* CvPlot::defaultWorkingCity() const
 }
 
 
-void CvPlot::setWorkingCityOverride( const CvCity* pNewValue)
+void CvPlot::setWorkingCityOverride(CvCity* pCity)
 {
-	if (getWorkingCityOverride() == pNewValue)
+	if (getWorkingCityOverride() == pCity)
 		return; // advc
 
-	if (pNewValue != NULL)
+	if (pCity != NULL)
 	{
 		FAssert(pNewValue->getOwner() == getOwner());
-		m_workingCityOverride = pNewValue->getIDInfo();
+		m_workingCityOverride = pCity->getIDInfo();
 	}
 	else m_workingCityOverride.reset();
 

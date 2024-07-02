@@ -525,7 +525,7 @@ public:
 	void updateWorkingCity();
 	CvCity const* defaultWorkingCity() const; // advc
 	CvCity* getWorkingCityOverride() const;															// Exposed to Python
-	void setWorkingCityOverride(const CvCity* pNewValue);
+	void setWorkingCityOverride(CvCity* pNewValue);
 	// <advc.003u>
 	CvCityAI* AI_getWorkingCity() const;
 	CvCityAI* AI_getWorkingCityOverrideAI() const; // </advc.003u>
