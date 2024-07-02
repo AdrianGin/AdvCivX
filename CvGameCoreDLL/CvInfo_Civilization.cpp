@@ -306,7 +306,7 @@ bool CvCivilizationInfo::read(CvXMLLoadUtility* pXML)
 		pXML->SetStringList(&m_paszCityNames, &m_iNumCityNames);
 		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
-	// advc.003: Reduce code duplication
+	// advc: Reduce code duplication
 	for (int i = 0; i < 2; i++)
 	{
 		bool bBuildings = (i == 0);

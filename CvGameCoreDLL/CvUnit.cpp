@@ -7829,13 +7829,13 @@ bool CvUnit::isBetterDefenderThan(const CvUnit* pDefender, const CvUnit* pAttack
 	{
 		if (pDefender->collateralDamage() > 0)
 		{
-			iOurDefense *= (100 + pDefender->collateralDamage());
+			iOurDefense *= 100 + pDefender->collateralDamage();
 			iOurDefense /= 100;
 		}
 
 		if (pDefender->currInterceptionProbability() > 0)
 		{
-			iOurDefense *= (100 + pDefender->currInterceptionProbability());
+			iOurDefense *= 100 + pDefender->currInterceptionProbability();
 			iOurDefense /= 100;
 		}
 	}

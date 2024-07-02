@@ -465,7 +465,8 @@ void CvUnitAI::AI_upgrade()
 				pUpgradeUnit->joinGroup(NULL);
 				/*	indicate that the unit intends to rejoin the old group
 					(although it might not actually do so...) */
-				pUpgradeUnit->getGroup()->AI().AI_setMissionAI(MISSIONAI_GROUP, 0, pGroup->getHeadUnit());
+				pUpgradeUnit->getGroup()->AI().AI_setMissionAI(MISSIONAI_GROUP, NULL,
+						pGroup->getHeadUnit());
 			}
 		}
 	}
@@ -5491,9 +5492,7 @@ void CvUnitAI::AI_spyMove()
 				break;
 			case MISSIONAI_EXPLORE:
 				/*if (atPlot(pMissionPlot))
-				{
-					getGroup()->AI_setMissionAI(NO_MISSIONAI, 0, 0);
-				}*/
+					getGroup()->AI_setMissionAI(NO_MISSIONAI, NULL, NULL);*/
 				break;
 			case MISSIONAI_LOAD_SPECIAL:
 				if (AI_load(UNITAI_SPY_SEA, MISSIONAI_LOAD_SPECIAL))
@@ -16081,7 +16080,7 @@ bool CvUnitAI::AI_transportGoTo(CvPlot const& kEndTurnPlot, CvPlot const& kTarge
 						!pLoopGroup->isFull())
 					{
 						pLoopGroup->clearMissionQueue();
-						pLoopGroup->AI_setMissionAI(NO_MISSIONAI, 0, 0);
+						pLoopGroup->AI_setMissionAI(NO_MISSIONAI, NULL, NULL);
 					}
 				}
 			}
