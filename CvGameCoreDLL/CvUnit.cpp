@@ -435,6 +435,10 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer)
 			pLoopUnit->kill(false, ePlayer);
 		}
 	}
+	/*	advc (note - known issue): We're not checking whether this unit was set
+		as the m_missionAIUnit of a CvSelectionGroup. This becomes a problem
+		only if our FFreeList ID gets assigned to a new unit. Unknown if this
+		ever actually happens. Don't want to loop through all groups just in case. */
 
 	CvPlayerAI& kOwner = GET_PLAYER(getOwner()); // advc
 	if (ePlayer != NO_PLAYER)

@@ -5023,9 +5023,12 @@ void CvPlot::updateWorkingCity()
 		pBestCity = defaultWorkingCity(); // advc: Moved into new function
 
 	CvCity* pOldWorkingCity = getWorkingCity();
-	if (pOldWorkingCity == pBestCity)
+	if (pOldWorkingCity == pBestCity &&
+		// advc.001 (from WtP): Allow proper update upon CvCity::kill
+		(pOldWorkingCity != NULL || m_workingCity.isValid()))
+	{
 		return;
-
+	}
 	if (pOldWorkingCity != NULL)
 		pOldWorkingCity->setWorkingPlot(*this, false);
 

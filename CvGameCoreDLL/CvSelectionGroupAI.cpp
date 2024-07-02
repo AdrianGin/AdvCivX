@@ -1044,6 +1044,9 @@ void CvSelectionGroupAI::AI_setMissionAI(MissionAITypes eNewMissionAI,
 
 CvUnitAI* CvSelectionGroupAI::AI_getMissionAIUnit() const
 {
+	/*	advc (note): Could possibly return an incorrect unit if the correct
+		one has been killed and the same FFreeList ID has gotten assigned to
+		a new unit. I.e. this data member is not getting reset by CvUnit::kill. */
 	return ::AI_getUnit(m_missionAIUnit);
 }
 

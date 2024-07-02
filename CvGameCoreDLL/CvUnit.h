@@ -1185,7 +1185,7 @@ protected:
 	// <advc.opt>
 	CvArea* m_pArea;
 	CvPlot* m_pPlot; // </advc.opt>
-
+	// advc (note): These aren't CvUnit pointers b/c of the order of deserialization
 	IDInfo m_combatUnit;
 	IDInfo m_transportUnit;
 	/*	advc.opt (tbd.): string objects take up 28 byte each; replace with pointers.
