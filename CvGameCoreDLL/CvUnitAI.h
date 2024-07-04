@@ -54,7 +54,7 @@ public:
 			bool bCountCollateral = false, int iBaseCollateral = 0,
 			bool bCheckCanAttack = false,
 			int iCurrentHP = -1, bool bAssumePromotion = false) const; // advc.139
-	/*	collateralDamage no longer includes promotions since Patch 3.13, but
+	/*	collateralDamage no longer includes promotions since BtS 3.17, but
 		the AI should take promotions into account when estimating coll. damage.
 		Not currently used for deciding whether a unit deals _any_ coll. damage. */
 	int AI_collateralDmgFactor() const
