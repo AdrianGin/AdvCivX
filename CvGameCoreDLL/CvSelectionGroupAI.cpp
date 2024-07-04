@@ -117,7 +117,7 @@ bool CvSelectionGroupAI::AI_update()
 
 	FAssert(getOwner() != NO_PLAYER);
 
-	if (!AI_isControlled())
+	if (!isAIControlled())
 		return false;
 
 	if (getNumUnits() == 0)

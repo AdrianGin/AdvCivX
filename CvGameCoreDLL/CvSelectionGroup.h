@@ -284,6 +284,9 @@ public:
 	int getMissionData1(int iNode) const;																														// Exposed to Python
 	int getMissionData2(int iNode) const;																														// Exposed to Python
 	// <advc.003u>
+	/*	Was bool CvSelectionGroupAI::AI_isControlled. Makes at least as much sense
+		at the base class, and non-virtual will be faster (frequently called). */
+	bool isAIControlled() const { return (!isHuman() || isAutomated()); }
 	CvSelectionGroupAI& AI()
 	{	//return *static_cast<CvSelectionGroupAI*>(const_cast<CvSelectionGroup*>(this));
 		/*  The above won't work in an inline function b/c the compiler doesn't know
@@ -298,7 +301,7 @@ public:
 	virtual void read(FDataStreamBase* pStream);
 	virtual void write(FDataStreamBase* pStream);
 	// advc.003u: Keep one pure virtual function so that this class is abstract
-	virtual bool AI_isControlled() /* advc: */ const = 0;
+	virtual bool AI_update() = 0;
 
 protected:
 	// K-Mod! I'd rather this not be static, but I can't do that here.

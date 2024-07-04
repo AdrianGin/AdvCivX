@@ -395,7 +395,7 @@ bool CvSelectionGroup::AI_isGroupAttackExternal() { reportCall;
 	return AI().AI_isGroupAttack();
 }
 bool CvSelectionGroup::AI_isControlledExternal() { reportCall;
-	return AI().AI_isControlled();
+	return isAIControlled(); // (moved to CvSelectionGroup)
 }
 bool CvSelectionGroup::AI_isDeclareWarExternal(CvPlot* pPlot) { reportCall;
 	if (pPlot == NULL)

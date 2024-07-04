@@ -757,10 +757,10 @@ bool CvUnitAI::AI_bestCityBuild(CvCityAI const& kCity,
 		- and for that I do not want to disrupt the standard pathfinder.
 		(because I'm paranoid about OOS bugs.) */
 	//GroupPathFinder altFinder;
-	GroupPathFinder& pathFinder = (getGroup()->AI_isControlled() ?
+	GroupPathFinder& pathFinder = (getGroup()->isAIControlled() ?
 			CvSelectionGroup::pathFinder() :
 			CvSelectionGroup::getClearPathFinder()); // advc.opt
-	if (getGroup()->AI_isControlled())
+	if (getGroup()->isAIControlled())
 	{
 		// standard settings. cf. CvUnit::generatePath
 		pathFinder.setGroup(*getGroup(), NO_MOVEMENT_FLAGS);

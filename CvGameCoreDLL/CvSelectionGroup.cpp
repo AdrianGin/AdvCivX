@@ -234,7 +234,7 @@ void CvSelectionGroup::doTurn()
 			((eActivityType == ACTIVITY_HEAL || eActivityType == ACTIVITY_SENTRY) &&
 			isHuman() && sentryAlert()); // </advc.004l>
 	if (eActivityType == ACTIVITY_HOLD ||
-		(eActivityType == ACTIVITY_HEAL && (AI_isControlled() || !bHurt ||
+		(eActivityType == ACTIVITY_HEAL && (isAIControlled() || !bHurt ||
 		(bSentryAlert && pHeadUnit->canSentryHeal(plot())) // advc.004l
 		)) ||
 		(eActivityType == ACTIVITY_SENTRY && bSentryAlert))
@@ -242,7 +242,7 @@ void CvSelectionGroup::doTurn()
 		setActivityType(ACTIVITY_AWAKE);
 	}
 
-	if (AI_isControlled())
+	if (isAIControlled())
 	{
 		if (getActivityType() != ACTIVITY_MISSION ||
 			(!canFight() && GET_PLAYER(getOwner()).AI_isAnyPlotDanger(getPlot(), 2)))
@@ -577,7 +577,7 @@ void CvSelectionGroup::pushMission(MissionTypes eMission, int iData1, int iData2
 		AI().AI_setMissionAI(eMissionAI, pMissionAIPlot, pMissionAIUnit);
 
 	insertAtEndMissionQueue(mission, !bAppend ||
-			AI_isControlled()); // K-Mod (AI commands should execute immediately)
+			isAIControlled()); // K-Mod (AI commands should execute immediately)
 
 	if (bManual)
 	{
@@ -617,7 +617,7 @@ bool CvSelectionGroup::autoMission() // K-Mod changed this from void to bool.
 	//if (isHuman())
 	/*	K-Mod. (otherwise the automation will just reissue commands
 		immediately after they are cleared, resulting in an infinite loop.) */
-	if (!AI_isControlled())
+	if (!isAIControlled())
 	{
 		FOR_EACH_UNIT_IN(pUnit, *this)
 		{
@@ -901,7 +901,7 @@ void CvSelectionGroup::startMission()
 					headMissionQueueNode()->m_data.bModified)) // advc.111
 				{
 					bAction = true;
-					if (!AI_isControlled())
+					if (!isAIControlled())
 						aiHasPillaged.push_back(pUnit->getID());
 					// AI groups might want to reconsider their action after pillaging
 					if (!isHuman() && canAllMove())
@@ -987,7 +987,7 @@ void CvSelectionGroup::startMission()
 		/*	K-Mod. If the worker is already in danger when the command is issued,
 			use the MOVE_IGNORE_DANGER flag. */
 		case MISSION_BUILD:
-			if (!AI_isControlled() &&
+			if (!isAIControlled() &&
 				headMissionQueueNode()->m_data.iPushTurn == GC.getGame().getGameTurn() &&
 				// cf. condition used in CvSelectionGroup::doTurn.
 				kOwner.AI_isAnyPlotDanger(*plot(), 2, true, false))
@@ -1031,7 +1031,7 @@ void CvSelectionGroup::startMission()
 				case MISSIONAI_LOAD_SPECIAL:
 					goto exit_unit_loop; // don't auto-unload. Just do nothing.
 				default:
-					FAssert(AI_isControlled());
+					FAssert(isAIControlled());
 					pUnit->unload(); // this checks canUnload internally
 					break;
 				}
@@ -1378,7 +1378,7 @@ bool CvSelectionGroup::continueMission_bulk(int iSteps)
 						iLastGroupID = getID();
 					}
 				#endif
-					if (AI_isControlled())
+					if (isAIControlled())
 						pushMission(MISSION_SKIP);
 				}
 				// </advc.pf>
@@ -1696,7 +1696,7 @@ bool CvSelectionGroup::continueMission_bulk(int iSteps)
 			if (headMissionQueueNode() != NULL)
 				activateHeadMission();
 			// <advc.153>
-			else if (!AI_isControlled() &&
+			else if (!isAIControlled() &&
 				(missionData.eMissionType == MISSION_BUILD ||
 				// Too annoying?
 				//missionData.eMissionType == MISSION_MOVE_TO ||
@@ -2781,7 +2781,7 @@ void CvSelectionGroup::groupMove(CvPlot* pPlot, bool bCombat, CvUnit* pCombatUni
 	CvSelectionGroup* pBehindGroupCannotMove = NULL; // advc.153
 	UnitAITypes eHeadAI = getHeadUnitAIType();
 	// <advc.153>
-	bool const bAIControl = AI_isControlled();
+	bool const bAIControl = isAIControlled();
 	/*	True forces the join-pBehindGroup branch in the loop below to be taken.
 		Caveat: A player option for this will probably work in multiplayer, but
 		a BUG option won't unless a parameter is added to CvNetPushMission and
@@ -2965,7 +2965,7 @@ bool CvSelectionGroup::groupPathTo(int iX, int iY, MovementFlags eFlags)
 	FAssert(getNumUnits() == 0 || atPlot(pPathPlot)); // K-Mod
 
 	// K-Mod.
-	if (!AI_isControlled() && !bEndMove)
+	if (!isAIControlled() && !bEndMove)
 	{
 		/*	If the step we just took will make us change our path to something longer,
 			then cancel the move. This prevents units from wasting all their moves by
@@ -2993,7 +2993,7 @@ bool CvSelectionGroup::groupPathTo(int iX, int iY, MovementFlags eFlags)
 // Returns true if move was made...
 bool CvSelectionGroup::groupRoadTo(int iX, int iY, MovementFlags eFlags)
 {
-	if (!AI_isControlled() || !at(iX, iY) || getLengthMissionQueue() == 1)
+	if (!isAIControlled() || !at(iX, iY) || getLengthMissionQueue() == 1)
 	{
 		BuildTypes eBestBuild = NO_BUILD;
 		//RouteTypes eBestRoute = // advc: unused
@@ -3022,7 +3022,7 @@ bool CvSelectionGroup::groupBuild(BuildTypes eBuild, /* advc.011b: */ bool bFini
 	/*CvPlot* pPlot = plot();
 	ImprovementTypes eImprovement = (ImprovementTypes)GC.getInfo(eBuild).getImprovement();
 	if (eImprovement != NO_IMPROVEMENT) {
-		if (AI_isControlled()) {
+		if (isAIControlled()) {
 			if (GET_PLAYER(getOwner()).isAutomationSafe(*pPlot)) {
 					BonusTypes eBonus = (BonusTypes)pPlot->getNonObsoleteBonusType(GET_PLAYER(getOwner()).getTeam());
 					if ((eBonus == NO_BONUS) || !GC.getInfo(eImprovement).isImprovementBonusTrade(eBonus)) {
@@ -3411,7 +3411,7 @@ bool CvSelectionGroup::canDoMission(MissionTypes eMission, int iData1, int iData
 		case MISSION_HEAL:
 			if (pUnit->canHeal(pPlot) &&
 				// advc.004l: AI control check only for performance
-				(AI_isControlled() || !pUnit->canSentryHeal(pPlot)))
+				(isAIControlled() || !pUnit->canSentryHeal(pPlot)))
 			{
 				return true;
 			}
@@ -3876,7 +3876,7 @@ bool CvSelectionGroup::generatePath(CvPlot const& kFrom, CvPlot const& kTo,
 		I might be able to reduce OOS bugs.
 		advc.706 (note): Can trigger after defeat of active player in R&F game.
 		advc.128: MAX_MOVES: The AI may use this function to anticipate human moves. */
-	FAssert(AI_isControlled() || (eFlags & MOVE_MAX_MOVES));
+	FAssert(isAIControlled() || (eFlags & MOVE_MAX_MOVES));
 	// <advc.128>
 	FAssert(!bUseTempFinder || !bReuse);
 	/*	Not getClearPathFinder -- want bTempFinder to work correctly even when called

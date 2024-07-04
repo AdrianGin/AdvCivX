@@ -747,7 +747,7 @@ CvSelectionGroup* CvMap::findSelectionGroup(int iX, int iY, PlayerTypes eOwner,
 
 		FOR_EACH_GROUP_VAR(pLoopSelectionGroup, kLoopPlayer)
 		{
-			bool const bAIControl = pLoopSelectionGroup->AI_isControlled(); // advc.153
+			bool const bAIControl = pLoopSelectionGroup->isAIControlled(); // advc.153
 			if (bReadyToSelect && !pLoopSelectionGroup->readyToSelect(
 				!bAIControl)) // advc.153: was false
 			{

@@ -68,7 +68,7 @@ bool GroupStepMetric::canStepThrough(CvPlot const& kPlot, CvSelectionGroup const
 	/*	(advc.pf: Danger checks based on path data moved into a
 		separate function) */
 
-	if (kGroup.AI_isControlled() || kPlot.isRevealed(kGroup.getHeadTeam()))
+	if (kGroup.isAIControlled() || kPlot.isRevealed(kGroup.getHeadTeam()))
 	{
 		if (eFlags & (MOVE_THROUGH_ENEMY /* K-Mod: */ | MOVE_ATTACK_STACK))
 		{
@@ -130,7 +130,7 @@ bool GroupStepMetric::canStepThrough(CvPlot const& kPlot, CvSelectionGroup const
 	MovementFlags eFlags, int iMoves, int iPathTurns)
 {
 	if ((iPathTurns > 1 || iMoves == 0) &&
-		kGroup.AI_isControlled() &&
+		kGroup.isAIControlled() &&
 		!(eFlags & MOVE_IGNORE_DANGER) &&
 		(!kGroup.canFight() || /* advc.031d: */ (eFlags & MOVE_AVOID_DANGER)) &&
 		!kGroup.alwaysInvisible() &&
@@ -154,7 +154,7 @@ bool GroupStepMetric::isValidDest(CvPlot const& kPlot, CvSelectionGroup const& k
 	if (eDomain == DOMAIN_IMMOBILE)
 		return false;
 
-	bool const bAIControl = kGroup.AI_isControlled();
+	bool const bAIControl = kGroup.isAIControlled();
 
 	if (bAIControl)
 	{	/*  BETTER_BTS_AI_MOD, Efficiency, 11/04/09, jdog5000: START
@@ -393,7 +393,7 @@ int GroupStepMetric::cost(CvPlot const& kFrom, CvPlot const& kTo,
 		However, diagonal zig-zags will probably seem unnatural and weird to humans
 		who are just trying to move in a straight line.
 		So let the pathfinding for human groups prefer cardinal movement. */
-	bool const bAIControl = kGroup.AI_isControlled();
+	bool const bAIControl = kGroup.isAIControlled();
 	/*	advc.pf: AI map visibility is generally unimportant and a relatively
 		high weight makes it harder to give routes the proper weight (see below). */
 	if (/*bAIControl*/ iExploreModifier < 3)
