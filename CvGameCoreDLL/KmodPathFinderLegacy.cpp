@@ -375,14 +375,27 @@ bool KmodPathFinderLegacy::ProcessNode()
 				// total cost will be set when the parent is set.
 
 				child_node->m_bOnStack = true;
-
-				if (GroupStepMetric::canStepThrough(  // advc.pf: handle plot lookup here
-					kMap.getPlot(child_node->m_iX, child_node->m_iY),
-					*settings.pGroup, settings.eFlags,
-					child_node->m_iData1, child_node->m_iData2)) // advc.pf
+				// advc.pf: Handle plot lookup here
+				CvPlot const& kChildPlot = kMap.getPlot(child_node->m_iX, child_node->m_iY);
+				// advc.pf: Split in two functions
+				/*if (GroupStepMetric::canStepThrough(kChildPlot, *settings.pGroup, settings.eFlags) &&
+					GroupStepMetric::canStepThrough(kChildPlot, *settings.pGroup, settings.eFlags,
+					child_node->m_iData1, child_node->m_iData2))*/
+				/*	<advc.pf> The above should find the same paths as K-Mod did. These checks
+					should correspond to the current (July '24) AdvCiv paths: */
+				if (GroupStepMetric::canStepThrough(kChildPlot, *settings.pGroup, settings.eFlags))
 				{
-					open_list.push_back(child_node);
-					child_node->m_eFAStarListType = FASTARLIST_OPEN;
+					if (!GroupStepMetric::canStepThrough(kChildPlot, *settings.pGroup, settings.eFlags,
+						child_node->m_iData1, child_node->m_iData2))
+					{
+						child_node->m_bOnStack = false;
+						child_node = NULL;
+					}
+					else // </advc.pf>
+					{
+						open_list.push_back(child_node);
+						child_node->m_eFAStarListType = FASTARLIST_OPEN;
+					}
 				}
 				else
 				{

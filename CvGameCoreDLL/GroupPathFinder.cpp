@@ -30,12 +30,9 @@ bool GroupStepMetric::isValidStep(CvPlot const& kFrom, CvPlot const& kTo,
 			kGroup.canMoveAllTerrain());
 }
 
-/*	"pathValid_source" in K-Mod
-	advc.pf (note): Checks based on the path data are problematic in this function.
-	In rare circumstances, the plot danger check can cause the pathfinder to fail;
-	see comment in KmodPathFinder::processChild. */
+// "pathValid_source" in K-Mod
 bool GroupStepMetric::canStepThrough(CvPlot const& kPlot, CvSelectionGroup const& kGroup,
-	MovementFlags eFlags, int iMoves, int iPathTurns)
+	MovementFlags eFlags)
 {
 	//PROFILE_FUNC(); // advc.003o
 
@@ -67,23 +64,11 @@ bool GroupStepMetric::canStepThrough(CvPlot const& kPlot, CvSelectionGroup const
 	{
 		return false;
 	}
-	bool const bAIControl = kGroup.AI_isControlled();
-	if (bAIControl)
-	{
-		if (iPathTurns > 1 || iMoves == 0)
-		{
-			if (!(eFlags & MOVE_IGNORE_DANGER) &&
-				(!kGroup.canFight() ||
-				(eFlags & MOVE_AVOID_DANGER)) && // advc.031d
-				!kGroup.alwaysInvisible() &&
-				GET_PLAYER(kGroup.getHeadOwner()).AI_isAnyPlotDanger(kPlot))
-			{
-				return false;
-			}
-		}
-	}
 
-	if (bAIControl || kPlot.isRevealed(kGroup.getHeadTeam()))
+	/*	(advc.pf: Danger checks based on path data moved into a
+		separate function) */
+
+	if (kGroup.AI_isControlled() || kPlot.isRevealed(kGroup.getHeadTeam()))
 	{
 		if (eFlags & (MOVE_THROUGH_ENEMY /* K-Mod: */ | MOVE_ATTACK_STACK))
 		{
@@ -134,6 +119,25 @@ bool GroupStepMetric::canStepThrough(CvPlot const& kPlot, CvSelectionGroup const
 			return false;
 	}*/
 
+	return true;
+}
+
+/*	advc.pf: Cut from pathValid_source. Given how the pathfinder uses that function
+	(that is: to close off plots entirely after visiting from only one neighbor),
+	it mustn't take into account path data. Doing so had lead to rare pathfinding
+	failures in K-Mod. */
+bool GroupStepMetric::canStepThrough(CvPlot const& kPlot, CvSelectionGroup const& kGroup,
+	MovementFlags eFlags, int iMoves, int iPathTurns)
+{
+	if ((iPathTurns > 1 || iMoves == 0) &&
+		kGroup.AI_isControlled() &&
+		!(eFlags & MOVE_IGNORE_DANGER) &&
+		(!kGroup.canFight() || /* advc.031d: */ (eFlags & MOVE_AVOID_DANGER)) &&
+		!kGroup.alwaysInvisible() &&
+		GET_PLAYER(kGroup.getHeadOwner()).AI_isAnyPlotDanger(kPlot))
+	{
+		return false;
+	}
 	return true;
 }
 

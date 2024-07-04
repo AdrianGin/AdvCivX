@@ -1361,10 +1361,10 @@ bool CvSelectionGroup::continueMission_bulk(int iSteps)
 					units ready to defend. If the unit doesn't get stuck in a loop
 					subsequently (separate assertion), it's probably fine anyway.
 					If it does get stuck, then this earlier assertion should help
-					diagnose the problem. It could then well be a rare issue with
-					a worker retreating from enemy units, caused by the use of
-					path data in GroupStepMetric::canStepThrough or ::cost.
-					Probably not worth trying to fix (if indeed very rare). */
+					diagnose the problem. There might still be rare cases in which
+					the use of path data by GroupStepMetric causes the pathfinder
+					to fail, specifically when a worker retreats from enemy units.
+					If indeed very rare, then probably not worth trying to fix. */
 				if (missionData.iPushTurn >= GC.getGame().getGameTurn() &&
 					(!canFight() || (missionData.eFlags & MOVE_AVOID_DANGER)) &&
 					!hasMoved())
