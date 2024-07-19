@@ -6701,8 +6701,9 @@ void CvGame::doHolyCity()
 		TeamTypes eBestTeam = NO_TEAM;
 		{
 			int iBestValue = MAX_INT;
-			/*	advc.001: Was MAX_TEAMS. Make sure Barbarians can't found a religion
-				somehow. Inspired by Mongoose SDK ReligionMod. */
+			/*	advc.001: Was MAX_TEAMS. Make sure Barbarians don't get a religion
+				here somehow. Inspired by Mongoose SDK ReligionMod. Though they can
+				still get one through CvPlayer::doResearch and CvTeam::setHasTech. */
 			for (TeamIter<CIV_ALIVE> itTeam; itTeam.hasNext(); ++itTeam)
 			{
 				if (!itTeam->isHasTech(GC.getInfo(eReligion).getTechPrereq()) ||
