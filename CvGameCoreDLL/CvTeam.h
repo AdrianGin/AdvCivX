@@ -694,6 +694,7 @@ protected:
 	void doBarbarianResearch(); // advc
 	void updateTechShare(TechTypes eTech, /* advc.opt: */ int iOtherKnownThreshold = -1);
 	void updateTechShare();
+	void updateMilitaryHappinessUnits(); // advc.184
 	int calculateBestTechShare() const; // advc.opt
 	void updatePlotGroupBonus(TechTypes eTech, bool bAdd); // advc
 

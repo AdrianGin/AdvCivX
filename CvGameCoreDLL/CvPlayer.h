@@ -190,6 +190,7 @@ public:
 	void updateCitySight(bool bIncrement, bool bUpdatePlotGroups);
 	void updateTradeRoutes();
 	void updatePlunder(int iChange, bool bUpdatePlotGroups);
+	void updateMilitaryHappinessUnits(); // advc.184
 
 	void updateTimers();
 

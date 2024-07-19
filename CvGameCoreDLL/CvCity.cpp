@@ -174,7 +174,7 @@ void CvCity::init(int iID, PlayerTypes eOwner, int iX, int iY, bool bBumpUnits,
 		initTraitCulture(); // </advc.908b>
 	updateCultureLevel(false);
 
-	CvPlot& kPlot = GC.getMap().getPlot(iX, iY);
+	CvPlot& kPlot = getPlot();
 	{
 		int const iFreeCityPlotCulture = GC.getDefineINT("FREE_CITY_CULTURE");
 		if (kPlot.getCulture(getOwner()) < iFreeCityPlotCulture)
@@ -211,7 +211,7 @@ void CvCity::init(int iID, PlayerTypes eOwner, int iX, int iY, bool bBumpUnits,
 			setRevealed(it->getID(), true);
 	}
 
-	changeMilitaryHappinessUnits(kPlot.plotCount(PUF_isMilitaryHappiness));
+	updateMilitaryHappinessUnits(); // advc.184: Moved into new function
 
 	FOR_EACH_ENUM(Commerce)
 	{
@@ -5413,15 +5413,21 @@ int CvCity::getMilitaryHappiness() const
 
 void CvCity::changeMilitaryHappinessUnits(int iChange)
 {
-	if (iChange != 0)
-	{
-		m_iMilitaryHappinessUnits += iChange;
-		FAssert(getMilitaryHappinessUnits() >= 0);
-		AI_setAssignWorkDirty(true);
-		// <advc.004> Update the unhappiness indicator
-		if (isActiveOwned())
-			gDLL->UI().setDirty(CityInfo_DIRTY_BIT, true); // </advc.004>
-	}
+	if (iChange == 0)
+		return;
+	m_iMilitaryHappinessUnits += iChange;
+	FAssert(getMilitaryHappinessUnits() >= 0);
+	AI_setAssignWorkDirty(true);
+	// <advc.004> Update the unhappiness indicator
+	if (isActiveOwned())
+		gDLL->UI().setDirty(CityInfo_DIRTY_BIT, true); // </advc.004>
+}
+
+// advc.184: Cut from init
+void CvCity::updateMilitaryHappinessUnits()
+{
+	changeMilitaryHappinessUnits(getPlot().plotCount(PUF_isMilitaryHappiness)
+			- getMilitaryHappinessUnits());
 }
 
 

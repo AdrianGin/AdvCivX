@@ -3198,6 +3198,13 @@ void CvPlayer::updatePlunder(int iChange, bool bUpdatePlotGroups)
 	}
 }
 
+// advc.184:
+void CvPlayer::updateMilitaryHappinessUnits()
+{
+	FOR_EACH_CITY_VAR(pCity, *this)
+		pCity->updateMilitaryHappinessUnits();
+}
+
 void CvPlayer::updateTimers()
 {
 	FOR_EACH_GROUP_VAR(pLoopSelectionGroup, *this)

@@ -502,6 +502,7 @@ public:
 	int getMilitaryHappiness() const;																			// Exposed to Python
 	int getMilitaryHappinessUnits() const { return m_iMilitaryHappinessUnits; }									// Exposed to Python
 	void changeMilitaryHappinessUnits(int iChange);
+	void updateMilitaryHappinessUnits(); // advc.184
 
 	int getBuildingGoodHappiness() const { return m_iBuildingGoodHappiness; }									// Exposed to Python
 	int getBuildingBadHappiness() const { return m_iBuildingBadHappiness; }										// Exposed to Python

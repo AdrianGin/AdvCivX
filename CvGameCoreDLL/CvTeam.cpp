@@ -3367,6 +3367,9 @@ void CvTeam::setVassal(TeamTypes eMaster, bool bNewValue, bool bCapitulated)
 
 	for (MemberIter it(getID()); it.hasNext(); ++it)
 		it->updateCitySight(true, false);
+	// <advc.184>
+	updateMilitaryHappinessUnits();
+	GET_TEAM(eMaster).updateMilitaryHappinessUnits(); // </advc.184>
 
 	CvMap const& kMap = GC.getMap();
 	for (int i = 0; i < kMap.numPlots(); ++i)
@@ -5320,6 +5323,13 @@ void CvTeam::updateTechShare()
 	int const iBestTechShare = calculateBestTechShare(); // </advc.opt>
 	FOR_EACH_ENUM(Tech)
 		updateTechShare(eLoopTech, /* advc.opt: */ iBestTechShare);
+}
+
+// advc.184:
+void CvTeam::updateMilitaryHappinessUnits()
+{
+	for (MemberIter it(getID()); it.hasNext(); ++it)
+		it->updateMilitaryHappinessUnits();
 }
 
 // advc.opt: Cut from updateTechShare(TechTypes)
