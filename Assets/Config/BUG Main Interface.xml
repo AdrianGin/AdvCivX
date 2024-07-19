@@ -123,7 +123,7 @@
 			<!-- advc.256: New option. NB: Changes to the values will require
 				 corresponding changes to CvGame::update. -->
 			<list   id="GraphicsUpdateRate" key="Graphics Update Rate" 
-					type="int" default="0" listType="int" 
+					type="int" default="12" listType="int" 
 					values="12, 6, 4, 3, 2, 1, 0"/>
 
 			<!-- advc.092: New option -->
