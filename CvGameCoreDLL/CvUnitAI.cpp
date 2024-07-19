@@ -5891,7 +5891,8 @@ void CvUnitAI::AI_workerSeaMove()
 	{
 		// BETTER_BTS_AI_MOD, Unit AI, Efficiency, 08/20/09, jdog5000: was AI_getPlotDanger
 		//if (GET_PLAYER(getOwner()).AI_isAnyPlotDanger(getPlot()))
-		// advc.mnai (bugfix arguably; tagging advc.001)
+		/*	advc.mnai (for performance, arguably; tagging advc.opt)
+			Tbd.: Maybe plot danger should really be used; it's more accurate. */
 		if (GET_PLAYER(getOwner()).AI_isAnyWaterDanger(getPlot()))
 		{
 			if (AI_retreatToCity())
@@ -6290,6 +6291,7 @@ void CvUnitAI::AI_attackSeaMove()
 			int iAttackers = getPlot().plotCount(PUF_isUnitAIType, UNITAI_ATTACK_SEA, -1, NO_PLAYER, getTeam());
 			// advc.114a: Why count only group heads? Need to count all attackers!
 					//PUF_isGroupHead, -1, -1);
+			// advc (tbd.): Use AI_getPlotDanger? It's more accurate but slower.
 			int iBlockaders = kOwner.AI_getWaterDanger(getPlot(), 4);
 			//if (iAttackers > iBlockaders + 2)
 			// advc.114a: Replacing the above
@@ -6464,7 +6466,8 @@ void CvUnitAI::AI_reserveSeaMove()
 	} // BETTER_BTS_AI_MOD: END
 
 	/*  <advc.017b> Defend bonus if it's threatened, otherwise, consider a bunch of
-		other activities first. (K-Mod's AI_guardBonus(15) moved down instead.) */
+		other activities first. (K-Mod's AI_guardBonus(15) moved down instead.)
+		Tbd.: Use PlotDanger instead? More accurate but slower. */
 	if(kOwner.AI_isAnyWaterDanger(
 		getPlot(), std::min(maxMoves(), CvPlayerAI::DANGER_RANGE)) &&
 		AI_guardBonus(10))
@@ -7111,6 +7114,7 @@ void CvUnitAI::AI_assaultSeaMove()
 
 			MissionAITypes eMissionAIType = MISSIONAI_GROUP;
 			if (kOwner.AI_isAnyUnitTargetMissionAI(*this, &eMissionAIType, 1, getGroup(), 3) ||
+				// advc (tbd.): Use PlotDanger instead? More accurate but slower.
 				kOwner.AI_isAnyWaterDanger(getPlot(), 4))
 			{
 				// Loaded but with no escort, wait for others joining us soon or avoid dangerous waters
@@ -7352,7 +7356,7 @@ void CvUnitAI::AI_assaultSeaMove()
 			MissionAITypes eMissionAIType = MISSIONAI_GROUP;
 			if (kOwner.AI_isAnyUnitTargetMissionAI(
 				*this, &eMissionAIType, 1, getGroup(), 1))
-			{
+			{	// advc (tbd.): Use PlotDanger instead? More accurate but slower.
 				if (iEscorts < kOwner.AI_getWaterDanger(getPlot(), 2))
 				{
 					// Wait for units which are joining our group this turn (hopefully escorts)

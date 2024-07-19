@@ -3463,6 +3463,8 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 			/*	advc.300: Let civs not worry about Barbarian borders and vice versa
 				No need then to check for border danger at peacetime. */
 			GET_TEAM(getTeam()).getNumWars(false) > 0 && !isBarbarian() &&
+			// advc: Maybe (force-)disable the border check for water units?
+			//!kPlot.isWater() &&
 			//bool bCheckBorder = (!isHuman() && !kPlot.isCity());
 			/*  K-Mod. I don't want auto-workers on the frontline.
 				So count border danger for humans too, unless the plot is defended. */
@@ -3670,7 +3672,11 @@ int CvPlayerAI::AI_getWaterDanger(CvPlot const& kPlot, int iRange,
 	{
 		CvPlot const& p = *it;
 		if (!p.isWater() || /* advc.opt: */ !p.isUnit() ||
-			!p.isAdjacentToArea(p.getArea()))
+			/*	advc: More for clarity than for 1-plot lakes (which aren't adjacent
+				to their own area). Or perhaps better to restrict this function to
+				kPlot being land and to use AI_getPlotDanger for water? */
+			(kPlot.isWater() ? !kPlot.sameArea(p) :
+			!kPlot.isAdjacentToArea(p.getArea())))
 		{
 			continue;
 		}
