@@ -284,8 +284,8 @@ public:
 	int getMissionData1(int iNode) const;																														// Exposed to Python
 	int getMissionData2(int iNode) const;																														// Exposed to Python
 	// <advc.003u>
-	/*	Was bool CvSelectionGroupAI::AI_isControlled. Makes at least as much sense
-		at the base class, and non-virtual will be faster (frequently called). */
+	/*	Was CvSelectionGroupAI::AI_isControlled. Makes at least as much sense at
+		the base class, and non-virtual will be faster (frequently called). */
 	bool isAIControlled() const { return (!isHuman() || isAutomated()); }
 	CvSelectionGroupAI& AI()
 	{	//return *static_cast<CvSelectionGroupAI*>(const_cast<CvSelectionGroup*>(this));

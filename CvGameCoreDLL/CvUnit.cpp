@@ -8478,7 +8478,7 @@ bool CvUnit::isBeforeUnitCycle(CvUnit const& kOther) const
 }
 
 
-bool CvUnit::canJoinGroup(const CvPlot* pPlot, CvSelectionGroup const* pSelectionGroup) const // advc: const pSelectionGroup
+bool CvUnit::canJoinGroup(const CvPlot* pPlot, CvSelectionGroup const* pSelectionGroup) const
 {
 	// do not allow someone to join a group that is about to be split apart
 	// this prevents a case of a never-ending turn

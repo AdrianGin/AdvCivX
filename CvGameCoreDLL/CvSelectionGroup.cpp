@@ -3148,11 +3148,8 @@ void CvSelectionGroup::setTransportUnit(CvUnit* pTransportUnit,
 			// loop over all the units, finding one to load
 			FOR_EACH_UNIT_VAR_IN(pLoopUnit, *this)
 			{
-				if (pLoopUnit == NULL)
-				{
-					FAssertMsg(pLoopUnit != NULL, "Can this happen?"); // advc.test
-					continue;
-				}
+				/*if (pLoopUnit == NULL)
+					continue; */ // advc: Don't think this can (or should) happen
 				/*	just in case implementation of setTransportUnit changes,
 					check to make sure this unit is not already loaded */
 				if (pLoopUnit->getTransportUnit() != pTransportUnit)
@@ -3175,11 +3172,8 @@ void CvSelectionGroup::setTransportUnit(CvUnit* pTransportUnit,
 	{
 		FOR_EACH_UNIT_VAR_IN(pLoopUnit, *this)
 		{
-			if (pLoopUnit == NULL)
-			{
-				FAssertMsg(pLoopUnit != NULL, "Can this happen?"); // advc.test
-				continue;
-			}
+			/*if (pLoopUnit == NULL)
+				continue; */ // advc: Don't think this can (or should) happen
 			pLoopUnit->setTransportUnit(NULL); // unload unit
 		}
 	}

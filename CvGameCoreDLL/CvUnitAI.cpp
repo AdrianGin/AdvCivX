@@ -1227,7 +1227,7 @@ void CvUnitAI::LFBgetBetterAttacker(CvUnitAI** ppAttacker, // advc.003u: param w
 /*  K-Mod - test if we should declare war before moving to the target plot.
 	(originally, DOW were made inside the unit movement mechanics.
 	To me, that seems like a really dumb idea.) */
-bool CvUnitAI::AI_considerDOW(CvPlot const& kPlot) // advc: param was CvPlot*
+bool CvUnitAI::AI_considerDOW(CvPlot const& kPlot)
 {
 	CvTeamAI& kOurTeam = GET_TEAM(getTeam());
 	TeamTypes ePlotTeam = kPlot.getTeam();
@@ -9652,8 +9652,9 @@ bool CvUnitAI::AI_omniGroup(UnitAITypes eUnitAI, int iMaxGroup, int iMaxOwnUnitA
 		if (!AI_allowGroup(*pLoopUnit, eUnitAI))
 			continue;
 
-		// K-Mod. I've restructed this wad of conditions so that it is easier for me to read. // advc: Made a few more edits - parts of it were still off-screen ...
-		/*	((removed ((heaps) of parentheses) (etc)).)
+		/*	K-Mod. I've restructed this wad of conditions so that it is easier for me to read.
+				advc: Made a few more edits - parts of it were still off-screen ...
+			((removed ((heaps) of parentheses) (etc)).)
 			also, I've rearranged the order to be slightly faster for failed checks.
 			Note: the iMaxGroups & OwnUnitAI check is apparently off-by-one.
 			This is for backwards compatibility for the original code. */
@@ -21597,17 +21598,17 @@ bool CvUnitAI::AI_plotValid(CvPlot const* pPlot) /* advc: */ const
 int CvUnitAI::AI_opportuneOdds(int iActualOdds, CvUnit const& kDefender) const
 {
 	int const iOdds = iActualOdds; // abbreviate
-	int r = iOdds;
+	int iR = iOdds;
 	// adjust the values based on the relative production cost of the units.
 	{
 		int iOurCost = getUnitInfo().getProductionCost();
 		int iTheirCost = kDefender.getUnitInfo().getProductionCost();
 		if (iOurCost > 0 && iTheirCost > 0 && iOurCost != iTheirCost)
 		{
-			//r += iOdds * (100 - iOdds) * 2 * iTheirCost / (iOurCost + iTheirCost) / 100;
-			//r -= iOdds * (100 - iOdds) * 2 * iOurCost / (iOurCost + iTheirCost) / 100;
+			//iR += iOdds * (100 - iOdds) * 2 * iTheirCost / (iOurCost + iTheirCost) / 100;
+			//iR -= iOdds * (100 - iOdds) * 2 * iOurCost / (iOurCost + iTheirCost) / 100;
 			int x = iOdds * (100 - iOdds) * 2 / (iOurCost + iTheirCost + 20);
-			r += x * (iTheirCost - iOurCost) / 100;
+			iR += x * (iTheirCost - iOurCost) / 100;
 		}
 	}
 	// similarly, adjust based on the LFB value (slightly diluted)
@@ -21621,7 +21622,7 @@ int CvUnitAI::AI_opportuneOdds(int iActualOdds, CvUnit const& kDefender) const
 		int iTheirValue = kDefender.LFBgetRelativeValueRating() + iDilution;
 
 		int x = iOdds * (100 - iOdds) * 2 / std::max(1, iOurValue + iTheirValue);
-		r += x * (iTheirValue - iOurValue) / 100;
+		iR += x * (iTheirValue - iOurValue) / 100;
 	}
 
 	CvPlot const& kDefenderPlot = *kDefender.plot();
@@ -21629,22 +21630,22 @@ int CvUnitAI::AI_opportuneOdds(int iActualOdds, CvUnit const& kDefender) const
 	// adjust down if the enemy is on a defensive tile - we'd prefer to attack them on open ground.
 	if (!kDefender.noDefensiveBonus())
 	{
-		r -= (100 - iOdds) * kDefenderPlot.defenseModifier(kDefender.getTeam(), false,
+		iR -= (100 - iOdds) * kDefenderPlot.defenseModifier(kDefender.getTeam(), false,
 			getTeam()) // advc.012
 			/ (getDomainType() == DOMAIN_SEA ? 100 : 300);
 	}
 
 	// adjust the odds up if the enemy is wounded. We want to attack them now before they heal.
-	r += iOdds * (100 - iOdds) * kDefender.getDamage() / (100 * kDefender.maxHitPoints());
+	iR += iOdds * (100 - iOdds) * kDefender.getDamage() / (100 * kDefender.maxHitPoints());
 	// adjust the odds down if our attacker is wounded - but only if healing is viable.
 	if (isHurt() && healRate() > 10)
-		r -= iOdds * (100 - iOdds) * getDamage() / (100 * maxHitPoints());
+		iR -= iOdds * (100 - iOdds) * getDamage() / (100 * maxHitPoints());
 
 	// We're extra keen to take cites when we can...
 	if (kDefenderPlot.isCity() && AI_countEnemyDefenders(kDefenderPlot) == 1)
-		r += (100 - iOdds) / 3;
+		iR += (100 - iOdds) / 3;
 
-	return r;
+	return iR;
 }
 
 // K-Mod. A simple hash of the unit's birthmark.

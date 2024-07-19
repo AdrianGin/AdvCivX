@@ -3454,7 +3454,7 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 	// advc.opt: Since the SafeRangeCache is disabled, let's not waste any time with this.
 
 	TeamTypes const eTeam = getTeam();
-	int r = 0;
+	int iR = 0;
 	bCheckBorder = (bCheckBorder &&
 			// advc: Cities were excluded in AI_getAnyPlotDanger, but not in AI_getPlotDanger.
 			// K-Mod: "Cities need to be excluded for some legacy AI code"
@@ -3477,7 +3477,7 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 			// <advc>
 			if (iLimit == 1)
 				return 1;
-			r++; // As in K-Mod, border danger can add at most 1 to the danger count.
+			iR++; // As in K-Mod, border danger can add at most 1 to the danger count.
 			// (K-Mod: "I don't think two border tiles are really more dangerous than one border tile.")
 			bCheckBorder = false; // </advc>
 		}
@@ -3537,8 +3537,8 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 								kPlot.setBorderDangerCache(eActualLoopTeam, true);
 							}
 						}  // <advc>
-						r++;
-						if (r >= iLimit)
+						iR++;
+						if (iR >= iLimit)
 							return iLimit;
 						// Count at most 1 for border danger
 						bCheckBorder = false; 
@@ -3548,8 +3548,8 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 			if (p.isUnit()) // Redundant but fast (inlined)
 			{
 				// Code moved into auxiliary function
-				r += AI_countDangerousUnits(p, kPlot, bTestMoves, iLimit, eAttackPlayer);
-				if (r >= iLimit)
+				iR += AI_countDangerousUnits(p, kPlot, bTestMoves, iLimit, eAttackPlayer);
+				if (iR >= iLimit)
 					return iLimit;
 			} // </advc>
 		}
@@ -3557,7 +3557,7 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 			but is this really ever going to be a problem? */
 		/*else if (p.isUnit() && kPlotArea.canBeEntered(p.getArea()))
 		{
-			r += AI_countDangerousUnits(p, kPlot, bTestMoves, 1, eAttackPlayer);
+			iR += AI_countDangerousUnits(p, kPlot, bTestMoves, 1, eAttackPlayer);
 			// ... (copy from above)
 		}*/ // </advc.030>
 	}
@@ -3577,7 +3577,7 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 		of what iRange is and then reports that the plot is safe for any iRange <= DANGER_RANGE. */
 	/*if (isSafeRangeCacheValid() && iRange > kPlot.getActivePlayerSafeRangeCache())
 		kPlot.setActivePlayerSafeRangeCache(iRange);*/ // advc.opt: SafeRangeCache is disabled
-	return std::min(r, iLimit); // advc.104: May have counted past the limit
+	return std::min(iR, iLimit); // advc.104: May have counted past the limit
 }
 
 // advc: from AI_getAnyPlotDanger
@@ -7512,8 +7512,8 @@ bool CvPlayerAI::AI_demandRebukedSneak(PlayerTypes ePlayer) const
 		//if (GET_TEAM(getTeam()).getPower(true) > GET_TEAM(GET_PLAYER(ePlayer).getTeam()).getDefensivePower(getTeam()))
 		/*	K-Mod. Don't start a war if we're already busy;
 			and use AI_startWarVal to evaluate, rather than just power.
-			The 50 value is arbitrary. zero would probably be fine.
-			50 war rating is also arbitrary, but zero would be too low! */
+			The 50 start-war value is arbitrary. zero would probably be fine.
+			50 war rating is also arbitrary, but, here, zero would be too low! */
 		CvTeamAI const& kTeam = GET_TEAM(getTeam());
 		if (kTeam.AI_getWarPlan(GET_PLAYER(ePlayer).getTeam()) == NO_WARPLAN  &&
 			(!kTeam.AI_isAnyWarPlan() || kTeam.AI_getWarSuccessRating() > 50) &&
@@ -8553,9 +8553,8 @@ int CvPlayerAI::AI_getRankDifferenceAttitude(PlayerTypes ePlayer) const
 		iBase = kPers.getWorseRankDifferenceAttitudeChange();
 		if (iBase != 0) // save time
 		{
-			/*  Want multiplier to be 1 when the rank difference is 35% of
-				CivPlayersEverAlive, and near 0 when greater than 50% of
-				CivPlayersEverAlive. */
+			/*  Want multiplier to be 1 when the rank difference is 35% of its
+				maximum, and near 0 when greater than 50% of its maximum. */
 			rMultiplier = 1 -
 					(2 * iRankDifference - fixp(0.35) * iMaxRankDifference).abs() /
 					iMaxRankDifference;
