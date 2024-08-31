@@ -7116,7 +7116,8 @@ bool CvUnit::isGarrisonInTeamCity() const
 	CvTeam const& kCityTeam = GET_TEAM(getPlot().getTeam());
 	if (isInvisible(kCityTeam.getID(), false))
 		return false;
-	return (kCityTeam.getMasterTeam() == getTeam() ||
+	return (kCityTeam.getID() == getTeam() ||
+			kCityTeam.getMasterTeam() == getTeam() ||
 			kCityTeam.getID() == GET_TEAM(getTeam()).getMasterTeam());
 }
 
