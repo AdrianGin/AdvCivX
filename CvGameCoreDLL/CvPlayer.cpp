@@ -6496,6 +6496,9 @@ bool CvPlayer::canResearch(TechTypes eTech, bool bTrade,
 			return false;
 		}
 	}
+	// <advc.307> Don't allow Barbarians to innovate
+	if (isBarbarian() && GC.getGame().countKnownTechNumTeams(eTech) <= 0)
+		return false; // </advc.307>
 
 	if (!canEverResearch(eTech))
 		return false;
