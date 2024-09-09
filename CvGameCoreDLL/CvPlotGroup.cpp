@@ -228,7 +228,8 @@ void CvPlotGroup::changeNumBonuses(BonusTypes eBonus, int iChange)
 		and so this assert is invalid.
 		(This isn't my fault. I haven't changed it. It has always been like this.) */
 	{
-		// advc: Maintain a list of the group owner's cities (CLinkList<CvCity*> m_ownerCities)?
+		/*	advc: Worth maintaining a list of the group owner's cities
+			(CLinkList<CvCity*> m_ownerCities)? */
 		PROFILE("CvPlotGroup::changeNumBonuses - cities");
 		CLLNode<XYCoords>* pPlotNode = headPlotsNode();
 		while (pPlotNode != NULL)
