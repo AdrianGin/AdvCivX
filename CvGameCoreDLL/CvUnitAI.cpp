@@ -3699,6 +3699,12 @@ void CvUnitAI::AI_attackCityMove()
 	if (AI_defendTerritory(70, eMoveFlags, 1, true))
 		return;
 	// K-Mod end
+	// <advc.300> Rather guard cities better than staging in arbitrary places
+	if (isBarbarian() && pTargetCity == NULL)
+	{
+		if (AI_guardCity(false, true, 7, eMoveFlags, 2))
+			return;
+	} // </advc.300>
 	if (AI_moveToStagingCity())
 		return;
 	if (AI_offensiveAirlift())
@@ -10243,8 +10249,13 @@ bool CvUnitAI::AI_guardCityMinDefender(bool bSearch)
 	and duplicated code and double-counting mistakes...
 	I've deleted the bulk of the old code, and rewritten it
 	to be much much simpler - and also better. */
-bool CvUnitAI::AI_guardCity(bool bLeave, bool bSearch, int iMaxPath, MovementFlags eFlags)
+bool CvUnitAI::AI_guardCity(bool bLeave, bool bSearch, int iMaxPath, MovementFlags eFlags,
+	// <advc.300> Go up to this much beyond defensive needs if no city needs defenders
+	int iExtraDefenders)
 {
+	// Only affects the city search
+	FAssert(iExtraDefenders >= 0 && bSearch || iExtraDefenders == 0); // </advc.300>
+
 	PROFILE_FUNC();
 
 	FAssert(getDomainType() == DOMAIN_LAND);
@@ -10321,11 +10332,13 @@ bool CvUnitAI::AI_guardCity(bool bLeave, bool bSearch, int iMaxPath, MovementFla
 				within 3 tiles of the city. If this stack is farther away than that,
 				it'll probably not arrive in time to save the city, but it might,
 				or could quickly retake the city. */
-			int iDelta = iDefendersNeeded - iDefendersHave;
-			if(iDelta <= 0)
-				continue; // No functional change from BtS
-			if(pLoopCity->AI_isEvacuating() &&
-				iDelta > fixp(0.75) * getGroup()->getNumUnits())
+			int const iDefendersWant = iDefendersNeeded - iDefendersHave
+					+ iExtraDefenders; // advc.300
+			bool const bMoreNeeded = (iDefendersNeeded > iDefendersHave); // advc.300
+			if (iDefendersWant <= 0) // No functional change from BtS
+				continue;
+			if (pLoopCity->AI_isEvacuating() &&
+				iDefendersWant > fixp(0.75) * getGroup()->getNumUnits())
 			{
 				continue;
 			} // </advc.139>
@@ -10339,6 +10352,8 @@ bool CvUnitAI::AI_guardCity(bool bLeave, bool bSearch, int iMaxPath, MovementFla
 				continue;
 			}
 			int iPathTurns;
+			/*	advc.300 (note): Ideally we'd check bMoreNeeded here in case that
+				another city truly needs more, but this gets too fiddly to implement. */
 			if (at(pLoopCity->getPlot()) || !generatePath(pLoopCity->getPlot(),
 				eFlags, true, &iPathTurns, iMaxPath))
 			{
@@ -10347,7 +10362,9 @@ bool CvUnitAI::AI_guardCity(bool bLeave, bool bSearch, int iMaxPath, MovementFla
 			if (iPathTurns > iMaxPath)
 				continue;
 
-			int iValue = 1000 * (1 + iDefendersNeeded - iDefendersHave);
+			int iValue = //1000 *
+					(bMoreNeeded ? 1000 : 500) * // advc.300
+					(1 + iDefendersWant);
 			iValue /= 1 + iPathTurns + iDefendersHave;
 			if (iValue > iBestValue)
 			{

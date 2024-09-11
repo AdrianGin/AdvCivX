@@ -6780,7 +6780,7 @@ int CvCityAI::AI_neededDefenders(/* advc.139: */ bool bIgnoreEvac,
 	bool const bOffenseWar = (getArea().getAreaAIType(getTeam()) == AREAAI_OFFENSIVE ||
 			getArea().getAreaAIType(getTeam()) == AREAAI_MASSING);
 	bool const bDefenseWar = (getArea().getAreaAIType(getTeam()) == AREAAI_DEFENSIVE);
-	CvGame const& kGame = GC.getGame();
+	CvGameAI const& kGame = GC.AI_getGame();
 	CvPlayerAI const& kOwner = GET_PLAYER(getOwner());
 	int iDefenders = 1;
 	if (isBarbarian())
@@ -6788,6 +6788,11 @@ int CvCityAI::AI_neededDefenders(/* advc.139: */ bool bIgnoreEvac,
 		iDefenders = GC.getInfo(kGame.getHandicapType()).getBarbarianInitialDefenders();
 		// advc.300: Numerator was pop+2
 		iDefenders += (getPopulation() + kOwner.getCurrentEra()) / 7;
+		// <advc.300> Extra defenders when far behind in tech, especially early New World.
+		int const iAreaCities = getArea().getCitiesPerPlayer(getOwner());
+		iDefenders += std::max(0, kGame.AI_getCurrEra() - kOwner.AI_getCurrEra()
+				- (iAreaCities > 1 && getArea().getNumCivCities() * 3 <= iAreaCities ?
+				0 : 1)); // </advc.300>
 		return iDefenders;
 	} // advc.003n: Switched the order of these two branches
 	if (!GET_TEAM(getTeam()).AI_isWarPossible())

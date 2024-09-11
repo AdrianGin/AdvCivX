@@ -161,7 +161,8 @@ protected:
 	bool AI_guardCityOnlyDefender(); // K-Mod
 	bool AI_guardCityMinDefender(bool bSearch = true);
 	bool AI_guardCity(bool bLeave = false, bool bSearch = false, int iMaxPath = MAX_INT,
-			MovementFlags eFlags = NO_MOVEMENT_FLAGS);
+			MovementFlags eFlags = NO_MOVEMENT_FLAGS,
+			int iExtraDefenders = 0); // advc.300
 	bool AI_guardCityAirlift();
 	// <K-Mod>
 	bool AI_guardCoast(bool bPrimaryOnly = false,
