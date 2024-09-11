@@ -633,7 +633,7 @@ class MapConstants:
 			self.minimumMeteorSize += 1
 		if mmap.getWorldSize() > 4:
 			self.minimumMeteorSize += 1
-		# Smaller value means more less land near the poles
+		# Smaller value means less land near the poles
 		self.northAttenuationFactor = 0.59
 		# Avoid elongated Antarctica; likelier to occur when land ratio is high.
 		self.northAttenuationFactor += (1 - self.SeaLevelFactor) / 4.25
