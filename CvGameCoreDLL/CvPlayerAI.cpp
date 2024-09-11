@@ -25763,7 +25763,7 @@ void CvPlayerAI::AI_updateStrategyHash()
 				iProductionValue += 3;
 			}
 		}
-		if (iProductionValue >= 10)
+		if (iProductionValue > 8) // advc.018: Threshold reduced by 1
 			m_eStrategyHash |= AI_STRATEGY_PRODUCTION;
 		log_strat2(AI_STRATEGY_PRODUCTION, iProductionValue)
 	} // K-Mod end
