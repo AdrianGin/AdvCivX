@@ -7694,7 +7694,12 @@ void CvCityAI::AI_getYieldMultipliers(int &iFoodMultiplier, int &iProductionMult
 	// K-Mod end
 	// <advc.300>
 	if (isBarbarian())
-		return; // </advc.300>
+	{
+		int iCommerceToProductionShift = AI_commerceToProductionMultiplierShift();
+		iProductionMultiplier += iCommerceToProductionShift;
+		iCommerceMultiplier -= iCommerceToProductionShift;
+		return;
+	} // </advc.300>
 
 	int iNetCommerce = kPlayer.AI_getAvailableIncome(); // K-Mod
 	int iNetExpenses = kPlayer.calculateInflatedCosts() +
@@ -12641,7 +12646,12 @@ void CvCityAI::AI_updateSpecialYieldMultiplier()
 		// K-Mod end
 	} // <advc.300>
 	if (isBarbarian())
-		return; // </advc.300>
+	{
+		int iCommerceToProductionShift = AI_commerceToProductionMultiplierShift();
+		m_aiSpecialYieldMultiplier[YIELD_PRODUCTION] += iCommerceToProductionShift;
+		m_aiSpecialYieldMultiplier[YIELD_COMMERCE] -= iCommerceToProductionShift;
+		return;
+	} // </advc.300>
 
 	BuildingTypes eProductionBuilding = getProductionBuilding();
 	if (eProductionBuilding != NO_BUILDING)
@@ -12768,6 +12778,17 @@ int CvCityAI::AI_specialYieldMultiplier(YieldTypes eYield) const
 int CvCityAI::AI_commerceToProductionMultiplierShift() const
 {
 	int iR = 0;
+	/*	<advc.300> Delay Cottaging of New World to make it a little less
+		attractive for conquerors */
+	if (isBarbarian())
+	{
+		if (getArea().getNumCivCities() <= 0)
+		{
+			iR += range(CvEraInfo::AI_getAgeOfExploration()
+					- GC.getGame().getCurrentEra(), 0, 2) * 10;
+		}
+		return iR;
+	} // </advc.300>
 	if (GET_PLAYER(getOwner()).AI_isDoStrategy(AI_STRATEGY_PRODUCTION))
 		iR = 20;
 	else if (3 * findBaseYieldRateRank(YIELD_PRODUCTION) <=
