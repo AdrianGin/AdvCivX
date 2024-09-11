@@ -11027,8 +11027,11 @@ int CvCityAI::AI_jobChangeValue(std::pair<bool, int> new_job, std::pair<bool, in
 		{
 			int iProductionRank = findYieldRateRank(YIELD_PRODUCTION);
 			int iExperienceValue = 100 * iExperience * 4;
-			if (iProductionRank <= kOwner.getNumCities() / 2 + 1)
+			if (iProductionRank <= kOwner.getNumCities() / 2 + 1
+				|| isBarbarian()) // advc.300: Yield rank shouldn't matter for them
+			{
 				iExperienceValue += 100 * iExperience * 4;
+			}
 			iExperienceValue += (getMilitaryProductionModifier() * iExperience * 8);
 			iTotalValue += iExperienceValue;
 		}
@@ -11416,9 +11419,11 @@ bool CvCityAI::AI_emphasizeIrrigatingPlot(CvPlot const& kPlot) const
 				bHasBonusImprovement = true;
 		}
 	}*/ // BtS
-	if (kPlot.getNonObsoleteBonusType(getTeam(), true) != NO_BONUS)
+	if (kPlot.getNonObsoleteBonusType(getTeam(), true) != NO_BONUS
+		|| isBarbarian()) // advc.300
+	{
 		return false;
-
+	}
 	/*	It looks unwieldly but the code has to be rigid to avoid "worker ADD"
 		where they keep connecting then disconnecting a crops resource or building
 		multiple farms to connect a single crop resource.
@@ -11540,6 +11545,9 @@ void CvCityAI::AI_bestPlotBuild(CvPlot const& kPlot, int* piBestValue, BuildType
 	
 	BuildTypes eBestBuild = NO_BUILD;
 	int iBestValue = 0;
+
+	// advc.300: Improve only worked plots for their yield
+	if (!isBarbarian() || isWorkingPlot(kPlot))
 	{	// advc: Moved into subroutine
 		bool bEmphasizeIrrigation = AI_emphasizeIrrigatingPlot(kPlot);
 		FOR_EACH_ENUM(Improvement)

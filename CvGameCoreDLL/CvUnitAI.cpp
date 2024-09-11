@@ -17478,6 +17478,9 @@ bool CvUnitAI::AI_nextCityToImproveAirlift()
 bool CvUnitAI::AI_irrigateTerritory()
 {
 	PROFILE_FUNC();
+	// <advc.300>
+	if (isBarbarian())
+		return false; // </advc.300>
 	// Erik <OPT1> Cache the viable subset of builds so that we don't have to loop through all of them
 	std::vector<BuildTypes> irrigationCarryingBuilds;
 	FOR_EACH_ENUM(Build)
