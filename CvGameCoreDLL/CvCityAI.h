@@ -141,6 +141,7 @@ public:
 	int AI_yieldMultiplier(YieldTypes eYield) const;
 	void AI_updateSpecialYieldMultiplier();
 	int AI_specialYieldMultiplier(YieldTypes eYield) const;
+	int AI_commerceToProductionMultiplierShift() const; // advc
 	int AI_getCultureWeight() const { return m_iCultureWeight; } // K-Mod
 	void AI_setCultureWeight(int iWeight) { m_iCultureWeight = iWeight; } // K-Mod
 	bool AI_needsCultureToWorkFullRadius() const; // advc
