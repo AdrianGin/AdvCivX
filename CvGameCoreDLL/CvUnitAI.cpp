@@ -3508,7 +3508,7 @@ void CvUnitAI::AI_attackCityMove()
 				return;
 			// <advc.300>
 			int iSearchRange = 3;
-			if(getArea().getAreaAIType(getTeam()) == AREAAI_ASSAULT)
+			if (getArea().getAreaAIType(getTeam()) == AREAAI_ASSAULT)
 				iSearchRange = 1; // </advc.300>
 			if (AI_pillageRange(iSearchRange, 0, eMoveFlags))
 				return;
@@ -10292,7 +10292,7 @@ bool CvUnitAI::AI_guardCity(bool bLeave, bool bSearch, int iMaxPath, MovementFla
 	{
 		int iBestValue = 0;
 		//bool const bMoveAllTerrain = getGroup()->canMoveAllTerrain(); // advc
-		FOR_EACH_CITYAI(pLoopCity, kOwner) // advc: Flattened the body of this loop
+		FOR_EACH_CITYAI(pLoopCity, kOwner)
 		{
 			/*if (!AI_plotValid(pLoopCity->plot()))
 				continue;*/
@@ -17475,7 +17475,7 @@ bool CvUnitAI::AI_nextCityToImproveAirlift()
 }
 
 
-bool CvUnitAI::AI_irrigateTerritory()  // advc: refactored
+bool CvUnitAI::AI_irrigateTerritory()
 {
 	PROFILE_FUNC();
 	// Erik <OPT1> Cache the viable subset of builds so that we don't have to loop through all of them

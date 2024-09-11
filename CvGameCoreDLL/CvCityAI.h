@@ -119,7 +119,7 @@ public:
 	}
 	int AI_totalBestBuildValue(CvArea const& kArea) const;
 
-	int AI_clearFeatureValue(CityPlotTypes ePlot);
+	int AI_clearFeatureValue(CityPlotTypes ePlot) const;
 	// K-Mod
 	// note: some of the following functions existed in BBAI for debugging purposes. But the new K-Mod versions are an integral part of the AI.
 	bool AI_isGoodPlot(CityPlotTypes ePlot, int* aiYields = 0) const;
@@ -267,9 +267,10 @@ protected:
 
 	int AI_experienceWeight();
 	int AI_buildUnitProb(/* advc.017: */ bool bDraft = false);
+	bool AI_emphasizeIrrigatingPlot(CvPlot const& kPlot) const; // advc
 	void AI_bestPlotBuild(CvPlot const& kPlot, int* piBestValue, BuildTypes* peBestBuild,
 			int iFoodPriority, int iProductionPriority, int iCommercePriority, bool bChop,
-			int iHappyAdjust, int iHealthAdjust, int iDesiredFoodChange);
+			int iHappyAdjust, int iHealthAdjust, int iDesiredFoodChange) const;
 
 	void AI_buildGovernorChooseProduction();
 	void AI_barbChooseProduction(); // K-Mod
