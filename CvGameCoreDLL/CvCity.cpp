@@ -8140,7 +8140,9 @@ void CvCity::setWeLoveTheKingDay(bool bNewValue)
 		m_bWeLoveTheKingDay = bNewValue;
 
 		updateMaintenance();
-
+		// <f1rpo> Bugfix: Don't show the message when celebrations end
+		if (!isWeLoveTheKingDay())
+			return; // </f1rpo>
 		eCivic = NO_CIVIC;
 
 		for (iI = 0; iI < GC.getNumCivicInfos(); iI++)
