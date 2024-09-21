@@ -8312,7 +8312,6 @@ int CvPlayerAI::AI_getShareWarAttitude(PlayerTypes ePlayer) const
 			// This divisor seems to produce roughly the result I have in mind
 			(fixp(3.1) * GC.getWAR_SUCCESS_CITY_CAPTURING() * iDiv)).round(), 0, iLimit);
 	return iR;
-	// </advc.130m>
 }
 
 

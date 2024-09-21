@@ -4430,8 +4430,7 @@ void CvTeamAI::AI_changeWarSuccess(TeamTypes eTeam, scaled rChange)
 			apAffectedTeams.push_back(&kWarAlly);
 		}
 	}
-	/*	Attitude cache update - relevant for WarAttitude (advc.sha) and
-		ShareWarAttitude (advc.130m). */
+	// Attitude cache update; also relevant for WarAttitude (advc.sha).
 	/*	To save time. Not crucial to keep AI attitude up to date during AI turns.
 		Note that network games are treated as never being in between turns. */
 	if (!GC.getGame().isInBetweenTurns() &&
