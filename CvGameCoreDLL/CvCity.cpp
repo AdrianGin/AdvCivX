@@ -6451,6 +6451,9 @@ void CvCity::setWeLoveTheKingDay(bool bNewValue)
 
 	m_bWeLoveTheKingDay = bNewValue;
 	updateMaintenance();
+	// <advc.001> Show message only when celebrations begin
+	if (!isWeLoveTheKingDay())
+		return; // </advc.001>
 	CivicTypes eCivic = NO_CIVIC;
 	FOR_EACH_ENUM(Civic)
 	{
