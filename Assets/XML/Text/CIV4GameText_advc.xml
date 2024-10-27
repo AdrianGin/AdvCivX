@@ -7058,4 +7058,16 @@
 		<Spanish>factor principios</Spanish>
 	</TEXT>
 
+	<!-- advc.132: The original TXT_KEY_ESPIONAGE_..._MOD texts are defined
+		 in Civ4GameText_BTS.xml. (IT, SP may really need an article, but
+		 that can't be worked around.) -->
+	<TEXT>
+		<Tag>TXT_KEY_ESPIONAGE_CIVIC_RELIGION_MOD</Tag>
+		<English>(increased for not practising %s1_ReligionOrCivic)</English>
+		<French>(augmenté pour ne pas pratiquer %s2_ReligionOrCivic)</French>
+		<German>(erhöht f&#252;r Nichtaus&#252;bung von %s2_ReligionOrCivic)</German>
+		<Italian>(aumentato per non praticare %s2_ReligionOrCivic)</Italian>
+		<Spanish>(aumentado por no practicar %s2_ReligionOrCivic)</Spanish>
+	</TEXT>
+
 </Civ4GameText>
