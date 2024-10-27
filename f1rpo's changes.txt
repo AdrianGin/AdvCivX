@@ -6,5 +6,3 @@ fixed some BBAI and BtS bugs.
 
 Commit history:
 https://github.com/f1rpo/AdvCiv/tree/kmod_tweaks
-Background:
-https://forums.civfanatics.com/threads/advanced-civ.614217/#post-14841994
