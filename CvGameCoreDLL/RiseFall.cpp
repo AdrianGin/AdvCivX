@@ -79,6 +79,12 @@ void RiseFall::init() {
 			return;
 		}
 	}
+	// <mm.mastery>
+	if (g.totalVictoryValid())
+	{
+		shutOff(gDLL->getText("TXT_KEY_RF_INVALID_OPTION",
+					GC.getInfo(g.getTotalVictory()).getDescription()));
+	} // </mm.mastery>
 	int maxChapters = GC.getDefineINT("RF_CHAPTERS_BASE");
 	CvGameSpeedInfo& speed = GC.getInfo(g.getGameSpeedType());
 	double chapterModifier = (speed.getGoldenAgePercent() + 150) / 250.0;

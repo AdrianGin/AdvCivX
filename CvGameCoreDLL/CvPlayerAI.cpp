@@ -24854,6 +24854,17 @@ void CvPlayerAI::AI_updateVictoryWeights()
 {
 	if (getPersonalityType() == NO_LEADER)
 		return;
+	// <mm.mastery> Don't mess with the weights
+	if (GC.getGame().totalVictoryValid())
+	{
+		FOR_EACH_ENUM(Victory)
+		{
+			int iWeight;
+			AI_isVictoryValid(eLoopVictory, iWeight);
+			m_aiVictoryWeights.set(eLoopVictory, safeIntCast<short>(iWeight));
+		}
+		return;
+	} // </mm.mastery>
 	EagerEnumMap<VictoryTypes,bool> abValid;
 	EagerEnumMap<VictoryTypes,short> aiWeight;
 	FOR_EACH_ENUM(Victory)
@@ -24922,7 +24933,8 @@ bool CvPlayerAI::AI_isVictoryValid(VictoryTypes eVictory, int& iWeight) const
 			return false;
 		}
 	}
-	if (GC.getInfo(eVictory).isConquest())
+	if (kVictory.isConquest()
+		&& !kVictory.get(CvVictoryInfo::TotalVictory)) // mm.mastery
 	{
 		iWeight = (bHuman ? iHumanWeight : kPersonality.getConquestVictoryWeight());
 		if (bCheckBBAIDefine &&
@@ -24949,6 +24961,9 @@ bool CvPlayerAI::AI_isVictoryValid(VictoryTypes eVictory, int& iWeight) const
 			return false;
 		}
 	}
+	// <mm.mastery> f1rpo - probably not needed; future-proofing maybe.
+	if (kVictory.get(CvVictoryInfo::TotalVictory))
+		iWeight = iHumanWeight; // </mm.mastery>
 	return kGame.isVictoryValid(eVictory);
 }
 
