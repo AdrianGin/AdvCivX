@@ -84,6 +84,13 @@ public:
 	void signDefensivePact(TeamTypes eTeam, /* advc.032: */ bool bProlong = false);																			// Exposed to Python
 	bool canSignDefensivePact(TeamTypes eTeam) /* advc: */ const;
 
+	int getTotalVictoryScore(
+			int* piCulture = NULL, int* piGlobalCulture = NULL, int* piCultureScore = NULL,
+			int* piPopulation = NULL, int* piGlobalPopulation = NULL, int* piPopulationScore = NULL,
+			int* piLandOwned = NULL, int* piGlobalLand = NULL, int* piLandScore = NULL,
+			int* piWonders = NULL, int* piGlobalWonders = NULL, int* piWonderScore = NULL,
+			int* piLegendaryCities = NULL, int* piLegendaryScore = NULL,
+			int* piSpaceScore = NULL) const; // mm.mastery
 	int getAssets() const;																															// Exposed to Python
 	int getPower(bool bIncludeVassals) const;																																// Exposed to Python
 	int getDefensivePower(TeamTypes eExcludeTeam = NO_TEAM) const;						// Exposed to Python

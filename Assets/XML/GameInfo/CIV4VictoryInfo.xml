@@ -145,5 +145,26 @@
 			<iVictoryDelayTurns>0</iVictoryDelayTurns>
 			<VictoryMovie/>
 		</VictoryInfo>
+		<!-- mm.mastery -->
+		<VictoryInfo>
+			<Type>VICTORY_TOTAL</Type>
+			<Description>TXT_KEY_VICTORY_TOTAL</Description>
+			<Civilopedia>TXT_KEY_VICTORY_TOTAL_PEDIA</Civilopedia>
+			<bTargetScore>0</bTargetScore>
+			<bEndScore>1</bEndScore>
+			<bConquest>1</bConquest>
+			<bDiploVote>0</bDiploVote>
+			<bPermanent>0</bPermanent>
+			<bTotalVictory>1</bTotalVictory>
+			<iPopulationPercentLead>0</iPopulationPercentLead>
+			<iLandPercent>0</iLandPercent>
+			<iMinLandPercent>0</iMinLandPercent>
+			<iReligionPercent>0</iReligionPercent>
+			<CityCulture>NONE</CityCulture>
+			<iNumCultureCities>0</iNumCultureCities>
+			<iTotalCultureRatio>0</iTotalCultureRatio>
+			<iVictoryDelayTurns>0</iVictoryDelayTurns>
+			<VictoryMovie>ART_DEF_MOVIE_VICTORY_MASTERY</VictoryMovie>
+		</VictoryInfo>
 	</VictoryInfos>
 </Civ4VictoryInfo>

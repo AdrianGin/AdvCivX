@@ -88,6 +88,38 @@ void CyTeam::signDefensivePact(int /*TeamTypes*/ eTeam)
 		m_pTeam->signDefensivePact((TeamTypes)eTeam);
 }
 
+// <mm.mastery>
+int CyTeam::getTotalVictoryScore()
+{
+	return (m_pTeam == NULL ? -1 :
+			m_pTeam->getTotalVictoryScore());
+}
+// f1rpo: 15-valued tuple (excluding the actual score total)
+python::tuple CyTeam::getTotalVictoryScoreComponents()
+{
+	int iCulture = 0, iGlobalCulture = 0, iCultureScore = 0,
+			iPopulation = 0, iGlobalPopulation = 0, iPopulationScore = 0,
+			iLandOwned = 0, iGlobalLand = 0, iLandScore = 0,
+			iWonders = 0, iGlobalWonders = 0, iWonderScore = 0,
+			iLegendaryCities = 0, iLegendaryScore = 0, iSpaceScore = 0;
+	if (m_pTeam != NULL)
+	{
+		m_pTeam->getTotalVictoryScore(
+			&iCulture, &iGlobalCulture, &iCultureScore,
+			&iPopulation, &iGlobalPopulation, &iPopulationScore,
+			&iLandOwned, &iGlobalLand, &iLandScore,
+			&iWonders, &iGlobalWonders, &iWonderScore,
+			&iLegendaryCities, &iLegendaryScore, &iSpaceScore);
+	}
+	python::tuple tup = python::make_tuple(
+			iCulture, iGlobalCulture, iCultureScore,
+			iPopulation, iGlobalPopulation, iPopulationScore,
+			iLandOwned, iGlobalLand, iLandScore,
+			iWonders, iGlobalWonders, iWonderScore,
+			iLegendaryCities, iLegendaryScore, iSpaceScore);
+	return tup;
+} // </mm.mastery>
+
 int CyTeam::getAssets()
 {
 	return m_pTeam ? m_pTeam->getAssets() : -1;

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- mm.mastery -->
+<Civ4GameText xmlns="http://www.firaxis.com">
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_TOTAL</Tag>
+		<English>Mastery</English>
+		<German>Gesamtheits-Sieg</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_TOTAL_PEDIA</Tag>
+		<English>Mastery -- A combined victory requiring control of the majority of land, population, culture, and relgion on the planet.</English>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_RELIGIOUS</Tag>
+		<English>Religious</English>
+		<French>Religious</French>
+		<German>Fromm</German>
+		<Italian>Religious</Italian>
+		<Spanish>Religious</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_TOTAL_PEDIA</Tag>
+		<English>Religious Victory -- You must control the holy city of you religion and spread your religion to at least 70% of the rest of the world.</English>
+		<German>Frommer Sieg</German>
+	</TEXT>	
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_SCREEN_POPULATION</Tag>
+		<English>Population percent</English>
+		<German>Bevölkerungsanteil</German>
+	</TEXT>	
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_SCREEN_CONDITION</Tag>
+		<English>Category</English>
+		<German>Kategorie</German>
+	</TEXT>	
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_SCREEN_POINTS</Tag>
+		<English>Points</English>
+		<German>Punkte</German>
+		<Spanish>Puntos</Spanish>
+	</TEXT>	
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_SCREEN_PERCENTAGE</Tag>
+		<English>Status</English>
+	</TEXT>		
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_SCREEN_RIVAL</Tag>
+		<English>Best Rival</English>
+		<German>Bester Gegner</German>
+	</TEXT>		
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_SCREEN_WORLD_POP</Tag>
+		<English>Population</English>
+		<German>Bevölkerung</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_SCREEN_WORLD_LAND</Tag>
+		<English>Land</English>
+	</TEXT>	
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_SCREEN_LAUNCHED</Tag>
+		<English>Launched</English>
+		<German>Gestarted</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_SCREEN_NOTLAUNCHED</Tag>
+		<English>Not Launched</English>
+		<German>Nicht gestartet</German>
+	</TEXT>		
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_SCREEN_CITIES</Tag>
+		<English>Legendary Cities</English>
+		<German>Legendäre Städte</German>
+	</TEXT>	
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_SCREEN_TOTALS</Tag>
+		<English>Mastery Score</English>
+		<German>Gesamtheitliche Punkte</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_STARSHIP_LAUNCH</Tag>
+		<English>%s1 has launched a starship!</English>
+		<German>%s1 hat ein Raumschiff gestartet!</German>
+	</TEXT>	
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_SCREEN_TOOEARLY</Tag>
+		<English>The world is too young to judge!</English>
+		<German>Es ist zu früh für ein Urteil!</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_VICTORY_SCREEN_BUILDING2</Tag>
+		<English>Build %d1 - %d2 %s3</English>
+		<French>Construire : %d1 - %d2 %s3</French>
+		<German>%d1 - %d2 %s3</German>
+		<Italian>Costruisci %d1 - %d2 %s3</Italian>
+		<Spanish>Construir %d1 - %d2 %s3</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BEST_RIVAL_CCV</Tag>
+		<English>Best Rival</English>
+		<German>Bester Gegner</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_OTHER_NATIONS_CCV</Tag>
+		<English>Other Nations</English>
+		<German>Andere Nationen</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_OF_VCM</Tag>
+		<English>of</English>
+		<German>von</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUILT_VCM</Tag>
+		<English>built</English>
+		<German>gebaut</German>
+	</TEXT>
+    <TEXT>
+        <Tag>TXT_KEY_VICTORY_RELIGION_NO_HOLY_CITY_CCV</Tag>
+        <English>No Holy City</English>
+        <German>keine Heilige Stadt</German>
+    </TEXT>
+</Civ4GameText>

@@ -29,6 +29,10 @@ void CyTeamPythonInterface()
 		.def("signOpenBorders", &CyTeam::signOpenBorders, "void (int /*TeamTypes*/ eTeam)")
 		.def("signDefensivePact", &CyTeam::signDefensivePact, "void (int /*TeamTypes*/ eTeam)")
 
+		// <mm.mastery>
+		.def("getTotalVictoryScore", &CyTeam::getTotalVictoryScore, "int ()")
+		.def("getTotalVictoryScoreComponents", &CyTeam::getTotalVictoryScoreComponents, "tuple-of-15-int ()")
+		// </mm.mastery>
 		.def("getAssets", &CyTeam::getAssets, "int ()")
 		.def("getPower", &CyTeam::getPower, "int (bool bIncludeVassals)")
 		.def("getDefensivePower", &CyTeam::getDefensivePower, "int ()")

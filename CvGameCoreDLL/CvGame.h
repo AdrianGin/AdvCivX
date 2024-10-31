@@ -667,6 +667,8 @@ public:
 	}
 	bool isBuildingClassMaxedOut(BuildingClassTypes eBuildingClass, int iExtra = 0) const;				// Exposed to Python
 	void incrementBuildingClassCreatedCount(BuildingClassTypes eBuildingClass);
+	// mm.mastery: (karadoc - replacing "getSevoWonderScore")
+	int countWorldWonders(bool bBuilt = true, PlayerTypes eBuilder = NO_PLAYER) const;					// Exposed to Python
 	int getProjectCreatedCount(ProjectTypes eProject) const												// Exposed to Python
 	{
 		return m_aiProjectCreatedCount.get(eProject);
@@ -921,6 +923,8 @@ public:
 	DllExport void cheatSpaceship() const;
 	DllExport VictoryTypes getSpaceVictory() const;
 	VictoryTypes getDominationVictory() const; // advc.115f
+	VictoryTypes getTotalVictory() const; // mm.mastery
+	bool totalVictoryValid() const; // mm.mastery
 	DllExport void nextActivePlayer(bool bForward);
 
 	// advc.003j (note): Isn't (and imo shouldn't be) used DLL-internally

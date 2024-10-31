@@ -772,6 +772,11 @@ bool CyGame::isBuildingClassMaxedOut(int /*BuildingClassTypes*/ eIndex, int iExt
 {
 	return m_kGame.isBuildingClassMaxedOut((BuildingClassTypes)eIndex, iExtra);
 }
+// mm.mastery:
+int CyGame::countWorldWonders(bool bBuilt, int /*PlayerTypes*/ eBuilder)
+{
+	return m_kGame.countWorldWonders(bBuilt, (PlayerTypes)eBuilder);
+}
 
 int CyGame::getProjectCreatedCount(int /*ProjectTypes*/ eIndex)
 {

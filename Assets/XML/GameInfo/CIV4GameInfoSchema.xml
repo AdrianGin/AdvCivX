@@ -535,6 +535,8 @@
 	<ElementType name="bConquest" content="textOnly" dt:type="boolean"/>
 	<ElementType name="bDiploVote" content="textOnly" dt:type="boolean"/>
 	<ElementType name="bPermanent" content="textOnly" dt:type="boolean"/>
+	<!-- mm.mastery -->
+	<ElementType name="bTotalVictory" content="textOnly" dt:type="boolean"/>
 	<ElementType name="iPopulationPercentLead" content="textOnly" dt:type="int"/>
 	<!-- advc.254 -->
 	<ElementType name="iLandPercentLead" content="textOnly" dt:type="int"/>
@@ -554,6 +556,8 @@
 		<element type="bConquest"/>
 		<element type="bDiploVote"/>
 		<element type="bPermanent"/>
+		<!-- mm.mastery -->
+		<element type="bTotalVictory" minOccurs="0"/>
 		<element type="iPopulationPercentLead"/>
 		<!-- advc.254 (set to 0 by default in the DLL) -->
 		<element type="iLandPercentLead" minOccurs="0"/>

@@ -197,6 +197,7 @@ public:
 	bool isUnitClassMaxedOut(int /*UnitClassTypes*/ eIndex, int iExtra);
 	int getBuildingClassCreatedCount(int /*BuildingClassTypes*/ eIndex);
 	bool isBuildingClassMaxedOut(int /*BuildingClassTypes*/ eIndex, int iExtra);
+	int countWorldWonders(bool bBuilt, int /*PlayerTypes*/ eBuilder); // mm.mastery
 
 	int getProjectCreatedCount(int /*ProjectTypes*/ eIndex);
 	bool isProjectMaxedOut(int /*ProjectTypes*/ eIndex, int iExtra);

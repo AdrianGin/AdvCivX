@@ -472,6 +472,12 @@ void CvGame::setStartTurnYear(int iTurn)
 	}
 
 	setStartTurn(getGameTurn());
+	// <mm.mastery>
+	if (totalVictoryValid())
+	{
+		FOR_EACH_ENUM(Victory)
+			setVictoryValid(eLoopVictory, true);
+	} // </mm.mastery>
 
 	if (getMaxTurns() == 0 /* advc.250c: */ || iTurn > 0)
 	{
@@ -483,6 +489,10 @@ void CvGame::setStartTurnYear(int iTurn)
 		if (getEstimateEndTurn() > getGameTurn())
 		{
 			bool bValid = false;
+			// <mm.mastery>
+			if (totalVictoryValid())
+				bValid = true;
+			else // </mm.mastery>
 			FOR_EACH_ENUM(Victory)
 			{
 				if (isVictoryValid(eLoopVictory) &&
@@ -3590,6 +3600,24 @@ VictoryTypes CvGame::getDominationVictory() const
 	return NO_VICTORY;
 }
 
+// <mm.mastery> (Helper functions added by f1rpo)
+VictoryTypes CvGame::getTotalVictory() const
+{
+	FOR_EACH_ENUM(Victory)
+	{
+		if (GC.getInfo(eLoopVictory).get(CvVictoryInfo::TotalVictory))
+			return eLoopVictory;
+	}
+	return NO_VICTORY;
+}
+
+
+bool CvGame::totalVictoryValid() const
+{
+	VictoryTypes const eTotal = getTotalVictory();
+	return (eTotal != NO_VICTORY && isVictoryValid(eTotal));
+} // </mm.mastery>
+
 // advc: Moved from CvGameInterface.cpp
 VictoryTypes CvGame::getSpaceVictory() const
 {
@@ -5682,6 +5710,43 @@ bool CvGame::isProjectMaxedOut(ProjectTypes eProject, int iExtra) const
 		return false;
 	FAssert(getProjectCreatedCount(eProject) <= kProject.getMaxGlobalInstances());
 	return (getProjectCreatedCount(eProject) + iExtra >= kProject.getMaxGlobalInstances());
+}
+
+// mm.mastery:
+int CvGame::countWorldWonders(bool bBuilt, PlayerTypes eBuilder) const
+{
+	FAssert(!bBuilt || eBuilder != NO_PLAYER);
+	int iR = 0;
+	if (eBuilder == NO_PLAYER || !bBuilt)
+	{
+		FOR_EACH_ENUM(BuildingClass)
+		{
+			if (GC.getInfo(eLoopBuildingClass).isWorldWonder())
+			{
+				iR += (bBuilt ? getBuildingClassCreatedCount(eLoopBuildingClass) :
+						GC.getBuildingClassInfo(eLoopBuildingClass).getMaxGlobalInstances());
+			}
+		}
+	}
+	else
+	{
+		for (PlayerIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		{
+			FOR_EACH_CITY(pCity, *itPlayer)
+			{
+				CvCivilization const& kCiv = GET_PLAYER(BARBARIAN_PLAYER).getCivilization();
+				for (int i = 0; i < kCiv.getNumBuildings(); i++)
+				{
+					if (GC.getInfo(kCiv.buildingClassAt(i)).isWorldWonder() &&
+						pCity->getBuildingOriginalOwner(kCiv.buildingAt(i)) == eBuilder)
+					{
+						iR += pCity->getNumRealBuilding(kCiv.buildingAt(i));
+					}
+				}
+			}
+		}
+	}
+	return iR;
 }
 
 
@@ -8083,7 +8148,7 @@ bool CvGame::testVictory(VictoryTypes eVictory, TeamTypes eTeam, bool* pbEndScor
 		{
 			FOR_EACH_CITY(pCity, *itMember)
 			{
-				if (pCity->getCultureLevel() >= kVictory.getCityCulture())
+				if (pCity->getCultureLevel() >= culturalVictoryCultureLevel())
 					iCount++;
 			}
 		}
@@ -8164,6 +8229,24 @@ void CvGame::testVictory()
 			}
 		}
 	}
+	// <mm.mastery> (based on code by Sevo)
+	if (getMaxTurns() != 0 && getElapsedGameTurns() >= getMaxTurns() &&
+		totalVictoryValid())
+	{
+		// Sorry, folks, no winners today by usual means, only Mastery achievable.
+		aeeWinners.clear();
+		int iBestScore = 0;
+		for (TeamIter<MAJOR_CIV> itTeam; itTeam.hasNext(); ++itTeam)
+		{
+			int iScore = itTeam->getTotalVictoryScore();
+			if (iScore < iBestScore)
+				continue;
+			if (iScore > iBestScore)
+				aeeWinners.clear();
+			iBestScore = iScore;
+			aeeWinners.push_back(std::make_pair(itTeam->getID(), getTotalVictory()));					
+		}
+	} // </mm.mastery>
 	if (aeeWinners.size() > 0)
 	{
 		int iWinner = SyncRandNum(aeeWinners.size());

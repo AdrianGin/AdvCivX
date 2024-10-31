@@ -1748,6 +1748,101 @@ bool CvTeam::canSignDefensivePact(TeamTypes eTeam) /* advc: */ const
 	return true;
 }
 
+/*	mm.mastery: Mastery victory scoring system, written by Sevo, edited by karadoc
+	(and by f1rpo). */
+int CvTeam::getTotalVictoryScore(
+	// f1rpo: Expose the score components to Python (out-parameters)
+	int* piCulture, int* piGlobalCulture, int* piCultureScore,
+	int* piPopulation, int* piGlobalPopulation, int* piPopulationScore,
+	int* piLandOwned, int* piGlobalLand, int* piLandScore,
+	int* piWonders, int* piGlobalWonders, int* piWonderScore,
+	int* piLegendaryCities, int* piLegendaryScore,
+	int* piSpaceScore) const
+{
+	LOCAL_REF(int, iCulture, piCulture, 0);
+	LOCAL_REF(int, iGlobalCulture, piGlobalCulture, 0);
+	LOCAL_REF(int, iCultureScore, piCultureScore, 0);
+	LOCAL_REF(int, iPopulation, piPopulation, 0);
+	LOCAL_REF(int, iGlobalPopulation, piGlobalPopulation, 0);
+	LOCAL_REF(int, iPopulationScore, piPopulationScore, 0);
+	LOCAL_REF(int, iLandOwned, piLandOwned, 0);
+	LOCAL_REF(int, iGlobalLand, piGlobalLand, 0);
+	LOCAL_REF(int, iLandScore, piLandScore, 0);
+	LOCAL_REF(int, iWonders, piWonders, 0);
+	LOCAL_REF(int, iGlobalWonders, piGlobalWonders, 0);
+	LOCAL_REF(int, iWonderScore, piWonderScore, 0);
+	LOCAL_REF(int, iLegendaryCities, piLegendaryCities, 0);
+	LOCAL_REF(int, iLegendaryScore, piLegendaryScore, 0);
+	LOCAL_REF(int, iSpaceScore, piSpaceScore, 0);
+	if (getNumMembers() < 1) // karadoc (sanity check)
+		return 0;
+	CvGame const& kGame = GC.getGame();
+	// f1rpo: The religion part will have to be re-implemented in Python
+	int iReligionScore = 0; // NB: Global religion percent is 100
+	FOR_EACH_ENUM(Religion)
+	{
+		if (hasHolyCity(eLoopReligion))
+		{
+			int iReligionPercent = kGame.calculateReligionPercent(eLoopReligion);
+			if (iReligionPercent > iReligionScore)
+			{
+				//iReligionScore = iReligionPercent;
+				// f1rpo: Cumulative as per Matty's request
+				iReligionScore += iReligionPercent;
+			}
+		}
+	}
+	/*	f1rpo: Disabled at Matty's request
+		(also not exposing this component to Python) */
+	//long lGlobalPowerHistory = 0;
+	/*	f1rpo: Only major civs (was all players), to be consistent with wonder counting.
+		(Could otherwise also use CvGame::getTotalPopulation.) */
+	for (PlayerIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+	{
+		iGlobalCulture += itPlayer->countTotalCulture();
+		iGlobalPopulation += itPlayer->getTotalPopulation();
+		/*for (int iTurn = 0; iTurn <= kGame.getGameTurn(); iTurn++)
+			lGlobalPowerHistory += itPlayer->getHistory(PLAYER_HISTORY_POWER, iTurn);*/
+	}
+	//long lPowerHistory = 0;
+	for (MemberIter itMember(getID()); itMember.hasNext(); ++itMember)
+	{
+		iWonders += kGame.countWorldWonders(true, itMember->getID()); // karadoc
+		/*for (int iTurn = 0; iTurn <= kGame.getGameTurn(); iTurn++)
+			lPowerHistory += itMember->getHistory(PLAYER_HISTORY_POWER, iTurn);*/
+		FOR_EACH_CITY(pCity, *itMember)
+		{
+			if (pCity->getCultureLevel() >= kGame.culturalVictoryCultureLevel())
+				iLegendaryCities++;
+		}
+	}
+	iGlobalWonders = kGame.countWorldWonders(false); // karadoc
+	if (iGlobalWonders > 0)
+		iWonderScore = iWonders * 100 / iGlobalWonders;
+	iPopulation = getTotalPopulation();
+	if (iGlobalPopulation > 0)
+		iPopulationScore = iPopulation * 100 / iGlobalPopulation;	
+	iLandOwned = getTotalLand();
+	if (iGlobalLand > 0)
+		iLandScore = iLandOwned * 100 / iGlobalLand;
+	// f1rpo (note): Not just globally owned; all land.
+	iGlobalLand = GC.getMap().getLandPlots();
+	iCulture = countTotalCulture();
+	if (iGlobalCulture > 0)
+		iCultureScore = iCulture * 100 / iGlobalCulture;
+	iLegendaryScore = 30 * iLegendaryCities;
+	iSpaceScore = 0;
+	//if (kGame.getStarshipLaunched(getID()))
+	if (hasSpaceshipArrived()) // karadoc
+		iSpaceScore += 100;
+
+	int iR = iWonderScore + iPopulationScore + iLandScore + iCultureScore +
+			iLegendaryScore + iReligionScore + iSpaceScore;
+	/*if (lGlobalPowerHistory > 0)
+		iR += safeIntCast<int>(lPowerHistory * 100 / lGlobalPowerHistory);*/
+	return iR;
+}
+
 
 int CvTeam::getAssets() const
 {

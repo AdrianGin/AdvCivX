@@ -374,6 +374,7 @@ protected:
 	{
 		base_t::addElements(kElements);
 		kElements.addInt(LandPercentLead, "LandPercentLead"); // advc.254
+		kElements.addBool(TotalVictory, "TotalVictory"); // mm.mastery
 	}
 public:
 	enum IntElementTypes
@@ -384,7 +385,18 @@ public:
 	int get(IntElementTypes e) const
 	{
 		return base_t::get(static_cast<base_t::IntElementTypes>(e));
-	} // </advc.tag>
+	}
+	enum BoolElementTypes
+	{
+		TotalVictory = CvXMLInfo::NUM_BOOL_ELEMENT_TYPES, // advc.254
+		NUM_BOOL_ELEMENT_TYPES
+	};
+	int get(BoolElementTypes e) const
+	{
+		return base_t::get(static_cast<base_t::BoolElementTypes>(e));
+	}
+	PY_IS_ELEMENT(TotalVictory);
+	// </advc.tag>
 
 	CvVictoryInfo();
 	// The const functions are exposed to Python ...
