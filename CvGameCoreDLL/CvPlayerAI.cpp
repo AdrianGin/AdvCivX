@@ -24854,13 +24854,20 @@ void CvPlayerAI::AI_updateVictoryWeights()
 {
 	if (getPersonalityType() == NO_LEADER)
 		return;
-	// <mm.mastery> Don't mess with the weights
+	// <mm.mastery>
 	if (GC.getGame().totalVictoryValid())
 	{
+		static int const iDefaultWeight = (
+				GC.getInfoTypeForString("LEADER_DEFAULTS") == NO_LEADER ? 30 :
+				GC.getInfo((LeaderHeadTypes)GC.getInfoTypeForString("LEADER_DEFAULTS")).
+				getSpaceVictoryWeight());
 		FOR_EACH_ENUM(Victory)
 		{
 			int iWeight;
 			AI_isVictoryValid(eLoopVictory, iWeight);
+			// Dilute with the default (for less focus)
+			iWeight += iDefaultWeight;
+			iWeight /= 2;
 			m_aiVictoryWeights.set(eLoopVictory, safeIntCast<short>(iWeight));
 		}
 		return;
