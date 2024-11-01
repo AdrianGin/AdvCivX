@@ -492,25 +492,19 @@ void CvGame::setStartTurnYear(int iTurn)
 		for (int i = 0; i < kSpeed.getNumTurnIncrements(); i++)
 			iEstimateEndTurn += kSpeed.getGameTurnInfo(i).iNumGameTurnsPerIncrement;
 		setEstimateEndTurn(iEstimateEndTurn);
-
 		if (getEstimateEndTurn() > getGameTurn())
 		{
-			bool bValid = false;
-			// <mm.mastery>
-			if (isMasteryVictoryValid())
-				bValid = true;
-			else // </mm.mastery>
 			FOR_EACH_ENUM(Victory)
 			{
 				if (isVictoryValid(eLoopVictory) &&
-					GC.getInfo(eLoopVictory).isEndScore())
+					(GC.getInfo(eLoopVictory).isEndScore() ||
+					// mm.mastery:
+					GC.getInfo(eLoopVictory).get(CvVictoryInfo::TotalVictory)))
 				{
-					bValid = true;
+					setMaxTurns(getEstimateEndTurn() - getGameTurn());
 					break;
 				}
-			}
-			if (bValid)
-				setMaxTurns(getEstimateEndTurn() - getGameTurn());
+			}	
 		}
 	}
 	else setEstimateEndTurn(getGameTurn() + getMaxTurns());
@@ -4139,6 +4133,51 @@ EraTypes CvGame::getCurrentEra() const
 	}
 	FAssert(iCount > 0); // advc
 	return NO_ERA;
+}
+
+// mm.mastery:
+void CvGame::reportGameEraChange(EraTypes eOldEra, EraTypes eCurrEra)
+{
+	if (eCurrEra == NO_ERA)
+		eCurrEra = getCurrentEra();
+	if (eCurrEra <= eOldEra || !isMasteryVictoryValid() ||
+		getGameState() == GAMESTATE_EXTENDED)
+	{
+		return;
+	}
+	int iCorrectionRatio = 100 * (eCurrEra - getStartEra()) /
+			std::max(1, GC.getNumEraInfos());
+	int iElapsedErasRatio = (100 * (eCurrEra - getStartEra()) + 50) /
+			std::max(1, GC.getNumEraInfos() - getStartEra());
+	int iElapsedTurnsRatio = 100 * getElapsedGameTurns() /
+			std::max(1, getEstimateEndTurn() - getStartTurn());
+	int iTurnsRemaining = getMaxTurns() - getElapsedGameTurns();
+	FAssert(iTurnsRemaining > 0);
+	{	// event message for testing
+		CvWString szMsg;
+		szMsg.Format(L"New era. era ratio: %d, turns ratio %d, correction ratio: %d", iElapsedErasRatio, iElapsedTurnsRatio, iCorrectionRatio);
+		gDLL->UI().addMessage(getActivePlayer(), false, GC.getEVENT_MESSAGE_TIME(), szMsg, "AS2D_GLOBALWARMING", MESSAGE_TYPE_MAJOR_EVENT, NULL, GC.getColorType("HIGHLIGHT_TEXT"));
+	}
+	if (iElapsedErasRatio > iElapsedTurnsRatio)
+	{
+		int iTrimmedTurns = iTurnsRemaining * iCorrectionRatio *
+				(iElapsedErasRatio - iElapsedTurnsRatio) / 10000;
+		// don't trim anywhere below 60 turns remaining.
+		iTrimmedTurns += std::min(0, iTurnsRemaining - iTrimmedTurns - 60);
+		if (iTrimmedTurns > 0)
+		{
+			changeMaxTurns(-iTrimmedTurns);
+			{	// event message for testing
+				CvWString szMsg;
+				szMsg.Format(L"Trimmed turn limit from %d to %d", getMaxTurns() + iTrimmedTurns, getMaxTurns());
+				gDLL->UI().addMessage(getActivePlayer(), false, GC.getEVENT_MESSAGE_TIME(), szMsg, "AS2D_GLOBALWARMING", MESSAGE_TYPE_MAJOR_EVENT, NULL, GC.getColorType("HIGHLIGHT_TEXT"));
+			}
+			/*	<f1rpo> To help the AI. I don't think updating AI caches is necessary
+				though; will happen soon enough. */
+			if (getMaxTurns() < getEstimateEndTurn())
+				setEstimateEndTurn(getMaxTurns()); // </f1rpo>
+		}
+	}
 }
 
 // advc:

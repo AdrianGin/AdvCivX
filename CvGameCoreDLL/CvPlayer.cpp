@@ -9278,13 +9278,21 @@ void CvPlayer::setPersonalityType(LeaderHeadTypes eNewValue)
 void CvPlayer::setCurrentEra(EraTypes eNewValue)
 {
 	if (getCurrentEra() == eNewValue)
-		return; // advc
+		return;
 
-	EraTypes eOldEra = m_eCurrentEra;
-	m_eCurrentEra = eNewValue;
+	CvGame& kGame = GC.getGame();
+	EraTypes const eOldEra = m_eCurrentEra;
+	{
+		EraTypes const eOldGameEra = kGame.getCurrentEra(); // mm.mastery
+		m_eCurrentEra = eNewValue;
+		// <mm.mastery>
+		EraTypes const eNewGameEra = kGame.getCurrentEra();
+		if (eOldGameEra != eNewGameEra)
+			kGame.reportGameEraChange(eOldGameEra, eNewGameEra); // </mm.mastery>
+	}
 	AI().AI_updateEraFactor(); // advc.erai
 
-	if (GC.getGame().getActiveTeam() != NO_TEAM)
+	if (kGame.getActiveTeam() != NO_TEAM)
 	{
 		CvMap const& kMap = GC.getMap();
 		for (int i = 0; i < kMap.numPlots(); i++)
@@ -9292,7 +9300,7 @@ void CvPlayer::setCurrentEra(EraTypes eNewValue)
 			CvPlot& kPlot = kMap.getPlotByIndex(i);
 			kPlot.updateGraphicEra();
 			if (kPlot.getRevealedImprovementType(
-				GC.getGame().getActiveTeam(), true) != NO_IMPROVEMENT)
+				kGame.getActiveTeam(), true) != NO_IMPROVEMENT)
 			{
 				if (kPlot.getOwner() == getID() ||
 					(!kPlot.isOwned() && isActive()))
@@ -9325,10 +9333,10 @@ void CvPlayer::setCurrentEra(EraTypes eNewValue)
 		GC.getPythonCaller()->callScreenFunction("updateCameraStartDistance");
 	}
 
-	if (isHuman() && getCurrentEra() != GC.getGame().getStartEra() &&
-		!GC.getGame().isNetworkMultiPlayer())
+	if (isHuman() && getCurrentEra() != kGame.getStartEra() &&
+		!kGame.isNetworkMultiPlayer())
 	{
-		if (GC.getGame().isFinalInitialized() && !gDLL->GetWorldBuilderMode())
+		if (kGame.isFinalInitialized() && !gDLL->GetWorldBuilderMode())
 		{
 			CvPopupInfo* pInfo = new CvPopupInfo(BUTTONPOPUP_PYTHON_SCREEN);
 			if (pInfo != NULL)
@@ -9343,11 +9351,11 @@ void CvPlayer::setCurrentEra(EraTypes eNewValue)
 	{
 		CvWString szBuffer = gDLL->getText("TXT_KEY_SOMEONE_ENTERED_ERA",
 				getNameKey(), GC.getInfo(eNewValue).getTextKeyWide());
-		GC.getGame().addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
+		kGame.addReplayMessage(REPLAY_MESSAGE_MAJOR_EVENT,
 				getID(), szBuffer, GC.getColorType("ALT_HIGHLIGHT_TEXT"));
 	} // </advc.106>
 	// <advc.106n> Save pre-Industrial minimap terrain for replay
-	if (GC.getGame().isFinalInitialized() &&
+	if (kGame.isFinalInitialized() &&
 		getCurrentEra() >= GC.getDefineINT("REPLAY_TEXTURE_ERA"))
 	{
 		CvMap& kMap = GC.getMap();

@@ -205,6 +205,7 @@ public:
 
 	bool canTrainNukes() const;																			// Exposed to Python
 	EraTypes getCurrentEra() const;																		// Exposed to Python
+	void reportGameEraChange(EraTypes eOldEra, EraTypes eCurrEra = NO_ERA); // mm.mastery
 	EraTypes getHighestEra() const; // advc
 	scaled groundbreakingNormalizationModifier(TechTypes eTech) const; // advc.groundbr
 
