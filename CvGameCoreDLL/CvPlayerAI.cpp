@@ -24003,6 +24003,7 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 		(cf. old code) */
 	int iEraThresholdPercent = 80 - (AI_getStrategyRand(1) % 2) * 20;
 	CvGameAI const& kGame = GC.AI_getGame();
+	bool const bMastery = kGame.totalVictoryValid(); // mm.mastery
 	int iLegendaryCulture = kGame.getCultureThreshold(
 			CvCultureLevelInfo::finalCultureLevel());
 	int iVictoryCities = kGame.culturalVictoryNumCultureCities();
@@ -24053,7 +24054,8 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 		}
 	}
 
-	if (iLegendaryCount >= iVictoryCities)
+	if (iLegendaryCount >= iVictoryCities &&
+		!(bMastery && kGame.getGameState() != GAMESTATE_EXTENDED)) // mm.mastery
 	{
 		/*	Already won, keep playing culture heavy but do some tech
 			to keep pace if human wants to keep playing */
@@ -24167,9 +24169,14 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 
 	int iWinningCountdown = MAX_INT;
 	if (((int)countdownList.size()) >= iVictoryCities && iVictoryCities > 0)
-	{
-		std::partial_sort(countdownList.begin(), countdownList.begin() +
-				iVictoryCities, countdownList.end());
+	{	// <mm.mastery>
+		if (bMastery)
+			std::sort(countdownList.begin(), countdownList.end());
+		else // </mm.mastery>
+		{
+			std::partial_sort(countdownList.begin(), countdownList.begin() +
+					iVictoryCities, countdownList.end());
+		}
 		iWinningCountdown = countdownList[iVictoryCities-1];
 	}
 	if (iCloseToLegendaryCount >= iVictoryCities ||
@@ -24192,6 +24199,29 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 		{
 			/*if (AI_cultureVictoryTechValue(getCurrentResearch()) < 100)
 				return 4;*/ // BtS
+			// <mm.mastery>
+			if (bMastery)
+			{
+				/*	work out how many legendary cities we should aim for.
+					(please excuse the arbitrary numbers used here) */
+				int const iTurnsRemaining = kGame.getEstimateEndTurn() - kGame.getGameTurn();
+				if (iTurnsRemaining > 0 && 3 * iTurnsRemaining < kGame.getMaxTurns())
+				{
+					int iTarget = 0;
+					for (int i = 0; i < (int)countdownList.size(); i++)
+					{
+						if (countdownList[i] < iTurnsRemaining - 10 &&
+							(i < iVictoryCities + iLegendaryCount ||
+							countdownList[i] - countdownList[iTarget] < 15))
+						{
+							iTarget = i;
+						}
+					}
+					if (iTurnsRemaining < countdownList[iTarget] + 12)
+						return 4;
+				}
+				return 3;
+			} // </mm.mastery>
 			// K-Mod. Do full culture if our winning countdown is below the countdown target.
 			/*  <advc.115> Was 180. Now set to the countdownThresh param if
 				it is provided, otherwise 115. */
