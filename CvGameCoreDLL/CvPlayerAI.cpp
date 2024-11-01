@@ -24885,19 +24885,40 @@ void CvPlayerAI::AI_updateVictoryWeights()
 	if (getPersonalityType() == NO_LEADER)
 		return;
 	// <mm.mastery>
-	if (GC.getGame().totalVictoryValid())
+	if (GC.getGame().totalVictoryValid() && isMajorCiv())
 	{
-		static int const iDefaultWeight = (
-				GC.getInfoTypeForString("LEADER_DEFAULTS") == NO_LEADER ? 30 :
-				GC.getInfo((LeaderHeadTypes)GC.getInfoTypeForString("LEADER_DEFAULTS")).
-				getSpaceVictoryWeight());
+		int iAvgPositiveWeight = 0;
+		int iDiv = 0;
+		FOR_EACH_ENUM(LeaderHead)
+		{
+			CvLeaderHeadInfo const& kLeader = GC.getInfo(eLoopLeaderHead);
+			int aiWeights[] = {
+					kLeader.getCultureVictoryWeight(),
+					kLeader.getSpaceVictoryWeight(),
+					kLeader.getConquestVictoryWeight(),
+					kLeader.getDominationVictoryWeight(),
+					kLeader.getDiplomacyVictoryWeight()
+			};
+			for (int i = 0; i < ARRAYSIZE(aiWeights); i++)
+			{
+				if (aiWeights[i] > 0)
+				{
+					iAvgPositiveWeight += kLeader.getCultureVictoryWeight();
+					iDiv++;
+				}
+			}
+		}
+		if (iDiv > 0)
+			iAvgPositiveWeight /= iDiv;
 		FOR_EACH_ENUM(Victory)
 		{
 			int iWeight;
 			AI_isVictoryValid(eLoopVictory, iWeight);
-			// Dilute with the default (for less focus)
-			iWeight += iDefaultWeight;
-			iWeight /= 2;
+			if (iWeight > 0)
+			{	// Move toward the average (for less focus)
+				iWeight += iAvgPositiveWeight;
+				iWeight /= 2;
+			}
 			m_aiVictoryWeights.set(eLoopVictory, safeIntCast<short>(iWeight));
 		}
 		return;
