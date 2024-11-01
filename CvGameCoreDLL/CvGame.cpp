@@ -5715,7 +5715,8 @@ bool CvGame::isProjectMaxedOut(ProjectTypes eProject, int iExtra) const
 // mm.mastery:
 int CvGame::countWorldWonders(bool bBuilt, PlayerTypes eBuilder) const
 {
-	FAssert(!bBuilt || eBuilder != NO_PLAYER);
+	//FAssert(!bBuilt || eBuilder != NO_PLAYER); // karadoc
+	FAssert(bBuilt || eBuilder == NO_PLAYER); // f1rpo (true and NO_PLAYER is fine)
 	int iR = 0;
 	if (eBuilder == NO_PLAYER || !bBuilt)
 	{
@@ -5730,18 +5731,19 @@ int CvGame::countWorldWonders(bool bBuilt, PlayerTypes eBuilder) const
 	}
 	else
 	{
-		for (PlayerIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
+		CvCivilization const& kCiv = GET_PLAYER(eBuilder).getCivilization();
+		for (int i = 0; i < kCiv.getNumBuildings(); i++)
 		{
-			FOR_EACH_CITY(pCity, *itPlayer)
+			if (!GC.getInfo(kCiv.buildingClassAt(i)).isWorldWonder())
+				continue;
+			// We want to include wonders of eBuilder that have been captured
+			for (PlayerIter<MAJOR_CIV,KNOWN_TO> itOwner(TEAMID(eBuilder));
+				itOwner.hasNext(); ++itOwner)
 			{
-				CvCivilization const& kCiv = GET_PLAYER(BARBARIAN_PLAYER).getCivilization();
-				for (int i = 0; i < kCiv.getNumBuildings(); i++)
+				FOR_EACH_CITY(pCity, *itOwner)
 				{
-					if (GC.getInfo(kCiv.buildingClassAt(i)).isWorldWonder() &&
-						pCity->getBuildingOriginalOwner(kCiv.buildingAt(i)) == eBuilder)
-					{
+					if (pCity->getBuildingOriginalOwner(kCiv.buildingAt(i)) == eBuilder)
 						iR += pCity->getNumRealBuilding(kCiv.buildingAt(i));
-					}
 				}
 			}
 		}

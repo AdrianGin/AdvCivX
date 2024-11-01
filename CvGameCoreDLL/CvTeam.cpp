@@ -1784,17 +1784,14 @@ int CvTeam::getTotalVictoryScore(
 		if (hasHolyCity(eLoopReligion))
 		{
 			int iReligionPercent = kGame.calculateReligionPercent(eLoopReligion);
-			if (iReligionPercent > iReligionScore)
-			{
-				//iReligionScore = iReligionPercent;
-				// f1rpo: Cumulative as per Matty's request
-				iReligionScore += iReligionPercent;
-			}
+			//iReligionScore = std::max(iReligionScore, iReligionPercent);
+			// f1rpo: Cumulative as per Matty's request
+			iReligionScore += iReligionPercent;
 		}
 	}
 	/*	f1rpo: Disabled at Matty's request
 		(also not exposing this component to Python) */
-	//long lGlobalPowerHistory = 0;
+	//long long lGlobalPowerHistory = 0;
 	/*	f1rpo: Only major civs (was all players), to be consistent with wonder counting.
 		(Could otherwise also use CvGame::getTotalPopulation.) */
 	for (PlayerIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
@@ -1804,7 +1801,7 @@ int CvTeam::getTotalVictoryScore(
 		/*for (int iTurn = 0; iTurn <= kGame.getGameTurn(); iTurn++)
 			lGlobalPowerHistory += itPlayer->getHistory(PLAYER_HISTORY_POWER, iTurn);*/
 	}
-	//long lPowerHistory = 0;
+	//long long lPowerHistory = 0;
 	for (MemberIter itMember(getID()); itMember.hasNext(); ++itMember)
 	{
 		iWonders += kGame.countWorldWonders(true, itMember->getID()); // karadoc

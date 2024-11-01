@@ -1423,14 +1423,17 @@ class CvVictoryScreen:
 					iTeamWonderScore = self.getTeamWonderScore(activePlayer.getTeam().getID())
 					if bBestKnown:
 						iRivalWonderScore = self.getTeamWonderScore(iBestTeam)
+					'''
 					#iTotalWorldWondersBuilt = gc.getPlayer(0).getSevoWondersScore(1)
 					#iTotalWorldWondersPossible = gc.getPlayer(0).getSevoWondersScore(2)
-					iTotalWorldWondersBuilt = gc.getGame().countWorldWonders(true, -1) # karadoc
-					'''
-					iTotalWorldWondersPossible = gc.getGame().countWorldWonders(False, -1) # karadoc
+					iTotalWorldWondersBuilt = gc.getGame().countWorldWonders(True, -1) # karadoc
+					#iTotalWorldWondersPossible = gc.getGame().countWorldWonders(False, -1) # karadoc
+					# f1rpo: Scoring is currently based on wonders possible; whereas total wonders built
+					# does not affect scoring.
+					iTotalWorldWondersPossible = iGlobalWonders
 					iRow = screen.appendTableRow(szTable)
 					screen.setTableText(szTable, 0, iRow, localText.getText("TXT_KEY_CONCEPT_WONDERS", ()), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
-					screen.setTableText(szTable, 1, iRow, u"%i  (%i " %(iOurWonders, iGlobalWonders) + localText.getText("TXT_KEY_OF_VCM", ()) + " %i " %(iTotalWorldWondersPossible)+ localText.getText("TXT_KEY_BUILT_VCM", ()) + ")", "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+					screen.setTableText(szTable, 1, iRow, u"%i  (%i " %(iOurWonders, iTotalWorldWondersBuilt) + localText.getText("TXT_KEY_OF_VCM", ()) + " %i " %(iTotalWorldWondersPossible)+ localText.getText("TXT_KEY_BUILT_VCM", ()) + ")", "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 					screen.setTableText(szTable, 2, iRow, u"%i" %iOurWonderScore, "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 					if bBestKnown:
 						screen.setTableText(szTable, 3, iRow, u"%i" %(iBestWonders), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
