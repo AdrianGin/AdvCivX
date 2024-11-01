@@ -923,8 +923,8 @@ public:
 	DllExport void cheatSpaceship() const;
 	DllExport VictoryTypes getSpaceVictory() const;
 	VictoryTypes getDominationVictory() const; // advc.115f
-	VictoryTypes getTotalVictory() const; // mm.mastery
-	bool totalVictoryValid() const; // mm.mastery
+	VictoryTypes getTotalVictory() const; // mm.mastery													// Exposed to Python
+	bool totalVictoryValid() const; // mm.mastery														// Exposed to Python
 	DllExport void nextActivePlayer(bool bForward);
 
 	// advc.003j (note): Isn't (and imo shouldn't be) used DLL-internally

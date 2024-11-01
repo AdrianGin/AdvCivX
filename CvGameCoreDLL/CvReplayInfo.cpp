@@ -270,9 +270,9 @@ void CvReplayInfo::appendSettingsMsg(CvWString& szSettings, PlayerTypes ePlayer)
 	szSettings += 
 			gDLL->getText("TXT_KEY_NAME_LEADER_CIV",
 			GC.getInfo(kPlayer.getLeaderType()).getTextKeyWide(),
-			kPlayer.getCivilizationShortDescriptionKey(), kPlayer.getReplayName()) + L"\n" +
+			kPlayer.getCivilizationShortDescriptionKey(), kPlayer.getReplayName()) + NEWLINE +
 			gDLL->getText("TXT_KEY_SETTINGS_DIFFICULTY",
-			GC.getInfo(getDifficulty()).getTextKeyWide()) + L"\n" +
+			GC.getInfo(getDifficulty()).getTextKeyWide()) + NEWLINE +
 			(bScenario ? szMapName : gDLL->getText("TXT_KEY_SIZE_MAP_WITH",
 			GC.getInfo(getWorldSize()).getTextKeyWide(),
 			getMapScriptName().GetCString()) + L" " +
@@ -305,23 +305,31 @@ void CvReplayInfo::appendSettingsMsg(CvWString& szSettings, PlayerTypes ePlayer)
 	if(kGame.isOption(GAMEOPTION_ADVANCED_START) && !kGame.isOption(GAMEOPTION_SPAH))
 	{
 		szSettings += gDLL->getText("TXT_KEY_ADVANCED_START_POINTS") + L" "
-				+ CvWString::format(L"%d", kGame.getNumAdvancedStartPoints()) + L"\n";
+				+ CvWString::format(L"%d", kGame.getNumAdvancedStartPoints()) + NEWLINE;
 	} // </advc.250b>
-	int iDisabled = 0;
-	for(int i = 0; i < GC.getNumVictoryInfos(); i++)
+	// <mm.mastery>
+	if (kGame.totalVictoryValid())
 	{
-		VictoryTypes eVictory = (VictoryTypes)i;
-		if(kGame.isVictoryValid(eVictory))
-			continue;
-		iDisabled++;
-		szSettings += GC.getInfo(eVictory).getDescription();
-		szSettings += L", ";
+		szSettings += GC.getInfo(kGame.getTotalVictory()).getDescription();
+		szSettings += NEWLINE;
 	}
-	if(iDisabled > 0)
+	else // </mm.mastery>
 	{
-		szSettings = szSettings.substr(0, szSettings.length() - 2) + L" "; // Drop the final comma
-		szSettings += gDLL->getText("TXT_KEY_VICTORY_DISABLED") + L"\n";
-	} // <advc.250b>
+		int iDisabled = 0;
+		FOR_EACH_ENUM2(Victory, eVictory)
+		{
+			if(kGame.isVictoryValid(eVictory))
+				continue;
+			iDisabled++;
+			szSettings += GC.getInfo(eVictory).getDescription();
+			szSettings += L", ";
+		}
+		if(iDisabled > 0)
+		{	// Drop the final comma
+			szSettings = szSettings.substr(0, szSettings.length() - 2) + L" ";
+			szSettings += gDLL->getText("TXT_KEY_VICTORY_DISABLED") + NEWLINE;
+		} // <advc.250b>
+	}
 	if(kGame.isOption(GAMEOPTION_SPAH))
 	{
 		// bTab=false b/c that's a bit too much indentation
@@ -346,7 +354,7 @@ void CvReplayInfo::appendSettingsMsg(CvWString& szSettings, PlayerTypes ePlayer)
 		szSettings += L", ";
 	}
 	if(iOptions > 0)
-		szSettings = szSettings.substr(0, szSettings.length() - 2) + L"\n";
+		szSettings = szSettings.substr(0, szSettings.length() - 2) + NEWLINE;
 	//CvWString szModName(GC.getModName().getName) // I'd like the prefix to be configurable
 	CvWString const szKey = "TXT_KEY_REPLAY_PREFIX";
 	CvWString szModName = gDLL->getText(szKey);

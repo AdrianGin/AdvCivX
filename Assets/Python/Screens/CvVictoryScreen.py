@@ -1070,9 +1070,13 @@ class CvVictoryScreen:
 				# </advc.300>
 				screen.appendListBoxStringNoUpdate(szOptionsTable, szDescr, WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 		# <advc.190a> Disabled victory conditions. Some overlap with CvReplayInfo::addSettingsMsg
-		for i in range(gc.getNumVictoryInfos()):
-			if not g.isVictoryValid(i):
-				screen.appendListBoxStringNoUpdate(szOptionsTable, gc.getVictoryInfo(i).getDescription() + " " + localText.getText("TXT_KEY_VICTORY_DISABLED",()), WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+		# <mm.mastery>
+		if g.totalVictoryValid():
+			screen.appendListBoxStringNoUpdate(szOptionsTable, gc.getVictoryInfo(g.getTotalVictory()).getDescription(), WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+		else: # </mm.mastery>
+			for i in range(gc.getNumVictoryInfos()):
+				if not g.isVictoryValid(i):
+					screen.appendListBoxStringNoUpdate(szOptionsTable, gc.getVictoryInfo(i).getDescription() + " " + localText.getText("TXT_KEY_VICTORY_DISABLED",()), WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 		# </advc.190a>
 
 		# <advc.104> AI settings
