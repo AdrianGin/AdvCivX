@@ -877,7 +877,7 @@ public:
 	BuildingTypes getShrineBuilding(int eIndex, ReligionTypes eReligion = NO_RELIGION);
 	void changeShrineBuilding(BuildingTypes eBuilding, ReligionTypes eReligion, bool bRemove = false);*/
 
-	bool culturalVictoryValid() const
+	bool isCulturalVictoryValid() const
 	{	// (advc, note: Important not to call culturalVictoryNumCultureCities here.)
 		return (m_iNumCultureVictoryCities > 0);
 	}
@@ -923,8 +923,8 @@ public:
 	DllExport void cheatSpaceship() const;
 	DllExport VictoryTypes getSpaceVictory() const;
 	VictoryTypes getDominationVictory() const; // advc.115f
-	VictoryTypes getTotalVictory() const; // mm.mastery													// Exposed to Python
-	bool totalVictoryValid() const; // mm.mastery														// Exposed to Python
+	VictoryTypes getMasteryVictory() const; // mm.mastery												// Exposed to Python
+	bool isMasteryVictoryValid() const; // mm.mastery													// Exposed to Python
 	DllExport void nextActivePlayer(bool bForward);
 
 	// advc.003j (note): Isn't (and imo shouldn't be) used DLL-internally

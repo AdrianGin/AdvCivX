@@ -280,8 +280,8 @@ void CyGamePythonInterface()
 		.def("isEventActive", &CyGame::isEventActive, "bool (int /*EventTriggerTypes*/ eTrigger)")
 		.def("doControl", &CyGame::doControl, "void (int /*ControlTypes*/ iControl)")
 		// <mm.mastery>
-		.def("getTotalVictory", &CyGame::getTotalVictory, "bool ()")
-		.def("totalVictoryValid", &CyGame::totalVictoryValid, "bool ()") // </mm.mastery>
+		.def("getMasteryVictory", &CyGame::getMasteryVictory, "int /*VictoryTypes*/ ()")
+		.def("isMasteryVictoryValid", &CyGame::isMasteryVictoryValid, "bool ()") // </mm.mastery>
 		// advc.095:
 		.def("setCityBarWidth", &CyGame::setCityBarWidth, "void (bool)")
 		// BULL - AutoSave:

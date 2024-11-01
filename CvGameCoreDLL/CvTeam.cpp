@@ -1750,7 +1750,7 @@ bool CvTeam::canSignDefensivePact(TeamTypes eTeam) /* advc: */ const
 
 /*	mm.mastery: Mastery victory scoring system, written by Sevo, edited by karadoc
 	(and by f1rpo). */
-int CvTeam::getTotalVictoryScore(
+int CvTeam::getMasteryScore(
 	// f1rpo: Expose the score components to Python (out-parameters)
 	int* piCulture, int* piGlobalCulture, int* piCultureScore,
 	int* piPopulation, int* piGlobalPopulation, int* piPopulationScore,

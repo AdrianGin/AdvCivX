@@ -80,10 +80,10 @@ void RiseFall::init() {
 		}
 	}
 	// <mm.mastery>
-	if (g.totalVictoryValid())
+	if (g.isMasteryVictoryValid())
 	{
 		shutOff(gDLL->getText("TXT_KEY_RF_INVALID_OPTION",
-					GC.getInfo(g.getTotalVictory()).getDescription()));
+					GC.getInfo(g.getMasteryVictory()).getDescription()));
 	} // </mm.mastery>
 	int maxChapters = GC.getDefineINT("RF_CHAPTERS_BASE");
 	CvGameSpeedInfo& speed = GC.getInfo(g.getGameSpeedType());

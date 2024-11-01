@@ -2452,7 +2452,7 @@ void CvPlayerAI::AI_updateCommerceWeights()
 	// Use culture slider to decide whether a human player is going for cultural victory
 	bool const bUseCultureRank = ((AI_atVictoryStage(AI_VICTORY_CULTURE2) ||
 			getCommercePercent(COMMERCE_CULTURE) >= 40) &&
-			kGame.culturalVictoryValid()); // advc.001
+			kGame.isCulturalVictoryValid()); // advc.001
 	bool const bC3 = ((AI_atVictoryStage(AI_VICTORY_CULTURE3) ||
 			getCommercePercent(COMMERCE_CULTURE) >= 70) &&
 			bUseCultureRank); // advc.001
@@ -24003,7 +24003,7 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 		(cf. old code) */
 	int iEraThresholdPercent = 80 - (AI_getStrategyRand(1) % 2) * 20;
 	CvGameAI const& kGame = GC.AI_getGame();
-	bool const bMastery = kGame.totalVictoryValid(); // mm.mastery
+	bool const bMastery = kGame.isMasteryVictoryValid(); // mm.mastery
 	int iLegendaryCulture = kGame.getCultureThreshold(
 			CvCultureLevelInfo::finalCultureLevel());
 	int iVictoryCities = kGame.culturalVictoryNumCultureCities();
@@ -24885,7 +24885,7 @@ void CvPlayerAI::AI_updateVictoryWeights()
 	if (getPersonalityType() == NO_LEADER)
 		return;
 	// <mm.mastery>
-	if (GC.getGame().totalVictoryValid() && isMajorCiv())
+	if (GC.getGame().isMasteryVictoryValid() && isMajorCiv())
 	{
 		int iAvgPositiveWeight = 0;
 		int iDiv = 0;
@@ -24974,7 +24974,7 @@ bool CvPlayerAI::AI_isVictoryValid(VictoryTypes eVictory, int& iWeight) const
 	{	/*	(Would be cleaner to replace these 5 getters with a single one
 			that takes a VictoryTypes param.) */
 		iWeight = (bHuman ? iHumanWeight : kPersonality.getCultureVictoryWeight());
-		if (!kGame.culturalVictoryValid())
+		if (!kGame.isCulturalVictoryValid())
 			return false;
 		if (bCheckBBAIDefine && 
 			!GC.getDefineBOOL("BBAI_VICTORY_STRATEGY_CULTURE"))

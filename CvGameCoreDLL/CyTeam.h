@@ -32,8 +32,8 @@ public:
 	void signOpenBorders(int /*TeamTypes*/ eTeam);
 	void signDefensivePact(int /*TeamTypes*/ eTeam);
 
-	int getTotalVictoryScore(); // mm.mastery
-	python::tuple getTotalVictoryScoreComponents(); // mm.mastery
+	int getMasteryScore(); // mm.mastery
+	python::tuple getMasteryScoreComponents(); // mm.mastery
 	int getAssets();
 	int getPower(bool bIncludeVassals);
 	int getDefensivePower();

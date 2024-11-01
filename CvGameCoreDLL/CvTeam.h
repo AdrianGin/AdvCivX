@@ -84,7 +84,7 @@ public:
 	void signDefensivePact(TeamTypes eTeam, /* advc.032: */ bool bProlong = false);																			// Exposed to Python
 	bool canSignDefensivePact(TeamTypes eTeam) /* advc: */ const;
 
-	int getTotalVictoryScore(
+	int getMasteryScore(
 			int* piCulture = NULL, int* piGlobalCulture = NULL, int* piCultureScore = NULL,
 			int* piPopulation = NULL, int* piGlobalPopulation = NULL, int* piPopulationScore = NULL,
 			int* piLandOwned = NULL, int* piGlobalLand = NULL, int* piLandScore = NULL,

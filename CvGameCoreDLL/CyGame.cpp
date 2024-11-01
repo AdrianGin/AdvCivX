@@ -1142,14 +1142,14 @@ void CyGame::doControl(int iControl)
 	m_kGame.doControl((ControlTypes) iControl);
 }
 // <mm.mastery>
-int CyGame::getTotalVictory()
+int CyGame::getMasteryVictory()
 {
-	return m_kGame.getTotalVictory();
+	return m_kGame.getMasteryVictory();
 }
 
-bool CyGame::totalVictoryValid()
+bool CyGame::isMasteryVictoryValid()
 {
-	return m_kGame.totalVictoryValid();
+	return m_kGame.isMasteryVictoryValid();
 } // </mm.mastery>
 // advc.095:
 void CyGame::setCityBarWidth(bool bWide)

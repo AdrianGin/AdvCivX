@@ -308,9 +308,9 @@ void CvReplayInfo::appendSettingsMsg(CvWString& szSettings, PlayerTypes ePlayer)
 				+ CvWString::format(L"%d", kGame.getNumAdvancedStartPoints()) + NEWLINE;
 	} // </advc.250b>
 	// <mm.mastery>
-	if (kGame.totalVictoryValid())
+	if (kGame.isMasteryVictoryValid())
 	{
-		szSettings += GC.getInfo(kGame.getTotalVictory()).getDescription();
+		szSettings += GC.getInfo(kGame.getMasteryVictory()).getDescription();
 		szSettings += NEWLINE;
 	}
 	else // </mm.mastery>

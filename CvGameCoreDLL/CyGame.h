@@ -287,8 +287,8 @@ public:
 
 	void doControl(int iControl);
 
-	int /*VictoryTypes*/ getTotalVictory(); // mm.mastery
-	bool totalVictoryValid(); // mm.mastery
+	int /*VictoryTypes*/ getMasteryVictory(); // mm.mastery
+	bool isMasteryVictoryValid(); // mm.mastery
 	void setCityBarWidth(bool bWide); // advc.095
 	void saveGame(std::string szFileName); // BULL - AutoSave
 	bool useKModAI(); // advc.104

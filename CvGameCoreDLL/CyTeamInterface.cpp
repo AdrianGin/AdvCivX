@@ -30,8 +30,8 @@ void CyTeamPythonInterface()
 		.def("signDefensivePact", &CyTeam::signDefensivePact, "void (int /*TeamTypes*/ eTeam)")
 
 		// <mm.mastery>
-		.def("getTotalVictoryScore", &CyTeam::getTotalVictoryScore, "int ()")
-		.def("getTotalVictoryScoreComponents", &CyTeam::getTotalVictoryScoreComponents, "tuple-of-15-int ()")
+		.def("getMasteryScore", &CyTeam::getMasteryScore, "int ()")
+		.def("getMasteryScoreComponents", &CyTeam::getMasteryScoreComponents, "tuple-of-15-int ()")
 		// </mm.mastery>
 		.def("getAssets", &CyTeam::getAssets, "int ()")
 		.def("getPower", &CyTeam::getPower, "int (bool bIncludeVassals)")

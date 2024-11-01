@@ -1071,8 +1071,8 @@ class CvVictoryScreen:
 				screen.appendListBoxStringNoUpdate(szOptionsTable, szDescr, WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 		# <advc.190a> Disabled victory conditions. Some overlap with CvReplayInfo::addSettingsMsg
 		# <mm.mastery>
-		if g.totalVictoryValid():
-			screen.appendListBoxStringNoUpdate(szOptionsTable, gc.getVictoryInfo(g.getTotalVictory()).getDescription(), WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+		if g.isMasteryVictoryValid():
+			screen.appendListBoxStringNoUpdate(szOptionsTable, gc.getVictoryInfo(g.getMasteryVictory()).getDescription(), WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 		else: # </mm.mastery>
 			for i in range(gc.getNumVictoryInfos()):
 				if not g.isVictoryValid(i):
@@ -1319,7 +1319,7 @@ class CvVictoryScreen:
 		for iTeam in range(gc.getMAX_CIV_TEAMS()):
 			t = gc.getTeam(iTeam)
 			if t.isAlive() and not t.isMinorCiv() and iTeam != iActiveTeam:
-				iScore = t.getTotalVictoryScore()
+				iScore = t.getMasteryScore()
 				if (iScore > iBestTeamScore):
 					iBestTeamScore = iScore
 					iBestTeam = iTeam
@@ -1327,10 +1327,10 @@ class CvVictoryScreen:
 		# (I see that karadoc had later also corrected this.)
 		bBestKnown = (iBestTeam != TeamTypes.NO_TEAM and gc.getTeam(iBestTeam).isHasMet(iActiveTeam))
 		# f1rpo: Get most of the score components from the DLL rather than
-		# largely reimplementing CvTeam::getTotalVictoryScore here
-		(iOurCulture, iGlobalCulture, iOurCultureScore, iOurPopulation, iGlobalPopulation, iOurPopulationScore, iOurLand, iGlobalLand, iOurLandScore, iOurWonders, iGlobalWonders, iOurWonderScore, iOurLegendaryCities, iOurLegendaryScore, iOurSpaceScore) = gc.getTeam(iActiveTeam).getTotalVictoryScoreComponents()
-		(iBestCulture, iGlobalCulture, iBestCultureScore, iBestPopulation, iGlobalPopulation, iBestPopulationScore, iBestLand, iGlobalLand, iBestLandScore, iBestWonders, iGlobalWonders, iBestWonderScore, iBestLegendaryCities, iBestLegendaryScore, iBestSpaceScore) = gc.getTeam(iActiveTeam).getTotalVictoryScoreComponents()
-		iOurScore = gc.getTeam(iActiveTeam).getTotalVictoryScore()
+		# largely reimplementing CvTeam::getMasteryScore here
+		(iOurCulture, iGlobalCulture, iOurCultureScore, iOurPopulation, iGlobalPopulation, iOurPopulationScore, iOurLand, iGlobalLand, iOurLandScore, iOurWonders, iGlobalWonders, iOurWonderScore, iOurLegendaryCities, iOurLegendaryScore, iOurSpaceScore) = gc.getTeam(iActiveTeam).getMasteryScoreComponents()
+		(iBestCulture, iGlobalCulture, iBestCultureScore, iBestPopulation, iGlobalPopulation, iBestPopulationScore, iBestLand, iGlobalLand, iBestLandScore, iBestWonders, iGlobalWonders, iBestWonderScore, iBestLegendaryCities, iBestLegendaryScore, iBestSpaceScore) = gc.getTeam(iActiveTeam).getMasteryScoreComponents()
+		iOurScore = gc.getTeam(iActiveTeam).getMasteryScore()
 		# Power History
 		# f1rpo: Disabled at Matty's request
 		'''
@@ -1556,7 +1556,7 @@ class CvVictoryScreen:
 							if (iLoopTeam != iActiveTeam and iLoopTeam != iBestTeam and activePlayer.getTeam().isHasMet(iLoopTeam) or gc.getGame().isDebugMode()):
 								iRow = screen.appendTableRow(szTable)
 								screen.setTableText(szTable, 0, iRow, u"<font=3b>" + icurrent + ":" + u"</font>", "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
-								screen.setTableText(szTable, 1, iRow, u"<font=3b>" + str(gc.getTeam(iLoopTeam).getTotalVictoryScore()) + u"</font>", "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+								screen.setTableText(szTable, 1, iRow, u"<font=3b>" + str(gc.getTeam(iLoopTeam).getMasteryScore()) + u"</font>", "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 				# civ picker dropdown
 					if (CyGame().isDebugMode()):
 						self.szDropdownName = self.DEBUG_DROPDOWN_ID

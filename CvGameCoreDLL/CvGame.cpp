@@ -473,7 +473,7 @@ void CvGame::setStartTurnYear(int iTurn)
 
 	setStartTurn(getGameTurn());
 	// <mm.mastery>
-	if (totalVictoryValid())
+	if (isMasteryVictoryValid())
 	{
 		FOR_EACH_ENUM(Victory)
 			setVictoryValid(eLoopVictory, true);
@@ -490,7 +490,7 @@ void CvGame::setStartTurnYear(int iTurn)
 		{
 			bool bValid = false;
 			// <mm.mastery>
-			if (totalVictoryValid())
+			if (isMasteryVictoryValid())
 				bValid = true;
 			else // </mm.mastery>
 			FOR_EACH_ENUM(Victory)
@@ -3601,7 +3601,7 @@ VictoryTypes CvGame::getDominationVictory() const
 }
 
 // <mm.mastery> (Helper functions added by f1rpo)
-VictoryTypes CvGame::getTotalVictory() const
+VictoryTypes CvGame::getMasteryVictory() const
 {
 	FOR_EACH_ENUM(Victory)
 	{
@@ -3612,10 +3612,10 @@ VictoryTypes CvGame::getTotalVictory() const
 }
 
 
-bool CvGame::totalVictoryValid() const
+bool CvGame::isMasteryVictoryValid() const
 {
-	VictoryTypes const eTotal = getTotalVictory();
-	return (eTotal != NO_VICTORY && isVictoryValid(eTotal));
+	VictoryTypes const eMastery = getMasteryVictory();
+	return (eMastery != NO_VICTORY && isVictoryValid(eMastery));
 } // </mm.mastery>
 
 // advc: Moved from CvGameInterface.cpp
@@ -8232,7 +8232,7 @@ void CvGame::testVictory()
 		}
 	}
 	// <mm.mastery> (based on code by Sevo)
-	if (totalVictoryValid())
+	if (isMasteryVictoryValid())
 	{
 		// Sorry, folks, no winners today by usual means, only Mastery achievable.
 		aeeWinners.clear();
@@ -8241,13 +8241,13 @@ void CvGame::testVictory()
 			int iBestScore = 0;
 			for (TeamIter<MAJOR_CIV> itTeam; itTeam.hasNext(); ++itTeam)
 			{
-				int iScore = itTeam->getTotalVictoryScore();
+				int iScore = itTeam->getMasteryScore();
 				if (iScore < iBestScore)
 					continue;
 				if (iScore > iBestScore)
 					aeeWinners.clear();
 				iBestScore = iScore;
-				aeeWinners.push_back(std::make_pair(itTeam->getID(), getTotalVictory()));
+				aeeWinners.push_back(std::make_pair(itTeam->getID(), getMasteryVictory()));
 			}
 		}
 	} // </mm.mastery>
@@ -9878,14 +9878,14 @@ int CvGame::culturalVictoryNumCultureCities() const
 {
 	//return m_iNumCultureVictoryCities;
 	/*	advc.001: Easier to return infinity here than to ensure that all
-		call locations check for culturalVictoryValid */
-	return (culturalVictoryValid() ? m_iNumCultureVictoryCities : CULT_VICT_CITY_TRESH_INFINITE);
+		call locations check for isCulturalVictoryValid */
+	return (isCulturalVictoryValid() ? m_iNumCultureVictoryCities : CULT_VICT_CITY_TRESH_INFINITE);
 }
 
 
 CultureLevelTypes CvGame::culturalVictoryCultureLevel() const
 {
-	return (culturalVictoryValid() ? m_eCultureVictoryCultureLevel : NO_CULTURELEVEL);
+	return (isCulturalVictoryValid() ? m_eCultureVictoryCultureLevel : NO_CULTURELEVEL);
 }
 
 

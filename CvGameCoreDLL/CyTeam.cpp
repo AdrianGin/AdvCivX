@@ -89,13 +89,13 @@ void CyTeam::signDefensivePact(int /*TeamTypes*/ eTeam)
 }
 
 // <mm.mastery>
-int CyTeam::getTotalVictoryScore()
+int CyTeam::getMasteryScore()
 {
 	return (m_pTeam == NULL ? -1 :
-			m_pTeam->getTotalVictoryScore());
+			m_pTeam->getMasteryScore());
 }
 // f1rpo: 15-valued tuple (excluding the actual score total)
-python::tuple CyTeam::getTotalVictoryScoreComponents()
+python::tuple CyTeam::getMasteryScoreComponents()
 {
 	int iCulture = 0, iGlobalCulture = 0, iCultureScore = 0,
 			iPopulation = 0, iGlobalPopulation = 0, iPopulationScore = 0,
@@ -104,7 +104,7 @@ python::tuple CyTeam::getTotalVictoryScoreComponents()
 			iLegendaryCities = 0, iLegendaryScore = 0, iSpaceScore = 0;
 	if (m_pTeam != NULL)
 	{
-		m_pTeam->getTotalVictoryScore(
+		m_pTeam->getMasteryScore(
 			&iCulture, &iGlobalCulture, &iCultureScore,
 			&iPopulation, &iGlobalPopulation, &iPopulationScore,
 			&iLandOwned, &iGlobalLand, &iLandScore,
