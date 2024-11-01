@@ -24219,6 +24219,8 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 					}
 					if (iTurnsRemaining < countdownList[iTarget] + 12)
 						return 4;
+					if (iTarget <= iLegendaryCount)
+						return 1; // doesn't look like we're going to get another
 				}
 				return 3;
 			} // </mm.mastery>
@@ -25048,6 +25050,7 @@ void CvPlayerAI::AI_updateVictoryStageHash()
 	}
 	//bool bStartedOtherLevel3 = false;
 	bool bStartedOtherLevel4 = false;
+	bool const bMastery = GC.getGame().isMasteryVictoryValid(); // mm.mastery
 
 	// Space victory
 	int iVictoryStage = AI_calculateSpaceVictoryStage();
@@ -25062,7 +25065,7 @@ void CvPlayerAI::AI_updateVictoryStageHash()
 				//bStartedOtherLevel3 = true;
 				m_eVictoryStageHash |= AI_VICTORY_SPACE3;
 
-				if (iVictoryStage > 3 && !bStartedOtherLevel4)
+				if (iVictoryStage > 3 && (!bStartedOtherLevel4 || bMastery))
 				{
 					bStartedOtherLevel4 = true;
 					m_eVictoryStageHash |= AI_VICTORY_SPACE4;
@@ -25084,7 +25087,7 @@ void CvPlayerAI::AI_updateVictoryStageHash()
 				//bStartedOtherLevel3 = true;
 				m_eVictoryStageHash |= AI_VICTORY_CONQUEST3;
 
-				if (iVictoryStage > 3 && !bStartedOtherLevel4)
+				if (iVictoryStage > 3 && (!bStartedOtherLevel4 || bMastery))
 				{
 					bStartedOtherLevel4 = true;
 					m_eVictoryStageHash |= AI_VICTORY_CONQUEST4;
@@ -25106,7 +25109,7 @@ void CvPlayerAI::AI_updateVictoryStageHash()
 				//bStartedOtherLevel3 = true;
 				m_eVictoryStageHash |= AI_VICTORY_DOMINATION3;
 
-				if (iVictoryStage > 3 && !bStartedOtherLevel4)
+				if (iVictoryStage > 3 && (!bStartedOtherLevel4 || bMastery))
 				{
 					bStartedOtherLevel4 = true;
 					m_eVictoryStageHash |= AI_VICTORY_DOMINATION4;
