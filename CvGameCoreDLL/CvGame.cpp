@@ -8232,21 +8232,23 @@ void CvGame::testVictory()
 		}
 	}
 	// <mm.mastery> (based on code by Sevo)
-	if (getMaxTurns() != 0 && getElapsedGameTurns() >= getMaxTurns() &&
-		totalVictoryValid())
+	if (totalVictoryValid())
 	{
 		// Sorry, folks, no winners today by usual means, only Mastery achievable.
 		aeeWinners.clear();
-		int iBestScore = 0;
-		for (TeamIter<MAJOR_CIV> itTeam; itTeam.hasNext(); ++itTeam)
+		if (getMaxTurns() != 0 && getElapsedGameTurns() >= getMaxTurns())
 		{
-			int iScore = itTeam->getTotalVictoryScore();
-			if (iScore < iBestScore)
-				continue;
-			if (iScore > iBestScore)
-				aeeWinners.clear();
-			iBestScore = iScore;
-			aeeWinners.push_back(std::make_pair(itTeam->getID(), getTotalVictory()));					
+			int iBestScore = 0;
+			for (TeamIter<MAJOR_CIV> itTeam; itTeam.hasNext(); ++itTeam)
+			{
+				int iScore = itTeam->getTotalVictoryScore();
+				if (iScore < iBestScore)
+					continue;
+				if (iScore > iBestScore)
+					aeeWinners.clear();
+				iBestScore = iScore;
+				aeeWinners.push_back(std::make_pair(itTeam->getID(), getTotalVictory()));
+			}
 		}
 	} // </mm.mastery>
 	if (aeeWinners.size() > 0)

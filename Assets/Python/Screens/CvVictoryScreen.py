@@ -1320,6 +1320,7 @@ class CvVictoryScreen:
 					iBestTeamScore = iScore
 					iBestTeam = iTeam
 		# f1rpo: Had been using hasMetHuman - incorrect in MP.
+		# (I see that karadoc had later also corrected this.)
 		bBestKnown = (iBestTeam != TeamTypes.NO_TEAM and gc.getTeam(iBestTeam).isHasMet(iActiveTeam))
 		# f1rpo: Get most of the score components from the DLL rather than
 		# largely reimplementing CvTeam::getTotalVictoryScore here
@@ -1499,19 +1500,20 @@ class CvVictoryScreen:
 					iRow = screen.appendTableRow(szTable)
 					screen.setTableText(szTable, 0, iRow, localText.getText("TXT_KEY_CONCEPT_SPACESHIP", ()), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 					if bBestKnown:
-						iRivalLaunched = gc.getTeam(iBestTeam).hasSpaceshipArrived()
+						bRivalLaunched = self.teamLaunchedShip(iBestTeam)
 					iNeedParts = 0
-					if gc.getTeam(iActiveTeam).hasSpaceshipArrived():
+					if self.teamLaunchedShip(iActiveTeam):
 						screen.setTableText(szTable, 1, iRow, localText.getText("TXT_KEY_VICTORY_SCREEN_LAUNCHED", ()), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 						screen.setTableText(szTable, 2, iRow, u"%i" %(100), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 					else:
 						screen.setTableText(szTable, 1, iRow, localText.getText("TXT_KEY_VICTORY_SCREEN_NOTLAUNCHED", ()), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 						if (activePlayer.getTeam().getProjectCount(gc.getInfoTypeForString("PROJECT_APOLLO_PROGRAM")) > 0 ):
 							iNeedParts = 1
-					if (bBestKnown and (iRivalLaunched == 1)):
-						screen.setTableText(szTable, 3, iRow, u"%s" %(localText.getText("TXT_KEY_VICTORY_SCREEN_LAUNCHED", ())), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
-					elif bBestKnown:
-						screen.setTableText(szTable, 3, iRow, localText.getText("TXT_KEY_VICTORY_SCREEN_NOTLAUNCHED", ()), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+					if bBestKnown:
+						if bRivalLaunched:
+							screen.setTableText(szTable, 3, iRow, u"%s" %(localText.getText("TXT_KEY_VICTORY_SCREEN_LAUNCHED", ())), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
+						else:
+							screen.setTableText(szTable, 3, iRow, localText.getText("TXT_KEY_VICTORY_SCREEN_NOTLAUNCHED", ()), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 					#add spaceship button
 					iSpaceshipButtonRow = screen.getTableNumRows(szTable)
 					screen.appendTableRow(szTable)
@@ -1527,9 +1529,9 @@ class CvVictoryScreen:
 											screen.setTableText(szTable, 0, iRow, localText.getText("TXT_KEY_VICTORY_SCREEN_BUILDING2", (gc.getProjectInfo(i).getVictoryMinThreshold(iL), gc.getProjectInfo(i).getVictoryThreshold(iL), gc.getProjectInfo(i).getTextKey())), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_RIGHT_JUSTIFY)
 										else:
 											screen.setTableText(szTable, 0, iRow, localText.getText("TXT_KEY_VICTORY_SCREEN_BUILDING", (gc.getProjectInfo(i).getVictoryThreshold(iL), gc.getProjectInfo(i).getTextKey())), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_RIGHT_JUSTIFY)
-										if gc.getTeam(iActiveTeam).hasSpaceshipArrived():
+										if not self.teamLaunchedShip(iActiveTeam):
 											screen.setTableText(szTable, 1, iRow, str(activePlayer.getTeam().getProjectCount(i)), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
-										if bBestKnown and gc.getTeam(iBestTeam).hasSpaceshipArrived():
+										if bBestKnown and not self.teamLaunchedShip(iBestTeam):
 											screen.setTableText(szTable, 3, iRow, str(gc.getTeam(iBestTeam).getProjectCount(i)), "", WidgetTypes.WIDGET_GENERAL, -1, -1, CvUtil.FONT_LEFT_JUSTIFY)
 				# Score Totals
 					iRow = screen.appendTableRow(szTable)
@@ -2056,6 +2058,7 @@ class CvVictoryScreen:
 				if (gc.getPlayer(iLoopPlayer).getTeam() == teamID):
 					teamCulture += gc.getPlayer(iLoopPlayer).countTotalCulture()
 		return teamCulture
+	'''
 	def teamLaunchedShip(self, teamID):
 		# for iLoopPlayer in range(gc.getMAX_CIV_PLAYERS()):
 			# if (gc.getPlayer(iLoopPlayer).isAlive() and not gc.getPlayer(iLoopPlayer).isMinorCiv() and not gc.getPlayer(iLoopPlayer).isBarbarian()):
@@ -2063,10 +2066,20 @@ class CvVictoryScreen:
 					# if (gc.getGame().getStarshipLaunched(iLoopPlayer)):
 						# return 1
 		# return -1
-		# Karadoc version
-		return gc.getTeam(teamID).hasSpaceshipArrived()
-		# end
-	'''
+		# karadoc's first version
+		#return gc.getTeam(teamID).hasSpaceshipArrived()
+		# karadoc's 2nd version
+		# f1rpo: Should still test for arrival, I think.
+		if gc.getTeam(teamID).hasSpaceshipArrived():
+			return True
+		for iProject in range(gc.getNumProjectInfos()):
+			if gc.getProjectInfo(iProject).isSpaceship():
+				eVictory = gc.getProjectInfo(iProject).getVictoryPrereq()
+				if eVictory >= 0:
+					# f1rpo: Replacing getVictoryDelay
+					return gc.getTeam(teamID).getVictoryCountdown(eVictory) >= 0
+
+		return False
 
 # BUG Additions Start
 	def getVotesForWhichCandidate(self, iPlayer, iCand1, iCand2, iVote):
