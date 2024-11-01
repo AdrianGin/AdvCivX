@@ -2492,6 +2492,8 @@ void CvPlayerAI::AI_updateCommerceWeights()
 	/*	advc.001: Seems that karadoc hadn't thought of exceeding the end turn.
 		Perhaps no real problem, but causes an assertion to fail. */
 	int const iGameTurn = std::min(iEndTurn, kGame.getGameTurn());
+	int iLegendaryCities = 0; // mm.mastery
+	bool const bMastery = kGame.isMasteryVictoryValid(); // mm.mastery
 	FAssert(city_countdown_list.size() == getNumCities());
 	for (size_t i = 0; i < city_countdown_list.size(); i++)
 	{
@@ -2513,10 +2515,17 @@ void CvPlayerAI::AI_updateCommerceWeights()
 		if (pCity->getCulture(getID()) >= iLegendaryCulture)
 		{
 			iWeight /= 10;
+			iLegendaryCities++; // mm.mastery
 		}
 		else if (bUseCultureRank)
 		{
-			int iCultureRateRank = i+1; // an alias, used for clarity.
+			int iCultureRateRank = i + 1; // an alias, used for clarity.
+			// <mm.mastery>
+			if (bMastery)
+			{
+				iCultureRateRank -= iLegendaryCities;
+				FAssert(iCultureRateRank > 0); // f1rpo: i>0 in MMod - sounds wrong.
+			} // </mm.mastery>
 			// if one of the currently best cities, then focus hard
 			if (iCultureRateRank <= iVictoryCities)
 			{
