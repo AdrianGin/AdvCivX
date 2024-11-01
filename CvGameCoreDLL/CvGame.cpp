@@ -476,7 +476,14 @@ void CvGame::setStartTurnYear(int iTurn)
 	if (isMasteryVictoryValid())
 	{
 		FOR_EACH_ENUM(Victory)
-			setVictoryValid(eLoopVictory, true);
+		{
+			if (eLoopVictory != getMasteryVictory())
+			{
+				setVictoryValid(eLoopVictory, //true
+						// f1rpo: Don't think (playing for) Diplo makes sense
+						!GC.getInfo(eLoopVictory).isDiploVote());
+			}
+		}
 	} // </mm.mastery>
 
 	if (getMaxTurns() == 0 /* advc.250c: */ || iTurn > 0)
