@@ -470,30 +470,24 @@ void CvGame::setStartTurnYear(int iTurn)
 		iStartTurn /= 100;
 		setGameTurn(iStartTurn);
 	}
-
 	setStartTurn(getGameTurn());
-
 	if (getMaxTurns() == 0 /* advc.250c: */ || iTurn > 0)
 	{
 		int iEstimateEndTurn = 0;
 		for (int i = 0; i < kSpeed.getNumTurnIncrements(); i++)
 			iEstimateEndTurn += kSpeed.getGameTurnInfo(i).iNumGameTurnsPerIncrement;
 		setEstimateEndTurn(iEstimateEndTurn);
-
 		if (getEstimateEndTurn() > getGameTurn())
 		{
-			bool bValid = false;
 			FOR_EACH_ENUM(Victory)
 			{
 				if (isVictoryValid(eLoopVictory) &&
 					GC.getInfo(eLoopVictory).isEndScore())
 				{
-					bValid = true;
+					setMaxTurns(getEstimateEndTurn() - getGameTurn());
 					break;
 				}
 			}
-			if (bValid)
-				setMaxTurns(getEstimateEndTurn() - getGameTurn());
 		}
 	}
 	else setEstimateEndTurn(getGameTurn() + getMaxTurns());
@@ -8083,7 +8077,7 @@ bool CvGame::testVictory(VictoryTypes eVictory, TeamTypes eTeam, bool* pbEndScor
 		{
 			FOR_EACH_CITY(pCity, *itMember)
 			{
-				if (pCity->getCultureLevel() >= kVictory.getCityCulture())
+				if (pCity->getCultureLevel() >= culturalVictoryCultureLevel())
 					iCount++;
 			}
 		}

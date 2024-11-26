@@ -1346,6 +1346,8 @@ void CvUnitAI::AI_settleMove()
 	PROFILE_FUNC();
 
 	CvPlayerAI const& kOwner = GET_PLAYER(getOwner()); // K-Mod
+	/*	advc (note): This was MOVE_SAFE_TERRITORY in BtS, which had prevented
+		passage through foreign (open) borders. */
 	MovementFlags const eMoveFlags = MOVE_NO_ENEMY_TERRITORY; // K-Mod
 
 	if (kOwner.getNumCities() == 0)
@@ -4871,8 +4873,9 @@ void CvUnitAI::AI_missionaryMove()
 
 		if (!isHuman())
 		{
+			// advc (note): BtS had first tried MOVE_SAFE_TERRITORY; K-Mod removed that.
 			if (AI_load(UNITAI_MISSIONARY_SEA, MISSIONAI_LOAD_SPECIAL, NO_UNITAI,
-				-1, -1, -1, 0, /*MOVE_SAFE_TERRITORY*/ MOVE_NO_ENEMY_TERRITORY))
+				-1, -1, -1, 0, MOVE_NO_ENEMY_TERRITORY))
 			{
 				return;
 			}
@@ -17937,7 +17940,7 @@ bool CvUnitAI::AI_improveBonus( // K-Mod. (all that junk wasn't being used anywa
 		FAssert(eBestBuild < GC.getNumBuildInfos());
 		MissionTypes eBestMission = MISSION_MOVE_TO;
 		// advc.001y: Sea workers can't route
-		if(getGroup()->canDoMission(MISSION_ROUTE_TO, getX(), getY(), plot(), false, false))
+		if (getGroup()->canDoMission(MISSION_ROUTE_TO, getX(), getY(), plot(), false, false))
 		{
 			if (pBestPlot->getWorkingCity() == NULL ||
 				!pBestPlot->getWorkingCity()->isConnectedToCapital())
@@ -17988,14 +17991,13 @@ bool CvUnitAI::AI_improvePlot(CvPlot const& kPlot, BuildTypes eBuild) // advc: p
 {
 	if (eBuild != NO_BUILD)
 	{
-		FAssertMsg(eBuild < GC.getNumBuildInfos(), "BestBuild is assigned a corrupt value");
-
-		eBuild = AI_betterPlotBuild(kPlot, eBuild);
+		FAssert(eBuild < GC.getNumBuildInfos());
 		if (!at(kPlot))
 		{
 			pushGroupMoveTo(kPlot, NO_MOVEMENT_FLAGS, false, false,
 					MISSIONAI_BUILD, &kPlot);
 		}
+		eBuild = AI_betterPlotBuild(kPlot, eBuild);
 		getGroup()->pushMission(MISSION_BUILD, eBuild, -1, NO_MOVEMENT_FLAGS,
 				//(getGroup()->getLengthMissionQueue() > 0), false, MISSIONAI_BUILD, pPlot);
 				true, false, MISSIONAI_BUILD, &kPlot); // K-Mod
@@ -18334,8 +18336,7 @@ bool CvUnitAI::AI_routeTerritory(bool bImprovementOnly)
 			if (iMissions < 3) // </advc.121>
 			{
 				int iPathTurns;
-				if (generatePath(kPlot, MOVE_SAFE_TERRITORY /* advc.pf: */ | MOVE_ROUTE_TO,
-					true, &iPathTurns))
+				if (generatePath(kPlot, MOVE_SAFE_TERRITORY, true, &iPathTurns))
 				{	// <advc.121> Allow teaming up (mostly just on slow speed settings)
 					if (iMissions > 0)
 					{
@@ -18371,8 +18372,8 @@ bool CvUnitAI::AI_routeTerritory(bool bImprovementOnly)
 				MISSIONAI_BUILD, pBestPlot);
 		/*	(Falling through to MISSION_ROUTE_TO would probably also be fine
 			if bAppend is set to !bRouteTo) */
-		getGroup()->pushMission(MISSION_BUILD, eBestBuild, -1, NO_MOVEMENT_FLAGS,
-				true, false, MISSIONAI_BUILD, pBestPlot);
+		getGroup()->pushMission(MISSION_BUILD, eBestBuild, -1,
+				NO_MOVEMENT_FLAGS, true, false, MISSIONAI_BUILD, pBestPlot);
 		return true;
 	} // </advc.121>
 	getGroup()->pushMission(MISSION_ROUTE_TO, pBestPlot->getX(), pBestPlot->getY(),

@@ -14497,7 +14497,7 @@ int CvPlayerAI::AI_countCargoSpace(UnitAITypes eUnitAI) const
 	and it gets called by several UnitAI members too. Probably no noticeable
 	difference in performance, but who knows. */
 int CvPlayerAI::AI_neededExplorers(CvArea const& kArea) const
-{	// Body moved into AI_neededExplorers_bulk
+{
 	std::map<int,int>::const_iterator itNeeded = m_neededExplorersByArea.find(
 			kArea.getID());
 	if (itNeeded == m_neededExplorersByArea.end())
@@ -24922,7 +24922,7 @@ bool CvPlayerAI::AI_isVictoryValid(VictoryTypes eVictory, int& iWeight) const
 			return false;
 		}
 	}
-	if (GC.getInfo(eVictory).isConquest())
+	if (kVictory.isConquest())
 	{
 		iWeight = (bHuman ? iHumanWeight : kPersonality.getConquestVictoryWeight());
 		if (bCheckBBAIDefine &&

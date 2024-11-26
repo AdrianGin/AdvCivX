@@ -23,6 +23,7 @@ localText = CyTranslator()
 # to begin with, and, now that I've increased the default player count on Huge maps,
 # it's totally out of whack.
 def worldSizeTarget():
+	#return gc.getWorldInfo(gc.getMap().getWorldSize()).getDefaultPlayers() # BtS behavior
 	# 5 adjusted by building class prereq modifier, rounded to nearest.
 	return ((5 * (100 + gc.getWorldInfo(gc.getMap().getWorldSize()).getBuildingClassPrereqModifier())) + 50) // 100
 

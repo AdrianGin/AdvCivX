@@ -348,6 +348,8 @@ protected:
 	bool m_bCtrlDownAlt;
 
 	CvString m_szHotKey;
+	/*	advc (tbd.?): Caching these seems like a bad tradeoff; could generate
+		them as needed. See the xml_reader branch of WtP. */
 	CvWString m_szHotKeyDescriptionKey;
 	CvWString m_szHotKeyAltDescriptionKey;
 	CvWString m_szHotKeyString;

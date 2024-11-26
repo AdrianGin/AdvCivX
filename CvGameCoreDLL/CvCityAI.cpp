@@ -10693,7 +10693,7 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 				+ (AI_isStrongEmphasis() ? 25 : 0); // advc.131d
 		iProductionValue *= iMultPercent;
 		iProductionValue /= 100;
-		if (isFoodProduction())
+		if (bFoodIsProduction)
 		{
 			iFoodValue *= iMultPercent;
 			iFoodValue /= 100;
@@ -10709,7 +10709,7 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 
 	if (AI_isEmphasizeYield(YIELD_FOOD))
 	{
-		if (!isFoodProduction())
+		if (!bFoodIsProduction)
 		{
 			iFoodValue *= 130
 					+ (AI_isStrongEmphasis() ? 15 : 0); // advc.131d
@@ -10739,7 +10739,7 @@ int CvCityAI::AI_yieldValue(int* piYields, int* piCommerceYields, bool bRemove,
 
 	if (iProductionValue > 0)
 	{
-		if (isFoodProduction())
+		if (bFoodIsProduction)
 		{
 			iProductionValue *= 100 + (bWorkerOptimization ? 0 :
 					AI_specialYieldMultiplier(YIELD_PRODUCTION));

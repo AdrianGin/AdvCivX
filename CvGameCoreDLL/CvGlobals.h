@@ -674,20 +674,24 @@ public:
 #pragma endregion GlobalDefines
 	/*	K-Mod: more reliable versions of the 'gDLL->xxxKey' functions
 		NOTE: I've replaced all calls to the gDLL key functions with calls to these functions. */
-	bool altKey() const { return (GetKeyState(VK_MENU) & 0x8000); }
-	bool ctrlKey() const { return (GetKeyState(VK_CONTROL) & 0x8000); }
-	bool shiftKey() const { return (GetKeyState(VK_SHIFT) & 0x8000); }
+	// advc: Helper function (let's make it public; why not).
+	bool isKeyDown(int iVirtualKey) const
+	{
+		return (GetKeyState(iVirtualKey) & 0x8000);
+	}
+	bool altKey() const { return isKeyDown(VK_MENU); }
+	bool ctrlKey() const { return isKeyDown(VK_CONTROL); }
+	bool shiftKey() const { return isKeyDown(VK_SHIFT); }
 	// hold X to temporarily suppress automatic unit cycling.
 	bool suppressCycling() const
 	{
-		return (GetKeyState('X') & 0x8000) ||
+		return (isKeyDown('X') ||
 			/*	advc.088: Needs to be consistent with GC.getInfo(CONTROL_UNSELECT_ALL).
 				getHotKeyVal(), isAltDown() etc. Could check those here, but not in-line.
 				Not quite sure if performance matters here. If it doesn't, then key X
 				should perhaps also be a ControlInfo. */
-			((GetKeyState('U') & 0x8000) && shiftKey() && altKey());
-	}
-	// K-Mod end
+			(isKeyDown('U') && shiftKey() && altKey()));
+	} // K-Mod end
 	/*	advc: These two shouldn't be used in the DLL.
 		The EXE mostly seems to call the const version. */
 	DllExport int getMaxCivPlayers() const;
