@@ -6162,6 +6162,8 @@ int CvPlayer::calculateInflationRate() const
 	int iTurns = (kGame.getGameTurn() + kGame.getElapsedGameTurns()) / 2;
 	if (kGame.getMaxTurns() > 0)
 		iTurns = std::min(kGame.getMaxTurns(), iTurns);
+	// advc.084: In case that Time victory is disabled
+	else iTurns = std::min(kGame.getEstimateEndTurn(), iTurns);
 	iTurns += GC.getInfo(kGame.getGameSpeedType()).getInflationOffset();
 	if (iTurns <= 0)
 		return 0;
