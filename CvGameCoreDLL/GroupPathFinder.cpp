@@ -47,17 +47,6 @@ bool GroupStepMetric::canStepThrough(CvPlot const& kPlot, CvSelectionGroup const
 		if (!kPlot.isRevealed(kGroup.getHeadTeam()))
 			return false;
 	}
-	// <advc.pf> No new AI routes in human territory (but upgrade to railroad OK)
-	if (eFlags & MOVE_ROUTE_TO)
-	{
-		if(kPlot.getRevealedRouteType(kGroup.getHeadTeam()) == NO_ROUTE &&
-			!kGroup.isHuman())
-		{
-			PlayerTypes eOwner = kPlot.getOwner();
-			if(eOwner != NO_PLAYER && GET_PLAYER(eOwner).isHuman())
-				return false;
-		}
-	} // </advc.pf>
 
 	if ((eFlags & MOVE_NO_ENEMY_TERRITORY) && kPlot.isOwned() &&
 		GET_TEAM(kPlot.getTeam()).isAtWar(kGroup.getHeadTeam()))

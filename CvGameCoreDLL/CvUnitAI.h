@@ -388,6 +388,11 @@ protected:
 
 	bool AI_canGroupWithAIType(UnitAITypes eUnitAI) const;
 	bool AI_allowGroup(CvUnitAI const& kUnit, UnitAITypes eUnitAI) const;
+	// <advc>
+	bool AI_shouldRouteWhileImproving(CvPlot const& kDest, MovementFlags& eFlags,
+			CvCity const* pDestCity = NULL) const; // </advc>
+	// advc.pf:
+	bool AI_canRouteThroughSafeTerritory(CvPlot const& kDest, MovementFlags& eFlags) const;
 	bool AI_moveSettlerToCoast(int iMaxPathTurns = 5); // advc.040
 
 	// added so under cheat mode we can call protected functions for testing

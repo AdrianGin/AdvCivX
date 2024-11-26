@@ -3004,11 +3004,9 @@ bool CvSelectionGroup::groupRoadTo(int iX, int iY, MovementFlags eFlags)
 			return true;
 		}
 	}
-	return groupPathTo(iX, iY, eFlags
-			/*  advc.pf: In the debugger, I'm seeing this function get called via
-				continueMission without any flags set, and these calls cause
-				the AI to build roads through foreign territory. */
-			| MOVE_ROUTE_TO);
+	// advc.pf: Don't want the AI to route through foreign territory
+	FAssert(eFlags & MOVE_SAFE_TERRITORY);
+	return groupPathTo(iX, iY, eFlags);
 }
 
 
