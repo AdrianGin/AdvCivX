@@ -1050,12 +1050,15 @@ void CvCityAI::AI_chooseProduction()
 				else if (iWaterPercent > 60)
 					iOdds = 13;
 				if (iOdds >= 0)
-				{
-					/*  advc.124: No functional change from the K-Mod code.
-						Original BtS condition deleted (it didn't check
-						seaExplorersTarget). */
-					if (iSeaExplorersNow == 0 && iSeaExplorersTarget > 0)
+				{	// <advc.040>
+					if (GC.getInfo(kPlayer.getCurrentEra()).get(CvEraInfo::AIAgeOfExploration) ?
+						(iSeaExplorersTarget > iSeaExplorersNow) : // </advc.040>
+						/*  advc.124: No functional change from the K-Mod code.
+							Original BtS condition deleted (it didn't check
+							seaExplorersTarget). */
+						(iSeaExplorersNow == 0 && iSeaExplorersTarget > 0))
 					{
+						iOdds /= (iSeaExplorersNow + 1); // advc.040
 						if (AI_chooseUnit(UNITAI_EXPLORE_SEA, iOdds))
 						{
 							if (gCityLogLevel >= 2) logBBAI("      City %S uses early sea explore", getName().GetCString());
