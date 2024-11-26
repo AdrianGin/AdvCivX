@@ -2005,8 +2005,13 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 	   AI player can get one more turn before being eliminated. Not normally a problem
 	   because there isn't much that a civ without cities can do, but I've had a
 	   case where a dead player arranged a vassal agreement. */
-	if(eOldOwner != NO_PLAYER)
-		GET_PLAYER(eOldOwner).verifyAlive(); // </advc.001>
+	if (eOldOwner != NO_PLAYER &&
+		/*	Handling human defeat during Auto Play at this point
+			can cause a crash when the Unit map layer is enabled */
+		!GET_PLAYER(eOldOwner).isHumanDisabled())
+	{
+		GET_PLAYER(eOldOwner).verifyAlive();
+	} // </advc.001>
 	// <advc.130w> Major power shift; good time to update expansionist hate.
 	for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
 	{
