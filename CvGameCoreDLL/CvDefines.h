@@ -45,7 +45,9 @@ enum MovementFlags // advc.pf: Turned into an enum; exposed to Python (CyEnumsIn
 		even if they are not visible. (Note: AI units do this regardless of the flag.) */
 	MOVE_ASSUME_VISIBLE					= (1 << 13),
 	// </K-Mod>
-	MOVE_AVOID_DANGER 					= (1 << 14), // advc.031d
+	// advc.pf: Don't need this after all, but will reserve the pattern for old saves
+	//MOVE_ROUTE_TO						= (1 << 14),
+	MOVE_AVOID_DANGER 					= (1 << 15), // advc.031d
 };
 OVERLOAD_BITWISE_OPERATORS(MovementFlags)
 

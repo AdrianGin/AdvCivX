@@ -4570,6 +4570,21 @@ void CvSelectionGroup::read(FDataStreamBase* pStream)
 	}
 	else // </advc.011b>
 		m_missionQueue.Read(pStream);
+	// <advc.pf>
+	if (uiFlag < 3)
+	{	// Replace removed movement flag with SAFE_TERRITORY
+		MovementFlags const MOVE_ROUTE_TO = static_cast<MovementFlags>(1 << 14);
+		for (CLLNode<MissionData>* pNode = headMissionQueueNode(); pNode != NULL;
+			pNode = nextMissionQueueNode(pNode))
+		{
+			MissionData& md = pNode->m_data;
+			if (md.eMissionType == MISSION_ROUTE_TO || (md.eFlags & MOVE_ROUTE_TO))
+			{
+				md.eFlags |= MOVE_SAFE_TERRITORY;
+				md.eFlags &= ~MOVE_ROUTE_TO;
+			}
+		}
+	} // </advc.pf>
 }
 
 
@@ -4577,7 +4592,8 @@ void CvSelectionGroup::write(FDataStreamBase* pStream)
 {
 	uint uiFlag;
 	//uiFlag = 1; // advc.011b
-	uiFlag = 2; // advc.004l
+	//uiFlag = 2; // advc.004l
+	uiFlag = 3; // advc.pf (MOVE_ROUTE_TO removed)
 	pStream->Write(uiFlag);
 	REPRO_TEST_BEGIN_WRITE(CvString::format("SelGroup(%d,%d,%d)", getID(), getX(), getY()));
 	pStream->Write(m_iID);
