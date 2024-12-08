@@ -45,7 +45,7 @@ public:
 			bool bColorAllegiance = false, // advc.048
 			bool bOmitOwner = false, // advc.061
 			bool bIndicator = false); // advc.007
-	// advc.004 (Exposed to Python, replacing redunant code in CyMainInterface.py)
+	// advc.004 (Exposed to Python, replacing redundant code in CyMainInterface.py)
 	void setHurtUnitStrength(CvWString& szBuffer, CvUnit const& kUnit,
 			int iHP = -1); // advc.048c
 	void setPlotListHelp(CvWStringBuffer &szString, CvPlot const& kPlot, bool bOneLine, bool bShort,
