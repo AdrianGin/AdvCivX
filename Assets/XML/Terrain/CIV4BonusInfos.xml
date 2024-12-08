@@ -1587,7 +1587,8 @@
 			<iConstAppearance>50</iConstAppearance>
 			<iMinAreaSize>3</iMinAreaSize>
 			<iMinLatitude>0</iMinLatitude>
-			<iMaxLatitude>90</iMaxLatitude>
+			<!-- advc.129: was 90 -->
+			<iMaxLatitude>49</iMaxLatitude>
 			<Rands>
 				<iRandApp1>25</iRandApp1>
 				<iRandApp2>25</iRandApp2>
