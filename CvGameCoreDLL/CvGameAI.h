@@ -41,7 +41,7 @@ public:
 
 protected:
 
-	int m_iPad;
+	//int m_iPad; // advc: unused
 	int m_iMaxCultureLevelPercent; // advc.251
 	// <advc.104>
 	UWAI m_uwai;

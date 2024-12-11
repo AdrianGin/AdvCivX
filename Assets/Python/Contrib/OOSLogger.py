@@ -2,6 +2,7 @@ import os
 from CvPythonExtensions import *
 import CvUtil
 import BugPath
+import codecs # advc
 
 gc = CyGlobalContext()
 
@@ -46,9 +47,10 @@ def writeLog():
 	szNewFilename = BugPath.getRootDir() + "\\Logs\\" + "OOSLog - %s - " % (playername) + "Turn %s" % (gc.getGame().getGameTurn()) + ".log"
 	# <advc> Replacement for the bWroteLog mechanism above
 	if os.path.isfile(szNewFilename):
-		return # </advc>
-	pFile = open(szNewFilename, "w")
-
+		return
+	# Use codecs module to set encoding. To support non-Latin locales.
+	# And convertToStr calls replaced with convertToUnicode.
+	pFile = codecs.open(szNewFilename, "w", "utf-8") # </advc>
 	# Backup current language
 	iLanguage = CyGame().getCurrentLanguage()
 	# Force english language for logs
@@ -98,7 +100,7 @@ def writeLog():
 			pFile.write(SEPERATOR)
 			pFile.write(SEPERATOR)
 
-			pFile.write("  PLAYER %d: %s  \n" % (iPlayer, CvUtil.convertToStr(pPlayer.getName())))
+			pFile.write("  PLAYER %d: %s  \n" % (iPlayer, CvUtil.convertToUnicode(pPlayer.getName())))
 			#pFile.write("  Civilization: %s  \n" % (CvUtil.convertToStr(pPlayer.getCivilizationDescriptionKey())))
 
 			pFile.write(SEPERATOR)
@@ -150,21 +152,21 @@ def writeLog():
 			pFile.write("Improvement Info:\n")
 			pFile.write("-----------------\n")
 			for iImprovement in range(gc.getNumImprovementInfos()):
-				pFile.write("Player %d, %s, Improvement count: %d\n" % (iPlayer, CvUtil.convertToStr(gc.getImprovementInfo(iImprovement).getDescription()), pPlayer.getImprovementCount(iImprovement) ))
+				pFile.write("Player %d, %s, Improvement count: %d\n" % (iPlayer, CvUtil.convertToUnicode(gc.getImprovementInfo(iImprovement).getDescription()), pPlayer.getImprovementCount(iImprovement) ))
 
 			pFile.write("\n\n")
 
 			pFile.write("Building Class Info:\n")
 			pFile.write("--------------------\n")
 			for iBuildingClass in range(gc.getNumBuildingClassInfos()):
-				pFile.write("Player %d, %s, Building class count plus making: %d\n" % (iPlayer, CvUtil.convertToStr(gc.getBuildingClassInfo(iBuildingClass).getDescription()), pPlayer.getBuildingClassCountPlusMaking(iBuildingClass) ))
+				pFile.write("Player %d, %s, Building class count plus making: %d\n" % (iPlayer, CvUtil.convertToUnicode(gc.getBuildingClassInfo(iBuildingClass).getDescription()), pPlayer.getBuildingClassCountPlusMaking(iBuildingClass) ))
 
 			pFile.write("\n\n")
 
 			pFile.write("Unit Class Info:\n")
 			pFile.write("--------------------\n")
 			for iUnitClass in range(gc.getNumUnitClassInfos()):
-				pFile.write("Player %d, %s, Unit class count plus training: %d\n" % (iPlayer, CvUtil.convertToStr(gc.getUnitClassInfo(iUnitClass).getDescription()), pPlayer.getUnitClassCountPlusMaking(iUnitClass) ))
+				pFile.write("Player %d, %s, Unit class count plus training: %d\n" % (iPlayer, CvUtil.convertToUnicode(gc.getUnitClassInfo(iUnitClass).getDescription()), pPlayer.getUnitClassCountPlusMaking(iUnitClass) ))
 
 			pFile.write("\n\n")
 
@@ -185,7 +187,7 @@ def writeLog():
 				pLoopUnitTuple = pPlayer.firstUnit(False)
 				while (pLoopUnitTuple[0] != None):
 					pUnit = pLoopUnitTuple[0]
-					pFile.write("Player %d, Unit ID: %d, %s\n" % (iPlayer, pUnit.getID(), CvUtil.convertToStr(pUnit.getName()) ))
+					pFile.write("Player %d, Unit ID: %d, %s\n" % (iPlayer, pUnit.getID(), CvUtil.convertToUnicode(pUnit.getName()) ))
 
 					pFile.write("X: %d, Y: %d\n" % (pUnit.getX(), pUnit.getY()) )
 					pFile.write("Damage: %d\n" % pUnit.getDamage() )
@@ -227,7 +229,7 @@ def writeLog():
 				pLoopCityTuple = pPlayer.firstCity(False)
 				while (pLoopCityTuple[0] != None):
 					pCity = pLoopCityTuple[0]
-					pFile.write("Player %d, City ID: %d, %s, X: %d, Y: %d\n"% (iPlayer, pCity.getID(), CvUtil.convertToStr(pCity.getName()), pCity.getX(), pCity.getY()))
+					pFile.write("Player %d, City ID: %d, %s, X: %d, Y: %d\n"% (iPlayer, pCity.getID(), CvUtil.convertToUnicode(pCity.getName()), pCity.getX(), pCity.getY()))
 
 					pFile.write("Religions and corporations present are also used for the checksum.\n")
 					#pFile.write("Founded: %d\n" % pCity.getGameTurnFounded() )

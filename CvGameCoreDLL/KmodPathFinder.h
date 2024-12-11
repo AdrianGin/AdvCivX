@@ -58,7 +58,7 @@ public:
 		m_iPathLength = iPathLength;
 	}
 protected:
-	CvPlot* m_pPlot; // FAStarNode::m_iX, m_iY in K-MMod
+	CvPlot* m_pPlot; // FAStarNode::m_iX, m_iY in K-Mod
 	int m_iPathLength; // FAStarNode::m_iData2 in K-Mod
 public: // Keeping these public (for now) for interchangeability with FAStarNode
 	// Path costs need to have a fairly high resolution; short int won't do.
@@ -116,7 +116,7 @@ public:
 		ensure the following:
 		-	For two adjacent plots p and q that both aren't the path destination
 			and a path w from the start to p,
-			isValidStep(p, q) && canStepThrough(p)
+			isValidStep(p, q) && canStepThrough(p, w)
 			needs to be true if and only if the step from p to q can be added to w.
 		-	If q is the path destination, then the conjunction above needs to be
 			true if and only if the step _could_ be added to w if some plot other
@@ -130,9 +130,15 @@ public:
 			any path that reaches p from s.
 		-	isValidStep is the most frequently called function among these three,
 			so it should perform as little work as possible.
+		-	canStepThrough refers to the conjunction of two functions of that
+			name. Only one of those two may take into account the partial path w.
+			This separation allows the pathfinder to disregard a plot p entirely
+			once canStepThrough(p) has been found to be false for any partial path.
 		Remarks:
-		-	I've come up with this specification based on karadoc's code.
-			I wish it were less complicated, but I do want it to be fast.
+		-	I've come up with this specification based on karadoc's code. I wish
+			it were less complicated, but I do want it to be fast. (canStepThrough
+			had corresponded only to a single K-Mod function; this had resulted in
+			rare failures to find an existing path.)
 		-	More broadly speaking, canStepThrough should check whether a plot
 			can be entered if we assume that it isn't the destination, and
 			isValidStep should check any conditions that depend on the kFrom plot. */
@@ -141,11 +147,16 @@ public:
 		FErrorMsg("Should've been hidden by a derived-class member");
 		return false;
 	}
-	/*	kNode is the pathfinder node associated with kPlot. (The
-		group step metric will require some data from that node.)
-		The node data should not be used to enforce the path length limit;
-		KmodPathFinder handles that. */
-	bool canStepThrough(CvPlot const& kPlot, Node const& kNode) const
+	bool canStepThrough(CvPlot const& kPlot) const
+	{
+		FErrorMsg("Should've been hidden by a derived-class member");
+		return false;
+	}
+	/*	kNode is the pathfinder node associated with kPlot. The node data -
+		containing any info about the partial path relevant for pathfinding -
+		should not be used to enforce the path length limit; KmodPathFinder
+		handles that. */
+	bool canStepThrough(CvPlot const& kPlot, PathNode const& kNode) const
 	{
 		FErrorMsg("Should've been hidden by a derived-class member");
 		return false;
@@ -643,18 +654,23 @@ void KmodPathFinder<StepMetric,Node>::processChild(
 		kChild.m_iHeuristicCost = m_stepMetric.heuristicCost(
 				kChildPlot, *m_pDest);
 		// Total cost will be set when the parent is set
-		if (m_stepMetric.canStepThrough(kChildPlot, kChild))
+		/*	<advc.001> Split into two calls. We can only close the node
+			(else branch) when the first one fails. The second one merely
+			invalidates the path we've taken so far. (Well, I don't think
+			we'll check any further paths reaching kChild via kParent, and
+			it's possible we might have to(?). But even closing kChild based
+			on the path data had lead to problems only very rarely ... */
+		if (m_stepMetric.canStepThrough(kChildPlot))
+		{
+			if (!m_stepMetric.canStepThrough(kChildPlot, kChild))
+				return; // </advc.001>
 			m_openList.open(kChild);
+		}
 		else
 		{	// This node is a dead end
 			/*	advc: Which is to say, we can never enter it, not even on a
 				later call to generatePath - except if it is the destination;
-				that remains to be checked.
-				However: If there is plot danger to be avoided in kChildPlot,
-				then we might be able to enter via a shorter path and avoid ending
-				the turn in kChildPlot that way. I don't see a reasonably fast way
-				to address this rare problem. (And it's not really a problem
-				with this base class but with GroupPathFinder.)*/
+				that remains to be checked. */
 			kChild.setState(PATHNODE_CLOSED);
 		}
 	}

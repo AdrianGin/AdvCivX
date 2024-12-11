@@ -22,14 +22,15 @@ class BugGeneralOptionsTab(BugOptionsTab.BugOptionsTab):
 		left, center, right = self.addThreeColumnLayout(screen, column, "Top", True)
 		
 		self.createGreatPersonGeneralPanel(screen, left)
-		self.addSpacer(screen, left, "GeneralL1")
+		#self.addSpacer(screen, left, "GeneralL1") # advc.256: No more room for this
 		self.createTechSplashPanel(screen, left)
 		#self.createLeaderheadPanel(screen, left)
-		# <advc.092>
-		self.addSpacer(screen, left, "AboveEnlargeHUD1")
-		self.addSpacer(screen, left, "AboveEnlargeHUD2")
-		self.addCheckbox(screen, left, "MainInterface__EnlargeHUD")
-		# </advc.092>
+		# <advc.256>
+		self.addSpacer(screen, left, "AboveOverall")
+		self.addLabel(screen, left, "Overall", "Overall:")
+		self.addIntDropdown(screen, left, left, "MainInterface__GraphicsUpdateRate", True)
+		# </advc.256>
+		self.addCheckbox(screen, left, "MainInterface__EnlargeHUD") # advc.092
 		#self.createAutoSavePanel(screen, center)
 		self.createInfoPanePanel(screen, center)
 		# advc.004k (note): Should remove this spacer if the hide-command options are re-enabled

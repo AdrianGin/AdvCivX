@@ -120,6 +120,12 @@
 					type="boolean" default="False" 
 					get="isShowOnlyOnceProgress" dirtyBit="GameData"/>
 
+			<!-- advc.256: New option. NB: Changes to the values will require
+				 corresponding changes to CvGame::update. -->
+			<list   id="GraphicsUpdateRate" key="Graphics Update Rate" 
+					type="int" default="12" listType="int" 
+					values="12, 6, 4, 3, 2, 1, 0"/>
+
 			<!-- advc.092: New option -->
 			<option id="EnlargeHUD" key="Enlarge HUD" 
 					type="boolean" default="True" 
@@ -309,7 +315,7 @@
 				<choice id="Disable"/>
 			</list>
 
-			<!-- advc.002f: -->
+			<!-- advc.002f: start -->
 			<option id="AvoidGrowthIcon" key="Avoid Growth Icon" 
 					type="boolean" default="True" dirtyBit="CityInfo"/>
 			<option id="CityNetworkIcon" key="City Network Icon" 
@@ -334,6 +340,7 @@
 					type="boolean" default="False" dirtyBit="CityInfo"/>
 			<option id="NoBadHealthIcon" key="No Bad Health Icon" 
 					type="boolean" default="False" dirtyBit="CityInfo"/-->
+			<!-- advc.002f: end -->
 			<!-- advc.101 -->
 			<option id="RevoltChanceIcon" key="Revolt Chance Icon" 
 					type="boolean" default="False" dirtyBit="CityInfo"/>

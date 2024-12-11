@@ -190,6 +190,7 @@ public:
 	void updateCitySight(bool bIncrement, bool bUpdatePlotGroups);
 	void updateTradeRoutes();
 	void updatePlunder(int iChange, bool bUpdatePlotGroups);
+	void updateMilitaryHappinessUnits(); // advc.184
 
 	void updateTimers();
 
@@ -197,10 +198,8 @@ public:
 	bool hasAutoUnit() const;
 	DllExport bool hasBusyUnit() const;
 
-	// K-Mod
-	bool isChoosingFreeTech() const { return m_iChoosingFreeTechCount > 0; }
-	void changeChoosingFreeTechCount(int iChange) { m_iChoosingFreeTechCount += iChange; }
-	// K-Mod end
+	bool isChoosingFreeTech() const { return m_iChoosingFreeTechCount > 0; } // K-Mod
+	void changeChoosingFreeTechCount(int iChange) { m_iChoosingFreeTechCount += iChange; } // K-Mod
 
 	void chooseTech(int iDiscover = 0, CvWString szText = "", bool bFront = false);									// Exposed to Python
 
@@ -220,8 +219,8 @@ public:
 	int countNumCoastalCitiesByArea(CvArea const& kArea) const;														// Exposed to Python
 	int countTotalCulture() const;																					// Exposed to Python
 
-	// advc.042: countUnimprovedBonuses, countOwnedBonuses moved to CvPlayerAI
-	int countCityFeatures(FeatureTypes eFeature) const;																// Exposed to Python
+	/*	advc.042: countUnimprovedBonuses, countOwnedBonuses, countCityFeatures
+		moved to CvPlayerAI */
 	int countNumBuildings(BuildingTypes eBuilding) const;															// Exposed to Python
 	int countNumCitiesConnectedToCapital() const;																	// Exposed to Python
 	/* int countPotentialForeignTradeCities(CvArea* pIgnoreArea = NULL) const;
@@ -1669,6 +1668,7 @@ protected:  // <advc.210>
 	std::vector<AdvCiv4lert*> m_paAlerts; // advc.210
 	// <advc.106b>
 	std::vector<CvTalkingHeadMessage*> m_aMajorMsgs;
+	std::vector<CvTalkingHeadMessage*> m_aHotSeatMsgs;
 	int m_iNewMessages; // </advc.106b>
 	// advc.074:
 	mutable CLinkList<std::pair<PlayerTypes,BonusTypes> > m_cancelingExport;
@@ -1710,6 +1710,8 @@ protected:  // <advc.210>
 	void doWarnings();
 	void doEvents();
 	// <advc.106b>
+	void clearMessageCopies(std::vector<CvTalkingHeadMessage*>* pContainer = NULL);
+	void showMessageCopies(std::vector<CvTalkingHeadMessage*>* pContainer = NULL);
 	void postProcessMessages();
 	int getStartOfTurnMessageLimit() const;
 	// </advc.106b>

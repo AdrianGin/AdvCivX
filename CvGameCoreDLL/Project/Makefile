@@ -24,7 +24,7 @@
 #   To make it easier to switch, temporarily, to /Zd, which links much faster.
 # PROJECT_Profile_CFLAGS, PROJECT_Debug_CFLAGS, PROJECT_DebugOpt_CFLAGS added to Makefile.project.
 # For selecting a profiler and for balancing speed vs. fidelity of debug builds.
-# Removed unused /DCVGAMECOREDLL_EXPORTS from Debug_DEFINES
+# Removed unused /DCVGAMECOREDLL_EXPORTS
 # devolution (Erik) has added the target 'Final_Release' with
 #   whole-program optimization. [To avoid confusion, I've removed the Firaxis flag
 #   "FINAL_RELEASE", which had merely disabled the OutputDebugString function from
@@ -35,22 +35,22 @@
 
 ## User setup
 ##
-## Any setting here can be overwritten by assigning a new value to the variables in Makefile.settings
-##  Makefile.settings is made automatically if it is missing whenever the project is build or cleaned
+## Any setting here can be overwritten by assigning a new value to the variables in Makefile.user
+##  Makefile.user is made automatically if it is missing whenever the project is build or cleaned
 ##
 ## Not touching the makefile itself can be beneficial if the makefile is committed to svn/git
-## Makefile.settings can also accept CUSTOM_CFLAGS and CUSTOM_LDFLAGS if you want to ADD additional flags
+## Makefile.user can also accept CUSTOM_CFLAGS and CUSTOM_LDFLAGS if you want to ADD additional flags
 ##   the custom flags will not overwrite any flags the makefile sets itself
 ##   An example could be you want to define ENABLE_MY_DEBUG_OUTPUT in C++, then you write
 ##     CUSTOM_CFLAGS -DENABLE_MY_DEBUG_OUTPUT
-##     in Makefile.settings and it will be defined for you without the risk of committing active debug output to other people
+##     in Makefile.user and it will be defined for you without the risk of committing active debug output to other people
 ##
 ##     You can write whatever you want after -D and it will work like you write #DEFINE in C++
 ## 
 
 
 #### Paths ####
-# Note: Edit Makefile.settings instead and add it to .gitignore
+# Note: Edit Makefile.user instead and add it to .gitignore
 # Note: $(PROGRAMFILES) converts to "C:\Program Files", "C:\Program Files (x86)" or whatever fits your system.
 # run "nmake.exe /P" in cmd.exe to see what it is on your system
 #
@@ -88,7 +88,7 @@ FD="bin\fastdep.exe"
 
 #### DEFINES ####
 Debug_DEFINES=/DWIN32 /D_WINDOWS /D_USRDLL /D_DEBUG
-Release_DEFINES=/DWIN32 /D_WINDOWS /D_USRDLL /DCVGAMECOREDLL_EXPORTS /DNDEBUG
+Release_DEFINES=/DWIN32 /D_WINDOWS /D_USRDLL /DNDEBUG
 ## Optional: Copy the flags above into "Additional options" in NMAKE properties (Configuration Properties)
 ## to make VC++ aware of what is defined and what isn't, which affects the help popup and red lines.
 ## Use the Release_DEFINES for all targets except debug. Assert adds /DFASSERT_ENABLE,
@@ -104,11 +104,11 @@ CUSTOM_LDFLAGS =
 
 
 
-!IF [IF NOT EXIST Makefile.settings EXIT 1] != 0
-!IF [ECHO CUSTOM_CFLAGS = > Makefile.settings]
+!IF [IF NOT EXIST Makefile.user EXIT 1] != 0
+!IF [ECHO CUSTOM_CFLAGS = > Makefile.user]
 !ENDIF
 !ENDIF
-!include Makefile.settings
+!include Makefile.user
 
 PRECOMPILE_DEPENDENCIES =
 PROJECT_CFLAGS =

@@ -229,6 +229,18 @@
 		<German>Die Fortschrittsbalken für [COLOR_HIGHLIGHT_TEXT]Große Persönlichkeiten[COLOR_REVERT] and [COLOR_HIGHLIGHT_TEXT]Große Generäle[COLOR_REVERT] (falls überhaupt aktiviert) erscheinen erst, wenn entsprechender Fortschritt besteht.</German>
 	</TEXT>
 
+	<!-- advc.256: New option -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__GRAPHICSUPDATERATE_TEXT</Tag>
+		<English>Screen Update Rate</English>
+		<German>Grafik-Update-Rate</German>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__GRAPHICSUPDATERATE_HOVER</Tag>
+		<English>The number of main screen updates per 3 seconds. Applies only during AI turns and never in multiplayer games. Recommended: 12, meaning 4 updates per second as in BtS, the fastest possible rate. Lower rates will speed up AI turns - probably by no more than 20% - at the expense of halting visuals.</English>
+		<German>Anzahl der Aktualisierungen des Hauptbildschirms pro 3 Sekunden. Betrifft nur KI-Züge und nur im Einzelspieler-Modus. Empfohlen: 12, also 4 Updates pro Sekunde wie In BtS, die höchstmögliche Anzahl. Niedrigere Werte verkürzen die Dauer der KI-Züge etwas - vielleicht um bis zu 20% -, lassen das Bild aber stocken.</German>
+	</TEXT>
+
 	<!-- advc.092: New option -->
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__ENLARGEHUD_TEXT</Tag>

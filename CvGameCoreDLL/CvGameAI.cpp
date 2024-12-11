@@ -109,7 +109,7 @@ void CvGameAI::AI_uninit() {}
 void CvGameAI::AI_reset(/* advc (as in CvGame): */ bool bConstructor)
 {
 	AI_uninit();
-	m_iPad = 0;
+	//m_iPad = 0; // advc: unused
 	m_iMaxCultureLevelPercent = 0; // advc.251
 	if (!bConstructor)
 	{
@@ -302,8 +302,12 @@ void CvGameAI::read(FDataStreamBase* pStream)
 
 	uint uiFlag;
 	pStream->Read(&uiFlag);
-
-	pStream->Read(&m_iPad);
+	// <advc>
+	if (uiFlag < 1)
+	{
+		int iPad;
+		pStream->Read(&iPad);
+	} // </advc>
 	// <advc.104>
 	m_uwai.read(pStream);
 	AI_sortOutUWAIOptions(true); // </advc.104>
@@ -315,8 +319,9 @@ void CvGameAI::write(FDataStreamBase* pStream)
 	CvGame::write(pStream);
 
 	uint uiFlag = 0;
+	uiFlag = 1; // advc: Remove m_iPad
 	pStream->Write(uiFlag);
 
-	pStream->Write(m_iPad);
+	//pStream->Write(m_iPad); // advc: unused
 	m_uwai.write(pStream); // advc.104
 }

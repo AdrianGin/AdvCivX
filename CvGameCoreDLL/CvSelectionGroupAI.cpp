@@ -117,7 +117,7 @@ bool CvSelectionGroupAI::AI_update()
 
 	FAssert(getOwner() != NO_PLAYER);
 
-	if (!AI_isControlled())
+	if (!isAIControlled())
 		return false;
 
 	if (getNumUnits() == 0)
@@ -418,7 +418,9 @@ CvUnitAI* CvSelectionGroupAI::AI_getBestGroupAttacker(const CvPlot* pPlot,
 						kLoopUnit.collateralDamageMaxUnits());
 				if (iPossibleTargets > 0)
 				{
-					iValue *= (100 + (kLoopUnit.collateralDamage() * iPossibleTargets) / 5);
+					iValue *= 100 + ((kLoopUnit.//collateralDamage()
+							AI_collateralDmgFactor() * // advc.159
+							iPossibleTargets)) / 5;
 					iValue /= 100;
 				}
 			}
@@ -760,7 +762,7 @@ CvUnit* CvSelectionGroupAI::AI_bestUnitForMission(MissionTypes eMission,
 			rPriority *= std::max(1, 15 + iBombard - iWaste);
 			scaled rOdds = per100(pUnit->AI_attackOdds(pMissionPlot, false));
 			rPriority *= (1 - rOdds);
-			rPriority /= 1 + per100(pUnit->collateralDamage());
+			rPriority /= 1 + per100(pUnit->AI_collateralDmgFactor());
 			rPriority /= 15 + std::min(iDefenders, pUnit->collateralDamageMaxUnits());
 			/*	(CollateralDamageLimit gets ignored by all AI code so far,
 				so I'm not going to bother with it here either.) */
@@ -1042,6 +1044,9 @@ void CvSelectionGroupAI::AI_setMissionAI(MissionAITypes eNewMissionAI,
 
 CvUnitAI* CvSelectionGroupAI::AI_getMissionAIUnit() const
 {
+	/*	advc (note): Could possibly return an incorrect unit if the correct
+		one has been killed and the same FFreeList ID has gotten assigned to
+		a new unit. I.e. this data member is not getting reset by CvUnit::kill. */
 	return ::AI_getUnit(m_missionAIUnit);
 }
 

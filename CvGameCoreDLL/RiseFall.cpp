@@ -81,7 +81,7 @@ void RiseFall::init() {
 	}
 	int maxChapters = GC.getDefineINT("RF_CHAPTERS_BASE");
 	CvGameSpeedInfo& speed = GC.getInfo(g.getGameSpeedType());
-	double chapterModifier = (speed.getGoldenAgePercent() + 100) / 200.0;
+	double chapterModifier = (speed.getGoldenAgePercent() + 150) / 250.0;
 	int startTurn = g.getStartTurn();
 	int endTurn = g.getEstimateEndTurn();
 	int totalTurns = endTurn - startTurn;

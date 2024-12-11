@@ -54,6 +54,14 @@ public:
 			bool bCountCollateral = false, int iBaseCollateral = 0,
 			bool bCheckCanAttack = false,
 			int iCurrentHP = -1, bool bAssumePromotion = false) const; // advc.139
+	/*	collateralDamage no longer includes promotions since BtS 3.17, but
+		the AI should take promotions into account when estimating coll. damage.
+		Not currently used for deciding whether a unit deals _any_ coll. damage. */
+	int AI_collateralDmgFactor() const
+	{	/*	Multiplication would be closer to how collateralCombat works, but,
+			for most units, it won't matter much, and addition is faster. */
+		return collateralDamage() + getExtraCollateralDamage();
+	}
 	// </advc.159>
 	int AI_sacrificeValue(const CvPlot* pPlot) const;
 	// Lead From Behind by UncutDragon (edited for K-Mod):
@@ -153,7 +161,8 @@ protected:
 	bool AI_guardCityOnlyDefender(); // K-Mod
 	bool AI_guardCityMinDefender(bool bSearch = true);
 	bool AI_guardCity(bool bLeave = false, bool bSearch = false, int iMaxPath = MAX_INT,
-			MovementFlags eFlags = NO_MOVEMENT_FLAGS);
+			MovementFlags eFlags = NO_MOVEMENT_FLAGS,
+			int iExtraDefenders = 0); // advc.300
 	bool AI_guardCityAirlift();
 	// <K-Mod>
 	bool AI_guardCoast(bool bPrimaryOnly = false,
@@ -379,6 +388,11 @@ protected:
 
 	bool AI_canGroupWithAIType(UnitAITypes eUnitAI) const;
 	bool AI_allowGroup(CvUnitAI const& kUnit, UnitAITypes eUnitAI) const;
+	// <advc>
+	bool AI_shouldRouteWhileImproving(CvPlot const& kDest, MovementFlags& eFlags,
+			CvCity const* pDestCity = NULL) const; // </advc>
+	// advc.pf:
+	bool AI_canRouteThroughSafeTerritory(CvPlot const& kDest, MovementFlags& eFlags) const;
 	bool AI_moveSettlerToCoast(int iMaxPathTurns = 5); // advc.040
 
 	// added so under cheat mode we can call protected functions for testing

@@ -435,6 +435,10 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer)
 			pLoopUnit->kill(false, ePlayer);
 		}
 	}
+	/*	advc (note - known issue): We're not checking whether this unit was set
+		as the m_missionAIUnit of a CvSelectionGroup. This becomes a problem
+		only if our FFreeList ID gets assigned to a new unit. Unknown if this
+		ever actually happens. Don't want to loop through all groups just in case. */
 
 	CvPlayerAI& kOwner = GET_PLAYER(getOwner()); // advc
 	if (ePlayer != NO_PLAYER)
@@ -2990,43 +2994,47 @@ void CvUnit::move(CvPlot& kPlot, bool bShow, /* advc.163: */ bool bJump, bool bG
 		finishMoves(); // </advc.163>
 	else changeMoves(kPlot.movementCost(*this, kOldPlot));
 	// <advc.162>
-	if(isInvasionMove(kOldPlot, kPlot))
+	if (isInvasionMove(kOldPlot, kPlot))
 	{
 		std::vector<CvUnit*> aCargoUnits;
 		getCargoUnits(aCargoUnits);
-		for(size_t i = 0; i < aCargoUnits.size(); i++)
+		for (size_t i = 0; i < aCargoUnits.size(); i++)
 		{
-			if(!aCargoUnits[i]->isRivalTerritory() && aCargoUnits[i]->getDomainType() != DOMAIN_AIR)
+			if (!aCargoUnits[i]->isRivalTerritory() &&
+				aCargoUnits[i]->getDomainType() != DOMAIN_AIR)
+			{
 				aCargoUnits[i]->changeMoves(aCargoUnits[i]->movesLeft());
+			}
 		}
 	} // </advc.162>
 	setXY(kPlot.getX(), kPlot.getY(), /* advc.163 (was 'true'): */ bGroup,
 			true, bShow && kPlot.isVisibleToWatchingHuman(), bShow);
 
 	FeatureTypes eFeature = kPlot.getFeatureType();
-	if (eFeature != NO_FEATURE) //change feature
+	if (eFeature != NO_FEATURE) 
 	{
-		CvString szFeature(GC.getInfo(eFeature).getOnUnitChangeTo());
+		CvFeatureInfo const& kFeature = GC.getInfo(eFeature);
+		/*	change feature
+			(advc note: This mechanism was apparently added for the bundled
+			Afterworld mod) */
+		CvString szFeature(kFeature.getOnUnitChangeTo());
 		if (!szFeature.IsEmpty())
 		{
 			FeatureTypes eNewFeature = (FeatureTypes)GC.getInfoTypeForString(szFeature);
 			kPlot.setFeatureType(eNewFeature);
 		}
-	}
-
-	if (isActiveOwned() && !kPlot.isOwned() &&
-		eFeature != NO_FEATURE) // spawn birds if trees present - JW
-	{
-		CvFeatureInfo const& kFeature = GC.getInfo(eFeature);
-		if (GC.getASyncRand().get(100) < kFeature.getEffectProbability())
+		// spawn birds if trees present - JW
+		if (isActiveOwned() && !kPlot.isOwned() &&
+			GC.getASyncRand().get(100) < kFeature.getEffectProbability()) 
 		{
-			EffectTypes eEffect = (EffectTypes)GC.getInfoTypeForString(kFeature.getEffectType());
+			EffectTypes eEffect = (EffectTypes)
+					GC.getInfoTypeForString(kFeature.getEffectType());
 			NiPoint3 pt = kPlot.getPoint();
-			gDLL->getEngineIFace()->TriggerEffect(eEffect, pt, (float)GC.getASyncRand().get(360));
+			gDLL->getEngineIFace()->TriggerEffect(eEffect, pt, (float)
+					GC.getASyncRand().get(360));
 			gDLL->UI().playGeneralSound("AS3D_UN_BIRDS_SCATTER", pt);
 		}
 	}
-
 	CvEventReporter::getInstance().unitMove(&kPlot, this, &kOldPlot);
 }
 
@@ -7112,7 +7120,8 @@ bool CvUnit::isGarrisonInTeamCity() const
 	CvTeam const& kCityTeam = GET_TEAM(getPlot().getTeam());
 	if (isInvisible(kCityTeam.getID(), false))
 		return false;
-	return (kCityTeam.getMasterTeam() == getTeam() ||
+	return (kCityTeam.getID() == getTeam() ||
+			kCityTeam.getMasterTeam() == getTeam() ||
 			kCityTeam.getID() == GET_TEAM(getTeam()).getMasterTeam());
 }
 
@@ -7829,13 +7838,13 @@ bool CvUnit::isBetterDefenderThan(const CvUnit* pDefender, const CvUnit* pAttack
 	{
 		if (pDefender->collateralDamage() > 0)
 		{
-			iOurDefense *= (100 + pDefender->collateralDamage());
+			iOurDefense *= 100 + pDefender->collateralDamage();
 			iOurDefense /= 100;
 		}
 
 		if (pDefender->currInterceptionProbability() > 0)
 		{
-			iOurDefense *= (100 + pDefender->currInterceptionProbability());
+			iOurDefense *= 100 + pDefender->currInterceptionProbability();
 			iOurDefense /= 100;
 		}
 	}
@@ -8474,7 +8483,7 @@ bool CvUnit::isBeforeUnitCycle(CvUnit const& kOther) const
 }
 
 
-bool CvUnit::canJoinGroup(const CvPlot* pPlot, CvSelectionGroup const* pSelectionGroup) const // advc: const pSelectionGroup
+bool CvUnit::canJoinGroup(const CvPlot* pPlot, CvSelectionGroup const* pSelectionGroup) const
 {
 	// do not allow someone to join a group that is about to be split apart
 	// this prevents a case of a never-ending turn
@@ -11784,7 +11793,9 @@ bool CvUnit::isCombatVisible(CvUnit const* pDefender,
 			else if (pDefender != NULL && pDefender->isHuman())
 			{
 				if (!GET_PLAYER(pDefender->getOwner()).isOption(PLAYEROPTION_QUICK_DEFENSE) &&
-					!gDLL->getEngineIFace()->isGlobeviewUp()) // advc.102
+					!gDLL->getEngineIFace()->isGlobeviewUp() && // advc.102
+					// advc.001: Camera won't catch AI-vs-human combat in Hotseat
+					(isHuman() || !GC.getGame().isHotSeat()))
 				{
 					bVisible = true;
 				}

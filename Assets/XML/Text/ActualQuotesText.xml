@@ -2106,7 +2106,7 @@
 		<Italian>Attenzione, le nostre parole sono supportate da armi nucleari!</Italian>
 		<Spanish>&#161;Cuidado, respaldamos nuestras palabras con armas nucleares!</Spanish>
 	</TEXT>
-	<!-- Replacing "watch out for your worst enemy" -->
+	<!-- Replacing "watch out for our worst enemy" -->
 	<TEXT>
 		<Tag>AI_DIPLO_WORST_ENEMY_1</Tag>
 		<English>[OUR_WORST_ENEMY] is a scheming, lying murderer. Beware!</English>
@@ -2199,12 +2199,11 @@
 		 resembles another ascribed quote: "heaven cannot brook two suns". -->
 	<TEXT>
 		<Tag>AI_DIPLO_DECLARE_WAR_LEADER_ALEXANDER_1</Tag>
-		<English>I've brought a kaffis of mustard seed for you to foretaste the bitterness of my victory. ([OUR_NAME] declares war!)</English>
-		<French>Ce monde n'est pas assez grand pour nous deux ! ([OUR_NAME] vous d&#233;clare la guerre !)</French>
-		<German>Ich lasse Euch Senfkörner zukommen -- als einen Vorgeschmack auf eure bittere Niederlage! ([OUR_NAME] declares war!)</German>
-		<German>Diese Welt ist nicht gro&#223; genug f&#252;r uns beide! ([OUR_NAME] erkl&#228;rt Euch den Krieg!)</German>
-		<Italian>Questo mondo non &#232; grande abbastanza per tutti e due! ([OUR_NAME] dichiara guerra!)</Italian>
-		<Spanish>&#161;Este mundo no es lo bastante grande para nuestras dos naciones! (&#161;[OUR_NAME] os declara la guerra!)</Spanish>
+		<English>I've brought a kaffis of mustard seed for you, [CT_NAME], to foretaste the bitterness of my victory. ([OUR_NAME] declares war!)</English>
+		<French>Ce monde n'est pas assez grand pour nous deux, [CT_NAME] ! ([OUR_NAME] vous d&#233;clare la guerre !)</French>
+		<German>Ich lasse Euch Senfkörner zukommen, [CT_NAME], -- als Vorgeschmack auf Eure bittere Niederlage! ([OUR_NAME] declares war!)</German>
+		<Italian>Questo mondo non &#232; grande abbastanza per tutti e due, [CT_NAME]! ([OUR_NAME] dichiara guerra!)</Italian>
+		<Spanish>&#161;Este mundo no es lo bastante grande para nuestras dos naciones, [CT_NAME]! (&#161;[OUR_NAME] os declara la guerra!)</Spanish>
 	</TEXT>
 
 </Civ4GameText>

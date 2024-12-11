@@ -4,7 +4,13 @@
 #define K_MOD_PATH_FINDER_LEGACY_H
 
 /*	<advc.test> This is the old (AdvCiv 0.98) version of KmodPathFinder.
-	For verifying the correctness of the current, restructured version. */
+	For verifying the correctness of the current, restructured version.
+	Note that this covers only the generic parts of the A* implementation,
+	which are, at least in theory, not specific to Civ. I.e. most AdvCiv
+	changes to the costs and validity of paths automatically also affect
+	the legacy pathfinder. A couple of later AdvCiv changes on the generic
+	side have also been applied to the legacy version - so that it remains
+	useful for testing the correctness of further changes of this kind. */
 #ifdef FASSERT_ENABLE
 	#define VERIFY_PATHF 0
 #else

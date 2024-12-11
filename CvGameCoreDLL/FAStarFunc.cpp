@@ -57,6 +57,8 @@ BOOL pathValid(FAStarNode* parent, FAStarNode* node, int data, void const* point
 	MovementFlags eFlags = (MovementFlags)gDLL->getFAStarIFace()->GetInfo(finder);
 	if (!GroupStepMetric::isValidStep(kFrom, kTo, kGroup, eFlags))
 		return FALSE;
+	if (!GroupStepMetric::canStepThrough(kFrom, kGroup, eFlags))
+		return FALSE;
 	if (!GroupStepMetric::canStepThrough(kFrom, kGroup, eFlags,
 		parent->m_iData1, parent->m_iData2))
 	{

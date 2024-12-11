@@ -45,7 +45,9 @@ public:
 /*	static interface so that GroupStepMetric can share code with the
 	FAStar pathfinder in the EXE */
 	static bool isValidStep(CvPlot const& kFrom, CvPlot const& kTo,
-			CvSelectionGroup const& kGroup, MovementFlags eFlags);	
+			CvSelectionGroup const& kGroup, MovementFlags eFlags);
+	static bool canStepThrough(CvPlot const& kFrom, CvSelectionGroup const& kGroup,
+			MovementFlags eFlags);
 	static bool canStepThrough(CvPlot const& kFrom, CvSelectionGroup const& kGroup,
 			MovementFlags eFlags, int iMoves, int iPathTurns);
 	static bool isValidDest(CvPlot const& kPlot, CvSelectionGroup const& kGroup,
@@ -86,6 +88,10 @@ public:
 	bool isValidStep(CvPlot const& kFrom, CvPlot const& kTo) const
 	{
 		return isValidStep(kFrom, kTo, *m_pGroup, m_eFlags);
+	}
+	bool canStepThrough(CvPlot const& kPlot) const
+	{
+		return canStepThrough(kPlot, *m_pGroup, m_eFlags);
 	}
 	bool canStepThrough(CvPlot const& kPlot, GroupPathNode const& kNode) const
 	{

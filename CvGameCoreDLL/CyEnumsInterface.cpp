@@ -2005,7 +2005,7 @@ void CyEnumsPythonInterface()
 		.value("NUM_GLOBE_LAYER_TYPES", NUM_GLOBE_LAYER_TYPES)
 		.value("NO_GLOBE_LAYER", NUM_GLOBE_LAYER_TYPES)
 		;
-	// advc.pf: If generatePath (CvUnit, CvSelectionGroup) is exposed, so should be this.
+	// advc.pf: If generatePath (CvUnit, CvSelectionGroup) is exposed, so should this be.
 	python::enum_<MovementFlags>("MovementFlags")
 		.value("NO_MOVEMENT_FLAGS", NO_MOVEMENT_FLAGS)
 		.value("MOVE_IGNORE_DANGER", MOVE_IGNORE_DANGER)
@@ -2022,6 +2022,5 @@ void CyEnumsPythonInterface()
 		.value("MOVE_NO_ATTACK", MOVE_NO_ATTACK)
 		.value("MOVE_HAS_STEPPED", MOVE_HAS_STEPPED)
 		.value("MOVE_ASSUME_VISIBLE", MOVE_ASSUME_VISIBLE)
-		.value("MOVE_ROUTE_TO", MOVE_ROUTE_TO)
 		;
 }

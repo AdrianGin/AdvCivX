@@ -1200,6 +1200,7 @@ protected:
 
 	void verifyCivics();
 
+	void updateUnprofiled(); // advc.256
 	void updateWar();
 	void updateMoves();
 	void updateTimers();

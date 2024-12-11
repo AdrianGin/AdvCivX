@@ -2189,9 +2189,10 @@ enum AudioTag
 	AUDIOTAG_COUNT,
 };
 
+// advc (caveat): Should add only to the end of this enum
 enum ActionSubTypes
 {
-	NO_ACTIONSUBTYPE,
+	NO_ACTIONSUBTYPE = -1,
 	ACTIONSUBTYPE_INTERFACEMODE,
 	ACTIONSUBTYPE_COMMAND,
 	ACTIONSUBTYPE_BUILD,
@@ -2201,6 +2202,8 @@ enum ActionSubTypes
 	ACTIONSUBTYPE_CORPORATION,
 	ACTIONSUBTYPE_SPECIALIST,
 	ACTIONSUBTYPE_BUILDING,
+	/*	This appears to be hardcoded in the EXE in code that opens an Advisor screen
+		while another Advisor screen is already open */
 	ACTIONSUBTYPE_CONTROL,
 	ACTIONSUBTYPE_AUTOMATE,
 	ACTIONSUBTYPE_MISSION,

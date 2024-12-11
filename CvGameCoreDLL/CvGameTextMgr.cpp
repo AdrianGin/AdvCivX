@@ -19871,6 +19871,21 @@ void CvGameTextMgr::setEspionageCostHelp(CvWStringBuffer &szBuffer,
 
 	if (kPlayer.getEspionageMissionCost(eMission, eTargetPlayer, pPlot, iExtraData, pSpyUnit) > 0)
 	{
+		/*	<advc.132> Normally no mission-specific cost breakdown here; mention
+			the effect of own civics/ religion only to reassure the player that
+			the mission is deliberately allowed when civic/ religion doesn't match. */
+		if (eTargetPlayer != NO_PLAYER &&
+			((kMission.getSwitchCivicCostFactor() > 0 &&
+			!kPlayer.isCivic((CivicTypes)iExtraData)) ||
+			(kMission.getSwitchReligionCostFactor() > 0 &&
+			kPlayer.getStateReligion() != iExtraData)))
+		{
+			szBuffer.append(NEWLINE);
+			szBuffer.append(gDLL->getText("TXT_KEY_ESPIONAGE_CIVIC_RELIGION_MOD",
+					kMission.getSwitchCivicCostFactor() > 0 ?
+					GC.getInfo((CivicTypes)iExtraData).getTextKeyWide() :
+					GC.getInfo((ReligionTypes)iExtraData).getTextKeyWide()));
+		} // </advc.132>
 		int iModifier = 100;
 		int iTempModifier = 0;
 		CvCity const* pCity = (pPlot == NULL ? NULL : pPlot->getPlotCity());

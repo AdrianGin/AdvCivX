@@ -190,7 +190,8 @@ bool SelfMod::testCodeLayout(byte* pBytes, int iBytes, uint uiStart) const
 						until SelfMod is finished */
 					"Debugger breakpoint?");
 		#endif
-			FErrorMsg("Unexpected memory layout of EXE");
+			FErrorMsg("Unexpected memory layout of EXE"
+				" (Steam version? will need to switch to \"unsupported beta\" version of BtS)");
 			return false;
 		}
 	}

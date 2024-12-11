@@ -272,8 +272,8 @@ public:
 
 	// advc.inl:
 	bool isCity() const
-	{	// (Should perhaps simply turn m_plotCity into a CvCity pointer.)
-		return (m_plotCity.iID != NO_PLAYER); // avoid ::getCity call
+	{
+		return m_plotCity.isIDSet(); // avoid ::getCity call
 	}
 	/*	advc: Deprecated; exported through .def file. Should use more specific checks
 		such as isCity (inline) or (CvTeam) isBase, isCityTrade, isCityDefense, isCityHeal. */
@@ -525,7 +525,7 @@ public:
 	void updateWorkingCity();
 	CvCity const* defaultWorkingCity() const; // advc
 	CvCity* getWorkingCityOverride() const;															// Exposed to Python
-	void setWorkingCityOverride(const CvCity* pNewValue);
+	void setWorkingCityOverride(CvCity* pNewValue);
 	// <advc.003u>
 	CvCityAI* AI_getWorkingCity() const;
 	CvCityAI* AI_getWorkingCityOverrideAI() const; // </advc.003u>
@@ -894,6 +894,8 @@ protected:
 		CvArea* m_pArea; // This acted as a cache in BtS (was mutable)
 		int m_iArea;
 	}; // </advc>
+	/*	advc (note): These aren't CvCity pointers b/c of the order of deserialization.
+		Could use the same pattern as above (union) though. */
 	IDInfo m_plotCity;
 	IDInfo m_workingCity;
 	IDInfo m_workingCityOverride;

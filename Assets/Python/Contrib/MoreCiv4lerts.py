@@ -27,12 +27,17 @@ class MoreCiv4lerts:
 
 	def __init__(self, eventManager):
 		## Init event handlers
-		# <advc.135b> One instance per player
+		# <advc.135b> One object per player
 		for iPlayer in range(gc.getMAX_PLAYERS()):
-			# advc.706: Not just for humans
-			if gc.getPlayer(iPlayer).isHuman() or gc.getGame().isOption(GameOptionTypes.GAMEOPTION_RISE_FALL):
-				MoreCiv4lertsEvent(eventManager, iPlayer)
-		# <advc.135b>
+			if (not gc.getPlayer(iPlayer).isHuman()
+					# advc.706: Not just for humans
+					and not gc.getGame().isOption(GameOptionTypes.GAMEOPTION_RISE_FALL)):
+				continue
+			# Don't need multiple objects in network games
+			if gc.getGame().isNetworkMultiPlayer() and iPlayer != gc.getGame().getActivePlayer():
+				continue
+			MoreCiv4lertsEvent(eventManager, iPlayer)
+		# </advc.135b>
 
 class AbstractMoreCiv4lertsEvent(object):
 	
@@ -89,7 +94,7 @@ class MoreCiv4lertsEvent( AbstractMoreCiv4lertsEvent):
 	
 	def reset(self, argsList=None):
 		# <advc.106c><advc.135b>
-		# Should perhaps just call checkAlerts with
+		# Should perhaps just call checkForAlerts with
 		# a silent=true parameter.
 		# advc.135b: owner instead of activePlayer
 		currentTurn = gc.getGame().getGameTurn()
@@ -259,7 +264,11 @@ class MoreCiv4lertsEvent( AbstractMoreCiv4lertsEvent):
 			teamPlayerList = []
 			teamPlayerList = PyGame.getCivTeamList(PyGame.getActiveTeam())
 			teamPlayerList.append(PyPlayer(iActivePlayer))
-			for loopPlayer in range(len(teamPlayerList)):
+			#for loopPlayer in range(len(teamPlayerList)):
+			# <advc.001> (from Taurus) Addressing the issue that EF points out in the body
+			for teamPlayer in teamPlayerList:
+				# Should be iLoopPlayer or something, but let's keep the changes minimal.
+				loopPlayer = teamPlayer.getID() # </advc.001>
 				lCity = []
 				# EF: This looks very wrong. Above the list of players will not be 0, 1, ...
 				#     but here it uses loopPlayer which is 0, 1, ...

@@ -71,6 +71,12 @@
 		<Italian>Generale</Italian>
 		<Spanish>General</Spanish>
 	</TEXT>
+	<!-- advc.256 (Not a great label name ...) -->
+	<TEXT>
+		<Tag>TXT_KEY_BUG_OPTLABEL_OVERALL</Tag>
+		<English>Overall:</English>
+		<German>Insgesamt:</German>
+	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPTLABEL_PROGRESSBARS</Tag>
 		<English>Progress Bars:</English>

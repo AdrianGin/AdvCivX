@@ -537,10 +537,7 @@ void CvPlayer::reset(PlayerTypes eID, bool bConstructorCall)
 		m_aVote.clear();
 		m_aUnitExtraCosts.clear();
 		m_triggersFired.clear();
-		// <advc.106b>
-		for(size_t i = 0; i < m_aMajorMsgs.size(); i++)
-			SAFE_DELETE(m_aMajorMsgs[i]);
-		m_aMajorMsgs.clear(); // </advc.106b>
+		clearMessageCopies(); // advc.106b
 	}
 
 	m_plotGroups.removeAll();
@@ -2008,8 +2005,13 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 	   AI player can get one more turn before being eliminated. Not normally a problem
 	   because there isn't much that a civ without cities can do, but I've had a
 	   case where a dead player arranged a vassal agreement. */
-	if(eOldOwner != NO_PLAYER)
-		GET_PLAYER(eOldOwner).verifyAlive(); // </advc.001>
+	if (eOldOwner != NO_PLAYER &&
+		/*	Handling human defeat during Auto Play at this point
+			can cause a crash when the Unit map layer is enabled */
+		!GET_PLAYER(eOldOwner).isHumanDisabled())
+	{
+		GET_PLAYER(eOldOwner).verifyAlive();
+	} // </advc.001>
 	// <advc.130w> Major power shift; good time to update expansionist hate.
 	for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
 	{
@@ -2813,7 +2815,7 @@ void CvPlayer::doTurn()
 		m_iNewMessages = 0;
 	/*  This way, NewMessages is never reset for non-humans. It is reset in
 		setHumanDisabled though, i.e. when coming out of AI Auto Play. */
-	if (isHuman())
+	if (isHuman() && isActive())
 		gDLL->UI().clearEventMessages();
 	// </advc.106b>
 
@@ -3201,6 +3203,13 @@ void CvPlayer::updatePlunder(int iChange, bool bUpdatePlotGroups)
 	}
 }
 
+// advc.184:
+void CvPlayer::updateMilitaryHappinessUnits()
+{
+	FOR_EACH_CITY_VAR(pCity, *this)
+		pCity->updateMilitaryHappinessUnits();
+}
+
 void CvPlayer::updateTimers()
 {
 	FOR_EACH_GROUP_VAR(pLoopSelectionGroup, *this)
@@ -3265,12 +3274,12 @@ bool CvPlayer::hasBusyUnit() const
 
 void CvPlayer::chooseTech(int iDiscover, CvWString szText, bool bFront)
 {
-	// K-Mod
+	// <K-Mod> (based on UNOFFICIAL_PATCH, Free Tech Popup Fix, 12/07/09, EmperorFool)
 	FAssert(isHuman());
 	if (iDiscover > 0)
-	{	// note: if iDiscover is > 1, this function will be called again with iDiscover-=1
+	{	// (K-Mod note: if iDiscover is > 1, this function will be called again with iDiscover-=1)
 		changeChoosingFreeTechCount(1);
-	} // K-Mod end
+	} // </K-Mod>
 
 	CvPopupInfo* pInfo = new CvPopupInfo(BUTTONPOPUP_CHOOSETECH);
 	if (pInfo != NULL)
@@ -3455,23 +3464,6 @@ int CvPlayer::countTotalCulture() const
 	FOR_EACH_CITY(pLoopCity, *this)
 		iCount += pLoopCity->getCultureTimes100(getID());
 	return iCount/100;
-}
-
-
-int CvPlayer::countCityFeatures(FeatureTypes eFeature) const
-{
-	PROFILE_FUNC();
-
-	int iCount = 0;
-	FOR_EACH_CITY(pLoopCity, *this)
-	{
-		for (CityPlotIter it(*pLoopCity); it.hasNext(); ++it)
-		{
-			if (it->getFeatureType() == eFeature)
-				iCount++;
-		}
-	}
-	return iCount;
 }
 
 
@@ -6170,6 +6162,8 @@ int CvPlayer::calculateInflationRate() const
 	int iTurns = (kGame.getGameTurn() + kGame.getElapsedGameTurns()) / 2;
 	if (kGame.getMaxTurns() > 0)
 		iTurns = std::min(kGame.getMaxTurns(), iTurns);
+	// advc.084: In case that Time victory is disabled
+	else iTurns = std::min(kGame.getEstimateEndTurn(), iTurns);
 	iTurns += GC.getInfo(kGame.getGameSpeedType()).getInflationOffset();
 	if (iTurns <= 0)
 		return 0;
@@ -6509,6 +6503,9 @@ bool CvPlayer::canResearch(TechTypes eTech, bool bTrade,
 			return false;
 		}
 	}
+	// <advc.307> Don't allow Barbarians to innovate
+	if (isBarbarian() && GC.getGame().countKnownTechNumTeams(eTech) <= 0)
+		return false; // </advc.307>
 
 	if (!canEverResearch(eTech))
 		return false;
@@ -6921,7 +6918,8 @@ void CvPlayer::convert(ReligionTypes eReligion, /* <advc.001v> */ bool bForce)
 	if (isActive())
 	{
 		killAll(BUTTONPOPUP_CHANGERELIGION);
-		if(iAnarchyLength > 0) {
+		if (iAnarchyLength > 0)
+		{
 			killAll(BUTTONPOPUP_CHOOSEPRODUCTION);
 			killAll(BUTTONPOPUP_CHOOSETECH);
 		}
@@ -8940,7 +8938,9 @@ void CvPlayer::setTurnActive(bool bNewValue, bool bDoTurn)
 					if (isActive())
 					{
 						/*  Make sure that Python events like Civ4lerts are
-							triggered before processing messages */
+							triggered before processing messages. Don't consider
+							those to be in-between-turn messages, however. */
+						GC.getGame().setInBetweenTurns(false);
 						CyArgsList pyArgs;
 						pyArgs.add(kGame.getTurnSlice());
 						CvEventReporter::getInstance().genericEvent("gameUpdate", pyArgs.makeFunctionArgs());
@@ -8959,10 +8959,8 @@ void CvPlayer::setTurnActive(bool bNewValue, bool bDoTurn)
 				else if (kGame.isFinalInitialized()) // No initial autosave here
 					kGame.autoSave(); // <advc.106l>
 			} // </advc.044>
-			// <advc.106b> Clear messages in any case (in particular during AIAutoPlay)
-			for (size_t i = 0; i < m_aMajorMsgs.size(); i++)
-				SAFE_DELETE(m_aMajorMsgs[i]);
-			m_aMajorMsgs.clear(); // </106b>
+			// advc.106b: Clear messages in any case (in particular during AIAutoPlay)
+			clearMessageCopies();
 		}
 
 		if (isActive())
@@ -10981,7 +10979,7 @@ void CvPlayer::addMessage(CvTalkingHeadMessage const& kMessage)
 {
 	// <advc.706> Remove messages arriving during interlude from display immediately
 	CvGame const& kGame = GC.getGame();
-	if(kGame.isOption(GAMEOPTION_RISE_FALL) && isActive() &&
+	if (kGame.isOption(GAMEOPTION_RISE_FALL) && isActive() &&
 		kGame.getRiseFall().getInterludeCountdown() >= 0)
 	{
 		gDLL->UI().clearEventMessages();
@@ -10989,19 +10987,25 @@ void CvPlayer::addMessage(CvTalkingHeadMessage const& kMessage)
 	m_listGameMessages.push_back(kMessage);
 	// <advc.106b>
 	// Special treatment only for events in other civs' turns.
-	if(!kGame.isInBetweenTurns() && isActive())
+	if (!kGame.isInBetweenTurns() && isActive())
 		return;
 	/* DISPLAY_ONLY, COMBAT, CHAT, QUEST don't show up on the Event tab
 	   of the Turn Log, and therefore shouldn't count.
 	   (That is assuming that quests also send INFO messages, which I haven't
 	   verified - tbd.) */
 	InterfaceMessageTypes eMessage = kMessage.getMessageType();
-	if(eMessage == MESSAGE_TYPE_INFO || eMessage == MESSAGE_TYPE_MINOR_EVENT ||
+	if (eMessage == MESSAGE_TYPE_INFO || eMessage == MESSAGE_TYPE_MINOR_EVENT ||
 		eMessage == MESSAGE_TYPE_MAJOR_EVENT || eMessage == MESSAGE_TYPE_MAJOR_EVENT_LOG_ONLY)
 	{
 		m_iNewMessages++; // See comment in postProcessBeginTurnEvents
 	}
-	if(eMessage == MESSAGE_TYPE_MAJOR_EVENT)
+	/*	Hotseat clears some messages before players get to see them; we'll show them
+		again at the start of the recipient's next turn. */
+	bool const bMissedMsg = (kGame.isHotSeat() && isActive() &&
+			(eMessage == MESSAGE_TYPE_MINOR_EVENT ||
+			eMessage == MESSAGE_TYPE_MAJOR_EVENT ||
+			eMessage == MESSAGE_TYPE_INFO));
+	if (eMessage == MESSAGE_TYPE_MAJOR_EVENT || bMissedMsg)
 	{
 		/*  Need to make a copy b/c, apparently, the EXE deletes the original
 			before postProcessBeginTurnEvents gets called. */
@@ -11012,11 +11016,40 @@ void CvPlayer::addMessage(CvTalkingHeadMessage const& kMessage)
 				MESSAGE_TYPE_MAJOR_EVENT, kMessage.getIcon(), kMessage.getFlashColor(),
 				kMessage.getX(), kMessage.getY(), kMessage.getOffScreenArrows(),
 				kMessage.getOnScreenArrows());
-		m_aMajorMsgs.push_back(pCopy);
+		if (eMessage == MESSAGE_TYPE_MAJOR_EVENT)
+			m_aMajorMsgs.push_back(pCopy);
+		if (bMissedMsg)
+			m_aHotSeatMsgs.push_back(pCopy);
 	} // </advc.106b>
 }
 
 // <advc.106b>
+void CvPlayer::clearMessageCopies(std::vector<CvTalkingHeadMessage*>* pContainer)
+{
+	if (pContainer == NULL)
+	{
+		clearMessageCopies(&m_aMajorMsgs);
+		clearMessageCopies(&m_aHotSeatMsgs);
+		return;
+	}
+	for(size_t i = 0; i < pContainer->size(); i++)
+		SAFE_DELETE((*pContainer)[i]);
+	pContainer->clear();
+}
+
+void CvPlayer::showMessageCopies(std::vector<CvTalkingHeadMessage*>* pContainer)
+{
+	if (pContainer == NULL)
+	{
+		showMessageCopies(&m_aMajorMsgs);
+		showMessageCopies(&m_aHotSeatMsgs);
+		return;
+	}
+	for (size_t i = 0; i < pContainer->size(); i++)
+		gDLL->UI().showMessage(*(*pContainer)[i]);
+}
+
+
 void CvPlayer::postProcessMessages()
 {
 	/* Determining how many messages are being displayed:
@@ -11035,33 +11068,33 @@ void CvPlayer::postProcessMessages()
 	   b/c of the splash screen. Don't want to suppress it b/c it should go
 	   into the log, but don't count it when deciding whether to open the log
 	   b/c the tech finished message doesn't take up much attention. */
-	if(getCurrentResearch() == NO_TECH)
+	if (getCurrentResearch() == NO_TECH)
 		m_iNewMessages--;
 	// Don't open the Turn Log when there's only first-contact diplo
 	bool bRelevantDiplo = false;
-	if(!m_listDiplomacy.empty() && m_iNewMessages > 0)
+	if (!m_listDiplomacy.empty() && m_iNewMessages > 0)
 	{
 		TCHAR const* aszRelevantNonOffers[] = { "CANCEL_DEAL", "RELIGION_PRESSURE",
 			"CIVIC_PRESSURE", "JOIN_WAR", "STOP_TRADING",
 		};
-		for(CvDiploQueue::const_iterator it = m_listDiplomacy.begin(); it !=
+		for (CvDiploQueue::const_iterator it = m_listDiplomacy.begin(); it !=
 			m_listDiplomacy.end(); ++it)
 		{
 			CvDiploParameters* dp = *it;
-			if(dp == NULL)
+			if (dp == NULL)
 			{
 				FAssert(dp != NULL);
 				continue;
 			}
-			if(dp->getHumanDiplo() || dp->getOurOfferList().getLength() > 0 ||
+			if (dp->getHumanDiplo() || dp->getOurOfferList().getLength() > 0 ||
 				dp->getTheirOfferList().getLength() > 0)
 			{
 				bRelevantDiplo = true;
 				break;
 			}
-			for(int i = 0; i < ARRAYSIZE(aszRelevantNonOffers); i++)
+			for (int i = 0; i < ARRAYSIZE(aszRelevantNonOffers); i++)
 			{
-				if(dp->getDiploComment() == GC.getAIDiploCommentType(aszRelevantNonOffers[i]))
+				if (dp->getDiploComment() == GC.getAIDiploCommentType(aszRelevantNonOffers[i]))
 				{
 					bRelevantDiplo = true;
 					break;
@@ -11069,37 +11102,33 @@ void CvPlayer::postProcessMessages()
 			}
 		}
 	}
-	if (!GC.getGame().getAIAutoPlay() && iLimit >= 0 && (m_iNewMessages > iLimit ||
-		(m_iNewMessages > 0 && (bRelevantDiplo ||
-		/*  Hotseat seems to show messages only if there hasn't been another
-			human turn since the message was triggered (can't check that here;
-			have to show the Turn Log in all cases). */
-		GC.getGame().isHotSeat()))))
+	bool const bHotSeat = GC.getGame().isHotSeat();
+	if (!GC.getGame().getAIAutoPlay())
 	{
-		gDLL->UI().clearEventMessages();
-		if(!GC.getGame().isHotSeat())
+		if (iLimit >= 0 && (m_iNewMessages > iLimit ||
+			(m_iNewMessages > 0 && bRelevantDiplo)))
 		{
+			gDLL->UI().clearEventMessages();
 			/*  Show major events even if the Turn Log gets opened. As with
 				NewMessages, CvPlayer needs to keep track of the recent messages;
 				use aMajorMsgs for that. */
-			for(size_t i = 0; i < m_aMajorMsgs.size(); i++)
-				gDLL->UI().showMessage(*m_aMajorMsgs[i]);
+			showMessageCopies(&m_aMajorMsgs);
+			gDLL->UI().showTurnLog();
 		}
-		gDLL->UI().showTurnLog();
+		// Messages that were missed b/c they were cleared too early
+		else if (bHotSeat)
+			showMessageCopies(&m_aHotSeatMsgs);
 	}
 	// Clear messages in any case
-	for(size_t i = 0; i < m_aMajorMsgs.size(); i++)
-		SAFE_DELETE(m_aMajorMsgs[i]);
-	m_aMajorMsgs.clear();
-	GC.getGame().setInBetweenTurns(false);
+	clearMessageCopies();
 }
 
 int CvPlayer::getStartOfTurnMessageLimit() const
 {
-	if(!BUGOption::isEnabled("MainInterface__AutoOpenEventLog", true))
+	if (!BUGOption::isEnabled("MainInterface__AutoOpenEventLog", true))
 		return -1;
 	int iR = BUGOption::getValue("MainInterface__MessageLimit", 3);
-	if(!isOption(PLAYEROPTION_MINIMIZE_POP_UPS) &&
+	if (!isOption(PLAYEROPTION_MINIMIZE_POP_UPS) &&
 		GC.getDefineINT("MESSAGE_LIMIT_WITHOUT_MPU") == 0)
 	{
 		return -1;
@@ -14892,7 +14921,7 @@ void CvPlayer::write(FDataStreamBase* pStream)
 		/*	<advc.001> Don't store popups for AI players. The EXE sometimes adds popups
 			to AI players through CvPlayer::getPopups; not sure when and why. Those popups
 			linger and appear when switching to an AI player through Alt+Z. */
-		if (!isActive())
+		if (!isHuman())
 		{
 			currentPopups.clear();
 			clearPopups();

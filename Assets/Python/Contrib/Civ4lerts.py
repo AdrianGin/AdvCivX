@@ -102,24 +102,34 @@ class Civ4lerts:
 
 	def __init__(self, eventManager):
 		cityEvent = BeginActivePlayerTurnCityAlertManager(eventManager)
-		#cityEvent.add(CityOccupation(eventManager)) # advc.210b: Disabled
-		cityEvent.add(CityGrowth(eventManager))
-		cityEvent.add(CityHealthiness(eventManager))
-		cityEvent.add(CityHappiness(eventManager))
-		cityEvent.add(CanHurryPopulation(eventManager))
-		cityEvent.add(CanHurryGold(eventManager))
-		# advc (note): This thing triggers once all units have received orders. Pretty weird.
-		cityEvent = EndTurnReadyCityAlertManager(eventManager)
-		cityEvent.add(CityPendingGrowth(eventManager))
-		
+		# <advc.135b> One object per Hotseat player
+		for iPlayer in range(gc.getMAX_PLAYERS()):
+			if (not gc.getPlayer(iPlayer).isHuman()
+					# advc.706: Not just for humans
+					and not gc.getGame().isOption(GameOptionTypes.GAMEOPTION_RISE_FALL)):	
+				continue
+			# Don't need multiple objects in network games
+			if gc.getGame().isNetworkMultiPlayer() and iPlayer != gc.getGame().getActivePlayer():
+				continue
+			# (iPlayer params added below) </advc.135b>
+			#cityEvent.add(CityOccupation(eventManager, iPlayer)) # advc.210b: Disabled
+			cityEvent.add(CityGrowth(eventManager, iPlayer))
+			cityEvent.add(CityHealthiness(eventManager, iPlayer))
+			cityEvent.add(CityHappiness(eventManager, iPlayer))
+			cityEvent.add(CanHurryPopulation(eventManager, iPlayer))
+			cityEvent.add(CanHurryGold(eventManager, iPlayer))
+			# advc (note): This thing triggers once all units have received orders. Pretty weird.
+			cityEvent = EndTurnReadyCityAlertManager(eventManager)
+			cityEvent.add(CityPendingGrowth(eventManager, iPlayer))
+			GoldTrade(eventManager, iPlayer)
+			GoldPerTurnTrade(eventManager, iPlayer)
+			RefusesToTalk(eventManager, iPlayer)
+			WorstEnemy(eventManager, iPlayer)
+
 		WarTrade(eventManager) # advc.210a
 		Revolt(eventManager) # advc.210b
 		BonusThirdParties(eventManager) # advc.210d
 		CityTrade(eventManager) # advc.ctr
-		GoldTrade(eventManager)
-		GoldPerTurnTrade(eventManager)
-		RefusesToTalk(eventManager)
-		WorstEnemy(eventManager)
 
 # <advc.127>
 def isSilent():
@@ -246,7 +256,8 @@ class AbstractCityAlertManager(AbstractStatefulAlert):
 		ePlayer, player = PlayerUtil.getActivePlayerAndID()
 		for city in PlayerUtil.playerCities(player):
 			for alert in self.alerts:
-				alert.checkCity(getCityId(city), city, ePlayer, player)
+				if alert.iOwner == ePlayer: # advc.135b: Only alerts owned by active player
+					alert.checkCity(getCityId(city), city, ePlayer, player)
 
 	def _init(self):
 		"Initializes each alert."
@@ -261,12 +272,14 @@ class AbstractCityAlertManager(AbstractStatefulAlert):
 	def _resetCity(self, city):
 		"tells each alert to check the state of the given city -- no alerts are displayed."
 		for alert in self.alerts:
+			# advc.135b (note): Can't hurt to reset alerts of all players, I guess.
 			alert.resetCity(city)
 
 	def _discardCity(self, city):
 		"tells each alert to discard the state of the given city."
 		for alert in self.alerts:
-			alert.discardCity(city)
+			if alert.iOwner == gc.getGame().getActivePlayer(): # advc.135b: Only alerts of active player
+				alert.discardCity(city)
 
 class BeginActivePlayerTurnCityAlertManager(AbstractCityAlertManager):
 	"""
@@ -304,7 +317,8 @@ class AbstractCityAlert:
 	Tracks cities from turn-to-turn and checks each at the end of every game turn
 	to see if the alert should be displayed.
 	"""
-	def __init__(self, eventManager):
+	def __init__(self, eventManager, iPlayer): # advc.135b: iPlayer param, also added to subclasses.
+		self.iOwner = iPlayer # advc.135b: Attribute added
 		"Performs static initialization that doesn't require game data."
 		pass
 	
@@ -319,7 +333,8 @@ class AbstractCityAlert:
 	def reset(self):
 		"Clears state kept for each city."
 		self._beforeReset()
-		player = PlayerUtil.getActivePlayer()
+		#player = PlayerUtil.getActivePlayer()
+		player = gc.getPlayer(self.iOwner) # advc.135b
 		for city in PlayerUtil.playerCities(player):
 			self.resetCity(city)
 	
@@ -342,8 +357,8 @@ class AbstractCityTestAlert(AbstractCityAlert):
 	
 	State: set of city IDs that pass the test.
 	"""
-	def __init__(self, eventManager):
-		AbstractCityAlert.__init__(self, eventManager)
+	def __init__(self, eventManager, iPlayer):
+		AbstractCityAlert.__init__(self, eventManager, iPlayer)
 
 	def checkCity(self, cityId, city, iPlayer, player):
 		message = None
@@ -421,8 +436,8 @@ class CityPendingGrowth(AbstractCityAlert):
 	Displays an alert when a city's population will change next turn.
 	State: None.
 	"""
-	def __init__(self, eventManager):
-		AbstractCityAlert.__init__(self, eventManager)
+	def __init__(self, eventManager, iPlayer):
+		AbstractCityAlert.__init__(self, eventManager, iPlayer)
 	
 	def checkCity(self, cityId, city, iPlayer, player):
 		if (Civ4lertsOpt.isShowCityPendingGrowthAlert()):
@@ -445,8 +460,8 @@ class CityGrowth(AbstractCityAlert):
 	Displays an alert when a city's population changes.
 	State: map of populations by city ID.
 	"""
-	def __init__(self, eventManager):
-		AbstractCityAlert.__init__(self, eventManager)
+	def __init__(self, eventManager, iPlayer):
+		AbstractCityAlert.__init__(self, eventManager, iPlayer)
 	
 	def checkCity(self, cityId, city, iPlayer, player):
 		if (cityId not in self.populations):
@@ -508,8 +523,8 @@ class CityHappiness(AbstractCityTestAlert):
 	
 	Test: True if the city is unhappy.
 	"""
-	def __init__(self, eventManager):
-		AbstractCityTestAlert.__init__(self, eventManager)
+	def __init__(self, eventManager, iPlayer):
+		AbstractCityTestAlert.__init__(self, eventManager, iPlayer)
 	
 	def init(self):
 		AbstractCityAlert.init(self)
@@ -577,8 +592,8 @@ class CityHealthiness(AbstractCityTestAlert):
 	
 	Test: True if the city is unhealthy.
 	"""
-	def __init__(self, eventManager):
-		AbstractCityTestAlert.__init__(self, eventManager)
+	def __init__(self, eventManager, iPlayer):
+		AbstractCityTestAlert.__init__(self, eventManager, iPlayer)
 	
 	def _passesTest(self, city):
 		return city.healthRate(False, 0) < 0
@@ -626,8 +641,8 @@ class CityOccupation(AbstractCityTestAlert):
 	
 	Test: True if the city is under occupation.
 	"""
-	def __init__(self, eventManager):
-		AbstractCityTestAlert.__init__(self, eventManager)
+	def __init__(self, eventManager, iPlayer):
+		AbstractCityTestAlert.__init__(self, eventManager, iPlayer)
 	
 	def _passesTest(self, city):
 		return city.isOccupation()
@@ -671,8 +686,8 @@ class AbstractCanHurry(AbstractCityTestAlert):
 	
 	Test: True if the city can hurry.
 	"""
-	def __init__(self, eventManager):
-		AbstractCityTestAlert.__init__(self, eventManager)
+	def __init__(self, eventManager, iPlayer):
+		AbstractCityTestAlert.__init__(self, eventManager, iPlayer)
 		eventManager.addEventHandler("cityBuildingUnit", self.onCityBuildingUnit)
 		eventManager.addEventHandler("cityBuildingBuilding", self.onCityBuildingBuilding)
 		eventManager.addEventHandler("cityBuildingProject", self.onCityBuildingProject)
@@ -703,7 +718,7 @@ class AbstractCanHurry(AbstractCityTestAlert):
 		self._onItemStarted(city)
 
 	def _onItemStarted(self, city):
-		if (city.getOwner() == gc.getGame().getActivePlayer()):
+		if (city.getOwner() == self.iOwner): # advc.135b: Right side was active player
 			self.discardCity(city)
 	
 	def _passesTest(self, city):
@@ -733,8 +748,8 @@ class CanHurryPopulation(AbstractCanHurry):
 	"""
 	Displays an alert when a city can hurry using population.
 	"""
-	def __init__(self, eventManager): 
-		AbstractCanHurry.__init__(self, eventManager)
+	def __init__(self, eventManager, iPlayer): 
+		AbstractCanHurry.__init__(self, eventManager, iPlayer)
 		
 	def init(self):
 		AbstractCanHurry.init(self, "HURRY_POPULATION")
@@ -768,8 +783,8 @@ class CanHurryGold(AbstractCanHurry):
 	"""
 	Displays an alert when a city can hurry using gold.
 	"""
-	def __init__(self, eventManager): 
-		AbstractCanHurry.__init__(self, eventManager)
+	def __init__(self, eventManager, iPlayer): 
+		AbstractCanHurry.__init__(self, eventManager, iPlayer)
 
 	def init(self):
 		AbstractCanHurry.init(self, "HURRY_GOLD")
@@ -790,15 +805,17 @@ class GoldTrade(AbstractStatefulAlert):
 	Displays an alert when a civilization has a significant increase
 	in gold available for trade since the last alert.
 	"""
-	def __init__(self, eventManager):
+	def __init__(self, eventManager, iPlayer):
 		AbstractStatefulAlert.__init__(self, eventManager)
+		self.iOwner = iPlayer # advc.035b
 		eventManager.addEventHandler("BeginActivePlayerTurn", self.onBeginActivePlayerTurn)
 
 	def onBeginActivePlayerTurn(self, argsList):
 		if isSilent(): return # advc.127
 		if (not Civ4lertsOpt.isShowGoldTradeAlert()):
 			return
-		playerID = PlayerUtil.getActivePlayerID()
+		#playerID = PlayerUtil.getActivePlayerID()
+		playerID = self.iOwner # advc.135b
 		for rival in TradeUtil.getGoldTradePartners(playerID):
 			rivalID = rival.getID()
 			oldMaxGoldTrade = self._getMaxGoldTrade(playerID, rivalID)
@@ -834,15 +851,17 @@ class GoldPerTurnTrade(AbstractStatefulAlert):
 	Displays an alert when a civilization has a significant increase
 	in gold per turn available for trade since the last alert.
 	"""
-	def __init__(self, eventManager):
+	def __init__(self, eventManager, iPlayer):
 		AbstractStatefulAlert.__init__(self, eventManager)
+		self.iOwner = iPlayer # advc.035b
 		eventManager.addEventHandler("BeginActivePlayerTurn", self.onBeginActivePlayerTurn)
 
 	def onBeginActivePlayerTurn(self, argsList):
 		if isSilent(): return # advc.127
 		if (not Civ4lertsOpt.isShowGoldPerTurnTradeAlert()):
 			return
-		playerID = PlayerUtil.getActivePlayerID()
+		#playerID = PlayerUtil.getActivePlayerID()
+		playerID = self.iOwner # advc.135b
 		for rival in TradeUtil.getGoldTradePartners(playerID):
 			rivalID = rival.getID()
 			oldMaxGoldPerTurnTrade = self._getMaxGoldPerTurnTrade(playerID, rivalID)
@@ -881,8 +900,9 @@ class RefusesToTalk(AbstractStatefulAlert):
 	"""
 	Displays an alert when a civilization cuts off or reestablishes communication.
 	"""
-	def __init__(self, eventManager):
+	def __init__(self, eventManager, iPlayer):
 		AbstractStatefulAlert.__init__(self, eventManager)
+		self.iOwner = iPlayer # advc.035b
 		eventManager.addEventHandler("BeginActivePlayerTurn", self.onBeginActivePlayerTurn)
 ##
 # K-Mod, 15/jan/11, karadoc
@@ -905,6 +925,15 @@ class RefusesToTalk(AbstractStatefulAlert):
 	def onChangeWar(self, argsList):
 		if isSilent(): return # advc.127
 		bIsWar, eTeam, eRivalTeam = argsList
+		# <advc.001> (from Taurus) Barbarian wars can cause problems
+		# b/c CvGame::initDiplomacy happens so early
+		if (eTeam != TeamTypes.NO_TEAM and
+			(gc.getTeam(eTeam).isBarbarian() or gc.getTeam(eTeam).isMinorCiv())):
+			return
+		if (eRivalTeam != TeamTypes.NO_TEAM and
+			(gc.getTeam(eRivalTeam).isBarbarian() or gc.getTeam(eRivalTeam).isMinorCiv())):
+			return
+		# </advc.001>
 		self.checkIfIsAnyOrHasMetAllTeams(eTeam, eRivalTeam)
 		
 	def onCityRazed(self, argsList):
@@ -926,39 +955,45 @@ class RefusesToTalk(AbstractStatefulAlert):
 		"""
 		Calls check() only if the active team is any or has met all of the given teams.
 		"""
-		eActiveTeam, activeTeam = PlayerUtil.getActiveTeamAndID()
+		#eActiveTeam, activeTeam = PlayerUtil.getActiveTeamAndID()
+		eOwnerTeam = gc.getPlayer(self.iOwner).getTeam() # advc.135b
 		for eTeam in eTeams:
-			if eActiveTeam != eTeam and not activeTeam.isHasMet(eTeam):
+			#if eActiveTeam != eTeam and not activeTeam.isHasMet(eTeam):
+			if eOwnerTeam != eTeam and not gc.getTeam(eOwnerTeam).isHasMet(eTeam):
 				return
 		self.check()
 
 	def check(self):
 		if (not Civ4lertsOpt.isShowRefusesToTalkAlert()):
 			return
-		eActivePlayer, activePlayer = PlayerUtil.getActivePlayerAndID()
+		#eActivePlayer, activePlayer = PlayerUtil.getActivePlayerAndID()
+		owner = gc.getPlayer(self.iOwner) # advc.135b (though probably makes no difference here(?))
 		try: # advc.009b
-			refusals = self.refusals[eActivePlayer]
+			refusals = self.refusals[owner.getID()] # advc.135b: was eActivePlayer
 		# <advc.009b>
 		except(AttributeError, KeyError):
 			return # </advc.009b>
 		newRefusals = set()
 		newRefusalsDisplay = set() # advc.106d: Don't necessarily display them all
 		for player in PlayerUtil.players(True, False, False, False):
-			if DiplomacyUtil.canContact(activePlayer, player) and not DiplomacyUtil.isWillingToTalk(player, eActivePlayer):
+			# advc.135b: Active player replaced with owner
+			if DiplomacyUtil.canContact(owner, player) and not DiplomacyUtil.isWillingToTalk(player, owner.getID()):
 				newRefusals.add(player.getID())
 				# <advc.106d> Don't report refusal when war just begun, nor when stopped trading (i.e. when not at war).
-				if gc.getTeam(gc.getPlayer(eActivePlayer).getTeam()).isAtWar(player.getTeam()) and gc.getTeam(gc.getPlayer(eActivePlayer).getTeam()).AI_getAtWarCounter(player.getTeam()) > 1:
+				# (advc.135b: Active player instead of owner)
+				if gc.getTeam(owner.getTeam()).isAtWar(player.getTeam()) and gc.getTeam(owner.getTeam()).AI_getAtWarCounter(player.getTeam()) > 1:
 					newRefusalsDisplay.add(player.getID()) # </advc.106d>
-		self.display(eActivePlayer, "TXT_KEY_CIV4LERTS_ON_WILLING_TO_TALK", refusals.difference(newRefusals))
-		self.display(eActivePlayer, "TXT_KEY_CIV4LERTS_ON_REFUSES_TO_TALK", newRefusalsDisplay.difference(refusals)) # advc.106d: was newRefusals...
-		self.refusals[eActivePlayer] = newRefusals
+		# <advc.135b> Owner instead of active player
+		self.display(owner.getID(), "TXT_KEY_CIV4LERTS_ON_WILLING_TO_TALK", refusals.difference(newRefusals))
+		self.display(owner.getID(), "TXT_KEY_CIV4LERTS_ON_REFUSES_TO_TALK", newRefusalsDisplay.difference(refusals)) # advc.106d: was newRefusals...
+		self.refusals[owner.getID()] = newRefusals # </advc.135b>
 	
-	def display(self, eActivePlayer, key, players):
+	def display(self, eToPlayer, key, players): # advc.135b: Player param renamed from eActivePlayer
 		for ePlayer in players:
 			player = gc.getPlayer(ePlayer)
 			if player.isAlive():
 				message = BugUtil.getText(key, player.getName())
-				addMessageNoIcon(eActivePlayer, message)
+				addMessageNoIcon(eToPlayer, message)
 
 	def _reset(self):
 		self.refusals = {}
@@ -975,8 +1010,9 @@ class WorstEnemy(AbstractStatefulAlert):
 	"""
 	Displays an alert when a civilization's worst enemy changes.
 	"""
-	def __init__(self, eventManager):
+	def __init__(self, eventManager, iPlayer):
 		AbstractStatefulAlert.__init__(self, eventManager)
+		self.iOwner = iPlayer # advc.035b
 		eventManager.addEventHandler("BeginActivePlayerTurn", self.onBeginActivePlayerTurn)
 # EF: the worst enemy is updated at the end of each team's turn, so these are pointless
 		# <advc.130e> Now updated more timely, so these aren't pointless;
@@ -1025,9 +1061,11 @@ class WorstEnemy(AbstractStatefulAlert):
 		"""
 		Calls check() only if the active team is any or has met all of the given teams.
 		"""
-		eActiveTeam, activeTeam = PlayerUtil.getActiveTeamAndID()
+		#eActiveTeam, activeTeam = PlayerUtil.getActiveTeamAndID()
+		eOwnerTeam = gc.getPlayer(self.iOwner).getTeam() # advc.135b
 		for eTeam in eTeams:
-			if eActiveTeam != eTeam and not activeTeam.isHasMet(eTeam):
+			# advc.135b: Owner team instead of active team
+			if eOwnerTeam != eTeam and not gc.getTeam(eOwnerTeam).isHasMet(eTeam):
 				return
 		self.check()
 
@@ -1036,28 +1074,31 @@ class WorstEnemy(AbstractStatefulAlert):
 	def check(self, silent=False):
 		if (not Civ4lertsOpt.isShowWorstEnemyAlert()):
 			return
-		eActivePlayer = PlayerUtil.getActivePlayerID()
-		eActiveTeam, activeTeam = PlayerUtil.getActiveTeamAndID()
+		#eActivePlayer = PlayerUtil.getActivePlayerID()
+		#eActiveTeam, activeTeam = PlayerUtil.getActiveTeamAndID()
+		eOwnerTeam = gc.getPlayer(self.iOwner).getTeam() # advc.135b
 		try: # advc.009b
-			enemies = self.enemies[eActivePlayer]
+			enemies = self.enemies[self.iOwner] # advc.135b: was active player
 		# <advc.009b>
 		except(AttributeError, KeyError):
 			return # </advc.009b>
 		newEnemies = AttitudeUtil.getWorstEnemyTeams()
 		delayedMessages = {}
 		for eTeam, eNewEnemy in newEnemies.iteritems():
-			if activeTeam.isHasMet(eTeam):
+			if gc.getTeam(eOwnerTeam).isHasMet(eTeam): # advc.135b: was active team
 				eOldEnemy = enemies[eTeam]
 				if eOldEnemy != -1 and not gc.getTeam(eOldEnemy).isAlive():
 					eOldEnemy = -1
 					enemies[eTeam] = -1
 				#if eActiveTeam != eNewEnemy and not activeTeam.isHasMet(eNewEnemy):
-				if eNewEnemy != -1 and not activeTeam.isHasMet(eNewEnemy): # K-Mod. (isHasMet(-1) could cause a seg-fault.)
+				# K-Mod. (isHasMet(-1) could cause a seg-fault.)
+				# advc.135b: Owner team instead of active team
+				if eNewEnemy != -1 and not gc.getTeam(eOwnerTeam).isHasMet(eNewEnemy):
 					eNewEnemy = -1
 				if eOldEnemy != eNewEnemy:
 					enemies[eTeam] = eNewEnemy
 					if eNewEnemy == -1:
-						if eOldEnemy == eActiveTeam:
+						if eOldEnemy == eOwnerTeam: # advc.135b: Right side was active team
 							message = BugUtil.getText("TXT_KEY_CIV4LERTS_ON_YOU_NO_WORST_ENEMY", gc.getTeam(eTeam).getName())
 						else:
 							message = BugUtil.getText("TXT_KEY_CIV4LERTS_ON_NO_WORST_ENEMY", 
@@ -1069,24 +1110,24 @@ class WorstEnemy(AbstractStatefulAlert):
 						else:
 							delayedMessages[eNewEnemy] += u", " + gc.getTeam(eTeam).getName()
 					else:
-						if eOldEnemy == eActiveTeam:
+						if eOldEnemy == eOwnerTeam: # advc.135b: Right side was active team
 							message = BugUtil.getText("TXT_KEY_CIV4LERTS_ON_SWITCH_WORST_ENEMY_FROM_YOU", 
 									(gc.getTeam(eTeam).getName(), gc.getTeam(eNewEnemy).getName()))
-						elif eNewEnemy == eActiveTeam:
+						elif eNewEnemy == eOwnerTeam: # advc.135b: Right side was active team
 							message = BugUtil.getText("TXT_KEY_CIV4LERTS_ON_SWITCH_WORST_ENEMY_TO_YOU", 
 									(gc.getTeam(eTeam).getName(), gc.getTeam(eOldEnemy).getName()))
 						else:
 							message = BugUtil.getText("TXT_KEY_CIV4LERTS_ON_SWITCH_WORST_ENEMY", 
 									(gc.getTeam(eTeam).getName(), gc.getTeam(eNewEnemy).getName(), gc.getTeam(eOldEnemy).getName()))
 					if message and not silent: # advc.106c
-						addMessageNoIcon(eActivePlayer, message)
+						addMessageNoIcon(self.iOwner, message) # advc.135b: 1st arg was active player
 		for eEnemy, haters in delayedMessages.iteritems():
-			if eActiveTeam == eEnemy:
+			if eOwnerTeam == eEnemy: # advc.135b: Left side was active team
 				message = BugUtil.getText("TXT_KEY_CIV4LERTS_ON_YOU_WORST_ENEMY", haters)
 			else:
 				message = BugUtil.getText("TXT_KEY_CIV4LERTS_ON_WORST_ENEMY", (haters, gc.getTeam(eEnemy).getName()))
 			if not silent: # advc.106c
-				addMessageNoIcon(eActivePlayer, message)
+				addMessageNoIcon(self.iOwner, message) # advc.135b: Left side was active team
 
 	def _reset(self):
 		"""
@@ -1109,7 +1150,9 @@ class AdvCiv4lert(AbstractStatefulAlert):
 
 	def check(self, silent=False):
 		if self.isEnabled():
-			gc.getPlayer(PlayerUtil.getActivePlayerID()).checkAlert(self.getID(), silent)
+			activePlayer = gc.getPlayer(PlayerUtil.getActivePlayerID())
+			if activePlayer.isHuman():
+				activePlayer.checkAlert(self.getID(), silent)
 
 	def _reset(self):
 		self.check(True)

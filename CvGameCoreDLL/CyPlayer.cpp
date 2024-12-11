@@ -261,7 +261,9 @@ int CyPlayer::countUnimprovedBonuses(CyArea* pArea, CyPlot* pFromPlot)
 
 int CyPlayer::countCityFeatures(int /*FeatureTypes*/ eFeature)
 {
-	return m_pPlayer ? m_pPlayer->countCityFeatures((FeatureTypes) eFeature) : -1;
+	return m_pPlayer ?
+			m_pPlayer->AI().AI_countCityFeatures( // advc.042
+			(FeatureTypes)eFeature) : -1;
 }
 
 int CyPlayer::countNumBuildings(int /*BuildingTypes*/ eBuilding)

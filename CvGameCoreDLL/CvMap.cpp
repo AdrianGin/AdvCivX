@@ -747,7 +747,7 @@ CvSelectionGroup* CvMap::findSelectionGroup(int iX, int iY, PlayerTypes eOwner,
 
 		FOR_EACH_GROUP_VAR(pLoopSelectionGroup, kLoopPlayer)
 		{
-			bool const bAIControl = pLoopSelectionGroup->AI_isControlled(); // advc.153
+			bool const bAIControl = pLoopSelectionGroup->isAIControlled(); // advc.153
 			if (bReadyToSelect && !pLoopSelectionGroup->readyToSelect(
 				!bAIControl)) // advc.153: was false
 			{
@@ -1134,8 +1134,9 @@ void CvMap::resetPathDistance()
 
 int CvMap::calculatePathDistance(CvPlot const* pSource, CvPlot const* pDest) const
 {
-	if(pSource == NULL || pDest == NULL)
+	if (pSource == NULL || pDest == NULL)
 		return -1;
+	// advc.pf (tbd.): Replace with TeamPathFinder for better performance?
 	if (gDLL->getFAStarIFace()->GeneratePath(&GC.getStepFinder(),
 		pSource->getX(), pSource->getY(), pDest->getX(), pDest->getY(), false, 0, true))
 	{

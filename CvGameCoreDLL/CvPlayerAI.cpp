@@ -3454,7 +3454,7 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 	// advc.opt: Since the SafeRangeCache is disabled, let's not waste any time with this.
 
 	TeamTypes const eTeam = getTeam();
-	int r = 0;
+	int iR = 0;
 	bCheckBorder = (bCheckBorder &&
 			// advc: Cities were excluded in AI_getAnyPlotDanger, but not in AI_getPlotDanger.
 			// K-Mod: "Cities need to be excluded for some legacy AI code"
@@ -3463,6 +3463,8 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 			/*	advc.300: Let civs not worry about Barbarian borders and vice versa
 				No need then to check for border danger at peacetime. */
 			GET_TEAM(getTeam()).getNumWars(false) > 0 && !isBarbarian() &&
+			// advc: Maybe (force-)disable the border check for water units?
+			//!kPlot.isWater() &&
 			//bool bCheckBorder = (!isHuman() && !kPlot.isCity());
 			/*  K-Mod. I don't want auto-workers on the frontline.
 				So count border danger for humans too, unless the plot is defended. */
@@ -3477,7 +3479,7 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 			// <advc>
 			if (iLimit == 1)
 				return 1;
-			r++; // As in K-Mod, border danger can add at most 1 to the danger count.
+			iR++; // As in K-Mod, border danger can add at most 1 to the danger count.
 			// (K-Mod: "I don't think two border tiles are really more dangerous than one border tile.")
 			bCheckBorder = false; // </advc>
 		}
@@ -3537,8 +3539,8 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 								kPlot.setBorderDangerCache(eActualLoopTeam, true);
 							}
 						}  // <advc>
-						r++;
-						if (r >= iLimit)
+						iR++;
+						if (iR >= iLimit)
 							return iLimit;
 						// Count at most 1 for border danger
 						bCheckBorder = false; 
@@ -3548,8 +3550,8 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 			if (p.isUnit()) // Redundant but fast (inlined)
 			{
 				// Code moved into auxiliary function
-				r += AI_countDangerousUnits(p, kPlot, bTestMoves, iLimit, eAttackPlayer);
-				if (r >= iLimit)
+				iR += AI_countDangerousUnits(p, kPlot, bTestMoves, iLimit, eAttackPlayer);
+				if (iR >= iLimit)
 					return iLimit;
 			} // </advc>
 		}
@@ -3557,7 +3559,7 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 			but is this really ever going to be a problem? */
 		/*else if (p.isUnit() && kPlotArea.canBeEntered(p.getArea()))
 		{
-			r += AI_countDangerousUnits(p, kPlot, bTestMoves, 1, eAttackPlayer);
+			iR += AI_countDangerousUnits(p, kPlot, bTestMoves, 1, eAttackPlayer);
 			// ... (copy from above)
 		}*/ // </advc.030>
 	}
@@ -3577,7 +3579,7 @@ int CvPlayerAI::AI_getPlotDanger(/* BtS parameters: */ CvPlot const& kPlot, int 
 		of what iRange is and then reports that the plot is safe for any iRange <= DANGER_RANGE. */
 	/*if (isSafeRangeCacheValid() && iRange > kPlot.getActivePlayerSafeRangeCache())
 		kPlot.setActivePlayerSafeRangeCache(iRange);*/ // advc.opt: SafeRangeCache is disabled
-	return std::min(r, iLimit); // advc.104: May have counted past the limit
+	return std::min(iR, iLimit); // advc.104: May have counted past the limit
 }
 
 // advc: from AI_getAnyPlotDanger
@@ -3670,7 +3672,11 @@ int CvPlayerAI::AI_getWaterDanger(CvPlot const& kPlot, int iRange,
 	{
 		CvPlot const& p = *it;
 		if (!p.isWater() || /* advc.opt: */ !p.isUnit() ||
-			!p.isAdjacentToArea(p.getArea()))
+			/*	advc: More for clarity than for 1-plot lakes (which aren't adjacent
+				to their own area). Or perhaps better to restrict this function to
+				kPlot being land and to use AI_getPlotDanger for water? */
+			(kPlot.isWater() ? !kPlot.sameArea(p) :
+			!kPlot.isAdjacentToArea(p.getArea())))
 		{
 			continue;
 		}
@@ -4838,12 +4844,13 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 	/*  K-Mod. A very rough estimate assuming each city has ~2 trade routes;
 		new local trade routes worth ~2 commerce, and foreign worth ~6. */
 	if (kTech.getTradeRoutes() != 0)
-	{
+	{	/*	advc (note): Could use the pIgnoreArea param to count intercontinental
+			partners separately, but 6c is already a high estimate. */
 		int iConnectedForeignCities = AI_countPotentialForeignTradeCities(
 				true, AI_getFlavorValue(FLAVOR_GOLD) == 0);
-		int iAddedCommerce = 2*iCityCount*kTech.getTradeRoutes() +
-				4*range(iConnectedForeignCities-2*iCityCount, 0,
-				iCityCount*kTech.getTradeRoutes()) +
+		int iAddedCommerce = 2 * iCityCount * kTech.getTradeRoutes() +
+				4 * range(iConnectedForeignCities - 2 * iCityCount, 0,
+				iCityCount * kTech.getTradeRoutes()) +
 				// <advc.131>
 				std::max(0, std::min(AI_getNumCitySites(), getNumCities())
 				// Up to one site already covered by iCityCount
@@ -5330,7 +5337,7 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 					planned sites - but even that isn't exactly what we want. */
 				iBuildValue += 28; // advc: instead of 40
 			}
-			iBuildValue += 4 + iChopValue * (countCityFeatures(eFeature) + 4);
+			iBuildValue += 4 + iChopValue * (AI_countCityFeatures(eFeature) + 4);
 			/*  <advc.129> Very early game: Is the feature blocking a resource?
 				(especially Silver, which can now appear on Grassland Forest) */
 			if (pCapital != NULL && getNumCities() <= 2)
@@ -6974,7 +6981,10 @@ int CvPlayerAI::AI_techReligionValue(TechTypes eTech, int iPathLength,
 		{
 			iLaterReligions++;
 			if (eLoopReligion == eFavoriteReligion)
+			{	/*	Even if bChooseReligion? Yes, I think; will play better
+					with some leaders aiming for the later techs. */
 				bLateFavoriteReligion = true;
+			}
 			if (eTech == GC.getInfo(eLoopReligion).getTechPrereq())
 				bLateReligion = true;
 		} // </advc.171>
@@ -6986,7 +6996,7 @@ int CvPlayerAI::AI_techReligionValue(TechTypes eTech, int iPathLength,
 	{
 		TechTypes eReligionTech = GC.getInfo(eLoopReligion).getTechPrereq();
 		/*if (kTeam.isHasTech(eReligionTech)) {
-			if (!(GC.getGame().isReligionSlotTaken((ReligionTypes)iJ)))
+			if (!GC.getGame().isReligionSlotTaken(eLoopReligion))
 				iPotentialReligions++;
 		}*/ // BtS
 		/*	K-Mod. iPotentialReligions will only be non-zero during the
@@ -7046,10 +7056,11 @@ int CvPlayerAI::AI_techReligionValue(TechTypes eTech, int iPathLength,
 					}
 					if (bPrereqFoundsReligion)
 						iRoll = iRoll * 3/4;
-					/*	(In addition to multi-religion
+					/*	Encourage only a little (NB: there's further multi-religion
 						discouragement farther below) */
 					else if (countHolyCities() > 0)
 						iRoll = iRoll * 4/3;
+					// Full encouragement
 					else iRoll = iRoll * 5/3; // was *3/2
 					// </advc.171>
 				}
@@ -7508,8 +7519,8 @@ bool CvPlayerAI::AI_demandRebukedSneak(PlayerTypes ePlayer) const
 		//if (GET_TEAM(getTeam()).getPower(true) > GET_TEAM(GET_PLAYER(ePlayer).getTeam()).getDefensivePower(getTeam()))
 		/*	K-Mod. Don't start a war if we're already busy;
 			and use AI_startWarVal to evaluate, rather than just power.
-			The 50 value is arbitrary. zero would probably be fine.
-			50 war rating is also arbitrary, but zero would be too low! */
+			The 50 start-war value is arbitrary. zero would probably be fine.
+			50 war rating is also arbitrary, but, here, zero would be too low! */
 		CvTeamAI const& kTeam = GET_TEAM(getTeam());
 		if (kTeam.AI_getWarPlan(GET_PLAYER(ePlayer).getTeam()) == NO_WARPLAN  &&
 			(!kTeam.AI_isAnyWarPlan() || kTeam.AI_getWarSuccessRating() > 50) &&
@@ -8302,7 +8313,6 @@ int CvPlayerAI::AI_getShareWarAttitude(PlayerTypes ePlayer) const
 			// This divisor seems to produce roughly the result I have in mind
 			(fixp(3.1) * GC.getWAR_SUCCESS_CITY_CAPTURING() * iDiv)).round(), 0, iLimit);
 	return iR;
-	// </advc.130m>
 }
 
 
@@ -8549,9 +8559,8 @@ int CvPlayerAI::AI_getRankDifferenceAttitude(PlayerTypes ePlayer) const
 		iBase = kPers.getWorseRankDifferenceAttitudeChange();
 		if (iBase != 0) // save time
 		{
-			/*  Want multiplier to be 1 when the rank difference is 35% of
-				CivPlayersEverAlive, and near 0 when greater than 50% of
-				CivPlayersEverAlive. */
+			/*  Want multiplier to be 1 when the rank difference is 35% of its
+				maximum, and near 0 when greater than 50% of its maximum. */
 			rMultiplier = 1 -
 					(2 * iRankDifference - fixp(0.35) * iMaxRankDifference).abs() /
 					iMaxRankDifference;
@@ -12171,8 +12180,9 @@ int CvPlayerAI::AI_bonusTradeVal(BonusTypes eBonus, PlayerTypes eFromPlayer, int
 	/*  To make resource vs. resource trades more compatible. A multiple of 5
 		would lead to a rounding error when gold is paid for a resource b/c
 		2 gpt correspond to 1 tradeVal. */
-	if (r >= 3 && !GET_TEAM(getTeam()).isGoldTrading() &&
-		!GET_TEAM(eFromPlayer).isGoldTrading())
+	// Let's actually apply this even once gold trading is available
+	if (r >= 3 /*&& !GET_TEAM(getTeam()).isGoldTrading() &&
+		!GET_TEAM(eFromPlayer).isGoldTrading()*/)
 	{
 		iR = r.roundToMultiple(4);
 	}
@@ -14488,7 +14498,7 @@ int CvPlayerAI::AI_countCargoSpace(UnitAITypes eUnitAI) const
 	and it gets called by several UnitAI members too. Probably no noticeable
 	difference in performance, but who knows. */
 int CvPlayerAI::AI_neededExplorers(CvArea const& kArea) const
-{	// Body moved into AI_neededExplorers_bulk
+{
 	std::map<int,int>::const_iterator itNeeded = m_neededExplorersByArea.find(
 			kArea.getID());
 	if (itNeeded == m_neededExplorersByArea.end())
@@ -14731,6 +14741,24 @@ bool CvPlayerAI::AI_isUnimprovedBonus(CvPlot const& p, CvPlot const* pFromPlot,
 		}
 	}
 	return false;
+}
+
+/*	advc.042: Moved from CvPlayer, to be consistent with other AI counts moved.
+	May in the future want to exclude rival-owned plots unlikely to flip. */
+int CvPlayerAI::AI_countCityFeatures(FeatureTypes eFeature) const
+{
+	PROFILE_FUNC();
+
+	int iCount = 0;
+	FOR_EACH_CITY(pLoopCity, *this)
+	{
+		for (CityPlotIter it(*pLoopCity); it.hasNext(); ++it)
+		{
+			if (it->getFeatureType() == eFeature)
+				iCount++;
+		}
+	}
+	return iCount;
 }
 
 
@@ -17763,13 +17791,11 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 					AI_getHappinessWeight(iS * iTempValue, 1))/100;
 		}
 	}
-	for (int iI = 0; iI < GC.getNumFeatureInfos(); iI++)
+	FOR_EACH_ENUM(Feature)
 	{
-		int iHappiness = kCivic.getFeatureHappinessChanges(iI);
-		if (iHappiness != 0)
-		{
-			iValue += (iHappiness * countCityFeatures((FeatureTypes)iI) * 5);
-		}
+		int iHappiness = kCivic.getFeatureHappinessChanges(eLoopFeature);
+		if (iHappiness != 0) // (time saving)
+			iValue += (iHappiness * AI_countCityFeatures(eLoopFeature) * 5);
 	}
 
 	FOR_EACH_ENUM(Hurry)
@@ -24897,7 +24923,7 @@ bool CvPlayerAI::AI_isVictoryValid(VictoryTypes eVictory, int& iWeight) const
 			return false;
 		}
 	}
-	if (GC.getInfo(eVictory).isConquest())
+	if (kVictory.isConquest())
 	{
 		iWeight = (bHuman ? iHumanWeight : kPersonality.getConquestVictoryWeight());
 		if (bCheckBBAIDefine &&
@@ -25737,7 +25763,7 @@ void CvPlayerAI::AI_updateStrategyHash()
 				iProductionValue += 3;
 			}
 		}
-		if (iProductionValue >= 10)
+		if (iProductionValue > 8) // advc.018: Threshold reduced by 1
 			m_eStrategyHash |= AI_STRATEGY_PRODUCTION;
 		log_strat2(AI_STRATEGY_PRODUCTION, iProductionValue)
 	} // K-Mod end

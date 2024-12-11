@@ -277,7 +277,8 @@ void CvBattleRound::setNumAlive(BattleUnitTypes unitType, int value)
 //! \brief      Default constructor.
 //------------------------------------------------------------------------------------------------
 CvMissionDefinition::CvMissionDefinition() :
-	m_fMissionTime(0.0f),
+	// advc.001 (from C2C): Was 0. Currently always overwritten by setMissionTime anyway.
+	m_fMissionTime(-1.f),
 	m_eMissionType(NO_MISSION),
 	m_pPlot(NULL)
 {

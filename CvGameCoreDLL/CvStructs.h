@@ -37,6 +37,7 @@ struct IDInfo
 		//FAssert(iID != FFreeList::INVALID_INDEX || eOwner == BARBARIAN_PLAYER);
 	}
 	void validateOwner(); // advc.opt
+	bool isIDSet() const { return iID != FFreeList::INVALID_INDEX; } // advc
 
 	PlayerTypes eOwner;
 	int iID;
