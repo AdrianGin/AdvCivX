@@ -2897,8 +2897,9 @@ void CvGame::updateUnprofiled()
 	/*	<advc.004m> Slice 0 seems to be the earliest time when plot indicators
 		can be enabled w/o crashing. But it appears that, for some players,
 		the indicators do not actually appear then - race condition? Slice 1
-		doesn't seem to help either. Try 2? (It's a continuous count.) */
-	if (getTurnSlice() == 2 &&
+		doesn't seem to help either. 4 was maybe an improvement. Try 7?
+		(It's a continuous count.) At some point, the delay gets noticeable. */
+	if (getTurnSlice() == 7 &&
 		// Leave it up to the savegame when loading an initial autosave
 		m_iTurnLoadedFromSave != m_iElapsedGameTurns)
 	{
