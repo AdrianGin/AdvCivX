@@ -4844,12 +4844,13 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 	/*  K-Mod. A very rough estimate assuming each city has ~2 trade routes;
 		new local trade routes worth ~2 commerce, and foreign worth ~6. */
 	if (kTech.getTradeRoutes() != 0)
-	{
+	{	/*	advc (note): Could use the pIgnoreArea param to count intercontinental
+			partners separately, but 6c is already a high estimate. */
 		int iConnectedForeignCities = AI_countPotentialForeignTradeCities(
 				true, AI_getFlavorValue(FLAVOR_GOLD) == 0);
-		int iAddedCommerce = 2*iCityCount*kTech.getTradeRoutes() +
-				4*range(iConnectedForeignCities-2*iCityCount, 0,
-				iCityCount*kTech.getTradeRoutes()) +
+		int iAddedCommerce = 2 * iCityCount * kTech.getTradeRoutes() +
+				4 * range(iConnectedForeignCities - 2 * iCityCount, 0,
+				iCityCount * kTech.getTradeRoutes()) +
 				// <advc.131>
 				std::max(0, std::min(AI_getNumCitySites(), getNumCities())
 				// Up to one site already covered by iCityCount
