@@ -3309,7 +3309,7 @@
 		<Italian>Simile alla Terra (70%% acqua)</Italian>
 		<Spanish>Similar a la Tierra (70%% agua)</Spanish>
 	</TEXT>
-	<TEXT> <!-- redefine -->
+	<TEXT>
 		<Tag>TXT_KEY_MAP_SCRIPT_EARTH_50</Tag>
 		<English>Earthlike (60%% water)</English>
 		<French>Semblable à la Terre (60%% d'eau)</French>
@@ -3326,7 +3326,7 @@
 		<Italian>Mediterraneo (45%% acqua)</Italian>
 		<Spanish>Mediterráneo (45%% agua)</Spanish>
 	</TEXT>
-	<!-- NB: These two only gets used for Tectonics -->
+	<!-- NB: These two only get used for Tectonics -->
 	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_MAP_SCRIPT_PANGAEA</Tag>
 		<English>Pangaea (70%% water)</English>
