@@ -3649,7 +3649,8 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 	}
 }
 
-// K-Mod. The cheat mode text associated with parseContactCivHelp.
+/*	K-Mod. The cheat mode text associated with parseContactCivHelp.
+	Mostly BBAI code. */
 void CvDLLWidgetData::parseScoreboardCheatText(CvWidgetDataStruct &widgetDataStruct,
 	CvWStringBuffer &szBuffer)
 {
@@ -3706,84 +3707,11 @@ void CvDLLWidgetData::parseScoreboardCheatText(CvWidgetDataStruct &widgetDataStr
 		szBuffer.append(NEWLINE);
 	}
 
-	// Strategies
 	CvWString szTempBuffer;
-	szTempBuffer.Format(L"");
-
-	// advc.007: bDebug=true param added so that human strategies get shown as well
-	if (kPlayer.AI_isDoStrategy(AI_STRATEGY_DAGGER, true))
-	{
-		szTempBuffer.Format(L"Dagger, ");
-		szBuffer.append(szTempBuffer);
-	}
-	if (kPlayer.AI_isDoStrategy(AI_STRATEGY_CRUSH, true))
-	{
-		szTempBuffer.Format(L"Crush, ");
-		szBuffer.append(szTempBuffer);
-	}
-	if (kPlayer.AI_isDoStrategy(AI_STRATEGY_ALERT1, true))
-	{
-		szTempBuffer.Format(L"Alert1, ");
-		szBuffer.append(szTempBuffer);
-	}
-	if (kPlayer.AI_isDoStrategy(AI_STRATEGY_ALERT2, true))
-	{
-		szTempBuffer.Format(L"Alert2, ");
-		szBuffer.append(szTempBuffer);
-	}
-	if (kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE, true))
-	{
-		szTempBuffer.Format(L"Turtle, ");
-		szBuffer.append(szTempBuffer);
-	}
-	if (kPlayer.AI_isDoStrategy(AI_STRATEGY_LAST_STAND, true))
-	{
-		szTempBuffer.Format(L"LastStand, ");
-		szBuffer.append(szTempBuffer);
-	}
-	if (kPlayer.AI_isDoStrategy(AI_STRATEGY_FINAL_WAR, true))
-	{
-		szTempBuffer.Format(L"FinalWar, ");
-		szBuffer.append(szTempBuffer);
-	}
-	if (kPlayer.AI_isDoStrategy(AI_STRATEGY_GET_BETTER_UNITS, true))
-	{
-		szTempBuffer.Format(L"GetBetterUnits, ");
-		szBuffer.append(szTempBuffer);
-	}
-	if (kPlayer.AI_isDoStrategy(AI_STRATEGY_PRODUCTION, true))
-	{
-		szTempBuffer.Format(L"Production, ");
-		szBuffer.append(szTempBuffer);
-	}
-	if (kPlayer.AI_isDoStrategy(AI_STRATEGY_MISSIONARY, true))
-	{
-		szTempBuffer.Format(L"Missionary, ");
-		szBuffer.append(szTempBuffer);
-	}
-	if (kPlayer.AI_isDoStrategy(AI_STRATEGY_BIG_ESPIONAGE, true))
-	{
-		szTempBuffer.Format(L"BigEspionage, ");
-		szBuffer.append(szTempBuffer);
-	}
-	if (kPlayer.AI_isDoStrategy(AI_STRATEGY_ECONOMY_FOCUS, true)) // K-Mod
-	{
-		szTempBuffer.Format(L"EconomyFocus, ");
-		szBuffer.append(szTempBuffer);
-	}
-	if (kPlayer.AI_isDoStrategy(AI_STRATEGY_ESPIONAGE_ECONOMY, true)) // K-Mod
-	{
-		szTempBuffer.Format(L"EspionageEconomy, ");
-		szBuffer.append(szTempBuffer);
-	}
-
-	szBuffer.append(NEWLINE);
-	szTempBuffer.Format(L"Vic Strats: ");
+	szTempBuffer.Format(L"Strats:  "); // advc.007: was "Vic strats"
 	szBuffer.append(szTempBuffer);
-
-	szTempBuffer.Format(L"");
 	// Victory strategies
-
+	szTempBuffer.clear();
 	/*  <advc.007> Reordered and "else" added so that only the highest stage is
 		displayed. */
 	if (kPlayer.AI_atVictoryStage(AI_VICTORY_CULTURE4))
@@ -3890,6 +3818,47 @@ void CvDLLWidgetData::parseScoreboardCheatText(CvWidgetDataStruct &widgetDataStr
 		szTempBuffer.Format(L"Diplo1, ");
 		szBuffer.append(szTempBuffer);
 	} // </advc.007>
+	szBuffer.append(NEWLINE);
+	// Strategies (advc: Moved below victory stages)
+	szTempBuffer.clear();
+	// <advc> Refactored with a loop and switch
+	for (int iShift = 0; iShift < MAX_AI_STRATEGIES; iShift++)
+	{
+		AIStrategy eStrat = (AIStrategy)(1 << iShift);
+		if (!kPlayer.AI_isDoStrategy(eStrat,
+				true)) // advc.007: So that human strategies get shown as well
+		{
+			continue;
+		}
+		CvWString wsStrat;
+		switch(eStrat)
+		{
+		case AI_DEFAULT_STRATEGY: continue; // (no separator either)
+		case AI_STRATEGY_DAGGER:			wsStrat = L"Dagger";			break;
+		case AI_STRATEGY_CRUSH:				wsStrat = L"Crush";				break;
+		case AI_STRATEGY_ALERT1:			wsStrat = L"Alert1";			break;
+		case AI_STRATEGY_ALERT2:			wsStrat = L"Alert2";			break;
+		case AI_STRATEGY_TURTLE:			wsStrat = L"Turtle";			break;
+		case AI_STRATEGY_LAST_STAND:		wsStrat = L"Last Stand";		break;
+		case AI_STRATEGY_FINAL_WAR:			wsStrat = L"Final War";			break;
+		case AI_STRATEGY_GET_BETTER_UNITS:	wsStrat = L"Get Better Units";	break;
+		// advc.007: These 4 had been omitted by BBAI (perhaps b/c of their simple conditions)
+		case AI_STRATEGY_FASTMOVERS:		wsStrat = L"Fast Movers";		break;
+		case AI_STRATEGY_LAND_BLITZ:		wsStrat = L"Land Blitz";		break;
+		case AI_STRATEGY_AIR_BLITZ:			wsStrat = L"Air Blitz";			break;
+		case AI_STRATEGY_OWABWNW:			wsStrat = L"Nukes";				break;
+		case AI_STRATEGY_PRODUCTION:		wsStrat = L"Production";		break;
+		case AI_STRATEGY_MISSIONARY:		wsStrat = L"Missionary";		break;
+		case AI_STRATEGY_BIG_ESPIONAGE:		wsStrat = L"Big Espionage";		break;
+		case AI_STRATEGY_ECONOMY_FOCUS:		wsStrat = L"Economy Focus";		break; // K-Mod
+		case AI_STRATEGY_ESPIONAGE_ECONOMY:	wsStrat = L"Espionage Economy";	break; // K-Mod
+		default: wsStrat = L"(Unknown strategy)";
+		}
+		if (!szTempBuffer.empty())
+			szTempBuffer.append(L", ");
+		szTempBuffer += wsStrat;
+	}
+	szBuffer.append(szTempBuffer); // </advc>
 
 	// List the top 3 culture cities (by culture value weight).
 	//if (kPlayer.AI_atVictoryStage(AI_VICTORY_CULTURE1))

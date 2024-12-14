@@ -18916,7 +18916,7 @@ void CvPlayerAI::AI_setAttitudeExtra(PlayerTypes eIndex, int iNewValue)
 	int iChange = iNewValue - m_aiAttitudeExtra[eIndex]; // K-Mod
 	m_aiAttitudeExtra[eIndex] = iNewValue;
 	// K-Mod
-	if (iChange)
+	if (iChange != 0)
 		AI_changeCachedAttitude(eIndex, iChange);
 	// K-Mod end
 }
