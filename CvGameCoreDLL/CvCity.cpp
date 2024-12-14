@@ -365,7 +365,8 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 		FOR_EACH_ENUM(Commerce)
 		{
 			changeCommerceRateTimes100(eLoopCommerce,
-					-100 * kOwner.getFreeCityCommerce(eLoopCommerce));
+				-(100 + kOwner.getCommerceRateModifier(eLoopCommerce)) *
+				kOwner.getFreeCityCommerce(eLoopCommerce));
 		}
 	} // </advc.001>
 
@@ -405,14 +406,13 @@ void CvCity::kill(bool bUpdatePlotGroups, /* advc.001: */ bool bBumpUnits)
 	FAssert(!isWorkingPlot(CITY_HOME_PLOT));
 	FAssert(getSpecialistPopulation() == 0);
 	FAssert(getNumGreatPeople() == 0);
-	FAssert(getBaseYieldRate(YIELD_FOOD) == 0);
-	FAssert(getBaseYieldRate(YIELD_PRODUCTION) == 0);
-	FAssert(getBaseYieldRate(YIELD_COMMERCE) == 0);
+	FOR_EACH_ENUM(Yield)
+		FAssert(getYieldRate(eLoopYield) == 0);
 	FAssert(!isProduction());
 	// <advc>
 	FOR_EACH_ENUM(Commerce)
-		FAssertMsg(getCommerceRate(eLoopCommerce) == 0,
-				"Part of lost city's special commerce not subtracted from owner's cache");
+		FAssertMsg(getCommerceRateTimes100(eLoopCommerce) == 0,
+				"Part of lost city's commerce not subtracted from owner's cache");
 	// </advc>
 #endif
 	bool const bCapital = isCapital();
