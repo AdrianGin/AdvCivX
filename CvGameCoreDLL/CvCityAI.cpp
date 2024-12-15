@@ -2158,8 +2158,14 @@ void CvCityAI::AI_chooseProduction()
 	int iAircraftHave = 0;
 	UnitTypes eBestAttackAircraft = NO_UNIT;
 	UnitTypes eBestMissile = NO_UNIT;
+	// advc: To help consistency between the air production code segments
+	bool bFarTooFewAircraft = false;
 	// K-Mod. was +4, now +12 for the new unit spending metric
-	if (iUnitSpending < iMaxUnitSpending + 12 && (!bCultureCity || bDefenseWar))
+	bool const bFundingForAircraft = //(iUnitSpending < iMaxUnitSpending + 12)
+			// <advc.airf>
+			(iUnitSpending < iMaxUnitSpending + 10 ||
+			iUnitSpending * 100 < iMaxUnitSpending * 115); // </advc.airf>
+	if (bFundingForAircraft && (!bCultureCity || bDefenseWar))
 	{
 		if (bLandWar || bAssault || iFreeAirExperience > 0 || SyncRandOneChanceIn(3))
 		{
@@ -2196,7 +2202,6 @@ void CvCityAI::AI_chooseProduction()
 				{
 					iAircraftNeed = std::max(iAircraftNeed, 1 + kPlayer.getNumCities() / 2);
 				}
-
 				bool bAirBlitz = kPlayer.AI_isDoStrategy(AI_STRATEGY_AIR_BLITZ);
 				bool bLandBlitz = kPlayer.AI_isDoStrategy(AI_STRATEGY_LAND_BLITZ);
 				if (bAirBlitz)
@@ -2209,16 +2214,14 @@ void CvCityAI::AI_chooseProduction()
 					iAircraftNeed /= 2;
 					iAircraftNeed += 1;
 				}
-
 				airWeight.set(UNITAI_ATTACK_AIR, bAirBlitz ? 125 : 80);
-				airWeight.set(UNITAI_DEFENSE_AIR, /*bLandBlitz ? 100 : 100*/ 100); // advc: huh?
+				airWeight.set(UNITAI_DEFENSE_AIR, /*bLandBlitz?100:100*/ 100); // advc: huh?
 				if (iBestMissileValue > 0)
 					airWeight.set(UNITAI_MISSILE_AIR, bAssault ? 60 : 40);
-
 				//airWeight.set(UNITAI_ICBM, 20);
 				airWeight.set(UNITAI_ICBM, 20 * iNukeWeight / 100); // K-Mod
-
-				if (iAircraftHave * 2 < iAircraftNeed)
+				bFarTooFewAircraft = (iAircraftHave * 2 < iAircraftNeed);
+				if (bFarTooFewAircraft)
 				{
 					if (AI_chooseLeastRepresentedUnit(airWeight))
 					{
@@ -2604,16 +2607,14 @@ void CvCityAI::AI_chooseProduction()
 		}
 	}
 
-	if (iUnitSpending < iMaxUnitSpending + 12 && !bFinancialTrouble) // was +4 (new metric)
+	if (bFundingForAircraft && !bFarTooFewAircraft && // advc (b/c handled higher up)
+		iAircraftHave < iAircraftNeed && !bFinancialTrouble)
 	{
-		if (iAircraftHave * 2 >= iAircraftNeed && iAircraftHave < iAircraftNeed)
-		{
-			int iOdds = 33;
-			if (iFreeAirExperience > 0 || iProductionRank <= 1 + kPlayer.getNumCities() / 2)
-				iOdds = -1;
-			if (AI_chooseLeastRepresentedUnit(airWeight, iOdds))
-				return;
-		}
+		int iOdds = 33;
+		if (iFreeAirExperience > 0 || iProductionRank <= 1 + kPlayer.getNumCities() / 2)
+			iOdds = -1;
+		if (AI_chooseLeastRepresentedUnit(airWeight, iOdds))
+			return;
 	}
 
 	if (!bLandWar)

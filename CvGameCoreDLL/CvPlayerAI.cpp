@@ -26902,7 +26902,7 @@ int CvPlayerAI::AI_getTotalFloatingDefenders(CvArea const& kArea) const
 // K-Mod. (very basic just as a starting point. I'll refine this later.)
 int CvPlayerAI::AI_getTotalAirDefendersNeeded() const
 {
-	int iNeeded = getNumCities() + 1;
+	int iNeeded = 1 + (3 * getNumCities()) / 4; // advc.airf: 3/4
 	//iNeeded = iNeeded + iNeeded*(getCurrentEra()+1) / std::max(1, GC.getNumEraInfos()*2);
 	// Todo. Adjust based on what other civs are doing.
 
@@ -26912,7 +26912,7 @@ int CvPlayerAI::AI_getTotalAirDefendersNeeded() const
 		iNeeded = iNeeded*3/2;
 
 	return iNeeded;
-} // K-Mod end
+}
 
 
 RouteTypes CvPlayerAI::AI_bestAdvancedStartRoute(CvPlot* pPlot, int* piYieldValue) const
