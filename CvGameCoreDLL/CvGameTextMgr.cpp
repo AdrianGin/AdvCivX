@@ -1606,23 +1606,9 @@ void CvGameTextMgr::setPlotListHelpPerOwner(CvWStringBuffer& szString,
 {
 	if(kPlot.getCenterUnit() == NULL)
 		return;
-	// <advc.002b>
-	int iFontSize = 12; // default when there is no custom theme
-	CvArtInfoMisc const* pTheme = ARTFILEMGR.getMiscArtInfo("DEFAULT_THEME_NAME");
-	if(pTheme != NULL && pTheme->getPath() != NULL)
-	{
-		CvString szThemePath(pTheme->getPath());
-		/*  Don't know how to look up the font size. Would perhaps have to
-			(re-)parse the theme files (no, thanks). Instead, the DLL is told
-			through XML what font size to assume.
-			I do know how to check if the mod's theme has been removed, and I don't
-			want to rely on players changing the XML setting after removing it. */
-		if(szThemePath.find("Mods") != CvString::npos)
-			iFontSize = ::range(GC.getDefineINT("FONT_SIZE_FACTOR", 13), 7, 19);
-	}
-	// (The code below was written for iFontSize=14, so that's fontFactor=1.)
-	double dFontFactor = 14.0 / iFontSize;
-	// </advc.002b>
+	/*	advc.002b: This function was written with size 16 in mind, so needs to
+		adjust (only) when a different size is used. */
+	double const dFontFactor = 16.0 / GC.getGame().getHelpFontSize();
 	CvGame const& kGame = GC.getGame();
 	int iScreenHeight = kGame.getScreenHeight();
 	int iLineLimit = (iScreenHeight == 0 ? 25 :

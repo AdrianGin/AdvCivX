@@ -349,6 +349,66 @@ private:
 	};
 };
 
+// advc.092c:
+class HelpTextAreaWidthMod : public SelfMod
+{
+public:
+	HelpTextAreaWidthMod(double dTargetWidth) : m_dTargetWidth(dTargetWidth) {}
+protected:
+	bool apply() // override
+	{
+		byte const iTargetMultiplicand = calculateTargetMultiplicand();
+		/*	The multiplicand is hardcoded as a single-byte immediate operand:
+			|Code addr.| Disassembly						| Code bytes
+			------------------------------------------------------------------------------
+			 00559A91	push 1Dh							  6A 1D
+			------------------------------------------------------------------------------
+			This is in a function that seems to get called (only?) via
+			CyGInterface.setHelpTextArea - and probably not directly from that
+			function and not on every call of it (reliably on the first call,
+			it seems). */
+		uint const uiCodeAddress = 0x00559A91;
+		/*	Before applying our patch, let's confirm that the code is layed out
+			in memory as we expect it to be. */
+		byte aTestBytes[] = { 0x6A };//mustn't include the operand (b/c we may want to modify that repeatedly)
+		/*	Longer sequence to search for if we have to find an address offset.
+			(tbd.) */
+		/*byte aNeedleBytes[] = {
+			
+		};
+		int iAddressOffset = findAddressOffset(
+				aNeedleBytes, ARRAYSIZE(aNeedleBytes), 0x00464930,
+				aQuickTestBytes, ARRAYSIZE(aQuickTestBytes), 0x004649A9);*/
+		int iAddressOffset = findAddressOffset(aTestBytes, ARRAYSIZE(aTestBytes),
+				uiCodeAddress);
+		if (iAddressOffset == MIN_INT)
+			return false;
+		FAssert(((int)uiCodeAddress) > -iAddressOffset);
+		// Apply our patch
+		uint const uiPatchAddress = uiCodeAddress + 1;
+		if (!unprotectPage(reinterpret_cast<LPVOID>(uiPatchAddress), sizeof(byte)))
+			return false;
+		*reinterpret_cast<byte*>(uiPatchAddress) = iTargetMultiplicand;
+		return true;
+	}
+	
+private:
+	double const m_dTargetWidth;
+	byte calculateTargetMultiplicand()
+	{
+		/*	The EXE seems to convert the font size set by the theme to a somewhat
+			smaller scale, perhaps one expressing the horizontal space taken up. */
+		double dFontFactorInternal = floor(GC.getGame().getHelpFontSize() / 1.5);
+		/*	The total width seems to get calculated as a hardcoded constant times
+			the font size factor */
+		double const dMultiplicandInternal = 29;
+		double dWidthInternal = std::max<double>(dFontFactorInternal, 5) * dMultiplicandInternal;
+		double dAdjustmentFactor = m_dTargetWidth / dWidthInternal;
+		return safeIntCast<byte>(fmath::round(
+				dMultiplicandInternal * dAdjustmentFactor));
+	}
+};
+
 } // (end of unnamed namespace)
 
 
@@ -383,4 +443,15 @@ void Civ4BeyondSwordPatches::patchPlotIndicatorSize()
 				"this error message, set the size to \"BtS\" on the Map tab "
 				"of the BUG menu");
 	}
+}
+
+
+// advc.092c:
+void Civ4BeyondSwordPatches::setHelpTextAreaSize(float fWidth)
+{
+	if (abs(fWidth - getHelpTextAreaWidth()) < 0.5f)
+		return;
+	m_fHelpTextAreaWidth = fWidth;
+	if (!HelpTextAreaWidthMod(fWidth).applyIfEnabled())
+		FErrorMsg("Failed to change help text area width");
 }
