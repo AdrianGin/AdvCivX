@@ -862,9 +862,10 @@ class CvMainInterface:
 				# The subtrahend should account for decorations on the corner panel;
 				# for visual alignment.
 				#gRect("LowerLeftCornerPanel").width() - 21,
-				# But the help text really doesn't use that much width; it's been kept
-				# short with the original width in mind. So ...
-				gRect("LowerLeftCornerPanel").width() - HLEN(0.12 * gRect("LowerLeftCornerPanel").width()),
+				max(280,
+				# The help text really doesn't use that much width; it's been kept short
+				# with the original width in mind. So ...
+				gRect("LowerLeftCornerPanel").width() - HLEN(0.12 * gRect("LowerLeftCornerPanel").width())),
 				0)
 		gSetRect("DefaultHelpAreaMin", "Top",
 				HSPACE(7),
