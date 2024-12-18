@@ -303,7 +303,7 @@ protected:
 			of DLL calls, the last one being CvPlayer::getGlobeLayerColors.
 			I've verified that this sequence exists in the Steamless (unpacked)
 			version of the Steam BtS EXE on disk, namely at 0x00464F88, i.e. at
-			an offset of 1624. */
+			an offset of 1616. */
 		byte aNeedleBytes[] = {
 			0xA1, 0x00, 0x00, 0x00, 0x00, 0x50, 0x64, 0x89, 0x25, 0x00, 0x00,
 			0x00, 0x00, 0x83, 0xEC, 0x68, 0x53, 0x55, 0x56, 0x57, 0x33, 0xFF,
@@ -312,20 +312,19 @@ protected:
 			0x44, 0x89, 0x7C, 0x24, 0x48, 0x89, 0x7C, 0x24, 0x4C, 0x8D, 0x54,
 			0x24, 0x40, 0x52, 0xC6, 0x84, 0x24, 0x84, 0x00, 0x00, 0x00, 0x01,
 			0x8B, 0x41, 0x04, 0x8D, 0x54, 0x24, 0x54, 0x52, 0x50, 0x8B, 0x41,
-			0x08, 0x50 
+			0x08, 0x50
 		};
 		int iNeedleOffset = findAddressOffset(
-				aNeedleBytes, ARRAYSIZE(aNeedleBytes), 0x00464930,
+				aNeedleBytes, ARRAYSIZE(aNeedleBytes), 0x00464938,
 				aQuickTestBytes, ARRAYSIZE(aQuickTestBytes), 0x004649A9);
-		/*	This offset is not useful though; the patch locations are too
-			far away and will require different offsets for the default
-			Steam version. Can only hardcode those. Let's still check
-			for the needle's offset as a confirmation that we're dealing
-			with Steam. */
+		/*	This offset is too far away from most of the code locations. Would
+			need two more search patterns. I'll just hardcode the offsets
+			instead and use the calculated offset only as confirmation that
+			we're dealing with Steam. */
 		/*if (iNeedleOffset == MIN_INT)
 			return false;*/
 		int aAdressOffsets[4] = {};
-		if (iNeedleOffset == 1624)
+		if (iNeedleOffset == 1616)
 		{
 			aAdressOffsets[0] = 1616;
 			aAdressOffsets[1] = 704;
