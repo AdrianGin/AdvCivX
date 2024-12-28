@@ -1,4 +1,4 @@
-// trs.092b: New implementation file; see comment in header.
+// advc.092b: New implementation file; see comment in header.
 #include "CvGameCoreDLL.h"
 #include "SelfMod.h"
 #include "CvGame.h"
