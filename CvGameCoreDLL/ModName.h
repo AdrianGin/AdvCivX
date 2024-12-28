@@ -24,11 +24,15 @@ public:
 	char const* getFullPath() const { return m_sFullPath.c_str(); }
 	char const* getPathInRoot() const { return m_sPathInRoot.c_str(); }
 	char const* getName() const { return m_sName.c_str(); } // name of the AdvCiv folder
+	char const* getUserPath() const { return m_sUserPath; } // advc.009
 	
 private:
 	CvString m_sFullPath;
 	CvString m_sPathInRoot;
 	CvString m_sName;
+	CvString m_sUserPath; // advc.009
+
+	void updateUserPath(); // advc.009
 };
 
 #endif

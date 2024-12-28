@@ -38,10 +38,13 @@
 from CvPythonExtensions import *
 import BugOptions
 import BugUtil
-# advc.003d:
-import BugPath
+import BugPath # advc.003d
+# <advc.009>
+import EarlyBugOptions 
+import CvAppInterface # </advc.009>
 
 gc = CyGlobalContext()
+earlyOptions = None # advc.009
 
 IS_PRESENT = False
 VERSION = -1
@@ -180,9 +183,35 @@ def getOptionSTRING(argsList):
 
 def castOptionValue(func, id, default):
 	try:
-		return func(BugOptions.getOption(id).getValue())
+		val = func(BugOptions.getOption(id).getValue())
+		# <advc.009< Allow garbage coll. once early-options mechanism no longer needed
+		global earlyOptions
+		earlyOptions = None # </advc.009>
+		return val
 	except:
 		return default
+
+# <advc.009>
+def getEarlyOptionINT(argsList):
+	sConfigPath, section__key, default = argsList
+	global earlyOptions
+	if earlyOptions is None:
+		earlyOptions = EarlyBugOptions.EarlyOptions(sConfigPath)
+	# NB: For debugging, the try-except should be temporarily removed.
+	try:
+		return earlyOptions.getValue(section__key, default)
+	except:
+		return default
+
+# Need to export these to PYBugOptionsModule - which is CvAppInterface
+# (a copy of which is not included in the mod). Normally, this is handled
+# during the BUG initialization.
+def exportEarlyOptionAccessors():
+	if not hasattr(CvAppInterface, "getEarlyOptionINT"):
+		setattr(CvAppInterface, "getEarlyOptionINT", getEarlyOptionINT)
+
+exportEarlyOptionAccessors()
+# </advc.009>
 
 # <advc.003d>
 def getUserDirStr():

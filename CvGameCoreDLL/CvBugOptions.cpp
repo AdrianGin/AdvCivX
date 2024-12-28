@@ -42,13 +42,39 @@ bool checkBUGStatus(const char* optionKey, bool bWarn)
 	return true;
 }
 
+/*	advc.009: Note that this will only work for some of the config files
+	(listed in EarlyBugOptions.py) */
+namespace
+{
+	int getEarlyOption(char const* szID, int iDefault, bool bWarn)
+	{
+		char const* szConfigPath = GC.getModName().getUserPath();
+		if (szConfigPath == NULL)
+		{
+			FAssertMsg(!bWarn, "Failed to locate BUG config prior to BUG init");
+			return iDefault;
+		}
+		CyArgsList argsList;
+		long lResult = 0;
+		argsList.add(szConfigPath);
+		argsList.add(szID);
+		argsList.add(iDefault);
+		gDLL->getPythonIFace()->callFunction(PYBugOptionsModule, "getEarlyOptionINT",
+				argsList.makeFunctionArgs(), &lResult);
+		return lResult;
+	}
+}
 
-bool BUGOption::isEnabled(const char* id, bool bDefault, bool bWarn)
+
+bool BUGOption::isEnabled(const char* id, bool bDefault, bool bWarn, bool bPreInit)
 {	// <advc>
 	PROFILE_FUNC();
-	if(!checkBUGStatus(id, bWarn))
+	if (!checkBUGStatus(id, bWarn /* <advc.009> */ && !bPreInit))
+	{
+		if (bPreInit)
+			return (getEarlyOption(id, bDefault, bWarn) != 0); // </advc.009>
 		return bDefault;
-	// </advc>
+	} // </advc>
 	CyArgsList argsList;
 	long lResult = 0;
 	argsList.add(id);
@@ -57,11 +83,14 @@ bool BUGOption::isEnabled(const char* id, bool bDefault, bool bWarn)
 	return lResult != 0;
 }
 
-int BUGOption::getValue(const char* id, int iDefault, bool bWarn)
+int BUGOption::getValue(const char* id, int iDefault, bool bWarn, bool bPreInit)
 {	// <advc>
-	if(!checkBUGStatus(id, bWarn))
+	if (!checkBUGStatus(id, bWarn /* <advc.009> */ && !bPreInit))
+	{
+		if (bPreInit)
+			return getEarlyOption(id, iDefault, bWarn); // </advc.009>
 		return iDefault;
-	// </advc>
+	} // </advc>
 	CyArgsList argsList;
 	long lResult = 0;
 	argsList.add(id);
