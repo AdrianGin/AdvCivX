@@ -182,11 +182,7 @@ void CvArtFileMgr::testThemePath()
 	size_t posRes = sThmPath.find("/Resource");
 	std::string sModName = GC.getModName().getName();
 	if (posMods == std::string::npos || posRes == std::string::npos)
-	{
-		/*	Has apparently been edited by the user - possibly reverted to the
-			BtS theme, which is fine. */
 		return;
-	}
 	std::string sThmPathModName = sThmPath.substr(posMods + 5, posRes - 5);
 	// Temp. copy for lower case - the mod name isn't case-sensitive.
 	std::string sModNameLC = sModName;

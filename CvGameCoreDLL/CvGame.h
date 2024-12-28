@@ -960,7 +960,6 @@ public:
 			bool bAlt, bool bShift, bool bCtrl) const;
 	DllExport void handleMiddleMouse(bool bCtrl, bool bAlt, bool bShift);
 	DllExport void handleDiplomacySetAIComment(DiploCommentTypes eComment) const;
-	int getHelpFontSize() const; // advc.002b
 	void setHelpTextAreaWidth(float fWidth); // advc.092c (exposed to Python)
 
 	scaled goodyHutEffectFactor(bool bSpeedAdjust = true) const; // advc.314

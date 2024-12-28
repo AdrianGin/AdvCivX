@@ -1,8 +1,9 @@
-// trs.092b: New implementation file; see comment in header.
+// advc.092b: New implementation file; see comment in header.
 #include "CvGameCoreDLL.h"
 #include "SelfMod.h"
 #include "CvGame.h"
 #include "CvBugOptions.h"
+#include "CvGameTextMgr.h"
 
 Civ4BeyondSwordPatches smc::BtS_EXE;
 
@@ -422,7 +423,7 @@ private:
 	{
 		/*	The EXE seems to convert the font size set by the theme to a somewhat
 			smaller scale, perhaps one expressing the horizontal space taken up. */
-		double dFontFactorInternal = floor(GC.getGame().getHelpFontSize() / 1.5);
+		double dFontFactorInternal = floor(GAMETEXT.getHelpFontSize() / 1.5);
 		/*	The total width seems to get calculated as a hardcoded constant times
 			the font size factor */
 		double const dMultiplicandInternal = 29;
@@ -431,6 +432,100 @@ private:
 		return safeIntCast<byte>(fmath::round(
 				dMultiplicandInternal * dAdjustmentFactor));
 	}
+};
+
+// advc.002b:
+class FontSizeHookMod : public SelfMod
+{
+public:
+	typedef int __cdecl HookFun();
+	FontSizeHookMod(HookFun* pHook)
+	:	m_pHook(pHook), m_pDSAddress(NULL), m_uiDSConstant(0) {}
+	std::pair<uint*,uint> getDSAddress() const
+	{
+		return std::make_pair(m_pDSAddress, m_uiDSConstant);
+	}
+protected:
+	bool apply() // override
+	{
+		uint uiPatchAddress = 0x00815D37;
+		/*	An address that our hook function will need to write to - b/c that's
+			the task of the instruction that the hook supplants. Will be a
+			different address in the Steam EXE, however. */
+		m_pDSAddress = reinterpret_cast<uint*>(0x00C23F60);
+		// For verifying that this exists where we expect it
+		byte aDSAddress[] = { 0x00, 0xC2, 0x3F, 0x60 };
+		/*	A few instructions that lead up to the instruction we wish to
+			overwrite. Seems to be unique enough to occur in just one place
+			in the disk/GOG and in the Steam EXE. */
+		byte aExpectedCodeBytes[] = {
+			0x6A, 0xFF, 0x8D, 0x45, 0x78, 0x50, 0x8D, 0x4D, 0x44, 0xC7, 0x45, 0x78
+		};
+		// The search pattern ends 4 bytes before the location for our hook
+		uint uiSearchAddress = uiPatchAddress - ARRAYSIZE(aExpectedCodeBytes) - 4;
+		int iAddressOffset = findAddressOffset(
+				aExpectedCodeBytes, ARRAYSIZE(aExpectedCodeBytes),
+				uiSearchAddress,
+				aDSAddress, ARRAYSIZE(aDSAddress),
+				uiPatchAddress + 2);
+		if (iAddressOffset == -1943) // Steam
+		{
+			m_pDSAddress = *reinterpret_cast<uint**>(uiPatchAddress + iAddressOffset + 2);
+			if (m_pDSAddress != reinterpret_cast<uint*>(0x00BC6F60))
+			{
+				FErrorMsg("Offset matches Steam EXE, but expected operand not found");
+				m_pDSAddress = NULL;
+				return false;
+			}
+		}
+		else if (iAddressOffset == 0)
+		{
+			if (m_pDSAddress != *reinterpret_cast<uint**>(uiPatchAddress + 2))
+			{
+				FErrorMsg("Expected operand not found; font size hook not inserted.");
+				m_pDSAddress = NULL;
+				return false;
+			}
+		}
+		else if (iAddressOffset == MIN_INT)
+			return false;
+		else FErrorMsg("Unrecognized version of the BtS executable; might still work.");
+		m_uiDSConstant = 15;
+		byte aCodeBytes[] = {
+			/*	Out of EAX, EDX and ECX (the caller-saved registers), we only
+				have enough space to preserve one - and it seems apparent enough
+				that only ECX needs to be preserved. Also no space for passing
+				EDI via the stack. */
+			//	PUSH		ECX
+				0x51,
+			//	CALL-rel32	signed displacement
+				0xE8,		0x00, 0x00, 0x00, 0x00,
+			//	MOV			EDI EAX (Move the hook's return value into EDI)
+				0x8B, 0xF8,
+			//	POP			ECX
+				0x59,
+			//	NOP (no use for this single byte)
+				0x90
+		};
+		FAssert(((int)uiPatchAddress) > -iAddressOffset);
+		uiPatchAddress += iAddressOffset;
+		uint const uiCodeBytes = ARRAYSIZE(aCodeBytes);
+		// Instruction pointer is already at the MOV
+		uint uiEIP = uiPatchAddress + uiCodeBytes - 4;
+		int iDisplacement = static_cast<int>(reinterpret_cast<uint>(m_pHook));
+		iDisplacement -= static_cast<int>(uiEIP);
+		*reinterpret_cast<int*>(&aCodeBytes[2]) = iDisplacement;
+		if (!unprotectPage(reinterpret_cast<LPVOID>(uiPatchAddress), uiCodeBytes))
+			return false;
+		for (uint i = 0; i < uiCodeBytes; i++)
+			reinterpret_cast<byte*>(uiPatchAddress)[i] = aCodeBytes[i];
+		return true;
+	}
+	
+private:
+	HookFun* m_pHook;
+	uint* m_pDSAddress;
+	uint m_uiDSConstant;
 };
 
 } // (end of unnamed namespace)
@@ -470,7 +565,6 @@ void Civ4BeyondSwordPatches::patchPlotIndicatorSize()
 	}
 }
 
-
 // advc.092c:
 void Civ4BeyondSwordPatches::setHelpTextAreaSize(float fWidth)
 {
@@ -480,3 +574,107 @@ void Civ4BeyondSwordPatches::setHelpTextAreaSize(float fWidth)
 	if (!HelpTextAreaWidthMod(fWidth).applyIfEnabled())
 		FErrorMsg("Failed to change help text area width");
 }
+
+// <advc.002b>
+void Civ4BeyondSwordPatches::insertFontSizeHook(FontResizeCallback* pCallback)
+{
+	if (pCallback == NULL)
+	{
+		FErrorMsg("Callback required");
+		return;
+	}
+	FontSizeHookMod mod(fontSizeHook);
+	if (mod.applyIfEnabled())
+	{
+		std::pair<uint*,uint> movDSData = mod.getDSAddress();
+		m_pDSAddress = movDSData.first;
+		m_uiDSConstant = movDSData.second;
+		FAssertMsg(m_pDSAddress != NULL && m_uiDSConstant > 0,
+				"Hook insertion should've been canceled");
+		m_pCallback = pCallback;
+	}
+	else FErrorMsg("Failed to insert font resizer hook. See FONT_SIZE_ADJUSTMENT in "
+			"GlobalDefines_advc.xml for an alternative way to adjust font sizes "
+			"(and avoid this warning).");
+}
+
+
+int Civ4BeyondSwordPatches::fontSizeHook()
+{
+	int iNegativeSize; // Not enough room in the EXE to push this param via the stack
+	__asm { MOV iNegativeSize, EDI }
+	/*	All the rest in a separate function - to reduce the likelihood
+		of EDI being used before my asm block can read it. Being virtual should
+		prevent that function from getting expanded inline. */
+	return smc::BtS_EXE.resizeFontVirtual(iNegativeSize);
+}
+
+
+int Civ4BeyondSwordPatches::resizeFontVirtual(int iNegativeSize) const
+{
+	// None of these error conditions are ever supposed to occur
+	if (!isFontSizeHookInserted())
+	{
+		FErrorMsg("Internal call?");
+		return 0;
+	}
+	/*	Fulfill our debt to the EXE for the MOV instruction that our hook
+		has supplanted there */
+	*m_pDSAddress = m_uiDSConstant;
+	if (iNegativeSize >= 0)
+	{
+		FErrorMsg("Unexpected sign of font size obtained from EXE");
+		return iNegativeSize;
+	}
+	if (!GC.isCachingDone())
+	{
+		FErrorMsg("Font settings in global defines not yet loaded");
+		return iNegativeSize;
+	}
+	if (GC.IsGraphicsInitialized())
+	{
+		FErrorMsg("Graphics already initialized; too late to change font sizes.");
+		return iNegativeSize;
+	}
+	int iSizeCat = -1;
+	bool bBold = false, bItalic = false;
+	/*	Counting the calls is our best bet for figuring out which GFont
+		we're dealing with. Note that graphics init happens just once
+		per app launch; so no need to ever reset this counter. */
+	static int iCalls = 0;
+	iCalls++;
+	switch(iCalls)
+	{
+	/*	Seeing size 20 here. Does not correspond to any of the GFont definitions
+		in Civ4Theme_Common.thm. Maybe a fallback font from somewhere else?
+		I don't think we want to adjust this one- */
+	case 1: return iNegativeSize;
+		// GFont name		BtS size
+		// Size1_Normal		12
+	case 2: iSizeCat = 1; break;
+		// Size2_Normal		14
+	case 3: iSizeCat = 2; break;
+		// Size2_Bold		14
+	case 4: iSizeCat = 2; bBold = true; break;
+		// Size2_Italic		14
+	case 5: iSizeCat = 2; bItalic = true; break;
+		// Size3_Normal		16
+	case 6: iSizeCat = 3; break;
+		// Size3_Bold		16
+	case 7: iSizeCat = 3; bBold = true; break;
+		// Size4_Normal		22
+	case 8: iSizeCat = 4; break;
+		// Size4_Bold		22
+	case 9: iSizeCat = 4; bBold = true; break;
+	default:
+		/*	Someone might uncomment the 9 unused fonts in Civ4Theme_Common.thm.
+			Beyond that ... alarming. */
+		FAssertMsg(iCalls <= 18, "Far more font types than expected");
+		return iNegativeSize;
+	}
+	/*	Undo the NEG instruction that has already been performed by the EXE.
+		This gives us the value from Civ4Theme_Common.thm. Negate again before
+		returning. */
+	return -m_pCallback(-iNegativeSize, iSizeCat, bBold, bItalic);
+}
+// </advc.002b>

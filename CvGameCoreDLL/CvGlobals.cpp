@@ -285,7 +285,12 @@ void CvGlobals::clearTypesMap()
 		m_VarSystem->UnInit();
 }
 
-// <advc.002b> (from "We the People")
+/*	advc.002b: Would be nice to keep this warning in case that AdvCiv's
+	theme files get reactivated by a modder. But we can't check here whether
+	that's the case. A pity, it was a useful warning with a clever
+	implementation. With this compile-time switch, it'll probably stay unused. */
+#if ENABLE_INSTALL_LOC_WARNING
+// (from "We the People")
 namespace
 {
 	std::string GetCurrentDirectory(bool bDLLPath)
@@ -315,7 +320,8 @@ void CvGlobals::testInstallLocation()
 	sprintf(szMessage, sMsg);
 	CvString sHeading = "Invalid mod install location";
 	gDLL->MessageBox(szMessage, sHeading);
-} // </advc.002b>
+}
+#endif
 
 
 CvDiplomacyScreen* CvGlobals::getDiplomacyScreen()
@@ -971,7 +977,10 @@ void CvGlobals::setDLLIFace(CvDLLUtilityIFaceBase* pDll)
 				pDll->getExternalModName(false));
 	} // </advc.106i>
 	m_pDLL = pDll;
-	testInstallLocation(); // advc.002b
+// advc.002b:
+#if ENABLE_INSTALL_LOC_WARNING
+	testInstallLocation();
+#endif
 }
 
 void CvGlobals::setDLLProfiler(FProfiler* prof)

@@ -2,7 +2,11 @@
    Civ4Theme_....thm files in the BtS/Resource/Themes/Civ4 folder instead -
    I'm only modifying Civ4Theme_Common.thm. Can't figure out how, and
    other mods also copy all those files. At least I've gotten rid of the
-   copied tga files. */
+   copied tga files.
+   Note that AdvCiv, by version 1.12, no longer loads these modified theme
+   files. Instead, font sizes are set through GlobalDefines_advc.xml.
+   The theme files can be reactivated through DEFAULT_THEME in Assets\XML\
+   Art\Civ4ArtDefines_misc.xml. */
 
 resource_path "Mods\AdvCiv\Resource";
 /* For some obscure reason, the includes in Civ4Theme.thm can't be moved here

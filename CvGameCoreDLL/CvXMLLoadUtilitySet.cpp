@@ -8,6 +8,7 @@
 #include "CvInfo_All.h"
 #include "CvGameAI.h" // advc.104x
 #include "FVariableSystem.h"
+#include "SelfMod.h" // advc.002b
 // <advc> Overwrite the definition in CvGlobals.h b/c a const GC is no use here
 #undef GC
 #define GC CvGlobals::getInstance() // </advc>
@@ -749,7 +750,12 @@ bool CvXMLLoadUtility::LoadPreMenuGlobals()
 	TestScaledNum(); // </advc.fract>
 	getUWAI().doXML(); // advc.104x
 	GC.setXMLLoadUtility(this); // advc.003v
-
+	// <advc.002b>
+	if (!GAMETEXT.isGfcThemeModified() &&
+		GC.getDefineINT(CvGlobals::FONT_SIZE_ADJUSTMENT) > 0)
+	{
+		smc::BtS_EXE.insertFontSizeHook(CvGameTextMgr::adjustFontSize);
+	} // </advc.002b>
 	return true;
 }
 

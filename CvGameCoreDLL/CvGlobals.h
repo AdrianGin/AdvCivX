@@ -42,6 +42,8 @@ class CvMap;
 class CvPlayerAI;
 class CvTeamAI;
 class CvWorldInfo;
+// advc.002b:
+#define ENABLE_INSTALL_LOC_WARNING 0
 // <advc.enum>
 #define FORWARD_DECLARE_INFO_CLASS(Name, Dummy) class Cv##Name##Info;
 DO_FOR_EACH_INFO_TYPE(FORWARD_DECLARE_INFO_CLASS) // </advc.enum>
@@ -74,7 +76,10 @@ public:
 	DllExport void init();
 	DllExport void uninit();
 	void clearTypesMap();
-	void testInstallLocation(); // advc.002b
+// advc.002b:
+#if ENABLE_INSTALL_LOC_WARNING
+	void testInstallLocation();
+#endif
 
 	DllExport CvDiplomacyScreen* getDiplomacyScreen();
 	DllExport CMPDiplomacyScreen* getMPDiplomacyScreen();
@@ -565,7 +570,8 @@ public:
 		DO(DOW_UNIT_CAPTURE_CHANCE) /* advc.010 */ \
 		DO(SHOW_ODDS_IN_COMBAT_MESSAGES) /* advc.048 */ \
 		DO(CAN_CHOP_UNOWNED_FEATURES) /* advc.119 */ \
-		DO(DEFY_RESOLUTION_POP_ANGER) /* advc.118b */
+		DO(DEFY_RESOLUTION_POP_ANGER) /* advc.118b */ \
+		DO(FONT_SIZE_ADJUSTMENT) /* advc.002b */
 	#define MAKE_ENUMERATOR(VAR) VAR,
 	enum GlobalDefines
 	{

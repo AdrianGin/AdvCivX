@@ -1608,7 +1608,7 @@ void CvGameTextMgr::setPlotListHelpPerOwner(CvWStringBuffer& szString,
 		return;
 	/*	advc.002b: This function was written with size 16 in mind, so needs to
 		adjust (only) when a different size is used. */
-	double const dFontFactor = 16.0 / GC.getGame().getHelpFontSize();
+	double const dFontFactor = 16.0 / getHelpFontSize();
 	CvGame const& kGame = GC.getGame();
 	int iScreenHeight = kGame.getScreenHeight();
 	int iLineLimit = (iScreenHeight == 0 ? 25 :
@@ -21584,6 +21584,77 @@ void CvGameTextMgr::getCorporationDataForWB(bool bHeadquarters, std::vector<CvWB
 		mapCorporationData.push_back(CvWBData(i, strDescription, kInfo.getButton()));
 	}
 }
+
+// <advc.002b>
+bool CvGameTextMgr::isGfcThemeModified() const
+{
+	CvArtInfoMisc const* pTheme = ARTFILEMGR.getMiscArtInfo("DEFAULT_THEME_NAME");
+	if (pTheme != NULL && pTheme->getPath() != NULL)
+	{
+		CvString szThemePath(pTheme->getPath());
+		if (szThemePath.find("Mods") != CvString::npos)
+			return true;
+	}
+	return false;
+}
+
+
+int CvGameTextMgr::getHelpFontSize() const
+{
+	int iFontSize = 0;
+	if (!m_aiGfcFontSizes.empty())
+	{
+		iFontSize = m_aiGfcFontSizes[0];
+		// The help text font should be the second smallest
+		for (size_t i = 1; i < m_aiGfcFontSizes.size(); i++)
+		{
+			if (m_aiGfcFontSizes[i] > iFontSize)
+			{
+				iFontSize = m_aiGfcFontSizes[i];
+				break;
+			}
+		}
+	}
+	// If the DLL doesn't get to adjust the fonts
+	if (iFontSize <= 0)
+	{	/*	The thm file that comes with AdvCiv uses size 16
+			(can't tell if this has been changed by a mod-mod).
+			The BtS file uses 14. */
+		iFontSize = (isGfcThemeModified() ? 16 : 14);
+	}
+	return iFontSize;
+}
+
+
+int CvGameTextMgr::adjustFontSize(int iFontSize, int iSizeCategory, bool bBold, bool bItalic)
+{
+	//return (iFontSize * (14 - iSizeCategory)) / 10;
+	/*	Better not to rely on the size categories. Can get the sizes I want
+		through a more flexible formula. A multiplier based on the screen dims
+		would be nice, but the screen isn't initialized yet. Unclear if and how
+		the user profile could be accessed at this point. */
+	/*	Can support this through early parsing of BUG config.
+		But it'll still require a restart to take effect. */
+	//int iAdjust = BUGOption::getValue("Main__FontSizeAdjust", 15, true, true);
+	int iAdjust = GC.getDefineINT(CvGlobals::FONT_SIZE_ADJUSTMENT);
+	/*	So that the adjustment has the advertised effect on size 14.
+		Will be a greater effect on sizes smaller than that, a lesser effect
+		on larger sizes. */
+	double dMult = ((iAdjust + 100) / 100.0) * std::sqrt(14.0);
+	double dFontSize = std::sqrt(static_cast<double>(iFontSize)) * dMult;
+	int iRounded=-1;
+	// Bias the rounding against size 18 - that size looks too bold.
+	if (dFontSize > 17 && dFontSize < 17.8)
+		iRounded = 17;
+	else if (dFontSize > 18.2 && dFontSize < 19)
+		iRounded = 19;
+	else iRounded = fmath::round(dFontSize);
+	iFontSize = std::max(iFontSize, iRounded);
+	// (This callback is a static function)
+	std::vector<int>& aiGfcFontSizes = GAMETEXT.m_aiGfcFontSizes;
+	aiGfcFontSizes.push_back(iFontSize);
+	return iFontSize;
+} // </advc.002b>
 
 // <advc> Based on BtS and ACO code originally in setCombatPlotHelp
 void CvGameTextMgr::appendCombatModifiers(CvWStringBuffer& szBuffer,

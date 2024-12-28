@@ -12,23 +12,24 @@
 
 <Civ4Defines xmlns="x-schema:CIV4GlobalDefinesSchema.xml">
 
-	<!-- advc: 000 in BtS - which makes sense because mods can be compatible
-		 with outdated versions of BtS. AdvCiv, however, requires v3.19.
-		 If the MIN_VERSION check (in the EXE) fails, a warning is displayed. -->
-	<Define> <!-- redefine -->
-		<DefineName>MIN_VERSION</DefineName>
-		<iDefineIntVal>319</iDefineIntVal>
-	</Define>
+	<!-- advc.002b: If a positive value is set, the size of the HUD fonts
+		 (i.e. pretty much all text except for city names on the main map) is
+		 increased. Size-14 fonts (those are normally used for help text) get
+		 magnified by FONT_SIZE_ADJUSTMENT percent. So 15 (the recommended
+		 value) will set the help text size to 16 (rounding to the nearest
+		 integer). Larger fonts also are magnified, but by less than what the
+		 percentage specifies. Smaller sizes (scarcely used) get magnified
+		 a bit more than what the percentage says. Set to 0 for BtS font sizes.
+		 18 should work well for a modest extra increase on 1440p displays.
 
-	<!-- advc.002b: The DLL needs to know (well, it's not crucial ...) the
-		 font size of Size2_Normal in Civ4Theme_Common.thm. AdvCiv sets that
-		 to 16. If a mod-mod changes Size2_Normal, then FONT_SIZE_FACTOR should
-		 be adjusted accordingly. If the AdvCiv theme is removed (and not
-		 replaced with a different custom theme), then there should be no need
-		 to edit this value; the DLL can figure that out on its own. -->
+		 This setting has no effect when AdvCiv's theme files are enabled
+		 through DEFAULT_THEME in XML\Art\Civ4ArtDefines_Misc.xml. Using
+		 those theme files is only recommended when the adjustment through
+		 this setting fails. (Conceivable, as it is implemented through an
+		 experimental hack.) -->
 	<Define>
-		<DefineName>HELP_FONT_SIZE</DefineName>
-		<iDefineIntVal>16</iDefineIntVal>
+		<DefineName>FONT_SIZE_ADJUSTMENT</DefineName>
+		<iDefineIntVal>15</iDefineIntVal>
 	</Define>
 
 	<!-- advc.009: Moved from GlobalDefinesAlt.xml.
@@ -97,6 +98,14 @@
 	<Define>
 		<DefineName>REPLAY_TEXTURE_ERA</DefineName>
 		<iDefineIntVal>10</iDefineIntVal>
+	</Define>
+
+	<!-- advc: 000 in BtS - which makes sense because mods can be compatible
+		 with outdated versions of BtS. AdvCiv, however, requires v3.19.
+		 If the MIN_VERSION check (in the EXE) fails, a warning is displayed. -->
+	<Define> <!-- redefine -->
+		<DefineName>MIN_VERSION</DefineName>
+		<iDefineIntVal>319</iDefineIntVal>
 	</Define>
 
 	<!-- advc.002h: 0 only hides the clouds. Their shadows are hidden through

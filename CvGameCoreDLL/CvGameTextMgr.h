@@ -343,6 +343,11 @@ public:
 	DllExport void getImprovementDataForWB(std::vector<CvWBData>& mapImprovementData);
 	DllExport void getReligionDataForWB(bool bHolyCity, std::vector<CvWBData>& mapReligionData);
 	DllExport void getCorporationDataForWB(bool bHeadquarters, std::vector<CvWBData>& mapCorporationData);
+	// <advc.002b> Seems the most appropriate place for these
+	bool isGfcThemeModified() const;
+	int getHelpFontSize() const;
+	static int adjustFontSize(int iFontSize, int iSizeCategory,
+			bool bBold, bool bItalic); // (callback) </advc.002b>
 
 private:
 	void eventTechHelp(CvWStringBuffer& szBuffer, EventTypes eEvent, TechTypes eTech, PlayerTypes ePlayer, PlayerTypes eOtherPlayer);
@@ -414,6 +419,7 @@ private:
 	// </advc.061>
 	std::vector<int*> m_apbPromotion;
 	bool m_bAlwaysShowPlotCulture; // advc.099f
+	std::vector<int> m_aiGfcFontSizes; // advc.002b
 };
 
 // Singleton Accessor

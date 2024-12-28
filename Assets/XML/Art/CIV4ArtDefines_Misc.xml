@@ -330,10 +330,17 @@
 			<NIF></NIF>
 			<KFM></KFM>
 		</MiscArtInfo>
-		<!-- advc.002b: Set modified theme as default -->
+		<!-- advc.002b: Setting the Path to
+			 Mods/AdvCiv/Resource/Civ4.thm
+			 will cause the FONT_SIZE_ADJUSTMENT in GlobalDefines_advc.xml to
+			 be ignored. Instead, the font sizes in Resource\Civ4Theme_Common.thm
+			 will be used. Other changes to those thm files will apply too.
+			 The mod will then no longer load when placed under My Games. And
+			 renaming the AdvCiv folder will require the Path here to be adjusted
+			 and also twice in Resource\Civ4.thm. -->
 		<MiscArtInfo>
 			<Type>DEFAULT_THEME_NAME</Type>
-			<Path>Mods/AdvCiv/Resource/Civ4.thm</Path>
+			<Path>Resource/Civ4.thm</Path>
 			<fScale>0.0</fScale>
 			<NIF>None</NIF>
 			<KFM>None</KFM>
