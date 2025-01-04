@@ -1449,10 +1449,20 @@ void CvDLLWidgetData::doResearch(CvWidgetDataStruct &widgetDataStruct)
 		if ((GetKeyState(VK_LSHIFT) & 0x8000) || (GetKeyState(VK_RSHIFT) & 0x8000))
 			bShift = true;
 	}*/ // BtS
-	bool bShift = GC.shiftKey();
-
-	// UNOFFICIAL_PATCH, Bugfix (Free Tech Popup Fix), 12/07/09, EmperorFool: START
+	bool const bShift = GC.shiftKey();
 	CvPlayer& kActivePlayer = GET_PLAYER(getActivePlayer());
+	TechTypes eNewActiveResearch = (TechTypes)widgetDataStruct.m_iData1;
+	/*	<advc.001> The main interface now passes the tech ID when the name of
+		the current research is clicked (for the right-click Pedia jump). But
+		we still want to clear the current research on left-click, so we mustn't
+		pass the tech ID along here. */
+	if (widgetDataStruct.m_eWidgetType == WIDGET_RESEARCH &&
+		eNewActiveResearch == kActivePlayer.getCurrentResearch() &&
+		!kActivePlayer.isChoosingFreeTech())
+	{
+		eNewActiveResearch = NO_TECH;
+	} // </advc.001>
+	// UNOFFICIAL_PATCH, Bugfix (Free Tech Popup Fix), 12/07/09, EmperorFool: START
 	if (widgetDataStruct.m_iData2 > 0)
 	{
 		if (!kActivePlayer.isChoosingFreeTech())
@@ -1464,16 +1474,6 @@ void CvDLLWidgetData::doResearch(CvWidgetDataStruct &widgetDataStruct)
 		}
 		else kActivePlayer.changeChoosingFreeTechCount(-1);
 	} // UNOFFICIAL_PATCH: END
-	TechTypes eNewActiveResearch = (TechTypes)widgetDataStruct.m_iData1;
-	/*	<advc.001> The main interface now passes the tech ID when the name of
-		the current research is clicked (for the right-click Pedia jump). But
-		we still want to clear the current research on left-click, so we mustn't
-		pass the tech ID along here. */
-	if (widgetDataStruct.m_eWidgetType == WIDGET_RESEARCH &&
-		eNewActiveResearch == kActivePlayer.getCurrentResearch())
-	{
-		eNewActiveResearch = NO_TECH;
-	} // </advc.001>
 	CvMessageControl::getInstance().sendResearch(eNewActiveResearch,
 			widgetDataStruct.m_iData2, bShift);
 }
