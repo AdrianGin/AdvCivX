@@ -1393,14 +1393,4 @@
 		<iDefineIntVal>1000</iDefineIntVal>
 	</Define>
 
-	<!-- advc.002j: This value gets subtracted from all fScale values that
-		 Civ4ArtDefines_Unit.xml sets to exactly 0.42. That should be all the
-		 horse-mounted units (not including chariots or non-horse mounts).
-		 Those probably all should have and retain a consistent scale,
-		 hence this parameter for resizing them all at once. -->
-	<Define>
-		<DefineName>UNIT_MODEL_SCALE_MODIFIER_042</DefineName>
-		<fDefineFloatVal>-0.1</fDefineFloatVal>
-	</Define>
-
 </Civ4Defines>

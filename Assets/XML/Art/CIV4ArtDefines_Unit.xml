@@ -4,9 +4,6 @@
 <!-- Copyright Firaxis Games 2005 -->
 <!-- -->
 <!-- Unit art path information -->
-<!-- advc.002j (note): The fScale values for horse-mounted units are also
-	 affected by UNIT_MODEL_SCALE_MODIFIER_042 in GlobalDefines_advc.xml, and
-	 the fader settings in CIV4DetailManager.xml scale the size of all units. -->
 <Civ4ArtDefines xmlns="x-schema:CIV4ArtDefinesSchema.xml">
 	<UnitArtInfos>
 		<UnitArtInfo>
@@ -1332,8 +1329,7 @@
 		<UnitArtInfo>
 			<Type>ART_DEF_UNIT_CHARIOT</Type>
 			<Button>,Art/Interface/Buttons/Units/Chariot.dds,Art/Interface/Buttons/Unit_Resource_Atlas.dds,5,7</Button>
-			<!-- advc.002j: was 0.35 -->
-			<fScale>0.34</fScale>
+			<fScale>0.35</fScale>
 			<fInterfaceScale>0.9</fInterfaceScale>
 			<bActAsLand>0</bActAsLand>
 			<bActAsAir>0</bActAsAir>
@@ -1368,8 +1364,7 @@
 		<UnitArtInfo>
 			<Type>ART_DEF_UNIT_EGYPT_WARCHARIOT</Type>
 			<Button>,Art/Interface/Buttons/Units/Chariot_WarChariot.dds,Art/Interface/Buttons/Unit_Resource_Atlas.dds,6,7</Button>
-			<!-- advc.002j: was 0.37 -->
-			<fScale>0.36</fScale>
+			<fScale>0.37</fScale>
 			<fInterfaceScale>0.8</fInterfaceScale>
 			<bActAsLand>0</bActAsLand>
 			<bActAsAir>0</bActAsAir>
@@ -1823,7 +1818,7 @@
 			<Type>ART_DEF_UNIT_CATAPULT</Type>
 			<Button>,Art/Interface/Buttons/Units/Catapult.dds,Art/Interface/Buttons/Unit_Resource_Atlas.dds,7,8</Button>
 			<!-- advc.002j: was 0.65 -->
-			<fScale>0.61</fScale>
+			<fScale>0.62</fScale>
 			<fInterfaceScale>1.0</fInterfaceScale>
 			<bActAsLand>0</bActAsLand>
 			<bActAsAir>0</bActAsAir>
@@ -1858,7 +1853,7 @@
 			<Type>ART_DEF_UNIT_CANNON</Type>
 			<Button>,Art/Interface/Buttons/Units/Cannon.dds,Art/Interface/Buttons/Unit_Resource_Atlas.dds,6,8</Button>
 			<!-- advc.002j: was 0.53 -->
-			<fScale>0.51</fScale>
+			<fScale>0.52</fScale>
 			<fInterfaceScale>0.8</fInterfaceScale>
 			<bActAsLand>0</bActAsLand>
 			<bActAsAir>0</bActAsAir>
@@ -3966,8 +3961,7 @@
 		<UnitArtInfo>
 			<Type>ART_DEF_UNIT_CHARIOT_CHINESE</Type>
 			<Button>,Art/Interface/Buttons/Units/Chariot.dds,Art/Interface/Buttons/Unit_Resource_Atlas.dds,5,7</Button>
-			<!-- advc.002j: was 0.35 -->
-			<fScale>0.34</fScale>
+			<fScale>0.35</fScale>
 			<fInterfaceScale>0.9</fInterfaceScale>
 			<bActAsLand>0</bActAsLand>
 			<bActAsAir>0</bActAsAir>
@@ -4137,8 +4131,7 @@
 		<UnitArtInfo>
 			<Type>ART_DEF_UNIT_CHARIOT_CELTIC</Type>
 			<Button>,Art/Interface/Buttons/Units/Chariot.dds,Art/Interface/Buttons/Unit_Resource_Atlas.dds,5,7</Button>
-			<!-- advc.002j: was 0.35 -->
-			<fScale>0.34</fScale>
+			<fScale>0.35</fScale>
 			<fInterfaceScale>0.9</fInterfaceScale>
 			<bActAsLand>0</bActAsLand>
 			<bActAsAir>0</bActAsAir>
@@ -4635,8 +4628,7 @@
 		<UnitArtInfo>
 			<Type>ART_DEF_UNIT_CHARIOT_EUROPEAN</Type>
 			<Button>,Art/Interface/Buttons/Units/Chariot.dds,Art/Interface/Buttons/Unit_Resource_Atlas.dds,5,7</Button>
-			<!-- advc.002j: was 0.35 -->
-			<fScale>0.34</fScale>
+			<fScale>0.35</fScale>
 			<fInterfaceScale>0.9</fInterfaceScale>
 			<bActAsLand>0</bActAsLand>
 			<bActAsAir>0</bActAsAir>
@@ -5158,8 +5150,7 @@
 		<UnitArtInfo>
 			<Type>ART_DEF_UNIT_CHARIOT_MIDDLE_EAST</Type>
 			<Button>,Art/Interface/Buttons/Units/Chariot.dds,Art/Interface/Buttons/Unit_Resource_Atlas.dds,5,7</Button>
-			<!-- advc.002j: was 0.37 -->
-			<fScale>0.36</fScale>
+			<fScale>0.37</fScale>
 			<fInterfaceScale>0.8</fInterfaceScale>
 			<bActAsLand>0</bActAsLand>
 			<bActAsAir>0</bActAsAir>
@@ -5479,8 +5470,7 @@
 		<UnitArtInfo>
 			<Type>ART_DEF_UNIT_WAR_ELEPHANT_MIDDLE_EAST</Type>
 			<Button>,Art/Interface/Buttons/Units/WarElephant.dds,Art/Interface/Buttons/Unit_Resource_Atlas.dds,7,2</Button>
-			<!-- advc.002j: was 0.32 -->
-			<fScale>0.31</fScale>
+			<fScale>0.32</fScale>
 			<fInterfaceScale>0.6</fInterfaceScale>
 			<bActAsLand>0</bActAsLand>
 			<bActAsAir>0</bActAsAir>
@@ -5602,8 +5592,7 @@
 		<UnitArtInfo>
 			<Type>ART_DEF_UNIT_CHARIOT_SOUTH_AMERICA</Type>
 			<Button>,Art/Interface/Buttons/Units/Chariot.dds,Art/Interface/Buttons/Unit_Resource_Atlas.dds,5,7</Button>
-			<!-- advc.002j: was 0.35 -->
-			<fScale>0.34</fScale>
+			<fScale>0.35</fScale>
 			<fInterfaceScale>0.9</fInterfaceScale>
 			<bActAsLand>0</bActAsLand>
 			<bActAsAir>0</bActAsAir>
