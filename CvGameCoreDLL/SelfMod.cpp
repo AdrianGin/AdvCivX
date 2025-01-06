@@ -470,7 +470,6 @@ void Civ4BeyondSwordPatches::patchPlotIndicatorSize()
 	}
 }
 
-
 // advc.092c:
 void Civ4BeyondSwordPatches::setHelpTextAreaSize(float fWidth)
 {

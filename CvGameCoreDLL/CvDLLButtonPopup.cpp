@@ -2605,7 +2605,6 @@ bool CvDLLButtonPopup::launchEventPopup(CvPopup* pPopup, CvPopupInfo &info)
 	EventTriggeredData* pTriggeredData = kActivePlayer.getEventTriggered(info.getData1());
 	if (pTriggeredData == NULL)
 		return false;
-
 	if (pTriggeredData->m_eTrigger == NO_EVENTTRIGGER)
 		return false;
 

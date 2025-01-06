@@ -5568,8 +5568,7 @@ bool CvUnit::spread(ReligionTypes eReligion)
 				pCity->setHasReligion(eFailedReligion, false, true, false,
 						getOwner()); // advc.106e
 				bSuccess = true;
-			}
-			// K-Mod
+			} // K-Mod end
 		}
 
 		// Python Event

@@ -9459,21 +9459,6 @@ void CvGame::onAllGameDataRead()
 	} // </advc.134a>
 }
 
-/*	advc: Called once the EXE signals that graphics have been initialized
-	(w/e that means exactly) */
-void CvGame::onGraphicsInitialized()
-{
-	// advc.095:
-	setCityBarWidth(BUGOption::isEnabled("MainInterface__WideCityBars", false));
-	/*	<advc.001> After loading, the camera tries to center on some unit
-		(apparently; I don't know where that's implemented). If there is
-		none, it seems to center on some random(?) unrevealed tile. */
-	if (GET_PLAYER(getActivePlayer()).getNumUnits() == 0)
-		setUpdateTimer(UPDATE_LOOK_AT_STARTING_PLOT, 1);
-	// </advc.001>
-	GC.getPythonCaller()->callScreenFunction("updateCameraStartDistance"); // advc.004m
-}
-
 
 void CvGame::saveReplay(PlayerTypes ePlayer)
 {	// advc.106i: Hack to prepend sth. to the replay file name

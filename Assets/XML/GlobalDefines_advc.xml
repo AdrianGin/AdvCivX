@@ -12,14 +12,6 @@
 
 <Civ4Defines xmlns="x-schema:CIV4GlobalDefinesSchema.xml">
 
-	<!-- advc: 000 in BtS - which makes sense because mods can be compatible
-		 with outdated versions of BtS. AdvCiv, however, requires v3.19.
-		 If the MIN_VERSION check (in the EXE) fails, a warning is displayed. -->
-	<Define> <!-- redefine -->
-		<DefineName>MIN_VERSION</DefineName>
-		<iDefineIntVal>319</iDefineIntVal>
-	</Define>
-
 	<!-- advc.002b: The DLL needs to know (well, it's not crucial ...) the
 		 font size of Size2_Normal in Civ4Theme_Common.thm. AdvCiv sets that
 		 to 16. If a mod-mod changes Size2_Normal, then FONT_SIZE_FACTOR should
@@ -97,6 +89,14 @@
 	<Define>
 		<DefineName>REPLAY_TEXTURE_ERA</DefineName>
 		<iDefineIntVal>10</iDefineIntVal>
+	</Define>
+
+	<!-- advc: 000 in BtS - which makes sense because mods can be compatible
+		 with outdated versions of BtS. AdvCiv, however, requires v3.19.
+		 If the MIN_VERSION check (in the EXE) fails, a warning is displayed. -->
+	<Define> <!-- redefine -->
+		<DefineName>MIN_VERSION</DefineName>
+		<iDefineIntVal>319</iDefineIntVal>
 	</Define>
 
 	<!-- advc.002h: 0 only hides the clouds. Their shadows are hidden through
@@ -622,9 +622,11 @@
 	<!-- [advc.099]
 	     If set to 0 or less (BtS behavior), foreign culture can only
 		 cause a city to revolt if the owner of the foreign culture has a
-		 city nearby. If set to 1 (recommended), revolts can occur in any
-		 cities with high foreign culture, even if the owner of that culture
-		 is no longer alive.
+		 city nearby. Should then probably also revert related changes to
+		 the occupation countdown; see OCCUPATION_COUNTDOWN_EXPONENT.
+		 If set to 1 (recommended), revolts can occur in any cities with
+		 high foreign culture, even if the owner of that culture is
+		 no longer alive.
 		 Either way, the revolt can only flip the city if the foreign
 		 culture is alive and nearby. -->
 	<Define>
