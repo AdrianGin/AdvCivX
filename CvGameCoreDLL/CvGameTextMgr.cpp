@@ -1608,7 +1608,7 @@ void CvGameTextMgr::setPlotListHelpPerOwner(CvWStringBuffer& szString,
 		return;
 	/*	advc.002b: This function was written with size 16 in mind, so needs to
 		adjust (only) when a different size is used. */
-	double const dFontFactor = 16.0 / GC.getGame().getHelpFontSize();
+	double const dFontFactor = 16.0 / getHelpFontSize();
 	CvGame const& kGame = GC.getGame();
 	int iScreenHeight = kGame.getScreenHeight();
 	int iLineLimit = (iScreenHeight == 0 ? 25 :
@@ -21556,6 +21556,34 @@ void CvGameTextMgr::getCorporationDataForWB(bool bHeadquarters, std::vector<CvWB
 		mapCorporationData.push_back(CvWBData(i, strDescription, kInfo.getButton()));
 	}
 }
+
+// <advc.002b>
+bool CvGameTextMgr::isGfcThemeModified() const
+{
+	CvArtInfoMisc const* pTheme = ARTFILEMGR.getMiscArtInfo("DEFAULT_THEME_NAME");
+	if (pTheme != NULL && pTheme->getPath() != NULL)
+	{
+		CvString szThemePath(pTheme->getPath());
+		if (szThemePath.find("Mods") != CvString::npos)
+			return true;
+	}
+	return false;
+}
+
+
+int CvGameTextMgr::getHelpFontSize() const
+{
+	// Default for Size2Normal (the smallest size used) when there is no custom theme
+	int iFontSize = 14;
+	/*  Don't know how to look up the font size. Would perhaps have to (re-)parse
+		the theme files (no, thanks). Instead, the DLL is told through XML what
+		font size to assume. I do know how to check if the mod's theme has been
+		removed, and I don't want to rely on players changing the XML setting
+		after removing it. */
+	if (isGfcThemeModified())
+		iFontSize = ::range(GC.getDefineINT("HELP_FONT_SIZE", 16), 8, 22);
+	return iFontSize;
+} // </advc.002b>
 
 // <advc> Based on BtS and ACO code originally in setCombatPlotHelp
 void CvGameTextMgr::appendCombatModifiers(CvWStringBuffer& szBuffer,

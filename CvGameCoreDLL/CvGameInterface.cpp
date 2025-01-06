@@ -2827,26 +2827,6 @@ void CvGame::handleDiplomacySetAIComment(DiploCommentTypes eComment) const
 	m_bShowingCurrentDeals = (eComment == GC.getAIDiploCommentType("CURRENT_DEALS"));
 }
 
-// advc.002b:
-int CvGame::getHelpFontSize() const
-{
-	// Default for Size2Normal (the smallest size used) when there is no custom theme
-	int iFontSize = 14;
-	CvArtInfoMisc const* pTheme = ARTFILEMGR.getMiscArtInfo("DEFAULT_THEME_NAME");
-	if (pTheme != NULL && pTheme->getPath() != NULL)
-	{
-		CvString szThemePath(pTheme->getPath());
-		/*  Don't know how to look up the font size. Would perhaps have to
-			(re-)parse the theme files (no, thanks). Instead, the DLL is told
-			through XML what font size to assume.
-			I do know how to check if the mod's theme has been removed, and I don't
-			want to rely on players changing the XML setting after removing it. */
-		if (szThemePath.find("Mods") != CvString::npos)
-			iFontSize = ::range(GC.getDefineINT("HELP_FONT_SIZE", 16), 8, 22);
-	}
-	return iFontSize;
-}
-
 // advc.092c:
 void CvGame::setHelpTextAreaWidth(float fWidth)
 {

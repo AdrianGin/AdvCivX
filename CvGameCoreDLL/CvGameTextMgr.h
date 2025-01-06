@@ -343,6 +343,9 @@ public:
 	DllExport void getImprovementDataForWB(std::vector<CvWBData>& mapImprovementData);
 	DllExport void getReligionDataForWB(bool bHolyCity, std::vector<CvWBData>& mapReligionData);
 	DllExport void getCorporationDataForWB(bool bHeadquarters, std::vector<CvWBData>& mapCorporationData);
+	// <advc.002b>
+	bool isGfcThemeModified() const;
+	int getHelpFontSize() const; // </advc.002b>
 
 private:
 	void eventTechHelp(CvWStringBuffer& szBuffer, EventTypes eEvent, TechTypes eTech, PlayerTypes ePlayer, PlayerTypes eOtherPlayer);

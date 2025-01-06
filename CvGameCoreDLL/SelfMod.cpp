@@ -3,6 +3,7 @@
 #include "SelfMod.h"
 #include "CvGame.h"
 #include "CvBugOptions.h"
+#include "CvGameTextMgr.h"
 
 Civ4BeyondSwordPatches smc::BtS_EXE;
 
@@ -422,7 +423,7 @@ private:
 	{
 		/*	The EXE seems to convert the font size set by the theme to a somewhat
 			smaller scale, perhaps one expressing the horizontal space taken up. */
-		double dFontFactorInternal = floor(GC.getGame().getHelpFontSize() / 1.5);
+		double dFontFactorInternal = floor(GAMETEXT.getHelpFontSize() / 1.5);
 		/*	The total width seems to get calculated as a hardcoded constant times
 			the font size factor */
 		double const dMultiplicandInternal = 29;
