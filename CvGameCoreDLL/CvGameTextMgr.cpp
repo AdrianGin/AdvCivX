@@ -18442,7 +18442,7 @@ void CvGameTextMgr::buildCityBillboardIconString( CvWStringBuffer& szBuffer, CvC
 		{
 			//szBuffer.append(CvWString::format(L" %c:%s%d%%", gDLL->getSymbolID(DEFENSE_CHAR), ((iDefenseModifier > 0) ? "+" : ""), iDefenseModifier));
 			// <advc.002f>
-			szBuffer.append(CvWString::format(L"   " SETCOLR L"%s%d%%" ENDCOLR L"%c",
+			szBuffer.append(CvWString::format(L"  " SETCOLR L"%s%d%%" ENDCOLR L"%c",
 					// I've tried some other colors, but they're no easier to read.
 					TEXT_COLOR("COLOR_WHITE"),
 					((iDefenseModifier > 0) ? "+" : ""),
