@@ -60,27 +60,28 @@ class BugMapOptionsTab(BugOptionsTab.BugOptionsTab):
 		self.addSpacer(screen, center, "SpacerCenter1") # advc.004
 		# <advc.002f>
 		self.addLabel(screen, center, "CityIcons", "City Billboards:")
-		# advc.095:
 		centerL, centerR = self.addTwoColumnLayout(screen, center, "CityIcons", False)
-		self.addCheckbox(screen, centerL, "MainInterface__WideCityBars")
-		self.addCheckbox(screen, centerR, "MainInterface__AvoidGrowthIcon")
-		self.addCheckbox(screen, centerL, "MainInterface__CityNetworkIcon")
-		self.addCheckbox(screen, centerR, "MainInterface__AirportIcon")
-		self.addCheckbox(screen, centerL, "MainInterface__TopCityIcons")
+		# advc.095 (disused since AdvCiv 1.12):
+		#self.addCheckbox(screen, centerL, "MainInterface__WideCityBars")
+		self.addCheckbox(screen, centerL, "MainInterface__AvoidGrowthIcon")
+		self.addCheckbox(screen, centerR, "MainInterface__CityNetworkIcon")
+		self.addCheckbox(screen, centerL, "MainInterface__AirportIcon")
+		self.addCheckbox(screen, centerR, "MainInterface__TopCityIcons")
 		#self.addCheckbox(screen, centerL, "MainInterface__TopProductionIcon")
 		#self.addCheckbox(screen, centerR, "MainInterface__TopGoldIcon")
 		#self.addCheckbox(screen, centerL, "MainInterface__TopResearchIcon")
 		#self.addCheckbox(screen, centerR, "MainInterface__TopEspionageIcon")
 		#self.addCheckbox(screen, centerL, "MainInterface__TopXPIcon")
-		self.addCheckbox(screen, centerR, "MainInterface__NextGPIcon")
+		self.addCheckbox(screen, centerL, "MainInterface__NextGPIcon")
 		#self.addCheckbox(screen, centerL, "MainInterface__NoUnhappyIcon")
 		#self.addCheckbox(screen, centerR, "MainInterface__NoBadHealthIcon")
 		# </advc.002f>
-		self.addCheckbox(screen, centerL, "MainInterface__RevoltChanceIcon") # advc.101
+		self.addCheckbox(screen, centerR, "MainInterface__RevoltChanceIcon") # advc.101
 		# <advc.186>
 		# Moved from City Screen tab. But let's disable it entirely.
 		#self.addCheckbox(screen, centerR, "CityBar__SelectionHelp")
-		self.addSpacer(screen, centerR, "SelectionHelp")
+		self.addSpacer(screen, centerL, "BuildingDisplayL")
+		self.addSpacer(screen, centerR, "BuildingDisplayR")
 		self.addTextDropdown(screen, centerL, centerR, "CityBar__BuildingDisplay")
 		# </advc.186>
 		self.addLabel(screen, right, "Camera", "Camera:") # advc.004m

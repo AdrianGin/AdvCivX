@@ -993,8 +993,8 @@
 		<German>Zeigt die Kapazität für Lufteinheiten an, wenn der Mauszeiger auf ein (Stadt- oder Festungs-) Feld bewegt wird, auf dem sich freundliche Lufteinheiten befinden. Ist diese Option deaktiviert, wird die Kapazität stattdessen im Hilfetext zum Stadt-Balken (also nur für Stadtfelder) angegeben.</German>
 	</TEXT>
 
-	<!-- advc.095 -->
-	<TEXT>
+	<!-- advc.095 (disused) -->
+	<!--TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__WIDECITYBARS_TEXT</Tag>
 		<English>Wide City Bars</English>
 		<German>Verbreitern</German>
@@ -1003,6 +1003,6 @@
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__WIDECITYBARS_HOVER</Tag>
 		<English>When checked, the main map displays the wide city bars from the BUG mod. (Known issue with those bars: the right half can't be moused over.)</English>
 		<German>Zeigt die extra-breiten Fortschritts-Balken aus der BUG-Mod auf der Hauptkarte an. (Die rechten Hälften dieser Balken lassen sich nicht anklicken - bekanntes Problem.)</German>
-	</TEXT>
+	</TEXT-->
 	
 </Civ4GameText>

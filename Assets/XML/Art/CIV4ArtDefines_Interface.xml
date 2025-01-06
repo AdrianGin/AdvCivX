@@ -357,8 +357,9 @@
 		<!-- advc.095: The DLL will swap these three paths with their narrow
 			 counterparts above when the Wide City Bars option is toggled.
 			 (Because the EXE will always use the type strings above to locate
-			 the path.) -->
-		<InterfaceArtInfo>
+			 the path.)
+			 Disused since AdvCiv 1.12. -->
+		<!--InterfaceArtInfo>
 			<Type>INTERFACE_WIDE_CITY_BAR_CAPITAL_GLOW</Type>
 			<Path>Art/Interface/CityBar/WideCityBar_Glow.dds</Path>
 		</InterfaceArtInfo>
@@ -369,7 +370,7 @@
 		<InterfaceArtInfo>
 			<Type>INTERFACE_WIDE_CITY_BAR_MODEL</Type>
 			<Path>Art/Interface/CityBar/WideCityBar.nif</Path>
-		</InterfaceArtInfo>
+		</InterfaceArtInfo-->
 		<!-- (advc.095 end) -->
 		<InterfaceArtInfo>
 			<Type>INTERFACE_CITY_PANEL</Type>
