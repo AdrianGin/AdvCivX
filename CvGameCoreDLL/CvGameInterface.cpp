@@ -2681,14 +2681,17 @@ EndTurnButtonStates CvGame::getEndTurnState() const
 // advc.095:
 void CvGame::setCityBarWidth(bool bWide)
 {
-	if (ARTFILEMGR.isCityBarPathsSwapped() == bWide)
+	// So that I don't need to comment out all the Python exposure code
+	FErrorMsg("The city bar width option has been disabled through the DLL");
+	return;
+	/*if (ARTFILEMGR.isCityBarPathsSwapped() == bWide)
 		return;
 	ARTFILEMGR.swapCityBarPaths();
 	for (PlayerIter<ALIVE> itPlayer; itPlayer.hasNext(); ++itPlayer)
 	{
 		FOR_EACH_CITY_VAR(pCity, *itPlayer)
 			pCity->reloadEntity();
-	}
+	}*/
 }
 
 
