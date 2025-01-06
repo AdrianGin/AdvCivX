@@ -21106,87 +21106,88 @@ void CvGameTextMgr::getTurnTimerText(CvWString& strText)
 void CvGameTextMgr::getFontSymbols(std::vector< std::vector<wchar> >& aacSymbols,
 	std::vector<int>& aiMaxNumRows)
 {
-	aacSymbols.push_back(std::vector<wchar>());
+	std::vector<wchar> acEmpty; // advc (will get copied)
+
+	aacSymbols.push_back(acEmpty);
 	aiMaxNumRows.push_back(1);
 	FOR_EACH_ENUM(Yield)
 	{
-		aacSymbols[aacSymbols.size() - 1].push_back(GC.getInfo(eLoopYield).getChar());
+		aacSymbols.back().push_back(GC.getInfo(eLoopYield).getChar());
 	}
 
-	aacSymbols.push_back(std::vector<wchar>());
+	aacSymbols.push_back(acEmpty);
 	aiMaxNumRows.push_back(2);
 	FOR_EACH_ENUM(Commerce)
 	{
-		aacSymbols[aacSymbols.size() - 1].push_back(GC.getInfo(eLoopCommerce).getChar());
+		aacSymbols.back().push_back(GC.getInfo(eLoopCommerce).getChar());
 	}
 
-	aacSymbols.push_back(std::vector<wchar>());
+	aacSymbols.push_back(acEmpty);
 	aiMaxNumRows.push_back(2);
 	FOR_EACH_ENUM(Religion)
 	{
-		aacSymbols[aacSymbols.size() - 1].push_back(GC.getInfo(eLoopReligion).getChar());
-		aacSymbols[aacSymbols.size() - 1].push_back(GC.getInfo(eLoopReligion).getHolyCityChar());
+		aacSymbols.back().push_back(GC.getInfo(eLoopReligion).getChar());
+		aacSymbols.back().push_back(GC.getInfo(eLoopReligion).getHolyCityChar());
 	}
 	FOR_EACH_ENUM(Corporation)
 	{
-		aacSymbols[aacSymbols.size() - 1].push_back(GC.getInfo(eLoopCorporation).getChar());
-		aacSymbols[aacSymbols.size() - 1].push_back(GC.getInfo(eLoopCorporation).getHeadquarterChar());
+		aacSymbols.back().push_back(GC.getInfo(eLoopCorporation).getChar());
+		aacSymbols.back().push_back(GC.getInfo(eLoopCorporation).getHeadquarterChar());
 	}
 
-	aacSymbols.push_back(std::vector<wchar>());
+	aacSymbols.push_back(acEmpty);
 	aiMaxNumRows.push_back(3);
 	FOR_EACH_ENUM(Bonus)
 	{
-		aacSymbols[aacSymbols.size() - 1].push_back(GC.getInfo(eLoopBonus).getChar());
+		aacSymbols.back().push_back(GC.getInfo(eLoopBonus).getChar());
 	}
 
-	aacSymbols.push_back(std::vector<wchar>());
+	aacSymbols.push_back(acEmpty);
 	aiMaxNumRows.push_back(3);
 	for (int i = 0; i < MAX_NUM_SYMBOLS; i++)
 	{
-		aacSymbols[aacSymbols.size() - 1].push_back((wchar)gDLL->getSymbolID(i));
+		aacSymbols.back().push_back((wchar)gDLL->getSymbolID(i));
 	}
 }
 
-void CvGameTextMgr::assignFontIds(int iFirstSymbolCode, int iPadAmount)
+// advc: Helper function
+namespace
 {
-	/*	advc.make: safeIntCast calls added throughout so that the info classes
-		can store the symbol as a wchar. */
+	void fillRow(int& iSymbol, int iRowLen)
+	{
+		do
+		{
+			iSymbol++;
+		} while (iSymbol % iRowLen != 0);
+	}
+}
 
-	int iSymbol = iFirstSymbolCode;
+void CvGameTextMgr::assignFontIds(int iFirstSymbolCode, int iRowLen)
+{
+	/*	advc: safeIntCast calls added throughout so that the info classes can
+		store the symbol as a wchar. And param "iPadAmount" renamed to "iRowLen"
+		for clarity. It's the number of columns in GameFont.tga (I think).
+		Probably also needs to stay consistent with getFontSymbols.
+		Comments below are mine. */
 
-	// set yield symbols
+	int iSymbol = iFirstSymbolCode; // (The smaller codes are for glyphs)
+	// One row for yield icons
 	FOR_EACH_ENUM(Yield)
 	{
 		GC.getInfo(eLoopYield).setChar(safeIntCast<wchar>(iSymbol));
 		iSymbol++;
 	}
-
-	do
-	{
-		iSymbol++;
-	} while (iSymbol % iPadAmount != 0);
-
-	// set commerce symbols
+	fillRow(iSymbol, iRowLen);
+	// Two rows for commerce icons
 	FOR_EACH_ENUM(Commerce)
 	{
 		GC.getInfo(eLoopCommerce).setChar(safeIntCast<wchar>(iSymbol));
 		iSymbol++;
 	}
-
-	do
-	{
-		iSymbol++;
-	} while (iSymbol % iPadAmount != 0);
-
-	if (NUM_COMMERCE_TYPES < iPadAmount)
-	{
-		do
-		{
-			iSymbol++;
-		} while (iSymbol % iPadAmount != 0);
-	}
-
+	fillRow(iSymbol, iRowLen);
+	if (NUM_COMMERCE_TYPES < iRowLen)
+		fillRow(iSymbol, iRowLen);
+	// Two rows for religion and corp icons, alternating between regular and starred.
 	FOR_EACH_ENUM(Religion)
 	{
 		GC.getInfo(eLoopReligion).setChar(safeIntCast<wchar>(iSymbol));
@@ -21201,23 +21202,11 @@ void CvGameTextMgr::assignFontIds(int iFirstSymbolCode, int iPadAmount)
 		GC.getInfo(eLoopCorporation).setHeadquarterChar(safeIntCast<wchar>(iSymbol));
 		iSymbol++;
 	}
-
-	do
-	{
-		iSymbol++;
-	} while (iSymbol % iPadAmount != 0);
-
-	if (2 * (GC.getNumReligionInfos() + GC.getNumCorporationInfos()) < iPadAmount)
-	{
-		do
-		{
-			iSymbol++;
-		} while (iSymbol % iPadAmount != 0);
-	}
-
-	// set bonus symbols
+	fillRow(iSymbol, iRowLen);
+	if (2 * (GC.getNumReligionInfos() + GC.getNumCorporationInfos()) < iRowLen)
+		fillRow(iSymbol, iRowLen);
+	// Three rows for bonus resource icons
 	int iBonusBase = iSymbol;
-
 	/*  UNOFFICIAL_PATCH, Bugfix (GameFontFix), 06/02/10, LunarMongoose
 		this erroneous extra increment command was breaking GameFont.tga files
 		when using exactly 49 or 74 resource types in a mod */
@@ -21228,29 +21217,12 @@ void CvGameTextMgr::assignFontIds(int iFirstSymbolCode, int iPadAmount)
 		GC.getInfo(eLoopBonus).setChar(safeIntCast<wchar>(iBonus));
 		iSymbol++;
 	}
-
-	do
-	{
-		iSymbol++;
-	} while (iSymbol % iPadAmount != 0);
-
-	if (GC.getNumBonusInfos() < iPadAmount)
-	{
-		do
-		{
-			iSymbol++;
-		} while (iSymbol % iPadAmount != 0);
-	}
-
-	if (GC.getNumBonusInfos() < 2 * iPadAmount)
-	{
-		do
-		{
-			iSymbol++;
-		} while (iSymbol % iPadAmount != 0);
-	}
-
-	// set extra symbols
+	fillRow(iSymbol, iRowLen);
+	if (GC.getNumBonusInfos() < iRowLen)
+		fillRow(iSymbol, iRowLen);
+	if (GC.getNumBonusInfos() < 2 * iRowLen)
+		fillRow(iSymbol, iRowLen);
+	// The remaining row(s) for misc. icons
 	for (int i = 0; i < MAX_NUM_SYMBOLS; i++)
 	{
 		gDLL->setSymbolID(i, iSymbol);
