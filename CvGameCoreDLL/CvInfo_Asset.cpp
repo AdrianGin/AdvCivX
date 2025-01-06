@@ -287,7 +287,11 @@ bool CvArtInfoUnit::read(CvXMLLoadUtility* pXML)
 		m_iRunEndSoundTag = CvGlobals::getInstance().getFootstepAudioTypeByTag(szTextVal);
 		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
-
+	// <advc.002j>
+	static float const fUNIT_SCALE_MODIFIER_042 = GC.getDefineFLOAT(
+			"UNIT_MODEL_SCALE_MODIFIER_042");
+	if (abs(m_fScale - 0.42f) < 0.0001f)
+		m_fScale += fUNIT_SCALE_MODIFIER_042; // </advc.002j>
 	return true;
 }
 
