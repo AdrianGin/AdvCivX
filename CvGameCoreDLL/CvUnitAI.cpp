@@ -1280,7 +1280,9 @@ bool CvUnitAI::AI_considerPathDOW(CvPlot const& kPlot, MovementFlags eFlags)
 	}
 
 	bool bDOW = false;
-	GroupPathNode* pNode = getPathFinder().getEndNode(); // TODO: rewrite so that getEndNode isn't used.
+	/*	TODO: rewrite so that getEndNode isn't used.
+		(advc: And how would we do that?) */
+	GroupPathNode* pNode = getPathFinder().getEndNode();
 	while (!bDOW && pNode != NULL)
 	{
 		CvPlot const& kLoopPlot = pNode->getPlot(); // advc
@@ -13686,37 +13688,36 @@ bool CvUnitAI::AI_goToTargetCity(MovementFlags eFlags,  // advc: some refactorin
 	{	// <advc.163>
 		if(!canMove())
 			return true; // </advc.163>
-		/*  regenerate the path, just in case we want to take a different route after the DOW
+		/*  regenerate the path after the DOW
 			(but don't bother recalculating the best destination)
 			Note. if the best destination happens to be on the border,
 			and has a stack of defenders on it, this will make us attack them.
 			That's bad. I'll try to fix that in the future. */
-		if (!generatePath(*pBestPlot, eFlags, false))
+		if (!generatePath(*pBestPlot, eFlags))
 			return false;
-		CvPlot* pEnemyPlot = pEndTurnPlot; // advc.001t
+		CvPlot* pPreDoWEndTurnPlot = pEndTurnPlot; // advc.001t
 		pEndTurnPlot = &getPathEndTurnPlot();
 		// <advc.139> Don't move through city that is about to be lost
 		CvCityAI const* pPlotCity = pEndTurnPlot->AI_getPlotCity();
-		if(pPlotCity != NULL && pPlotCity->AI_isEvacuating())
+		if (pPlotCity != NULL && pPlotCity->AI_isEvacuating())
 			return false; // </advc.139>
-		// <advc.001t>
-		if(!isEnemy(*pEndTurnPlot))
+		/*	<advc.001t> A DoW on a human and no immediately invading stack will
+			cause confusion, and makes the AI look inept. */
+		if (!isEnemy(*pEndTurnPlot) && pTargetCity->isHuman())
 		{
-			// This will trigger a few times in most games
-			/*FAssertMsg(isEnemy(pEndTurnPlot->getTeam()),
-				"Known issue: AI may change its mind about the path to the target city "
-				"after declaring war; temporary fix: stick to the original path.");*/
-			if(isEnemy(*pEnemyPlot))
-				pEndTurnPlot = pEnemyPlot;
-			else FAssert(isEnemy(pEnemyPlot->getTeam()));
-			/*  If the else... assert fails, it's probably b/c the stack has multiple
-				moves and there is an intermediate tile that requires a DoW. So this
-				can be fine. Could check this through getPathFinder().GetEndNode()
-				like it's done in AI_considerPathDOW -- tbd.? */
+			/*	Consider going back to the original path - even if it's not optimal.
+				(If our group has multiple moves, then we should really also
+				check for enemy plots along the path; but that's too rare
+				to worry about.) */
+			if (isEnemy(*pPreDoWEndTurnPlot) && generatePath(*pPreDoWEndTurnPlot, eFlags))
+				pEndTurnPlot = pPreDoWEndTurnPlot;
+			/*	Could be that neither path ends in an enemy plot; especially (only?)
+				when our group has multiple moves. */
 		} // </advc.001t>
 	}
 	pushGroupMoveTo(*pEndTurnPlot,
-			// I'm going to use MISSIONAI_ASSAULT signal to our spies and other units that we're attacking this city.
+			/*	Using the mission AI type to signal to our spies
+				and other units that we're attacking this city. */
 			eFlags, false, false, MISSIONAI_ASSAULT, pTargetCity->plot());
 	// K-Mod end
 	return true;
