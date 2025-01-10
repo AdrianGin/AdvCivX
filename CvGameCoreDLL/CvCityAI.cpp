@@ -10290,9 +10290,10 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 
 								iValue *= 400;
 								iValue /= std::max(1, (GC.getBuildInfo(eBuild).getFeatureTime(pPlot->getFeatureType()) + 100));
-
-								//if ((iValue > iBestValue) || ((iValue > 0) && (eBestBuild == NO_BUILD)))
-								if (iValue > iBestValue) // K-Mod. (removed redundant checks)
+								/*	f1rpo: Restored. Right side of || needed for
+									removing features from improved plots. */
+								if (iValue > iBestValue || (iValue > 0 && eBestBuild == NO_BUILD))
+								//if (iValue > iBestValue) // K-Mod. (removed redundant checks)
 								{
 									iBestValue = iValue;
 									eBestBuild = eBuild;
