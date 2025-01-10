@@ -152,6 +152,12 @@ void TestScaledNum()
 	// (But an approxEquals check isn't possible so close to r2.MAX)
 	FAssert(r2 > fixp(1.99));
 	FAssert(r2 < 2);
+	{
+		scaled rBig = 582913;
+		rBig = rBig.sqrt();
+		// Precision isn't great for such large numbers. Haven't looked into why.
+		FAssert(rBig.approxEquals(fixp(763.5), 3));
+	}
 
 	// Speed measurements
 	// (CPU cycles noted in comments can be out of date)

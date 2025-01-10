@@ -775,7 +775,11 @@ private:
 		} // Ex.: iBaseDiv=8 and rProductOfPowersOfTwo=1270/1024, approximating (2^0.1)^3.
 		ScaledNum<256,uint> rLastFactor(1);
 		// Look up approximate result of ((*this)/iBaseDiv)^rExpFrac in precomputed table
-		int iLastBaseTimes64 = (ScaledNum<64,uint>(*this / iBaseDiv)).m_i; // Ex.: 42/64 approximating 5.2/8
+		int iLastBaseTimes64;
+		if (iBaseDiv > MAX) // iBaseDiv can get too large. Use two divisions then.
+			iLastBaseTimes64 = (ScaledNum<64,uint>((*this / (iBaseDiv / 1024)) / 1024)).m_i;
+		// Ex.: 42/64 approximating 5.2/8
+		else iLastBaseTimes64 = (ScaledNum<64,uint>(*this / iBaseDiv)).m_i;
 		#ifdef SCALED_NUM_EXTRA_ASSERTS
 			FAssertBounds(0, 64+1, iLastBaseTimes64);
 		#endif
