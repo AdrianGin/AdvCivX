@@ -294,7 +294,7 @@ public:
 	{
 		return (m_aiHasMetTurn.get(eOther) >= 0); // advc.091
 	}
-	int getHasMetTurn(TeamTypes eOther) { return m_aiHasMetTurn.get(eOther); } // advc.091  (exposed to Python)
+	int getHasMetTurn(TeamTypes eOther) const { return m_aiHasMetTurn.get(eOther); } // advc.091  (exposed to Python)
 	// advc.071: Return value, 2nd param added.
 	CvPlot* makeHasMet(TeamTypes eOther, bool bNewDiplo, FirstContactData* pData = NULL);
 	bool isHasSeen(TeamTypes eOther) const { return m_abHasSeen.get(eOther); }; // K-Mod

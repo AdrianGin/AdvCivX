@@ -188,7 +188,7 @@ void CvSelectionGroup::doTurn()
 
 	FAssert(getOwner() != NO_PLAYER);
 	// <advc>
-	if(getNumUnits() <= 0)
+	if (getNumUnits() <= 0)
 	{
 		doDelayedDeath();
 		return;
@@ -2467,7 +2467,7 @@ void CvSelectionGroup::unloadAll()
 bool CvSelectionGroup::alwaysInvisible() const
 {
 	//PROFILE_FUNC(); // advc.003o
-	if(getNumUnits() <= 0)
+	if (getNumUnits() <= 0)
 		return false;
 	FOR_EACH_UNIT_IN(pUnit, *this)
 	{

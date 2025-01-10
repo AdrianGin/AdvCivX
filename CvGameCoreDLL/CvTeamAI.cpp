@@ -4704,8 +4704,11 @@ bool CvTeamAI::AI_isSneakAttackReady(TeamTypes eIndex) const
 {
 	//return (AI_isChosenWar(eIndex) && !(AI_isSneakAttackPreparing(eIndex))); // BtS
 	// K-Mod (advc: originally in an overloaded function)
-	if(eIndex != NO_TEAM)
-		return !isAtWar(eIndex) && AI_isChosenWar(eIndex) && !AI_isSneakAttackPreparing(eIndex); // K-Mod
+	if (eIndex != NO_TEAM)
+	{
+		return !isAtWar(eIndex) && AI_isChosenWar(eIndex) &&
+				!AI_isSneakAttackPreparing(eIndex);
+	}
 	for (TeamIter<MAJOR_CIV> it; it.hasNext(); ++it)
 	{
 		if (AI_isSneakAttackReady(it->getID()))
@@ -4718,7 +4721,7 @@ bool CvTeamAI::AI_isSneakAttackReady(TeamTypes eIndex) const
 
 bool CvTeamAI::AI_isSneakAttackPreparing(TeamTypes eIndex) const
 {
-	if(eIndex != NO_TEAM)
+	if (eIndex != NO_TEAM)
 	{
 		WarPlanTypes eWarPlan = AI_getWarPlan(GET_TEAM(eIndex).getMasterTeam()); // advc.104j
 		return (eWarPlan == WARPLAN_PREPARING_LIMITED || eWarPlan == WARPLAN_PREPARING_TOTAL);

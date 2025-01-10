@@ -8596,7 +8596,7 @@ void CvCityAI::AI_updateBestBuild()
 			/*  make some minor adjustments to prioritize plots that are easy to access,
 				and plots which aren't already improved. */
 			if (iValue > 0)
-			{
+			{ 
 				if (kPlot.isRoute())
 					iValue += 2;
 				if (!kPlot.isImproved())

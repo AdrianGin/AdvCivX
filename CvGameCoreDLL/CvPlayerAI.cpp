@@ -24672,7 +24672,7 @@ int CvPlayerAI::AI_calculateDominationVictoryStage() const
 	{
 		// <advc.115>
 		int iEverAlive = kGame.getCivPlayersEverAlive();
-		if(iPercentOfDomination > 87 - iEverAlive) // was 80 flat </advc.115>
+		if (iPercentOfDomination > 87 - iEverAlive) // was 80 flat </advc.115>
 			return 4;
 		if (iPercentOfDomination > /*50*/ 62 - iEverAlive) // advc.115
 			return 3;
@@ -24885,7 +24885,8 @@ void CvPlayerAI::AI_updateVictoryWeights()
 		if (abValid.get(eLoopVictory))
 		{
 			short iWeight = m_aiVictoryWeights.get(eLoopVictory);
-			iWeight = static_cast<short>(iWeight + (iDeadWeight * iWeight) / iValidWeight);
+			iWeight = safeIntCast<short>(
+					iWeight + (iDeadWeight * iWeight) / iValidWeight);
 			m_aiVictoryWeights.set(eLoopVictory, iWeight);
 		}
 	}

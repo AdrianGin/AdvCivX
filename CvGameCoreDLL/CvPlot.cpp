@@ -4740,7 +4740,7 @@ void CvPlot::setImprovementType(ImprovementTypes eNewValue,
 	bool bUpdateInFoW) // advc.055
 {
 	ImprovementTypes const eOldImprovement = getImprovementType();
-	if(getImprovementType() == eNewValue)
+	if (getImprovementType() == eNewValue)
 		return;
 	// <advc.183>
 	bool const bActedAsCity = (eOldImprovement != NO_IMPROVEMENT &&
@@ -5352,7 +5352,7 @@ int CvPlot::calculateYield(YieldTypes eYield, bool bDisplay) const
 		eImprovement = getImprovementType();
 		eRoute = getRouteType();
 	}
-	int iNatureYield = // advc.908a: Preserve this for later
+	int const iNatureYield = // advc.908a: Preserve this for later
 			calculateNatureYield(eYield,
 			bDisplay ? getActiveTeam() : // advc.182
 			/*	(advc: Note that NO_TEAM means that bonus resources are ignored.
@@ -5410,7 +5410,7 @@ int CvPlot::calculateYield(YieldTypes eYield, bool bDisplay) const
 			int iThresh = GET_PLAYER(ePlayer).getExtraYieldThreshold(eYield);
 			if (iThresh > 0)
 			{
-				if(iYield >= iThresh)
+				if (iYield >= iThresh)
 					iYield += GC.getDefineINT(CvGlobals::EXTRA_YIELD);
 			}
 		}

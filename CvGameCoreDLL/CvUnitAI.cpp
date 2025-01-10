@@ -1285,7 +1285,7 @@ bool CvUnitAI::AI_considerPathDOW(CvPlot const& kPlot, MovementFlags eFlags)
 	GroupPathNode* pNode = getPathFinder().getEndNode();
 	while (!bDOW && pNode != NULL)
 	{
-		CvPlot const& kLoopPlot = pNode->getPlot(); // advc
+		CvPlot const& kLoopPlot = pNode->getPlot();
 		/*  we need to check DOW even for moves several turns away -
 			otherwise the actual move mission may fail to find a path.
 			however, I would consider it irresponsible to call this function for multi-move missions.
@@ -13582,8 +13582,8 @@ CvCity* CvUnitAI::AI_pickTargetCity(MovementFlags eFlags, int iMaxPathTurns,
 
 /*	BETTER_BTS_AI_MOD, 03/29/10, jdog5000 (War tactics AI, Efficiency):
 	(K-Mod has apparently merged BBAI's AI_goToTargetBarbCity into this) */
-bool CvUnitAI::AI_goToTargetCity(MovementFlags eFlags,  // advc: some refactoring
-	int iMaxPathTurns, CvCity* pTargetCity)
+bool CvUnitAI::AI_goToTargetCity(MovementFlags eFlags, int iMaxPathTurns,
+	CvCity* pTargetCity)
 {
 	PROFILE_FUNC();
 
@@ -13617,7 +13617,7 @@ bool CvUnitAI::AI_goToTargetCity(MovementFlags eFlags,  // advc: some refactorin
 			int iPathTurns;
 			if (!generatePath(*pAdj, eFlags, true, &iPathTurns, iMaxPathTurns))
 				continue;
-			if(iPathTurns <= iMaxPathTurns &&
+			if (iPathTurns <= iMaxPathTurns &&
 				/*  advc.083: This was previously asserted after the loop ("no suicide missions...")
 					but not actually guaranteed by the loop. If the pathfinder thinks
 					that it's OK to move through the city, then we might as well
@@ -13671,11 +13671,11 @@ bool CvUnitAI::AI_goToTargetCity(MovementFlags eFlags,  // advc: some refactorin
 
 	/*  <advc.001t> Needed when called from AI_attackMove. Attack stacks aren't supposed
 		to declare war, and they shouldn't move into enemy cities when war is imminent. */
-	if(!(eFlags & MOVE_DECLARE_WAR) && GET_TEAM(getTeam()).
+	if (!(eFlags & MOVE_DECLARE_WAR) && GET_TEAM(getTeam()).
 		AI_isSneakAttackReady(pTargetCity->getTeam()))
 	{
 		TeamTypes eBestPlotTeam = pBestPlot->getTeam();
-		if(eBestPlotTeam != NO_TEAM && GET_TEAM(eBestPlotTeam).getMasterTeam() ==
+		if (eBestPlotTeam != NO_TEAM && GET_TEAM(eBestPlotTeam).getMasterTeam() ==
 			GET_TEAM(pTargetCity->getTeam()).getMasterTeam())
 		{
 			return false;
@@ -13686,7 +13686,7 @@ bool CvUnitAI::AI_goToTargetCity(MovementFlags eFlags,  // advc: some refactorin
 	// K-Mod start
 	if (AI_considerPathDOW(*pEndTurnPlot, eFlags))
 	{	// <advc.163>
-		if(!canMove())
+		if (!canMove())
 			return true; // </advc.163>
 		/*  regenerate the path after the DOW
 			(but don't bother recalculating the best destination)
