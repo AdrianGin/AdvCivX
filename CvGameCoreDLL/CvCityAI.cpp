@@ -1677,7 +1677,7 @@ void CvCityAI::AI_chooseProduction()
 
 		// K-Mod (the spies stuff used to be lower down)
 		int iNumSpies = kPlayer.AI_totalAreaUnitAIs(kArea, UNITAI_SPY);
-				// advc.001j: already counted
+				// advc: already counted
 				//+ kPlayer.AI_getNumTrainAIUnits(UNITAI_SPY);
 		int iNeededSpies = iNumCitiesInArea / 3;
 		if (bPrimaryArea)
@@ -12012,7 +12012,7 @@ void CvCityAI::AI_buildGovernorChooseProduction()
 		if (!kOwner.AI_isAreaAlone(getArea()))
 		{
 			int iNumSpies = kOwner.AI_totalAreaUnitAIs(getArea(), UNITAI_SPY);
-					// advc.001j: Commented out
+					// advc: Commented out
 					//+ kOwner.AI_getNumTrainAIUnits(UNITAI_SPY);
 			int iNeededSpies = 2 + getArea().getCitiesPerPlayer(kOwner.getID()) / 5;
 			iNeededSpies += kOwner.getCommercePercent(COMMERCE_ESPIONAGE)/20;

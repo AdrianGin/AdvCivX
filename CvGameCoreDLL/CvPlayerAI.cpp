@@ -14919,7 +14919,7 @@ int CvPlayerAI::AI_maxUnitCostPerMil(CvArea const* pArea, int iBuildProb) const
 	CvTeamAI const& kTeam = GET_TEAM(getTeam());
 
 	//if (GC.getGame().isOption(GAMEOPTION_ALWAYS_PEACE))
-	if (!kTeam.AI_isWarPossible()) // advc.001j
+	if (!kTeam.AI_isWarPossible()) // advc.001
 		return 20; // ??
 
 	if (iBuildProb < 0) // a rough estimate:
@@ -15561,7 +15561,7 @@ bool CvPlayerAI::AI_isTargetForMissionaries(PlayerTypes eTarget,
 		return false;
 	if(GET_TEAM(getTeam()).AI_isSneakAttackReady(kTarget.getTeam())) // advc
 		return false;
-	if(!GET_TEAM(kTarget.getTeam()).canPeacefullyEnter(getTeam())) // advc.001j
+	if(!GET_TEAM(kTarget.getTeam()).canPeacefullyEnter(getTeam())) // advc.001
 		return false;
 	if(kTarget.isNoNonStateReligionSpread() &&
 		kTarget.getStateReligion() != eReligion &&
@@ -24096,7 +24096,7 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 				iWeight; // advc.115f
 
 		//if (kGame.isOption(GAMEOPTION_ALWAYS_PEACE))
-		if (!GET_TEAM(getTeam()).AI_isWarPossible()) // advc.001j
+		if (!GET_TEAM(getTeam()).AI_isWarPossible()) // advc.001
 			iValue += 30;
 
 		iValue += (kGame.isOption(GAMEOPTION_AGGRESSIVE_AI) ?
@@ -24436,7 +24436,7 @@ int CvPlayerAI::AI_calculateConquestVictoryStage() const
 	CvTeamAI const& kTeam = GET_TEAM(getTeam());
 	// check for validity of conquest victory
 	//if (kGame.isOption(GAMEOPTION_ALWAYS_PEACE)
-	if (!kTeam.AI_isWarPossible() || // advc.001j
+	if (!kTeam.AI_isWarPossible() || // advc.001
 		isAVassal())
 	{
 		return 0;
@@ -24623,7 +24623,7 @@ int CvPlayerAI::AI_calculateDominationVictoryStage() const
 	CvGame const& kGame = GC.getGame();
 	CvTeamAI const& kTeam = GET_TEAM(getTeam());
 	//if (kGame.isOption(GAMEOPTION_ALWAYS_PEACE))
-	if (!kTeam.AI_isWarPossible() || // advc.001j
+	if (!kTeam.AI_isWarPossible() || // advc.001
 		isAVassal())
 	{
 		return 0;
@@ -25367,7 +25367,7 @@ void CvPlayerAI::AI_updateStrategyHash()
 				for (PlayerIter<MAJOR_CIV,OTHER_KNOWN_TO> itOther(getTeam());
 					itOther.hasNext(); ++itOther)
 				{
-					if (kTeam.canPeacefullyEnter(itOther->getTeam())) // advc.001j
+					if (kTeam.canPeacefullyEnter(itOther->getTeam())) // advc.001
 					{
 						if (itOther->getStateReligion() == getStateReligion())
 							iMissionary += 10;
@@ -25885,7 +25885,7 @@ void CvPlayerAI::AI_updateStrategyHash()
 
 	//Turn off inappropriate strategies.
 	//if (kGame.isOption(GAMEOPTION_ALWAYS_PEACE))
-	if (!GET_TEAM(getTeam()).AI_isWarPossible()) // advc.001j
+	if (!GET_TEAM(getTeam()).AI_isWarPossible()) // advc.001
 	{
 		m_eStrategyHash &= ~AI_STRATEGY_DAGGER;
 		m_eStrategyHash &= ~AI_STRATEGY_CRUSH;
