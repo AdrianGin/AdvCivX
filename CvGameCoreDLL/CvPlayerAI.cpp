@@ -24462,7 +24462,6 @@ int CvPlayerAI::AI_calculateConquestVictoryStage() const
 	// first, gather some data.
 	int iDoWs = 0, iKnownCivs = 0, iRivalPop = 0, iStartCivs = 0,
 			iConqueredCivs = 0, iAttitudeWeight = 0;
-
 	for (PlayerAIIter<EVER_ALIVE,OTHER_KNOWN_TO> itPlayer(getTeam());
 		itPlayer.hasNext(); ++itPlayer)
 	{
@@ -24470,7 +24469,9 @@ int CvPlayerAI::AI_calculateConquestVictoryStage() const
 		CvTeamAI const& kLoopTeam = GET_TEAM(kLoopPlayer.getTeam());
 		if (!kLoopTeam.isMajorCiv())
 			continue;
-
+		/*	advc (note): Dead players retain this memory unless they get reused.
+			And also the has-met data checked by the loop header. Caveat: Accessing
+			such info at the level of teams may well fail. */
 		iDoWs += kLoopPlayer.AI_getMemoryCount(getID(), MEMORY_DECLARED_WAR);
 		/*  advc.130j: DoW memory counted times 3, but there's also decay now
 			and CvTeamAI::forgiveEnemies, so let's go with 2.5. */
