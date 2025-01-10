@@ -24441,12 +24441,13 @@ int CvPlayerAI::AI_calculateConquestVictoryStage() const
 	{
 		return 0;
 	}
+	int iOtherVictoryWeight = 0; // advc.104c
 	// <advc.115f>
 	int iWeight = 0;
 	FOR_EACH_ENUM(Victory)
 	{
-		if (GC.getInfo(eLoopVictory).isConquest())
-			iWeight += AI_getVictoryWeight(eLoopVictory);
+		(GC.getInfo(eLoopVictory).isConquest() ? iWeight :
+				iOtherVictoryWeight) += AI_getVictoryWeight(eLoopVictory); // advc.104c
 	}
 	if (iWeight < 0)
 		return 0; // </advc.115f>
@@ -24585,9 +24586,10 @@ int CvPlayerAI::AI_calculateConquestVictoryStage() const
 				!bManyOffshoreRivals && // advc.115
 				(bVeryStrong ||
 				(bWarmonger && bHateful && 2 * iConqueredCivs >= iKnownCivs)) &&
-				/*  advc.104c: The ==1 might be exploitable; by keeping some
+				/*  <advc.104c> The ==1 might be exploitable; by keeping some
 					insignificant civ in the game. Probably no problem. */
-				(iFriends == 0 || (iFriends == iRemaining && iFriends == 1)))
+				(iFriends == 0 || (iFriends == iRemaining && iFriends == 1)) ||
+				iOtherVictoryWeight <= 0) // </advc.104c>
 			{
 				/*	finally, before confirming level 4, check that there is
 					at least one team that we can declare war on. */
@@ -24645,7 +24647,17 @@ int CvPlayerAI::AI_calculateDominationVictoryStage() const
 	// <advc.104c>
 	int const iPopObjective = std::max(1, kGame.getAdjustedPopulationPercent(eDomination));
 	int const iLandObjective = std::max(1, kGame.getAdjustedLandPercent(eDomination));
+	int iNonMilitaryVictoryWeight = 0;
+	FOR_EACH_ENUM(Victory)
+	{
+		if (eLoopVictory != eDomination &&
+			!GC.getInfo(eLoopVictory).isConquest())
+		{
+			iNonMilitaryVictoryWeight += AI_getVictoryWeight(eLoopVictory);
+		}
+	}
 	bool bBlockedByFriends = false;
+	if (iNonMilitaryVictoryWeight > 0)
 	{
 		scaled rPopNonFriends;
 		scaled rLandNonFriends;
