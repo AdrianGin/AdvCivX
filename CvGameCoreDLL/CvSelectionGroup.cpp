@@ -2410,8 +2410,13 @@ bool CvSelectionGroup::canDefend() /* advc: */ const
 	return false;
 }
 
+
 bool CvSelectionGroup::canBombard(CvPlot const& kPlot) const
 {
+	/*	advc.001j (note): For AI units, it's usually enough to check the head
+		unit - due to the group ordering imposed by addUnit. There are exceptions
+		though (sea units in particular). Will have to leave it up to callers
+		to decide whether they need fast or reliable results. */
 	FOR_EACH_UNIT_IN(pUnit, *this)
 	{
 		if (pUnit->canBombard(kPlot))
@@ -2419,6 +2424,7 @@ bool CvSelectionGroup::canBombard(CvPlot const& kPlot) const
 	}
 	return false;
 }
+
 
 int CvSelectionGroup::visibilityRange() const // advc: const; return type was bool
 {

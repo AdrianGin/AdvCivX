@@ -6291,7 +6291,8 @@ bool CvCity::isBombardable(const CvUnit* pUnit) const
 {
 	if (pUnit != NULL && !pUnit->isEnemy(getTeam()))
 		return false;
-
+	/*	advc (note): Important not to check pUnit->ignoreBuildingDefense.
+		Need to be able to bombard either way for the sake of other units. */
 	return (getDefenseModifier(false) > 0 ||
 			// advc.004c: Don't give away 0 defense in the fog of war to human attacker
 			(pUnit != NULL && pUnit->isHuman() && !isVisible(pUnit->getTeam())) ||

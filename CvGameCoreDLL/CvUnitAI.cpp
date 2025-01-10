@@ -3167,7 +3167,7 @@ void CvUnitAI::AI_attackCityMove()
 					{
 						return;
 					}
-					if (canBombard(getPlot()))
+					if (getGroup()->canBombard(getPlot())) // advc.001j: check group
 					{
 						getGroup()->pushMission(MISSION_BOMBARD, -1, -1, NO_MOVEMENT_FLAGS,
 								false, false, MISSIONAI_ASSAULT, pTargetCity->plot());
@@ -3602,9 +3602,11 @@ void CvUnitAI::AI_attackCityMove()
 						and that'll fail b/c AI_safety has already failed. */
 					CvCity* pAreaTargetCity = getArea().AI_getTargetCity(getOwner());
 					if (pAreaTargetCity != NULL)
-					{	/*  advc: One way that this can happen: Owner is at war with a civ that
-							it can only reach through the territory of a third party (no OB) and
-							is preparing war against the third party.
+					{	/*  advc: Possibly due to an inconsistency between the ratio
+							calculation in this function and that in AI_stackAttackCity.
+							A more obscure way we can end up here: Owner at war with a civ
+							that it can only reach through the territory of a third party
+							(no OB) and is preparing war against the third party.
 							AI_pickTargetCity will then pick a city of the current war enemy, but
 							the Area AI will be set to a non-ASSAULT type, meaning that AI_attackCityMove
 							will (in vain) look for a land path. AI_solveBlockageProblem will then (always?)
@@ -13839,7 +13841,7 @@ bool CvUnitAI::AI_bombardCity()
 		break; // assume there can only be one city adjacent to us
 	}
 
-	if (!canBombard(getPlot()))
+	if (!getGroup()->canBombard(getPlot())) // advc.001j: check group
 		return false;
 
 	CvCity* pBombardCity = bombardTarget(getPlot());
@@ -14586,7 +14588,7 @@ bool CvUnitAI::AI_blockade()
 		iValue += GET_PLAYER(getOwner()).AI_adjacentPotentialAttackers(pCity->getPlot());
 		iValue += 3 * GET_PLAYER(getOwner()).AI_plotTargetMissionAIs(
 				pCity->getPlot(), MISSIONAI_ASSAULT, getGroup(), 2);
-		if (canBombard(kPlot))
+		if (getGroup()->canBombard(kPlot)) // advc.001j: check group
 			iValue *= 2;
 		iValue *= 1000;
 		iValue /= (iPathTurns + 1);
@@ -14626,7 +14628,7 @@ bool CvUnitAI::AI_blockade()
 
 	if (at(*pBestBlockadePlot))
 	{
-		if (canBombard(getPlot()))
+		if (getGroup()->canBombard(getPlot())) // advc.001j: check group
 		{
 			getGroup()->pushMission(MISSION_BOMBARD, -1, -1, NO_MOVEMENT_FLAGS,
 					false, false, MISSIONAI_BLOCKADE, pBestBlockadePlot);
@@ -21238,7 +21240,7 @@ bool CvUnitAI::AI_airAttackDamagedSkip()
 	-- or we should wait for another unit to bombard... */
 bool CvUnitAI::AI_followBombard()
 {
-	if (canBombard(getPlot()))
+	if (getGroup()->canBombard(getPlot())) // advc.001j: check group
 	{
 		getGroup()->pushMission(MISSION_BOMBARD);
 		return true;
