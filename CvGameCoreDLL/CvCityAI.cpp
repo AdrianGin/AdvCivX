@@ -8244,8 +8244,10 @@ int CvCityAI::AI_getImprovementValue(CvPlot const& kPlot, ImprovementTypes eImpr
 		rValue += iClearFeatureValue;
 	} // K-Mod end
 	if (peBestBuild != NULL)
+	{	// advc: Caller relies on no build being returned for present improvement
+		FAssert(eImprovement != kPlot.getImprovementType() || eBestTempBuild == NO_BUILD);
 		*peBestBuild = eBestTempBuild;
-
+	}
 	return rValue.round();
 }
 
@@ -8568,7 +8570,10 @@ void CvCityAI::AI_updateBestBuild()
 				constructing sth. nonurgent */
 			if (kPlot.isFeature() && GC.getInfo(m_aeBestBuild[ePlot]).
 				isFeatureRemove(kPlot.getFeatureType())) // </advc.117>
-			{
+			{	/*	<advc.121> Extra priority for clearing harmful feature
+					from worked, improved plot. */
+				if (iValue > 0 && kPlot.isImproved() && kPlot.isBeingWorked())
+					iValue *= 2; // </advc.121>
 				// Increase chop multipier from 2 to 3; handle nonurgent construction orders.
 				CvCity* pCity=NULL;
 				int iChopValue = kPlot.getFeatureProduction(
@@ -11568,6 +11573,7 @@ void CvCityAI::AI_bestPlotBuild(CvPlot const& kPlot, int* piBestValue, BuildType
 			if (iValue > iBestValue)
 			{
 				iBestValue = iValue;
+				// advc (note): Will be NO_BUILD for kPlot's present improvement
 				eBestBuild = eBestTempBuild;
 			}
 		}
@@ -11607,10 +11613,15 @@ void CvCityAI::AI_bestPlotBuild(CvPlot const& kPlot, int* piBestValue, BuildType
 				iValue *= 400;
 				iValue /= std::max(1, GC.getInfo(eLoopBuild).getFeatureTime(
 						kPlot.getFeatureType()) + 100);
-
-				if (iValue > iBestValue) // K-Mod. (removed redundant checks)
-					//|| (iValue > 0 && eBestBuild == NO_BUILD))
-				{
+				/*	<advc.001> One of the checks K-Mod had removed. They're needed
+					when kPlot has an improvement that we want to keep. */
+				if (iValue <= 0)
+					continue; // </advc.001>
+				if (iValue > iBestValue || // K-Mod. (removed redundant checks)
+					eBestBuild == NO_BUILD) // advc.001 (restored)
+				{	// <advc.121> Akin to the boost for RouteYieldChanges below
+					if (eBestBuild == NO_BUILD && kPlot.isBeingWorked())
+						iBestValue *= 2; // </advc.121>
 					iBestValue = iValue;
 					eBestBuild = eLoopBuild;
 				}

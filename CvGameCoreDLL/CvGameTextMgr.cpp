@@ -4425,6 +4425,25 @@ void CvGameTextMgr::setPlotHelpDebug_ShiftOnly(CvWStringBuffer& szString, CvPlot
 		CityPlotTypes ePlot = pWorkingCity->getCityPlotIndex(kPlot);
 		int iBuildValue = pWorkingCity->AI_getBestBuildValue(ePlot);
 		BuildTypes eBestBuild = pWorkingCity->AI_getBestBuild(ePlot);
+		// <advc.007> Akin to CvUnitAI::AI_bestCityBuild
+		CvPlot const* pBestPlot = NULL;
+		if (ePlot == CITY_HOME_PLOT)
+		{
+			iBuildValue = 0;
+			eBestBuild = NO_BUILD;
+			for (WorkablePlotIter it(*pWorkingCity); it.hasNext(); ++it)
+			{
+				CvPlot& kPlot = *it;
+				CityPlotTypes eLoopPlot = it.currID();
+				int iValue = pWorkingCity->AI_getBestBuildValue(eLoopPlot);
+				if (iValue > iBuildValue)
+				{
+					iBuildValue = iValue;
+					eBestBuild = pWorkingCity->AI_getBestBuild(eLoopPlot);
+					pBestPlot = &kPlot;
+				}
+			}
+		} // </advc.007>
 		// BETTER_BTS_AI_MOD, Debug, 06/25/09, jdog5000: START
 		szString.append(NEWLINE);
 
@@ -4441,9 +4460,16 @@ void CvGameTextMgr::setPlotHelpDebug_ShiftOnly(CvWStringBuffer& szString, CvPlot
 		ImprovementTypes eImprovement = kPlot.getImprovementType();
 
 		if (eBestBuild != NO_BUILD)
-		{
-
-			if (GC.getInfo(eBestBuild).getImprovement() != NO_IMPROVEMENT &&
+		{	// <advc.007>
+			if (pBestPlot != NULL)
+			{
+				szTempBuffer.Format(SETCOLR L"\nBest Build: %s in (%d,%d)" ENDCOLR,
+						TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),
+						GC.getInfo(eBestBuild).getDescription(),
+						pBestPlot->getX(), pBestPlot->getY());
+			}
+			else // </advc.007>
+				if (GC.getInfo(eBestBuild).getImprovement() != NO_IMPROVEMENT &&
 				eImprovement != NO_IMPROVEMENT &&
 				eImprovement != GC.getInfo(eBestBuild).getImprovement())
 			{
