@@ -14664,7 +14664,7 @@ int CvPlayerAI::AI_countOwnedBonuses(BonusTypes eBonus,
 	// K-Mod end
 	CvMap const& kMap = GC.getMap();
 	int iCount = 0;
-	/*	advc: Treat Adv. Start upfront - and don't double count city bonuses.
+	/*	advc: Treat Adv. Start upfront - and don't double-count city bonuses.
 		Comment from Kek-Mod: "This era seems like nonsense meant to
 		prevent counting all bonuses when the map is fully revealed."
 		(I guess it's mainly relevant for tech evaluation in Advanced Start.) */

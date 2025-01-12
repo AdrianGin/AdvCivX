@@ -14704,8 +14704,7 @@ bool CvUnitAI::AI_pirateBlockade()
 	for (int i = 0; i < GC.getMap().numPlots(); i++)
 	{
 		CvPlot const& kPlot = GC.getMap().getPlotByIndex(i);
-		// advc: Reduce indentation
-		if(!kPlot.isRevealed(getTeam()) || // advc.opt
+		if (!kPlot.isRevealed(getTeam()) || // advc.opt
 			!AI_plotValid(kPlot) ||
 			kPlot.isVisibleEnemyUnit(this) || !canPlunder(kPlot) ||
 			//SyncRandSuccessRatio(3, 4) ||

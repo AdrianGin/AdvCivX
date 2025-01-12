@@ -2653,7 +2653,7 @@ int CvPlot::defenseModifier(TeamTypes eDefender, bool bIgnoreBuilding,
 
 int CvPlot::movementCost(CvUnit const& kUnit, CvPlot const& kFrom,
 	bool bAssumeRevealed, // advc.001i
-	bool bIgnoresRoutes) const // advc.001t
+	bool bIgnoresRoute) const // advc.001t
 {
 	// <advc.162>
 	if(kUnit.isInvasionMove(kFrom, *this))
@@ -2726,7 +2726,7 @@ int CvPlot::movementCost(CvUnit const& kUnit, CvPlot const& kFrom,
 		isValidRoute(&kUnit, bAssumeRevealed) && // </advc.001i>
 		(GET_TEAM(eTeam).isBridgeBuilding() ||
 		!kFrom.isRiverCrossing(directionXY(kFrom, *this))) &&
-		!bIgnoresRoutes) // advc.001t
+		!bIgnoresRoute) // advc.001t
 	{	// <advc.001i>
 		RouteTypes eFromRoute = (bAssumeRevealed ? kFrom.getRouteType() :
 				kFrom.getRevealedRouteType(eTeam));

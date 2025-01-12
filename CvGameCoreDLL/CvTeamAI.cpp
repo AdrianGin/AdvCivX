@@ -3018,7 +3018,7 @@ int CvTeamAI::AI_getEnemyPowerPercent(bool bConsiderOthers) const
 		else if(AI_isChosenWar(kEnemy.getID()) && // Haven't declared war yet
 			/*  advc.104j: getDefensivePower counts vassals already.
 				If planning war against multiple civs, DP allies could also be
-				double counted (fixme). Could collect the war enemies in a std::set
+				double-counted (fixme). Could collect the war enemies in a std::set
 				in a first pass; though it sucks to implement the vassal/DP logic
 				multiple times (already in getDefensivePower and MilitaryAnalyst).
 				Also, the computation for bConsiderOthers above can be way off. */

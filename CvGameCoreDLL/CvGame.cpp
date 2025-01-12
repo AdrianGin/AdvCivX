@@ -391,7 +391,7 @@ void CvGame::regenerateMap(/* advc.tsl: */ bool bAutomated)
 	// <advc.004j>
 	if (bShowDawn)
 		showDawnOfMan(); // </advc.004j>
-	if (getActivePlayer()!= NO_PLAYER)
+	if (getActivePlayer() != NO_PLAYER)
 	{
 		CvPlot* pPlot = GET_PLAYER(getActivePlayer()).getStartingPlot();
 		if (pPlot != NULL)

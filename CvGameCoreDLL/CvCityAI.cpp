@@ -8303,7 +8303,7 @@ int CvCityAI::AI_healthHappyImprovementValue(CvPlot const& kPlot,
 			needed for chop evaluation, which doesn't currently involve _this_ function.
 			Perhaps the way to untangle this would be to use AI_getImprovementValue
 			also for evaluating chopping (with eImprovement=NO_IMPROVEMENT). For now,
-			let's at least subtract the double counted health from the tendency value. */
+			let's at least subtract the double-counted health from the tendency value. */
 		if (bIgnoreFeature)
 		{
 			FeatureTypes const eFeature = kPlot.getFeatureType();

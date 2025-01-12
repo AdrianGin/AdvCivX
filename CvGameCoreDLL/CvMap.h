@@ -147,7 +147,7 @@ public:
 		return GC.getXYDirection(iDX + DIRECTION_RADIUS, iDY + DIRECTION_RADIUS);
 	}
 
-	DirectionTypes directionXY(CvPlot const& kFromPlot, CvPlot const& kToPlot) const // advc: params as references
+	DirectionTypes directionXY(CvPlot const& kFromPlot, CvPlot const& kToPlot) const
 	{
 		return directionXY(
 				dxWrap(kToPlot.getX() - kFromPlot.getX()),
