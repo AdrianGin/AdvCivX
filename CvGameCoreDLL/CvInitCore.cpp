@@ -1094,8 +1094,11 @@ void CvInitCore::setType(CvWString const& szType)
 		setType(GAME_SP_NEW);
 	else if (wcsicmp(szType.GetCString(), L"spload") == 0)
 		setType(GAME_SP_LOAD);
-	//FErrorMsg(false, "Invalid game type in ini file!");
-	setType(GAME_NONE);
+	else
+	{
+		//FErrorMsg(false, "Invalid game type in ini file!");
+		setType(GAME_NONE);
+	}
 }
 
 void CvInitCore::setMode(GameMode eMode)
