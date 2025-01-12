@@ -40,7 +40,7 @@ public:
 	DllExport void reset(HandicapTypes eHandicap, bool bConstructorCall = false);
 
 	DllExport void setInitialItems();
-	DllExport void regenerateMap()
+	DllExport void regenerateMap() // call from WorldBuilder
 	{	// <advc.tsl>
 		regenerateMap(false);
 	}
