@@ -10887,7 +10887,8 @@ void CvCity::doReligion()
 				is allowed to spread here, add it to the list. */
 			int iGrip = getReligionGrip(eLoopReligion);
 			// only half the weight for self-spread
-			iGrip += SyncRandNum(iRandomWeight / 2);
+			// advc.173: Instead reduced through XML
+			iGrip += SyncRandNum(iRandomWeight /*/ 2*/);
 			religion_grips.push_back(std::make_pair(iGrip, eLoopReligion));
 		}
 	}
@@ -10978,7 +10979,8 @@ void CvCity::doReligion()
 				FAssert(eWeakestReligion != NO_RELIGION);
 				/*	If the existing religion is weak compared to the new religion,
 					the existing religion can get removed. */
-				int iOdds = getReligionCount() * 100 * (iLoopGrip - iWeakestGrip) /
+				int iOdds = (getReligionCount() - 1) * // advc.173: Don't count eLoopReligion
+						100 * (iLoopGrip - iWeakestGrip) /
 						std::max(1, iLoopGrip);
 				if (SyncRandSuccess100(iOdds))
 				{

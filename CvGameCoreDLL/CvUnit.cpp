@@ -5541,7 +5541,8 @@ bool CvUnit::spread(ReligionTypes eReligion)
 					if (pCity != GC.getGame().getHolyCity(eLoopReligion))
 					{
 						int iInfluence = pCity->getReligionGrip(eLoopReligion);
-						iInfluence += SyncRandNum(iRandomWeight);
+						// advc.173: Two dice (with sides halved through XML)
+						iInfluence += 2 * SyncRandNum(iRandomWeight);
 						if (eLoopReligion == eReligion)
 							iInfluence += m_pUnitInfo->getReligionSpreads(eReligion) / 2;
 						aieRankedReligions.push_back(std::make_pair(
