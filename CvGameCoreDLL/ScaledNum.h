@@ -761,9 +761,8 @@ private:
 		ScaledNum<256,uint> rPowOfTwo; // Ex.: Array position [13] is 19, so rPowOfTwo=19/256
 		rPowOfTwo.m_i = FixedPointPowTables::powersOfTwoNormalized_256[rExpFrac.m_i];
 		++rPowOfTwo; // Denormalize (Ex.: 275/256; approximating 2^0.1)
-		/*	Tbd.: Try replacing this loop with _BitScanReverse (using the /EHsc compiler flag).
-			Or perhaps not available in MSVC03? See: github.com/danaj/Math-Prime-Util/pull/10/
-			*/
+		/*	Tbd.: Try replacing this loop with _BitScanReverse. We might have access to that:
+			github.com/danaj/Math-Prime-Util/pull/10/ */
 		{	//while (iBaseDiv < *this) // Would result in expensive overflow handling
 			int const iCeil = ceil();
 			while (iBaseDiv < iCeil)

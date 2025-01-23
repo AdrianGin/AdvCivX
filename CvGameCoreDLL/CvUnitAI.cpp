@@ -3015,7 +3015,7 @@ void CvUnitAI::AI_attackCityMove()
 		advc (note): There are a couple of exceptions where NO_MOVEMENT_FLAGS
 		is used. I guess this was done on purpose(?). */
 	MovementFlags const eMoveFlags = (MOVE_AVOID_ENEMY_WEIGHT_2 |
-			(bReadyToAttack ? MOVE_ATTACK_STACK | MOVE_DECLARE_WAR : NO_MOVEMENT_FLAGS));
+			(bReadyToAttack ? (MOVE_ATTACK_STACK | MOVE_DECLARE_WAR) : NO_MOVEMENT_FLAGS));
 
 	// K-Mod. Barbarian stacks should be reckless and unpredictable.
 	if (isBarbarian())
@@ -4038,7 +4038,7 @@ void CvUnitAI::AI_pillageMove()
 	}
 
 	if (!isHuman() && getPlot().isCoastalLand() &&
-		/*  advc.046: SKIP w/o setting eMissionAI would make the group forget
+		/*  advc.046: SKIP w/o setting eMissionAI will make the group forget
 			that it's stranded, and then AI_pickupStranded won't find it. */
 		!AI_getGroup()->AI_isStranded() &&
 		GET_PLAYER(getOwner()).AI_isAnyUnitTargetMissionAI(*this, MISSIONAI_PICKUP))
