@@ -11341,15 +11341,17 @@ int CvPlayerAI::AI_maxGoldPerTurnTrade(PlayerTypes ePlayer,
 	/*if (isHuman() || TEAMID(ePlayer) == getTeam())
 		iMaxGoldPerTurn = calculateGoldRate() + getGold() / GC.getPEACE_TREATY_LENGTH();*/ // BtS
 	// <advc.036>
-	if(isHuman())
-		return std::max(0, calculateGoldRate());
+	if (isHuman())
+	{	/*  BtS capped the return value at calculateGoldRate, so the getGold()
+			part had no effect. */
+		return std::max(0, std::max(calculateGoldRate(), std::min(999,
+				std::max(AI_getAvailableIncome() - calculateInflatedCosts() +
+				std::max(0, -getGoldPerTurn()),
+				getGold() / GC.getDefineINT(CvGlobals::PEACE_TREATY_LENGTH)))));
+	}
 	// Don't pay gold to our capitulated vassal
-	if(GET_TEAM(ePlayer).isVassal(getTeam()) && GET_TEAM(ePlayer).isCapitulated())
+	if (GET_TEAM(ePlayer).isVassal(getTeam()) && GET_TEAM(ePlayer).isCapitulated())
 		return 0;
-	/*  BtS caps the return value at calculateGoldRate, so the getGold()...
-		part had no effect. The AI shouldn't make assumptions about human
-		finances anyway. Let human use the gold slider to communicate how much
-		gpt the AI can ask for in trade proposals. */
 	scaled rAvailable(
 			AI_getAvailableIncome() - getGoldPerTurn() - calculateInflatedCosts(), 3);
 	// Included in AvailableIncome, but don't want to divide it by 3.
