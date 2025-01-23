@@ -2842,13 +2842,38 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eMasterTeam, int iPowerMultipl
 				The cached utility values don't account for the peace with 3rd parties
 				(implied by capitulation), and it's out of date on a human master's turn,
 				so this is all a bit fuzzy. */
-			if (uwai().leaderUWAI().getCache().
-				warUtilityIgnoringDistraction(eMasterTeam) > -40 ||
-				// Expect to tire master out
-				kMasterTeam.uwai().leaderUWAI().getCache().
+			int iOurUtil = uwai().leaderUWAI().getCache().
+					warUtilityIgnoringDistraction(eMasterTeam);
+			if (iOurUtil > -40)
+			{
+				// Let's better sum up all our negative utility values
+				for (TeamIter<MAJOR_CIV, ENEMY_OF> itEnemy(getID()); itEnemy.hasNext();
+					++itEnemy)
+				{
+					if (!itEnemy->isAVassal() && itEnemy->getID() != eMasterTeam)
+					{
+						iOurUtil += std::min(0, uwai().leaderUWAI().getCache().
+								warUtilityIgnoringDistraction(itEnemy->getID()));
+						if (iOurUtil > -50)
+							return DENIAL_POWER_US;
+					}
+				}
+			}
+			if (kMasterTeam.uwai().leaderUWAI().getCache().
 				warUtilityIgnoringDistraction(getID()) < -25)
 			{
-				return DENIAL_POWER_US;
+				// Expect to tire master out - if we can hold out.
+				if (getNumMembers() > 1 ||
+					(getNumCities() > 1 && getNumCities() * 3 > kMasterTeam.getNumCities()))
+				{
+					return DENIAL_POWER_US;
+				}
+				CvCity const* pCapital = GET_PLAYER(getLeaderID()).getCapital();
+				if (pCapital != NULL &&
+					pCapital->getArea().getCitiesPerPlayer(getLeaderID()) != getNumCities())
+				{
+					return DENIAL_POWER_US;
+				}
 			}
 			// </advc.104>  <advc.104o> Take into account past wars
 			int iPastWarScore = GET_PLAYER(getLeaderID()).uwai().getCache().
