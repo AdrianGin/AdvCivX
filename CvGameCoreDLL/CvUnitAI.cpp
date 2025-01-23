@@ -2852,7 +2852,7 @@ void CvUnitAI::AI_paratrooperMove()
 		if (AI_anyAttack(1, 45, 0, 3))
 			return;
 	}*/ // disabled by K-Mod. (redundant)
-	if (AI_pillageRange(1, 15))
+	if (AI_pillageRange(1, 13)) // advc.083: was 15
 	{
 		return;
 	}
@@ -3946,7 +3946,7 @@ void CvUnitAI::AI_pillageMove()
 	/*	K-Mod. Pillage units should focus on pillaging, when possible.
 		note: having 2 moves doesn't necessarily mean we can
 		move & pillage in the same turn, but it's a good enough approximation. */
-	if (AI_pillageRange(getGroup()->baseMoves() > 1 ? 1 : 0, 11))
+	if (AI_pillageRange(getGroup()->baseMoves() > 1 ? 1 : 0, 10)) // advc.083: thresh was 11
 	{
 		return;
 	}
@@ -4011,7 +4011,7 @@ void CvUnitAI::AI_pillageMove()
 
 	if (getArea().getAreaAIType(getTeam()) == AREAAI_OFFENSIVE || isEnemy(getPlot()))
 	{
-		if (AI_pillage(20))
+		if (AI_pillage(12 + GET_PLAYER(getOwner()).AI_getCurrEra())) // advc.083: was 20
 		{
 			return;
 		}
@@ -4056,6 +4056,42 @@ void CvUnitAI::AI_pillageMove()
 	if (AI_handleStranded())
 		return;
 	// K-Mod end
+	// <advc.017b>
+	UnitAITypes const eConvertAI = (AI_getBirthmark() % 3 == 0 ? UNITAI_ATTACK
+			: UNITAI_ATTACK_CITY);
+	if (getArea().getAreaAIType(getTeam()) == AREAAI_OFFENSIVE &&
+		getPlot().isCity() &&
+		/*	Somewhat mirrors an invaderWeight condition in CvCityAI::
+			AI_chooseProduction - but the correspondence isn't consequential. */
+		GET_PLAYER(getOwner()).AI_totalAreaUnitAIs(getArea(), UNITAI_PILLAGE) * 7 >
+		getArea().getCitiesPerPlayer(getOwner()) * 2 &&
+		GET_PLAYER(getOwner()).AI_unitValue(
+		getUnitType(), eConvertAI, area()) > 0 &&
+		GET_TEAM(getTeam()).AI_getEnemyPowerPercent() > 50)
+	{
+		for (PlayerIter<ALIVE,/*KNOWN_POTENTIAL_*/ENEMY_OF> itEnemy(getTeam());
+			itEnemy.hasNext(); ++itEnemy)
+		{	/*	Better only consider switching the unit type once already at
+				war. Before that, we can't easily tell if there's anything
+				important to pillage. */
+			/*if (!GET_TEAM(getTeam()).AI_mayAttack(itEnemy->getTeam()))
+				continue;*/
+			FOR_EACH_CITY(pEnemyCity, *itEnemy)
+			{
+				if (!pEnemyCity->isRevealed(getTeam()) ||
+					!pEnemyCity->isArea(getArea()))
+				{
+					continue;
+				}
+				if (generatePath(pEnemyCity->getPlot(),
+					MOVE_ATTACK_STACK/* | MOVE_DECLARE_WAR*/))
+				{
+					AI_setUnitAIType(eConvertAI);
+					return;
+				}
+			}
+		}
+	} // </advc.017b>
 
 	if (AI_retreatToCity())
 	{
@@ -15102,7 +15138,8 @@ bool CvUnitAI::AI_pillage(int iBonusValueThreshold, MovementFlags eFlags)
 						if (iValue > iBestValue)
 						{
 							int iPathTurns;
-							if (generatePath(kPlot, eFlags, true, &iPathTurns))
+							if (generatePath(kPlot, eFlags, true, &iPathTurns,
+								8)) // advc.083: Don't move in arbitrarily deep
 							{
 								iValue /= (iPathTurns + 1);
 								if (iValue > iBestValue)
