@@ -2653,12 +2653,17 @@ void CvUnitAI::AI_attackMove()
 
 		if (kOwner.getNumCities() > 1 && getGroup()->getNumUnits() == 1)
 		{
-			if (getArea().getAreaAIType(getTeam()) != AREAAI_DEFENSIVE)
+			//if (getArea().getAreaAIType(getTeam()) != AREAAI_DEFENSIVE)
+			if (!kOwner.AI_isFocusWar()) // advc.105
 			{
 				if (getArea().getNumUnrevealedTiles(getTeam()) > 0)
 				{
 					if (kOwner.AI_areaMissionAIs(getArea(), MISSIONAI_EXPLORE, getGroup()) <
-						kOwner.AI_neededExplorers(getArea()) + 1)
+						kOwner.AI_neededExplorers(getArea()) +
+						// <advc.300> Was unconditionally +1
+						((kOwner.AI_isDefenseFocusOnBarbarians(getArea()) &&
+						plotDistance(plot(), kOwner.getCapital()->plot()) > 5) ? 0 : 1))
+						// </advc.300>
 					{
 						if (AI_exploreRange(3))
 						{
