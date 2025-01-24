@@ -477,8 +477,8 @@ private:
 	void SetGlobalActionInfo();
 
 	void SetGlobalAnimationPathInfo(CvAnimationPathInfo** ppAnimationPathInfo, char* szTagName, int* iNumVals);
-	//void SetGameText(const char* szTextGroup, const char* szTagName);
-	void SetGameText(const char* szTextGroup, const char* szTagName, const std::string& language_name); // K-Mod
+	void SetGameText(const char* szTextGroup, const char* szTagName,
+			std::string const& sLanguageName); // K-Mod
 
 	/*	<advc.006g> (The BtS code sometimes said "XML Error", sometimes "XML Load Error"
 		not sure if that's meaningful, but I'm going to preserve it.)*/

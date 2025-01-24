@@ -171,7 +171,7 @@
 		<DefineName>RELIGION_INFLUENCE_STATE_RELIGION_WEIGHT</DefineName>
 		<iDefineIntVal>20</iDefineIntVal>
 	</Define>
-	<!-- advc,173: Was 80. DLL rolls twice now. -->
+	<!-- advc.173: Was 80. DLL rolls twice now. -->
 	<Define>
 		<DefineName>RELIGION_INFLUENCE_RANDOM_WEIGHT</DefineName>
 		<iDefineIntVal>40</iDefineIntVal>
