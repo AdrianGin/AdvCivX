@@ -571,7 +571,11 @@ bool CvXMLLoadUtility::LoadGlobalText()
 	if (gDLL->isModularXMLLoading())
 	{
 		gDLL->enumerateFiles(aszModfiles, "modules\\*_CIV4GameText.xml");
-		aszFiles.insert(aszFiles.end(), aszModfiles.begin(), aszModfiles.end());
+		aszFiles.insert(//aszFiles.end(),
+				/*	advc.rh (not actually part of rheinig's mod):
+					With game text, the first definition wins out. */
+				aszFiles.begin(),
+				aszModfiles.begin(), aszModfiles.end());
 	}
 
 	for(std::vector<CvString>::iterator it = aszFiles.begin(); it != aszFiles.end(); ++it)
