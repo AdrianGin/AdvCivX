@@ -284,7 +284,7 @@ void CitySiteEvaluator::log(CvPlot const& kPlot)
 			int iNextX = pNextBestSite->getX();
 			int iNextY = pNextBestSite->getY();
 			logBBAI("\nNext best site: %d (%d,%d)", iBest, iNextX, iNextY);
-			evaluateWithLogging(kPlot);
+			evaluateWithLogging(*pNextBestSite);
 		}
 	}
 	{
@@ -304,7 +304,7 @@ void CitySiteEvaluator::log(CvPlot const& kPlot)
 			int iAdjX = pBestAdjSite->getX();
 			int iAdjY = pBestAdjSite->getY();
 			logBBAI("\nBest site adjacent to (%d,%d): %d (%d,%d)", kPlot.getX(), kPlot.getY(), iBest, iAdjX, iAdjY);
-			evaluateWithLogging(kPlot);
+			evaluateWithLogging(*pBestAdjSite);
 		}
 	}
 }
@@ -2217,7 +2217,7 @@ int AIFoundValue::adjustToFood(int iValue, int iSpecialFoodPlus, int iSpecialFoo
 // (adjustToBadHealth deals with short-term health)
 int AIFoundValue::evaluateLongTermHealth(int& iHealthPercent) const
 {
-	int r = 0;
+	int iR = 0;
 	int iFreshWaterHealth = 0;
 	if (kPlot.isFreshWater())
 	{
@@ -2228,14 +2228,14 @@ int AIFoundValue::evaluateLongTermHealth(int& iHealthPercent) const
 	/*  <advc.031> The above may have accounted for feature production; now
 		evaluated separately elsewhere. */
 	if (iHealthPercent > 0 || eEra >= CvEraInfo::AI_getAgeOfPestilence())
-		r += std::min(iHealthPercent, 350) / 6;
+		iR += std::min(iHealthPercent, 350) / 6;
 	// Extra bonus for persistent health (as in BtS/ K-Mod): // </advc.031> 
-	r += iFreshWaterHealth * 30;
+	iR += iFreshWaterHealth * 30;
 	// (K-Mod (commented this out, compensated by the river bonuses I added.)
 	/*if (iFreshWaterHealth > 0)
 		r += 40;*/
-	IFLOG if(r!=0) logBBAI("+%d from %d/100 health", r, iHealthPercent);
-	return r;
+	IFLOG if(iR!=0) logBBAI("+%d from %d/100 health", iR, iHealthPercent);
+	return iR;
 }
 
 // advc.031:
@@ -2247,7 +2247,7 @@ int AIFoundValue::evaluateFeatureProduction(int iProduction) const
 	if (rAIEraFactor <= 0)
 		r /= 4;
 	else r /= rAIEraFactor + 2;
-	IFLOG if(r!=0) logBBAI("+%d from %d feature production", r, iProduction);
+	IFLOG if(r!=0) logBBAI("+%d from %d feature production", r.round(), iProduction);
 	return r.round();
 }
 
