@@ -3595,10 +3595,11 @@ int CvPlayerAI::AI_countDangerousUnits(CvPlot const& kAttackerPlot, CvPlot const
 			return 0;
 	} // </advc.128>
 	int iR = 0;
+	int iDefenders = 0; // advc.107
 	TeamTypes const eOurMaster = GET_TEAM(eTeam).getMasterTeam(); // advc.opt
-	FOR_EACH_UNIT_IN(pLoopUnit, kAttackerPlot)
+	FOR_EACH_UNITAI_IN(pLoopUnit, kAttackerPlot)
 	{
-		CvUnit const& kUnit = *pLoopUnit;
+		CvUnitAI const& kUnit = *pLoopUnit;
 		// advc.opt: Team check changed to MasterTeam
 		if (GET_TEAM(kUnit.getOwner()).getMasterTeam() == eOurMaster)
 		{
@@ -3645,11 +3646,29 @@ int CvPlayerAI::AI_countDangerousUnits(CvPlot const& kAttackerPlot, CvPlot const
 						continue;
 				}
 			}
+			// <advc.107>
+			if (iLimit == 1) // shortcut
+				return 1;
+			if (kAttackerPlot.isCity() &&
+				kUnit.AI_getGroup()->AI_getMissionAIType() == MISSIONAI_GUARD_CITY &&
+				!kUnit.isHuman())
+			{
+				iDefenders++;
+			} // </advc.107>
 			iR++;
 			if (iR >= iLimit)
-				return iLimit;
+			{
+				iR = iLimit;
+				break;
+			}
 		}
 	}
+	// <advc.107>
+	if (iR > 1 && iDefenders > 0)
+	{
+		iR = std::max(1, iR - std::min(iDefenders,
+			kAttackerPlot.AI_getPlotCity()->AI_minDefenders()));
+	} // </advc.107>
 	return iR;
 }
 
