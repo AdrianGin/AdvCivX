@@ -2041,6 +2041,7 @@ void CvPlayerAI::AI_conquerCity(CvCityAI& kCity,  // advc.003u: param was CvCity
 		{
 			PlayerTypes const eLiberationPlayer = kCity.getLiberationPlayer(true);
 			if (eLiberationPlayer != NO_PLAYER &&
+				!GET_TEAM(getTeam()).isAtWar(TEAMID(eLiberationPlayer)) &&
 				/*	(Don't check trade denial b/c that includes conditions for refusal
 					by recipient. Recipient has no choice here.) */
 				canTradeItem(eLiberationPlayer, TradeData(TRADE_CITIES, kCity.getID())) /*&&
