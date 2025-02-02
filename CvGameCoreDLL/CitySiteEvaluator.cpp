@@ -2579,7 +2579,7 @@ int AIFoundValue::adjustToProduction(int iValue, scaled rBaseProduction) const
 {
 	// K-Mod. reduce value of cities which will struggle to get any productivity.
 	// <advc.040>
-	if(bFirstColony)
+	if (bFirstColony)
 	{
 		rBaseProduction += scaled::max(iUnrevealedTiles * fixp(0.5),
 				(rBaseProduction * iUnrevealedTiles) / NUM_CITY_PLOTS);
@@ -2590,7 +2590,7 @@ int AIFoundValue::adjustToProduction(int iValue, scaled rBaseProduction) const
 			rBaseProduction >= GC.getInfo(YIELD_PRODUCTION).getMinCity());
 	scaled rThreshold = fixp(8.5); // advc.031: was 9
 	// <advc.303> Can't expect that much production from just the inner ring.
-	if(bBarbarian)
+	if (bBarbarian)
 		rThreshold = 4; // </advc.303>
 	if (rBaseProduction < rThreshold)
 	{

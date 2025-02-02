@@ -11722,7 +11722,7 @@ int CvPlayerAI::AI_baseBonusUnitVal(BonusTypes eBonus, UnitTypes eUnit,
 				because including the effect from iOrBonusesWeHave was going to be
 				a big improvement. The only way I can think of working around this
 				is to add a 'bConstCache' argument to this function... */
-			bOrBonus = bOrBonus || ePrereqBonus == eBonus;
+			bOrBonus = (bOrBonus || ePrereqBonus == eBonus);
 		}
 		if (bOrBonus)
 		{	// 1: 1, 2: 2/3, 3: 1/2, ...
@@ -11883,14 +11883,12 @@ int CvPlayerAI::AI_baseBonusBuildingVal(BonusTypes eBonus, BuildingTypes eBuildi
 		where we will never be able to build. */
 	bool const bCanNeverBuild = (bHasTechForBuilding &&
 			!bCanConstruct && !bStateReligion);
-	// If we can never build this, it is worthless.
-	if (bCanNeverBuild)
+	if (bCanNeverBuild) // If we can never build this, it is worthless.
 		return 0;
-	// double value if we can build it right now
-	if (bCanConstruct)
+	if (bCanConstruct) // double value if we can build it right now
 		iValue *= 2;
-	// <advc.036> Don't trade for the bonus until we need it
-	if (bTrade && !bCanConstruct)
+	// <advc.036>
+	if (bTrade && !bCanConstruct) // Don't trade for the bonus until we need it
 		return 0; // </advc.036>
 
 	// if non-limited water building, weight by coastal cities
