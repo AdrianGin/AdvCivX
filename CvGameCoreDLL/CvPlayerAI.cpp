@@ -11780,11 +11780,16 @@ int CvPlayerAI::AI_baseBonusUnitVal(BonusTypes eBonus, UnitTypes eUnit,
 	// devalue units for which we already have a better replacement.
 	UnitAITypes const eDefaultAI = kUnit.getDefaultUnitAIType();
 	int iNewTypeValue = AI_unitValue(eUnit, eDefaultAI, NULL);
-	int iBestTypeValue = AI_bestAreaUnitAIValue(eDefaultAI, NULL);
+	UnitTypes eBestType = NO_UNIT; // advc.036
+	int iBestTypeValue = AI_bestAreaUnitAIValue(eDefaultAI, NULL,
+			&eBestType); // advc.036
 	if (iBestTypeValue > 0)
 	{
-		iValue = (iValue * std::max(0, std::min(
-				100, 120 * iNewTypeValue / iBestTypeValue - 20))) / 100;
+		int iRatio = (120 * iNewTypeValue) / iBestTypeValue;
+		// advc.036: Encourage a variety of unit combat types
+		if (GC.getInfo(eBestType).getUnitCombatType() == kUnit.getUnitCombatType())
+			iRatio -= 20;
+		iValue = (iValue * std::max(0, std::min(100, iRatio))) / 100;
 	}
 	/*	<advc.650> Having access to at least a few nukes is very valuable.
 		The XML power values can't capture that sufficiently. */
