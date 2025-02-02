@@ -2591,6 +2591,10 @@ bool CvSelectionGroup::canDefend()
 
 bool CvSelectionGroup::canBombard(const CvPlot* pPlot)
 {
+	/*	f1rpo (note): For AI units, it's usually enough to check the head
+		unit - due to the group ordering imposed by addUnit. There are exceptions
+		though (sea units in particular). Will have to leave it up to callers
+		to decide whether they need fast or reliable results. */
 	CLLNode<IDInfo>* pUnitNode = headUnitNode();
 	while (pUnitNode != NULL)
 	{

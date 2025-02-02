@@ -3056,7 +3056,7 @@ void CvUnitAI::AI_attackCityMove()
 					if (AI_omniGroup(UNITAI_ATTACK_CITY, -1, -1, true, iMoveFlags, 3, true, false, bIgnoreFaster)) // bigger groups only
 						return;
 
-					if (canBombard(plot()))
+					if (getGroup()->canBombard(plot())) // f1rpo: check group (advc.001j)
 					{
 						getGroup()->pushMission(MISSION_BOMBARD, -1, -1, 0, false, false, MISSIONAI_ASSAULT, pTargetCity->plot());
 						return;
@@ -15491,7 +15491,7 @@ bool CvUnitAI::AI_bombardCity()
 		}
 	}
 
-	if (!canBombard(plot()))
+	if (!getGroup()->canBombard(plot())) // f1rpo: check group (advc.001j)
 		return false;
 
 	CvCity* pBombardCity = bombardTarget(plot());
@@ -16127,7 +16127,7 @@ bool CvUnitAI::AI_blockade()
 
 										iValue += (GET_PLAYER(getOwnerINLINE()).AI_plotTargetMissionAIs(pCity->plot(), MISSIONAI_ASSAULT, getGroup(), 2) * 3);
 
-										if (canBombard(pLoopPlot))
+										if (getGroup()->canBombard(pLoopPlot)) // f1rpo: check group (advc.001j)
 										{
 											iValue *= 2;
 										}
@@ -16176,7 +16176,7 @@ bool CvUnitAI::AI_blockade()
 
 		if (atPlot(pBestBlockadePlot))
 		{
-			if (canBombard(plot()))
+			if (getGroup()->canBombard(plot())) // f1rpo: check group (advc.001j)
 			{
 				getGroup()->pushMission(MISSION_BOMBARD, -1, -1, 0, false, false, MISSIONAI_BLOCKADE, pBestBlockadePlot);
 			}
@@ -23652,7 +23652,7 @@ bool CvUnitAI::AI_followBombard()
 	CvPlot* pAdjacentPlot2;
 	int iI, iJ; */ // K-mod disabled
 
-	if (canBombard(plot()))
+	if (getGroup()->canBombard(plot())) // f1rpo: check group (advc.001j)
 	{
 		getGroup()->pushMission(MISSION_BOMBARD);
 		return true;
