@@ -2698,11 +2698,18 @@ int AIFoundValue::adjustToCivSurroundings(int iValue, int iStealPercent) const
 				}
 			} // </advc.031>
 			int iCultureRange = pLoopCity->getCultureLevel() + 3;
-			if (iDistance <= iCultureRange && kTeam.AI_deduceCitySite(*pLoopCity))
+			if (kTeam.AI_deduceCitySite(*pLoopCity))
 			{
-				// cf. culture distribution in CvCity::doPlotCultureTimes100
-				iProximity += 90*(iDistance-iCultureRange)*(iDistance-iCultureRange)/
-						(iCultureRange*iCultureRange) + 10;
+				if (iDistance <= iCultureRange)
+				{
+					// cf. culture distribution in CvCity::doPlotCultureTimes100
+					iProximity += 90*(iDistance-iCultureRange)*(iDistance-iCultureRange)/
+							(iCultureRange*iCultureRange) + 10;
+				}
+				/*	<advc.031> A little extra range is useful to consider for
+					contested sites */
+				else if (iDistance == iCultureRange + 1)
+					iProximity += 5; // </advc.031>
 			}
 		}
 		if (kLoopPlayer.getTeam() == eTeam)
@@ -2711,11 +2718,15 @@ int AIFoundValue::adjustToCivSurroundings(int iValue, int iStealPercent) const
 		{
 			iForeignProximity = iProximity;
 			// advc.031:
-			bFreeForeignCulture = (kLoopPlayer.getFreeCityCommerce(COMMERCE_CULTURE) > 1);
+			bFreeForeignCulture = (kLoopPlayer.getFreeCityCommerce(COMMERCE_CULTURE) > 1 ||
+					(pNearestForeignCity != NULL && pNearestForeignCity->isCapital()));
 		}
 	}
-	// Reduce the value if we are going to get squeezed out by culture.
-	// Increase the value if we are hoping to block the other player!
+	// <advc.031>
+	int iOurFreeCultureAdvantage = (bFreeForeignCulture ? -1 : 0) +
+			(kSet.isEasyCulture() ? 1 : 0); // </advc.031>
+	/*	Reduce the value if we are going to get squeezed out by culture.
+		Increase the value if we are hoping to block the other player! */
 	if (iForeignProximity > 0)
 	{
 		/*	As a rough guide of scale, settling 3 steps from a level 2 city
@@ -2724,21 +2735,23 @@ int AIFoundValue::adjustToCivSurroundings(int iValue, int iStealPercent) const
 			4 steps from a level 3 city = 20 */
 		int iDelta = iForeignProximity - iOurProximity;
 		IFLOG logBBAI("Proximity difference (foreign minus ours): %d - %d = %d", iForeignProximity, iOurProximity, iDelta);
-		if (iDelta > 50)
+		if (iDelta > 47 + iOurFreeCultureAdvantage * 8) // advc.031: was 50 flat
 		{
 			IFLOG logBBAI("Site disregarded: proximity difference too great");
 			return 0; // we'd be crushed and eventually flipped if we settled here.
 		}
 		int const iTempValue = iValue; // advc.031
-		bool bEasyCulture = (!bFreeForeignCulture && kSet.isEasyCulture()); // advc.031
-		if (iDelta > -20 && iDelta <= (kSet.isAmbitious() ? 10 : 0) *
-			(bEasyCulture ? 2 : 1))
+		if (iDelta > -20 &&
+			//iDelta <= (kSet.isAmbitious() ? 10 : 0) * (bEasyCulture ? 2 : 1))
+			// advc.031:
+			iDelta <= 5 + iOurFreeCultureAdvantage * 5 + (kSet.isAmbitious() ? 8 : 0))
 		{
 			/*	we want to get this spot before our opponents do.
 				The lower our advantage, the more urgent the site is. */
-			iValue *= 120 + iDelta/2 + (kSet.isAmbitious() ? 5 : 0)
+			iValue *= 115 + // advc.031: was 120
+					iDelta/2 + (kSet.isAmbitious() ? 5 : 0)
 					// advc.031: The 2nd city should focus more on high yields
-					- (iCities <= 1 ? 12 : 0);
+					- (iCities <= 1 ? 11 : 0);
 			iValue /= 100;
 			/*  <advc.031> Don't rush to settle marginal spots (which might
 				not even make the MinFoundValue cut w/o the boost above). */
@@ -2749,8 +2762,10 @@ int AIFoundValue::adjustToCivSurroundings(int iValue, int iStealPercent) const
 				iValue = std::max(iTempValue, iValue);
 			} // </advc.031>
 		}
-		iDelta -= bEasyCulture ? 20 : 10;
-		if (iDelta > 0)
+		//iDelta -= (kSet.isEasyCulture() ? 20 : 10);
+		iDelta -= 10 + iOurFreeCultureAdvantage * 10; // advc.031
+		if (iDelta > 0 &&
+			iForeignProximity > 5) // advc.031
 		{
 			iValue *= 100 - iDelta*3/2;
 			iValue /= 100;
