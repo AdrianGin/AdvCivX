@@ -390,7 +390,7 @@ void CvPlot::doImprovement()
 				continue;
 			// <advc.rom3>
 			//Afforess: check for valid terrains for this bonus before discovering it
-			if (!canHaveBonus(eLoopBonus), false, /* advc.129: */ true)
+			if (!canHaveBonus(eLoopBonus, false, /* advc.129: */ true))
 				continue; // </advc.rom3>
 			iOdds *= GC.getGame().getSpeedPercent();
 			iOdds /= 100;
