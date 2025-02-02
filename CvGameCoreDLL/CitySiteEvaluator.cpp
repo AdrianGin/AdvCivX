@@ -48,7 +48,8 @@ CitySiteEvaluator::CitySiteEvaluator(CvPlayerAI const& kPlayer, int iMinRivalRan
 		bool bEasyCultureFromTrait = false;
 		m_bEasyCulture = kPlayer.AI_isEasyCulture(&bEasyCultureFromTrait);
 		if (bEasyCultureFromTrait && pPersonality != NULL &&
-			pPersonality->getBasePeaceWeight() <= 5)
+			//pPersonality->getBasePeaceWeight() <= 5
+			pPersonality->getBuildUnitProb() > 25) // advc.031
 		{
 			m_bAmbitious = true;
 		}
