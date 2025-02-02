@@ -14133,7 +14133,9 @@ bool CvUnitAI::AI_anyAttack(int iRange, int iOddsThreshold, MovementFlags eFlags
 			return false;
 		pBestPlot = &getPathEndTurnPlot();
 	}
-	if (bFollow && AI_isAnyEnemyDefender(*pBestPlot))
+	if (bFollow && AI_isAnyEnemyDefender(*pBestPlot) &&
+		// advc.001: Group lead by settler. Best way to handle this?
+		canMoveOrAttackInto(*pBestPlot, bDeclareWar))
 	{
 		/*	we need to ungroup to capture the undefended unit / city.
 			(because not everyone in our group can move) */
