@@ -11651,7 +11651,7 @@ int CvPlayerAI::AI_baseBonusVal(BonusTypes eBonus, /* advc.036: */ bool bTrade) 
 		}
 		// <advc.036b> 
 		if (iBuildingsEnabled > 1)
-			rBuildingValue /= scaled(iBuildingsEnabled).pow(fixp(1/10.)); // </advc.036b>
+			rBuildingValue /= scaled(iBuildingsEnabled).pow(fixp(1/9.)); // </advc.036b>
 		rValue += rBuildingValue;
 	}
 	FOR_EACH_ENUM(Project)
@@ -11893,6 +11893,7 @@ int CvPlayerAI::AI_baseBonusBuildingVal(BonusTypes eBonus, BuildingTypes eBuildi
 	if (bCanConstruct) // double value if we can build it right now
 		iValue *= 2;
 	// <advc.036>
+	else iValue--;
 	if (bTrade && !bCanConstruct) // Don't trade for the bonus until we need it
 		return 0; // </advc.036>
 
