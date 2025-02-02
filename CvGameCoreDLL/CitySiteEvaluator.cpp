@@ -1428,13 +1428,14 @@ ImprovementTypes AIFoundValue::getBonusImprovement(BonusTypes eBonus, CvPlot con
 	{
 		aiYield[eLoopYield] = GC.getInfo(eBestImprovement).
 				getImprovementBonusYield(eBonus, eLoopYield);
-		/*	Note/ fixme: We don't count the improvement's YieldChange and
+		/*	Open issue: We don't count the improvement's YieldChange and
 			IrrigatedYieldChange, i.e. we treat wet farms, dry farms and
-			improvements that don't add any yield (plantation, pasture) all
-			the same and thus overestimate the latter.
-			This separate accounting for "special" yields really needs to go,
-			and then CvPlot::calculateImprovementYieldChange could perhaps
-			be used (for all plots). */
+			improvements that don't add any yield (plantation, pasture)
+			all the same and thus overestimate the latter. This separate
+			accounting for "special" yields really needs to go, and then
+			CvPlot::calculateImprovementYieldChange could perhaps be used
+			(for all plots). Stop-gap measure for Mines: */
+		aiYield[eLoopYield] += GC.getInfo(eBestImprovement).getYieldChange(eLoopYield) / 2;
 		if (!bRemoveFeature && eFeature != NO_FEATURE)
 		{
 			aiYield[eLoopYield] += GC.getInfo(eFeature).getYieldChange(eLoopYield);
