@@ -2594,9 +2594,16 @@ int AIFoundValue::adjustToProduction(int iValue, scaled rBaseProduction) const
 	// <advc.303> Can't expect that much production from just the inner ring.
 	if (bBarbarian)
 		rThreshold = 4; // </advc.303>
+	/*	<advc.031> Between workshops, railroads, specialists, there should be
+		some way to squeeze out production. Though there'll also be more
+		production needed ... */
+	else if (kPlayer.getCurrentEra() >= CvEraInfo::AI_getAgeOfProduction())
+		rThreshold = 6; // </advc.031>
 	if (rBaseProduction < rThreshold)
 	{
-		iValue = ((iValue * rBaseProduction) / rThreshold).round();
+		// <advc.031> Was linear (times BaseProduction/Threshold)
+		iValue = (iValue * (scaled::max(1, rBaseProduction - 1) /
+				rThreshold).sqrt()).round(); // </advc.031>
 		IFLOG logBBAI("Times (%d/%d) for low production", rBaseProduction.getPercent(), rThreshold.getPercent());
 	} // K-Mod end
 	return iValue;
