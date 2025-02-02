@@ -966,7 +966,9 @@ void CvUnit::updateAirCombat(bool bQuick)
 		{
 			CvWString szBuffer = gDLL->getText("TXT_KEY_MISC_YOU_SHOT_DOWN_ENEMY",
 					pInterceptor->getNameKey(), getNameKey(), getVisualCivAdjective(pInterceptor->getTeam()));
-			gDLL->UI().addMessage(pInterceptor->getOwner(), false, -1, szBuffer, *pPlot,
+			gDLL->UI().addMessage(pInterceptor->getOwner(), //false
+					true, // advc.004g
+					-1, szBuffer, *pPlot,
 					"AS2D_INTERCEPT", MESSAGE_TYPE_INFO, getButton(), GC.getColorType("GREEN"));
 
 			szBuffer = gDLL->getText("TXT_KEY_MISC_YOU_UNIT_SHOT_DOWN",
@@ -981,7 +983,9 @@ void CvUnit::updateAirCombat(bool bQuick)
 					pInterceptor->getNameKey(), getNameKey(),
 					kAirMission.getDamage(BATTLE_UNIT_ATTACKER), // advc.004g
 					getVisualCivAdjective(pInterceptor->getTeam()));
-			gDLL->UI().addMessage(pInterceptor->getOwner(), false, -1, szBuffer, *pPlot,
+			gDLL->UI().addMessage(pInterceptor->getOwner(), //false
+					true, // advc.004g
+					-1, szBuffer, *pPlot,
 					"AS2D_INTERCEPT", MESSAGE_TYPE_INFO, getButton(), GC.getColorType("GREEN"));
 
 			szBuffer = gDLL->getText("TXT_KEY_MISC_YOU_AIR_UNIT_HURT",
@@ -1001,7 +1005,9 @@ void CvUnit::updateAirCombat(bool bQuick)
 
 			szBuffer = gDLL->getText("TXT_KEY_MISC_YOU_UNIT_SHOT_DOWN",
 					pInterceptor->getNameKey(), getNameKey());
-			gDLL->UI().addMessage(pInterceptor->getOwner(), false, -1, szBuffer,
+			gDLL->UI().addMessage(pInterceptor->getOwner(), //false
+					true, // advc.004g
+					-1, szBuffer,
 					"AS2D_INTERCEPTED", MESSAGE_TYPE_INFO, getButton(), GC.getColorType("RED"),
 					pPlot->getX(), pPlot->getY());
 		}
@@ -1017,7 +1023,9 @@ void CvUnit::updateAirCombat(bool bQuick)
 			szBuffer = gDLL->getText("TXT_KEY_MISC_YOUR_AIR_UNIT_DAMAGED",
 					pInterceptor->getNameKey(), getNameKey(),
 					kAirMission.getDamage(BATTLE_UNIT_DEFENDER)); // advc.004g
-			gDLL->UI().addMessage(pInterceptor->getOwner(), false, -1, szBuffer,
+			gDLL->UI().addMessage(pInterceptor->getOwner(), //false
+					true, // advc.004g
+					-1, szBuffer,
 					"AS2D_INTERCEPTED", MESSAGE_TYPE_INFO, getButton(), GC.getColorType("RED"),
 					pPlot->getX(), pPlot->getY());
 		}
@@ -1031,7 +1039,9 @@ void CvUnit::updateAirCombat(bool bQuick)
 
 			szBuffer = gDLL->getText("TXT_KEY_MISC_YOUR_AIR_UNIT_ABORTED",
 					getNameKey(), pInterceptor->getNameKey());
-			gDLL->UI().addMessage(getOwner(), false, -1, szBuffer,
+			gDLL->UI().addMessage(getOwner(), //false
+					true, // advc.004g
+					-1, szBuffer,
 					"AS2D_INTERCEPTED", MESSAGE_TYPE_INFO, getButton(), GC.getColorType("RED"),
 					pPlot->getX(), pPlot->getY());
 		}
