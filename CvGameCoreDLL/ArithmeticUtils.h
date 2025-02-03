@@ -30,6 +30,13 @@ namespace intdiv
 		FAssert(iDividend >= 0 && iDivisor > 0);
 		return (iDividend + iDivisor - 1) / iDivisor;
 	}
+
+	inline int umodulo(int iDividend, int iDivisor)
+	{
+		FAssert(iDivisor > 0);
+		int iR = iDividend % iDivisor;
+		return (iR >= 0 ? iR : iR + iDivisor);
+	}
 }
 
 /*	advc.opt: MSVC produces branches for std::max and std::min.

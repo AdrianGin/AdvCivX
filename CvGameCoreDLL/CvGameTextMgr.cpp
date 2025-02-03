@@ -125,16 +125,13 @@ void CvGameTextMgr::setDateStr(CvWString& szString, int iGameTurn, bool bSave, C
 			szString = szYearBuffer;
 		}
 		else
-		{
-			int iMonth = getTurnMonthForGame(iGameTurn, iStartYear, eCalendar, eSpeed);
+		{	// <advc.001> Had used % (which doesn't work for negative dates, i.e. BC)
+			wchar const* szMonth = GC.getInfo((MonthTypes)intdiv::umodulo(
+					getTurnMonthForGame(iGameTurn, iStartYear, eCalendar, eSpeed),
+					GC.getNumMonthInfos())).getDescription(); // </advc.001>
 			if (bSave)
-			{
-				szString = (szYearBuffer + "-" + GC.getInfo((MonthTypes)(iMonth % GC.getNumMonthInfos())).getDescription());
-			}
-			else
-			{
-				szString = (GC.getInfo((MonthTypes)(iMonth % GC.getNumMonthInfos())).getDescription() + CvString(", ") + szYearBuffer);
-			}
+				szString = szYearBuffer + "-" + szMonth;
+			else szString = szMonth + CvString(", ") + szYearBuffer;
 		}
 		break;
 	case CALENDAR_YEARS:
