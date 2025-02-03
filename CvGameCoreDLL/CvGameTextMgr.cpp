@@ -110,17 +110,18 @@ void CvGameTextMgr::setYearStr(CvWString& szString, int iGameTurn, bool bSave,
 }
 
 
-void CvGameTextMgr::setDateStr(CvWString& szString, int iGameTurn, bool bSave, CalendarTypes eCalendar, int iStartYear, GameSpeedTypes eSpeed)
+void CvGameTextMgr::setDateStr(CvWString& szString, int iGameTurn, bool bSave,
+	CalendarTypes eCalendar, int iStartYear, GameSpeedTypes eSpeed)
 {
 	CvWString szYearBuffer;
-	CvWString szWeekBuffer;
-
 	setYearStr(szYearBuffer, iGameTurn, bSave, eCalendar, iStartYear, eSpeed);
 
 	switch (eCalendar)
 	{
 	case CALENDAR_DEFAULT:
-		if (0 == (getTurnMonthForGame(iGameTurn + 1, iStartYear, eCalendar, eSpeed) - getTurnMonthForGame(iGameTurn, iStartYear, eCalendar, eSpeed)) % GC.getNumMonthInfos())
+		if ((getTurnMonthForGame(iGameTurn + 1, iStartYear, eCalendar, eSpeed)
+			-getTurnMonthForGame(iGameTurn, iStartYear, eCalendar, eSpeed))
+			% GC.getNumMonthInfos() == 0)
 		{
 			szString = szYearBuffer;
 		}
@@ -144,67 +145,62 @@ void CvGameTextMgr::setDateStr(CvWString& szString, int iGameTurn, bool bSave, C
 		break;
 
 	case CALENDAR_SEASONS:
+	{
+		wchar const* szSeason = GC.getInfo((SeasonTypes)
+					(iGameTurn % GC.getNumSeasonInfos())).getDescription();
 		if (bSave)
-		{
-			szString = (szYearBuffer + "-" + GC.getInfo((SeasonTypes)(iGameTurn % GC.getNumSeasonInfos())).getDescription());
-		}
-		else
-		{
-			szString = (GC.getInfo((SeasonTypes)(iGameTurn % GC.getNumSeasonInfos())).getDescription() + CvString(", ") + szYearBuffer);
-		}
+			szString = szYearBuffer + "-" + szSeason;
+		else szString = szSeason + CvString(", ") + szYearBuffer;
 		break;
-
+	}
 	case CALENDAR_MONTHS:
+	{
+		wchar const* szMonth = GC.getInfo((MonthTypes)
+				(iGameTurn % GC.getNumMonthInfos())).getDescription();
 		if (bSave)
-		{
-			szString = (szYearBuffer + "-" + GC.getInfo((MonthTypes)(iGameTurn % GC.getNumMonthInfos())).getDescription());
-		}
-		else
-		{
-			szString = (GC.getInfo((MonthTypes)(iGameTurn % GC.getNumMonthInfos())).getDescription() + CvString(", ") + szYearBuffer);
-		}
+			szString = szYearBuffer + "-" + szMonth;
+		else szString = szMonth + CvString(", ") + szYearBuffer;
 		break;
-
+	}
 	case CALENDAR_WEEKS:
-		szWeekBuffer = gDLL->getText("TXT_KEY_TIME_WEEK", ((iGameTurn % GC.getDefineINT("WEEKS_PER_MONTHS")) + 1));
-
+	{
+		CvWString szWeekBuffer;
+		static int const iWEEKS_PER_MONTHS = GC.getDefineINT("WEEKS_PER_MONTHS"); // advc.opt
+		szWeekBuffer = gDLL->getText("TXT_KEY_TIME_WEEK",
+				(iGameTurn % iWEEKS_PER_MONTHS) + 1);
+		wchar const* szMonth = GC.getInfo((MonthTypes)
+				((iGameTurn / iWEEKS_PER_MONTHS) % GC.getNumMonthInfos())).
+				getDescription();
 		if (bSave)
-		{
-			szString = (szYearBuffer + "-" + GC.getInfo((MonthTypes)((iGameTurn / GC.getDefineINT("WEEKS_PER_MONTHS")) % GC.getNumMonthInfos())).getDescription() + "-" + szWeekBuffer);
-		}
-		else
-		{
-			szString = (szWeekBuffer + ", " + GC.getInfo((MonthTypes)((iGameTurn / GC.getDefineINT("WEEKS_PER_MONTHS")) % GC.getNumMonthInfos())).getDescription() + ", " + szYearBuffer);
-		}
+			szString = (szYearBuffer + "-" + szMonth + "-" + szWeekBuffer);
+		else szString = (szWeekBuffer + ", " + szMonth + ", " + szYearBuffer);
 		break;
-
+	}
 	default:
-		FAssert(false);
+		FErrorMsg("Unsupported calendar type");
 	}
 }
 
 
 void CvGameTextMgr::setTimeStr(CvWString& szString, int iGameTurn, bool bSave)
 {
-	setDateStr(szString, iGameTurn, bSave, GC.getGame().getCalendar(), GC.getGame().getStartYear(), GC.getGame().getGameSpeedType());
+	setDateStr(szString, iGameTurn, bSave,
+			GC.getGame().getCalendar(), GC.getGame().getStartYear(),
+			GC.getGame().getGameSpeedType());
 }
 
 
 void CvGameTextMgr::setInterfaceTime(CvWString& szString, PlayerTypes ePlayer)
 {
 	CvWString szTempBuffer;
-
 	if (GET_PLAYER(ePlayer).isGoldenAge())
 	{
-		szString.Format(L"%c(%d) ", gDLL->getSymbolID(GOLDEN_AGE_CHAR), GET_PLAYER(ePlayer).getGoldenAgeTurns());
+		szString.Format(L"%c(%d) ", gDLL->getSymbolID(GOLDEN_AGE_CHAR),
+				GET_PLAYER(ePlayer).getGoldenAgeTurns());
 	}
-	else
-	{
-		szString.clear();
-	}
-
+	else szString.clear();
 	setTimeStr(szTempBuffer, GC.getGame().getGameTurn(), false);
-	szString += CvWString(szTempBuffer);
+	szString += szTempBuffer;
 }
 
 
@@ -212,27 +208,25 @@ void CvGameTextMgr::setGoldStr(CvWString& szString, PlayerTypes ePlayer)
 {
 	if (GET_PLAYER(ePlayer).getGold() < 0)
 	{
-		szString.Format(L"%c: " SETCOLR L"%d" SETCOLR, GC.getInfo(COMMERCE_GOLD).getChar(), TEXT_COLOR("COLOR_NEGATIVE_TEXT"), GET_PLAYER(ePlayer).getGold());
+		szString.Format(L"%c: " SETCOLR L"%d" SETCOLR,
+				GC.getInfo(COMMERCE_GOLD).getChar(),
+				TEXT_COLOR("COLOR_NEGATIVE_TEXT"),
+				GET_PLAYER(ePlayer).getGold());
 	}
 	else
 	{
-		szString.Format(L"%c: %d", GC.getInfo(COMMERCE_GOLD).getChar(), GET_PLAYER(ePlayer).getGold());
+		szString.Format(L"%c: %d",
+				GC.getInfo(COMMERCE_GOLD).getChar(),
+				GET_PLAYER(ePlayer).getGold());
 	}
 
 	int iGoldRate = GET_PLAYER(ePlayer).calculateGoldRate();
 	if (iGoldRate < 0)
-	{
 		szString += gDLL->getText("TXT_KEY_MISC_NEG_GOLD_PER_TURN", iGoldRate);
-	}
 	else if (iGoldRate > 0)
-	{
 		szString += gDLL->getText("TXT_KEY_MISC_POS_GOLD_PER_TURN", iGoldRate);
-	}
-
 	if (GET_PLAYER(ePlayer).isStrike())
-	{
 		szString += gDLL->getText("TXT_KEY_MISC_STRIKE");
-	}
 }
 
 
