@@ -43,8 +43,10 @@ namespace
 	}
 }
 
-void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &widgetDataStruct)
-{
+void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer,
+	CvWidgetDataStruct &widgetDataExternal)
+{	// advc: Copy - to make sure not to write to the param
+	CvWidgetDataStruct widgetDataStruct(widgetDataExternal);
 	// <advc.085> Replacing a few sporadic tests in the parse... functions
 	static WidgetTypes aePlayerAsData1[] =
 	{
@@ -762,8 +764,9 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 }
 
 
-bool CvDLLWidgetData::executeAction(CvWidgetDataStruct &widgetDataStruct)
-{
+bool CvDLLWidgetData::executeAction(CvWidgetDataStruct &widgetDataExternal)
+{	// advc: Copy - to make sure not to write to the param
+	CvWidgetDataStruct widgetDataStruct(widgetDataExternal);
 	/*	Right now general bHandled = false;  We can specific-case this to true later.
 		Game will run with this = false; */
 	bool bHandled = false;
@@ -1056,8 +1059,9 @@ bool CvDLLWidgetData::executeAction(CvWidgetDataStruct &widgetDataStruct)
 }
 
 //	right clicking action
-bool CvDLLWidgetData::executeAltAction(CvWidgetDataStruct &widgetDataStruct)
-{
+bool CvDLLWidgetData::executeAltAction(CvWidgetDataStruct &widgetDataExternal)
+{	// advc: Copy - to make sure not to write to the param
+	CvWidgetDataStruct widgetDataStruct(widgetDataExternal);
 	// <advc.003y>
 	CvPythonCaller const& py = *GC.getPythonCaller();
 	int iData1 = widgetDataStruct.m_iData1;

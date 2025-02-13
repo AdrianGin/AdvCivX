@@ -449,7 +449,11 @@ private:
 };
 
 struct CvWidgetDataStruct
-{
+{	// <advc>
+	CvWidgetDataStruct(CvWidgetDataStruct const& kOther)
+	:	m_iData1(kOther.m_iData1), m_iData2(kOther.m_iData2),
+		m_bOption(kOther.m_bOption), m_eWidgetType(kOther.m_eWidgetType)
+	{} // </advc>
 	int m_iData1;										//	The first bit of data
 	int m_iData2;										//	The second piece of data
 
