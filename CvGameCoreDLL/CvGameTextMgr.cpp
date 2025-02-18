@@ -20093,15 +20093,11 @@ void CvGameTextMgr::getTradeScreenTitleIcon(CvString& szButton, CvWidgetDataStru
 void CvGameTextMgr::getTradeScreenIcons(std::vector< std::pair<CvString, CvWidgetDataStruct> >& aIconInfos, PlayerTypes ePlayer)
 {
 	aIconInfos.clear();
-	for (int i = 0; i < GC.getNumCivicOptionInfos(); i++)
+	FOR_EACH_ENUM(CivicOption)
 	{
-		CivicTypes eCivic = GET_PLAYER(ePlayer).getCivics((CivicOptionTypes)i);
-		CvWidgetDataStruct widgetData;
-		widgetData.m_eWidgetType = WIDGET_PEDIA_JUMP_TO_CIVIC;
-		widgetData.m_iData1 = eCivic;
-		widgetData.m_iData2 = -1;
-		widgetData.m_bOption = false;
-		aIconInfos.push_back(std::make_pair(GC.getInfo(eCivic).getButton(), widgetData));
+		CivicTypes eCivic = GET_PLAYER(ePlayer).getCivics(eLoopCivicOption);
+		aIconInfos.push_back(std::make_pair(GC.getInfo(eCivic).getButton(),
+				CvWidgetDataStruct(eCivic, -1, false, WIDGET_PEDIA_JUMP_TO_CIVIC)));
 	}
 
 }
