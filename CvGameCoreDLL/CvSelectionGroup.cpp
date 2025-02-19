@@ -3011,7 +3011,7 @@ bool CvSelectionGroup::groupRoadTo(int iX, int iY, MovementFlags eFlags)
 		}
 	}
 	// advc.pf: Don't want the AI to route through foreign territory
-	FAssert(eFlags & MOVE_SAFE_TERRITORY);
+	FAssert((eFlags & MOVE_SAFE_TERRITORY) || isHuman());
 	return groupPathTo(iX, iY, eFlags);
 }
 
