@@ -2012,6 +2012,8 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 	{
 		GET_PLAYER(eOldOwner).verifyAlive();
 	} // </advc.001>
+	// advc.001w: Ownership change could affect cached paths (unlikely?)
+	GET_TEAM(getTeam()).updateActivePaths();
 	// <advc.130w> Major power shift; good time to update expansionist hate.
 	for (PlayerAIIter<MAJOR_CIV> itPlayer; itPlayer.hasNext(); ++itPlayer)
 	{

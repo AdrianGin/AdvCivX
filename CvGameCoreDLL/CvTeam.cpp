@@ -1101,11 +1101,10 @@ void CvTeam::declareWar(TeamTypes eTarget, bool bNewDiplo, WarPlanTypes eWarPlan
 	{
 		gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 		gDLL->UI().setDirty(CityInfo_DIRTY_BIT, true);
-		// advc.001w: Can now enter each other's territory
-		gDLL->UI().setDirty(Waypoints_DIRTY_BIT, true);
-		// advc.162: DoW increases certain path costs
-		CvSelectionGroup::resetPath();
 	}
+	// advc.001w: Can now enter each other's territory (important for advc.162)
+	updateActivePaths(eTarget);
+	CvSelectionGroup::resetPath(); // advc.162
 	// advc.003j: Obsolete
 	/*for (iI = 0; iI < MAX_PLAYERS; iI++) {
 		if (GET_PLAYER((PlayerTypes)iI).isAlive()) {
@@ -3142,7 +3141,7 @@ bool CvTeam::isFreeTrade(TeamTypes eIndex) const
 
 void CvTeam::setOpenBorders(TeamTypes eIndex, bool bNewValue)
 {
-	if(isOpenBorders(eIndex) == bNewValue)
+	if (isOpenBorders(eIndex) == bNewValue)
 		return; // advc
 	bool bOldFreeTrade = isFreeTrade(eIndex);
 	m_abOpenBorders.set(eIndex, bNewValue);
@@ -3153,9 +3152,10 @@ void CvTeam::setOpenBorders(TeamTypes eIndex, bool bNewValue)
 			itOther->AI_updateAttitude(itMember->getID());
 	} // </advc.130p>
 	AI().AI_setOpenBordersCounter(eIndex, 0);
-
 	GC.getMap().verifyUnitValidPlot();
-
+	// <advc.001w>
+	if (isOpenBorders(eIndex))
+		updateActivePaths(eIndex); // </advc.001w>
 	if (isActive() || GET_TEAM(eIndex).isActive())
 		gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 
@@ -3367,6 +3367,8 @@ void CvTeam::setVassal(TeamTypes eMaster, bool bNewValue, bool bCapitulated)
 
 	for (MemberIter it(getID()); it.hasNext(); ++it)
 		it->updateCitySight(true, false);
+	// advc.001w: (No change in movement rules for the vassal)
+	GET_TEAM(eMaster).updateActivePaths();
 	// <advc.184>
 	updateMilitaryHappinessUnits();
 	GET_TEAM(eMaster).updateMilitaryHappinessUnits(); // </advc.184>
@@ -4842,6 +4844,20 @@ bool CvTeam::isAlliedTerritory(TeamTypes eTerritoryOwner, TeamTypes eEnemy) cons
 	if (eEnemy == NO_TEAM || eTerritoryOwner == NO_TEAM)
 		return false;
 	return (isAtWar(eEnemy) && GET_TEAM(eTerritoryOwner).isAtWar(eEnemy));
+}
+
+/*	advc.001w: I think only situations in which the active player may have gained
+	access to new tiles need to be covered */
+void CvTeam::updateActivePaths(TeamTypes eOtherTeam)
+{
+	if (isActive() || (eOtherTeam != NO_TEAM && GET_TEAM(eOtherTeam).isActive()))
+	{
+		gDLL->UI().setDirty(Waypoints_DIRTY_BIT, true);
+		/*	Only thing that'll update waypoints after signing OB.
+			Resetting/ invalidating the K-Mod or original pathfinder
+			doesn't seem to help (and could also cause OOS problems). */
+		gDLL->UI().makeSelectionListDirty();
+	}
 }
 
 /*	advc: Says whether kPlot is a land plot that sea units of this team can enter

@@ -503,6 +503,7 @@ public:
 	}
 	bool isFriendlyTerritory(TeamTypes eTerritoryOwner) const;
 	bool isAlliedTerritory(TeamTypes eTerritoryOwner, TeamTypes eEnemy) const; // advc.183
+	void updateActivePaths(TeamTypes eOtherTeam = NO_TEAM); // advc.001w
 	// <advc> Same as isRevealedBase (but doesn't have to be)
 	bool isRevealedAirBase(CvPlot const& kPlot) const { return isRevealedBase(kPlot); }
 	bool isRevealedCityHeal(CvPlot const& kPlot) const { return isRevealedBase(kPlot); }
