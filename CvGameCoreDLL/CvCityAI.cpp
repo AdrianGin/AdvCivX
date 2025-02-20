@@ -7646,6 +7646,8 @@ void CvCityAI::AI_getYieldMultipliers(int &iFoodMultiplier, int &iProductionMult
 	iFoodTotal += iFutureFoodAdjustment;
 	iProductionTotal += aiUnworkedYield[YIELD_PRODUCTION];
 
+	/*	advc (note): Changes to the food targets here may have to be evened out
+		in AI_getImprovementValue to avoid oscillation */
 	int iExtraFoodForGrowth = 0;
 	if (iTargetSize > getPopulation())
 	{
@@ -8068,7 +8070,9 @@ int CvCityAI::AI_getImprovementValue(CvPlot const& kPlot, ImprovementTypes eImpr
 	{
 		/*	16 is arbitrary. It would be possible to get something better
 			using targetPop and so on, but that would be slower... */
-		int iTotalFood = 16 * GC.getFOOD_CONSUMPTION_PER_POPULATION();
+		/*	advc.121: Try 8 (twice the impact), also with changes in
+			AI_getYieldMultipliers in mind. */
+		int iTotalFood = 8 * GC.getFOOD_CONSUMPTION_PER_POPULATION();
 		iCorrectedFoodPriority = (iCorrectedFoodPriority *
 				(iTotalFood - weightedYieldDiffs.get(YIELD_FOOD)) /
 				std::max(1, iTotalFood)).round();
