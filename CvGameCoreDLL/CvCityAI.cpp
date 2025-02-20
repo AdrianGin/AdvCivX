@@ -7847,6 +7847,21 @@ void CvCityAI::AI_getYieldMultipliers(int &iFoodMultiplier, int &iProductionMult
 		iFoodMultiplier = 10000 / (200 - iFoodMultiplier);
 }
 
+// advc: Cut from AI_getImprovementValue
+namespace
+{
+	scaled AI_bonusDiscoverRandVal(ImprovementTypes eImprov)
+	{
+		scaled r;
+		FOR_EACH_ENUM(Bonus)
+		{
+			if (GC.getInfo(eImprov).getImprovementBonusDiscoverRand(eLoopBonus) > 0)
+				r++;
+		}
+		return r;
+	}
+}
+
 
 int CvCityAI::AI_getImprovementValue(CvPlot const& kPlot, ImprovementTypes eImprovement,
 	int iFoodPriority, int iProductionPriority, int iCommercePriority, int iDesiredFoodChange,
@@ -7956,16 +7971,15 @@ int CvCityAI::AI_getImprovementValue(CvPlot const& kPlot, ImprovementTypes eImpr
 			}
 		}
 	}
-	else
+	else if (eFinalImprovement != kPlot.getImprovementType()) // advc.121 (save time)
 	{
-		FOR_EACH_ENUM(Bonus)
-		{
-			if (GC.getInfo(eFinalImprovement).getImprovementBonusDiscoverRand(eLoopBonus) > 0)
-				rValue++;
-		}
+		rValue += AI_bonusDiscoverRandVal(eFinalImprovement);
+		// <advc.121> Prefer to use only differences in this upper part
+		if (kPlot.isImproved())
+			rValue -= AI_bonusDiscoverRandVal(kPlot.getImprovementType());
+		// </advc.121>
 	}
-
-	//if (rValue >= 0) // condition disabled by K-Mod. (maybe the yield will be worth it!)
+	//if (rValue >= 0) // disabled by K-Mod. (maybe the yield will be worth it!)
 
 	EagerEnumMap<YieldTypes,scaled> weightedFinalYields;
 	EagerEnumMap<YieldTypes,scaled> weightedYieldDiffs;
