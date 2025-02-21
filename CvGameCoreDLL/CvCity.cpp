@@ -5252,7 +5252,10 @@ void CvCity::GPProjection(std::vector<std::pair<UnitTypes,int> >& aeiProjection)
 		iTotalUnitProgress += getGreatPeopleUnitProgress(kCiv.unitAt(i));
 	/*	GPP total of the city on the turn that the GP will be born.
 		(Usually greater than GET_PLAYER(getOwner()).greatPeopleThreshold().) */
-	int iProjectedTotal = iTotalUnitProgress + iTurnsLeft * getGreatPeopleRate();
+	int iProjectedTotal = iTotalUnitProgress +
+			std::max(0, iTurnsLeft) * getGreatPeopleRate();
+	if (iProjectedTotal <= 0)
+		return;
 	int iRoundedPercentages = 0;
 	FOR_EACH_ENUM(Unit)
 	{
