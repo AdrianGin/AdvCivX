@@ -6417,12 +6417,12 @@ void CvGameTextMgr::parseCivInfos(CvWStringBuffer &szInfoText, CivilizationTypes
 		UnitTypes eUniqueUnit = GC.getInfo(eCivilization).
 				getCivilizationUnits(eLoopUnitClass);
 		UnitTypes eDefaultUnit = GC.getInfo(eLoopUnitClass).getDefaultUnit();
-		if (/*eeDefaultUnit != NO_UNIT &&*/ // advc.004: Include UU w/o a default unit
+		if (/*eeDefaultUnit != NO_UNIT &&*/ // advc.003l: Include UU w/o a default unit
 			eUniqueUnit != NO_UNIT && eDefaultUnit != eUniqueUnit)
 		{	// advc: Moved into new function
 			appendUniqueDesc(szInfoText, bFound, bDawnOfMan, bLinks,
 					GC.getInfo(eUniqueUnit).getDescription(),
-					// advc.004:
+					// advc.003l:
 					eDefaultUnit == NO_UNIT ? NULL : GC.getInfo(eDefaultUnit).getDescription());
 			bFound = true;
 		}
@@ -6460,14 +6460,14 @@ void CvGameTextMgr::parseCivInfos(CvWStringBuffer &szInfoText, CivilizationTypes
 				getCivilizationBuildings(eLoopBuildingClass);
 		BuildingTypes eDefaultBuilding = GC.getInfo(eLoopBuildingClass).
 				getDefaultBuilding();
-		if (/*eDefaultBuilding != NO_BUILDING &&*/ // advc.004: Include UB w/o a default building
+		if (/*eDefaultBuilding != NO_BUILDING &&*/ // advc.003l: Include UB w/o a default building
 			eUniqueBuilding != NO_BUILDING && eDefaultBuilding != eUniqueBuilding)
 		{	// advc: Moved into new function
 			appendUniqueDesc(szInfoText, bFound, bDawnOfMan, bLinks,
 					GC.getInfo(eUniqueBuilding).getDescription(),
-					// <advc.004>
+					// <advc.003l>
 					eDefaultBuilding == NO_BUILDING ? NULL :
-					GC.getInfo(eDefaultBuilding).getDescription()); // </advc.004>
+					GC.getInfo(eDefaultBuilding).getDescription()); // </advc.003l>
 			bFound = true;
 		}
 	}

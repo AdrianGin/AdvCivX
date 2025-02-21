@@ -28502,8 +28502,11 @@ void CvPlayerAI::AI_doEnemyUnitData()
 		if (m_aiUnitClassWeights[eLoopUnitClass] > 0)
 		{
 			UnitTypes eUnit = GC.getInfo(eLoopUnitClass).getDefaultUnit();
-			m_aiUnitCombatWeights[GC.getInfo(eUnit).getUnitCombatType()] +=
-					m_aiUnitClassWeights[eLoopUnitClass];
+			if (eUnit != NO_UNIT) // advc.003l
+			{
+				m_aiUnitCombatWeights[GC.getInfo(eUnit).getUnitCombatType()] +=
+						m_aiUnitClassWeights[eLoopUnitClass];
+			}
 		}
 	}
 	FOR_EACH_ENUM(UnitCombat)
@@ -28523,6 +28526,9 @@ int CvPlayerAI::AI_calculateUnitAIViability(UnitAITypes eUnitAI, DomainTypes eDo
 	FOR_EACH_ENUM(UnitClass)
 	{
 		UnitTypes eLoopUnit = GC.getInfo(eLoopUnitClass).getDefaultUnit();
+		// <advc.003l>
+		if (eLoopUnit == NO_UNIT)
+			continue; // </advc.003l>
 		// UNOFFICIAL_PATCH, 01/15/09, jdog5000 (Bugfix): was GC.getInfo(eLoopUnitClass)
 		CvUnitInfo const& kUnitInfo = GC.getInfo(eLoopUnit);
 		if (kUnitInfo.getDomainType() == eDomain)

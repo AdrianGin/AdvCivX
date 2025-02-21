@@ -1845,9 +1845,9 @@ int CvInitCore::getAdvancedStartMinPoints() const
 {
 	FOR_EACH_ENUM(UnitClass)
 	{
-		CvUnitInfo const& u = GC.getInfo(GC.getInfo(eLoopUnitClass).getDefaultUnit());
-		if (u.isFound())
-			return u.getAdvancedStartCost();
+		UnitTypes eDefault = GC.getInfo(eLoopUnitClass).getDefaultUnit();
+		if (eDefault != NO_UNIT && GC.getInfo(eDefault).isFound())
+			return GC.getInfo(eDefault).getAdvancedStartCost();
 	}
 	FAssert(false);
 	return -1;
