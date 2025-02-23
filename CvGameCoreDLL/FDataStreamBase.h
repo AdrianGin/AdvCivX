@@ -21,8 +21,9 @@
 	that would busy and fill up the HD. In that latter case, let the EXE handle
 	the error message by changing the count to -1. */
 #define SANITIZE_WRITE_COUNT() \
-	FAssertBounds(0, integer_limits<short>::max, iCount); \
-	if (iCount >= 32 * 1024 * 1024) /* 32M */ \
+	int iUpper = 32 * 1024 * 1024; /* 32M */ \
+	FAssertBounds(0, iUpper, iCount); \
+	if (iCount >= iUpper)  \
 		iCount = -1
 
 #include "ReproTest.h" // advc.repro
