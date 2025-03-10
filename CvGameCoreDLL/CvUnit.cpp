@@ -3078,7 +3078,7 @@ bool CvUnit::jumpToNearestValidPlot(/* K-Mod: */ bool bGroup, bool bForceMove,
 				!GET_TEAM(getTeam()).isRevealedAirBase(kLoopPlot))
 			{
 				continue;
-			}*/ // advc: canMoveInto already checks thats
+			}*/ // advc: canMoveInto already checks that
 			int iValue = (plotDistance(plot(), &kLoopPlot) * 2);
 			// K-Mod, 2/jan/11 - bForceMove functionality
 			if (bForceMove && iValue == 0)
@@ -3119,32 +3119,28 @@ bool CvUnit::jumpToNearestValidPlot(/* K-Mod: */ bool bGroup, bool bForceMove,
 			}
 		}
 	}
-	bool bValid = true;
-	if (pBestPlot != NULL)
-	{
-		// K-Mod. If a unit is bumped, we should clear their mission queue
-		if(!atPlot(pBestPlot))
-		{
-			CvSelectionGroup* pGroup = getGroup();
-			//pGroup->splitGroup(1); // advc.163: Safer to split? Hopefully no need.
-			pGroup->clearMissionQueue();
-			// K-Mod end
-			// <advc.163>
-			if(!isHuman())
-				pGroup->AI().AI_cancelGroupAttack(); // Maybe not needed, but doesn't hurt.
-			pGroup->setAutomateType(NO_AUTOMATE);
-			pGroup->setActivityType(ACTIVITY_AWAKE); // </advc.163>
-		}
-		if (bFreeMove) // advc.163
-			setXY(pBestPlot->getX(), pBestPlot->getY(), bGroup);
-		else move(*pBestPlot, true, true, bGroup); // advc.163
-	}
-	else
+	if (pBestPlot == NULL)
 	{
 		kill(false);
-		bValid = false;
+		return false;
 	}
-	return bValid;
+	// K-Mod. If a unit is bumped, we should clear their mission queue
+	if(!atPlot(pBestPlot))
+	{
+		CvSelectionGroup* pGroup = getGroup();
+		//pGroup->splitGroup(1); // advc.163: Safer to split? Hopefully no need.
+		pGroup->clearMissionQueue();
+		// K-Mod end
+		// <advc.163>
+		if(!isHuman())
+			pGroup->AI().AI_cancelGroupAttack(); // Maybe not needed, but doesn't hurt.
+		pGroup->setAutomateType(NO_AUTOMATE);
+		pGroup->setActivityType(ACTIVITY_AWAKE); // </advc.163>
+	}
+	if (bFreeMove) // advc.163
+		setXY(pBestPlot->getX(), pBestPlot->getY(), bGroup);
+	else move(*pBestPlot, true, true, bGroup); // advc.163
+	return true;
 }
 
 

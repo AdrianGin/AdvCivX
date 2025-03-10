@@ -973,7 +973,8 @@ void CvXMLLoadUtility::SetGlobalActionInfo()
 	PROFILE_FUNC();
 	logMsg("SetGlobalActionInfo\n");
 
-	// Originally named "iOldActionInfos". Not sure what this is for, modular loading?
+	/*	Originally named "iOldActionInfos". Not sure what this is for, modular loading?
+		Normally 0 (no action infos yet). */
 	int const iMissionOffset = GC.getNumActionInfos();
 
 	std::vector<ActionData> aActionData;

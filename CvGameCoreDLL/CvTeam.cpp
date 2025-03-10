@@ -2914,7 +2914,7 @@ CvPlot* CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 	{
 		int iOnFirstContact = 1;
 		// If met during the placement of free starting units, show only a diplo popup.
-		if(GC.IsGraphicsInitialized())
+		if (GC.IsGraphicsInitialized())
 			iOnFirstContact = BUGOption::getValue("Civ4lerts__OnFirstContact", 2);
 		if(bNewDiplo && iOnFirstContact == 0)
 			bNewDiplo = false;
