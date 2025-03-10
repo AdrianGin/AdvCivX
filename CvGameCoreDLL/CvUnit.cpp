@@ -3062,7 +3062,10 @@ bool CvUnit::jumpToNearestValidPlot(/* K-Mod: */ bool bGroup, bool bForceMove,
 	{
 		CvPlot& kLoopPlot = GC.getMap().getPlotByIndex(i);
 		if (//kLoopPlot.isValidDomainForLocation(*this)
-			isRevealedValidDomain(kLoopPlot) && // advc
+			(isRevealedValidDomain(kLoopPlot) // advc
+			/*	advc.001b: Allow air units to jump onto transports.
+				(NB: canMove checks the specifics.) */
+			|| (kLoopPlot.isUnit() && getDomainType() == DOMAIN_AIR)) &&
 			canEnterTerritory(kLoopPlot.getTeam(), false, kLoopPlot.area()) &&
 			canMoveInto(kLoopPlot) &&
 			!isEnemy(kLoopPlot))
