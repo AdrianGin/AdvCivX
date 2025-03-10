@@ -9898,8 +9898,7 @@ void CvCity::popOrder(int iNum, bool bFinish,
 				pUnit->move(*pRallyPlot, false, true);
 			if (pUnit->at(*plot()))
 			{
-				pUnit->jumpToNearestValidPlot(); // (as in BtS)
-				bool const bDead = pUnit->isDead();
+				bool const bDead = !pUnit->jumpToNearestValidPlot(); // (as in BtS)
 				if (isActiveOwned())
 				{
 					CvWString szMsg(gDLL->getText("TXT_KEY_AIR_CAPACITY_EXCEEDED",
