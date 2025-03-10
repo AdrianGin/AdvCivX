@@ -5902,6 +5902,10 @@ void CvPlot::changeVisibilityCount(TeamTypes eTeam, int iChange,
 			GET_TEAM(getTeam()).meet(eTeam, true, /* advc.071: */ &fcData);
 		}
 		// K-Mod. Meet the owner of any units you can see.
+		/*	advc.071: When border spread grants visibility, any unit spotted
+			could move away before the next graphics update. Confusing, then,
+			to trigger a meeting at this point. */
+		if (pUnit != NULL)
 		{
 			PROFILE("CvPlot::changeVisibility -- meet units"); // (this is new, so I want to time it.)
 			FOR_EACH_UNIT_IN(pLoopUnit, *this)

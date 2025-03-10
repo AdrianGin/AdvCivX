@@ -2909,17 +2909,20 @@ CvPlot* CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 	if (isActive() || GET_TEAM(eOther).isActive())
 		gDLL->UI().setDirty(Score_DIRTY_BIT, true);
 	// <advc.071>
-	bool bShowMessage = (isHuman() && pData != NULL);
-	if (bShowMessage || bNewDiplo)
+	bool bShowMessage = false;
+	if (bNewDiplo &&
+		((isHuman() || GET_TEAM(eOther).isHuman()))) // save time
 	{
 		int iOnFirstContact = 1;
 		// If met during the placement of free starting units, show only a diplo popup.
 		if (GC.IsGraphicsInitialized())
 			iOnFirstContact = BUGOption::getValue("Civ4lerts__OnFirstContact", 2);
-		if(bNewDiplo && iOnFirstContact == 0)
-			bNewDiplo = false;
-		if(bShowMessage && iOnFirstContact == 1)
-			bShowMessage = false;
+		if (iOnFirstContact != 1)
+		{
+			bShowMessage = (pData != NULL && isHuman());
+			if (iOnFirstContact == 0)
+				bNewDiplo = false;
+		}	
 	} // </advc.071>
 	if (isAlwaysWar() && getID() != eOther)
 		declareWar(eOther, false, NO_WARPLAN);
@@ -3005,6 +3008,16 @@ CvPlot* CvTeam::makeHasMet(TeamTypes eOther, bool bNewDiplo,
 			pAt = pUnit2->plot();
 		}
 	}
+	// Don't indicate a plot if we can't tell how it was spotted
+	if ((pAt1 == NULL || pAt2 == NULL) && pUnit1 == NULL && pUnit2 == NULL)
+		pAt = NULL;
+	// Can't generally tell where meetings occur with simultaneous turns
+	// ... But still no harm, I guess, in letting players know?
+	/*if (GC.getGame().isMPOption(MPOPTION_SIMULTANEOUS_TURNS))
+	{
+		pAt = NULL;
+		pUnitMet = NULL;
+	}*/
 	if (!bShowMessage)
 		return pAt;
 	CvWString szMsg = gDLL->getText("TXT_KEY_MISC_TEAM_MET",
