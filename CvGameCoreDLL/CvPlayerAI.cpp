@@ -286,32 +286,31 @@ void CvPlayerAI::AI_reset(bool bConstructor)
 	m_iAvailableIncome = 0; // K-Mod
 
 	m_aeAICitySites.clear();
-
-	FAssert(m_aiBonusValue == NULL);
-	m_aiBonusValue = new int[GC.getNumBonusInfos()];
-	m_aiBonusValueTrade = new int[GC.getNumBonusInfos()]; // advc.036
-	for (iI = 0; iI < GC.getNumBonusInfos(); iI++)
-	{
-		m_aiBonusValue[iI] = -1;
-		m_aiBonusValueTrade[iI] = -1; // advc.036
-	}
 	m_aeBestTechs.clear(); // advc.550g
-
-	FAssert(m_aiUnitClassWeights == NULL);
-	m_aiUnitClassWeights = new int[GC.getNumUnitClassInfos()];
-	for (iI = 0; iI < GC.getNumUnitClassInfos(); iI++)
-	{
-		m_aiUnitClassWeights[iI] = 0;
-	}
-
-	FAssert(m_aiUnitCombatWeights == NULL);
-	m_aiUnitCombatWeights = new int[GC.getNumUnitCombatInfos()];
-	for (iI = 0; iI < GC.getNumUnitCombatInfos(); iI++)
-	{
-		m_aiUnitCombatWeights[iI] = 0;
-	}
 	m_aiVictoryWeights.reset(); // advc.115f
-
+	if (!bConstructor) // advc.001
+	{
+		FAssert(m_aiBonusValue == NULL);
+		m_aiBonusValue = new int[GC.getNumBonusInfos()];
+		m_aiBonusValueTrade = new int[GC.getNumBonusInfos()]; // advc.036
+		for (iI = 0; iI < GC.getNumBonusInfos(); iI++)
+		{
+			m_aiBonusValue[iI] = -1;
+			m_aiBonusValueTrade[iI] = -1; // advc.036
+		}
+		FAssert(m_aiUnitClassWeights == NULL);
+		m_aiUnitClassWeights = new int[GC.getNumUnitClassInfos()];
+		for (iI = 0; iI < GC.getNumUnitClassInfos(); iI++)
+		{
+			m_aiUnitClassWeights[iI] = 0;
+		}
+		FAssert(m_aiUnitCombatWeights == NULL);
+		m_aiUnitCombatWeights = new int[GC.getNumUnitCombatInfos()];
+		for (iI = 0; iI < GC.getNumUnitCombatInfos(); iI++)
+		{
+			m_aiUnitCombatWeights[iI] = 0;
+		}
+	}
 	/*for (iI = 0; iI < MAX_PLAYERS; iI++) {
 		m_aiCloseBordersAttitude[iI] = 0;
 		if (!bConstructor && getID() != NO_PLAYER)
