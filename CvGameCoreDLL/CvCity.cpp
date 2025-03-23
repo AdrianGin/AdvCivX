@@ -8300,9 +8300,9 @@ void CvCity::setName(const wchar* szNewValue, bool bFound, /* advc.106k: */ bool
 	{
 		if (GET_PLAYER(getOwner()).isCityNameValid(szName, false))
 		{	// <advc.106k>
-			if(bInitial)
+			if (bInitial)
 				m_szPreviousName.clear();
-			else if(m_szPreviousName.empty())
+			else if (m_szPreviousName.empty())
 				m_szPreviousName = m_szName; // </advc.106k>
 			// <advc.005c>
 			if (!m_szName.empty())
