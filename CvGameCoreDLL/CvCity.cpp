@@ -8304,6 +8304,9 @@ void CvCity::setName(const wchar* szNewValue, bool bFound, /* advc.106k: */ bool
 				m_szPreviousName.clear();
 			else if(m_szPreviousName.empty())
 				m_szPreviousName = m_szName; // </advc.106k>
+			// <advc.005c>
+			if (!m_szName.empty())
+				GC.getGame().addPastCityName(getName()); // </advc.005c>
 			m_szName = szName;
 
 			setInfoDirty(true);

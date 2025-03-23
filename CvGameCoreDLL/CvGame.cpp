@@ -428,7 +428,7 @@ void CvGame::showDawnOfMan()
 
 void CvGame::uninit()
 {
-	m_aszDestroyedCities.clear();
+	m_aszPastCities.clear();
 	m_aszGreatPeopleBorn.clear();
 
 	m_deals.uninit();
@@ -6043,10 +6043,10 @@ void CvGame::setName(TCHAR const* szName)
 }
 
 
-bool CvGame::isDestroyedCityName(CvWString& szName) const
+bool CvGame::isPastCityName(CvWString& szName) const
 {
 	std::vector<CvWString>::const_iterator it;
-	for (it = m_aszDestroyedCities.begin(); it != m_aszDestroyedCities.end(); ++it)
+	for (it = m_aszPastCities.begin(); it != m_aszPastCities.end(); ++it)
 	{
 		if (*it == szName)
 			return true;
@@ -6055,9 +6055,9 @@ bool CvGame::isDestroyedCityName(CvWString& szName) const
 }
 
 
-void CvGame::addDestroyedCityName(CvWString const& szName)
+void CvGame::addPastCityName(CvWString const& szName)
 {
-	m_aszDestroyedCities.push_back(szName);
+	m_aszPastCities.push_back(szName);
 }
 
 
@@ -8955,12 +8955,12 @@ void CvGame::read(FDataStreamBase* pStream)
 		CvWString szBuffer;
 		uint iSize;
 
-		m_aszDestroyedCities.clear();
+		m_aszPastCities.clear();
 		pStream->Read(&iSize);
 		for (uint i = 0; i < iSize; i++)
 		{
 			pStream->ReadString(szBuffer);
-			m_aszDestroyedCities.push_back(szBuffer);
+			m_aszPastCities.push_back(szBuffer);
 		}
 
 		m_aszGreatPeopleBorn.clear();
@@ -9261,8 +9261,8 @@ void CvGame::write(FDataStreamBase* pStream)
 	m_aeHeadquarters.write(pStream);
 	{
 		std::vector<CvWString>::iterator it;
-		pStream->Write(m_aszDestroyedCities.size());
-		for (it = m_aszDestroyedCities.begin(); it != m_aszDestroyedCities.end(); ++it)
+		pStream->Write(m_aszPastCities.size());
+		for (it = m_aszPastCities.begin(); it != m_aszPastCities.end(); ++it)
 		{
 			pStream->WriteString(*it);
 		}
