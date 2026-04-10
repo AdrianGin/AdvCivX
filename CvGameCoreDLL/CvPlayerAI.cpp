@@ -608,7 +608,8 @@ void CvPlayerAI::AI_doTurnUnitsPost()
 			{
 				//if (pLoopUnit->canFight()) // BtS
 				// K-Mod - bug fix for the rare case of a barb city spawning on top of an animal
-				if (pLoopUnit->getUnitCombatType() != NO_UNITCOMBAT)
+				if (pLoopUnit->getUnitCombatType() != NO_UNITCOMBAT &&
+					!pLoopUnit->isFound()) // advc: Future-proof; from DoC.
 				{
 					int iExp = pLoopUnit->getExperience();
 					CvCityAI const* pPlotCity = pLoopUnit->getPlot().AI_getPlotCity();

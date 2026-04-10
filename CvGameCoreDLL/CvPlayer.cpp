@@ -10999,7 +10999,7 @@ void CvPlayer::addMessage(CvTalkingHeadMessage const& kMessage)
 	if (eMessage == MESSAGE_TYPE_INFO || eMessage == MESSAGE_TYPE_MINOR_EVENT ||
 		eMessage == MESSAGE_TYPE_MAJOR_EVENT || eMessage == MESSAGE_TYPE_MAJOR_EVENT_LOG_ONLY)
 	{
-		m_iNewMessages++; // See comment in postProcessBeginTurnEvents
+		m_iNewMessages++; // See comment in postProcessMessages
 	}
 	/*	Hotseat clears some messages before players get to see them; we'll show them
 		again at the start of the recipient's next turn. */
@@ -11010,7 +11010,7 @@ void CvPlayer::addMessage(CvTalkingHeadMessage const& kMessage)
 	if (eMessage == MESSAGE_TYPE_MAJOR_EVENT || bMissedMsg)
 	{
 		/*  Need to make a copy b/c, apparently, the EXE deletes the original
-			before postProcessBeginTurnEvents gets called. */
+			before postProcessMessages gets called. */
 		CvTalkingHeadMessage* pCopy = new CvTalkingHeadMessage(kMessage.getTurn(),
 				kMessage.getLength(), kMessage.getDescription(),
 				// Don't play it twice
