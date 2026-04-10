@@ -4929,7 +4929,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 					FOR_EACH_ENUM(Building)
 					{
 						if (GC.getInfo(eLoopBuilding).getReligionType() == eStateReligion)
-							aeReligionBuildings.push_back(eBuilding);
+							aeReligionBuildings.push_back(eLoopBuilding);
 					}
 					scaled rOurBuildings = AI_estimateReligionBuildings(
 							kOwner.getID(), eStateReligion, aeReligionBuildings);
