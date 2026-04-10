@@ -25889,7 +25889,8 @@ void CvPlayerAI::AI_updateStrategyHash()
 			}
 			else if (kVictory.getCityCulture() > 0)
 			{
-				if (m_eStrategyHash & AI_VICTORY_CULTURE1)
+				//if (m_iStrategyHash & AI_VICTORY_CULTURE1) // BBAI
+				if (AI_atVictoryStage(AI_VICTORY_CULTURE1)) // advc.001
 					iAchieveVictories++;
 			}
 			else if (kVictory.getMinLandPercent() > 0 || kVictory.getLandPercent() > 0)
