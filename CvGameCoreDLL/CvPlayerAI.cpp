@@ -4923,8 +4923,8 @@ int CvPlayerAI::AI_techValue(TechTypes eTech, int iPathLength, bool bFreeTech,
 
 	if (bSpecialistCommerce)
 	{
-		// If there are any bonuses, we need to count our specialists.
- 		// (The value from the bonuses will be applied later.)
+		/*	If there are any bonuses, we need to count our specialists.
+			(The value from the bonuses will be applied later.) */
 		iTotalBonusSpecialists = iTotalCurrentSpecialists = 0;
 
 		FOR_EACH_CITY(pLoopCity, *this)
@@ -13416,8 +13416,8 @@ uint CvPlayerAI::AI_unitImpassables(UnitTypes eUnit) const
 	if (!GC.getInfo(eUnit).isAnyTerrainImpassable() &&
 		!GC.getInfo(eUnit).isAnyFeatureImpassable())
 	{
-		return 0; // </advc.003t>
-	}
+		return 0;
+	} // </advc.003t>
 	uint uiCount = 0;
 	// <advc.057>
 	uint const uiCountBits = 3;
