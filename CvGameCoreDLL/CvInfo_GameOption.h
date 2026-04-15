@@ -260,7 +260,7 @@ protected:
 		kElements.addInt(EventRollSidesPercent, "EventRollSidesPercent", 100);
 		kElements.addInt(VoteIntervalPercent, "VoteIntervalPercent", 100);
 		kElements.addInt(UnitCostPercent, "UnitCostPercent", 100);
-		kElements.addInt(ExtraFreeOutsideUnits, "ExtraFreeOutsideUnits", 100);
+		kElements.addInt(ExtraFreeOutsideUnits, "ExtraFreeOutsideUnits");
 		// </advc.252>
 	}
 public:
