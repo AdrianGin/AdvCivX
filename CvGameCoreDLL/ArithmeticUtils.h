@@ -210,6 +210,11 @@ namespace fmath
 		int r = (int)(d + 0.5 * iMultiple);
 		return r - r % iMultiple;
 	}
+	inline double log2(double d) // as in C++11
+	{
+		static const double dLn2 = std::log(2);
+		return std::log(d) / dLn2;
+	}
 }
 
 #endif
