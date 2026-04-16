@@ -212,7 +212,7 @@ namespace fmath
 	}
 	inline double log2(double d) // as in C++11
 	{
-		static const double dLn2 = std::log(2);
+		static const double dLn2 = std::log(2.0);
 		return std::log(d) / dLn2;
 	}
 }

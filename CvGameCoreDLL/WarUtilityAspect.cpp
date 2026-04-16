@@ -2095,7 +2095,7 @@ void BorderDisputes::evaluate()
 		if (dOurCultureMultiplier > 0.04)
 		{
 			dOurCultureMultiplier = std::max(0.0,
-					1 - 0.25 * fmath::log2(25 * dOurCultureMultiplier);
+					1 - 0.25 * fmath::log2(25 * dOurCultureMultiplier));
 		}
 		else dOurCultureMultiplier = 1;
 		scaled rOurCultureModifier = scaled::fromDouble(dOurCultureMultiplier);
