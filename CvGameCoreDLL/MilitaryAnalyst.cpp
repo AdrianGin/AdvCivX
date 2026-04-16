@@ -360,7 +360,7 @@ void MilitaryAnalyst::simulateNuclearWar()
 		for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
 		{
 			CvPlayer const& kEnemyOfEnemy = *it;
-			if (isWar(kEnemyOfEnemy.getID(), kEnemyOfEnemy.getID()))
+			if (isWar(kEnemyOfEnemy.getID(), kEnemy.getID()))
 				rEnemyTargets += (kEnemyOfEnemy.isAVassal() ? fixp(0.5) : 1);
 		}
 		scaled rFiredOnUs = rPortionFired * rOurVassalMult * rEnemyVassalMult *
