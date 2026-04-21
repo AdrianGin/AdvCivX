@@ -11660,7 +11660,7 @@ void CvCityAI::AI_bestPlotBuild(CvPlot const& kPlot, int* piBestValue, BuildType
 					eBestBuild == NO_BUILD) // advc.001 (restored)
 				{	// <advc.121> Akin to the boost for RouteYieldChanges below
 					if (eBestBuild == NO_BUILD && kPlot.isBeingWorked())
-						iBestValue *= 2; // </advc.121>
+						iValue *= 2; // </advc.121>
 					iBestValue = iValue;
 					eBestBuild = eLoopBuild;
 				}
