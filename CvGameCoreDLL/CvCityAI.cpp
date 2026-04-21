@@ -4905,7 +4905,7 @@ int CvCityAI::AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags,
 					if(kRival.AI_atVictoryStage(AI_VICTORY_DIPLOMACY1))
 						iRivalStage++;
 					if(!kBuilding.isStateReligion() &&
-						kOwner.AI_atVictoryStage(AI_VICTORY_DIPLOMACY2))
+						kRival.AI_atVictoryStage(AI_VICTORY_DIPLOMACY2))
 					{
 						iRivalStage++;
 					}
