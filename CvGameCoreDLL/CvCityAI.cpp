@@ -63,6 +63,8 @@ CvCityAI::~CvCityAI()
 	SAFE_DELETE_ARRAY(m_aiEmphasizeCommerceCount);
 	SAFE_DELETE_ARRAY(m_aiSpecialYieldMultiplier);
 	SAFE_DELETE_ARRAY(m_aiPlayerCloseness);
+	SAFE_DELETE_ARRAY(m_aiCachePlayerClosenessTurn);
+	SAFE_DELETE_ARRAY(m_aiCachePlayerClosenessDistance);
 
 	SAFE_DELETE_ARRAY(m_aiBestBuildValue);
 	SAFE_DELETE_ARRAY(m_aeBestBuild);
