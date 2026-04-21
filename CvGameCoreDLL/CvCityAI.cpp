@@ -2328,11 +2328,17 @@ void CvCityAI::AI_chooseProduction()
 			SyncRandNum(1200) < std::min(400, iNukeWeight)) &&
 			(!bAssault || SyncRandNum(400) < std::min(200, 50 + iNukeWeight/2)))
 		{
-			int iTotalNukes = kPlayer.AI_totalUnitAIs(UNITAI_ICBM);
-			int iNukesWanted = 1 + 2 * std::min(kPlayer.getNumCities(),
+			int const iTotalNukes = kPlayer.AI_totalUnitAIs(UNITAI_ICBM);
+			int const iNukesWanted = 1 + 2 * std::min(kPlayer.getNumCities(),
 					kGame.getNumCities() - kPlayer.getNumCities());
 			if (iTotalNukes < iNukesWanted &&
-				SyncRandNum(100) * iNukesWanted < 90 - (80 * iTotalNukes))
+				/*	(advc: As in BtS, i.e. 90% if we have none, 90-80%=10%
+					when target reached, decreasing further from there.
+					The odds effectively a weighted delta divided by the target.
+					Multiple rolls may need to succeed b/c the AI may re-consider
+					the production order on later turns (fixme?).) */
+				SyncRandNum(100) * iNukesWanted <
+					90 * iNukesWanted - (80 * iTotalNukes))
 			{
 				if (pWaterArea != NULL &&
 					kPlayer.AI_totalUnitAIs(UNITAI_MISSILE_CARRIER_SEA) * 2 < iTotalNukes &&
@@ -2345,8 +2351,7 @@ void CvCityAI::AI_chooseProduction()
 					return;
 			}
 		}
-	}
-	// K-Mod end
+	} // K-Mod end
 
 	// Assault case now completely handled above
 	if (!bAssault && (!bCultureCity || bDefenseWar) && iUnitSpending < iMaxUnitSpending)
