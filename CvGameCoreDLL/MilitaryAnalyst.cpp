@@ -354,7 +354,7 @@ void MilitaryAnalyst::simulateNuclearWar()
 		if (kAgent.isAVassal())
 			rOurVassalMult /= 2;
 		scaled rEnemyVassalMult = 1;
-		if (kAgent.isAVassal())
+		if (kEnemy.isAVassal())
 			rEnemyVassalMult /= 2;
 		scaled rEnemyTargets;
 		for (PlayerIter<MAJOR_CIV> it; it.hasNext(); ++it)
