@@ -1821,7 +1821,7 @@ class ElevationMap2(FloatMap):
 		#initialize maps
 		for y in range(mc.hmHeight):
 			for x in range(mc.hmWidth):
-				i = GetHmIndex(x, y)
+				#i = GetHmIndex(x, y) # advc: unused
 				self.plateMap.append(PlatePlot(0, maxDistance))
 				borderMap.append(False)
 				self.plateHeightMap.append(0.0)
@@ -3802,6 +3802,9 @@ class PangaeaBreaker:
 			return
 		for x in range(x1, x2 + 1):
 			i = GetHmIndex(x, y)
+			# advc.001: Though this might not be an issue.
+			# Or maybe the map edges should be addressed by castMeteorUponTheEarth.
+			if i == -1: continue
 			#em.data[i] = 0.0
 			# advc: 0 elevation leads to coastal peaks when using the lowest-neighbor slope option.
 			em.data[i] *= min(0.88, 0.37 + math.sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY)) / 7.0)
@@ -5837,7 +5840,7 @@ class StartingArea:
 		# advc: Moved into subroutine
 		self.ClearVicinity(3)
 		print "Number of final plots in areaID = %(a)3d is %(p)5d" % {"a":self.areaID, "p":len(self.plotList)}
-		# advc.021b: Moved up:
+		# advc: Moved up:
 		for n in range(len(self.plotList)):
 			self.rawValue += self.plotList[n].localValue
 		# Moved the last third of this function's body into a new function FillDistanceTable
