@@ -5068,20 +5068,29 @@ void CvPlayer::found(int iX, int iY)
 
 	if (getAdvancedStartPoints() >= 0)
 	{	// Free border expansion for Creative
-		bool bCreative = false;
+		bool bFreeBorderExp = false; // advc: Renamed from "bCreative"
 		FOR_EACH_ENUM(Trait)
 		{
 			if (hasTrait(eLoopTrait))
 			{
 				if (GC.getInfo(eLoopTrait).getCommerceChange(COMMERCE_CULTURE) > 0)
 				{
-					bCreative = true;
+					bFreeBorderExp = true;
 					break;
 				}
 			}
 		}
-
-		if (bCreative)
+		/*	<advc.908b> Let traits handle this explicitly
+			unless the free culture effect is unused */
+		FOR_EACH_ENUM(Trait)
+		{
+			if (kGame.freeCityCultureFromTrait(eLoopTrait) != 0)
+			{
+				bFreeBorderExp = false;
+				break;
+			}
+		} // </advc.908b>
+		if (bFreeBorderExp)
 		{
 			FOR_EACH_ENUM(CultureLevel)
 			{
