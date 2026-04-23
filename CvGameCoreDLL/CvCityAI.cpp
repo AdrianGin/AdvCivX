@@ -2332,13 +2332,13 @@ void CvCityAI::AI_chooseProduction()
 			int const iNukesWanted = 1 + 2 * std::min(kPlayer.getNumCities(),
 					kGame.getNumCities() - kPlayer.getNumCities());
 			if (iTotalNukes < iNukesWanted &&
-				/*	(advc: As in BtS, i.e. 90% if we have none, 90-80%=10%
+				/*	advc.650: Reduced in favor of a second, higher-priority rule.
+					Weights were 90 and 80. Now 60% initially, 10% (as before)
 					when target reached, decreasing further from there.
 					The odds effectively a weighted delta divided by the target.
 					Multiple rolls may need to succeed b/c the AI may re-consider
 					the production order on later turns (fixme?).) */
-				SyncRandNum(100) * iNukesWanted <
-					90 * iNukesWanted - (80 * iTotalNukes))
+				SyncRandNum(100) * iNukesWanted < 60 * iNukesWanted - (50 * iTotalNukes))
 			{
 				if (pWaterArea != NULL &&
 					kPlayer.AI_totalUnitAIs(UNITAI_MISSILE_CARRIER_SEA) * 2 < iTotalNukes &&
