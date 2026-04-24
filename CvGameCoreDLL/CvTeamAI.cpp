@@ -401,6 +401,14 @@ bool CvTeamAI::AI_hasSharedPrimaryArea(TeamTypes eTeam) const
 	return false;
 }
 
+namespace
+{	// advc.300:
+	int presenceScore(int iCities, int iPop)
+	{
+		return iCities * iCities - iCities + 2 * iPop;
+	}
+}
+
 /*  advc.104s (note): If UWAI is enabled, AI_doWar may adjust (i.e. overwrite) the
 	result of this calculation through UWAI::Team::alignAreaAI. */
 AreaAITypes CvTeamAI::AI_calculateAreaAIType(CvArea const& kArea, bool bPreparingTotal) const
@@ -412,12 +420,26 @@ AreaAITypes CvTeamAI::AI_calculateAreaAIType(CvArea const& kArea, bool bPreparin
 
 	if (isBarbarian())
 	{
-		if (//kArea.getNumCities() == kArea.getCitiesPerPlayer(BARBARIAN_PLAYER)
-			// advc.300: Relatively peaceable (New World) Barbarians until outnumbered
-			kArea.getTotalPopulation() <= kArea.getPopulationPerPlayer(BARBARIAN_PLAYER) * 2)
-		{
-			return AREAAI_ASSAULT;
+		if (kArea.getNumCities() == kArea.getCitiesPerPlayer(BARBARIAN_PLAYER))
+		{	/*	advc (note): Meaning naval assault against civs on other continents
+				(if any are even reachable). Relatively peaceful behavior within kArea. */
+				return AREAAI_ASSAULT;
 		}
+		// <advc.300> Do the above also while clearly outnumbering the civs
+		int const iBarbarianCities = kArea.getCitiesPerPlayer(BARBARIAN_PLAYER);
+		if (iBarbarianCities > 0)
+		{
+			int const iBarbarianPop = kArea.getPopulationPerPlayer(BARBARIAN_PLAYER);
+			int const iCivCities = kArea.getNumCities() - iBarbarianCities;
+			int const iCivPop = kArea.getTotalPopulation() - iBarbarianPop;
+			int const iBarbarianPresence = presenceScore(iBarbarianCities,
+					std::min(iBarbarianPop, iBarbarianCities * 5));
+			int const iCivPresence = presenceScore(iCivCities, iCivPop);
+			scaled const rExp = GC.getGame().isOption(GAMEOPTION_RAGING_BARBARIANS) ?
+					fixp(0.6) : fixp(0.75);
+			if (iCivPresence <= scaled(iBarbarianPresence).pow(rExp))
+				return AREAAI_ASSAULT;
+		} // </advc.300>
 		if (countNumAIUnitsByArea(kArea, UNITAI_ATTACK) +
 			countNumAIUnitsByArea(kArea, UNITAI_ATTACK_CITY) +
 			countNumAIUnitsByArea(kArea, UNITAI_PILLAGE) +
