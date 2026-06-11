@@ -276,8 +276,9 @@
 		<Italian>Benvenuto, [CT_NAME]. Sei di nuovo qui per ammirare il mio eroico profilo?</Italian>
 		<Spanish>Saludos, [CT_NAME]. ¿Habéis vuelto a admirar mi heroico perfil?</Spanish>
 	</TEXT>
+	<!-- advc.005f: was #2 -->
 	<TEXT>
-		<Tag>AI_DIPLO_GREETINGS_ATT_FR_LEADER_DE_GAULLE_2</Tag>
+		<Tag>AI_DIPLO_GREETINGS_ATT_FR_LEADER_DE_GAULLE_3</Tag>
 		<English>Greatness is a road leading towards the unknown, mon ami. I am glad we walk it together.</English>
 		<French>Bienvenue, [CT_NAME]. Etes-vous revenu admirer mon allure héroïque ?</French>
 		<German>Willkommen, [CT_NAME]. Seid Ihr gekommen, um ein weiteres Mal mein heldenhaftes Profil zu würdigen?</German>
