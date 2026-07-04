@@ -375,9 +375,8 @@ void CvPlayerAI::AI_updateCacheData()
 	int i = 0;
 	FOR_EACH_CITYAI_VAR(pCity, *this)
 	{
-		pCity->AI_setCityValPercent(
-				(1 - stats::percentileRank(
-				rCityValues, rCityValues[i] + scaled::epsilon())).getPercent());
+		pCity->AI_setCityValPercent(stats::percentileRank(
+				rCityValues, rCityValues[i] + scaled::epsilon()).getPercent());
 		pCity->AI_updateSafety();
 		i++;
 	} // </advc.139>
