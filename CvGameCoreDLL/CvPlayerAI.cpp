@@ -489,6 +489,16 @@ void CvPlayerAI::AI_doTurnUnitsPre()
 	}
 }
 
+// advc.131e:
+struct DescByExperience
+{
+	bool operator()(CvUnitAI const* pFirst, CvUnitAI const* pSecond) const
+	{
+		if (pFirst->getExperience() != pSecond->getExperience())
+			return pFirst->getExperience() > pSecond->getExperience();
+		return pFirst->getID() < pSecond->getID(); // (mustn't let address break ties)
+	}
+};
 
 void CvPlayerAI::AI_doTurnUnitsPost()
 {
@@ -511,7 +521,7 @@ void CvPlayerAI::AI_doTurnUnitsPost()
 	}
 	// BETTER_BTS_AI_MOD, Gold AI, 02/24/10, jdog5000: START
 	//bool bAnyWar = (GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0);
-	int iStartingGold = getGold();
+	int const iStartingGold = getGold();
 	/* BBAI code
 	int iTargetGold = AI_goldTarget();
 	int iUpgradeBudget = (AI_getGoldToUpgradeAllUnits() / (bAnyWar ? 1 : 2));
@@ -531,21 +541,30 @@ void CvPlayerAI::AI_doTurnUnitsPost()
 		int iMaxBudget = AI_goldTarget(true);
 		iUpgradeBudget = std::min(iMaxBudget, getGold() * iMaxBudget /
 				std::max(1, AI_goldTarget(false)));
-	}
-	// K-Mod end
+	} // K-Mod end
 
 	// Always willing to upgrade 1 unit if we have the money
-	iUpgradeBudget = std::max(iUpgradeBudget,1);
+	iUpgradeBudget = std::max(iUpgradeBudget, 1);
 	// BETTER_BTS_AI_MOD: END
 
 	CvPlot const* pLastUpgradePlot = NULL;
-	for (int iPass = 0; iPass < 4; iPass++)
-	{
-		FOR_EACH_UNITAI_VAR(pLoopUnit, *this)
+	// <advc.131e>
+	std::vector<CvUnitAI*> apUnitsByExp;
+	FOR_EACH_UNITAI_VAR(pLoopUnit, *this)
+		apUnitsByExp.push_back(pLoopUnit);
+	std::sort(apUnitsByExp.begin(), apUnitsByExp.end(), DescByExperience());
+	for (int iPass = 0; iPass < 5; iPass++) // Case inserted for upgrade discounts
+	{	// BBAI check moved up to save time
+		if (iPass >= 3 && iStartingGold - getGold() >= iUpgradeBudget)
+			break; // </advc.131e>
+		//FOR_EACH_UNITAI_VAR(pLoopUnit, *this)
+		// <advc.131e>
+		for (std::vector<CvUnitAI*>::iterator itUnit = apUnitsByExp.begin();
+			itUnit != apUnitsByExp.end(); /* Increment later; may want to erase. */)
 		{
+			CvUnitAI* pLoopUnit = *itUnit; // </advc.131e>
 			bool bNoDisband = false;
 			bool bValid = false;
-
 			switch (iPass)
 			{
 			case 0:
@@ -577,23 +596,27 @@ void CvPlayerAI::AI_doTurnUnitsPost()
 				}
 				break;
 			}
+			// <advc.131e>
 			case 2:
+				if (pLoopUnit->getUpgradeDiscount() >= 40)
+					bValid = true;
+				break; // </advc.131e>
+			case 3:
 				/*if (pLoopUnit->cargoSpace() > 0)
 					bValid = true;*/ // BtS
 				// Only normal transports
 				if (pLoopUnit->cargoSpace() > 0 &&
 					pLoopUnit->specialCargo() == NO_SPECIALUNIT)
 				{
-					bValid = iStartingGold - getGold() < iUpgradeBudget;
+					bValid = true;
 				}
 				// Also upgrade escort ships
 				if (pLoopUnit->AI_getUnitAIType() == UNITAI_ESCORT_SEA)
-					bValid = iStartingGold - getGold() < iUpgradeBudget;
+					bValid = true;
 
 				break;
-			case 3:
-				//bValid = true; // BtS
-				bValid = iStartingGold - getGold() < iUpgradeBudget;
+			case 4:
+				bValid = true;
 				break;
 			default:
 				FAssert(false);
@@ -601,7 +624,12 @@ void CvPlayerAI::AI_doTurnUnitsPost()
 			}
 
 			if (!bValid)
+			{
+				++itUnit; // advc.131e
 				continue;
+			}
+			// advc.131e: One upgrade attempt per unit suffices
+			else itUnit = apUnitsByExp.erase(itUnit);
 
 			bool bKilled = false;
 			if (!bNoDisband)
@@ -609,7 +637,10 @@ void CvPlayerAI::AI_doTurnUnitsPost()
 				//if (pLoopUnit->canFight()) // BtS
 				// K-Mod - bug fix for the rare case of a barb city spawning on top of an animal
 				if (pLoopUnit->getUnitCombatType() != NO_UNITCOMBAT &&
-					!pLoopUnit->isFound()) // advc: Future-proof; from DoC.
+					!pLoopUnit->isFound() && // advc: Future-proof; from DoC.
+					/*	advc.131e: Will otherwise need to remove cargo from apUnitsByExp.
+						But probably a bad idea to scrap transports with cargo anyway. */
+					!pLoopUnit->hasCargo())
 				{
 					int iExp = pLoopUnit->getExperience();
 					CvCityAI const* pPlotCity = pLoopUnit->getPlot().AI_getPlotCity();

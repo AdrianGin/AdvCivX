@@ -419,9 +419,9 @@ void CvUnitAI::AI_upgrade()
 	if (!isReadyForUpgrade())
 		return;
 
-	const CvPlayerAI& kOwner = GET_PLAYER(getOwner());
-	UnitAITypes eUnitAI = AI_getUnitAIType();
-	CvArea* pArea = area();
+	CvPlayerAI const& kOwner = GET_PLAYER(getOwner());
+	UnitAITypes const eUnitAI = AI_getUnitAIType();
+	CvArea const* pArea = area();
 
 	int iBestValue = kOwner.AI_unitValue(getUnitType(), eUnitAI, pArea) * 100;
 	UnitTypes eBestUnit = NO_UNIT;
