@@ -5063,6 +5063,7 @@ void CvUnitAI::AI_greatPersonMove()
 	// 3) Attempt to carry out missions, starting with the highest value.
 
 	CvPlot* pBestPlot = NULL;
+	CvCity const* pBestCity = NULL; // advc.001 (from SAS)
 	SpecialistTypes eBestSpecialist = NO_SPECIALIST;
 	BuildingTypes eBestBuilding = NO_BUILDING;
 	int iBestValue = 1;
@@ -5093,6 +5094,9 @@ void CvUnitAI::AI_greatPersonMove()
 				{
 					iBestValue = iValue;
 					pBestPlot = &getPathEndTurnPlot();
+					// <advc.001> (from SAS)
+					pBestCity = pLoopCity;
+					iBestPathTurns = iPathTurns; // </advc.001>
 					eBestSpecialist = eLoopSpecialist;
 					eBestBuilding = NO_BUILDING;
 				}
@@ -5114,6 +5118,9 @@ void CvUnitAI::AI_greatPersonMove()
 				{
 					iBestValue = iValue;
 					pBestPlot = &getPathEndTurnPlot();
+					// <advc.001> (from SAS)
+					pBestCity = pLoopCity;
+					iBestPathTurns = iPathTurns; // </advc.001>
 					eBestBuilding = eBuilding;
 					eBestSpecialist = NO_SPECIALIST;
 				}
@@ -5158,6 +5165,7 @@ void CvUnitAI::AI_greatPersonMove()
 				{
 					iBestValue = iValue;
 					pBestPlot = &getPathEndTurnPlot();
+					pBestCity = pLoopCity; // advc.001 (from SAS)
 					iBestPathTurns = iPathTurns;
 					eBestBuilding = eBuilding;
 					eBestSpecialist = NO_SPECIALIST;
@@ -5413,7 +5421,9 @@ void CvUnitAI::AI_greatPersonMove()
 			}
 			if (eBestBuilding != NO_BUILDING)
 			{
-				MissionAITypes eMissionAI = canConstruct(pBestPlot, eBestBuilding) ? MISSIONAI_CONSTRUCT : MISSIONAI_HURRY;
+				MissionAITypes eMissionAI = canConstruct(
+						pBestCity->plot(), // advc.001: was pBestPlot
+						eBestBuilding) ? MISSIONAI_CONSTRUCT : MISSIONAI_HURRY;
 				if (gUnitLogLevel > 2) logBBAI("    %S %s 'build' (%S) with their %S (value: %d, choice #%d)", GET_PLAYER(getOwner()).getCivilizationDescription(0), AI_getGroup()->AI_getMissionAIType() == eMissionAI?"continues" :"chooses", GC.getInfo(eBestBuilding).getDescription(), getName(0).GetCString(), iSlowValue, iChoice);
 				if (at(*pBestPlot))
 				{
