@@ -24230,6 +24230,11 @@ int CvPlayerAI::AI_calculateCultureVictoryStage(
 				iVictoryCities, countdownList.end());
 		iWinningCountdown = countdownList[iVictoryCities-1];
 	}
+	{	// <advc.sas>
+		int iOwnVictoryCountdown = GET_TEAM(getTeam()).AI_getLowestVictoryCountdown();
+		if (iOwnVictoryCountdown >= 0 && iOwnVictoryCountdown < iWinningCountdown)
+			return 1; // </advc.sas>
+	}
 	if (iCloseToLegendaryCount >= iVictoryCities ||
 		//getCurrentEra() >= (GC.getNumEraInfos() - (2 + AI_getStrategyRand(1) % 2))
 		// K-Mod (note: this matches the above)
