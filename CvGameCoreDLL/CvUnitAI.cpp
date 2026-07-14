@@ -510,6 +510,15 @@ void CvUnitAI::AI_promote()
 	}
 }
 
+/*	advc.131e: The higher, the greater the priority. Can be negative when
+	a lot of XP will be lost. Most of the prioritization still happens in
+	CvPlayerAI::AI_doTurnUnitsPost; should perhaps move here. */
+scaled CvUnitAI::AI_upgradePriority() const
+{	/*	The post-upgrade XP with extra weight for the (normally non-positive)
+		change upon upgrading */
+	return getExperience() + fixp(1.6) * upgradeXPChange();
+}
+
 // <advc.003u>, advc.003s
 CvSelectionGroupAI const* CvUnitAI::AI_getGroup() const
 {

@@ -493,8 +493,8 @@ struct DescByExperience
 {
 	bool operator()(CvUnitAI const* pFirst, CvUnitAI const* pSecond) const
 	{
-		if (pFirst->getExperience() != pSecond->getExperience())
-			return pFirst->getExperience() > pSecond->getExperience();
+		if (pFirst->AI_upgradePriority() != pSecond->AI_upgradePriority())
+			return pFirst->AI_upgradePriority() > pSecond->AI_upgradePriority();
 		return pFirst->getID() < pSecond->getID(); // (mustn't let address break ties)
 	}
 };
