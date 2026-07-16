@@ -1180,12 +1180,14 @@
 
 	<!-- advc.156: When multiple members of a team are researching the same
 		 technology, their research modifiers are increased by this many
-		 percentage points. Recommended: -10 to penalize researching the same
-		 tech; use 0 for BtS behavior.
+		 percentage points. Recommended: 0 for BtS behavior. -10 for a moderate
+		 penalty when researching the same tech. Note, however, that
+		 human players can use a "binary research" scheme to bypass the
+		 penalty while still focusing their research on one tech at a time.
 		 Related: TECH_COST_EXTRA_TEAM_MEMBER_MODIFIER (50) -->
 	<Define>
 		<DefineName>RESEARCH_MODIFIER_EXTRA_TEAM_MEMBER</DefineName>
-		<iDefineIntVal>-10</iDefineIntVal>
+		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 
 	<!-- advc.082: If set to 1, hover text when about to attack says to
