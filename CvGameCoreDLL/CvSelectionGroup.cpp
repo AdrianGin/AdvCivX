@@ -1500,13 +1500,21 @@ bool CvSelectionGroup::continueMission_bulk(int iSteps)
 			break;
 
 		case MISSION_BUILD:
-			if(!groupBuild((BuildTypes)missionData.iData1,
-				!missionData.bModified)) // advc.011b
+		{
+			BuildTypes eBuild = (BuildTypes)missionData.iData1;
+			/*	<advc.001> (based on SAS) Routes may get built along the way to the
+				mission plot, but, if route-to or move-to fails and the mission plot
+				isn't reached, then any improvement build needs to be canceled. */
+			CvPlot const* pMissionAIPlot = AI().AI_getMissionAIPlot();
+			bool bCancel = (pMissionAIPlot != NULL && eBuild != NO_BUILD &&
+					GC.getInfo(eBuild).getRoute() == NO_ROUTE && !atPlot(pMissionAIPlot));
+			if (bCancel || // </advc.001>
+				!groupBuild(eBuild, /* advc.011b: */ !missionData.bModified))
 			{
 				bDone = true;
 			}
 			break;
-
+		}
 		default: FAssert(false);
 		}
 	}

@@ -61,7 +61,7 @@ protected:
 		that has been reverse-engineered to write this class. I don't think a
 		compatibility layer should make a difference. Large address awareness
 		has been tested both ways. It's unclear whether different builds exist
-		apart from the incompatible Steam version. Localized editions perhaps. 
+		apart from the (default) Steam version. Localized editions perhaps. 
 		So this hasn't really been tested; it's a better-than-nothing effort to
 		align a starting address at which a certain sequence of code bytes is
 		expected with the address, if any, at which the sequence is actually found.
@@ -72,7 +72,7 @@ protected:
 		byte* pNeedleBytes, int iNeedleBytes, uint uiExpectedStart,
 		/*	Shorter sequence to check for upfront, to save time.
 			If found at uiQuckTestStart, then an offset of 0 is returned
-			w/o checking pNeeldeBytes. */
+			w/o checking pNeedleBytes. */
 		byte* pQuickTestBytes = NULL, int iQuickTestBytes = 0, uint uiQuickTestStart = 0,
 		/*	How big an offset we contemplate. Not going to search the
 			entire virtual memory*/

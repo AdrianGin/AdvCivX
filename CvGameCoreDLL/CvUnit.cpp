@@ -3387,7 +3387,7 @@ void CvUnit::gift(bool bTestTransport)
 	CvEventReporter::getInstance().unitGifted(pGiftUnit, getOwner(), plot());
 }
 
-// advc: Renamed from canLoadUnit, params changed to references.
+// advc: Renamed from "canLoadUnit"
 bool CvUnit::canLoadOnto(CvUnit const& kUnit, CvPlot const& kPlot,
 	bool bCheckMoves) const // advc.123c
 {
@@ -6617,7 +6617,7 @@ int CvUnit::upgradePrice(UnitTypes eUnit) const
 	return std::max(0, iPrice); // advc.mnai: max (future-proofing)
 }
 
-// advc.080: Based on code cut from CvUnit::upgrade. The param is (so far) unused.
+// advc.080, 131e: Based on code cut from CvUnit::upgrade. The param is (so far) unused.
 int CvUnit::upgradeXPChange(UnitTypes eUnit) const
 {
 	if(getLeaderUnitType() != NO_UNIT)

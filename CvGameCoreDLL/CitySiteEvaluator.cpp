@@ -376,7 +376,7 @@ short AIFoundValue::evaluate()
 	int iInnerBadTiles = 0;
 	int iLandTiles = 0; // advc.031
 	// <advc.040>
-	bool bFirstColony = isPrioritizeAsFirstColony();
+	bFirstColony = isPrioritizeAsFirstColony();
 	IFLOG if(bFirstColony) logBBAI("First colony");
 	// Scope for countBadTiles return parameters
 	{

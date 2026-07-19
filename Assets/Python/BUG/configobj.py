@@ -1861,7 +1861,7 @@ class ConfigObj(Section):
         else:
             start = self._a_to_u(' ' * NUM_INDENT_SPACES)
         if not comment.startswith('#') and not comment.startswith(';'):
-            start += _a_to_u('# ')
+            start += self._a_to_u('# ') # advc.sas: was missing "self"
         return (start + comment)
 
     def _compute_indent_string(self, depth):
