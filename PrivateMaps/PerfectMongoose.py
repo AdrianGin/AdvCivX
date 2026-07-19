@@ -659,6 +659,8 @@ class MapConstants:
 		# advc: Deleted; can be looked up in-game in AdvCiv. And it's tedious to keep it up to date here.
 		#self.optionsString = 
 
+		#run_smooth_tests() # advc.test
+
 
 mc = MapConstants()
 
@@ -1167,6 +1169,7 @@ class FloatMap:
 
 
 	def GetAverageInHex(self, x, y, radius):
+		'''
 		# advc.oxi: Was getCirclePoints
 		list = pb.getFilledCirclePoints(x, y, radius)
 		avg = 0.0
@@ -1184,6 +1187,53 @@ class FloatMap:
 			return 0.0
 		#avg = avg / len(list)
 		avg /= count # </advc.oxi>
+		return avg
+		'''
+		# advc.opt: The above is too slow. Expanding the function calls
+		# allows the bulk of the overhead to be eliminated. I've mostly let an
+		# LLM perform this task.
+
+		# (The LLM insists that these are nonnegligible optimizations in Python 2.4.)
+		width = self.width
+		height = self.height
+		data = self.data
+		wrapX = self.wrapX
+		wrapY = self.wrapY
+		r2 = radius * radius
+		avg = 0.0
+		count = 0
+		for dy in range(-radius, radius + 1):
+			yy = y + dy
+			# Handle boundary like GetIndex, but only once per dy.
+			if wrapY:
+				if yy < 0 or yy > height - 1:
+					yy_idx = yy % height
+				else:
+					yy_idx = yy
+				base = yy_idx * width
+			else:
+				if yy < 0 or yy > height - 1:
+					continue
+				else:
+					base = yy * width
+			dx = int(math.sqrt(r2 - dy * dy))
+			for xx in range(x - dx, x + dx + 1):
+				if wrapX:
+					if xx < 0 or xx > width - 1:
+						xx_idx = xx % width
+					else:
+						xx_idx = xx
+					i = base + xx_idx
+				else:
+					if xx < 0 or xx > width - 1:
+						continue
+					i = base + xx
+				count += 1
+				avg += data[i]
+
+		if count == 0:
+			return 0.0
+		avg /= count
 		return avg
 
 	# advc.oxi: Similar changes as in GetAverageInHex
@@ -1214,7 +1264,8 @@ class FloatMap:
 
 
 	def Smooth(self, radius):
-		dataCopy = {}
+		#dataCopy = {}
+		dataCopy = [0.0] * len(self.data) # advc.opt
 		for y in range(self.height):
 			for x in range(self.width):
 				i = self.GetIndex(x, y)
@@ -1224,7 +1275,8 @@ class FloatMap:
 
 
 	def Deviate(self, radius):
-		dataCopy = {}
+		#dataCopy = {}
+		dataCopy = [0.0] * len(self.data) # advc.opt
 		for y in range(self.height):
 			for x in range(self.width):
 				i = self.GetIndex(x, y)
@@ -1239,6 +1291,75 @@ class FloatMap:
 			return False
 		return True
 
+# advc: Tests for FloatMap.Smooth. I chose all the test data; the test code is LLM-generated.
+def set_grid_from_rows(map_obj, rows):
+	h = len(rows)
+	w = len(rows[0])
+	for y in range(h):
+		for x in range(w):
+			map_obj.data[y * w + x] = float(rows[y][x])
+def almost_equal(a, b, eps=1e-9):
+	return abs(a - b) <= eps
+def run_smooth_tests():
+	grid_rows = [
+		[1,  3,  2,  5],
+		[0,  6,  2, -3],
+		[10, -2,  4,  3],
+	]
+	width = len(grid_rows[0])
+	height = len(grid_rows)
+	tests = [ # (expectation at a few coordinates after smoothing)
+		# radius 0, (no horizontal wrap, no vertical wrap)
+		(False, False, 0, {
+			(0,1): 0,
+			(0,2): 10,
+			(3,2): 3,
+		}),
+		(False, False, 1, {
+			(0,0): 4/3.0,
+			(1,1): 1.8,
+			(2,2): 1.75,
+			(3,0): 4/3.0,
+		}),
+		(True, False, 1, {
+			(0,0): 2.25,
+			(1,1): 1.8,
+			(3,1): 1.4,
+			(0,2): 2.75,
+		}),
+		(True, True, 1, {
+			(0,0): 3.8,
+			(2,1): 2.2,
+			(1,2): 4.2,
+			(3,0): 1.6,
+		}),
+		(False, False, 2, {
+			(0,0): 22/6.0,
+			(0,1): 20/7.0,
+		}),
+		(False, False, 4, {
+			(1,1): 31/12.0, # mean of all plots
+		}),
+		(False, True, 3, {
+			(1,1): 74/26.0, # lots of double counting due to wrap-around
+		}),
+	]
+	for wrapX, wrapY, radius, expected_map in tests:
+		m = FloatMap()
+		m.initialize(width, height, wrapX, wrapY)
+		set_grid_from_rows(m, grid_rows)
+		m.Smooth(radius)
+		for (x, y), want in expected_map.items():
+			i = y * width + x
+			got = m.data[i]
+			if not almost_equal(got, want):
+				print("FAIL:",
+				      "wrapX=%s wrapY=%s radius=%d at (x,y)=(%d,%d)" % (wrapX, wrapY, radius, x, y))
+				print("  got     =", got)
+				print("  expected=", want)
+				return
+		print("PASS:", "wrapX=%s wrapY=%s radius=%d" % (wrapX, wrapY, radius))
+	print("All Smooth tests passed.")
 
 ##############################################################################
 ## PW3 Interpolation and Perlin
@@ -2237,7 +2358,9 @@ class ClimateMap3:
 					tempMap.data[i] = waterTemp
 				else:
 					tempMap.data[i] = latTemp
-		tempMap.Smooth(int(math.floor(em.width / 8.0)))
+		# advc: Was floor(em.width / 8.0). That's computationally expensive, and
+		# a smoothing diameter of a quarter of the equator seems enormous.
+		tempMap.Smooth(int(math.ceil(em.width / 18.0)))
 		tempMap.Normalize()
 
 
