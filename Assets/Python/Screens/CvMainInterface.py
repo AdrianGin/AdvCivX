@@ -2424,7 +2424,10 @@ class CvMainInterface:
 				gAlignedScoreboard.hide(screen, True)
 			CyInterface().setDirty(InterfaceDirtyBits.ScoreHelp_DIRTY_BIT, False)
 		# </advc.085>
-		if (CyInterface().isDirty(InterfaceDirtyBits.GlobeInfo_DIRTY_BIT) == True):
+		if (CyInterface().isDirty(InterfaceDirtyBits.GlobeInfo_DIRTY_BIT) == True
+				# advc.004z: Need to determine whether there are options to show
+				# even if GlobeInfo hasn't changed. And hide the scores accordingly.
+				or (bScoreStringsUpdated and CyEngine().isGlobeviewUp())):
 			# Globeview and Globelayer buttons
 			CyInterface().setDirty(InterfaceDirtyBits.GlobeInfo_DIRTY_BIT, False)
 			#self.updateGlobeviewButtons()
