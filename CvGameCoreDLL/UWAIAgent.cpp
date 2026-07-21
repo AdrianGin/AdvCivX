@@ -1983,6 +1983,21 @@ int UWAI::Team::endWarVal(TeamTypes eEnemy) const
 						r = iMaxHumanCanPay;
 					}
 				}
+				// Demand more if they have a lot. Also to avoid asking for a pittance.
+				else if (r > 0)
+				{
+					scaled const rMaxExtraMult = fixp(1.5);
+					scaled const rAssetsImpact = fixp(0.25);
+					// Recompute because earlier calculation had stopped at the current r
+					kAI.uwai().leaderUWAI().canTradeAssets(
+							(r * rMaxExtraMult / rAssetsImpact).ceil(),
+							kHuman.getLeaderID(), &iMaxHumanCanPay, true);
+					if (iMaxHumanCanPay > r)
+					{
+						r *= 1 + scaled::min(rMaxExtraMult,
+								rAssetsImpact * iMaxHumanCanPay / r);
+					}
+				}
 			}
 		}
 	}
@@ -2633,9 +2648,7 @@ bool UWAI::Player::isPeaceDealPossible(PlayerTypes eHuman) const
 
 
 bool UWAI::Player::canTradeAssets(int iTargetTradeVal, PlayerTypes eHuman,
-	int* piAvailableTradeVal,
-	// (advc.ctr: Now unused b/c the AI will always accept cities as payment)
-	bool bIgnoreCities) const
+	int* piAvailableTradeVal, bool bIgnoreCities) const
 {
 	if (piAvailableTradeVal != NULL)
 		*piAvailableTradeVal = iTargetTradeVal;
