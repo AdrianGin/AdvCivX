@@ -1167,7 +1167,7 @@ class FloatMap:
 		for i in range(self.length):
 			self.data[i] = func(self.data[i])
 
-
+	# advc.opt: Now only used by Smooth_Legacy, i.e. normally unused.
 	def GetAverageInHex(self, x, y, radius):
 		'''
 		# advc.oxi: Was getCirclePoints
@@ -1189,7 +1189,7 @@ class FloatMap:
 		avg /= count # </advc.oxi>
 		return avg
 		'''
-		# advc.opt: The above is too slow. Expanding the function calls
+		# advc.opt: The above was too slow. Expanding the function calls
 		# allows the bulk of the overhead to be eliminated. I've mostly let an
 		# LLM perform this task.
 
@@ -1277,7 +1277,7 @@ class FloatMap:
 	# that just the same results as before are produced (see commented out
 	# test code at the call location and also run_smooth_tests). And, if there's
 	# a problem, one can always go back to the version above, which, for the
-	# now halved radii, is just a few seconds slower.
+	# current radius, is just a few seconds slower.
 	def Smooth(self, radius):
 		width = self.width
 		height = self.height
