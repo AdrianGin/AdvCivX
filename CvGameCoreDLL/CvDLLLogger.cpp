@@ -21,8 +21,10 @@ void CvDLLLogger::logRandomNumber(const TCHAR* szMsg, unsigned short usNum,
 	CvString const* pszFileName) // advc.007b
 {
 	FAssert(isEnabledRand()); // Caller should handle this, for performance reasons.
-	if (szMsg == NULL)
-		return;
+	if (szMsg == NULL) {
+		szMsg = "NULL RAND";
+	}
+	
 	int const iTurnSlice = GC.getGame().getTurnSlice();
 	if (iTurnSlice <= 0)
 		return;

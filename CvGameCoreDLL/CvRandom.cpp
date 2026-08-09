@@ -7,21 +7,32 @@
 #define RANDOM_C      (12345)
 #define RANDOM_SHIFT  (16)
 
+static int instanceCount = 0;
+
 unsigned short CvRandom::getInt(unsigned short usNum, TCHAR const* szLog,
 	int iData1, int iData2) // advc.001n
-{	// <advc.003t>
-	if (GC.getLogger().isEnabledRand() && szLog != NULL)
-		printToLog(szLog, usNum, iData1, iData2); // </advc.003t>
+{
 	m_uiRandomSeed = (RANDOM_A * m_uiRandomSeed) + RANDOM_C;
 	unsigned short r = (unsigned short)
 			((((m_uiRandomSeed >> RANDOM_SHIFT) & MAX_UNSIGNED_SHORT) *
 			((unsigned int)usNum)) / (MAX_UNSIGNED_SHORT + 1));
+
+		// <advc.003t>
+	if (GC.getLogger().isEnabledRand() && szLog != NULL)
+		printToLog(szLog, r, iData1, iData2); // </advc.003t>
+
+	if( szLog == NULL ) {
+		printToLog("NULL RAND?", r, iData1, iData2); // </advc.003t>
+	}
+
 	return r;
 }
 
 
 CvRandom::CvRandom()
 {
+	m_instanceNum = instanceCount;
+	instanceCount++;
 	reset();
 }
 
@@ -37,6 +48,7 @@ void CvRandom::init(unsigned long ulSeed)
 // Initializes data members that are serialized
 void CvRandom::reset(unsigned int uiSeed)
 {
+	//GC.getLogger().logRandomNumber("RESEED", 0, uiSeed, m_uiRandomSeed, m_instanceNum);
 	m_uiRandomSeed = uiSeed;
 }
 
@@ -106,14 +118,18 @@ void CvRandom::shuffle(std::vector<int>& aiIndices)
 void CvRandom::printToLog(TCHAR const* szMsg, unsigned short usNum,
 	int iData1, int iData2) // advc.001n
 {	// advc.003t:
-	GC.getLogger().logRandomNumber(szMsg, usNum, m_uiRandomSeed, iData1, iData2);
+	TCHAR newMsg[200];
+	sprintf(newMsg, "%s I:%d", szMsg, m_instanceNum);
+	GC.getLogger().logRandomNumber(newMsg, usNum, m_uiRandomSeed, iData1, iData2);
 }
 
 
 void CvRandomExtended::printToLog(TCHAR const* szMsg, unsigned short usNum,
 	int iData1, int iData2) // advc.001n
 {
-	GC.getLogger().logRandomNumber(szMsg, usNum, m_uiRandomSeed, iData1, iData2,
+	TCHAR newMsg[200];
+	sprintf(newMsg, "%s EI:%d", szMsg, m_instanceNum);
+	GC.getLogger().logRandomNumber(newMsg, usNum, m_uiRandomSeed, iData1, iData2,
 			&m_szFileName);
 }
 

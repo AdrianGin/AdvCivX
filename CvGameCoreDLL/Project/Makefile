@@ -54,7 +54,7 @@
 # Note: $(PROGRAMFILES) converts to "C:\Program Files", "C:\Program Files (x86)" or whatever fits your system.
 # run "nmake.exe /P" in cmd.exe to see what it is on your system
 #
-#TOOLKIT=$(PROGRAMFILES)\Microsoft Visual C++ Toolkit 2003
+#TOOLKIT="D:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64"
 #PSDK=$(PROGRAMFILES)\Microsoft SDKs\Windows\v7.0A
 #
 ## Civ install path
@@ -65,7 +65,7 @@
 #
 ## Optional:
 # To have newly compiled dlls copied to your mod's Assets directory
-#YOURMOD=..
+YOURMOD=D:\Civ4\Beyond the Sword\Mods\AdvCiv
 # When the same DLL is used for a second mod
 #YOURMOD2=$(PROGRAMFILES)\Sid Meier's Civilization 4\Beyond the Sword\Mods\ModName
 # To have logs deleted after compilation
@@ -102,16 +102,14 @@ TEMP_FILE_DIR = temp_files
 CUSTOM_CFLAGS  =
 CUSTOM_LDFLAGS =
 
-
-
 !IF [IF NOT EXIST Makefile.user EXIT 1] != 0
 !IF [ECHO CUSTOM_CFLAGS = > Makefile.user]
 !ENDIF
 !ENDIF
 !include Makefile.user
 
-PRECOMPILE_DEPENDENCIES =
-PROJECT_CFLAGS =
+PRECOMPILE_DEPENDENCIES = 
+PROJECT_CFLAGS = 
 PROJECT_Debug_CFLAGS =
 PROJECT_DebugOpt_CFLAGS =
 PROJECT_Profile_CFLAGS =
@@ -214,7 +212,7 @@ GLOBAL_INCS=/I"$(TOOLKIT)/include" /I"$(PSDK)/Include" /I"$(PSDK)/Include/mfc"
 
 #### boost and python ####
 
-BOOST_LIB_PATH =
+BOOST_LIB_PATH = 
 !IF [IF NOT EXIST "$(BOOST_LIB_PATH)Boost-1.32.0\libs\boost_python-vc71-mt-gd-1_32.lib" EXIT 1] != 0
 BOOST_LIB_PATH = $(SOURCE_DIR)
 !IF [IF NOT EXIST "$(BOOST_LIB_PATH)Boost-1.32.0\libs\boost_python-vc71-mt-gd-1_32.lib" EXIT 1] != 0
@@ -296,6 +294,7 @@ $(Target_BIN): $(Target_BIN_TEMP)
 build: $(Target_BIN)
 !IFDEF YOURMOD
 	-COPY "$(Target_BIN)" "$(YOURMOD)\Assets\."
+	-COPY "$(Target_PDB)" "$(YOURMOD)\Assets\."
 !ENDIF
 !IFDEF YOURMOD2
 	-COPY "$(Target_BIN)" "$(YOURMOD2)\Assets\."
