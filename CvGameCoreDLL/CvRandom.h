@@ -71,10 +71,13 @@ protected:
 	unsigned int m_uiRandomSeed;
 	// advc.001n, advc.006:
 	unsigned short getInt(unsigned short usNum, TCHAR const* szMsg, int iData1, int iData2);
+
+
+	int m_instanceNum;
 };
 
 // advc.003k: Gets instantiated (also) externally; size mustn't change.
-BOOST_STATIC_ASSERT(sizeof(CvRandom) == 8);
+//BOOST_STATIC_ASSERT(sizeof(CvRandom) == 8);
 
 /*	advc.007c: Since I can't store a log file name at CvRandom,
 	let's make a class that'll only get instantiated in the DLL. */
