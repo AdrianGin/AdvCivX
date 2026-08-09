@@ -1,0 +1,32 @@
+name: Continuous Integration
+https://github.com/dguenms/beyond-the-sword-sdk/releases/download/v1.0/
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v7
+
+      - name: Download Civ4 SDK & Build Tools
+        run: |
+          curl.exe -sSL -o sdk.zip "https://github.com/placeholder.zip"
+          7z x sdk.zip -oC:\Civ4SDK
+        shell: powershell
+
+      - name: Compile CvGameCoreDLL
+        run: |
+          $env:TOOLKIT="C:\Civ4SDK\Microsoft Visual C++ Toolkit 2003"
+          $env:PSDK="C:\Civ4SDK\Microsoft SDKs\Windows\v7.0A"
+          $env:CIV4_LIB_INSTALL_PATH="C:\Civ4SDK"
+
+          # Prepend VC 2003 binary directory to PATH so nmake & cl use VC 2003
+          $env:Path = "$env:TOOLKIT\bin;$env:PSDK\bin;$env:Path"
+          cd VcGameCoreDLL
+          nmake Final_Release
+        shell: powershell
