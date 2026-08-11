@@ -181,7 +181,6 @@ target_compile_options(CvGameCoreDLL PRIVATE
     $<$<CONFIG:Final_Release>:/O2 /G7 /arch:SSE2 /GL>
 )
 
-#set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "/debug /INCREMENTAL:YES")
 #### Link flags ####
 target_link_options(CvGameCoreDLL PRIVATE
     /NOLOGO /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /TLBID:1
@@ -192,7 +191,6 @@ target_link_options(CvGameCoreDLL PRIVATE
     $<$<CONFIG:Profile>:/INCREMENTAL /DEBUG>
     $<$<CONFIG:Final_Release>:/LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF>
 )
-
 
 
 #### Post-build steps (equivalent to the "build:" target) ####
