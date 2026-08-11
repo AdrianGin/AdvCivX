@@ -48,7 +48,6 @@
 ##     You can write whatever you want after -D and it will work like you write #DEFINE in C++
 ## 
 
-
 #### Paths ####
 # Note: Edit Makefile.user instead and add it to .gitignore
 # Note: $(PROGRAMFILES) converts to "C:\Program Files", "C:\Program Files (x86)" or whatever fits your system.
@@ -333,7 +332,7 @@ Target_unfinished:
 
 $(Target_BIN_TEMP): $(OBJS) $(Target_RESOURCE)
 	@ECHO.Linking DLL
-	@$(LD) /out:$(Target_BIN_TEMP) $(LDFLAGS) $(LIBS) $(OBJS) $(Target_RESOURCE)
+	@$(LD) /out:$(Target_BIN_TEMP) $(LDFLAGS) $(LIBS) $(OBJS)
 
 {$(SOURCE_DIR)\.}.cpp{$(TEMP_TARGET_FILES)\.}.obj:
 	@ECHO.>"$*.obj.@"

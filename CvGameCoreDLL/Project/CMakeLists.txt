@@ -29,7 +29,7 @@ set(CMAKE_RC_COMPILER "${PSDK}/bin/rc.exe" CACHE FILEPATH "" FORCE)
 set(CMAKE_NINJA_CMCLDEPS_RC OFF)
 
 
-project(CvGameCoreDLL CXX RC)
+project(CvGameCoreDLL)
 
 if(NOT MSVC)
     message(FATAL_ERROR "This project only supports the MSVC toolchain (matches the original NMAKE build).")
@@ -66,8 +66,6 @@ set(BOOST_LIB_PATH "${SOURCE_DIR}/Boost-1.32.0")
 file(GLOB CVGAMECORE_SOURCES CONFIGURE_DEPENDS "${SOURCE_DIR}/*.cpp")
 list(FILTER CVGAMECORE_SOURCES EXCLUDE REGEX ".*/_precompile\\.cpp$")
 
-message(STATUS "SOURCE: ${CVGAMECORE_SOURCES}")
-
 if(BLACKLIST)
     list(FILTER CVGAMECORE_SOURCES EXCLUDE REGEX ".*/${BLACKLIST}\\.cpp$")
 endif()
@@ -91,33 +89,37 @@ if(BLACKLIST)
 endif()
 
 
-set(CMAKE_CXX_FLAGS "/DWIN32 /DWINDOWS")
+set(CMAKE_CXX_FLAGS "")
 set(CMAKE_CXX_FLAGS_DEBUG "")
 set(CMAKE_CXX_FLAGS_RELEASE "" )
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")
 set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "")
 
+
+
 set_target_properties(CvGameCoreDLL PROPERTIES
     OUTPUT_NAME "CvGameCoreDLL"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>"
-    #COMPILE_PDB_NAME "CvGameCoreDLL"
-    #PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>"
+    COMPILE_PDB_NAME "${CMAKE_BINARY_DIR}/$<CONFIG>/CvGameCoreDLL"
+    COMPILE_PDB_OUTPUT_DIRECTORY ""
 )
-
 
 #### Precompiled header (CvGameCoreDLL.h via _precompile.cpp) ####
 if(EXISTS "${CVGAMECORE_PRECOMPILE_SOURCE}")
+    set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
     set(TARGET_PCH CvGameCoreDLL.pch)
+    set(PRE_COMPILE_FLAGS /YuCvGameCoreDLL.h /YcCvGameCoreDLL.h /Fp${CMAKE_BINARY_DIR}/$<CONFIG>/${TARGET_PCH})
+
     add_library(${TARGET_PCH} OBJECT ${CVGAMECORE_PRECOMPILE_SOURCE})
     target_compile_options(${TARGET_PCH} PRIVATE
-            /YcCvGameCoreDLL.h
-            /D_USRDLL
-            /Fp${TARGET_PCH}
+            /Od /RTC1 /DWIN32 /D_WINDOWS /D_USRDLL /D_DEBUG /MD /GR /Gy /EHsc /Gd /Gm- /WX /W4 /Ob1 /Z7  ${PRE_COMPILE_FLAGS}
     )
+
     set_target_properties(${TARGET_PCH} PROPERTIES
-            COMPILE_PDB_NAME ${TARGET_PCH}
-            COMPILE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-    )
+            COMPILE_PDB_NAME "${CMAKE_BINARY_DIR}/$<CONFIG>/CvGameCoreDLL")
+
+    set_target_properties(${TARGET_PCH} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DLL>")
+
+
     target_include_directories(${TARGET_PCH} PRIVATE
             "${TOOLKIT}/include"
             "${PSDK}/include"
@@ -126,6 +128,7 @@ if(EXISTS "${CVGAMECORE_PRECOMPILE_SOURCE}")
             "C:/Program Files (x86)/Microsoft Visual Studio 10.0/VC/include"
     )
     #target_precompile_headers(CvGameCoreDLL PRIVATE "${SOURCE_DIR}/CvGameCoreDLL.h")
+    add_dependencies(CvGameCoreDLL ${TARGET_PCH})
 endif()
 
 #### Includes (GLOBAL_INCS + PROJECT_INCS) ####
@@ -142,11 +145,12 @@ target_include_directories(CvGameCoreDLL PRIVATE
 #### Libraries (GLOBAL_LIBS + PROJECT_LIBS) ####
 target_link_directories(CvGameCoreDLL PRIVATE
     "${SOURCE_DIR}/Python24/libs"
-    "${SOURCE_DIR}/Boost-1.32.0/libs/"
+    "${SOURCE_DIR}/Boost-1.32.0/libs"
     "${TOOLKIT}/lib/"
-        "${PSDK}/lib"
+    "${PSDK}/lib"
 )
 
+set(CMAKE_CXX_STANDARD_LIBRARIES "" CACHE INTERNAL "")
 
 target_link_libraries(CvGameCoreDLL PRIVATE
     boost_python-vc71-mt-1_32.lib
@@ -156,8 +160,9 @@ target_link_libraries(CvGameCoreDLL PRIVATE
 
 #### Global compile flags (GLOBAL_CFLAGS) ####
 target_compile_options(CvGameCoreDLL PRIVATE
-    /Ob1 /Z7 /D_USRDLL /GR /Gy /EHsc /Gd /Gm- /WX /W4 /Yu"CvGameCoreDLL.h" /Fp"CvGameCoreDLL.pch"
+        /DWIN32 /D_WINDOWS /Ob1 /Z7 /D_USRDLL /GR /Gy /EHsc /Gd /Gm- /WX /W4 /YuCvGameCoreDLL.h /Fp${CMAKE_BINARY_DIR}/$<CONFIG>/${TARGET_PCH}
 )
+
 
 #### Per-configuration defines and flags ####
 target_compile_definitions(CvGameCoreDLL PRIVATE
@@ -168,13 +173,12 @@ target_compile_definitions(CvGameCoreDLL PRIVATE
     $<$<CONFIG:Final_Release>:NDEBUG>
 )
 
-set_target_properties(CvGameCoreDLL PROPERTIES
-        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
+set_target_properties(CvGameCoreDLL PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DLL>")
 
 
 target_compile_options(CvGameCoreDLL PRIVATE
     # Debug_opt: an almost-Release build, still with debug info
-    $<$<CONFIG:Debug>:/Od /G7 /Z7 /RTC1>
+    $<$<CONFIG:Debug>:/Od /Z7 /RTC1>
     $<$<CONFIG:Debug_opt>:/O2 /G7 /arch:SSE2 /Z7>
     # Release: optimized, no debug info
     $<$<CONFIG:Release>:/O2 /G7 /arch:SSE2>
@@ -188,7 +192,7 @@ target_compile_options(CvGameCoreDLL PRIVATE
 #### Link flags ####
 target_link_options(CvGameCoreDLL PRIVATE
     /NOLOGO /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /TLBID:1
-    ${CUSTOM_LDFLAGS}
+    ${CUSTOM_LDFLAGS} $<TARGET_OBJECTS:${TARGET_PCH}> /DEF:${CMAKE_SOURCE_DIR}/CvGameCoreDLL.def
     $<$<CONFIG:Debug>:/INCREMENTAL /DEBUG>
     $<$<CONFIG:Debug_opt>:/INCREMENTAL /DEBUG>
     $<$<CONFIG:Release>:/INCREMENTAL:NO /OPT:REF /OPT:ICF>
@@ -202,6 +206,11 @@ target_link_libraries(CvGameCoreDLL PRIVATE
     $<$<CONFIG:Debug>:msvcprt.lib>
     $<$<CONFIG:Debug_opt>:msvcprt.lib>
 )
+
+if(MSVC)
+    string(REPLACE "/TP" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    string(REPLACE "/TP" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+endif()
 
 #### Post-build steps (equivalent to the "build:" target) ####
 if(YOURMOD)
