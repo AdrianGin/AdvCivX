@@ -29,7 +29,7 @@ set(CMAKE_RC_COMPILER "${PSDK}/bin/rc.exe" CACHE FILEPATH "" FORCE)
 set(CMAKE_NINJA_CMCLDEPS_RC OFF)
 
 
-project(CvGameCoreDLL)
+project(CvGameCoreDLL CXX RC)
 
 if(NOT MSVC)
     message(FATAL_ERROR "This project only supports the MSVC toolchain (matches the original NMAKE build).")
@@ -74,7 +74,8 @@ set(CVGAMECORE_PRECOMPILE_SOURCE "${SOURCE_DIR}/_precompile.cpp")
 
 add_library(CvGameCoreDLL SHARED ${CVGAMECORE_SOURCES})
 
-if(EXISTS "${SOURCE_DIR}/CvGameCoreDLL.rc")
+if(EXISTS "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
+
     target_sources(CvGameCoreDLL PRIVATE "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
     # Original only wires the .rc into the Final_Release link; RC compiles
     # cheaply for the others too, so it's left enabled for all configs here.
@@ -105,30 +106,9 @@ set_target_properties(CvGameCoreDLL PROPERTIES
 
 #### Precompiled header (CvGameCoreDLL.h via _precompile.cpp) ####
 if(EXISTS "${CVGAMECORE_PRECOMPILE_SOURCE}")
-    set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
-    set(TARGET_PCH CvGameCoreDLL.pch)
-    set(PRE_COMPILE_FLAGS /YuCvGameCoreDLL.h /YcCvGameCoreDLL.h /Fp${CMAKE_BINARY_DIR}/$<CONFIG>/${TARGET_PCH})
 
-    add_library(${TARGET_PCH} OBJECT ${CVGAMECORE_PRECOMPILE_SOURCE})
-    target_compile_options(${TARGET_PCH} PRIVATE
-            /Od /RTC1 /DWIN32 /D_WINDOWS /D_USRDLL /D_DEBUG /MD /GR /Gy /EHsc /Gd /Gm- /WX /W4 /Ob1 /Z7  ${PRE_COMPILE_FLAGS}
-    )
-
-    set_target_properties(${TARGET_PCH} PROPERTIES
-            COMPILE_PDB_NAME "${CMAKE_BINARY_DIR}/$<CONFIG>/CvGameCoreDLL")
-
-    set_target_properties(${TARGET_PCH} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DLL>")
-
-
-    target_include_directories(${TARGET_PCH} PRIVATE
-            "${TOOLKIT}/include"
-            "${PSDK}/include"
-            "${SOURCE_DIR}/Boost-1.32.0/include"
-            "${SOURCE_DIR}/Python24/include"
-            "C:/Program Files (x86)/Microsoft Visual Studio 10.0/VC/include"
-    )
-    #target_precompile_headers(CvGameCoreDLL PRIVATE "${SOURCE_DIR}/CvGameCoreDLL.h")
-    add_dependencies(CvGameCoreDLL ${TARGET_PCH})
+    target_precompile_headers(CvGameCoreDLL PRIVATE "${SOURCE_DIR}/CvGameCoreDLL.h")
+    #add_dependencies(CvGameCoreDLL ${TARGET_PCH})
 endif()
 
 #### Includes (GLOBAL_INCS + PROJECT_INCS) ####
@@ -138,7 +118,7 @@ target_include_directories(CvGameCoreDLL PRIVATE
     "${TOOLKIT}/include"
     "${PSDK}/Include"
     "${PSDK}/Include/mfc"
-    "C:/Program Files (x86)/Microsoft Visual Studio 10.0/VC/include"
+    #"C:/Program Files (x86)/Microsoft Visual Studio 10.0/VC/include"
 )
 
 
@@ -160,7 +140,7 @@ target_link_libraries(CvGameCoreDLL PRIVATE
 
 #### Global compile flags (GLOBAL_CFLAGS) ####
 target_compile_options(CvGameCoreDLL PRIVATE
-        /DWIN32 /D_WINDOWS /Ob1 /Z7 /D_USRDLL /GR /Gy /EHsc /Gd /Gm- /WX /W4 /YuCvGameCoreDLL.h /Fp${CMAKE_BINARY_DIR}/$<CONFIG>/${TARGET_PCH}
+        /DWIN32 /D_WINDOWS /Ob1 /Z7 /D_USRDLL /GR /Gy /EHsc /Gd /Gm- /WX /W4
 )
 
 
@@ -192,7 +172,7 @@ target_compile_options(CvGameCoreDLL PRIVATE
 #### Link flags ####
 target_link_options(CvGameCoreDLL PRIVATE
     /NOLOGO /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /TLBID:1
-    ${CUSTOM_LDFLAGS} $<TARGET_OBJECTS:${TARGET_PCH}> /DEF:${CMAKE_SOURCE_DIR}/CvGameCoreDLL.def
+    ${CUSTOM_LDFLAGS} /DEF:${CMAKE_SOURCE_DIR}/CvGameCoreDLL.def
     $<$<CONFIG:Debug>:/INCREMENTAL /DEBUG>
     $<$<CONFIG:Debug_opt>:/INCREMENTAL /DEBUG>
     $<$<CONFIG:Release>:/INCREMENTAL:NO /OPT:REF /OPT:ICF>
