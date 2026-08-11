@@ -91,14 +91,19 @@ if(BLACKLIST)
 endif()
 
 
-
+set(CMAKE_CXX_FLAGS "/DWIN32 /DWINDOWS")
+set(CMAKE_CXX_FLAGS_DEBUG "")
+set(CMAKE_CXX_FLAGS_RELEASE "" )
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")
+set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "")
 
 set_target_properties(CvGameCoreDLL PROPERTIES
     OUTPUT_NAME "CvGameCoreDLL"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>"
-    PDB_NAME "CvGameCoreDLL"
-    PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>"
+    #COMPILE_PDB_NAME "CvGameCoreDLL"
+    #PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>"
 )
+
 
 #### Precompiled header (CvGameCoreDLL.h via _precompile.cpp) ####
 if(EXISTS "${CVGAMECORE_PRECOMPILE_SOURCE}")
@@ -120,7 +125,7 @@ if(EXISTS "${CVGAMECORE_PRECOMPILE_SOURCE}")
             "${SOURCE_DIR}/Python24/include"
             "C:/Program Files (x86)/Microsoft Visual Studio 10.0/VC/include"
     )
-    target_precompile_headers(CvGameCoreDLL PRIVATE "${SOURCE_DIR}/CvGameCoreDLL.h")
+    #target_precompile_headers(CvGameCoreDLL PRIVATE "${SOURCE_DIR}/CvGameCoreDLL.h")
 endif()
 
 #### Includes (GLOBAL_INCS + PROJECT_INCS) ####
@@ -147,13 +152,11 @@ target_link_libraries(CvGameCoreDLL PRIVATE
     boost_python-vc71-mt-1_32.lib
     winmm.lib
     user32.lib
-    msvcprt.lib
 )
 
 #### Global compile flags (GLOBAL_CFLAGS) ####
 target_compile_options(CvGameCoreDLL PRIVATE
-    /D_USRDLL /GR /Gy /EHsc /Gd /Gm- /WX /W4
-    ${CUSTOM_CFLAGS}
+    /Ob1 /Z7 /D_USRDLL /GR /Gy /EHsc /Gd /Gm- /WX /W4 /Yu"CvGameCoreDLL.h" /Fp"CvGameCoreDLL.pch"
 )
 
 #### Per-configuration defines and flags ####
@@ -166,12 +169,12 @@ target_compile_definitions(CvGameCoreDLL PRIVATE
 )
 
 set_target_properties(CvGameCoreDLL PROPERTIES
-        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DLL>")
+        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
 
-set(CMAKE_CXX_FLAGS_DEBUG "/nologo /Od /RTC1 /DWIN32 /D_WINDOWS /D_USRDLL /D_DEBUG /MD /GR /Gy /EHsc /Gd /Gm-")
 
 target_compile_options(CvGameCoreDLL PRIVATE
     # Debug_opt: an almost-Release build, still with debug info
+    $<$<CONFIG:Debug>:/Od /G7 /Z7 /RTC1>
     $<$<CONFIG:Debug_opt>:/O2 /G7 /arch:SSE2 /Z7>
     # Release: optimized, no debug info
     $<$<CONFIG:Release>:/O2 /G7 /arch:SSE2>
@@ -181,6 +184,7 @@ target_compile_options(CvGameCoreDLL PRIVATE
     $<$<CONFIG:Final_Release>:/O2 /G7 /arch:SSE2 /GL>
 )
 
+#set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "/debug /INCREMENTAL:NO")
 #### Link flags ####
 target_link_options(CvGameCoreDLL PRIVATE
     /NOLOGO /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /TLBID:1
@@ -192,6 +196,12 @@ target_link_options(CvGameCoreDLL PRIVATE
     $<$<CONFIG:Final_Release>:/LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF>
 )
 
+# msvcprt.lib is added explicitly for Debug / Debug_opt, matching the
+# original LIBS override for those two targets.
+target_link_libraries(CvGameCoreDLL PRIVATE
+    $<$<CONFIG:Debug>:msvcprt.lib>
+    $<$<CONFIG:Debug_opt>:msvcprt.lib>
+)
 
 #### Post-build steps (equivalent to the "build:" target) ####
 if(YOURMOD)
