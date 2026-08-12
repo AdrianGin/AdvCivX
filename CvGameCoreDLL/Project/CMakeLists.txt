@@ -76,10 +76,7 @@ set(CVGAMECORE_PRECOMPILE_SOURCE "${SOURCE_DIR}/_precompile.cpp")
 add_library(CvGameCoreDLL SHARED ${CVGAMECORE_SOURCES})
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
-
-    #target_sources(CvGameCoreDLL PRIVATE "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
-    # Original only wires the .rc into the Final_Release link; RC compiles
-    # cheaply for the others too, so it's left enabled for all configs here.
+    target_sources(CvGameCoreDLL PRIVATE "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
 endif()
 
 if(BLACKLIST)
@@ -171,7 +168,7 @@ target_compile_options(CvGameCoreDLL PRIVATE
 #set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "/debug /INCREMENTAL:NO")
 #### Link flags ####
 target_link_options(CvGameCoreDLL PRIVATE
-    /NOLOGO /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /TLBID:1
+    /NOLOGO /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /TLBID:1 /VERBOSE
     ${CUSTOM_LDFLAGS} /DEF:${CMAKE_SOURCE_DIR}/CvGameCoreDLL.def
     $<$<CONFIG:Debug>:/INCREMENTAL /DEBUG>
     $<$<CONFIG:Debug_opt>:/INCREMENTAL /DEBUG>
