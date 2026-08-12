@@ -1,0 +1,33 @@
+name: Continuous Integration
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v7
+        with:
+            fetch-depth: 0
+
+      - name: Download Civ4 SDK & Build Tools
+        run: |
+          curl.exe -sSL -o sdk.zip "https://github.com/AdrianGin/Civ4-SDK/archive/refs/tags/1.0.zip"
+          7z x -slt sdk.zip -oC:\Civ4SDK -bb3
+          mv -v C:\Civ4SDK\Civ4-SDK-1.0\* C:\Civ4SDK
+        shell: powershell
+
+      - name: Compile CvGameCoreDLL
+        run: |
+          $env:TOOLKIT="C:\Civ4SDK\Microsoft Visual C++ Toolkit 2003"
+          $env:PSDK="C:\Civ4SDK\Microsoft SDKs\Windows\v7.0A"
+          $env:CIV4_LIB_INSTALL_PATH="C:\Civ4SDK"
+
+          # Prepend VC 2003 binary directory to PATH so nmake & cl use VC 2003
+          $env:Path = "$env:TOOLKIT\bin;$env:PSDK\bin;$env:Path"
+          cd CvGameCoreDLL/Project
+          cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja -DCMAKE_CXX_COMPILER_WORKS=TRUE -B build -S .
+          cmake --build build
+        shell: powershell
