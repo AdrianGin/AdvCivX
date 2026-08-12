@@ -27,25 +27,11 @@ jobs:
               mkdir C:\Civ4SDK
               mv "Civ4SDK\Microsoft Visual C++ Toolkit 2003" "C:\Civ4SDK"
               mv "Civ4SDK\WindowsSDK" "C:\Civ4SDK"
-              cp -r -v "Civ4SDK\CvGameCoreDLL" "$env:GITHUB_WORKSPACE\source\"
+              cp -r "Civ4SDK\CvGameCoreDLL" "$env:GITHUB_WORKSPACE\source\"
           shell: powershell
     
         - parallel:
-        
-            - name: Compile CvGameCoreDLL Debug
-              run: |
-                Set-PSDebug -Trace 1
-                $env:TOOLKIT="C:\Civ4SDK\Microsoft Visual C++ Toolkit 2003"
-                $env:PSDK="C:\Civ4SDK\WindowsSDK"
-                $env:CIV4_LIB_INSTALL_PATH="C:\Civ4SDK" 
-
-                # Prepend VC 2003 binary directory to PATH so nmake & cl use VC 2003
-                $env:Path = "$env:TOOLKIT\bin;$env:PSDK\bin;$env:Path"
-                where.exe cvtres.exe
-                cd source/CvGameCoreDLL/Project
-                cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja -DCMAKE_CXX_COMPILER_WORKS=TRUE -B Debug -S .
-                cmake --build Debug --verbose -j
-              shell: powershell        
+            
 
             - name: Compile CvGameCoreDLL
               run: |

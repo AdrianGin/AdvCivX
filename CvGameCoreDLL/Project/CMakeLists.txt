@@ -77,7 +77,7 @@ add_library(CvGameCoreDLL SHARED ${CVGAMECORE_SOURCES})
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
 
-    target_sources(CvGameCoreDLL PRIVATE "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
+    #target_sources(CvGameCoreDLL PRIVATE "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
     # Original only wires the .rc into the Final_Release link; RC compiles
     # cheaply for the others too, so it's left enabled for all configs here.
 endif()
@@ -196,9 +196,6 @@ endif()
 add_custom_command(TARGET CvGameCoreDLL POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "$<TARGET_FILE:CvGameCoreDLL>" "${CMAKE_SOURCE_DIR}/../../Assets/"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "$<TARGET_PDB_FILE:CvGameCoreDLL>" "${CMAKE_SOURCE_DIR}/../../Assets/"
-        COMMENT "Copying CvGameCoreDLL.dll/.pdb to ${CMAKE_SOURCE_DIR}/../../ Assets"
 )
 
 #### Post-build steps (equivalent to the "build:" target) ####
@@ -207,7 +204,6 @@ if(YOURMOD)
         COMMAND ${CMAKE_COMMAND} -E make_directory "${YOURMOD}/Assets"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "$<TARGET_FILE:CvGameCoreDLL>" "${YOURMOD}/Assets/"
-
         COMMENT "Copying CvGameCoreDLL.dll/.pdb to ${YOURMOD} Assets"
     )
 endif()
