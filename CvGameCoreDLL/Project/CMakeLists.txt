@@ -76,7 +76,7 @@ set(CVGAMECORE_PRECOMPILE_SOURCE "${SOURCE_DIR}/_precompile.cpp")
 add_library(CvGameCoreDLL SHARED ${CVGAMECORE_SOURCES})
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
-    target_sources(CvGameCoreDLL PRIVATE "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
+    #target_sources(CvGameCoreDLL PRIVATE "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
 endif()
 
 if(BLACKLIST)
@@ -115,7 +115,6 @@ target_include_directories(CvGameCoreDLL PRIVATE
     "${SOURCE_DIR}/Python24/include"
     "${TOOLKIT}/include"
     "${PSDK}/Include"
-    "${PSDK}/Include/mfc"
 )
 
 
@@ -150,7 +149,8 @@ target_compile_definitions(CvGameCoreDLL PRIVATE
     $<$<CONFIG:Final_Release>:NDEBUG>
 )
 
-set_target_properties(CvGameCoreDLL PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DLL>")
+set_target_properties(CvGameCoreDLL PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+set_target_properties(CvGameCoreDLL PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 
 
 target_compile_options(CvGameCoreDLL PRIVATE
@@ -168,7 +168,7 @@ target_compile_options(CvGameCoreDLL PRIVATE
 #set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "/debug /INCREMENTAL:NO")
 #### Link flags ####
 target_link_options(CvGameCoreDLL PRIVATE
-    /NOLOGO /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /TLBID:1 /VERBOSE
+    /NOLOGO /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /TLBID:1
     ${CUSTOM_LDFLAGS} /DEF:${CMAKE_SOURCE_DIR}/CvGameCoreDLL.def
     $<$<CONFIG:Debug>:/INCREMENTAL /DEBUG>
     $<$<CONFIG:Debug_opt>:/INCREMENTAL /DEBUG>
