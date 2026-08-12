@@ -27,7 +27,7 @@ jobs:
               mkdir C:\Civ4SDK
               mv "Civ4SDK\Microsoft Visual C++ Toolkit 2003" "C:\Civ4SDK"
               mv "Civ4SDK\WindowsSDK" "C:\Civ4SDK"
-              cp -r "Civ4SDK\CvGameCoreDLL" "$env:GITHUB_WORKSPACE\source\"
+              cp -r -v -Force "Civ4SDK\CvGameCoreDLL" "$env:GITHUB_WORKSPACE\source\"
           shell: powershell
     
         - parallel:
