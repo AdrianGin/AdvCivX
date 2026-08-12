@@ -16,10 +16,16 @@ cmake_minimum_required(VERSION 3.20)
 # compiler. If left empty, CMake falls back to auto-detecting the toolset
 # from your environment (e.g. a "Developer Command Prompt for VS" or -T/-A),
 # same as leaving TOOLKIT/PSDK commented out in the original Makefile.
-set(TOOLKIT "C:/Program Files (x86)/Civ4SDK/Microsoft Visual C++ Toolkit 2003" CACHE
-        PATH "Path to VC\\Tools\\MSVC\\<ver>\\bin\\Hostx64\\x64 (folder containing cl.exe/link.exe)")
-set(PSDK    "C:/Program Files (x86)/Civ4SDK/WindowsSDK" CACHE
-        PATH "Path to the Windows/Platform SDK root (folder containing bin\\rc.exe, Include\\, Lib\\)")
+if(DEFINED ENV{TOOLKIT})
+    set(TOOLKIT $ENV{TOOLKIT})
+    set(PSDK $ENV{PSDK})
+else()
+    set(TOOLKIT "F:/AdrianDev/Civ4-SDK/Microsoft Visual C++ Toolkit 2003" CACHE
+            PATH "Path to VC\\Tools\\MSVC\\<ver>\\bin\\Hostx64\\x64 (folder containing cl.exe/link.exe)")
+    set(PSDK    "F:/AdrianDev/Civ4-SDK/WindowsSDK" CACHE
+            PATH "Path to the Windows/Platform SDK root (folder containing bin\\rc.exe, Include\\, Lib\\)")
+endif()
+
 
 
 set(CMAKE_CXX_COMPILER "${TOOLKIT}/bin/cl.exe" CACHE FILEPATH "" FORCE)
@@ -42,7 +48,6 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Debug_opt;Release;Profile;Final_Release"
 #### User setup (equivalent to Makefile.user / Makefile.project) ####
 # Point these at your toolkit/SDK/mod folder just like the old TOOLKIT/PSDK/
 # YOURMOD variables. They can also be set on the cmake command line with -D.
-set(CIV4_LIB_INSTALL_PATH "D:/Civ4/Beyond the Sword/Mods/AdvCiv/CvGameCoreDLL" CACHE PATH "Path to the directory where boost and python are stored")
 set(YOURMOD  "D:/Civ4/Beyond the Sword/Mods/AdvCiv/" CACHE PATH "Mod Assets dir to auto-copy the built DLL/PDB into")
 set(YOURMOD2 "" CACHE PATH "Second mod Assets dir to auto-copy the built DLL into")
 set(YOURLOGS "" CACHE PATH "Directory whose *.log files get deleted after a build")
@@ -51,10 +56,6 @@ set(CUSTOM_CFLAGS  "" CACHE STRING "Extra compiler flags (like Makefile.user's C
 set(CUSTOM_LDFLAGS "" CACHE STRING "Extra linker flags (like Makefile.user's CUSTOM_LDFLAGS)")
 set(BLACKLIST "" CACHE STRING "Optional source file to blacklist (e.g. CvTextScreens), stubbed out instead of compiled")
 
-# Environment variable overrides, mirroring the original makefile's behaviour
-if(DEFINED ENV{CIV4_LIB_INSTALL_PATH} AND CIV4_LIB_INSTALL_PATH STREQUAL "")
-    set(CIV4_LIB_INSTALL_PATH "$ENV{CIV4_LIB_INSTALL_PATH}")
-endif()
 
 set(BOOST_LIB_PATH "${SOURCE_DIR}/Boost-1.32.0")
 
@@ -118,7 +119,6 @@ target_include_directories(CvGameCoreDLL PRIVATE
     "${TOOLKIT}/include"
     "${PSDK}/Include"
     "${PSDK}/Include/mfc"
-    #"C:/Program Files (x86)/Microsoft Visual Studio 10.0/VC/include"
 )
 
 
@@ -192,14 +192,22 @@ if(MSVC)
     string(REPLACE "/TP" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 endif()
 
+
+add_custom_command(TARGET CvGameCoreDLL POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "$<TARGET_FILE:CvGameCoreDLL>" "${CMAKE_SOURCE_DIR}/../../Assets/"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "$<TARGET_PDB_FILE:CvGameCoreDLL>" "${CMAKE_SOURCE_DIR}/../../Assets/"
+        COMMENT "Copying CvGameCoreDLL.dll/.pdb to ${CMAKE_SOURCE_DIR}/../../ Assets"
+)
+
 #### Post-build steps (equivalent to the "build:" target) ####
 if(YOURMOD)
     add_custom_command(TARGET CvGameCoreDLL POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "${YOURMOD}/Assets"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "$<TARGET_FILE:CvGameCoreDLL>" "${YOURMOD}/Assets/"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_PDB_FILE:CvGameCoreDLL>" "${YOURMOD}/Assets/"
+
         COMMENT "Copying CvGameCoreDLL.dll/.pdb to ${YOURMOD} Assets"
     )
 endif()

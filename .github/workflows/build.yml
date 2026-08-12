@@ -7,27 +7,57 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v7
-        with:
-            fetch-depth: 0
+        - parallel:
+            - name: Checkout SDK & Build Tools
+              uses: actions/checkout@v7
+              with:
+                  repository: AdrianGin/Civ4-SDK
+                  path: Civ4SDK
+                  fetch-depth: 0                        
 
-      - name: Download Civ4 SDK & Build Tools
-        run: |
-          curl.exe -sSL -o sdk.zip "https://github.com/AdrianGin/Civ4-SDK/archive/refs/tags/1.0.zip"
-          7z x -slt sdk.zip -oC:\Civ4SDK -bb3
-          mv -v C:\Civ4SDK\Civ4-SDK-1.0\* C:\Civ4SDK
-        shell: powershell
+            - name: Checkout Source Code
+              uses: actions/checkout@v7
+              with:
+                  path: source
+                  fetch-depth: 0
 
-      - name: Compile CvGameCoreDLL
-        run: |
-          $env:TOOLKIT="C:\Civ4SDK\Microsoft Visual C++ Toolkit 2003"
-          $env:PSDK="C:\Civ4SDK\Microsoft SDKs\Windows\v7.0A"
-          $env:CIV4_LIB_INSTALL_PATH="C:\Civ4SDK"
+        - name: Download Civ4 SDK & Build Tools
+          run: |
+              Set-PSDebug -Trace 1
+              mkdir C:\Civ4SDK
+              mv "Civ4SDK\Microsoft Visual C++ Toolkit 2003" "C:\Civ4SDK"
+              mv "Civ4SDK\WindowsSDK" "C:\Civ4SDK"
+              cp -r -v "Civ4SDK\CvGameCoreDLL" "$env:GITHUB_WORKSPACE\source\"
+          shell: powershell
+    
+        - parallel:
+        
+            - name: Compile CvGameCoreDLL Debug
+              run: |
+                Set-PSDebug -Trace 1
+                $env:TOOLKIT="C:\Civ4SDK\Microsoft Visual C++ Toolkit 2003"
+                $env:PSDK="C:\Civ4SDK\WindowsSDK"
+                $env:CIV4_LIB_INSTALL_PATH="C:\Civ4SDK" 
 
-          # Prepend VC 2003 binary directory to PATH so nmake & cl use VC 2003
-          $env:Path = "$env:TOOLKIT\bin;$env:PSDK\bin;$env:Path"
-          cd CvGameCoreDLL/Project
-          cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja -DCMAKE_CXX_COMPILER_WORKS=TRUE -B build -S .
-          cmake --build build
-        shell: powershell
+                # Prepend VC 2003 binary directory to PATH so nmake & cl use VC 2003
+                $env:Path = "$env:TOOLKIT\bin;$env:PSDK\bin;$env:Path"
+                where.exe cvtres.exe
+                cd source/CvGameCoreDLL/Project
+                cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja -DCMAKE_CXX_COMPILER_WORKS=TRUE -B Debug -S .
+                cmake --build Debug --verbose -j
+              shell: powershell        
+
+            - name: Compile CvGameCoreDLL
+              run: |
+                Set-PSDebug -Trace 1
+                $env:TOOLKIT="C:\Civ4SDK\Microsoft Visual C++ Toolkit 2003"
+                $env:PSDK="C:\Civ4SDK\WindowsSDK"
+                $env:CIV4_LIB_INSTALL_PATH="C:\Civ4SDK" 
+
+                # Prepend VC 2003 binary directory to PATH so nmake & cl use VC 2003
+                $env:Path = "$env:TOOLKIT\bin;$env:PSDK\bin;$env:Path"
+                where.exe cvtres.exe
+                cd source/CvGameCoreDLL/Project
+                cmake -DCMAKE_BUILD_TYPE=Release -G Ninja -DCMAKE_CXX_COMPILER_WORKS=TRUE -B Release -S .
+                cmake --build Release --verbose -j
+              shell: powershell
