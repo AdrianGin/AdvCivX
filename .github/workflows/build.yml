@@ -69,14 +69,14 @@ jobs:
           uses: actions/upload-artifact@v7
           with:
             name: CvGameCoreDLL
-            path: source/CvGameCoreDLL/Project/Release/CvGameCoreDLL.dll           
+            path: source/CvGameCoreDLL/Project/build/Release/CvGameCoreDLL.dll           
             
         - name: Upload DLL (Debug)
           uses: actions/upload-artifact@v7
           with:
-            name: CvGameCoreDLL
+            name: CvGameCoreDLL Debug
             path: |
-                source/CvGameCoreDLL/Project/Debug/CvGameCoreDLL.dll
-                source/CvGameCoreDLL/Project/Debug/CvGameCoreDLL.pdb
+                source/CvGameCoreDLL/Project/build/Debug/CvGameCoreDLL.dll
+                source/CvGameCoreDLL/Project/build/Debug/CvGameCoreDLL.pdb
             
                         
