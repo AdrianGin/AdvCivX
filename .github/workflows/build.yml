@@ -35,6 +35,7 @@ jobs:
 
             - name: Compile CvGameCoreDLL
               run: |
+                Add-MpPreference -ExclusionPath "${{ github.workspace }}"
                 Set-PSDebug -Trace 1
                 $env:TOOLKIT="C:\Civ4SDK\Microsoft Visual C++ Toolkit 2003"
                 $env:PSDK="C:\Civ4SDK\WindowsSDK"
@@ -50,6 +51,7 @@ jobs:
               
             - name: Compile CvGameCoreDLL (Debug)
               run: |
+                Add-MpPreference -ExclusionPath "${{ github.workspace }}"
                 Set-PSDebug -Trace 1
                 $env:TOOLKIT="C:\Civ4SDK\Microsoft Visual C++ Toolkit 2003"
                 $env:PSDK="C:\Civ4SDK\WindowsSDK"
