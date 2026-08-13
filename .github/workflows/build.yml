@@ -47,6 +47,21 @@ jobs:
                 cmake --preset Release
                 cmake --build --preset "DLL Release"
               shell: powershell
+              
+            - name: Compile CvGameCoreDLL (Debug)
+              run: |
+                Set-PSDebug -Trace 1
+                $env:TOOLKIT="C:\Civ4SDK\Microsoft Visual C++ Toolkit 2003"
+                $env:PSDK="C:\Civ4SDK\WindowsSDK"
+                $env:CIV4_LIB_INSTALL_PATH="C:\Civ4SDK" 
+
+                # Prepend VC 2003 binary directory to PATH so nmake & cl use VC 2003
+                $env:Path = "$env:TOOLKIT\bin;$env:PSDK\bin;$env:Path"
+                where.exe cvtres.exe
+                cd source/CvGameCoreDLL/Project
+                cmake --preset Debug
+                cmake --build --preset "DLL Debug"
+              shell: powershell              
 
             
         - name: Upload DLL
