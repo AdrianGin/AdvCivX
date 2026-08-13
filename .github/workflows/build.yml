@@ -31,8 +31,7 @@ jobs:
           shell: powershell
     
         - parallel:
-            
-
+           
             - name: Compile CvGameCoreDLL
               run: |
                 Add-MpPreference -ExclusionPath "${{ github.workspace }}"
@@ -71,3 +70,13 @@ jobs:
           with:
             name: CvGameCoreDLL
             path: source/CvGameCoreDLL/Project/Release/CvGameCoreDLL.dll           
+            
+        - name: Upload DLL (Debug)
+          uses: actions/upload-artifact@v7
+          with:
+            name: CvGameCoreDLL
+            path: |
+                source/CvGameCoreDLL/Project/Debug/CvGameCoreDLL.dll
+                source/CvGameCoreDLL/Project/Debug/CvGameCoreDLL.pdb
+            
+                        
