@@ -44,8 +44,8 @@ jobs:
                 $env:Path = "$env:TOOLKIT\bin;$env:PSDK\bin;$env:Path"
                 where.exe cvtres.exe
                 cd source/CvGameCoreDLL/Project
-                cmake -DCMAKE_BUILD_TYPE=Release -G Ninja -DCMAKE_CXX_COMPILER_WORKS=TRUE -B Release -S .
-                cmake --build Release --verbose -j16
+                cmake --preset Release
+                cmake --build --preset "DLL Release"
               shell: powershell
 
             
