@@ -1,1 +1,1 @@
-*.rc text eol=crlf
+*.rc binary eol=crlf
