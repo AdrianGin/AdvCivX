@@ -37,10 +37,6 @@ set(CMAKE_NINJA_CMCLDEPS_RC OFF)
 
 project(CvGameCoreDLL CXX RC)
 
-if(NOT MSVC)
-    message(FATAL_ERROR "This project only supports the MSVC toolchain (matches the original NMAKE build).")
-endif()
-
 #### Multi-config setup: replace the default VS configs with the Civ4 ones ####
 set(CMAKE_CONFIGURATION_TYPES "Debug;Debug_opt;Release;Profile;Final_Release"
     CACHE STRING "Available build configurations" FORCE)
@@ -76,7 +72,7 @@ set(CVGAMECORE_PRECOMPILE_SOURCE "${SOURCE_DIR}/_precompile.cpp")
 add_library(CvGameCoreDLL SHARED ${CVGAMECORE_SOURCES})
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
-    #target_sources(CvGameCoreDLL PRIVATE "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
+    target_sources(CvGameCoreDLL PRIVATE "${CMAKE_SOURCE_DIR}/CvGameCoreDLL.rc")
 endif()
 
 if(BLACKLIST)
@@ -103,11 +99,8 @@ set_target_properties(CvGameCoreDLL PROPERTIES
 )
 
 #### Precompiled header (CvGameCoreDLL.h via _precompile.cpp) ####
-if(EXISTS "${CVGAMECORE_PRECOMPILE_SOURCE}")
+target_precompile_headers(CvGameCoreDLL PRIVATE "${SOURCE_DIR}/CvGameCoreDLL.h")
 
-    target_precompile_headers(CvGameCoreDLL PRIVATE "${SOURCE_DIR}/CvGameCoreDLL.h")
-    #add_dependencies(CvGameCoreDLL ${TARGET_PCH})
-endif()
 
 #### Includes (GLOBAL_INCS + PROJECT_INCS) ####
 target_include_directories(CvGameCoreDLL PRIVATE
@@ -116,7 +109,6 @@ target_include_directories(CvGameCoreDLL PRIVATE
     "${TOOLKIT}/include"
     "${PSDK}/Include"
 )
-
 
 #### Libraries (GLOBAL_LIBS + PROJECT_LIBS) ####
 target_link_directories(CvGameCoreDLL PRIVATE
@@ -150,8 +142,6 @@ target_compile_definitions(CvGameCoreDLL PRIVATE
 )
 
 set_target_properties(CvGameCoreDLL PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-set_target_properties(CvGameCoreDLL PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-
 
 target_compile_options(CvGameCoreDLL PRIVATE
     # Debug_opt: an almost-Release build, still with debug info

@@ -1,0 +1,42 @@
+{
+    "version": 5,
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER_WORKS": "TRUE"
+            }
+        },
+        {
+            "name": "Debug",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "Release",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "DLL Debug",
+            "configurePreset": "Debug",
+            "jobs" : 0,
+            "verbose" : true
+        },
+        {
+            "name": "DLL Release",
+            "configurePreset": "Release",
+            "jobs" : 0,
+            "verbose" : true
+        }
+    ]
+}
