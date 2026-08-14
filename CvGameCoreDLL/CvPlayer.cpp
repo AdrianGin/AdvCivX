@@ -16729,8 +16729,7 @@ void CvPlayer::doEvents()
 	{
 		bNewEventEligible = false;
 	}
-
-	bNewEventEligible = true;
+	
 	std::vector<std::pair<EventTriggeredData*,int> > aePossibleEventTriggerWeights;
 	int iTotalWeight = 0;
 	FOR_EACH_ENUM(EventTrigger)
