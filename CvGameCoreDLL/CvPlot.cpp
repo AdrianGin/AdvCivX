@@ -392,8 +392,8 @@ void CvPlot::doImprovement()
 			//Afforess: check for valid terrains for this bonus before discovering it
 			if (!canHaveBonus(eLoopBonus, false, /* advc.129: */ true))
 				continue; // </advc.rom3>
-			iOdds *= GC.getGame().getSpeedPercent();
-			iOdds /= 100;
+			//iOdds *= GC.getGame().getSpeedPercent();
+			//iOdds /= 100;
 			if (SyncRandOneChanceIn(iOdds))
 			{	// UNOFFICIAL_PATCH: END
 				setBonusType(eLoopBonus);
@@ -413,8 +413,7 @@ void CvPlot::doImprovement()
 		Makes clearer which conditions are ensured by the caller. */
 	if (!isImproved())
 		return;
-	ImprovementTypes eImprovementUpgrade = GC.getInfo(getImprovementType()).
-			getImprovementUpgrade();
+	ImprovementTypes eImprovementUpgrade = GC.getInfo(getImprovementType()).getImprovementUpgrade();
 	if (eImprovementUpgrade != NO_IMPROVEMENT)
 	{
 		/*	advc: Caller already ensures isBeingWorked (and isOwned()).
@@ -6948,7 +6947,7 @@ void CvPlot::doFeature()
 			{
 				//if (SyncRandNum(10000) < iProbability)
 				// UNOFFICIAL_PATCH, Gamespeed scaling, 03/04/10, jdog5000: START
-				int iRoll = 100 * GC.getGame().getSpeedPercent();
+				int iRoll = 10000;
 				if (syncRand().get(iRoll, "CvPlot::doFeature",
 					getX(), getY()) < iProbability) // advc.007: Log coordinates
 				// UNOFFICIAL_PATCH: END
