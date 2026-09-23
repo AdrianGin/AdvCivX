@@ -6369,9 +6369,9 @@ void CvGame::doGlobalWarming()
 			bChanged = true;
 		}
 		else if (eTerrain == eColdTerrain &&
-			(!bProtectFeature || pProtectedFeature->isTerrain(eDryTerrain))) // advc.055
+			(!bProtectFeature || pProtectedFeature->isTerrain(eTemperateTerrain))) // advc.055
 		{
-			pPlot->setTerrainType(eDryTerrain); // advc.055: was eTemperateTerrain
+			pPlot->setTerrainType(eTemperateTerrain); // advc.055: was eTemperateTerrain
 			bChanged = true;
 		}
 		// 2) Forest -> Jungle
@@ -6417,7 +6417,7 @@ void CvGame::doGlobalWarming()
 			}
 			if (iColdScore < 3) // </advc.055>
 			{
-				pPlot->setTerrainType(eBarrenTerrain);
+				//pPlot->setTerrainType(eBarrenTerrain);
 				bChanged = true;
 			}
 		}
