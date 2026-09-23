@@ -4663,7 +4663,14 @@ int CvGame::getGlobalWarmingChances() const
 		tech level in the middle of the Industrial era. */
 	rIndexPerChance *= scaled(getCivTeamsEverAlive(), 8).pow(fixp(1/3.));
 	rIndexPerChance.increaseTo(1);
-	return (getGlobalWarmingIndex() / rIndexPerChance).round();
+
+	int ipc = GC.getDefineINT("GLOBAL_WARMING_INDEX_PER_CHANCE");
+	ipc = (ipc * getSpeedPercent()) / 100;
+
+	double scaleFactor = pow(getCivTeamsEverAlive() / 8., (1./3.));
+
+	ipc = (int)(((double)(ipc) * scaleFactor));
+	return getGlobalWarmingIndex() / ipc;
 }
 
 
