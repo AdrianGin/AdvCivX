@@ -494,6 +494,15 @@
 		<Spanish>Asigna los puntos de inicio solo a la IA por handicapar los jugadores humanos.</Spanish>
 	</TEXT>
 	
+	<TEXT>
+		<Tag>TXT_KEY_GAME_OPTION_POOLED_GREAT_PEOPLE_POINTS</Tag>
+		<English>Teamwide Great People Points</English>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_GAME_OPTION_POOLED_GREAT_PEOPLE_POINTS_HELP</Tag>
+		<English>Great People Points are pooled in team wide fashion - similar to Great Generals</English>
+	</TEXT>
+
 	<!-- advc.250b: Dawn-of-Man text from Civ4GameTextInfos.xml split
 		 in two. -->
 	<TEXT>
