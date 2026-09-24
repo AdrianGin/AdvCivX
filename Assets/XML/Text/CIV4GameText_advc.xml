@@ -3085,7 +3085,7 @@
 		 See CIV4GameText_advc.008.xml for the Civilopedia changes. -->
 	<TEXT> <!-- redefine -->
 		<Tag>TXT_KEY_UNIT_ROME_PRAETORIAN</Tag>
-		<English>Legionary</English>
+		<English>Praetorian</English>
 		<French>
 			<Text>Pr&#233;torien</Text>
 			<Gender>Male</Gender>

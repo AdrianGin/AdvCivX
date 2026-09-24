@@ -5306,7 +5306,7 @@
 			<Flavors/>
 			<iAIWeight>0</iAIWeight>
 			<!-- advc.907a: was 45 -->
-			<iCost>40</iCost>
+			<iCost>45</iCost>
 			<iHurryCostModifier>0</iHurryCostModifier>
 			<iAdvancedStartCost>100</iAdvancedStartCost>
 			<iAdvancedStartCostIncrease>0</iAdvancedStartCostIncrease>
@@ -5331,7 +5331,7 @@
 			<TerrainPassableTechs/>
 			<FeaturePassableTechs/>
 			<!-- advc.907a: was 8 -->
-			<iCombat>7</iCombat>
+			<iCombat>8</iCombat>
 			<iCombatLimit>100</iCombatLimit>
 			<iAirCombat>0</iAirCombat>
 			<iAirCombatLimit>0</iAirCombatLimit>
@@ -5373,7 +5373,7 @@
 			<iExtraCost>0</iExtraCost>
 			<iAsset>2</iAsset>
 			<!-- advc.907a: was 7 -->
-			<iPower>7</iPower>
+			<iPower>8</iPower>
 			<UnitMeshGroups>
 				<iGroupSize>3</iGroupSize>
 				<fMaxSpeed>1.75</fMaxSpeed>
