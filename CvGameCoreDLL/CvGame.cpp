@@ -6425,7 +6425,7 @@ void CvGame::doGlobalWarming()
 			if (iColdScore < 3) // </advc.055>
 			{
 				//pPlot->setTerrainType(eBarrenTerrain);
-				bChanged = true;
+				//bChanged = true;
 			}
 		}
 		/* 5) Sink coastal desert (disabled)
