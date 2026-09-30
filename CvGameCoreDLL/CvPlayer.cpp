@@ -2854,6 +2854,8 @@ void CvPlayer::doTurn()
 	FOR_EACH_CITY_VAR(pLoopCity, *this)
 		pLoopCity->doTurn();
 
+	doGreatPeople();
+
 	if (getGoldenAgeTurns() > 0)
 		changeGoldenAgeTurns(-1);
 	if (getAnarchyTurns() > 0)
@@ -7663,6 +7665,36 @@ void CvPlayer::changeGreatGeneralsThresholdModifier(int iChange)
 }
 
 
+void CvPlayer::setGreatPeopleUnitRate(UnitTypes eUnit, int iNewValue)
+{
+	if (GC.getGame().isOption(GAMEOPTION_NO_ESPIONAGE) &&
+		GC.getInfo(eUnit).getEspionagePoints() > 0)
+	{
+		return;
+	}
+	m_aiGreatPeopleUnitRate.set(eUnit, iNewValue);
+	FAssert(getGreatPeopleUnitRate(eUnit) >= 0);
+}
+
+
+void CvPlayer::changeGreatPeopleUnitRate(UnitTypes eUnit, int iChange)
+{
+	setGreatPeopleUnitRate(eUnit, getGreatPeopleUnitRate(eUnit) + iChange);
+}
+
+
+void CvPlayer::setGreatPeopleUnitProgress(UnitTypes eUnit, int iNewValue)
+{
+	m_aiGreatPeopleUnitProgress.set(eUnit, iNewValue);
+	FAssert(getGreatPeopleUnitProgress(eUnit) >= 0);
+}
+
+
+void CvPlayer::changeGreatPeopleUnitProgress(UnitTypes eUnit, int iChange)
+{
+	setGreatPeopleUnitProgress(eUnit, getGreatPeopleUnitProgress(eUnit) + iChange);
+}
+
 void CvPlayer::changeGreatPeopleRateModifier(int iChange)
 {
 	m_iGreatPeopleRateModifier += iChange;
@@ -11686,6 +11718,10 @@ void CvPlayer::doEspionagePoints()
 	}
 }
 
+void CvPlayer::doGreatPeople() {
+
+}
+
 int CvPlayer::getEspionageSpending(TeamTypes eAgainstTeam) const
 {
 	PROFILE_FUNC(); // advc (runtime seems totally negligible)
@@ -14317,6 +14353,9 @@ void CvPlayer::read(FDataStreamBase* pStream)
 		m_aiHasCorporationCount.read(pStream);
 		m_aiUpkeepCount.read(pStream);
 		m_aiSpecialistValidCount.read(pStream);
+		if (uiFlag >= 23)
+			m_aiGreatPeopleUnitProgress.read(pStream);
+
 		if (uiFlag >= 21)
 			m_abResearchingTech.read(pStream);
 		else LegacyArrayEnumMap<TechTypes,bool>::convert(m_abResearchingTech, pStream);
@@ -14710,7 +14749,8 @@ void CvPlayer::write(FDataStreamBase* pStream)
 	//uiFlag = 19; // advc.708
 	//uiFlag = 20; // advc.912g
 	//uiFlag = 21; // advc.enum: Bugfix in bool-valued ArrayEnumMap
-	uiFlag = 22; // advc: Bugs fixed with civ-wide special commerce rate cache
+	//uiFlag = 22; // advc: Bugs fixed with civ-wide special commerce rate cache
+	uiFlag = 23; //Pooled GPP Points
 	pStream->Write(uiFlag);
 
 	// <advc.027>
@@ -14883,6 +14923,7 @@ void CvPlayer::write(FDataStreamBase* pStream)
 	m_aiHasCorporationCount.write(pStream);
 	m_aiUpkeepCount.write(pStream);
 	m_aiSpecialistValidCount.write(pStream);
+	m_aiGreatPeopleUnitProgress.write(pStream);
 	m_abResearchingTech.write(pStream);
 	m_abEverSeenDemographics.write(pStream); // advc.091
 	m_abLoyalMember.write(pStream);

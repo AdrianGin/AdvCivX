@@ -82,7 +82,7 @@
 		 CivilizationIV.ini doesn't matter for multiplayer.) -->
 	<Define>
 		<DefineName>ENABLE_DEBUG_TOOLS_MULTIPLAYER</DefineName>
-		<iDefineIntVal>0</iDefineIntVal>
+		<iDefineIntVal>1</iDefineIntVal>
 	</Define>
 
 	<!-- [advc.007] If set to 1, the RandLog is named MPLogX.log,

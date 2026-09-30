@@ -31,6 +31,23 @@ def getNumCustomMapOptions():
 def getNumHiddenCustomMapOptions():
 	return 2
 
+def getGridSize(argsList):
+	#"Enlarge the grids! According to Soren, Earth-type maps are usually huge anyway."
+	grid_sizes = {
+		WorldSizeTypes.WORLDSIZE_DUEL:		(2,2),
+		WorldSizeTypes.WORLDSIZE_TINY:		(16,10),
+		WorldSizeTypes.WORLDSIZE_SMALL:		(21,13),
+		WorldSizeTypes.WORLDSIZE_STANDARD:	(26,16),
+		WorldSizeTypes.WORLDSIZE_LARGE:		(32,20),
+		WorldSizeTypes.WORLDSIZE_HUGE:		(38,24)
+	}
+
+	if (argsList[0] == -1): # (-1,) is passed to function on loads
+		return []
+	[eWorldSize] = argsList
+	return grid_sizes[eWorldSize]
+
+
 def getCustomMapOptionName(argsList):
 	[iOption] = argsList
 	option_names = {

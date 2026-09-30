@@ -8621,6 +8621,7 @@ void CvCity::setGreatPeopleUnitRate(UnitTypes eUnit, int iNewValue)
 		return;
 	}
 	m_aiGreatPeopleUnitRate.set(eUnit, iNewValue);
+	GET_PLAYER(getOwner()).setGreatPeopleUnitRate(eUnit, iNewValue);
 	FAssert(getGreatPeopleUnitRate(eUnit) >= 0);
 }
 
@@ -8628,12 +8629,14 @@ void CvCity::setGreatPeopleUnitRate(UnitTypes eUnit, int iNewValue)
 void CvCity::changeGreatPeopleUnitRate(UnitTypes eUnit, int iChange)
 {
 	setGreatPeopleUnitRate(eUnit, getGreatPeopleUnitRate(eUnit) + iChange);
+	GET_PLAYER(getOwner()).changeGreatPeopleUnitRate(eUnit, iChange);
 }
 
 
 void CvCity::setGreatPeopleUnitProgress(UnitTypes eUnit, int iNewValue)
 {
 	m_aiGreatPeopleUnitProgress.set(eUnit, iNewValue);
+	GET_PLAYER(getOwner()).setGreatPeopleUnitProgress(eUnit, iNewValue);
 	FAssert(getGreatPeopleUnitProgress(eUnit) >= 0);
 }
 
@@ -8641,6 +8644,7 @@ void CvCity::setGreatPeopleUnitProgress(UnitTypes eUnit, int iNewValue)
 void CvCity::changeGreatPeopleUnitProgress(UnitTypes eUnit, int iChange)
 {
 	setGreatPeopleUnitProgress(eUnit, getGreatPeopleUnitProgress(eUnit) + iChange);
+	GET_PLAYER(getOwner()).changeGreatPeopleUnitProgress(eUnit, iChange);
 }
 
 
@@ -11026,17 +11030,15 @@ void CvCity::doGreatPeople()
 	{
 		UnitTypes eUnit = kCiv.unitAt(i);
 		int iUnitRate = getGreatPeopleUnitRate(eUnit); // advc
-		changeGreatPeopleUnitProgress(eUnit, (iUnitRate *
-				/*	advc.001c: Seems like an oversight - per-unit progress
-					should include modifiers. */
-				iTotalGreatPeopleRateModifier) / 100);
+		changeGreatPeopleUnitProgress(eUnit, (iUnitRate * iTotalGreatPeopleRateModifier) / 100);
 		// <advc>
 		#ifdef FASSERT_ENABLE
 			iTotalUnitRate += iUnitRate;
 		#endif // </advc>
 	}
 	FAssert(iTotalUnitRate == getBaseGreatPeopleRate()); // advc
-	if (getGreatPeopleProgress() >= GET_PLAYER(getOwner()).greatPeopleThreshold())
+	if ((getGreatPeopleProgress() >= GET_PLAYER(getOwner()).greatPeopleThreshold()) &&
+		!GC.getGame().isOption(GAMEOPTION_POOL_GREAT_PEOPLE_POINTS))
 	{
 		int iTotalGreatPeopleUnitProgress = 0;
 		for (int i = 0; i < kCiv.getNumUnits(); i++)
