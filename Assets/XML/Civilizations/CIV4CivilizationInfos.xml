@@ -2776,7 +2776,7 @@
 			<Units>
 				<Unit>
 					<!-- advc.905b: was GALLEON -->
-					<UnitClassType>UNITCLASS_FRIGATE</UnitClassType>
+					<UnitClassType>UNITCLASS_GALLEON</UnitClassType>
 					<UnitType>UNIT_NETHERLANDS_OOSTINDIEVAARDER</UnitType>
 				</Unit>
 			</Units>
