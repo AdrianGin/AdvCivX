@@ -251,6 +251,15 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 		.def("getGreatGeneralsThresholdModifier", &CyPlayer::getGreatGeneralsThresholdModifier, "int ()")
 		.def("getGreatPeopleRateModifier", &CyPlayer::getGreatPeopleRateModifier, "int ()")
 		.def("getGreatGeneralRateModifier", &CyPlayer::getGreatGeneralRateModifier, "int ()")
+
+		.def("getGreatPeopleRate", &CyPlayer::getGreatPeopleRate, "int ()")
+		.def("getGreatPeopleProgress", &CyPlayer::getGreatPeopleProgress, "int ()")
+		.def("getGreatPeopleUnitProgress", &CyPlayer::getGreatPeopleUnitProgress, "int (int /*UnitTypes*/ eGreatPersonUnit)")
+		.def("setGreatPeopleUnitProgress", &CyPlayer::setGreatPeopleUnitProgress, "int (int /*UnitTypes*/ eGreatPersonUnit), int newval")
+		.def("changeGreatPeopleUnitProgress", &CyPlayer::changeGreatPeopleUnitProgress, "int (int /*UnitTypes*/ eGreatPersonUnit), int change")
+
+
+
 		.def("getDomesticGreatGeneralRateModifier", &CyPlayer::getDomesticGreatGeneralRateModifier, "int ()")
 		.def("getStateReligionGreatPeopleRateModifier", &CyPlayer::getStateReligionGreatPeopleRateModifier, "int ()")
 

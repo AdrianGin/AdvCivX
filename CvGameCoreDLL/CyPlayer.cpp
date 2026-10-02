@@ -1126,6 +1126,32 @@ int CyPlayer::getGreatGeneralRateModifier()
 	return m_pPlayer ? m_pPlayer->getGreatGeneralRateModifier() : -1;
 }
 
+int CyPlayer::getGreatPeopleRate() {
+	return m_pPlayer ? m_pPlayer->getGreatPeopleRate() : -1;
+}
+
+int CyPlayer::getGreatPeopleProgress() {
+	return m_pPlayer ? m_pPlayer->getGreatPeopleProgress() : -1;
+}
+
+int CyPlayer::getGreatPeopleUnitProgress(int eUnit) {
+	return m_pPlayer ? m_pPlayer->getGreatPeopleUnitProgress((UnitTypes)eUnit) : -1;
+}
+
+void CyPlayer::setGreatPeopleUnitProgress(int eUnit, int iNewValue) {
+	if ( m_pPlayer == NULL ) {
+		return;
+	}
+	m_pPlayer->setGreatPeopleUnitProgress((UnitTypes)eUnit, iNewValue);
+}
+
+void CyPlayer::changeGreatPeopleUnitProgress(int eUnit, int iChange) {
+	if ( m_pPlayer == NULL ) {
+		return;
+	}
+	m_pPlayer->changeGreatPeopleUnitProgress((UnitTypes)eUnit, iChange);
+}
+
 int CyPlayer::getDomesticGreatGeneralRateModifier()
 {
 	return m_pPlayer ? m_pPlayer->getDomesticGreatGeneralRateModifier() : -1;

@@ -569,12 +569,9 @@ public:
 	int getGreatGeneralsThresholdModifier() const { return m_iGreatGeneralsThresholdModifier; }						// Exposed to Python
 	void changeGreatGeneralsThresholdModifier(int iChange);
 
-	int getGreatPeopleUnitRate(UnitTypes eUnit) const															// Exposed to Python
-	{
-		return m_aiGreatPeopleUnitRate.get(eUnit);
-	}
-	void setGreatPeopleUnitRate(UnitTypes eUnit, int iNewValue);
-	void changeGreatPeopleUnitRate(UnitTypes eUnit, int iChange);
+	int getGreatPeopleRate() const;
+
+	int getGreatPeopleProgress() const;
 
 	int getGreatPeopleUnitProgress(UnitTypes eUnit) const														// Exposed to Python
 	{
@@ -1662,7 +1659,6 @@ protected:  // <advc.210>
 	ArrayEnumMap<CorporationTypes,int,char> m_aiHasCorporationCount;
 	ArrayEnumMap<UpkeepTypes,int,char> m_aiUpkeepCount; // advc (comment): unused (but accessible)
 	ArrayEnumMap<SpecialistTypes,int,char> m_aiSpecialistValidCount;
-	ArrayEnumMap<UnitTypes,int,short> m_aiGreatPeopleUnitRate;
 	ArrayEnumMap<UnitTypes,int> m_aiGreatPeopleUnitProgress;
 	/*int** m_paiExtraBuildingYield;
 	int** m_paiExtraBuildingCommerce;*/ // advc: unused
@@ -1724,7 +1720,7 @@ protected:  // <advc.210>
 	void doGold();
 	void doResearch();
 	void doEspionagePoints();
-	void doGreatPeople();
+	bool doGreatPeople();
 
 	void doWarnings();
 	void doEvents();

@@ -158,6 +158,17 @@ def findMaxCity():
 	return (bestCity, iMaxProgress)
 
 def getCityTurns(city):
+	if( gc.getGame().isOption(GameOptionTypes.GAMEOPTION_POOL_GREAT_PEOPLE_POINTS) ):
+		player = gc.getPlayer(city.getOwner())
+		iThreshold = player.greatPeopleThreshold(False)
+		iRate = player.getGreatPeopleRate()
+		if (iRate > 0):
+			iProgress = player.getGreatPeopleProgress()
+			iTurns = (iThreshold - iProgress + iRate - 1) / iRate
+			return iTurns
+		return None
+
+
 	if (city):
 		player = gc.getPlayer(city.getOwner())
 		iThreshold = player.greatPeopleThreshold(False)
@@ -168,7 +179,27 @@ def getCityTurns(city):
 			return iTurns
 	return None
 
+
+def calcPooledPercentages(city):
+	# Calc total rate
+	#iTotal = 0
+	# advc.001c: Total no longer needed, and the >0 check would prevent percentages from being shown when the GP rate is positive but no GP have been accumulated yet.
+	player = gc.getPlayer(city.getOwner())
+	iTotal=1
+	percents = []
+	for iUnit in g_gpUnitTypes:
+		iTotal += player.getGreatPeopleUnitProgress(iUnit)
+
+	for iUnit in g_gpUnitTypes:
+		iPercent = (player.getGreatPeopleUnitProgress(iUnit) * 100) / iTotal
+		if( iPercent > 0 ):
+			percents.append((iPercent, iUnit))
+
+	return percents
+
 def calcPercentages(city):
+	if( gc.getGame().isOption(GameOptionTypes.GAMEOPTION_POOL_GREAT_PEOPLE_POINTS) ):
+		return calcPooledPercentages(city)
 
 	# Calc total rate
 	#iTotal = 0
@@ -229,7 +260,72 @@ def getHoverText(eWidgetType, iData1, iData2, bOption):
 			szText += u"\n%s%s - %d%%" % (getUnitIcon(iUnit), gc.getUnitInfo(iUnit).getDescription(), iPercent)
 	return szText
 
+def getGreatPeopleText_Pooled(city, iGPTurns, iGPBarWidth, bGPBarTypesNone, bGPBarTypesOne, bIncludeCityName):
+	sGreatPeopleChar = u"%c" % CyGame().getSymbolID(FontSymbols.GREAT_PEOPLE_CHAR)
+	if (not city):
+		szText = BugUtil.getText("INTERFACE_GREAT_PERSON_NONE", (sGreatPeopleChar, ))
+	elif (bGPBarTypesNone):
+		if (iGPTurns):
+			szText = BugUtil.getText("INTERFACE_GREAT_PERSON_TURNS", (sGreatPeopleChar, iGPTurns))
+		else:
+			szText = sGreatPeopleChar
+	else:
+		lPercents = calcPercentages(city)
+		if (len(lPercents) == 0):
+			if (iGPTurns):
+				if (bIncludeCityName):
+					szText = BugUtil.getText("INTERFACE_GREAT_PERSON_CITY_TURNS", (sGreatPeopleChar, city.getName(), iGPTurns))
+				else:
+					szText = BugUtil.getText("INTERFACE_GREAT_PERSON_TURNS", (sGreatPeopleChar, iGPTurns))
+			else:
+				if (bIncludeCityName):
+					szText = BugUtil.getText("INTERFACE_GREAT_PERSON_CITY", (sGreatPeopleChar, city.getName()))
+				else:
+					szText = sGreatPeopleChar
+		else:
+			lPercents.sort()
+			lPercents.reverse()
+			if (bGPBarTypesOne or len(lPercents) == 1):
+				iPercent, iUnit = lPercents[0]
+				pInfo = gc.getUnitInfo(iUnit)
+				if (iGPTurns):
+					if (bIncludeCityName):
+						szText = BugUtil.getText("INTERFACE_GREAT_PERSON_CITY_TURNS", (pInfo.getDescription(), city.getName(), iGPTurns))
+					else:
+						szText = BugUtil.getText("INTERFACE_GREAT_PERSON_TURNS", (pInfo.getDescription(), iGPTurns))
+				else:
+					if (bIncludeCityName):
+						szText = BugUtil.getText("INTERFACE_GREAT_PERSON_CITY", (pInfo.getDescription(), city.getName()))
+					else:
+						szText = unicode(pInfo.getDescription())
+			else:
+				if (iGPTurns):
+					if (bIncludeCityName):
+						szText = BugUtil.getText("INTERFACE_GREAT_PERSON_CITY_TURNS", (sGreatPeopleChar, city.getName(), iGPTurns))
+					else:
+						szText = BugUtil.getText("INTERFACE_GREAT_PERSON_TURNS", (sGreatPeopleChar, iGPTurns))
+				else:
+					if (bIncludeCityName):
+						szText = BugUtil.getText("INTERFACE_GREAT_PERSON_CITY", (sGreatPeopleChar, city.getName()))
+					else:
+						szText = sGreatPeopleChar + u":"
+				szTypes = ""
+				for iPercent, iUnit in lPercents:
+					szNewTypes = szTypes + u" %c%d%%" % (getUnitIcon(iUnit), iPercent)
+					szNewText = szText + u"<font=2> -%s</font>" % szTypes
+					if (CyInterface().determineWidth(szNewText) > iGPBarWidth - 10):
+						# Keep under width
+						break
+					szTypes = szNewTypes
+				if (len(szTypes) > 0):
+					szText += u"<font=2> -%s</font>" % szTypes
+	return szText
+
+
 def getGreatPeopleText(city, iGPTurns, iGPBarWidth, bGPBarTypesNone, bGPBarTypesOne, bIncludeCityName):
+	if( gc.getGame().isOption(GameOptionTypes.GAMEOPTION_POOL_GREAT_PEOPLE_POINTS) ):
+		return getGreatPeopleText_Pooled(city, iGPTurns, iGPBarWidth, bGPBarTypesNone, bGPBarTypesOne, bIncludeCityName)
+
 	sGreatPeopleChar = u"%c" % CyGame().getSymbolID(FontSymbols.GREAT_PEOPLE_CHAR)
 	if (not city):
 		szText = BugUtil.getText("INTERFACE_GREAT_PERSON_NONE", (sGreatPeopleChar, ))

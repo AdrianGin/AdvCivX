@@ -5784,7 +5784,8 @@ class CvMainInterface:
 			screen.setHitTest("CultureText", HitTestTypes.HITTEST_NOHIT)
 			screen.show("CultureText")
 		if (pHeadSelectedCity.getGreatPeopleProgress() > 0 or
-				pHeadSelectedCity.getGreatPeopleRate() > 0):
+			pHeadSelectedCity.getGreatPeopleRate() > 0 or 
+			gc.getGame().isOption(GameOptionTypes.GAMEOPTION_POOL_GREAT_PEOPLE_POINTS)	):
 # BUG - Great Person Turns - start
 			iRate = pHeadSelectedCity.getGreatPeopleRate()
 			if CityScreenOpt.isShowCityGreatPersonInfo():

@@ -8621,7 +8621,6 @@ void CvCity::setGreatPeopleUnitRate(UnitTypes eUnit, int iNewValue)
 		return;
 	}
 	m_aiGreatPeopleUnitRate.set(eUnit, iNewValue);
-	GET_PLAYER(getOwner()).setGreatPeopleUnitRate(eUnit, iNewValue);
 	FAssert(getGreatPeopleUnitRate(eUnit) >= 0);
 }
 
@@ -8629,14 +8628,12 @@ void CvCity::setGreatPeopleUnitRate(UnitTypes eUnit, int iNewValue)
 void CvCity::changeGreatPeopleUnitRate(UnitTypes eUnit, int iChange)
 {
 	setGreatPeopleUnitRate(eUnit, getGreatPeopleUnitRate(eUnit) + iChange);
-	GET_PLAYER(getOwner()).changeGreatPeopleUnitRate(eUnit, iChange);
 }
 
 
 void CvCity::setGreatPeopleUnitProgress(UnitTypes eUnit, int iNewValue)
 {
 	m_aiGreatPeopleUnitProgress.set(eUnit, iNewValue);
-	GET_PLAYER(getOwner()).setGreatPeopleUnitProgress(eUnit, iNewValue);
 	FAssert(getGreatPeopleUnitProgress(eUnit) >= 0);
 }
 

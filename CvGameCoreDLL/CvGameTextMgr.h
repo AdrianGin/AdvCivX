@@ -92,6 +92,7 @@ public:
 	void parseWarTradesHelp(CvWStringBuffer& szBuffer, PlayerTypes eThisPlayer, PlayerTypes eOtherPlayer);
 	void parseLeaderLineHelp(CvWStringBuffer &szBuffer, PlayerTypes eThisPlayer, PlayerTypes eOtherPlayer);
 	void parseGreatPeopleHelp(CvWStringBuffer &szBuffer, CvCity const& kCity);
+	void parseGreatPeopleHelpPooledGpp(CvWStringBuffer &szBuffer, CvCity const& kCity);
 // BUG - Building Additional Great People - start
 	bool setBuildingAdditionalGreatPeopleHelp(CvWStringBuffer &szBuffer, const CvCity& city, const CvWString& szStart, bool bStarted = false);
 // BUG - Building Additional Great People - end

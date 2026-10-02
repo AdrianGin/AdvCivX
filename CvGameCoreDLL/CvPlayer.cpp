@@ -2851,10 +2851,12 @@ void CvPlayer::doTurn()
 	doResearch();
 	doEspionagePoints();
 
-	FOR_EACH_CITY_VAR(pLoopCity, *this)
+	FOR_EACH_CITY_VAR(pLoopCity, *this) {
 		pLoopCity->doTurn();
+	}
 
-	doGreatPeople();
+
+
 
 	if (getGoldenAgeTurns() > 0)
 		changeGoldenAgeTurns(-1);
@@ -7665,21 +7667,23 @@ void CvPlayer::changeGreatGeneralsThresholdModifier(int iChange)
 }
 
 
-void CvPlayer::setGreatPeopleUnitRate(UnitTypes eUnit, int iNewValue)
-{
-	if (GC.getGame().isOption(GAMEOPTION_NO_ESPIONAGE) &&
-		GC.getInfo(eUnit).getEspionagePoints() > 0)
-	{
-		return;
+int CvPlayer::getGreatPeopleRate() const {
+	CvCivilization const& kCiv = getCivilization();
+	int rate = 0;
+	FOR_EACH_CITY_VAR(pLoopCity, *this) {
+		rate += pLoopCity->getGreatPeopleRate();
 	}
-	m_aiGreatPeopleUnitRate.set(eUnit, iNewValue);
-	FAssert(getGreatPeopleUnitRate(eUnit) >= 0);
+	return rate;
 }
 
-
-void CvPlayer::changeGreatPeopleUnitRate(UnitTypes eUnit, int iChange)
-{
-	setGreatPeopleUnitRate(eUnit, getGreatPeopleUnitRate(eUnit) + iChange);
+int CvPlayer::getGreatPeopleProgress() const {
+	CvCivilization const& kCiv = getCivilization();
+	int greatPeoplePoints = 0;
+	for (int i = 0; i < kCiv.getNumUnits(); i++) {
+		UnitTypes eUnit = kCiv.unitAt(i);
+		greatPeoplePoints += getGreatPeopleUnitProgress(eUnit);
+	}
+	return greatPeoplePoints;
 }
 
 
@@ -7692,7 +7696,19 @@ void CvPlayer::setGreatPeopleUnitProgress(UnitTypes eUnit, int iNewValue)
 
 void CvPlayer::changeGreatPeopleUnitProgress(UnitTypes eUnit, int iChange)
 {
-	setGreatPeopleUnitProgress(eUnit, getGreatPeopleUnitProgress(eUnit) + iChange);
+	if ( GC.getGame().isOption(GAMEOPTION_POOL_GREAT_PEOPLE_POINTS) ) {
+		int old_greatPeoplePoints = getGreatPeopleProgress();
+		int overflow = old_greatPeoplePoints + iChange - greatPeopleThreshold();
+		setGreatPeopleUnitProgress(eUnit, getGreatPeopleUnitProgress(eUnit) + iChange);
+		if ( overflow >= 0 ) {
+			//Reset all GPP points
+			doGreatPeople();
+			setGreatPeopleUnitProgress(eUnit, overflow);
+		}
+
+	} else {
+		setGreatPeopleUnitProgress(eUnit, getGreatPeopleUnitProgress(eUnit) + iChange);
+	}
 }
 
 void CvPlayer::changeGreatPeopleRateModifier(int iChange)
@@ -11718,8 +11734,42 @@ void CvPlayer::doEspionagePoints()
 	}
 }
 
-void CvPlayer::doGreatPeople() {
+bool CvPlayer::doGreatPeople() {
 
+	if ( !GC.getGame().isOption(GAMEOPTION_POOL_GREAT_PEOPLE_POINTS) ) {
+		return false;
+	}
+
+	CvCivilization const& kCiv = getCivilization();
+	int greatPeoplePoints = getGreatPeopleProgress();
+	if ( greatPeoplePoints >= greatPeopleThreshold()) {
+		UnitTypes eGreatPeopleUnit = NO_UNIT;
+		int iGreatPeopleUnitRand = SyncRandNum(greatPeoplePoints);
+		for (int i = 0; i < kCiv.getNumUnits(); i++)
+		{
+			UnitTypes eLoopGP = kCiv.unitAt(i);
+			int iLoopProgress = getGreatPeopleUnitProgress(eLoopGP);
+			if (iGreatPeopleUnitRand < iLoopProgress)
+			{
+				eGreatPeopleUnit = eLoopGP;
+				break;
+			}
+			iGreatPeopleUnitRand -= iLoopProgress;
+		}
+
+		if (eGreatPeopleUnit != NO_UNIT)
+		{
+			reportFirstGPP();
+			//Reset all
+			for (int i = 0; i < kCiv.getNumUnits(); i++) {
+				UnitTypes eLoopGP = kCiv.unitAt(i);
+				setGreatPeopleUnitProgress(eLoopGP, 0);
+			}
+			createGreatPeople(eGreatPeopleUnit, true, false, *getCapital()->plot());
+			return true;
+		}
+	}
+	return false;
 }
 
 int CvPlayer::getEspionageSpending(TeamTypes eAgainstTeam) const

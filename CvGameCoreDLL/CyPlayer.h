@@ -267,6 +267,15 @@ public:
 	int getGreatGeneralsThresholdModifier();
 	int getGreatPeopleRateModifier();
 	int getGreatGeneralRateModifier();
+
+	int getGreatPeopleRate();
+	int getGreatPeopleProgress();
+	int getGreatPeopleUnitProgress(int eUnit);
+	void setGreatPeopleUnitProgress(int eUnit, int iNewValue);											// Exposed to Python
+	void changeGreatPeopleUnitProgress(int eUnit, int iChange);
+
+
+
 	int getDomesticGreatGeneralRateModifier();
 	int getStateReligionGreatPeopleRateModifier();
 

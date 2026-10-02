@@ -18010,10 +18010,184 @@ void CvGameTextMgr::setVassalRevoltHelp(CvWStringBuffer& szBuffer, TeamTypes eMa
 	}
 }
 
+void CvGameTextMgr::parseGreatPeopleHelpPooledGpp(CvWStringBuffer &szBuffer, CvCity const& kCity) {
+
+
+	CvPlayer const& kOwner = GET_PLAYER(kCity.getOwner());
+	szBuffer.assign(L"");
+	int const iGPRate = kCity.getGreatPeopleRate();
+
+	// BUG - Building Additional Great People - start
+	bool bBuildingAdditionalGreatPeople =
+			(BUGOption::isEnabled("MiscHover__BuildingAdditionalGreatPeople", false) ||
+			GC.altKey()); // advc.063
+	if (iGPRate == 0 && !bBuildingAdditionalGreatPeople)
+	// BUG - Building Additional Great People - end
+		return;
+	// BULL - Great People Rate Breakdown - start (advc.078)
+	//if (BUGOption::isEnabled("MiscHover__GreatPeopleRateBreakdown", true))
+	{
+		bool bFirst = false;
+		{
+			int iRate = 0;
+			FOR_EACH_ENUM(Specialist)
+			{
+				iRate += (kCity.getSpecialistCount(eLoopSpecialist) +
+						kCity.getFreeSpecialistCount(eLoopSpecialist)) *
+						GC.getInfo(eLoopSpecialist).getGreatPeopleRateChange();
+			}
+			if (iRate > 0)
+			{
+				if (bFirst)
+				{
+					szBuffer.append(SEPARATOR);
+					bFirst = false;
+				}
+				szBuffer.append(gDLL->getText("TXT_KEY_MISC_HELP_SPECIALIST_COMMERCE",
+						iRate, gDLL->getSymbolID(GREAT_PEOPLE_CHAR),
+						L"TXT_KEY_CONCEPT_SPECIALISTS"));
+			}
+		}
+		{
+			int iRate = 0;
+			FOR_EACH_ENUM2(Building, eBuilding)
+			{
+				if (kCity.getNumBuilding(eBuilding) > 0 &&
+					// advc (future-proofing):
+					!GET_TEAM(kCity.getTeam()).isObsoleteBuilding(eBuilding))
+				{
+					iRate += kCity.getNumBuilding(eBuilding) *
+							GC.getInfo(eBuilding).getGreatPeopleRateChange();
+				}
+			}
+			if (iRate > 0)
+			{
+				if (bFirst)
+				{
+					szBuffer.append(SEPARATOR);
+					bFirst = false;
+				}
+				szBuffer.append(NEWLINE);
+				szBuffer.append(gDLL->getText("TXT_KEY_MISC_HELP_BUILDING_COMMERCE",
+						iRate, gDLL->getSymbolID(GREAT_PEOPLE_CHAR)));
+			}
+		}
+	} // BULL - Great People Rate Breakdown - end
+	szBuffer.append(SEPARATOR);
+	szBuffer.append(NEWLINE);
+	// <advc.004> Skip base rate if final rate will be the same
+	int const iTotalGreatPeopleRateModifier = kCity.getTotalGreatPeopleRateModifier();
+	if (iTotalGreatPeopleRateModifier != 100) // </advc.004>
+	{
+		szBuffer.append(gDLL->getText("TXT_KEY_MISC_HELP_GREATPEOPLE_BASE_RATE",
+				kCity.getBaseGreatPeopleRate()));
+		szBuffer.append(NEWLINE);
+	}
+	int iModifier = 100;
+	{
+		int iBuildingMod = 0;
+		FOR_EACH_ENUM2(Building, eBuilding)
+		{
+			CvBuildingInfo const& kBuilding = GC.getInfo(eBuilding);
+			if (kCity.getNumBuilding(eBuilding) > 0 &&
+				!GET_TEAM(kCity.getTeam()).isObsoleteBuilding(eBuilding))
+			{
+				iBuildingMod += kCity.getNumBuilding(eBuilding) *
+						kBuilding.getGreatPeopleRateModifier();
+			}
+			for (MemberIter itMember(kOwner.getTeam()); itMember.hasNext(); ++itMember)
+			{
+				FOR_EACH_CITY(pLoopCity, *itMember)
+				{
+					if (pLoopCity->getNumBuilding(eBuilding) > 0 &&
+						!GET_TEAM(pLoopCity->getTeam()).isObsoleteBuilding(eBuilding))
+					{
+						iBuildingMod += pLoopCity->getNumBuilding(eBuilding) *
+								kBuilding.getGlobalGreatPeopleRateModifier();
+					}
+				}
+			}
+		}
+		if (iBuildingMod != 0)
+		{
+			szBuffer.append(gDLL->getText("TXT_KEY_MISC_HELP_GREATPEOPLE_BUILDINGS",
+					iBuildingMod));
+			szBuffer.append(NEWLINE);
+			iModifier += iBuildingMod;
+		}
+	}
+	{
+		int iCivicMod = 0;
+		FOR_EACH_ENUM(CivicOption)
+		{
+			if (kOwner.getCivics(eLoopCivicOption) != NO_CIVIC)
+			{
+				CvCivicInfo const& kCivic = GC.getInfo(kOwner.getCivics(eLoopCivicOption));
+				iCivicMod += kCivic.getGreatPeopleRateModifier();
+				if (kOwner.getStateReligion() != NO_RELIGION &&
+					kCity.isHasReligion(kOwner.getStateReligion()))
+				{
+					iCivicMod += kCivic.getStateReligionGreatPeopleRateModifier();
+				}
+			}
+		}
+		if (iCivicMod != 0)
+		{
+			szBuffer.append(gDLL->getText("TXT_KEY_MISC_HELP_GREATPEOPLE_CIVICS",
+					iCivicMod));
+			szBuffer.append(NEWLINE);
+			iModifier += iCivicMod;
+		}
+	}
+	FOR_EACH_ENUM2(Trait, eTrait)
+	{
+		if (kCity.hasTrait(eTrait))
+		{
+			CvTraitInfo const& kTrait = GC.getInfo(eTrait);
+			int iTraitMod = kTrait.getGreatPeopleRateModifier();
+			if (iTraitMod != 0)
+			{
+				szBuffer.append(gDLL->getText("TXT_KEY_MISC_HELP_GREATPEOPLE_TRAIT",
+						iTraitMod, kTrait.getTextKeyWide()));
+				szBuffer.append(NEWLINE);
+				iModifier += iTraitMod;
+			}
+		}
+	}
+	if (kOwner.isGoldenAge())
+	{
+		int iGoldenAgeMod = GC.getDefineINT("GOLDEN_AGE_GREAT_PEOPLE_MODIFIER");
+		if (iGoldenAgeMod != 0)
+		{
+			szBuffer.append(gDLL->getText("TXT_KEY_MISC_HELP_GREATPEOPLE_GOLDEN_AGE",
+					iGoldenAgeMod));
+			szBuffer.append(NEWLINE);
+			iModifier += iGoldenAgeMod;
+		}
+	}
+	FAssert(iModifier == iTotalGreatPeopleRateModifier); // advc
+	int iModGreatPeople = (iModifier * kCity.getBaseGreatPeopleRate()) / 100;
+	FAssertMsg(iModGreatPeople == kCity.getGreatPeopleRate(), "Great person rate does not match actual value");
+
+	szBuffer.append(gDLL->getText("TXT_KEY_MISC_HELP_GREATPEOPLE_FINAL", iModGreatPeople));
+	//szBuffer.append(NEWLINE);
+	// BUG - Building Additional Great People - start
+	if (bBuildingAdditionalGreatPeople && kCity.isActiveOwned())
+		setBuildingAdditionalGreatPeopleHelp(szBuffer, kCity, DOUBLE_SEPARATOR);
+	// BUG - Building Additional Great People - end
+
+}
+
 void CvGameTextMgr::parseGreatPeopleHelp(CvWStringBuffer &szBuffer, CvCity const& kCity)
 {
 	if (kCity.getOwner() == NO_PLAYER)
 		return;
+
+	if ( GC.getGame().isOption(GAMEOPTION_POOL_GREAT_PEOPLE_POINTS) ) {
+		parseGreatPeopleHelpPooledGpp(szBuffer, kCity);
+		return;
+	}
+
 	CvPlayer const& kOwner = GET_PLAYER(kCity.getOwner());
 	szBuffer.assign(gDLL->getText("TXT_KEY_MISC_GREAT_PERSON", kCity.getGreatPeopleProgress(),
 			kOwner.greatPeopleThreshold(false)));
@@ -18216,6 +18390,8 @@ void CvGameTextMgr::parseGreatPeopleHelp(CvWStringBuffer &szBuffer, CvCity const
 	if (bBuildingAdditionalGreatPeople && kCity.isActiveOwned())
 		setBuildingAdditionalGreatPeopleHelp(szBuffer, kCity, DOUBLE_SEPARATOR);
 	// BUG - Building Additional Great People - end
+
+
 }
 
 // BUG - Building Additional Great People - start
