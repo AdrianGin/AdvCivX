@@ -116,6 +116,12 @@ def getUnitIcon(iUnit):
 # Getting Progress
 
 def getDisplayCity():
+	if( gc.getGame().isOption(GameOptionTypes.GAMEOPTION_POOL_GREAT_PEOPLE_POINTS) ):
+		player = gc.getPlayer(gc.getGame().getActivePlayer())
+		capital = player.getCapitalCity()
+		return (capital, getCityTurns(capital))
+		pass
+
 	"""
 	Returns the city to display in the progress bar.
 	"""
@@ -238,9 +244,17 @@ def getHoverText(eWidgetType, iData1, iData2, bOption):
 	if (not city):
 		# no rate or progress in any city and no city selected
 		return BugUtil.getText("TXT_KEY_MISC_GREAT_PERSON", (0, PlayerUtil.getActivePlayer().greatPeopleThreshold(False)))
-	iThreshold = gc.getPlayer(city.getOwner()).greatPeopleThreshold(False)
-	iProgress = city.getGreatPeopleProgress()
-	iRate = city.getGreatPeopleRate()
+
+	if (gc.getGame().isOption(GameOptionTypes.GAMEOPTION_POOL_GREAT_PEOPLE_POINTS)	):
+		player = gc.getPlayer(city.getOwner())
+		iThreshold = player.greatPeopleThreshold(False)
+		iProgress = player.getGreatPeopleProgress()
+		iRate = player.getGreatPeopleRate()
+	else:
+		iThreshold = gc.getPlayer(city.getOwner()).greatPeopleThreshold(False)
+		iProgress = city.getGreatPeopleProgress()
+		iRate = city.getGreatPeopleRate()
+
 	#szText = BugUtil.colorText(city.getName(), "COLOR_HIGHLIGHT_TEXT")
 	# advc.004: Don't color the city (I don't think this matches the overall color scheme of the game)
 	szText = city.getName()
@@ -273,14 +287,8 @@ def getGreatPeopleText_Pooled(city, iGPTurns, iGPBarWidth, bGPBarTypesNone, bGPB
 		lPercents = calcPercentages(city)
 		if (len(lPercents) == 0):
 			if (iGPTurns):
-				if (bIncludeCityName):
-					szText = BugUtil.getText("INTERFACE_GREAT_PERSON_CITY_TURNS", (sGreatPeopleChar, city.getName(), iGPTurns))
-				else:
 					szText = BugUtil.getText("INTERFACE_GREAT_PERSON_TURNS", (sGreatPeopleChar, iGPTurns))
 			else:
-				if (bIncludeCityName):
-					szText = BugUtil.getText("INTERFACE_GREAT_PERSON_CITY", (sGreatPeopleChar, city.getName()))
-				else:
 					szText = sGreatPeopleChar
 		else:
 			lPercents.sort()
@@ -300,14 +308,8 @@ def getGreatPeopleText_Pooled(city, iGPTurns, iGPBarWidth, bGPBarTypesNone, bGPB
 						szText = unicode(pInfo.getDescription())
 			else:
 				if (iGPTurns):
-					if (bIncludeCityName):
-						szText = BugUtil.getText("INTERFACE_GREAT_PERSON_CITY_TURNS", (sGreatPeopleChar, city.getName(), iGPTurns))
-					else:
 						szText = BugUtil.getText("INTERFACE_GREAT_PERSON_TURNS", (sGreatPeopleChar, iGPTurns))
 				else:
-					if (bIncludeCityName):
-						szText = BugUtil.getText("INTERFACE_GREAT_PERSON_CITY", (sGreatPeopleChar, city.getName()))
-					else:
 						szText = sGreatPeopleChar + u":"
 				szTypes = ""
 				for iPercent, iUnit in lPercents:

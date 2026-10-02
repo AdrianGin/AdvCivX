@@ -4279,8 +4279,15 @@ class CvMainInterface:
 # BUG - Bars on single line for higher resolution screens - end
 		if pGPCity:
 			fThreshold = float(gc.getPlayer(pGPCity.getOwner()).greatPeopleThreshold(False))
-			fRate = float(pGPCity.getGreatPeopleRate())
-			fFirst = float(pGPCity.getGreatPeopleProgress()) / fThreshold
+
+			if( gc.getGame().isOption(GameOptionTypes.GAMEOPTION_POOL_GREAT_PEOPLE_POINTS) ):
+				player = gc.getPlayer(pGPCity.getOwner())
+				fRate = float(player.getGreatPeopleRate())
+				fFirst = float(player.getGreatPeopleProgress()) / fThreshold
+			else:
+				fRate = float(pGPCity.getGreatPeopleRate())
+				fFirst = float(pGPCity.getGreatPeopleProgress()) / fThreshold
+
 			screen.setBarPercentage(szGPBar, InfoBarTypes.INFOBAR_STORED, fFirst)
 			if (fFirst == 1):
 				screen.setBarPercentage(szGPBar, InfoBarTypes.INFOBAR_RATE,
@@ -5801,21 +5808,41 @@ class CvMainInterface:
 					szBuffer += u" " + localText.getText(
 							"INTERFACE_CITY_TURNS", (iGPTurns,))
 # BUG - Great Person Turns - end
-			self.setLabel("GreatPeopleText", "Background", szBuffer,
-					CvUtil.FONT_CENTER_JUSTIFY, FontTypes.GAME_FONT, -1.3)
-			screen.setHitTest("GreatPeopleText", HitTestTypes.HITTEST_NOHIT)
-			screen.show("GreatPeopleText")
-			# <advc> Refactored a bit
-			fFirst = float(pHeadSelectedCity.getGreatPeopleProgress())
-			fFirst /= gc.getPlayer(pHeadSelectedCity.getOwner()).greatPeopleThreshold(False)
-			screen.setBarPercentage("GreatPeopleBar",
-					InfoBarTypes.INFOBAR_STORED, fFirst)
-			fProgress = float(pHeadSelectedCity.getGreatPeopleRate())
-			fProgress /= gc.getPlayer(pHeadSelectedCity.getOwner()).greatPeopleThreshold(False)
-			if fFirst < 1:
-				fProgress /= (1 - fFirst)
-			screen.setBarPercentage("GreatPeopleBar", InfoBarTypes.INFOBAR_RATE, fProgress)
-			screen.show("GreatPeopleBar")
+			if( gc.getGame().isOption(GameOptionTypes.GAMEOPTION_POOL_GREAT_PEOPLE_POINTS) ):
+				self.setLabel("GreatPeopleText", "Background", szBuffer,
+						CvUtil.FONT_CENTER_JUSTIFY, FontTypes.GAME_FONT, -1.3)
+				screen.setHitTest("GreatPeopleText", HitTestTypes.HITTEST_NOHIT)
+				screen.show("GreatPeopleText")
+				# <advc> Refactored a bit
+				player = gc.getPlayer(pHeadSelectedCity.getOwner())
+				fFirst = float(player.getGreatPeopleProgress())
+				fFirst /= player.greatPeopleThreshold(False)
+				screen.setBarPercentage("GreatPeopleBar",
+						InfoBarTypes.INFOBAR_STORED, fFirst)
+				fProgress = float(player.getGreatPeopleRate())
+				fProgress /= player.greatPeopleThreshold(False)
+				if fFirst < 1:
+					fProgress /= (1 - fFirst)
+				screen.setBarPercentage("GreatPeopleBar", InfoBarTypes.INFOBAR_RATE, fProgress)
+				screen.show("GreatPeopleBar")
+			else:
+				self.setLabel("GreatPeopleText", "Background", szBuffer,
+						CvUtil.FONT_CENTER_JUSTIFY, FontTypes.GAME_FONT, -1.3)
+				screen.setHitTest("GreatPeopleText", HitTestTypes.HITTEST_NOHIT)
+				screen.show("GreatPeopleText")
+				# <advc> Refactored a bit
+				fFirst = float(pHeadSelectedCity.getGreatPeopleProgress())
+				fFirst /= gc.getPlayer(pHeadSelectedCity.getOwner()).greatPeopleThreshold(False)
+				screen.setBarPercentage("GreatPeopleBar",
+						InfoBarTypes.INFOBAR_STORED, fFirst)
+				fProgress = float(pHeadSelectedCity.getGreatPeopleRate())
+				fProgress /= gc.getPlayer(pHeadSelectedCity.getOwner()).greatPeopleThreshold(False)
+				if fFirst < 1:
+					fProgress /= (1 - fFirst)
+				screen.setBarPercentage("GreatPeopleBar", InfoBarTypes.INFOBAR_RATE, fProgress)
+				screen.show("GreatPeopleBar")
+
+
 		fFirst = float(pHeadSelectedCity.getCultureTimes100(pHeadSelectedCity.getOwner()))
 		fFirst /= 100 * pHeadSelectedCity.getCultureThreshold()
 		screen.setBarPercentage("CultureBar", InfoBarTypes.INFOBAR_STORED, fFirst)
