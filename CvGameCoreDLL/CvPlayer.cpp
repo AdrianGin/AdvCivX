@@ -7668,7 +7668,6 @@ void CvPlayer::changeGreatGeneralsThresholdModifier(int iChange)
 
 
 int CvPlayer::getGreatPeopleRate() const {
-	CvCivilization const& kCiv = getCivilization();
 	int rate = 0;
 	FOR_EACH_CITY_VAR(pLoopCity, *this) {
 		rate += pLoopCity->getGreatPeopleRate();
