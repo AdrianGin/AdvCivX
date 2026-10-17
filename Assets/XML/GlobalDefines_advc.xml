@@ -977,7 +977,7 @@
 		 Recommended: 10 -->
 	<Define>
 		<DefineName>CITY_TRADE_CULTURE_THRESH</DefineName>
-		<iDefineIntVal>10</iDefineIntVal>
+		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
 	<!-- When a city has this much nationality (city tile culture percentage)
 		 or more, then its AI owner applies a stricter attitude threshold
